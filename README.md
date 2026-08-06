@@ -10,7 +10,7 @@ collections, watchlists, and reading lists. It links the Alexandria Rust core in
 process over FFI rather than talking to a server, so the whole product runs as a
 single local application with no network hop between the interface and its data.
 
-> **Status:** specification complete, implementation not started.
+> **Status:** the foundation is in place; the use cases have not started.
 
 > Windows and Ubuntu. Single-user. Metadata and content editing only — never
 > re-encoding, never relocating, and never deleting a file from disk without an
@@ -166,7 +166,7 @@ one, and every milestone after `M-01` depends on it.
 
 | Milestone | Delivers | Depends on | Issues | Status |
 |---|---|---|---|---|
-| [M-01 — Foundation](https://github.com/artur-rios/alexandria-desktop-front/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 0 / 1 closed |
+| [M-01 — Foundation](https://github.com/artur-rios/alexandria-desktop-front/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 1 / 1 closed |
 | [M-02 — Shell and access](https://github.com/artur-rios/alexandria-desktop-front/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, confirm, and sign in to | M-01 | 9 | 0 / 9 closed |
 | [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-desktop-front/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 0 / 4 closed |
 | [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-desktop-front/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 0 / 6 closed |
