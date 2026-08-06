@@ -1,0 +1,5 @@
+# These files exist to be reported. Only the layering rules run here — the
+# project's style rules would bury the diagnostics the test is asserting on.
+analyzer:
+  plugins:
+    - custom_lint

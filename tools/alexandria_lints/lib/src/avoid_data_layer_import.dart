@@ -1,3 +1,7 @@
+// ignore_for_file: deprecated_member_use
+// custom_lint 0.8.x still hands rules an ErrorReporter; DiagnosticReporter
+// arrives with its next major. Changing this ahead of the package does not
+// compile.
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
@@ -10,8 +14,10 @@ import 'layer.dart';
 /// Data: the generated bindings are a Data-layer concern, and feature code
 /// depends on the gateway interface instead (Technology Stack Document §3.2).
 class AvoidDataLayerImport extends DartLintRule {
+  /// Creates the rule.
   const AvoidDataLayerImport() : super(code: _code);
 
+  /// The diagnostic this rule reports.
   static const _code = LintCode(
     name: 'avoid_data_layer_import',
     problemMessage:

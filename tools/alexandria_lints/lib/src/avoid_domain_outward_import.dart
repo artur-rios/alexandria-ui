@@ -1,3 +1,7 @@
+// ignore_for_file: deprecated_member_use
+// custom_lint 0.8.x still hands rules an ErrorReporter; DiagnosticReporter
+// arrives with its next major. Changing this ahead of the package does not
+// compile.
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
@@ -10,8 +14,10 @@ import 'layer.dart';
 /// nothing else — that is what lets the whole application be tested without a
 /// native library present.
 class AvoidDomainOutwardImport extends DartLintRule {
+  /// Creates the rule.
   const AvoidDomainOutwardImport() : super(code: _code);
 
+  /// The diagnostic this rule reports.
   static const _code = LintCode(
     name: 'avoid_domain_outward_import',
     problemMessage:

@@ -1,6 +1,18 @@
 /// The four layers of the architecture in
 /// docs/requirements/Operations & Infrastructure Document.md §2.2.
-enum Layer { domain, application, data, presentation }
+enum Layer {
+  /// Models, gateway interfaces, and the failure model. Depends on nothing.
+  domain,
+
+  /// View models and state notifiers.
+  application,
+
+  /// Gateway implementations over the generated bindings.
+  data,
+
+  /// Screens, components, and viewers.
+  presentation,
+}
 
 /// The layer a path belongs to, or `null` when it sits outside the layered
 /// tree.

@@ -1,0 +1,12 @@
+name: alexandria_lints_example
+description: "Fixtures the layering rules are proven against. Not shipped."
+publish_to: "none"
+version: 1.0.0
+
+environment:
+  sdk: ^3.12.2
+
+dev_dependencies:
+  alexandria_lints:
+    path: ../
+  custom_lint: ^0.8.1

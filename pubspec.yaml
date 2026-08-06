@@ -65,6 +65,7 @@ dev_dependencies:
 
   # Windows MSIX packaging (IR-16).
   msix: ^3.18.0
+  riverpod: ^3.4.2
 
 flutter:
   uses-material-design: true
