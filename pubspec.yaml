@@ -1,0 +1,71 @@
+name: alexandria_desktop
+description: "The cross-platform desktop front-end for Alexandria."
+publish_to: "none"
+version: 1.0.0+1
+
+# Every constraint below was resolved to the latest stable release at the time the
+# dependency was first added, per the version policy in
+# docs/requirements/Technology Stack Document.md §1.1. `pubspec.lock` is committed
+# and is the real pin; upgrading is a deliberate change to it, never a side effect
+# of a fresh checkout.
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Composition root and state management (IR-07).
+  flutter_riverpod: ^3.0.0
+
+  # Immutable domain models and the typed failure union (IR-08).
+  freezed_annotation: ^3.1.0
+
+  # The Alexandria core boundary (IR-03, IR-04, IR-09).
+  ffi: ^2.2.0
+
+  # Application-support directory, database path, and log file location
+  # (IR-05, IR-13).
+  path: ^1.9.1
+  path_provider: ^2.1.6
+
+  # The local settings store (IR-12).
+  shared_preferences: ^2.5.5
+
+  # Structured logging (IR-13).
+  logging: ^1.3.0
+
+  # Localization for pt-BR and en (IR-11).
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+  # Analysis. `flutter_lints` is the base set; `custom_lint` runs the in-repo
+  # layering rules in tools/alexandria_lints (IR-02).
+  flutter_lints: ^6.0.0
+  custom_lint: ^0.8.1
+  alexandria_lints:
+    path: tools/alexandria_lints
+
+  # Code generation: freezed models and the ffigen bindings (IR-03, IR-08).
+  build_runner: ^2.15.1
+  freezed: ^3.2.3
+  ffigen: ^21.0.0
+
+  # Test doubles for the gateway interfaces. The only mocking library in the
+  # project, per the Technology Stack Document §7.
+  mocktail: ^1.0.5
+
+  # Windows MSIX packaging (IR-16).
+  msix: ^3.18.0
+
+flutter:
+  uses-material-design: true
+  generate: true

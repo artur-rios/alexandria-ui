@@ -1,0 +1,59 @@
+# Analyzer configuration. `flutter_lints` is the base set; the project-specific
+# rules layered on top are in tools/alexandria_lints, run by `custom_lint`.
+#
+# IR-15: CI fails on any analyzer warning. There is no "known warnings" list —
+# the moment there is one, warnings stop being read.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  plugins:
+    - custom_lint
+
+  errors:
+    # Both catalogs must stay complete in both languages (IR-11). A missing
+    # translation is a build failure, not a string that renders as its key.
+    missing_required_param: error
+    missing_return: error
+
+  exclude:
+    # Generated output is not hand-edited and is not held to the project's
+    # style rules (IR-03). It is exercised through the code that uses it.
+    - lib/core/bindings/**
+    - lib/core/l10n/generated/**
+    - "**/*.freezed.dart"
+    - "**/*.g.dart"
+    # A fixture that must fail the layering rule cannot also pass analysis.
+    - test/analysis_fixtures/**
+
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    # BR-18 / FR-UX-07 and IR-10: colors, spacing, and typography come from the
+    # theme. These catch the mechanical half; the guard test in
+    # test/core/theme/ catches literal Color(...) constructions.
+    - avoid_field_initializers_in_const_classes
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_final_locals
+    - prefer_single_quotes
+    - require_trailing_commas
+    - unnecessary_parenthesis
+
+    # The FFI boundary returns nullable pointers; sound null safety is what
+    # keeps that from reaching feature code (Technology Stack Document §2).
+    - avoid_dynamic_calls
+    - cast_nullable_to_non_nullable
+
+    # Every failure is surfaced (FR-UX-09). A swallowed exception is the one
+    # thing the failure model cannot map.
+    - avoid_catches_without_on_clauses
+    - only_throw_errors
+    - unawaited_futures
+
+    # Documentation on the public surface every feature consumes.
+    - public_member_api_docs
