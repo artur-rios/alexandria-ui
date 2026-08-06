@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.artur_rios.Alexandria</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <name>Alexandria</name>
+  <summary>Your personal library, on your own machine</summary>
+
+  <description>
+    <p>
+      Alexandria indexes, organizes, and surfaces a single person's on-disk media
+      and documents. It browses the catalog, plays audio and video, reads
+      documents and comics, edits Markdown and text in place, and organizes
+      everything into collections, watchlists, and reading lists.
+    </p>
+    <p>
+      There is no server, no cloud, and no synchronization: the whole product
+      runs as a single local application, and nothing it records leaves the
+      machine.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.artur_rios.Alexandria.desktop</launchable>
+  <url type="homepage">https://github.com/artur-rios/alexandria-desktop-front</url>
+  <url type="bugtracker">https://github.com/artur-rios/alexandria-desktop-front/issues</url>
+
+  <content_rating type="oars-1.1" />
+</component>

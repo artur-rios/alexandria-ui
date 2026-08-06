@@ -10,7 +10,7 @@ collections, watchlists, and reading lists. It links the Alexandria Rust core in
 process over FFI rather than talking to a server, so the whole product runs as a
 single local application with no network hop between the interface and its data.
 
-> **Status:** specification complete, implementation not started.
+> **Status:** the foundation is in place; the use cases have not started.
 
 > Windows and Ubuntu. Single-user. Metadata and content editing only — never
 > re-encoding, never relocating, and never deleting a file from disk without an
@@ -92,7 +92,16 @@ Prerequisites, per the
 git clone https://github.com/artur-rios/alexandria-desktop-front.git
 cd alexandria-desktop-front
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
+dart run ffigen --config ffigen.yaml
+flutter gen-l10n
+```
+
+Place the core's shared library where the loader looks — `native/windows/` or
+`native/linux/`, or set `ALEXANDRIA_CORE_LIBRARY` to a locally built one:
+
+```bash
+cp ../alexandria-api/target/release/libalexandria_ffi.so native/linux/
 ```
 
 Run it with the desktop target for your platform:
@@ -126,6 +135,25 @@ flutter test integration_test -d windows
 flutter test integration_test -d linux
 ```
 
+The layering rules — Presentation and Application never importing Data, and
+Domain importing nothing outward — are analyzer rules in `tools/alexandria_lints`
+and run with the analyzer:
+
+```bash
+flutter analyze --fatal-infos --fatal-warnings
+```
+
+```bash
+dart run custom_lint
+```
+
+They are proven against deliberately-violating fixtures by a third suite, which
+shells out to the analyzer and so runs on its own rather than on every change:
+
+```bash
+flutter test analysis_test --timeout 5x
+```
+
 Tests are named with the Given-When-Then pattern
 (`GivenSomeCondition_WhenSomeAction_ThenSomeOutcome`). Every use case ships with
 its tests before its pull request is opened.
@@ -138,7 +166,7 @@ one, and every milestone after `M-01` depends on it.
 
 | Milestone | Delivers | Depends on | Issues | Status |
 |---|---|---|---|---|
-| [M-01 — Foundation](https://github.com/artur-rios/alexandria-desktop-front/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 0 / 1 closed |
+| [M-01 — Foundation](https://github.com/artur-rios/alexandria-desktop-front/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 1 / 1 closed |
 | [M-02 — Shell and access](https://github.com/artur-rios/alexandria-desktop-front/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, confirm, and sign in to | M-01 | 9 | 0 / 9 closed |
 | [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-desktop-front/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 0 / 4 closed |
 | [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-desktop-front/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 0 / 6 closed |

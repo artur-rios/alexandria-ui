@@ -1,0 +1,103 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Alexandria",
+  "@appTitle": {
+    "description": "The application name, shown in the window title bar."
+  },
+
+  "retry": "Try again",
+  "@retry": {
+    "description": "The action on every failure state that can be retried."
+  },
+
+  "coreUnavailableTitle": "Alexandria's core is not available",
+  "@coreUnavailableTitle": {
+    "description": "Heading of the core-unavailable state (UC-38 AF-04). The catalog is not reachable and no catalog call is attempted from here."
+  },
+
+  "failureCoreLibraryNotLoaded": "The Alexandria core could not be loaded from {path}.",
+  "@failureCoreLibraryNotLoaded": {
+    "description": "Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.",
+    "placeholders": {
+      "path": { "type": "String", "example": "C:\\Program Files\\Alexandria\\alexandria_ffi.dll" }
+    }
+  },
+
+  "failureApplicationDirectoryUnavailable": "The application folder {path} could not be created.",
+  "@failureApplicationDirectoryUnavailable": {
+    "description": "Startup step 2 failed: the application-support directory could not be resolved or created.",
+    "placeholders": {
+      "path": { "type": "String", "example": "C:\\Users\\me\\AppData\\Roaming\\Alexandria" }
+    }
+  },
+
+  "failureCoreInitializationFailed": "The Alexandria core could not open the catalog.",
+  "@failureCoreInitializationFailed": {
+    "description": "Startup step 3 failed: alexandria_index_init returned a non-success code."
+  },
+
+  "failureCoreUnhealthy": "The Alexandria core reported that it is not healthy.",
+  "@failureCoreUnhealthy": {
+    "description": "Startup step 4 failed: the core's health status is not the success code."
+  },
+
+  "failureCoreVersionUnsupported": "This version of Alexandria needs a core matching {required}, but found {found}.",
+  "@failureCoreVersionUnsupported": {
+    "description": "Startup step 4 failed: the core's version is outside the supported range. Both versions are stated.",
+    "placeholders": {
+      "found": { "type": "String", "example": "0.4.0" },
+      "required": { "type": "String", "example": ">=0.1.0 <0.2.0" }
+    }
+  },
+
+  "failurePreferencesUnreadable": "Your preferences could not be read, so the system theme and language are being used.",
+  "@failurePreferencesUnreadable": {
+    "description": "Startup step 5 fell back. Reported, not fatal."
+  },
+
+  "failureInvalidInput": "Alexandria rejected that as invalid.",
+  "@failureInvalidInput": {
+    "description": "The core rejected the input. Its verdict is final even when local validation passed."
+  },
+
+  "failureUnauthorized": "Your session has ended. Please sign in again.",
+  "@failureUnauthorized": {
+    "description": "The session is absent, expired, or rejected."
+  },
+
+  "failureNotInitialized": "Alexandria is not ready yet. Please restart the application.",
+  "@failureNotInitialized": {
+    "description": "A call was made before the core was initialized — a fault in the startup sequence rather than something the owner did."
+  },
+
+  "failureNotFound": "That item no longer exists.",
+  "@failureNotFound": {
+    "description": "The record does not exist, or has passed the retention window that made it reachable."
+  },
+
+  "failureInvalidState": "That cannot be done to this item right now.",
+  "@failureInvalidState": {
+    "description": "The record exists but is in the wrong state for the operation."
+  },
+
+  "failureDisk": "The file could not be read or written on disk. Nothing was changed.",
+  "@failureDisk": {
+    "description": "A filesystem operation failed. The core leaves the catalog untouched when this happens."
+  },
+
+  "failureIntegrity": "The file on disk no longer matches what Alexandria recorded.",
+  "@failureIntegrity": {
+    "description": "The on-disk file and the catalog record have diverged."
+  },
+
+  "failureConfiguration": "Alexandria's configuration could not be read.",
+  "@failureConfiguration": {
+    "description": "The core's own configuration is missing or unusable."
+  },
+
+  "failureUnexpected": "Something went wrong in Alexandria.",
+  "@failureUnexpected": {
+    "description": "A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number."
+  }
+}

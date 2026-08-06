@@ -1,0 +1,47 @@
+# IR-16: the Flatpak manifest.
+#
+# flutter_distributor covers MSIX, the Windows installer, the AppImage, and the
+# .deb, but has no Flatpak target, so this manifest and the flatpak-builder step
+# in .github/workflows/release.yml are hand-written.
+#
+# The bundle carries the Alexandria core's shared object alongside the
+# executable: nothing here installs, updates, or launches a service — the core
+# travels inside the application as a library (Operations & Infrastructure
+# Document §7.3).
+
+app-id: io.github.artur_rios.Alexandria
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+command: alexandria_desktop
+
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  # Audio, because the product plays music and video.
+  - --socket=pulseaudio
+  # The owner's library folders are the whole point of the application, and the
+  # portal cannot express "whatever folders they register later".
+  - --filesystem=home
+
+modules:
+  - name: alexandria-desktop
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 alexandria_desktop /app/bin/alexandria_desktop
+      - cp -r data /app/bin/data
+      - cp -r lib /app/bin/lib
+      - install -Dm644 io.github.artur_rios.Alexandria.desktop
+        /app/share/applications/io.github.artur_rios.Alexandria.desktop
+      - install -Dm644 io.github.artur_rios.Alexandria.metainfo.xml
+        /app/share/metainfo/io.github.artur_rios.Alexandria.metainfo.xml
+    sources:
+      # Populated by the release workflow from build/linux/x64/release/bundle.
+      - type: dir
+        path: bundle
+      - type: file
+        path: io.github.artur_rios.Alexandria.desktop
+      - type: file
+        path: io.github.artur_rios.Alexandria.metainfo.xml

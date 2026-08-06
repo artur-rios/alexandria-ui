@@ -1,0 +1,20 @@
+# IR-11: the localization infrastructure for pt-BR and en.
+#
+# `required-resource-attributes` makes a message without a description a
+# generation failure, and `untranslated-messages-file` records anything present
+# in the template and missing from a translation. The parity test in
+# test/core/l10n/ is what turns that record into a build failure — see IR-11.
+
+# Brazilian Portuguese is the only Portuguese variant this product ships, and
+# gen_l10n requires a base catalog whenever a country-coded one exists. The base
+# `pt` catalog therefore carries pt-BR rather than duplicating two files; the
+# supported locale is still declared as pt-BR in AppTheme's MaterialApp.
+
+arb-dir: lib/core/l10n
+template-arb-file: app_en.arb
+output-dir: lib/core/l10n/generated
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false
+required-resource-attributes: true
+untranslated-messages-file: build/untranslated_messages.json

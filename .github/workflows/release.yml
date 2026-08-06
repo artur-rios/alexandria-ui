@@ -1,0 +1,172 @@
+# IR-16: the packages, produced from the same pipeline on a tagged release.
+#
+#   Windows   an MSIX package and an installer executable
+#   Linux     an AppImage, a .deb, and a Flatpak
+#
+# Each bundles the Alexandria core's shared library. The core travels inside the
+# application bundle as a library: nothing here installs, updates, or launches a
+# service (Operations & Infrastructure Document §7.3).
+#
+# Packages are produced unsigned and published as build artifacts. Code signing
+# for Windows needs a certificate the project does not hold, and Flatpak
+# distribution through a public remote needs an account that does not exist yet;
+# both are deliberately deferred until before the first public release (§7.2).
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to package, without the leading v"
+        required: true
+
+env:
+  CORE_REPOSITORY: artur-rios/alexandria-api
+  CORE_REF: main
+
+jobs:
+  windows:
+    name: Windows packages
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CORE_REPOSITORY }}
+          ref: ${{ env.CORE_REF }}
+          path: core
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+
+      - name: Build the Alexandria core
+        working-directory: core
+        run: cargo build --release -p alexandria-ffi
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Resolve the version
+        id: version
+        shell: bash
+        run: |
+          version="${{ inputs.version }}"
+          [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      - run: flutter build windows --release
+
+      # Beside the executable, which is where IR-04's resolver looks first.
+      - name: Bundle the core
+        shell: bash
+        run: |
+          cp core/target/release/alexandria_ffi.dll \
+             build/windows/x64/runner/Release/
+
+      - name: Build the MSIX package
+        run: dart run msix:create --version ${{ steps.version.outputs.value }}.0
+
+      - name: Build the installer
+        env:
+          ALEXANDRIA_VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" `
+            packaging\windows\installer.iss
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-packages
+          path: |
+            build/windows/x64/runner/Release/*.msix
+            dist/*.exe
+          if-no-files-found: error
+
+  linux:
+    name: Linux packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CORE_REPOSITORY }}
+          ref: ${{ env.CORE_REF }}
+          path: core
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+
+      - name: Build the Alexandria core
+        working-directory: core
+        run: cargo build --release -p alexandria-ffi
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install the packaging toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ninja-build libgtk-3-dev \
+            flatpak flatpak-builder \
+            libfuse2 fakeroot
+          sudo flatpak remote-add --if-not-exists flathub \
+            https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y flathub \
+            org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+
+      - run: flutter pub get
+
+      - name: Resolve the version
+        id: version
+        run: |
+          version="${{ inputs.version }}"
+          [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      - run: flutter build linux --release
+
+      - name: Bundle the core
+        run: |
+          cp core/target/release/libalexandria_ffi.so \
+             build/linux/x64/release/bundle/lib/
+
+      - name: Build the AppImage and the .deb
+        run: |
+          dart pub global activate flutter_distributor
+          flutter_distributor package \
+            --platform linux --targets deb,appimage \
+            --skip-clean
+
+      - name: Build the Flatpak
+        run: |
+          cp -r build/linux/x64/release/bundle packaging/linux/bundle
+          flatpak-builder --repo=packaging/linux/repo --force-clean \
+            packaging/linux/build \
+            packaging/linux/io.github.artur_rios.Alexandria.yaml
+          flatpak build-bundle packaging/linux/repo \
+            "dist/alexandria-${{ steps.version.outputs.value }}.flatpak" \
+            io.github.artur_rios.Alexandria
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: |
+            dist/**/*.deb
+            dist/**/*.AppImage
+            dist/*.flatpak
+          if-no-files-found: error

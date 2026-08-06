@@ -48,7 +48,7 @@ Two consequences follow, and both are binding:
 | Runtime / framework | **Flutter** | Desktop embedders only. The Windows and Linux targets are enabled; macOS, web, iOS, and Android are not part of this project. |
 | Language | **Dart** | Version tracks the Flutter SDK rather than being pinned independently. |
 | Language features | Sound null safety, enabled project-wide | Non-negotiable: the FFI boundary returns nullable pointers, and the type system is what keeps that from reaching feature code. |
-| Analysis | **flutter_lints**, with project-specific rules layered on top | Enforces the layering rules in [Operations & Infrastructure §2.4](Operations%20%26%20Infrastructure%20Document.md); the analyzer runs in CI and a warning fails the build. |
+| Analysis | **flutter_lints**, with project-specific rules layered on top via **custom_lint** | Enforces the layering rules in [Operations & Infrastructure §2.4](Operations%20%26%20Infrastructure%20Document.md); the analyzer runs in CI and a warning fails the build. No analyzer rule can express "Presentation may not import Data", so the two rules that do — `avoid_data_layer_import` and `avoid_domain_outward_import` — live in the in-repo plugin `tools/alexandria_lints` and run as an analyzer plugin. |
 | Windows target | Windows 10 (x64) and later | The MSVC toolchain builds the embedder; the Alexandria core ships alongside as a DLL. |
 | Linux target | Ubuntu LTS (x64), GTK embedder | Other GTK-based distributions are best-effort; the core ships alongside as a shared object. |
 
@@ -209,6 +209,7 @@ section is the canonical list of the tools and versions.
 | Platform | Flutter (Windows + Linux desktop) | latest stable at implementation time |
 | Language | Dart | tracks the Flutter SDK |
 | Analysis | flutter_lints | latest stable at implementation time |
+| Analysis | custom_lint (+ `custom_lint_builder`, `analyzer_plugin`, for `tools/alexandria_lints`) | latest stable at implementation time |
 | Architecture | flutter_riverpod | latest stable at implementation time |
 | Architecture | freezed | latest stable at implementation time |
 | Architecture | json_serializable | latest stable at implementation time |
