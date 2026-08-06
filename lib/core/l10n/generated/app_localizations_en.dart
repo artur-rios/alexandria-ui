@@ -1,0 +1,79 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get appTitle => 'Alexandria';
+
+  @override
+  String get retry => 'Try again';
+
+  @override
+  String get coreUnavailableTitle => 'Alexandria\'s core is not available';
+
+  @override
+  String failureCoreLibraryNotLoaded(String path) {
+    return 'The Alexandria core could not be loaded from $path.';
+  }
+
+  @override
+  String failureApplicationDirectoryUnavailable(String path) {
+    return 'The application folder $path could not be created.';
+  }
+
+  @override
+  String get failureCoreInitializationFailed =>
+      'The Alexandria core could not open the catalog.';
+
+  @override
+  String get failureCoreUnhealthy =>
+      'The Alexandria core reported that it is not healthy.';
+
+  @override
+  String failureCoreVersionUnsupported(String found, String required) {
+    return 'This version of Alexandria needs a core matching $required, but found $found.';
+  }
+
+  @override
+  String get failurePreferencesUnreadable =>
+      'Your preferences could not be read, so the system theme and language are being used.';
+
+  @override
+  String get failureInvalidInput => 'Alexandria rejected that as invalid.';
+
+  @override
+  String get failureUnauthorized =>
+      'Your session has ended. Please sign in again.';
+
+  @override
+  String get failureNotInitialized =>
+      'Alexandria is not ready yet. Please restart the application.';
+
+  @override
+  String get failureNotFound => 'That item no longer exists.';
+
+  @override
+  String get failureInvalidState =>
+      'That cannot be done to this item right now.';
+
+  @override
+  String get failureDisk =>
+      'The file could not be read or written on disk. Nothing was changed.';
+
+  @override
+  String get failureIntegrity =>
+      'The file on disk no longer matches what Alexandria recorded.';
+
+  @override
+  String get failureConfiguration =>
+      'Alexandria\'s configuration could not be read.';
+
+  @override
+  String get failureUnexpected => 'Something went wrong in Alexandria.';
+}

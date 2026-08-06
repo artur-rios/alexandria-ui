@@ -51,3 +51,7 @@ native/linux/*.so
 
 # Local log files and scratch databases.
 *.log
+
+# gen_l10n's untranslated-messages record; the parity test in test/core/l10n is
+# what fails the build, not this file.
+/build/
