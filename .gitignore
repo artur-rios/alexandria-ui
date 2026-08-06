@@ -55,7 +55,3 @@ native/linux/*.so
 # gen_l10n's untranslated-messages record; the parity test in test/core/l10n is
 # what fails the build, not this file.
 /build/
-
-# The fixture package resolves its own dependencies when the layering test runs.
-tools/alexandria_lints/example/.dart_tool/
-tools/alexandria_lints/example/pubspec.lock

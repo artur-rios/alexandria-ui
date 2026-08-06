@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Alexandria
+Comment=Your personal library
+Exec=alexandria_desktop
+Icon=io.github.artur_rios.Alexandria
+Terminal=false
+Categories=AudioVideo;Player;Office;Viewer;

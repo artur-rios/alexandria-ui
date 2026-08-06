@@ -92,7 +92,16 @@ Prerequisites, per the
 git clone https://github.com/artur-rios/alexandria-desktop-front.git
 cd alexandria-desktop-front
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
+dart run ffigen --config ffigen.yaml
+flutter gen-l10n
+```
+
+Place the core's shared library where the loader looks — `native/windows/` or
+`native/linux/`, or set `ALEXANDRIA_CORE_LIBRARY` to a locally built one:
+
+```bash
+cp ../alexandria-api/target/release/libalexandria_ffi.so native/linux/
 ```
 
 Run it with the desktop target for your platform:
@@ -124,6 +133,25 @@ flutter test integration_test -d windows
 
 ```bash
 flutter test integration_test -d linux
+```
+
+The layering rules — Presentation and Application never importing Data, and
+Domain importing nothing outward — are analyzer rules in `tools/alexandria_lints`
+and run with the analyzer:
+
+```bash
+flutter analyze --fatal-infos --fatal-warnings
+```
+
+```bash
+dart run custom_lint
+```
+
+They are proven against deliberately-violating fixtures by a third suite, which
+shells out to the analyzer and so runs on its own rather than on every change:
+
+```bash
+flutter test analysis_test --timeout 5x
 ```
 
 Tests are named with the Given-When-Then pattern

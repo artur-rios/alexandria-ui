@@ -70,3 +70,15 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+
+# IR-16: the MSIX package. Produced unsigned — code signing needs a certificate
+# the project does not hold, deferred in Operations & Infrastructure §7.2.
+msix_config:
+  display_name: Alexandria
+  publisher_display_name: Artur Rios
+  identity_name: io.github.arturrios.Alexandria
+  # The core's DLL sits beside the executable in the release bundle, which is
+  # where IR-04's resolver looks first, so it is inside the package already.
+  output_name: alexandria
+  capabilities: ""
+  install_certificate: false

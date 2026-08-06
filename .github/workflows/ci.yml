@@ -1,0 +1,193 @@
+# IR-15: analysis, the unit and widget suite, and the integration suite on both
+# target platforms, failing on any analyzer warning.
+#
+# There is no "known warnings" list — the moment there is one, warnings stop
+# being read (Operations & Infrastructure Document §7.1).
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The core is a separate repository. Building it here rather than committing a
+  # binary keeps the shared library out of git history and makes a drift between
+  # the two repositories fail the build instead of going unnoticed.
+  CORE_REPOSITORY: artur-rios/alexandria-api
+  CORE_REF: main
+
+jobs:
+  analyze:
+    name: Analyze and generate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: |
+          flutter pub get
+          dart pub get --directory tools/alexandria_lints
+
+      - name: Check the vendored header against the core's
+        run: |
+          git clone --depth 1 --branch "$CORE_REF" \
+            "https://github.com/$CORE_REPOSITORY.git" /tmp/core
+          if ! diff -u /tmp/core/crates/alexandria-ffi/src/header.h \
+                       native/include/alexandria_ffi.h; then
+            echo "::error::native/include/alexandria_ffi.h has drifted from the core's header. Re-copy it and regenerate the bindings."
+            exit 1
+          fi
+
+      - name: Regenerate and check for a diff
+        run: |
+          dart run ffigen --config ffigen.yaml
+          dart run build_runner build
+          flutter gen-l10n
+          if ! git diff --exit-code; then
+            echo "::error::Generated output differs from what is committed. Run the generators and commit the result."
+            exit 1
+          fi
+
+      - name: Analyze
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      # The project's own source must be clean. The rules are proven to actually
+      # fire by the fixture suite in the `test` job — a plugin that failed to
+      # load would report nothing here and look like a pass.
+      - name: Layering rules
+        run: dart run custom_lint
+
+  test:
+    name: Unit and widget tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # IR-11: a key present in one language and absent from the other fails the
+      # build. The parity test in test/core/l10n is what enforces it.
+      - name: Localization parity
+        run: flutter test test/core/l10n
+
+      - name: Test with coverage
+        run: flutter test --coverage
+
+      # IR-02: proven against the fixture package, so what runs here is the
+      # plugin itself rather than a reimplementation of its logic.
+      - name: Layering rules against the fixtures
+        run: flutter test analysis_test --timeout 5x
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+
+  integration:
+    name: Integration (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            core_artifact: alexandria_ffi.dll
+            core_destination: native/windows
+          - os: ubuntu-latest
+            platform: linux
+            core_artifact: libalexandria_ffi.so
+            core_destination: native/linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CORE_REPOSITORY }}
+          ref: ${{ env.CORE_REF }}
+          path: core
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+
+      - name: Build the Alexandria core
+        working-directory: core
+        run: cargo build --release -p alexandria-ffi
+
+      - name: Bundle the core
+        shell: bash
+        run: |
+          mkdir -p "${{ matrix.core_destination }}"
+          cp "core/target/release/${{ matrix.core_artifact }}" \
+             "${{ matrix.core_destination }}/"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install the Linux desktop toolchain
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev xvfb
+
+      - run: flutter pub get
+
+      - name: Integration suite
+        shell: bash
+        run: |
+          if [ "${{ matrix.platform }}" = "linux" ]; then
+            xvfb-run -a flutter test integration_test -d linux
+          else
+            flutter test integration_test -d windows
+          fi
+
+  build:
+    name: Release build (${{ matrix.platform }})
+    needs: [analyze, test]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: ubuntu-latest
+            platform: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install the Linux desktop toolchain
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev
+
+      - run: flutter pub get
+
+      - run: flutter build ${{ matrix.platform }} --release

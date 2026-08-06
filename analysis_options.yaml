@@ -23,9 +23,6 @@ analyzer:
     - lib/core/l10n/generated/**
     - "**/*.freezed.dart"
     - "**/*.g.dart"
-    # The layering fixtures exist to be reported. They are their own package,
-    # analyzed by the test in test/core/analysis/ rather than from here.
-    - tools/alexandria_lints/example/**
 
   language:
     strict-casts: true
