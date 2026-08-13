@@ -116,6 +116,78 @@ abstract class AppLocalizations {
   /// **'Alexandria\'s core is not available'**
   String get coreUnavailableTitle;
 
+  /// Heading of the login screen (UC-02). Presented whenever there is no active session.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to Alexandria'**
+  String get loginTitle;
+
+  /// Label of the login form's e-mail field.
+  ///
+  /// In en, this message translates to:
+  /// **'E-mail'**
+  String get loginEmailLabel;
+
+  /// Label of the login form's password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get loginPasswordLabel;
+
+  /// The login form's primary action.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginSubmit;
+
+  /// UC-02 AF-01: the e-mail field was left empty. The core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your e-mail address.'**
+  String get loginEmailMissing;
+
+  /// UC-02 AF-01: the e-mail field does not hold an address. The core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'That does not look like an e-mail address.'**
+  String get loginEmailMalformed;
+
+  /// UC-02 AF-01: the password field was left empty. The core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password.'**
+  String get loginPasswordMissing;
+
+  /// UC-02 AF-02: the core rejected the credentials. Deliberately does not say which of the two was wrong, and does not reveal whether the address is registered.
+  ///
+  /// In en, this message translates to:
+  /// **'That e-mail and password do not match an account.'**
+  String get loginRejected;
+
+  /// UC-02 AF-03: the core holds no credentials. Signing up is UC-01, which is blocked on core support, so this states the condition rather than offering an action that does not exist yet.
+  ///
+  /// In en, this message translates to:
+  /// **'No account has been set up on this computer yet.'**
+  String get loginNoAccount;
+
+  /// UC-02 AF-04: heading shown on the login screen when a session was discarded because the core rejected a call, rather than because the owner signed out.
+  ///
+  /// In en, this message translates to:
+  /// **'You were signed out'**
+  String get loginSessionEndedTitle;
+
+  /// FR-AU-12 / BR-25: heading of the state that stands in place of the catalog while the account's e-mail is unconfirmed. The prompt itself is UC-40.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your e-mail address'**
+  String get catalogLockedTitle;
+
+  /// FR-AU-12: explains why the catalog is not reachable. The address is named so the owner knows where to look.
+  ///
+  /// In en, this message translates to:
+  /// **'Alexandria stays locked until the address {email} is confirmed.'**
+  String catalogLockedBody(String email);
+
   /// Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.
   ///
   /// In en, this message translates to:

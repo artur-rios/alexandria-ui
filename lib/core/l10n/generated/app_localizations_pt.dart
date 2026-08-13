@@ -19,6 +19,46 @@ class AppLocalizationsPt extends AppLocalizations {
       'O núcleo do Alexandria não está disponível';
 
   @override
+  String get loginTitle => 'Entrar no Alexandria';
+
+  @override
+  String get loginEmailLabel => 'E-mail';
+
+  @override
+  String get loginPasswordLabel => 'Senha';
+
+  @override
+  String get loginSubmit => 'Entrar';
+
+  @override
+  String get loginEmailMissing => 'Informe seu endereço de e-mail.';
+
+  @override
+  String get loginEmailMalformed => 'Isso não parece um endereço de e-mail.';
+
+  @override
+  String get loginPasswordMissing => 'Informe sua senha.';
+
+  @override
+  String get loginRejected =>
+      'Esse e-mail e essa senha não correspondem a uma conta.';
+
+  @override
+  String get loginNoAccount =>
+      'Ainda não há uma conta configurada neste computador.';
+
+  @override
+  String get loginSessionEndedTitle => 'Sua sessão foi encerrada';
+
+  @override
+  String get catalogLockedTitle => 'Confirme seu endereço de e-mail';
+
+  @override
+  String catalogLockedBody(String email) {
+    return 'O Alexandria permanece bloqueado até que o endereço $email seja confirmado.';
+  }
+
+  @override
   String failureCoreLibraryNotLoaded(String path) {
     return 'Não foi possível carregar o núcleo do Alexandria a partir de $path.';
   }

@@ -18,8 +18,18 @@ class FakeCoreClient implements CoreClient {
     this.failOnVersion = false,
     this.failOnHealth = false,
     this.failOnInitialize = false,
+    CoreJsonResponse? authLocalLoginResult,
+    this.failOnAuthLocalLogin = false,
   }) : healthResult = healthResult ?? coreHealthyStatusCode,
-       initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode;
+       initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
+       authLocalLoginResult =
+           authLocalLoginResult ??
+           (
+             status: CoreStatusFamily.auth.okCode,
+             json:
+                 '{"success":true,'
+                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}',
+           );
 
   /// What [version] returns.
   final String? versionResult;
@@ -39,8 +49,20 @@ class FakeCoreClient implements CoreClient {
   /// Whether [initialize] throws instead of returning.
   final bool failOnInitialize;
 
+  /// What [authLocalLogin] returns. Defaults to a successful login.
+  final CoreJsonResponse authLocalLoginResult;
+
+  /// Whether [authLocalLogin] throws instead of returning.
+  final bool failOnAuthLocalLogin;
+
   /// The database paths [initialize] was called with, in order.
   final List<String> initializedWith = [];
+
+  /// The JSON bodies [authLocalLogin] was called with, in order.
+  ///
+  /// Recorded so a test can assert that the core was *not* called when local
+  /// validation already rejected the input (Testing Specification §6.3).
+  final List<String> authLocalLoginBodies = [];
 
   /// How many times [dispose] was called.
   int disposeCount = 0;
@@ -63,6 +85,24 @@ class FakeCoreClient implements CoreClient {
     initializedWith.add(databasePath);
     return initializeResult;
   }
+
+  @override
+  Future<CoreJsonResponse> authLocalLogin(String jsonBody) async {
+    if (failOnAuthLocalLogin) {
+      throw const CoreCallException('auth local login call failed');
+    }
+    authLocalLoginBodies.add(jsonBody);
+    return authLocalLoginResult;
+  }
+
+  @override
+  Future<CoreJsonResponse> authLocalSetCredentials(
+    String jsonBody,
+    String token,
+  ) async => (
+    status: CoreStatusFamily.auth.okCode,
+    json: '{"success":true,"email":"owner@example.com"}',
+  );
 
   @override
   Future<void> dispose() async => disposeCount++;

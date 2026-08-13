@@ -12,6 +12,12 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/auth/application/login_controller.dart';
+import '../../features/auth/application/login_state.dart';
+import '../../features/auth/application/session_controller.dart';
+import '../../features/auth/application/session_state.dart';
+import '../../features/auth/data/core_auth_gateway.dart';
+import '../../features/auth/domain/auth_gateway.dart';
 import '../bindings/core_client.dart';
 import '../settings/settings_store.dart';
 import '../settings/shared_preferences_settings_store.dart';
@@ -53,6 +59,31 @@ final themeModeProvider = Provider<ThemeMode>((ref) {
   return ref.read(startupControllerProvider.notifier).settings?.themeMode ??
       ThemeMode.system;
 });
+
+/// The core's authentication operations (UC-02).
+///
+/// Reads the loaded core from the startup controller, so it is only usable
+/// once startup has reached [StartupReady] — which is exactly when the login
+/// screen is presented. A test overrides this with a fake gateway and never
+/// reaches the FFI boundary at all (Testing Specification §2.3).
+final authGatewayProvider = Provider<AuthGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the authentication gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreAuthGateway(core);
+});
+
+/// The owner's session, held in memory for the run (FR-AU-05).
+final sessionControllerProvider =
+    NotifierProvider<SessionController, SessionState>(SessionController.new);
+
+/// The login form's state (UC-02).
+final loginControllerProvider =
+    NotifierProvider<LoginController, LoginState>(LoginController.new);
 
 /// The language the owner chose, or `null` to follow the system.
 final localeProvider = Provider<Locale?>((ref) {

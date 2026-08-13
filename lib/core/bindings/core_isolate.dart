@@ -226,6 +226,35 @@ class CoreIsolate {
         (json) => json,
       ),
 
+      // The one branch that both passes and receives a string. The body
+      // carries the owner's plaintext password, so it is freed by
+      // withNativeString on the way in — including if the call throws — and
+      // the result's JSON is freed by consume on the way out, on the failure
+      // path too (IR-09, NFR-13, FR-AU-11).
+      'authLocalLogin' => withNativeString(arguments.first! as String, (body) {
+        final result = bindings.alexandria_auth_local_login(body);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      // Two strings in, one out. Nested rather than sequential so each copy is
+      // released by its own finally, including if the call throws between them.
+      'authLocalSetCredentials' => withNativeString(
+        arguments.first! as String,
+        (body) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_auth_local_set_credentials(
+            body,
+            token,
+          );
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       _ => throw CoreCallException('unknown core operation "$operation"'),
     };
   }
