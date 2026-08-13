@@ -39,15 +39,13 @@ jobs:
           flutter pub get
           dart pub get --directory tools/alexandria_lints
 
-      - name: Check the vendored header against the core's
-        run: |
-          git clone --depth 1 --branch "$CORE_REF" \
-            "https://github.com/$CORE_REPOSITORY.git" /tmp/core
-          if ! diff -u /tmp/core/crates/alexandria-ffi/src/header.h \
-                       native/include/alexandria_ffi.h; then
-            echo "::error::native/include/alexandria_ffi.h has drifted from the core's header. Re-copy it and regenerate the bindings."
-            exit 1
-          fi
+      # The drift check lives in the integration job rather than here. The
+      # core's header is not committed — `crates/alexandria-ffi/build.rs`
+      # generates it with cbindgen and the core's .gitignore excludes it — so a
+      # clone alone never contains it, and comparing against a clone reported
+      # drift unconditionally. The integration job builds the core, which is
+      # what makes the header exist, so that is where the comparison can be
+      # honest.
 
       - name: Regenerate and check for a diff
         run: |
@@ -129,9 +127,54 @@ jobs:
         with:
           workspaces: core
 
+      # alexandria-core depends on ffmpeg-next, whose ffmpeg-sys-next needs the
+      # ffmpeg C development libraries at build time. The package list mirrors
+      # the core repository's own workflow; the core builds on Linux only there,
+      # so the Windows half below is this repository's to carry.
+      - name: Install the ffmpeg development libraries (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libavformat-dev libavcodec-dev libavutil-dev \
+            libavfilter-dev libavdevice-dev libswscale-dev \
+            libswresample-dev pkg-config clang
+
+      # ffmpeg-sys-next has no pkg-config to find on Windows, so it is pointed
+      # at an unpacked release build through FFMPEG_DIR. The shared variant is
+      # the one that ships headers and import libraries.
+      #
+      # Its bin directory goes on PATH because a shared build links the core
+      # against avcodec, avformat, avutil, avfilter, avdevice, swscale, and
+      # swresample by name: without it the core builds and then fails to load,
+      # which surfaces as an unrelated-looking "core could not be loaded".
+      - name: Install the ffmpeg development libraries (Windows)
+        if: matrix.platform == 'windows'
+        shell: bash
+        run: |
+          set -e
+          root=/tmp/ffmpeg/ffmpeg-master-latest-win64-gpl-shared
+          curl -fsSL -o /tmp/ffmpeg.zip \
+            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl-shared.zip"
+          7z x /tmp/ffmpeg.zip -o/tmp/ffmpeg > /dev/null
+          echo "FFMPEG_DIR=$(cygpath -w "$root")" >> "$GITHUB_ENV"
+          cygpath -w "$root/bin" >> "$GITHUB_PATH"
+
       - name: Build the Alexandria core
         working-directory: core
         run: cargo build --release -p alexandria-ffi
+
+      # Now that the core has been built, its generated header exists and can
+      # actually be compared. Linux only: the header is the same on both, and
+      # running it twice would only double the failure.
+      - name: Check the vendored header against the core's
+        if: matrix.platform == 'linux'
+        run: |
+          if ! diff -u core/crates/alexandria-ffi/src/header.h \
+                       native/include/alexandria_ffi.h; then
+            echo "::error::native/include/alexandria_ffi.h has drifted from the core's header. Re-copy it and run 'dart run ffigen --config ffigen.yaml'."
+            exit 1
+          fi
 
       - name: Bundle the core
         shell: bash

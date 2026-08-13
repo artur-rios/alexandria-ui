@@ -467,6 +467,40 @@ class AlexandriaBindings {
         )
       >();
 
+  /// One page of a CBZ ComicBook (UC-39 / FR-MP-04).
+  ///
+  /// Returns `{"uuid":…,"page":N,"pageCount":N,"mimeType":…,"bytesBase64":…}`.
+  /// Unlike UC-38, the bytes *do* cross the boundary: a comic page has no path
+  /// of its own — it lives inside an archive — and it is bounded, so
+  /// base64 inside the existing JSON payload keeps the FFI shape intact while
+  /// staying byte-exact with HTTP.
+  PlaybackJsonResult alexandria_comic_page(
+    ffi.Pointer<ffi.Char> uuid,
+    int page,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_comic_page(uuid, page, token);
+  }
+
+  late final _alexandria_comic_pagePtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaybackJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Uint32,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_comic_page');
+  late final _alexandria_comic_page = _alexandria_comic_pagePtr
+      .asFunction<
+        PlaybackJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          int,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
   /// Write edited content back to a TextFile on disk (UC-33 / FR-TX-02,
   /// FR-TX-03).
   ///
@@ -562,6 +596,41 @@ class AlexandriaBindings {
       .asFunction<
         FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
       >();
+
+  /// Resolve a File to everything a local player needs to open it
+  /// (UC-38 / FR-MP-01, FR-MP-06).
+  ///
+  /// The FFI surface cannot carry a byte stream, so where HTTP streams
+  /// `GET /v1/files/{uuid}/stream`, this returns
+  /// `{"uuid":…,"path":…,"mimeType":…,"sizeBytes":…}` and the caller — Flutter
+  /// desktop, on the same machine as the file — opens that path directly.
+  /// Zero bytes cross this boundary. Parity with HTTP is defined on this
+  /// descriptor and on the authorization, state, and error decisions rather
+  /// than on byte transfer (FR-MP-06).
+  PlaybackJsonResult alexandria_file_playback_source(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_file_playback_source(uuid, token);
+  }
+
+  late final _alexandria_file_playback_sourcePtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaybackJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_file_playback_source');
+  late final _alexandria_file_playback_source =
+      _alexandria_file_playback_sourcePtr
+          .asFunction<
+            PlaybackJsonResult Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+            )
+          >();
 
   /// Hard-purge a soft-deleted file's catalog row (UC-08 / FR-FC-22).
   ///
@@ -736,6 +805,34 @@ class AlexandriaBindings {
   late final _alexandria_file_soft_delete = _alexandria_file_soft_deletePtr
       .asFunction<
         FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+      >();
+
+  /// A downscaled thumbnail for a video, image, or comic
+  /// (UC-40 / FR-MP-05). Returns
+  /// `{"uuid":…,"mimeType":"image/jpeg","bytesBase64":…}`. Bounded derived
+  /// bytes, so the same base64 rule as `alexandria_comic_page` applies.
+  PlaybackJsonResult alexandria_file_thumbnail(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_file_thumbnail(uuid, token);
+  }
+
+  late final _alexandria_file_thumbnailPtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaybackJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_file_thumbnail');
+  late final _alexandria_file_thumbnail = _alexandria_file_thumbnailPtr
+      .asFunction<
+        PlaybackJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
       >();
 
   /// List/query files filtered by type and lifecycle state (UC-03 / FR-FC-12).
@@ -1518,6 +1615,24 @@ final class IndexStartResult extends ffi.Struct {
 
   @ffi.Array.multi([37])
   external ffi.Array<ffi.Char> run_id;
+}
+
+/// JSON result for the playback functions. `json` is NULL on error and
+/// `status` carries the mapped code. The caller must free `json` with
+/// `alexandria_free_string`.
+final class PlaybackJsonResult extends ffi.Struct {
+  @ffi.Int()
+  external int status;
+
+  external ffi.Pointer<ffi.Char> json;
+
+  static ffi.Pointer<PlaybackJsonResult> $allocate(
+    ffi.Allocator $allocator, {
+    required int status,
+    required ffi.Pointer<ffi.Char> json,
+  }) => $allocator<PlaybackJsonResult>()
+    ..ref.status = status
+    ..ref.json = json;
 }
 
 const int READING_LIST_ERR_INVALID_INPUT = 1;
