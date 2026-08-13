@@ -167,7 +167,7 @@ one, and every milestone after `M-01` depends on it.
 | Milestone | Delivers | Depends on | Issues | Status |
 |---|---|---|---|---|
 | [M-01 — Foundation](https://github.com/artur-rios/alexandria-desktop-front/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 1 / 1 closed |
-| [M-02 — Shell and access](https://github.com/artur-rios/alexandria-desktop-front/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, confirm, and sign in to | M-01 | 9 | 0 / 9 closed |
+| [M-02 — Shell and access](https://github.com/artur-rios/alexandria-desktop-front/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, confirm, and sign in to | M-01 | 9 | 1 / 9 closed |
 | [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-desktop-front/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 0 / 4 closed |
 | [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-desktop-front/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 0 / 6 closed |
 | [M-05 — Metadata and content editing](https://github.com/artur-rios/alexandria-desktop-front/milestone/5) | Music and video metadata, file names, and text content can be edited | M-04 | 4 | 0 / 4 closed |
@@ -202,7 +202,7 @@ the missing call. The capabilities and what the front-end needs from each are in
 | [#39](https://github.com/artur-rios/alexandria-desktop-front/issues/39) | UC-38 — Navigate the application shell | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#40](https://github.com/artur-rios/alexandria-desktop-front/issues/40) | UC-39 — Manage application preferences | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#2](https://github.com/artur-rios/alexandria-desktop-front/issues/2) | UC-01 — Sign up | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#3](https://github.com/artur-rios/alexandria-desktop-front/issues/3) | UC-02 — Log in | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#3](https://github.com/artur-rios/alexandria-desktop-front/issues/3) | UC-02 — Log in — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#4](https://github.com/artur-rios/alexandria-desktop-front/issues/4) | UC-03 — Sign out | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#5](https://github.com/artur-rios/alexandria-desktop-front/issues/5) | UC-04 — Change credentials | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#41](https://github.com/artur-rios/alexandria-desktop-front/issues/41) | UC-40 — Confirm the e-mail address | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
