@@ -61,6 +61,28 @@
 #define COLLECTION_ERR_OTHER 9
 
 /**
+ * FFI status codes returned by playback operations (UC-38…UC-40).
+ * Deliberately separate from `INDEX_*`, `FILE_*`, and `COLLECTION_*` — per
+ * the convention above — so F-10 can grow its own set without colliding;
+ * `PLAYBACK_OK == FILE_OK == 0` by convention.
+ */
+#define PLAYBACK_OK 0
+
+#define PLAYBACK_ERR_INVALID_INPUT 1
+
+#define PLAYBACK_ERR_UNAUTHORIZED 2
+
+#define PLAYBACK_ERR_NOT_INITIALIZED 3
+
+#define PLAYBACK_ERR_NOT_FOUND 4
+
+#define PLAYBACK_ERR_INVALID_STATE 5
+
+#define PLAYBACK_ERR_DISK 6
+
+#define PLAYBACK_ERR_OTHER 9
+
+/**
  * FFI status codes returned by bookmark operations (UC-15+). Deliberately
  * separate from `COLLECTION_*` — per the convention above — so bookmark use
  * cases can grow their own set without colliding; `BOOKMARK_OK ==
@@ -176,6 +198,16 @@ typedef struct FileJsonResult {
   int status;
   char *json;
 } FileJsonResult;
+
+/**
+ * JSON result for the playback functions. `json` is NULL on error and
+ * `status` carries the mapped code. The caller must free `json` with
+ * `alexandria_free_string`.
+ */
+typedef struct PlaybackJsonResult {
+  int status;
+  char *json;
+} PlaybackJsonResult;
 
 /**
  * Result of `alexandria_collection_create` (UC-10). On success `status` is
@@ -329,6 +361,39 @@ struct FileJsonResult alexandria_file_get_by_uuid(const char *uuid, const char *
  * `token` is the bearer auth token.
  */
 struct FileJsonResult alexandria_file_read_content(const char *uuid, const char *token);
+
+/**
+ * Resolve a File to everything a local player needs to open it
+ * (UC-38 / FR-MP-01, FR-MP-06).
+ *
+ * The FFI surface cannot carry a byte stream, so where HTTP streams
+ * `GET /v1/files/{uuid}/stream`, this returns
+ * `{"uuid":…,"path":…,"mimeType":…,"sizeBytes":…}` and the caller — Flutter
+ * desktop, on the same machine as the file — opens that path directly.
+ * Zero bytes cross this boundary. Parity with HTTP is defined on this
+ * descriptor and on the authorization, state, and error decisions rather
+ * than on byte transfer (FR-MP-06).
+ */
+struct PlaybackJsonResult alexandria_file_playback_source(const char *uuid, const char *token);
+
+/**
+ * One page of a CBZ ComicBook (UC-39 / FR-MP-04).
+ *
+ * Returns `{"uuid":…,"page":N,"pageCount":N,"mimeType":…,"bytesBase64":…}`.
+ * Unlike UC-38, the bytes *do* cross the boundary: a comic page has no path
+ * of its own — it lives inside an archive — and it is bounded, so
+ * base64 inside the existing JSON payload keeps the FFI shape intact while
+ * staying byte-exact with HTTP.
+ */
+struct PlaybackJsonResult alexandria_comic_page(const char *uuid, uint32_t page, const char *token);
+
+/**
+ * A downscaled thumbnail for a video, image, or comic
+ * (UC-40 / FR-MP-05). Returns
+ * `{"uuid":…,"mimeType":"image/jpeg","bytesBase64":…}`. Bounded derived
+ * bytes, so the same base64 rule as `alexandria_comic_page` applies.
+ */
+struct PlaybackJsonResult alexandria_file_thumbnail(const char *uuid, const char *token);
 
 /**
  * Write edited content back to a TextFile on disk (UC-33 / FR-TX-02,

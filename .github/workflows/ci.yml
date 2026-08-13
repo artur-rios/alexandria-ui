@@ -22,6 +22,14 @@ env:
   CORE_REPOSITORY: artur-rios/alexandria-api
   CORE_REF: main
 
+  # Pinned rather than "whatever stable is today", because pubspec.lock is
+  # committed and is the real pin: the Flutter SDK constrains its own pinned
+  # packages, so a newer SDK rewrites the lock during `flutter pub get` and the
+  # build then runs against dependencies nobody chose. This must match the SDK
+  # the committed lock was resolved with. Upgrading is a deliberate change to
+  # both, never a side effect of a fresh runner.
+  FLUTTER_VERSION: 3.44.9
+
 jobs:
   analyze:
     name: Analyze and generate
@@ -31,6 +39,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
@@ -39,15 +48,13 @@ jobs:
           flutter pub get
           dart pub get --directory tools/alexandria_lints
 
-      - name: Check the vendored header against the core's
-        run: |
-          git clone --depth 1 --branch "$CORE_REF" \
-            "https://github.com/$CORE_REPOSITORY.git" /tmp/core
-          if ! diff -u /tmp/core/crates/alexandria-ffi/src/header.h \
-                       native/include/alexandria_ffi.h; then
-            echo "::error::native/include/alexandria_ffi.h has drifted from the core's header. Re-copy it and regenerate the bindings."
-            exit 1
-          fi
+      # The drift check lives in the integration job rather than here. The
+      # core's header is not committed — `crates/alexandria-ffi/build.rs`
+      # generates it with cbindgen and the core's .gitignore excludes it — so a
+      # clone alone never contains it, and comparing against a clone reported
+      # drift unconditionally. The integration job builds the core, which is
+      # what makes the header exist, so that is where the comparison can be
+      # honest.
 
       - name: Regenerate and check for a diff
         run: |
@@ -76,6 +83,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
@@ -129,9 +137,65 @@ jobs:
         with:
           workspaces: core
 
+      # alexandria-core depends on ffmpeg-next, whose ffmpeg-sys-next needs the
+      # ffmpeg C development libraries at build time. The package list mirrors
+      # the core repository's own workflow; the core builds on Linux only there,
+      # so the Windows half below is this repository's to carry.
+      - name: Install the ffmpeg development libraries (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libavformat-dev libavcodec-dev libavutil-dev \
+            libavfilter-dev libavdevice-dev libswscale-dev \
+            libswresample-dev pkg-config clang
+
+      # ffmpeg-sys-next has no pkg-config to find on Windows, so it is pointed
+      # at an unpacked release build through FFMPEG_DIR. The shared variant is
+      # the one that ships headers and import libraries, and its bin directory
+      # goes on PATH: a shared build links the core against avcodec, avformat,
+      # avutil, avfilter, avdevice, swscale, and swresample by name, and
+      # without them the core builds and then fails to load — which surfaces as
+      # an unrelated-looking "core could not be loaded".
+      #
+      # The 7.1 series, not master. ffmpeg-sys-next binds the hwcontext headers
+      # without the vendor SDKs by stubbing them, and its CUDA stub declares
+      # only CUcontext and CUstream. FFmpeg 7.1's hwcontext_cuda.h needs
+      # exactly those; master's added fields typed CUarray and
+      # CUDA_ARRAY3D_DESCRIPTOR, which the stub does not declare, so bindgen
+      # fails on a header it cannot parse. A newer ffmpeg needs a version of
+      # that crate that knows about it.
+      #
+      # The unpacked directory carries the exact build in its name, so it is
+      # discovered rather than spelled out.
+      - name: Install the ffmpeg development libraries (Windows)
+        if: matrix.platform == 'windows'
+        shell: bash
+        run: |
+          set -e
+          curl -fsSL -o /tmp/ffmpeg.zip \
+            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-win64-gpl-shared-7.1.zip"
+          7z x /tmp/ffmpeg.zip -o/tmp/ffmpeg > /dev/null
+          root=$(find /tmp/ffmpeg -maxdepth 1 -mindepth 1 -type d | head -1)
+          test -f "$root/include/libavutil/hwcontext_cuda.h"
+          echo "FFMPEG_DIR=$(cygpath -w "$root")" >> "$GITHUB_ENV"
+          cygpath -w "$root/bin" >> "$GITHUB_PATH"
+
       - name: Build the Alexandria core
         working-directory: core
         run: cargo build --release -p alexandria-ffi
+
+      # Now that the core has been built, its generated header exists and can
+      # actually be compared. Linux only: the header is the same on both, and
+      # running it twice would only double the failure.
+      - name: Check the vendored header against the core's
+        if: matrix.platform == 'linux'
+        run: |
+          if ! diff -u core/crates/alexandria-ffi/src/header.h \
+                       native/include/alexandria_ffi.h; then
+            echo "::error::native/include/alexandria_ffi.h has drifted from the core's header. Re-copy it and run 'dart run ffigen --config ffigen.yaml'."
+            exit 1
+          fi
 
       - name: Bundle the core
         shell: bash
@@ -142,6 +206,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
@@ -179,6 +244,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
