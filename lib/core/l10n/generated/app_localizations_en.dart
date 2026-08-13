@@ -18,6 +18,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coreUnavailableTitle => 'Alexandria\'s core is not available';
 
   @override
+  String get loginTitle => 'Sign in to Alexandria';
+
+  @override
+  String get loginEmailLabel => 'E-mail';
+
+  @override
+  String get loginPasswordLabel => 'Password';
+
+  @override
+  String get loginSubmit => 'Sign in';
+
+  @override
+  String get loginEmailMissing => 'Enter your e-mail address.';
+
+  @override
+  String get loginEmailMalformed =>
+      'That does not look like an e-mail address.';
+
+  @override
+  String get loginPasswordMissing => 'Enter your password.';
+
+  @override
+  String get loginRejected =>
+      'That e-mail and password do not match an account.';
+
+  @override
+  String get loginNoAccount =>
+      'No account has been set up on this computer yet.';
+
+  @override
+  String get loginSessionEndedTitle => 'You were signed out';
+
+  @override
+  String get catalogLockedTitle => 'Confirm your e-mail address';
+
+  @override
+  String catalogLockedBody(String email) {
+    return 'Alexandria stays locked until the address $email is confirmed.';
+  }
+
+  @override
   String failureCoreLibraryNotLoaded(String path) {
     return 'The Alexandria core could not be loaded from $path.';
   }

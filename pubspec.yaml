@@ -24,6 +24,15 @@ dependencies:
   # Immutable domain models and the typed failure union (IR-08).
   freezed_annotation: ^3.1.0
 
+  # Deserializes the JSON payloads the core returns across the FFI boundary
+  # (Technology Stack Document §5). First needed by UC-02's login result.
+  #
+  # Held at 4.9 rather than the current 4.12 because json_serializable above
+  # 6.11 needs analyzer 10+, and the in-repo custom_lint plugin in
+  # tools/alexandria_lints pins analyzer ^8.4.0. Both move together when that
+  # plugin is upgraded; neither moves alone.
+  json_annotation: ^4.9.0
+
   # The Alexandria core boundary (IR-03, IR-04, IR-09).
   ffi: ^2.2.0
 
@@ -58,6 +67,7 @@ dev_dependencies:
   build_runner: ^2.15.1
   freezed: ^3.2.3
   ffigen: ^21.0.0
+  json_serializable: ^6.11.2
 
   # Test doubles for the gateway interfaces. The only mocking library in the
   # project, per the Technology Stack Document §7.

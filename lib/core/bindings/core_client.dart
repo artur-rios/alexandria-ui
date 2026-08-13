@@ -19,9 +19,42 @@ abstract interface class CoreClient {
   /// database on demand. Returns the core's status code.
   Future<int> initialize(String databasePath);
 
+  /// Authenticates through `alexandria_auth_local_login` (FR-AU-04).
+  ///
+  /// [jsonBody] is the body the core's matching HTTP route takes —
+  /// `{"email":…,"password":…}`. It carries the plaintext password, so it is
+  /// built for this call and never logged or retained (FR-AU-11).
+  ///
+  /// Returns the core's status code and, on success, the `LocalLoginResult`
+  /// JSON. The string is freed on the worker before this returns, including
+  /// when the call fails (NFR-13).
+  Future<CoreJsonResponse> authLocalLogin(String jsonBody);
+
+  /// Sets or changes the local-login credentials through
+  /// `alexandria_auth_local_set_credentials`.
+  ///
+  /// [token] is required only once credentials already exist; an empty string
+  /// is first-time setup.
+  ///
+  /// Declared here because the integration suite sets the run's credentials
+  /// through the core's own call rather than by writing the database
+  /// (Testing Specification §7.3). The use case that puts it in front of the
+  /// owner is UC-04.
+  Future<CoreJsonResponse> authLocalSetCredentials(
+    String jsonBody,
+    String token,
+  );
+
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
 }
+
+/// A core call's status code and its JSON payload, if it returned one.
+///
+/// The payload is already a Dart string: the pointer the core allocated was
+/// read and freed on the worker isolate, so nothing above this line owns
+/// native memory (IR-09, NFR-13).
+typedef CoreJsonResponse = ({int status, String? json});
 
 /// The [CoreClient] backed by the real core over FFI.
 class FfiCoreClient implements CoreClient {
@@ -48,6 +81,18 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<int> initialize(String databasePath) async =>
       await _isolate.call('init', [databasePath]) as int;
+
+  @override
+  Future<CoreJsonResponse> authLocalLogin(String jsonBody) async =>
+      await _isolate.call('authLocalLogin', [jsonBody]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> authLocalSetCredentials(
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('authLocalSetCredentials', [jsonBody, token])
+          as CoreJsonResponse;
 
   @override
   Future<void> dispose() => _isolate.dispose();

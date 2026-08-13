@@ -6,6 +6,22 @@
 
   "coreUnavailableTitle": "O núcleo do Alexandria não está disponível",
 
+  "loginTitle": "Entrar no Alexandria",
+  "loginEmailLabel": "E-mail",
+  "loginPasswordLabel": "Senha",
+  "loginSubmit": "Entrar",
+
+  "loginEmailMissing": "Informe seu endereço de e-mail.",
+  "loginEmailMalformed": "Isso não parece um endereço de e-mail.",
+  "loginPasswordMissing": "Informe sua senha.",
+
+  "loginRejected": "Esse e-mail e essa senha não correspondem a uma conta.",
+  "loginNoAccount": "Ainda não há uma conta configurada neste computador.",
+  "loginSessionEndedTitle": "Sua sessão foi encerrada",
+
+  "catalogLockedTitle": "Confirme seu endereço de e-mail",
+  "catalogLockedBody": "O Alexandria permanece bloqueado até que o endereço {email} seja confirmado.",
+
   "failureCoreLibraryNotLoaded": "Não foi possível carregar o núcleo do Alexandria a partir de {path}.",
   "failureApplicationDirectoryUnavailable": "Não foi possível criar a pasta do aplicativo {path}.",
   "failureCoreInitializationFailed": "O núcleo do Alexandria não conseguiu abrir o catálogo.",

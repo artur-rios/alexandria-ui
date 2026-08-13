@@ -7,6 +7,9 @@ import 'core/l10n/generated/app_localizations.dart';
 import 'core/startup/core_unavailable_screen.dart';
 import 'core/startup/startup_state.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/application/session_state.dart';
+import 'features/auth/presentation/catalog_locked_screen.dart';
+import 'features/auth/presentation/login_screen.dart';
 
 /// The application root.
 ///
@@ -53,9 +56,23 @@ class AlexandriaApp extends ConsumerWidget {
         StartupFailed(:final failure) => CoreUnavailableScreen(
           failure: failure,
         ),
-        StartupReady(:final coreVersion) => StartupReadyPlaceholder(
-          coreVersion: coreVersion,
-        ),
+        // Startup ends where authentication begins: steps 6 and 7 of the
+        // sequence — is there an account, and is its e-mail confirmed — are
+        // answered by logging in (UC-02), not by the foundation.
+        StartupReady(:final coreVersion) => switch (ref.watch(
+          sessionControllerProvider,
+        )) {
+          // FR-AU-07: no session, so the login screen and no catalog call.
+          SessionAbsent() => const LoginScreen(),
+
+          // FR-AU-12 / BR-25: authenticated but unconfirmed keeps the catalog
+          // locked. UC-40 replaces this with the confirmation prompt.
+          SessionActive(:final session) when !session.emailConfirmed =>
+            CatalogLockedScreen(email: session.email),
+
+          // The shell UC-38 builds lands here.
+          SessionActive() => StartupReadyPlaceholder(coreVersion: coreVersion),
+        },
       },
     );
   }
