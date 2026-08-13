@@ -86,6 +86,10 @@ void main() {
       AUTH_ERR_NOT_INITIALIZED: NotInitializedFailure,
       AUTH_ERR_INVALID_STATE: InvalidStateFailure,
       AUTH_ERR_CONFIG: ConfigurationFailure,
+      // The account already exists (UC-01 AF-04). Its own variant rather than
+      // an invalid-input one, because the owner is not being told to correct
+      // what they typed — they are being sent to the login screen.
+      AUTH_ERR_CONFLICT: ConflictFailure,
       AUTH_ERR_OTHER: UnexpectedFailure,
     };
 

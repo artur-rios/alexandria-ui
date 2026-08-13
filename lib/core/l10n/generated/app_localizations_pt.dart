@@ -48,6 +48,39 @@ class AppLocalizationsPt extends AppLocalizations {
       'Ainda não há uma conta configurada neste computador.';
 
   @override
+  String get signUpTitle => 'Crie sua conta do Alexandria';
+
+  @override
+  String get signUpIntro =>
+      'Esta é a única conta. A senha dela não pode ser recuperada, então escolha uma que você não vá perder.';
+
+  @override
+  String get signUpPasswordConfirmationLabel => 'Repita a senha';
+
+  @override
+  String get signUpSubmit => 'Criar conta';
+
+  @override
+  String get signUpPasswordConfirmationMissing => 'Repita sua senha.';
+
+  @override
+  String get signUpPasswordMismatch => 'As duas senhas não coincidem.';
+
+  @override
+  String get signUpRejected =>
+      'O Alexandria não aceitou essas credenciais. Tente uma senha mais longa e menos previsível, que não seja seu endereço de e-mail.';
+
+  @override
+  String get signUpAccountExists =>
+      'Já existe uma conta neste computador. Entre com ela.';
+
+  @override
+  String get signUpGoToLogin => 'Ir para o login';
+
+  @override
+  String get loginGoToSignUp => 'Criar uma conta';
+
+  @override
   String get loginSessionEndedTitle => 'Sua sessão foi encerrada';
 
   @override
@@ -114,6 +147,9 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get failureConfiguration =>
       'Não foi possível ler a configuração do Alexandria.';
+
+  @override
+  String get failureConflict => 'Isso já existe no Alexandria.';
 
   @override
   String get failureUnexpected => 'Algo deu errado no Alexandria.';

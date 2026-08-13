@@ -239,6 +239,19 @@ class CoreIsolate {
         );
       }),
 
+      // Carries both plaintext entries in, so the same discipline as login
+      // applies: freed by withNativeString on the way in, and the result's
+      // JSON freed by consume on the way out (IR-09, NFR-13, FR-AU-11).
+      'authLocalRegister' => withNativeString(arguments.first! as String, (
+        body,
+      ) {
+        final result = bindings.alexandria_auth_local_register(body);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
       // Two strings in, one out. Nested rather than sequential so each copy is
       // released by its own finally, including if the call throws between them.
       'authLocalSetCredentials' => withNativeString(

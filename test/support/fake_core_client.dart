@@ -20,6 +20,8 @@ class FakeCoreClient implements CoreClient {
     this.failOnInitialize = false,
     CoreJsonResponse? authLocalLoginResult,
     this.failOnAuthLocalLogin = false,
+    CoreJsonResponse? authLocalRegisterResult,
+    this.failOnAuthLocalRegister = false,
   }) : healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
        authLocalLoginResult =
@@ -28,6 +30,14 @@ class FakeCoreClient implements CoreClient {
              status: CoreStatusFamily.auth.okCode,
              json:
                  '{"success":true,'
+                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}',
+           ),
+       authLocalRegisterResult =
+           authLocalRegisterResult ??
+           (
+             status: CoreStatusFamily.auth.okCode,
+             json:
+                 '{"success":true,"email":"owner@example.com",'
                  '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}',
            );
 
@@ -57,6 +67,15 @@ class FakeCoreClient implements CoreClient {
 
   /// The database paths [initialize] was called with, in order.
   final List<String> initializedWith = [];
+
+  /// What [authLocalRegister] returns. Defaults to a created account.
+  final CoreJsonResponse authLocalRegisterResult;
+
+  /// Whether [authLocalRegister] throws instead of returning.
+  final bool failOnAuthLocalRegister;
+
+  /// The JSON bodies [authLocalRegister] was called with, in order.
+  final List<String> authLocalRegisterBodies = [];
 
   /// The JSON bodies [authLocalLogin] was called with, in order.
   ///
@@ -93,6 +112,15 @@ class FakeCoreClient implements CoreClient {
     }
     authLocalLoginBodies.add(jsonBody);
     return authLocalLoginResult;
+  }
+
+  @override
+  Future<CoreJsonResponse> authLocalRegister(String jsonBody) async {
+    if (failOnAuthLocalRegister) {
+      throw const CoreCallException('auth local register call failed');
+    }
+    authLocalRegisterBodies.add(jsonBody);
+    return authLocalRegisterResult;
   }
 
   @override

@@ -9,6 +9,9 @@ enum LoginFieldError {
 
   /// The field was filled in, but not with something the field accepts.
   malformed,
+
+  /// The repeated password does not match the first (UC-01 AF-02).
+  mismatched,
 }
 
 /// Whether [email] can be submitted, per UC-02 step 3.
@@ -30,6 +33,24 @@ LoginFieldError? validateEmail(String email) {
 /// front-end that guessed at one would reject credentials the core accepts.
 LoginFieldError? validatePassword(String password) =>
     password.isEmpty ? LoginFieldError.missing : null;
+
+/// Whether the repeated password matches the first (UC-01 step 4, AF-02).
+///
+/// Checked before the core is called so a typo costs a message rather than a
+/// round trip — but the core checks it too, and its verdict is the one that
+/// decides. The owner's password is unrecoverable, so a typo here would lock
+/// them out of their own catalog.
+///
+/// Reports [LoginFieldError.missing] for an empty repeat rather than a
+/// mismatch: the owner has not made a mistake yet, they have not finished.
+LoginFieldError? validatePasswordConfirmation(
+  String password,
+  String confirmation,
+) {
+  if (confirmation.isEmpty) return LoginFieldError.missing;
+
+  return password == confirmation ? null : LoginFieldError.mismatched;
+}
 
 /// A local part, an `@`, and a dotted domain, with no whitespace anywhere.
 ///

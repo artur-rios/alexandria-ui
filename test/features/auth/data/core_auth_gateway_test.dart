@@ -14,13 +14,13 @@ void main() {
   CoreAuthGateway buildGateway(FakeCoreClient core) =>
       CoreAuthGateway(core, now: () => establishedAt);
 
-  Future<LoginOutcome> logInWith(FakeCoreClient core) => buildGateway(
+  Future<AuthOutcome> logInWith(FakeCoreClient core) => buildGateway(
     core,
   ).logIn(email: 'owner@example.com', password: 'correct horse');
 
   /// The failure a login attempt produced, or a failed expectation if it
   /// authenticated instead.
-  Failure failureOf(LoginOutcome outcome) {
+  Failure failureOf(AuthOutcome outcome) {
     expect(outcome, isA<FailedOutcome>());
     return (outcome as FailedOutcome).failure;
   }

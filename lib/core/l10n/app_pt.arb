@@ -17,6 +17,19 @@
 
   "loginRejected": "Esse e-mail e essa senha não correspondem a uma conta.",
   "loginNoAccount": "Ainda não há uma conta configurada neste computador.",
+  "signUpTitle": "Crie sua conta do Alexandria",
+  "signUpIntro": "Esta é a única conta. A senha dela não pode ser recuperada, então escolha uma que você não vá perder.",
+  "signUpPasswordConfirmationLabel": "Repita a senha",
+  "signUpSubmit": "Criar conta",
+
+  "signUpPasswordConfirmationMissing": "Repita sua senha.",
+  "signUpPasswordMismatch": "As duas senhas não coincidem.",
+
+  "signUpRejected": "O Alexandria não aceitou essas credenciais. Tente uma senha mais longa e menos previsível, que não seja seu endereço de e-mail.",
+  "signUpAccountExists": "Já existe uma conta neste computador. Entre com ela.",
+  "signUpGoToLogin": "Ir para o login",
+
+  "loginGoToSignUp": "Criar uma conta",
   "loginSessionEndedTitle": "Sua sessão foi encerrada",
 
   "catalogLockedTitle": "Confirme seu endereço de e-mail",
@@ -37,5 +50,6 @@
   "failureDisk": "Não foi possível ler ou gravar o arquivo em disco. Nada foi alterado.",
   "failureIntegrity": "O arquivo em disco não corresponde mais ao que o Alexandria registrou.",
   "failureConfiguration": "Não foi possível ler a configuração do Alexandria.",
+  "failureConflict": "Isso já existe no Alexandria.",
   "failureUnexpected": "Algo deu errado no Alexandria."
 }

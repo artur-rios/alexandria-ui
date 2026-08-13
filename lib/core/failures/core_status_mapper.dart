@@ -197,5 +197,9 @@ Failure _mapAuth(int code) => switch (code) {
     family: CoreStatusFamily.auth,
     code: code,
   ),
+  AUTH_ERR_CONFLICT => Failure.conflict(
+    family: CoreStatusFamily.auth,
+    code: code,
+  ),
   _ => Failure.unexpected(family: CoreStatusFamily.auth, code: code),
 };

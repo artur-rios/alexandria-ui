@@ -13,8 +13,8 @@ import 'package:alexandria_desktop/features/auth/domain/session.dart';
 /// loudly where a mis-stubbed mock passes quietly.
 class FakeAuthGateway implements AuthGateway {
   /// Creates a fake that authenticates by default.
-  FakeAuthGateway({LoginOutcome? outcome})
-    : outcome = outcome ?? LoginOutcome.authenticated(session: defaultSession);
+  FakeAuthGateway({AuthOutcome? outcome})
+    : outcome = outcome ?? AuthOutcome.authenticated(session: defaultSession);
 
   /// The session a successful login returns unless a test says otherwise.
   static final Session defaultSession = Session(
@@ -26,16 +26,29 @@ class FakeAuthGateway implements AuthGateway {
 
   /// A fake that fails every attempt with [failure].
   factory FakeAuthGateway.failing(Failure failure) =>
-      FakeAuthGateway(outcome: LoginOutcome.failed(failure: failure));
+      FakeAuthGateway(outcome: AuthOutcome.failed(failure: failure));
 
-  /// What [logIn] returns.
-  LoginOutcome outcome;
+  /// What [logIn] and [register] return.
+  AuthOutcome outcome;
+
+  /// What [accountExists] answers. An existing account by default, so a test
+  /// that says nothing about it gets the login screen.
+  AccountExistence existence = AccountExistence.present;
 
   /// The credentials [logIn] was called with, in order.
   ///
   /// Empty is the assertion that matters most: UC-02 AF-01 requires that local
   /// validation failures never reach the core.
   final List<({String email, String password})> calls = [];
+
+  /// The credentials [register] was called with, in order.
+  ///
+  /// Empty is again the assertion that matters: UC-01 AF-01 and AF-02 both
+  /// require that the core is never called.
+  final List<
+    ({String email, String password, String passwordConfirmation})
+  >
+  registrations = [];
 
   /// Held open to keep an attempt in flight, so a test can observe the
   /// submitting state. Completed by [release].
@@ -48,7 +61,7 @@ class FakeAuthGateway implements AuthGateway {
   void release() => _gate?.complete();
 
   @override
-  Future<LoginOutcome> logIn({
+  Future<AuthOutcome> logIn({
     required String email,
     required String password,
   }) async {
@@ -56,4 +69,22 @@ class FakeAuthGateway implements AuthGateway {
     await _gate?.future;
     return outcome;
   }
+
+  @override
+  Future<AuthOutcome> register({
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    registrations.add((
+      email: email,
+      password: password,
+      passwordConfirmation: passwordConfirmation,
+    ));
+    await _gate?.future;
+    return outcome;
+  }
+
+  @override
+  Future<AccountExistence> accountExists() async => existence;
 }

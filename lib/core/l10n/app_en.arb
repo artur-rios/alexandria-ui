@@ -58,7 +58,57 @@
 
   "loginNoAccount": "No account has been set up on this computer yet.",
   "@loginNoAccount": {
-    "description": "UC-02 AF-03: the core holds no credentials. Signing up is UC-01, which is blocked on core support, so this states the condition rather than offering an action that does not exist yet."
+    "description": "UC-02 AF-03: the core holds no credentials, so the owner is sent to sign-up (UC-01) by the action beside this message."
+  },
+
+  "signUpTitle": "Create your Alexandria account",
+  "@signUpTitle": {
+    "description": "Heading of the sign-up screen (UC-01). Presented on first launch, when the core holds no account."
+  },
+
+  "signUpIntro": "This is the only account. Its password cannot be recovered, so choose one you will not lose.",
+  "@signUpIntro": {
+    "description": "UC-01: explains the stakes before the owner chooses. The core owns no mail transport, so there is no reset to fall back on."
+  },
+
+  "signUpPasswordConfirmationLabel": "Repeat password",
+  "@signUpPasswordConfirmationLabel": {
+    "description": "Label of the sign-up form's second password field."
+  },
+
+  "signUpSubmit": "Create account",
+  "@signUpSubmit": {
+    "description": "The sign-up form's primary action."
+  },
+
+  "signUpPasswordConfirmationMissing": "Repeat your password.",
+  "@signUpPasswordConfirmationMissing": {
+    "description": "UC-01 AF-02: the second password field was left empty. The core is not called."
+  },
+
+  "signUpPasswordMismatch": "The two passwords do not match.",
+  "@signUpPasswordMismatch": {
+    "description": "UC-01 AF-02: the two entries differ. The core is not called."
+  },
+
+  "signUpRejected": "Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.",
+  "@signUpRejected": {
+    "description": "UC-01 AF-03: the core rejected the credentials. The core owns the password policy and does not send its reason across the boundary, so this names the rules it enforces without restating them as front-end validation."
+  },
+
+  "signUpAccountExists": "An account already exists on this computer. Sign in instead.",
+  "@signUpAccountExists": {
+    "description": "UC-01 AF-04: the core already holds an account, so registration is refused and the owner is sent to the login screen."
+  },
+
+  "signUpGoToLogin": "Go to sign in",
+  "@signUpGoToLogin": {
+    "description": "UC-01 AF-04: the action that leaves sign-up for the login screen."
+  },
+
+  "loginGoToSignUp": "Create an account",
+  "@loginGoToSignUp": {
+    "description": "UC-02 AF-03: the action that leaves login for the sign-up screen, offered when the core holds no account."
   },
 
   "loginSessionEndedTitle": "You were signed out",
@@ -157,6 +207,11 @@
   "failureConfiguration": "Alexandria's configuration could not be read.",
   "@failureConfiguration": {
     "description": "The core's own configuration is missing or unusable."
+  },
+
+  "failureConflict": "That already exists in Alexandria.",
+  "@failureConflict": {
+    "description": "The operation would create something that already exists. Nothing the owner typed was wrong."
   },
 
   "failureUnexpected": "Something went wrong in Alexandria.",

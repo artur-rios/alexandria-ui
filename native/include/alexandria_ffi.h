@@ -164,6 +164,13 @@
 #define AUTH_ERR_OTHER 9
 
 /**
+ * UC-41 AF-01/AF-02: the request conflicts with existing state — the
+ * active auth mode is not local, or an account already exists. The FFI
+ * counterpart of HTTP's `409`.
+ */
+#define AUTH_ERR_CONFLICT 10
+
+/**
  * Result of starting an index run. `run_id` is a NUL-terminated UUID string
  * on success (empty on failure).
  */
@@ -804,11 +811,24 @@ struct AuthJsonResult alexandria_auth_local_login(const char *json_body);
 /**
  * Set or change local-login credentials (UC-35 / FR-AU-05, FR-AU-06).
  * `json_body` is the JSON body HTTP would send (`email`, `password`).
- * `token` is optional: required only once credentials already exist
- * (AF-03) — pass an empty string on first-time setup.
+ * `token` is required: this changes existing credentials. Creating the
+ * account is `alexandria_auth_local_register` (UC-41).
  */
 struct AuthJsonResult alexandria_auth_local_set_credentials(const char *json_body,
                                                             const char *token);
+
+/**
+ * Register the local account (UC-41 / FR-AU-10, FR-AU-11): create the
+ * single owner's credentials and open a session. `json_body` is the JSON
+ * body HTTP would send (`email`, `password`, `passwordConfirmation`). On
+ * success `json` carries the `LocalRegisterResult`, whose `sessionId` the
+ * caller presents on subsequent requests.
+ *
+ * Deliberately takes no `token`: there is nothing to authenticate with
+ * before an account exists. Succeeds only once — a second call returns
+ * `AUTH_ERR_CONFLICT` (AF-02).
+ */
+struct AuthJsonResult alexandria_auth_local_register(const char *json_body);
 
 /**
  * Free a string previously returned by an FFI accessor.

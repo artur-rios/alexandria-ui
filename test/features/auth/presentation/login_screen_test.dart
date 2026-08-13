@@ -284,7 +284,7 @@ void main() {
   group('AF-06 — the e-mail is unconfirmed', () {
     Future<void> pumpUnconfirmed(WidgetTester tester) => tester.pumpLoginScreen(
       gateway: FakeAuthGateway(
-        outcome: LoginOutcome.authenticated(
+        outcome: AuthOutcome.authenticated(
           session: Session(
             credential: 'a-real-looking-session-id',
             establishedAt: DateTime.utc(2026, 8, 12, 9, 30),

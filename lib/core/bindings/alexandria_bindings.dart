@@ -46,10 +46,33 @@ class AlexandriaBindings {
   late final _alexandria_auth_local_login = _alexandria_auth_local_loginPtr
       .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
+  /// Register the local account (UC-41 / FR-AU-10, FR-AU-11): create the
+  /// single owner's credentials and open a session. `json_body` is the JSON
+  /// body HTTP would send (`email`, `password`, `passwordConfirmation`). On
+  /// success `json` carries the `LocalRegisterResult`, whose `sessionId` the
+  /// caller presents on subsequent requests.
+  ///
+  /// Deliberately takes no `token`: there is nothing to authenticate with
+  /// before an account exists. Succeeds only once — a second call returns
+  /// `AUTH_ERR_CONFLICT` (AF-02).
+  AuthJsonResult alexandria_auth_local_register(
+    ffi.Pointer<ffi.Char> json_body,
+  ) {
+    return _alexandria_auth_local_register(json_body);
+  }
+
+  late final _alexandria_auth_local_registerPtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_local_register');
+  late final _alexandria_auth_local_register =
+      _alexandria_auth_local_registerPtr
+          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
   /// Set or change local-login credentials (UC-35 / FR-AU-05, FR-AU-06).
   /// `json_body` is the JSON body HTTP would send (`email`, `password`).
-  /// `token` is optional: required only once credentials already exist
-  /// (AF-03) — pass an empty string on first-time setup.
+  /// `token` is required: this changes existing credentials. Creating the
+  /// account is `alexandria_auth_local_register` (UC-41).
   AuthJsonResult alexandria_auth_local_set_credentials(
     ffi.Pointer<ffi.Char> json_body,
     ffi.Pointer<ffi.Char> token,
@@ -1431,6 +1454,8 @@ class AlexandriaBindings {
 }
 
 const int AUTH_ERR_CONFIG = 8;
+
+const int AUTH_ERR_CONFLICT = 10;
 
 const int AUTH_ERR_INVALID_INPUT = 1;
 

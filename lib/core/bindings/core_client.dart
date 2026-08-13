@@ -30,6 +30,19 @@ abstract interface class CoreClient {
   /// when the call fails (NFR-13).
   Future<CoreJsonResponse> authLocalLogin(String jsonBody);
 
+  /// Creates the owner's account through `alexandria_auth_local_register`
+  /// (FR-AU-02).
+  ///
+  /// [jsonBody] is the body the core's matching HTTP route takes —
+  /// `{"email":…,"password":…,"passwordConfirmation":…}`. It carries both
+  /// plaintext entries, so it is built for this call and never logged or
+  /// retained (FR-AU-11).
+  ///
+  /// Takes no session credential: there is nothing to authenticate with before
+  /// an account exists. Succeeds only once — a second call answers
+  /// `AUTH_ERR_CONFLICT`.
+  Future<CoreJsonResponse> authLocalRegister(String jsonBody);
+
   /// Sets or changes the local-login credentials through
   /// `alexandria_auth_local_set_credentials`.
   ///
@@ -85,6 +98,10 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> authLocalLogin(String jsonBody) async =>
       await _isolate.call('authLocalLogin', [jsonBody]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> authLocalRegister(String jsonBody) async =>
+      await _isolate.call('authLocalRegister', [jsonBody]) as CoreJsonResponse;
 
   @override
   Future<CoreJsonResponse> authLocalSetCredentials(

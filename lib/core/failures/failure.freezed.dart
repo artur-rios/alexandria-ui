@@ -55,7 +55,7 @@ extension FailurePatterns on Failure {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( InvalidInputFailure value)?  invalidInput,TResult Function( UnauthorizedFailure value)?  unauthorized,TResult Function( NotInitializedFailure value)?  notInitialized,TResult Function( NotFoundFailure value)?  notFound,TResult Function( InvalidStateFailure value)?  invalidState,TResult Function( DiskFailure value)?  disk,TResult Function( IntegrityFailure value)?  integrity,TResult Function( ConfigurationFailure value)?  configuration,TResult Function( UnexpectedFailure value)?  unexpected,TResult Function( CoreLibraryNotLoadedFailure value)?  coreLibraryNotLoaded,TResult Function( ApplicationDirectoryUnavailableFailure value)?  applicationDirectoryUnavailable,TResult Function( CoreInitializationFailedFailure value)?  coreInitializationFailed,TResult Function( CoreUnhealthyFailure value)?  coreUnhealthy,TResult Function( CoreVersionUnsupportedFailure value)?  coreVersionUnsupported,TResult Function( PreferencesUnreadableFailure value)?  preferencesUnreadable,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( InvalidInputFailure value)?  invalidInput,TResult Function( UnauthorizedFailure value)?  unauthorized,TResult Function( NotInitializedFailure value)?  notInitialized,TResult Function( NotFoundFailure value)?  notFound,TResult Function( InvalidStateFailure value)?  invalidState,TResult Function( DiskFailure value)?  disk,TResult Function( IntegrityFailure value)?  integrity,TResult Function( ConfigurationFailure value)?  configuration,TResult Function( ConflictFailure value)?  conflict,TResult Function( UnexpectedFailure value)?  unexpected,TResult Function( CoreLibraryNotLoadedFailure value)?  coreLibraryNotLoaded,TResult Function( ApplicationDirectoryUnavailableFailure value)?  applicationDirectoryUnavailable,TResult Function( CoreInitializationFailedFailure value)?  coreInitializationFailed,TResult Function( CoreUnhealthyFailure value)?  coreUnhealthy,TResult Function( CoreVersionUnsupportedFailure value)?  coreVersionUnsupported,TResult Function( PreferencesUnreadableFailure value)?  preferencesUnreadable,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case InvalidInputFailure() when invalidInput != null:
@@ -66,7 +66,8 @@ return notFound(_that);case InvalidStateFailure() when invalidState != null:
 return invalidState(_that);case DiskFailure() when disk != null:
 return disk(_that);case IntegrityFailure() when integrity != null:
 return integrity(_that);case ConfigurationFailure() when configuration != null:
-return configuration(_that);case UnexpectedFailure() when unexpected != null:
+return configuration(_that);case ConflictFailure() when conflict != null:
+return conflict(_that);case UnexpectedFailure() when unexpected != null:
 return unexpected(_that);case CoreLibraryNotLoadedFailure() when coreLibraryNotLoaded != null:
 return coreLibraryNotLoaded(_that);case ApplicationDirectoryUnavailableFailure() when applicationDirectoryUnavailable != null:
 return applicationDirectoryUnavailable(_that);case CoreInitializationFailedFailure() when coreInitializationFailed != null:
@@ -91,7 +92,7 @@ return preferencesUnreadable(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( InvalidInputFailure value)  invalidInput,required TResult Function( UnauthorizedFailure value)  unauthorized,required TResult Function( NotInitializedFailure value)  notInitialized,required TResult Function( NotFoundFailure value)  notFound,required TResult Function( InvalidStateFailure value)  invalidState,required TResult Function( DiskFailure value)  disk,required TResult Function( IntegrityFailure value)  integrity,required TResult Function( ConfigurationFailure value)  configuration,required TResult Function( UnexpectedFailure value)  unexpected,required TResult Function( CoreLibraryNotLoadedFailure value)  coreLibraryNotLoaded,required TResult Function( ApplicationDirectoryUnavailableFailure value)  applicationDirectoryUnavailable,required TResult Function( CoreInitializationFailedFailure value)  coreInitializationFailed,required TResult Function( CoreUnhealthyFailure value)  coreUnhealthy,required TResult Function( CoreVersionUnsupportedFailure value)  coreVersionUnsupported,required TResult Function( PreferencesUnreadableFailure value)  preferencesUnreadable,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( InvalidInputFailure value)  invalidInput,required TResult Function( UnauthorizedFailure value)  unauthorized,required TResult Function( NotInitializedFailure value)  notInitialized,required TResult Function( NotFoundFailure value)  notFound,required TResult Function( InvalidStateFailure value)  invalidState,required TResult Function( DiskFailure value)  disk,required TResult Function( IntegrityFailure value)  integrity,required TResult Function( ConfigurationFailure value)  configuration,required TResult Function( ConflictFailure value)  conflict,required TResult Function( UnexpectedFailure value)  unexpected,required TResult Function( CoreLibraryNotLoadedFailure value)  coreLibraryNotLoaded,required TResult Function( ApplicationDirectoryUnavailableFailure value)  applicationDirectoryUnavailable,required TResult Function( CoreInitializationFailedFailure value)  coreInitializationFailed,required TResult Function( CoreUnhealthyFailure value)  coreUnhealthy,required TResult Function( CoreVersionUnsupportedFailure value)  coreVersionUnsupported,required TResult Function( PreferencesUnreadableFailure value)  preferencesUnreadable,}){
 final _that = this;
 switch (_that) {
 case InvalidInputFailure():
@@ -102,7 +103,8 @@ return notFound(_that);case InvalidStateFailure():
 return invalidState(_that);case DiskFailure():
 return disk(_that);case IntegrityFailure():
 return integrity(_that);case ConfigurationFailure():
-return configuration(_that);case UnexpectedFailure():
+return configuration(_that);case ConflictFailure():
+return conflict(_that);case UnexpectedFailure():
 return unexpected(_that);case CoreLibraryNotLoadedFailure():
 return coreLibraryNotLoaded(_that);case ApplicationDirectoryUnavailableFailure():
 return applicationDirectoryUnavailable(_that);case CoreInitializationFailedFailure():
@@ -123,7 +125,7 @@ return preferencesUnreadable(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( InvalidInputFailure value)?  invalidInput,TResult? Function( UnauthorizedFailure value)?  unauthorized,TResult? Function( NotInitializedFailure value)?  notInitialized,TResult? Function( NotFoundFailure value)?  notFound,TResult? Function( InvalidStateFailure value)?  invalidState,TResult? Function( DiskFailure value)?  disk,TResult? Function( IntegrityFailure value)?  integrity,TResult? Function( ConfigurationFailure value)?  configuration,TResult? Function( UnexpectedFailure value)?  unexpected,TResult? Function( CoreLibraryNotLoadedFailure value)?  coreLibraryNotLoaded,TResult? Function( ApplicationDirectoryUnavailableFailure value)?  applicationDirectoryUnavailable,TResult? Function( CoreInitializationFailedFailure value)?  coreInitializationFailed,TResult? Function( CoreUnhealthyFailure value)?  coreUnhealthy,TResult? Function( CoreVersionUnsupportedFailure value)?  coreVersionUnsupported,TResult? Function( PreferencesUnreadableFailure value)?  preferencesUnreadable,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( InvalidInputFailure value)?  invalidInput,TResult? Function( UnauthorizedFailure value)?  unauthorized,TResult? Function( NotInitializedFailure value)?  notInitialized,TResult? Function( NotFoundFailure value)?  notFound,TResult? Function( InvalidStateFailure value)?  invalidState,TResult? Function( DiskFailure value)?  disk,TResult? Function( IntegrityFailure value)?  integrity,TResult? Function( ConfigurationFailure value)?  configuration,TResult? Function( ConflictFailure value)?  conflict,TResult? Function( UnexpectedFailure value)?  unexpected,TResult? Function( CoreLibraryNotLoadedFailure value)?  coreLibraryNotLoaded,TResult? Function( ApplicationDirectoryUnavailableFailure value)?  applicationDirectoryUnavailable,TResult? Function( CoreInitializationFailedFailure value)?  coreInitializationFailed,TResult? Function( CoreUnhealthyFailure value)?  coreUnhealthy,TResult? Function( CoreVersionUnsupportedFailure value)?  coreVersionUnsupported,TResult? Function( PreferencesUnreadableFailure value)?  preferencesUnreadable,}){
 final _that = this;
 switch (_that) {
 case InvalidInputFailure() when invalidInput != null:
@@ -134,7 +136,8 @@ return notFound(_that);case InvalidStateFailure() when invalidState != null:
 return invalidState(_that);case DiskFailure() when disk != null:
 return disk(_that);case IntegrityFailure() when integrity != null:
 return integrity(_that);case ConfigurationFailure() when configuration != null:
-return configuration(_that);case UnexpectedFailure() when unexpected != null:
+return configuration(_that);case ConflictFailure() when conflict != null:
+return conflict(_that);case UnexpectedFailure() when unexpected != null:
 return unexpected(_that);case CoreLibraryNotLoadedFailure() when coreLibraryNotLoaded != null:
 return coreLibraryNotLoaded(_that);case ApplicationDirectoryUnavailableFailure() when applicationDirectoryUnavailable != null:
 return applicationDirectoryUnavailable(_that);case CoreInitializationFailedFailure() when coreInitializationFailed != null:
@@ -158,7 +161,7 @@ return preferencesUnreadable(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( CoreStatusFamily family,  int code)?  invalidInput,TResult Function( CoreStatusFamily family,  int code)?  unauthorized,TResult Function( CoreStatusFamily family,  int code)?  notInitialized,TResult Function( CoreStatusFamily family,  int code)?  notFound,TResult Function( CoreStatusFamily family,  int code)?  invalidState,TResult Function( CoreStatusFamily family,  int code)?  disk,TResult Function( CoreStatusFamily family,  int code)?  integrity,TResult Function( CoreStatusFamily family,  int code)?  configuration,TResult Function( CoreStatusFamily family,  int code)?  unexpected,TResult Function( String path)?  coreLibraryNotLoaded,TResult Function( String path)?  applicationDirectoryUnavailable,TResult Function( int code)?  coreInitializationFailed,TResult Function( int code)?  coreUnhealthy,TResult Function( String found,  String required)?  coreVersionUnsupported,TResult Function()?  preferencesUnreadable,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( CoreStatusFamily family,  int code)?  invalidInput,TResult Function( CoreStatusFamily family,  int code)?  unauthorized,TResult Function( CoreStatusFamily family,  int code)?  notInitialized,TResult Function( CoreStatusFamily family,  int code)?  notFound,TResult Function( CoreStatusFamily family,  int code)?  invalidState,TResult Function( CoreStatusFamily family,  int code)?  disk,TResult Function( CoreStatusFamily family,  int code)?  integrity,TResult Function( CoreStatusFamily family,  int code)?  configuration,TResult Function( CoreStatusFamily family,  int code)?  conflict,TResult Function( CoreStatusFamily family,  int code)?  unexpected,TResult Function( String path)?  coreLibraryNotLoaded,TResult Function( String path)?  applicationDirectoryUnavailable,TResult Function( int code)?  coreInitializationFailed,TResult Function( int code)?  coreUnhealthy,TResult Function( String found,  String required)?  coreVersionUnsupported,TResult Function()?  preferencesUnreadable,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case InvalidInputFailure() when invalidInput != null:
 return invalidInput(_that.family,_that.code);case UnauthorizedFailure() when unauthorized != null:
@@ -168,7 +171,8 @@ return notFound(_that.family,_that.code);case InvalidStateFailure() when invalid
 return invalidState(_that.family,_that.code);case DiskFailure() when disk != null:
 return disk(_that.family,_that.code);case IntegrityFailure() when integrity != null:
 return integrity(_that.family,_that.code);case ConfigurationFailure() when configuration != null:
-return configuration(_that.family,_that.code);case UnexpectedFailure() when unexpected != null:
+return configuration(_that.family,_that.code);case ConflictFailure() when conflict != null:
+return conflict(_that.family,_that.code);case UnexpectedFailure() when unexpected != null:
 return unexpected(_that.family,_that.code);case CoreLibraryNotLoadedFailure() when coreLibraryNotLoaded != null:
 return coreLibraryNotLoaded(_that.path);case ApplicationDirectoryUnavailableFailure() when applicationDirectoryUnavailable != null:
 return applicationDirectoryUnavailable(_that.path);case CoreInitializationFailedFailure() when coreInitializationFailed != null:
@@ -193,7 +197,7 @@ return preferencesUnreadable();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( CoreStatusFamily family,  int code)  invalidInput,required TResult Function( CoreStatusFamily family,  int code)  unauthorized,required TResult Function( CoreStatusFamily family,  int code)  notInitialized,required TResult Function( CoreStatusFamily family,  int code)  notFound,required TResult Function( CoreStatusFamily family,  int code)  invalidState,required TResult Function( CoreStatusFamily family,  int code)  disk,required TResult Function( CoreStatusFamily family,  int code)  integrity,required TResult Function( CoreStatusFamily family,  int code)  configuration,required TResult Function( CoreStatusFamily family,  int code)  unexpected,required TResult Function( String path)  coreLibraryNotLoaded,required TResult Function( String path)  applicationDirectoryUnavailable,required TResult Function( int code)  coreInitializationFailed,required TResult Function( int code)  coreUnhealthy,required TResult Function( String found,  String required)  coreVersionUnsupported,required TResult Function()  preferencesUnreadable,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( CoreStatusFamily family,  int code)  invalidInput,required TResult Function( CoreStatusFamily family,  int code)  unauthorized,required TResult Function( CoreStatusFamily family,  int code)  notInitialized,required TResult Function( CoreStatusFamily family,  int code)  notFound,required TResult Function( CoreStatusFamily family,  int code)  invalidState,required TResult Function( CoreStatusFamily family,  int code)  disk,required TResult Function( CoreStatusFamily family,  int code)  integrity,required TResult Function( CoreStatusFamily family,  int code)  configuration,required TResult Function( CoreStatusFamily family,  int code)  conflict,required TResult Function( CoreStatusFamily family,  int code)  unexpected,required TResult Function( String path)  coreLibraryNotLoaded,required TResult Function( String path)  applicationDirectoryUnavailable,required TResult Function( int code)  coreInitializationFailed,required TResult Function( int code)  coreUnhealthy,required TResult Function( String found,  String required)  coreVersionUnsupported,required TResult Function()  preferencesUnreadable,}) {final _that = this;
 switch (_that) {
 case InvalidInputFailure():
 return invalidInput(_that.family,_that.code);case UnauthorizedFailure():
@@ -203,7 +207,8 @@ return notFound(_that.family,_that.code);case InvalidStateFailure():
 return invalidState(_that.family,_that.code);case DiskFailure():
 return disk(_that.family,_that.code);case IntegrityFailure():
 return integrity(_that.family,_that.code);case ConfigurationFailure():
-return configuration(_that.family,_that.code);case UnexpectedFailure():
+return configuration(_that.family,_that.code);case ConflictFailure():
+return conflict(_that.family,_that.code);case UnexpectedFailure():
 return unexpected(_that.family,_that.code);case CoreLibraryNotLoadedFailure():
 return coreLibraryNotLoaded(_that.path);case ApplicationDirectoryUnavailableFailure():
 return applicationDirectoryUnavailable(_that.path);case CoreInitializationFailedFailure():
@@ -224,7 +229,7 @@ return preferencesUnreadable();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( CoreStatusFamily family,  int code)?  invalidInput,TResult? Function( CoreStatusFamily family,  int code)?  unauthorized,TResult? Function( CoreStatusFamily family,  int code)?  notInitialized,TResult? Function( CoreStatusFamily family,  int code)?  notFound,TResult? Function( CoreStatusFamily family,  int code)?  invalidState,TResult? Function( CoreStatusFamily family,  int code)?  disk,TResult? Function( CoreStatusFamily family,  int code)?  integrity,TResult? Function( CoreStatusFamily family,  int code)?  configuration,TResult? Function( CoreStatusFamily family,  int code)?  unexpected,TResult? Function( String path)?  coreLibraryNotLoaded,TResult? Function( String path)?  applicationDirectoryUnavailable,TResult? Function( int code)?  coreInitializationFailed,TResult? Function( int code)?  coreUnhealthy,TResult? Function( String found,  String required)?  coreVersionUnsupported,TResult? Function()?  preferencesUnreadable,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( CoreStatusFamily family,  int code)?  invalidInput,TResult? Function( CoreStatusFamily family,  int code)?  unauthorized,TResult? Function( CoreStatusFamily family,  int code)?  notInitialized,TResult? Function( CoreStatusFamily family,  int code)?  notFound,TResult? Function( CoreStatusFamily family,  int code)?  invalidState,TResult? Function( CoreStatusFamily family,  int code)?  disk,TResult? Function( CoreStatusFamily family,  int code)?  integrity,TResult? Function( CoreStatusFamily family,  int code)?  configuration,TResult? Function( CoreStatusFamily family,  int code)?  conflict,TResult? Function( CoreStatusFamily family,  int code)?  unexpected,TResult? Function( String path)?  coreLibraryNotLoaded,TResult? Function( String path)?  applicationDirectoryUnavailable,TResult? Function( int code)?  coreInitializationFailed,TResult? Function( int code)?  coreUnhealthy,TResult? Function( String found,  String required)?  coreVersionUnsupported,TResult? Function()?  preferencesUnreadable,}) {final _that = this;
 switch (_that) {
 case InvalidInputFailure() when invalidInput != null:
 return invalidInput(_that.family,_that.code);case UnauthorizedFailure() when unauthorized != null:
@@ -234,7 +239,8 @@ return notFound(_that.family,_that.code);case InvalidStateFailure() when invalid
 return invalidState(_that.family,_that.code);case DiskFailure() when disk != null:
 return disk(_that.family,_that.code);case IntegrityFailure() when integrity != null:
 return integrity(_that.family,_that.code);case ConfigurationFailure() when configuration != null:
-return configuration(_that.family,_that.code);case UnexpectedFailure() when unexpected != null:
+return configuration(_that.family,_that.code);case ConflictFailure() when conflict != null:
+return conflict(_that.family,_that.code);case UnexpectedFailure() when unexpected != null:
 return unexpected(_that.family,_that.code);case CoreLibraryNotLoadedFailure() when coreLibraryNotLoaded != null:
 return coreLibraryNotLoaded(_that.path);case ApplicationDirectoryUnavailableFailure() when applicationDirectoryUnavailable != null:
 return applicationDirectoryUnavailable(_that.path);case CoreInitializationFailedFailure() when coreInitializationFailed != null:
@@ -784,6 +790,74 @@ class _$ConfigurationFailureCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? family = null,Object? code = null,}) {
   return _then(ConfigurationFailure(
+family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
+as CoreStatusFamily,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class ConflictFailure extends Failure {
+  const ConflictFailure({required this.family, required this.code}): super._();
+  
+
+ final  CoreStatusFamily family;
+ final  int code;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ConflictFailureCopyWith<ConflictFailure> get copyWith => _$ConflictFailureCopyWithImpl<ConflictFailure>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ConflictFailure&&(identical(other.family, family) || other.family == family)&&(identical(other.code, code) || other.code == code));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,family,code);
+
+@override
+String toString() {
+  return 'Failure.conflict(family: $family, code: $code)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ConflictFailureCopyWith<$Res> implements $FailureCopyWith<$Res> {
+  factory $ConflictFailureCopyWith(ConflictFailure value, $Res Function(ConflictFailure) _then) = _$ConflictFailureCopyWithImpl;
+@useResult
+$Res call({
+ CoreStatusFamily family, int code
+});
+
+
+
+
+}
+/// @nodoc
+class _$ConflictFailureCopyWithImpl<$Res>
+    implements $ConflictFailureCopyWith<$Res> {
+  _$ConflictFailureCopyWithImpl(this._self, this._then);
+
+  final ConflictFailure _self;
+  final $Res Function(ConflictFailure) _then;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? family = null,Object? code = null,}) {
+  return _then(ConflictFailure(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as CoreStatusFamily,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as int,

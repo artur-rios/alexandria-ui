@@ -76,6 +76,17 @@ sealed class Failure with _$Failure {
     required int code,
   }) = ConfigurationFailure;
 
+  /// The operation would create something that already exists.
+  ///
+  /// Distinct from [InvalidInputFailure] because nothing the owner typed was
+  /// wrong: registering a second account (UC-01 AF-04) is refused because the
+  /// first one exists, and the answer is to sign in rather than to correct the
+  /// form.
+  const factory Failure.conflict({
+    required CoreStatusFamily family,
+    required int code,
+  }) = ConflictFailure;
+
   /// A status code this application does not know.
   ///
   /// It exists so the mapping is total: a core that grows a code the front-end
@@ -137,6 +148,7 @@ sealed class Failure with _$Failure {
     DiskFailure(:final code) ||
     IntegrityFailure(:final code) ||
     ConfigurationFailure(:final code) ||
+    ConflictFailure(:final code) ||
     UnexpectedFailure(:final code) ||
     CoreInitializationFailedFailure(:final code) ||
     CoreUnhealthyFailure(:final code) => code,
