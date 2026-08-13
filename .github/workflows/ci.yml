@@ -220,12 +220,29 @@ jobs:
 
       - name: Integration suite
         shell: bash
+        # One file per invocation, deliberately. On desktop, `flutter test`
+        # starts the application once per run, and the second file in a single
+        # invocation fails to launch with "Unable to start the app on the
+        # device" — whichever file that happens to be. Looping is what lets the
+        # suite hold more than one file.
+        #
+        # ALEXANDRIA_AUTH_MODE is the core's own setting, read at
+        # alexandria_index_init. It defaults to "external", in which mode the
+        # core refuses both local-auth calls, so the local-login tests need it
+        # set. See the note on UC-02 in the pull request that added this.
+        env:
+          ALEXANDRIA_AUTH_MODE: local
         run: |
-          if [ "${{ matrix.platform }}" = "linux" ]; then
-            xvfb-run -a flutter test integration_test -d linux
-          else
-            flutter test integration_test -d windows
-          fi
+          set -e
+          for suite in $(find integration_test -name '*_test.dart' | sort); do
+            echo "::group::$suite"
+            if [ "${{ matrix.platform }}" = "linux" ]; then
+              xvfb-run -a flutter test "$suite" -d linux
+            else
+              flutter test "$suite" -d windows
+            fi
+            echo "::endgroup::"
+          done
 
   build:
     name: Release build (${{ matrix.platform }})

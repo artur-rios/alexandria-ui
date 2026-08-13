@@ -67,7 +67,11 @@ void main() {
     expect(
       CoreStatusFamily.auth.isOk(response.status),
       isTrue,
-      reason: 'the core refused the run\'s credentials',
+      reason:
+          'the core refused the run\'s credentials (status ${response.status}). '
+          'The core reads ALEXANDRIA_AUTH_MODE at alexandria_index_init and '
+          'defaults to "external", in which mode it refuses both local-auth '
+          'calls. Run this suite with ALEXANDRIA_AUTH_MODE=local.',
     );
   }
 
