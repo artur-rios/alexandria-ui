@@ -11,6 +11,27 @@
 # for Windows needs a certificate the project does not hold, and Flatpak
 # distribution through a public remote needs an account that does not exist yet;
 # both are deliberately deferred until before the first public release (§7.2).
+#
+# KNOWN GAP — the Linux packages do not carry ffmpeg.
+#
+# The core links ffmpeg, so it needs libavcodec, libavdevice, libavfilter,
+# libavformat, libavutil, libswresample, and libswscale wherever it runs. The
+# Windows packages carry them beside the executable. The three Linux packages
+# each need a different answer, and none is chosen yet:
+#
+#   .deb       declare the distro's ffmpeg runtime packages as Depends, which
+#              means choosing which Ubuntu releases are supported, since the
+#              soname is in the package name and moves between them
+#   AppImage   bundle them, and everything they in turn need — libvpx, libopus,
+#              and the rest — which is what a tool like linuxdeploy does
+#   Flatpak    org.freedesktop.Platform 24.08 already provides them; the
+#              question is only whether the ffmpeg-full extension is needed for
+#              the formats the catalog holds
+#
+# Until that is settled, a Linux package installs and then fails to load the
+# core on any machine without ffmpeg already present. The build below succeeds
+# because the runner installed ffmpeg to compile the core — which is exactly
+# why the step after bundling reports the linkage rather than asserting it.
 
 name: Release
 
@@ -26,6 +47,24 @@ on:
 env:
   CORE_REPOSITORY: artur-rios/alexandria-api
   CORE_REF: main
+
+  # Must match the SDK the committed pubspec.lock was resolved with, for the
+  # same reason CI pins it: a newer SDK rewrites the lock during `pub get`, and
+  # a release built against dependencies nobody chose is worse here than in CI.
+  FLUTTER_VERSION: 3.44.9
+
+  # The LGPL build, not the GPL one CI uses. CI's ffmpeg is a build-time
+  # dependency of a binary nobody receives; these packages are distributed, and
+  # the GPL variant would carry its terms into what ships. The core is
+  # proprietary, so the LGPL shared build is the one whose terms a closed
+  # application can meet — by dynamic linking, unmodified, with its licence
+  # texts included. Nothing here re-encodes, so the GPL-only encoders that
+  # variant adds are not needed anyway.
+  FFMPEG_WINDOWS_BUILD: ffmpeg-n7.1-latest-win64-lgpl-shared-7.1
+
+  # The libraries a shared ffmpeg build links the core against by name. Listed
+  # once so the bundling steps below cannot drift from each other.
+  FFMPEG_LIBRARIES: avcodec avdevice avfilter avformat avutil swresample swscale
 
 jobs:
   windows:
@@ -45,12 +84,29 @@ jobs:
         with:
           workspaces: core
 
+      # alexandria-core depends on ffmpeg-next, whose ffmpeg-sys-next needs the
+      # ffmpeg C development libraries to build. See the CI workflow for why the
+      # 7.1 series rather than master.
+      - name: Install the ffmpeg development libraries
+        shell: bash
+        run: |
+          set -e
+          curl -fsSL -o /tmp/ffmpeg.zip \
+            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG_WINDOWS_BUILD}.zip"
+          7z x /tmp/ffmpeg.zip -o/tmp/ffmpeg > /dev/null
+          root=$(find /tmp/ffmpeg -maxdepth 1 -mindepth 1 -type d | head -1)
+          test -f "$root/include/libavutil/hwcontext_cuda.h"
+          echo "FFMPEG_DIR=$(cygpath -w "$root")" >> "$GITHUB_ENV"
+          echo "FFMPEG_ROOT_POSIX=$root" >> "$GITHUB_ENV"
+          cygpath -w "$root/bin" >> "$GITHUB_PATH"
+
       - name: Build the Alexandria core
         working-directory: core
         run: cargo build --release -p alexandria-ffi
 
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
@@ -67,11 +123,52 @@ jobs:
       - run: flutter build windows --release
 
       # Beside the executable, which is where IR-04's resolver looks first.
-      - name: Bundle the core
+      #
+      # The ffmpeg libraries travel with it: a shared build links
+      # alexandria_ffi.dll against them by name, so without them the package
+      # installs and then fails to load the core on first launch — the kind of
+      # break that only shows up on a machine that is not a build machine.
+      #
+      # The installer and the MSIX both take the whole Release directory, so
+      # copying here is all it takes to reach every Windows package.
+      - name: Bundle the core and its ffmpeg libraries
         shell: bash
         run: |
-          cp core/target/release/alexandria_ffi.dll \
-             build/windows/x64/runner/Release/
+          set -e
+          release=build/windows/x64/runner/Release
+          cp core/target/release/alexandria_ffi.dll "$release/"
+
+          for library in $FFMPEG_LIBRARIES; do
+            # The soname carries the major version, which moves with ffmpeg, so
+            # the file is matched rather than spelled out.
+            found=$(find "$FFMPEG_ROOT_POSIX/bin" -name "${library}-*.dll" | head -1)
+            test -n "$found" || { echo "::error::no DLL found for $library"; exit 1; }
+            cp "$found" "$release/"
+          done
+
+          # LGPL obliges the licence texts to travel with the binaries.
+          cp -r "$FFMPEG_ROOT_POSIX/LICENSE.txt" "$release/FFMPEG-LICENSE.txt"
+
+      # A package that cannot load the core is the failure this whole step
+      # exists to prevent, so it is checked here rather than discovered by
+      # whoever installs it.
+      - name: Verify every linked library is present
+        shell: bash
+        run: |
+          set -e
+          release=build/windows/x64/runner/Release
+          missing=0
+          for library in $FFMPEG_LIBRARIES; do
+            ls "$release/${library}-"*.dll > /dev/null 2>&1 || {
+              echo "::error::$library is missing from the Windows bundle"
+              missing=1
+            }
+          done
+          test -f "$release/alexandria_ffi.dll" || {
+            echo "::error::alexandria_ffi.dll is missing from the Windows bundle"
+            missing=1
+          }
+          exit $missing
 
       - name: Build the MSIX package
         run: dart run msix:create --version ${{ steps.version.outputs.value }}.0
@@ -108,12 +205,24 @@ jobs:
         with:
           workspaces: core
 
+      # Debian's libav* are the LGPL builds; libavcodec-extra is the GPL one and
+      # is deliberately not used here, for the reason given on
+      # FFMPEG_WINDOWS_BUILD above.
+      - name: Install the ffmpeg development libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libavformat-dev libavcodec-dev libavutil-dev \
+            libavfilter-dev libavdevice-dev libswscale-dev \
+            libswresample-dev pkg-config clang
+
       - name: Build the Alexandria core
         working-directory: core
         run: cargo build --release -p alexandria-ffi
 
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
@@ -144,6 +253,17 @@ jobs:
         run: |
           cp core/target/release/libalexandria_ffi.so \
              build/linux/x64/release/bundle/lib/
+
+      # Records what the core needs at runtime, so a package that cannot load
+      # it is diagnosable from the build log rather than only from a user's
+      # machine. Deliberately not a gate: every library resolves here because
+      # this runner installed them to build the core, so passing would say
+      # nothing about the machine the package lands on.
+      - name: Report the core's runtime dependencies
+        run: |
+          echo "Libraries libalexandria_ffi.so needs at runtime:"
+          ldd build/linux/x64/release/bundle/lib/libalexandria_ffi.so \
+            | grep -E "libav|libsw" || true
 
       - name: Build the AppImage and the .deb
         run: |
