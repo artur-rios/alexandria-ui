@@ -304,7 +304,7 @@ void main() {
         final container = containerWith(gateway);
 
         await submitValid(container);
-        gateway.outcome = LoginOutcome.authenticated(
+        gateway.outcome = AuthOutcome.authenticated(
           session: FakeAuthGateway.defaultSession,
         );
         await submitValid(container);

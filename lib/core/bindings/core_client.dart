@@ -30,20 +30,18 @@ abstract interface class CoreClient {
   /// when the call fails (NFR-13).
   Future<CoreJsonResponse> authLocalLogin(String jsonBody);
 
-  /// Sets or changes the local-login credentials through
-  /// `alexandria_auth_local_set_credentials`.
+  /// Creates the owner's account through `alexandria_auth_local_register`
+  /// (FR-AU-02).
   ///
-  /// [token] is required only once credentials already exist; an empty string
-  /// is first-time setup.
+  /// [jsonBody] is the body the core's matching HTTP route takes —
+  /// `{"email":…,"password":…,"passwordConfirmation":…}`. It carries both
+  /// plaintext entries, so it is built for this call and never logged or
+  /// retained (FR-AU-11).
   ///
-  /// Declared here because the integration suite sets the run's credentials
-  /// through the core's own call rather than by writing the database
-  /// (Testing Specification §7.3). The use case that puts it in front of the
-  /// owner is UC-04.
-  Future<CoreJsonResponse> authLocalSetCredentials(
-    String jsonBody,
-    String token,
-  );
+  /// Takes no session credential: there is nothing to authenticate with before
+  /// an account exists. Succeeds only once — a second call answers
+  /// `AUTH_ERR_CONFLICT`.
+  Future<CoreJsonResponse> authLocalRegister(String jsonBody);
 
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
@@ -87,12 +85,8 @@ class FfiCoreClient implements CoreClient {
       await _isolate.call('authLocalLogin', [jsonBody]) as CoreJsonResponse;
 
   @override
-  Future<CoreJsonResponse> authLocalSetCredentials(
-    String jsonBody,
-    String token,
-  ) async =>
-      await _isolate.call('authLocalSetCredentials', [jsonBody, token])
-          as CoreJsonResponse;
+  Future<CoreJsonResponse> authLocalRegister(String jsonBody) async =>
+      await _isolate.call('authLocalRegister', [jsonBody]) as CoreJsonResponse;
 
   @override
   Future<void> dispose() => _isolate.dispose();

@@ -1,5 +1,6 @@
 import 'package:alexandria_desktop/app.dart';
 import 'package:alexandria_desktop/core/di/providers.dart';
+import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +17,27 @@ import 'test_container.dart';
 /// own. That is what makes these tests cover the wiring in `app.dart` as well
 /// as the screen.
 extension PumpLogin on WidgetTester {
+  /// Pumps the application on the sign-up screen (UC-01).
+  ///
+  /// The screen is reached the way a fresh installation reaches it: startup
+  /// settles, no session is found, and the core reports no account.
+  Future<ProviderContainer> pumpSignUpScreen({
+    FakeAuthGateway? gateway,
+    Locale? locale,
+    ThemeMode themeMode = ThemeMode.light,
+    Size surfaceSize = const Size(1280, 800),
+  }) => pumpLoginScreen(
+    gateway: (gateway ?? FakeAuthGateway())
+      ..existence = AccountExistence.absent,
+    locale: locale,
+    themeMode: themeMode,
+    surfaceSize: surfaceSize,
+  );
+
   /// Pumps the application with [gateway] bound and startup already settled.
+  ///
+  /// Lands on the login screen unless the gateway reports no account, because
+  /// [FakeAuthGateway] says an account exists by default.
   Future<ProviderContainer> pumpLoginScreen({
     FakeAuthGateway? gateway,
     Locale? locale,
@@ -105,6 +126,40 @@ extension PumpLogin on WidgetTester {
     String password = 'correct horse',
   }) async {
     await enterCredentials(email: email, password: password);
+    await tap(find.byType(FilledButton));
+    await pumpAndSettle();
+  }
+
+  /// The sign-up form's repeated-password field.
+  TextField get passwordConfirmationField =>
+      widget<TextField>(find.byType(TextField).at(2));
+
+  /// Fills the sign-up form without submitting.
+  Future<void> enterRegistration({
+    String email = 'owner@example.com',
+    String password = 'a decent long passphrase',
+    String? passwordConfirmation,
+  }) async {
+    await enterText(find.byType(TextField).at(0), email);
+    await enterText(find.byType(TextField).at(1), password);
+    await enterText(
+      find.byType(TextField).at(2),
+      passwordConfirmation ?? password,
+    );
+    await pump();
+  }
+
+  /// Fills the sign-up form and presses its primary action.
+  Future<void> signUp({
+    String email = 'owner@example.com',
+    String password = 'a decent long passphrase',
+    String? passwordConfirmation,
+  }) async {
+    await enterRegistration(
+      email: email,
+      password: password,
+      passwordConfirmation: passwordConfirmation,
+    );
     await tap(find.byType(FilledButton));
     await pumpAndSettle();
   }

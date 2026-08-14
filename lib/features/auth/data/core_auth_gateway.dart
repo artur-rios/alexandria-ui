@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../core/bindings/alexandria_bindings.dart';
 import '../../../core/bindings/core_client.dart';
 import '../../../core/bindings/core_isolate.dart';
 import '../../../core/failures/core_status.dart';
@@ -8,6 +9,7 @@ import '../../../core/failures/failure.dart';
 import '../domain/auth_gateway.dart';
 import '../domain/session.dart';
 import 'local_login_result.dart';
+import 'local_register_result.dart';
 
 /// The [AuthGateway] backed by the real core over FFI (FR-AU-04).
 ///
@@ -24,7 +26,7 @@ class CoreAuthGateway implements AuthGateway {
   final DateTime Function() _now;
 
   @override
-  Future<LoginOutcome> logIn({
+  Future<AuthOutcome> logIn({
     required String email,
     required String password,
   }) async {
@@ -41,7 +43,7 @@ class CoreAuthGateway implements AuthGateway {
       // The call could not be made at all — as distinct from a call that was
       // made and refused. Deliberately not logged with its message here: the
       // message is the core's and the caller logs the failure it becomes.
-      return const LoginOutcome.failed(
+      return const AuthOutcome.failed(
         failure: Failure.unexpected(
           family: CoreStatusFamily.auth,
           code: AuthLoginStatus.callFailedCode,
@@ -50,7 +52,7 @@ class CoreAuthGateway implements AuthGateway {
     }
 
     if (!CoreStatusFamily.auth.isOk(response.status)) {
-      return LoginOutcome.failed(
+      return AuthOutcome.failed(
         failure: mapCoreStatus(CoreStatusFamily.auth, response.status),
       );
     }
@@ -77,7 +79,7 @@ class CoreAuthGateway implements AuthGateway {
     // the core does not believe in.
     if (!result.success) return _unreadable();
 
-    return LoginOutcome.authenticated(
+    return AuthOutcome.authenticated(
       session: Session(
         credential: result.sessionId,
         establishedAt: _now(),
@@ -87,7 +89,111 @@ class CoreAuthGateway implements AuthGateway {
     );
   }
 
-  LoginOutcome _unreadable() => const LoginOutcome.failed(
+  @override
+  Future<AuthOutcome> register({
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    final trimmedEmail = email.trim();
+
+    final CoreJsonResponse response;
+    try {
+      // Built here and referenced nowhere else, so both plaintext entries are
+      // unreachable once this call settles (FR-AU-11, NFR-11).
+      response = await _core.authLocalRegister(
+        jsonEncode({
+          'email': trimmedEmail,
+          'password': password,
+          'passwordConfirmation': passwordConfirmation,
+        }),
+      );
+    } on CoreCallException {
+      return const AuthOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.auth,
+          code: AuthLoginStatus.callFailedCode,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.auth.isOk(response.status)) {
+      return AuthOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.auth, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unreadable();
+
+    final LocalRegisterResult result;
+    try {
+      result = LocalRegisterResult.fromJson(
+        jsonDecode(json) as Map<String, dynamic>,
+      );
+    } on Object {
+      // Broad by intent, as on the login path: a malformed payload surfaces as
+      // FormatException and a wrongly-typed field as TypeError, and either way
+      // the owner needs a readable failure.
+      return _unreadable();
+    }
+
+    if (!result.success) return _unreadable();
+
+    return AuthOutcome.authenticated(
+      session: Session(
+        credential: result.sessionId,
+        establishedAt: _now(),
+        emailConfirmed: result.emailConfirmed,
+        // The core's normalized address rather than the raw text typed: it is
+        // what the account actually holds.
+        email: result.email,
+      ),
+    );
+  }
+
+  /// Answers FR-AU-01 by asking the core to authenticate an address that
+  /// cannot be registered.
+  ///
+  /// The core publishes no account-exists query, so this reads the one thing
+  /// that distinguishes the two states on a call that already exists: local
+  /// login answers `AUTH_ERR_CONFIG` when no credentials are stored and
+  /// `AUTH_ERR_UNAUTHORIZED` when they are. Nothing is created or modified,
+  /// and the core compares the address before verifying any password, so no
+  /// hash is computed.
+  ///
+  /// It is a probe, not a login: the address is deliberately unusable and no
+  /// session can result. When the core publishes a real query this method is
+  /// the only thing that changes — nothing above it knows how the question was
+  /// asked.
+  @override
+  Future<AccountExistence> accountExists() async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.authLocalLogin(
+        jsonEncode({'email': _probeAddress, 'password': ''}),
+      );
+    } on CoreCallException {
+      return AccountExistence.unknown;
+    }
+
+    return switch (response.status) {
+      AUTH_ERR_CONFIG => AccountExistence.absent,
+      AUTH_ERR_UNAUTHORIZED => AccountExistence.present,
+      // Anything else — the core not initialized, a code this version does not
+      // know — leaves the question unanswered rather than guessed at.
+      _ => AccountExistence.unknown,
+    };
+  }
+
+  /// The address the existence probe presents.
+  ///
+  /// `.invalid` is reserved by RFC 2606 precisely so that it can never be a
+  /// real address, which keeps the probe from colliding with an account
+  /// somebody actually holds.
+  static const String _probeAddress = 'account-probe@alexandria.invalid';
+
+  AuthOutcome _unreadable() => const AuthOutcome.failed(
     failure: Failure.unexpected(
       family: CoreStatusFamily.auth,
       code: AuthLoginStatus.unreadablePayloadCode,

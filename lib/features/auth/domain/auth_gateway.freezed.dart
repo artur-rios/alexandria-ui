@@ -12,7 +12,7 @@ part of 'auth_gateway.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$LoginOutcome {
+mixin _$AuthOutcome {
 
 
 
@@ -20,7 +20,7 @@ mixin _$LoginOutcome {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LoginOutcome);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthOutcome);
 }
 
 
@@ -29,20 +29,20 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'LoginOutcome()';
+  return 'AuthOutcome()';
 }
 
 
 }
 
 /// @nodoc
-class $LoginOutcomeCopyWith<$Res>  {
-$LoginOutcomeCopyWith(LoginOutcome _, $Res Function(LoginOutcome) __);
+class $AuthOutcomeCopyWith<$Res>  {
+$AuthOutcomeCopyWith(AuthOutcome _, $Res Function(AuthOutcome) __);
 }
 
 
-/// Adds pattern-matching-related methods to [LoginOutcome].
-extension LoginOutcomePatterns on LoginOutcome {
+/// Adds pattern-matching-related methods to [AuthOutcome].
+extension AuthOutcomePatterns on AuthOutcome {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -174,13 +174,13 @@ return failed(_that.failure);case _:
 /// @nodoc
 
 
-class AuthenticatedOutcome implements LoginOutcome {
+class AuthenticatedOutcome implements AuthOutcome {
   const AuthenticatedOutcome({required this.session});
   
 
  final  Session session;
 
-/// Create a copy of LoginOutcome
+/// Create a copy of AuthOutcome
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
@@ -199,14 +199,14 @@ int get hashCode => Object.hash(runtimeType,session);
 
 @override
 String toString() {
-  return 'LoginOutcome.authenticated(session: $session)';
+  return 'AuthOutcome.authenticated(session: $session)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $AuthenticatedOutcomeCopyWith<$Res> implements $LoginOutcomeCopyWith<$Res> {
+abstract mixin class $AuthenticatedOutcomeCopyWith<$Res> implements $AuthOutcomeCopyWith<$Res> {
   factory $AuthenticatedOutcomeCopyWith(AuthenticatedOutcome value, $Res Function(AuthenticatedOutcome) _then) = _$AuthenticatedOutcomeCopyWithImpl;
 @useResult
 $Res call({
@@ -225,7 +225,7 @@ class _$AuthenticatedOutcomeCopyWithImpl<$Res>
   final AuthenticatedOutcome _self;
   final $Res Function(AuthenticatedOutcome) _then;
 
-/// Create a copy of LoginOutcome
+/// Create a copy of AuthOutcome
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? session = null,}) {
   return _then(AuthenticatedOutcome(
@@ -234,7 +234,7 @@ as Session,
   ));
 }
 
-/// Create a copy of LoginOutcome
+/// Create a copy of AuthOutcome
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -249,13 +249,13 @@ $SessionCopyWith<$Res> get session {
 /// @nodoc
 
 
-class FailedOutcome implements LoginOutcome {
+class FailedOutcome implements AuthOutcome {
   const FailedOutcome({required this.failure});
   
 
  final  Failure failure;
 
-/// Create a copy of LoginOutcome
+/// Create a copy of AuthOutcome
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
@@ -274,14 +274,14 @@ int get hashCode => Object.hash(runtimeType,failure);
 
 @override
 String toString() {
-  return 'LoginOutcome.failed(failure: $failure)';
+  return 'AuthOutcome.failed(failure: $failure)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $FailedOutcomeCopyWith<$Res> implements $LoginOutcomeCopyWith<$Res> {
+abstract mixin class $FailedOutcomeCopyWith<$Res> implements $AuthOutcomeCopyWith<$Res> {
   factory $FailedOutcomeCopyWith(FailedOutcome value, $Res Function(FailedOutcome) _then) = _$FailedOutcomeCopyWithImpl;
 @useResult
 $Res call({
@@ -300,7 +300,7 @@ class _$FailedOutcomeCopyWithImpl<$Res>
   final FailedOutcome _self;
   final $Res Function(FailedOutcome) _then;
 
-/// Create a copy of LoginOutcome
+/// Create a copy of AuthOutcome
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
   return _then(FailedOutcome(
@@ -309,7 +309,7 @@ as Failure,
   ));
 }
 
-/// Create a copy of LoginOutcome
+/// Create a copy of AuthOutcome
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')

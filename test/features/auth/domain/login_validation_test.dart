@@ -107,4 +107,67 @@ void main() {
       },
     );
   });
+
+  // UC-01 step 4 and AF-02.
+  group('validatePasswordConfirmation', () {
+    test(
+      'GivenTwoIdenticalEntries_WhenTheyAreValidated_ThenThereIsNoError',
+      () {
+        expect(
+          validatePasswordConfirmation('correct horse', 'correct horse'),
+          isNull,
+        );
+      },
+    );
+
+    test(
+      'GivenEntriesThatDiffer_WhenTheyAreValidated_ThenTheyAreReportedAsMismatched',
+      () {
+        expect(
+          validatePasswordConfirmation('correct horse', 'correct hors'),
+          LoginFieldError.mismatched,
+        );
+      },
+    );
+
+    test(
+      'GivenEntriesDifferingOnlyInCase_WhenTheyAreValidated_ThenTheyAreReportedAsMismatched',
+      () {
+        expect(
+          validatePasswordConfirmation('Correct Horse', 'correct horse'),
+          LoginFieldError.mismatched,
+        );
+      },
+    );
+
+    // Trailing whitespace is part of a password, so it is a real mismatch
+    // rather than something to trim away.
+    test(
+      'GivenEntriesDifferingOnlyByTrailingSpace_WhenTheyAreValidated_ThenTheyAreReportedAsMismatched',
+      () {
+        expect(
+          validatePasswordConfirmation('correct horse', 'correct horse '),
+          LoginFieldError.mismatched,
+        );
+      },
+    );
+
+    // The owner has not made a mistake yet — they have not finished.
+    test(
+      'GivenAnEmptyRepeat_WhenItIsValidated_ThenItIsReportedAsMissing',
+      () {
+        expect(
+          validatePasswordConfirmation('correct horse', ''),
+          LoginFieldError.missing,
+        );
+      },
+    );
+
+    test(
+      'GivenBothEntriesEmpty_WhenTheyAreValidated_ThenTheRepeatIsReportedAsMissing',
+      () {
+        expect(validatePasswordConfirmation('', ''), LoginFieldError.missing);
+      },
+    );
+  });
 }

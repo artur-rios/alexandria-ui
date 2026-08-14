@@ -48,6 +48,39 @@ class AppLocalizationsEn extends AppLocalizations {
       'No account has been set up on this computer yet.';
 
   @override
+  String get signUpTitle => 'Create your Alexandria account';
+
+  @override
+  String get signUpIntro =>
+      'This is the only account. Its password cannot be recovered, so choose one you will not lose.';
+
+  @override
+  String get signUpPasswordConfirmationLabel => 'Repeat password';
+
+  @override
+  String get signUpSubmit => 'Create account';
+
+  @override
+  String get signUpPasswordConfirmationMissing => 'Repeat your password.';
+
+  @override
+  String get signUpPasswordMismatch => 'The two passwords do not match.';
+
+  @override
+  String get signUpRejected =>
+      'Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.';
+
+  @override
+  String get signUpAccountExists =>
+      'An account already exists on this computer. Sign in instead.';
+
+  @override
+  String get signUpGoToLogin => 'Go to sign in';
+
+  @override
+  String get loginGoToSignUp => 'Create an account';
+
+  @override
   String get loginSessionEndedTitle => 'You were signed out';
 
   @override
@@ -114,6 +147,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get failureConfiguration =>
       'Alexandria\'s configuration could not be read.';
+
+  @override
+  String get failureConflict => 'That already exists in Alexandria.';
 
   @override
   String get failureUnexpected => 'Something went wrong in Alexandria.';

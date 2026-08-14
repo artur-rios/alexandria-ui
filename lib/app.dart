@@ -7,9 +7,11 @@ import 'core/l10n/generated/app_localizations.dart';
 import 'core/startup/core_unavailable_screen.dart';
 import 'core/startup/startup_state.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/application/auth_entry_controller.dart';
 import 'features/auth/application/session_state.dart';
 import 'features/auth/presentation/catalog_locked_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'features/auth/presentation/sign_up_screen.dart';
 
 /// The application root.
 ///
@@ -62,8 +64,14 @@ class AlexandriaApp extends ConsumerWidget {
         StartupReady(:final coreVersion) => switch (ref.watch(
           sessionControllerProvider,
         )) {
-          // FR-AU-07: no session, so the login screen and no catalog call.
-          SessionAbsent() => const LoginScreen(),
+          // FR-AU-07: no session, so no catalog call. Which of the two
+          // authentication screens depends on whether the core already holds
+          // an account (FR-AU-01, UC-01 main flow step 1).
+          SessionAbsent() => switch (ref.watch(authEntryProvider)) {
+            AuthEntry.resolving => const StartupProgressScreen(),
+            AuthEntry.signUp => const SignUpScreen(),
+            AuthEntry.login => const LoginScreen(),
+          },
 
           // FR-AU-12 / BR-25: authenticated but unconfirmed keeps the catalog
           // locked. UC-40 replaces this with the confirmation prompt.

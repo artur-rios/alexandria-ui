@@ -16,8 +16,8 @@ import '../support/temporary_catalog.dart';
 ///
 /// What the unit suite fakes — the status codes, the payload shape, the
 /// memory discipline — is exactly what this suite exists to verify. The
-/// credentials are set through the core's own set-credentials call rather than
-/// by writing the database (§7.3).
+/// account is created through the core's own registration call rather than by
+/// writing the database (§7.3).
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -57,21 +57,31 @@ void main() {
     return client;
   }
 
-  /// Sets this run's credentials through the core's own call.
-  Future<void> setCredentials(CoreClient core) async {
-    final response = await core.authLocalSetCredentials(
-      jsonEncode({'email': email, 'password': password}),
-      '',
+  /// Creates this run's account through the core's own registration call.
+  ///
+  /// Registration rather than set-credentials: the core removed the
+  /// unauthenticated first-time path from `set_credentials` when it gained
+  /// `alexandria_auth_local_register` (UC-41), on the grounds that creating
+  /// the account is registration's job. Set-credentials now always requires a
+  /// session, so it can no longer bootstrap a run.
+  Future<void> createAccount(CoreClient core) async {
+    final response = await core.authLocalRegister(
+      jsonEncode({
+        'email': email,
+        'password': password,
+        'passwordConfirmation': password,
+      }),
     );
 
     expect(
       CoreStatusFamily.auth.isOk(response.status),
       isTrue,
       reason:
-          'the core refused the run\'s credentials (status ${response.status}). '
-          'The core reads ALEXANDRIA_AUTH_MODE at alexandria_index_init and '
-          'defaults to "external", in which mode it refuses both local-auth '
-          'calls. Run this suite with ALEXANDRIA_AUTH_MODE=local.',
+          'the core refused to create the run\'s account '
+          '(status ${response.status}). The core reads ALEXANDRIA_AUTH_MODE at '
+          'alexandria_index_init and defaults to "external", in which mode it '
+          'refuses every local-auth call. Run this suite with '
+          'ALEXANDRIA_AUTH_MODE=local.',
     );
   }
 
@@ -79,7 +89,7 @@ void main() {
     'GivenAnAccountInTheRealCore_WhenTheOwnerLogsIn_ThenASessionIsReturned',
     () async {
       final core = await initializedCore();
-      await setCredentials(core);
+      await createAccount(core);
 
       final outcome = await CoreAuthGateway(
         core,
@@ -93,7 +103,7 @@ void main() {
     'GivenAnAccountInTheRealCore_WhenTheOwnerLogsIn_ThenTheCoreReturnsUsableSessionMaterial',
     () async {
       final core = await initializedCore();
-      await setCredentials(core);
+      await createAccount(core);
 
       final outcome =
           await CoreAuthGateway(core).logIn(email: email, password: password)
@@ -111,7 +121,7 @@ void main() {
     'GivenTheWrongPassword_WhenTheOwnerLogsIn_ThenTheCoreRefuses',
     () async {
       final core = await initializedCore();
-      await setCredentials(core);
+      await createAccount(core);
 
       final outcome = await CoreAuthGateway(
         core,
@@ -125,7 +135,7 @@ void main() {
     'GivenAnUnknownAddress_WhenTheOwnerLogsIn_ThenTheCoreRefusesTheSameWay',
     () async {
       final core = await initializedCore();
-      await setCredentials(core);
+      await createAccount(core);
 
       final wrongPassword = await CoreAuthGateway(
         core,
@@ -172,7 +182,7 @@ void main() {
     'GivenManyLoginAttempts_WhenTheyAllSettle_ThenEveryReturnedStringWasFreed',
     () async {
       final core = await initializedCore();
-      await setCredentials(core);
+      await createAccount(core);
       final gateway = CoreAuthGateway(core);
 
       for (var attempt = 0; attempt < 50; attempt++) {

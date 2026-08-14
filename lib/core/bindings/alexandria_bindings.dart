@@ -46,10 +46,33 @@ class AlexandriaBindings {
   late final _alexandria_auth_local_login = _alexandria_auth_local_loginPtr
       .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
+  /// Register the local account (UC-41 / FR-AU-10, FR-AU-11): create the
+  /// single owner's credentials and open a session. `json_body` is the JSON
+  /// body HTTP would send (`email`, `password`, `passwordConfirmation`). On
+  /// success `json` carries the `LocalRegisterResult`, whose `sessionId` the
+  /// caller presents on subsequent requests.
+  ///
+  /// Deliberately takes no `token`: there is nothing to authenticate with
+  /// before an account exists. Succeeds only once — a second call returns
+  /// `AUTH_ERR_CONFLICT` (AF-02).
+  AuthJsonResult alexandria_auth_local_register(
+    ffi.Pointer<ffi.Char> json_body,
+  ) {
+    return _alexandria_auth_local_register(json_body);
+  }
+
+  late final _alexandria_auth_local_registerPtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_local_register');
+  late final _alexandria_auth_local_register =
+      _alexandria_auth_local_registerPtr
+          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
   /// Set or change local-login credentials (UC-35 / FR-AU-05, FR-AU-06).
   /// `json_body` is the JSON body HTTP would send (`email`, `password`).
-  /// `token` is optional: required only once credentials already exist
-  /// (AF-03) — pass an empty string on first-time setup.
+  /// `token` is required: this changes existing credentials. Creating the
+  /// account is `alexandria_auth_local_register` (UC-41).
   AuthJsonResult alexandria_auth_local_set_credentials(
     ffi.Pointer<ffi.Char> json_body,
     ffi.Pointer<ffi.Char> token,
@@ -967,6 +990,33 @@ class AlexandriaBindings {
       _alexandria_index_refresh_startPtr
           .asFunction<IndexStartResult Function(ffi.Pointer<ffi.Char>)>();
 
+  /// Report an index or re-index run's status and outcome (UC-42 / FR-FC-28).
+  /// `run_id` is the id `alexandria_index_start` or
+  /// `alexandria_index_refresh_start` returned. On success `json` carries the
+  /// same body the HTTP `GET /v1/index/runs/{runId}` route returns (FR-FC-24).
+  ///
+  /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
+  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02), and
+  /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid.
+  RunJsonResult alexandria_index_run_status_json(
+    ffi.Pointer<ffi.Char> run_id,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_index_run_status_json(run_id, token);
+  }
+
+  late final _alexandria_index_run_status_jsonPtr =
+      _lookup<
+        ffi.NativeFunction<
+          RunJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+        >
+      >('alexandria_index_run_status_json');
+  late final _alexandria_index_run_status_json =
+      _alexandria_index_run_status_jsonPtr
+          .asFunction<
+            RunJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+          >();
+
   /// Start an asynchronous index scan of `root`. Returns a `IndexStartResult`
   /// with a `run_id` and `status` (parity with HTTP 202 body). The scan runs in
   /// the background on the FFI runtime; read results via the accessor functions.
@@ -1432,6 +1482,8 @@ class AlexandriaBindings {
 
 const int AUTH_ERR_CONFIG = 8;
 
+const int AUTH_ERR_CONFLICT = 10;
+
 const int AUTH_ERR_INVALID_INPUT = 1;
 
 const int AUTH_ERR_INVALID_STATE = 5;
@@ -1666,6 +1718,27 @@ final class ReadingListJsonResult extends ffi.Struct {
     required int status,
     required ffi.Pointer<ffi.Char> json,
   }) => $allocator<ReadingListJsonResult>()
+    ..ref.status = status
+    ..ref.json = json;
+}
+
+/// Result of `alexandria_index_run_status_json` (UC-42). On success `status`
+/// is `RUN_OK` and `json` is a NUL-terminated JSON string of the `CatalogRun`
+/// body — byte-for-byte the same shape HTTP returns from
+/// `GET /v1/index/runs/{runId}` (FR-FC-24 / NFR-09). On failure `json` is
+/// NULL and `status` carries the mapped error code. The caller must free
+/// `json` with `alexandria_free_string`.
+final class RunJsonResult extends ffi.Struct {
+  @ffi.Int()
+  external int status;
+
+  external ffi.Pointer<ffi.Char> json;
+
+  static ffi.Pointer<RunJsonResult> $allocate(
+    ffi.Allocator $allocator, {
+    required int status,
+    required ffi.Pointer<ffi.Char> json,
+  }) => $allocator<RunJsonResult>()
     ..ref.status = status
     ..ref.json = json;
 }

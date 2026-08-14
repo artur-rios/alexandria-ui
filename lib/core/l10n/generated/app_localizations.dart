@@ -164,11 +164,71 @@ abstract class AppLocalizations {
   /// **'That e-mail and password do not match an account.'**
   String get loginRejected;
 
-  /// UC-02 AF-03: the core holds no credentials. Signing up is UC-01, which is blocked on core support, so this states the condition rather than offering an action that does not exist yet.
+  /// UC-02 AF-03: the core holds no credentials, so the owner is sent to sign-up (UC-01) by the action beside this message.
   ///
   /// In en, this message translates to:
   /// **'No account has been set up on this computer yet.'**
   String get loginNoAccount;
+
+  /// Heading of the sign-up screen (UC-01). Presented on first launch, when the core holds no account.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your Alexandria account'**
+  String get signUpTitle;
+
+  /// UC-01: explains the stakes before the owner chooses. The core owns no mail transport, so there is no reset to fall back on.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the only account. Its password cannot be recovered, so choose one you will not lose.'**
+  String get signUpIntro;
+
+  /// Label of the sign-up form's second password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat password'**
+  String get signUpPasswordConfirmationLabel;
+
+  /// The sign-up form's primary action.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get signUpSubmit;
+
+  /// UC-01 AF-02: the second password field was left empty. The core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat your password.'**
+  String get signUpPasswordConfirmationMissing;
+
+  /// UC-01 AF-02: the two entries differ. The core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'The two passwords do not match.'**
+  String get signUpPasswordMismatch;
+
+  /// UC-01 AF-03: the core rejected the credentials. The core owns the password policy and does not send its reason across the boundary, so this names the rules it enforces without restating them as front-end validation.
+  ///
+  /// In en, this message translates to:
+  /// **'Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.'**
+  String get signUpRejected;
+
+  /// UC-01 AF-04: the core already holds an account, so registration is refused and the owner is sent to the login screen.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already exists on this computer. Sign in instead.'**
+  String get signUpAccountExists;
+
+  /// UC-01 AF-04: the action that leaves sign-up for the login screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to sign in'**
+  String get signUpGoToLogin;
+
+  /// UC-02 AF-03: the action that leaves login for the sign-up screen, offered when the core holds no account.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account'**
+  String get loginGoToSignUp;
 
   /// UC-02 AF-04: heading shown on the login screen when a session was discarded because the core rejected a call, rather than because the owner signed out.
   ///
@@ -271,6 +331,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alexandria\'s configuration could not be read.'**
   String get failureConfiguration;
+
+  /// The operation would create something that already exists. Nothing the owner typed was wrong.
+  ///
+  /// In en, this message translates to:
+  /// **'That already exists in Alexandria.'**
+  String get failureConflict;
 
   /// A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number.
   ///

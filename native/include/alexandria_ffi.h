@@ -164,6 +164,31 @@
 #define AUTH_ERR_OTHER 9
 
 /**
+ * UC-41 AF-01/AF-02: the request conflicts with existing state — the
+ * active auth mode is not local, or an account already exists. The FFI
+ * counterpart of HTTP's `409`.
+ */
+#define AUTH_ERR_CONFLICT 10
+
+/**
+ * FFI status codes returned by run-status operations (UC-42 / FR-FC-28).
+ * Deliberately separate from `INDEX_*`, `FILE_*`, `COLLECTION_*`, `PLAYBACK_*`,
+ * and `AUTH_*` — per the convention established above — so this surface can
+ * grow independently; `RUN_OK == INDEX_OK == 0` by convention.
+ */
+#define RUN_OK 0
+
+#define RUN_ERR_INVALID_INPUT 1
+
+#define RUN_ERR_UNAUTHORIZED 2
+
+#define RUN_ERR_NOT_INITIALIZED 3
+
+#define RUN_ERR_NOT_FOUND 4
+
+#define RUN_ERR_OTHER 9
+
+/**
  * Result of starting an index run. `run_id` is a NUL-terminated UUID string
  * on success (empty on failure).
  */
@@ -274,6 +299,19 @@ typedef struct AuthJsonResult {
   int status;
   char *json;
 } AuthJsonResult;
+
+/**
+ * Result of `alexandria_index_run_status_json` (UC-42). On success `status`
+ * is `RUN_OK` and `json` is a NUL-terminated JSON string of the `CatalogRun`
+ * body — byte-for-byte the same shape HTTP returns from
+ * `GET /v1/index/runs/{runId}` (FR-FC-24 / NFR-09). On failure `json` is
+ * NULL and `status` carries the mapped error code. The caller must free
+ * `json` with `alexandria_free_string`.
+ */
+typedef struct RunJsonResult {
+  int status;
+  char *json;
+} RunJsonResult;
 
 const char *alexandria_version(void);
 
@@ -804,11 +842,36 @@ struct AuthJsonResult alexandria_auth_local_login(const char *json_body);
 /**
  * Set or change local-login credentials (UC-35 / FR-AU-05, FR-AU-06).
  * `json_body` is the JSON body HTTP would send (`email`, `password`).
- * `token` is optional: required only once credentials already exist
- * (AF-03) — pass an empty string on first-time setup.
+ * `token` is required: this changes existing credentials. Creating the
+ * account is `alexandria_auth_local_register` (UC-41).
  */
 struct AuthJsonResult alexandria_auth_local_set_credentials(const char *json_body,
                                                             const char *token);
+
+/**
+ * Register the local account (UC-41 / FR-AU-10, FR-AU-11): create the
+ * single owner's credentials and open a session. `json_body` is the JSON
+ * body HTTP would send (`email`, `password`, `passwordConfirmation`). On
+ * success `json` carries the `LocalRegisterResult`, whose `sessionId` the
+ * caller presents on subsequent requests.
+ *
+ * Deliberately takes no `token`: there is nothing to authenticate with
+ * before an account exists. Succeeds only once — a second call returns
+ * `AUTH_ERR_CONFLICT` (AF-02).
+ */
+struct AuthJsonResult alexandria_auth_local_register(const char *json_body);
+
+/**
+ * Report an index or re-index run's status and outcome (UC-42 / FR-FC-28).
+ * `run_id` is the id `alexandria_index_start` or
+ * `alexandria_index_refresh_start` returned. On success `json` carries the
+ * same body the HTTP `GET /v1/index/runs/{runId}` route returns (FR-FC-24).
+ *
+ * Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
+ * `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02), and
+ * `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid.
+ */
+struct RunJsonResult alexandria_index_run_status_json(const char *run_id, const char *token);
 
 /**
  * Free a string previously returned by an FFI accessor.

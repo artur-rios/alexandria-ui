@@ -12,10 +12,13 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/auth/application/auth_entry_controller.dart';
 import '../../features/auth/application/login_controller.dart';
 import '../../features/auth/application/login_state.dart';
 import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/application/session_state.dart';
+import '../../features/auth/application/sign_up_controller.dart';
+import '../../features/auth/application/sign_up_state.dart';
 import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
 import '../bindings/core_client.dart';
@@ -84,6 +87,14 @@ final sessionControllerProvider =
 /// The login form's state (UC-02).
 final loginControllerProvider =
     NotifierProvider<LoginController, LoginState>(LoginController.new);
+
+/// The sign-up form's state (UC-01).
+final signUpControllerProvider =
+    NotifierProvider<SignUpController, SignUpState>(SignUpController.new);
+
+/// Which screen a session-less owner is shown (FR-AU-01).
+final authEntryProvider =
+    NotifierProvider<AuthEntryController, AuthEntry>(AuthEntryController.new);
 
 /// The language the owner chose, or `null` to follow the system.
 final localeProvider = Provider<Locale?>((ref) {

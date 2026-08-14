@@ -26,6 +26,7 @@ extension FailureMessage on Failure {
     DiskFailure() => l10n.failureDisk,
     IntegrityFailure() => l10n.failureIntegrity,
     ConfigurationFailure() => l10n.failureConfiguration,
+    ConflictFailure() => l10n.failureConflict,
     UnexpectedFailure() => l10n.failureUnexpected,
   };
 }
