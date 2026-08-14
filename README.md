@@ -154,6 +154,19 @@ shells out to the analyzer and so runs on its own rather than on every change:
 flutter test analysis_test --timeout 5x
 ```
 
+Golden files guard the theme and layout of the key screens. They live beside
+the suites that use them, in `goldens/`, and are regenerated deliberately:
+
+```bash
+flutter test --update-goldens
+```
+
+**Look at the regenerated images in the pull request.** A golden updated without
+being looked at is worse than no golden — it turns a visual regression into a
+committed one. Note that `flutter test` loads no real font, so text and icons
+render as boxes: these images capture colour, spacing, and layout, and what the
+screens *say* is covered by the widget suites in both languages.
+
 Tests are named with the Given-When-Then pattern
 (`GivenSomeCondition_WhenSomeAction_ThenSomeOutcome`). Every use case ships with
 its tests before its pull request is opened.

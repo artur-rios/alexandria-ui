@@ -75,15 +75,25 @@ extension PumpLogin on WidgetTester {
 
   /// Pumps the application with a core that cannot be loaded, so startup ends
   /// in its failure state.
-  Future<ProviderContainer> pumpFailedStartup() async {
-    await binding.setSurfaceSize(const Size(1280, 800));
+  Future<ProviderContainer> pumpFailedStartup({
+    Locale? locale,
+    ThemeMode themeMode = ThemeMode.light,
+    Size surfaceSize = const Size(1280, 800),
+  }) async {
+    await binding.setSurfaceSize(surfaceSize);
     addTearDown(() => binding.setSurfaceSize(null));
 
     final container = ProviderContainer(
       overrides: [
         // A path with no file behind it: startup step 1 checks the filesystem
         // before it loads anything.
-        ...fakeCoreOverrides(libraryPath: 'no/such/library.dll'),
+        ...fakeCoreOverrides(
+          libraryPath: 'no/such/library.dll',
+          settings: InMemorySettingsStore(
+            themeMode: themeMode,
+            locale: locale,
+          ),
+        ),
         authGatewayProvider.overrideWithValue(FakeAuthGateway()),
       ],
     );
