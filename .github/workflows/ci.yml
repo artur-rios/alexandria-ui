@@ -226,12 +226,11 @@ jobs:
         # device" — whichever file that happens to be. Looping is what lets the
         # suite hold more than one file.
         #
-        # ALEXANDRIA_AUTH_MODE is the core's own setting, read at
-        # alexandria_index_init. It defaults to "external", in which mode the
-        # core refuses both local-auth calls, so the local-login tests need it
-        # set. See the note on UC-02 in the pull request that added this.
-        env:
-          ALEXANDRIA_AUTH_MODE: local
+        # ALEXANDRIA_AUTH_MODE is deliberately not set. The application puts
+        # the core into local auth mode itself, before initializing it, and a
+        # runner that set the variable would hide a regression in that: the
+        # suite would pass on the runner's configuration rather than on the
+        # application's.
         run: |
           set -e
           for suite in $(find integration_test -name '*_test.dart' | sort); do
