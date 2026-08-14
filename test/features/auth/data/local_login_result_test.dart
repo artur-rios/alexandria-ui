@@ -10,7 +10,8 @@ void main() {
   // The payload the core actually returns today, from LocalLoginResult in
   // crates/alexandria-core/src/auth/local.rs.
   const corePayload =
-      '{"success":true,"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}';
+      '{"success":true,"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50",'
+      '"emailConfirmed":true}';
 
   test(
     'GivenTheCoresLoginPayload_WhenItIsDecoded_ThenTheSessionIdIsRead',
@@ -61,7 +62,7 @@ void main() {
     'GivenAPayloadWhoseSessionIdIsNotAString_WhenItIsDecoded_ThenItThrows',
     () {
       expect(
-        () => decode('{"success":true,"sessionId":42}'),
+        () => decode('{"success":true,"sessionId":42,"emailConfirmed":true}'),
         throwsA(anything),
       );
     },

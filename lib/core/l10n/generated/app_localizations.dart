@@ -338,6 +338,66 @@ abstract class AppLocalizations {
   /// **'That already exists in Alexandria.'**
   String get failureConflict;
 
+  /// The core refused because the caller is asking too often. Nothing the owner typed was wrong; the remedy is to wait.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a moment and try again.'**
+  String get failureRateLimited;
+
+  /// The core could not reach a dependency — outbound mail being the one that exists today. The catalog is unaffected.
+  ///
+  /// In en, this message translates to:
+  /// **'Alexandria could not reach a service it needs, so that step did not happen.'**
+  String get failureServiceUnavailable;
+
+  /// Core rejection password_too_short. The bound comes from the core, which owns the policy.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least {min} characters.'**
+  String rejectionPasswordTooShort(String min);
+
+  /// Core rejection password_too_long.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at most {max} characters.'**
+  String rejectionPasswordTooLong(String max);
+
+  /// Core rejection password_whitespace.
+  ///
+  /// In en, this message translates to:
+  /// **'A password cannot be only spaces.'**
+  String get rejectionPasswordWhitespace;
+
+  /// Core rejection password_repeated_character.
+  ///
+  /// In en, this message translates to:
+  /// **'A password cannot be one character repeated.'**
+  String get rejectionPasswordRepeatedCharacter;
+
+  /// Core rejection password_too_common.
+  ///
+  /// In en, this message translates to:
+  /// **'That password is too common. Choose something less predictable.'**
+  String get rejectionPasswordTooCommon;
+
+  /// Core rejection password_contains_email, which covers both being the address and containing it.
+  ///
+  /// In en, this message translates to:
+  /// **'A password cannot contain your e-mail address.'**
+  String get rejectionPasswordContainsEmail;
+
+  /// Core rejection email_untrimmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the spaces around your e-mail address.'**
+  String get rejectionEmailUntrimmed;
+
+  /// UC-01 AF-06: the account was created and the session is open, but the core reported that the confirmation message was not sent. Stated plainly so the owner does not wait for a message that is never coming.
+  ///
+  /// In en, this message translates to:
+  /// **'The confirmation message could not be sent, so it is not on its way. Alexandria cannot deliver e-mail yet.'**
+  String get catalogLockedUndeliverable;
+
   /// A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number.
   ///
   /// In en, this message translates to:

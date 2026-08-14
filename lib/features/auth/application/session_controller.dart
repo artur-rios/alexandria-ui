@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../core/failures/failure.dart';
+import '../domain/auth_gateway.dart';
 import '../domain/session.dart';
 import 'session_state.dart';
 
@@ -23,12 +24,14 @@ class SessionController extends Notifier<SessionState> {
     SessionAbsent() => null,
   };
 
-  /// Records the session a successful login produced.
-  void establish(Session session) {
+  /// Records the session a successful login or registration produced.
+  ///
+  /// [confirmation] is passed on by registration alone (UC-01 AF-06).
+  void establish(Session session, {ConfirmationDelivery? confirmation}) {
     // Session.toString redacts the credential, so nothing here can leak it
     // into the log file this line lands in (FR-AU-11).
     _log.info('session established for ${session.email}');
-    state = SessionState.active(session: session);
+    state = SessionState.active(session: session, confirmation: confirmation);
   }
 
   /// Discards the session and returns the owner to the login screen, stating

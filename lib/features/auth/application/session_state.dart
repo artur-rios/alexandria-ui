@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
+import '../domain/auth_gateway.dart';
 import '../domain/session.dart';
 
 part 'session_state.freezed.dart';
@@ -20,5 +21,12 @@ sealed class SessionState with _$SessionState {
   const factory SessionState.absent({Failure? endedBecause}) = SessionAbsent;
 
   /// The owner is authenticated.
-  const factory SessionState.active({required Session session}) = SessionActive;
+  ///
+  /// [confirmation] is what the core said about the confirmation message when
+  /// this session began, and is present only for a session that registration
+  /// opened. `null` after a login, which sends no message and reports none.
+  const factory SessionState.active({
+    required Session session,
+    ConfirmationDelivery? confirmation,
+  }) = SessionActive;
 }

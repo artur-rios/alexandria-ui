@@ -91,6 +91,46 @@ void main() {
       },
     );
 
+    // FR-AU-12 / BR-25. The core creates the account unconfirmed and reports
+    // it, on registration and on every later login. What the application does
+    // with that is the catalog lock — and the lock only makes sense if the
+    // owner can actually confirm, which is what makes these two facts worth
+    // asserting against the real core rather than assuming.
+    test(
+      'GivenAFreshRegistration_WhenTheCoreReports_ThenTheAccountIsUnconfirmed',
+      () async {
+        final gateway = CoreAuthGateway(await emptyCore());
+
+        final outcome =
+            await gateway.register(
+                  email: email,
+                  password: password,
+                  passwordConfirmation: password,
+                )
+                as AuthenticatedOutcome;
+
+        expect(outcome.session.emailConfirmed, isFalse);
+      },
+    );
+
+    test(
+      'GivenAnUnconfirmedAccount_WhenTheOwnerLogsIn_ThenTheCoreStillReportsItUnconfirmed',
+      () async {
+        final gateway = CoreAuthGateway(await emptyCore());
+        await gateway.register(
+          email: email,
+          password: password,
+          passwordConfirmation: password,
+        );
+
+        final login =
+            await gateway.logIn(email: email, password: password)
+                as AuthenticatedOutcome;
+
+        expect(login.session.emailConfirmed, isFalse);
+      },
+    );
+
     test(
       'GivenARegisteredAccount_WhenTheOwnerLogsInWithAWrongPassword_ThenTheCoreRefuses',
       () async {

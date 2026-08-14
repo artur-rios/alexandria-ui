@@ -1,4 +1,5 @@
 import '../bindings/alexandria_bindings.dart';
+import 'core_rejection.dart';
 import 'core_status.dart';
 import 'failure.dart';
 
@@ -10,9 +11,21 @@ import 'failure.dart';
 /// success code is a programming error — the caller checks
 /// [CoreStatusFamily.isOk] first — and is reported as [UnexpectedFailure]
 /// rather than silently producing a failure that reads like a real one.
-Failure mapCoreStatus(CoreStatusFamily family, int code) {
+Failure mapCoreStatus(
+  CoreStatusFamily family,
+  int code, {
+  CoreRejection? rejection,
+}) {
   if (family.isOk(code)) {
     return Failure.unexpected(family: family, code: code);
+  }
+
+  // A rejection the core named wins over the status code's generic meaning:
+  // both say the input was refused, and only this one can say which rule it
+  // broke. Applied here rather than per family, because the error envelope is
+  // the core's, not any one area's.
+  if (rejection != null) {
+    return Failure.rejected(family: family, code: code, rejection: rejection);
   }
 
   return switch (family) {
@@ -198,6 +211,14 @@ Failure _mapAuth(int code) => switch (code) {
     code: code,
   ),
   AUTH_ERR_CONFLICT => Failure.conflict(
+    family: CoreStatusFamily.auth,
+    code: code,
+  ),
+  AUTH_ERR_RATE_LIMITED => Failure.rateLimited(
+    family: CoreStatusFamily.auth,
+    code: code,
+  ),
+  AUTH_ERR_SERVICE_UNAVAILABLE => Failure.serviceUnavailable(
     family: CoreStatusFamily.auth,
     code: code,
   ),

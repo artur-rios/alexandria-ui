@@ -8,6 +8,7 @@ import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/auth_gateway.dart';
 import '../domain/session.dart';
+import 'core_error_body.dart';
 import 'local_login_result.dart';
 import 'local_register_result.dart';
 
@@ -53,7 +54,14 @@ class CoreAuthGateway implements AuthGateway {
 
     if (!CoreStatusFamily.auth.isOk(response.status)) {
       return AuthOutcome.failed(
-        failure: mapCoreStatus(CoreStatusFamily.auth, response.status),
+        failure: mapCoreStatus(
+          CoreStatusFamily.auth,
+          response.status,
+          // The core names the rule it refused on. Reading it is what lets the
+          // owner be told what to change rather than only that something was
+          // wrong; a core that sends none falls back to the status code.
+          rejection: readCoreRejection(response.json),
+        ),
       );
     }
 
@@ -119,7 +127,14 @@ class CoreAuthGateway implements AuthGateway {
 
     if (!CoreStatusFamily.auth.isOk(response.status)) {
       return AuthOutcome.failed(
-        failure: mapCoreStatus(CoreStatusFamily.auth, response.status),
+        failure: mapCoreStatus(
+          CoreStatusFamily.auth,
+          response.status,
+          // The core names the rule it refused on. Reading it is what lets the
+          // owner be told what to change rather than only that something was
+          // wrong; a core that sends none falls back to the status code.
+          rejection: readCoreRejection(response.json),
+        ),
       );
     }
 
@@ -148,6 +163,12 @@ class CoreAuthGateway implements AuthGateway {
         // The core's normalized address rather than the raw text typed: it is
         // what the account actually holds.
         email: result.email,
+      ),
+      // UC-01 AF-06: registration is the one call that tries to send a
+      // message, so it is the one outcome that reports on it.
+      confirmation: ConfirmationDelivery(
+        sent: result.confirmationSent,
+        reasonCode: result.confirmationError,
       ),
     );
   }

@@ -214,6 +214,58 @@
     "description": "The operation would create something that already exists. Nothing the owner typed was wrong."
   },
 
+  "failureRateLimited": "Too many attempts. Wait a moment and try again.",
+  "@failureRateLimited": {
+    "description": "The core refused because the caller is asking too often. Nothing the owner typed was wrong; the remedy is to wait."
+  },
+
+  "failureServiceUnavailable": "Alexandria could not reach a service it needs, so that step did not happen.",
+  "@failureServiceUnavailable": {
+    "description": "The core could not reach a dependency — outbound mail being the one that exists today. The catalog is unaffected."
+  },
+
+  "rejectionPasswordTooShort": "Use at least {min} characters.",
+  "@rejectionPasswordTooShort": {
+    "description": "Core rejection password_too_short. The bound comes from the core, which owns the policy.",
+    "placeholders": { "min": { "type": "String", "example": "12" } }
+  },
+
+  "rejectionPasswordTooLong": "Use at most {max} characters.",
+  "@rejectionPasswordTooLong": {
+    "description": "Core rejection password_too_long.",
+    "placeholders": { "max": { "type": "String", "example": "128" } }
+  },
+
+  "rejectionPasswordWhitespace": "A password cannot be only spaces.",
+  "@rejectionPasswordWhitespace": {
+    "description": "Core rejection password_whitespace."
+  },
+
+  "rejectionPasswordRepeatedCharacter": "A password cannot be one character repeated.",
+  "@rejectionPasswordRepeatedCharacter": {
+    "description": "Core rejection password_repeated_character."
+  },
+
+  "rejectionPasswordTooCommon": "That password is too common. Choose something less predictable.",
+  "@rejectionPasswordTooCommon": {
+    "description": "Core rejection password_too_common."
+  },
+
+  "rejectionPasswordContainsEmail": "A password cannot contain your e-mail address.",
+  "@rejectionPasswordContainsEmail": {
+    "description": "Core rejection password_contains_email, which covers both being the address and containing it."
+  },
+
+  "rejectionEmailUntrimmed": "Remove the spaces around your e-mail address.",
+  "@rejectionEmailUntrimmed": {
+    "description": "Core rejection email_untrimmed."
+  },
+
+  "catalogLockedUndeliverable": "The confirmation message could not be sent, so it is not on its way. Alexandria cannot deliver e-mail yet.",
+  "@catalogLockedUndeliverable": {
+    "description": "UC-01 AF-06: the account was created and the session is open, but the core reported that the confirmation message was not sent. Stated plainly so the owner does not wait for a message that is never coming."
+  },
+
   "failureUnexpected": "Something went wrong in Alexandria.",
   "@failureUnexpected": {
     "description": "A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number."

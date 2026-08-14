@@ -55,11 +55,14 @@ extension FailurePatterns on Failure {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( InvalidInputFailure value)?  invalidInput,TResult Function( UnauthorizedFailure value)?  unauthorized,TResult Function( NotInitializedFailure value)?  notInitialized,TResult Function( NotFoundFailure value)?  notFound,TResult Function( InvalidStateFailure value)?  invalidState,TResult Function( DiskFailure value)?  disk,TResult Function( IntegrityFailure value)?  integrity,TResult Function( ConfigurationFailure value)?  configuration,TResult Function( ConflictFailure value)?  conflict,TResult Function( UnexpectedFailure value)?  unexpected,TResult Function( CoreLibraryNotLoadedFailure value)?  coreLibraryNotLoaded,TResult Function( ApplicationDirectoryUnavailableFailure value)?  applicationDirectoryUnavailable,TResult Function( CoreInitializationFailedFailure value)?  coreInitializationFailed,TResult Function( CoreUnhealthyFailure value)?  coreUnhealthy,TResult Function( CoreVersionUnsupportedFailure value)?  coreVersionUnsupported,TResult Function( PreferencesUnreadableFailure value)?  preferencesUnreadable,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( InvalidInputFailure value)?  invalidInput,TResult Function( RejectedFailure value)?  rejected,TResult Function( RateLimitedFailure value)?  rateLimited,TResult Function( ServiceUnavailableFailure value)?  serviceUnavailable,TResult Function( UnauthorizedFailure value)?  unauthorized,TResult Function( NotInitializedFailure value)?  notInitialized,TResult Function( NotFoundFailure value)?  notFound,TResult Function( InvalidStateFailure value)?  invalidState,TResult Function( DiskFailure value)?  disk,TResult Function( IntegrityFailure value)?  integrity,TResult Function( ConfigurationFailure value)?  configuration,TResult Function( ConflictFailure value)?  conflict,TResult Function( UnexpectedFailure value)?  unexpected,TResult Function( CoreLibraryNotLoadedFailure value)?  coreLibraryNotLoaded,TResult Function( ApplicationDirectoryUnavailableFailure value)?  applicationDirectoryUnavailable,TResult Function( CoreInitializationFailedFailure value)?  coreInitializationFailed,TResult Function( CoreUnhealthyFailure value)?  coreUnhealthy,TResult Function( CoreVersionUnsupportedFailure value)?  coreVersionUnsupported,TResult Function( PreferencesUnreadableFailure value)?  preferencesUnreadable,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case InvalidInputFailure() when invalidInput != null:
-return invalidInput(_that);case UnauthorizedFailure() when unauthorized != null:
+return invalidInput(_that);case RejectedFailure() when rejected != null:
+return rejected(_that);case RateLimitedFailure() when rateLimited != null:
+return rateLimited(_that);case ServiceUnavailableFailure() when serviceUnavailable != null:
+return serviceUnavailable(_that);case UnauthorizedFailure() when unauthorized != null:
 return unauthorized(_that);case NotInitializedFailure() when notInitialized != null:
 return notInitialized(_that);case NotFoundFailure() when notFound != null:
 return notFound(_that);case InvalidStateFailure() when invalidState != null:
@@ -92,11 +95,14 @@ return preferencesUnreadable(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( InvalidInputFailure value)  invalidInput,required TResult Function( UnauthorizedFailure value)  unauthorized,required TResult Function( NotInitializedFailure value)  notInitialized,required TResult Function( NotFoundFailure value)  notFound,required TResult Function( InvalidStateFailure value)  invalidState,required TResult Function( DiskFailure value)  disk,required TResult Function( IntegrityFailure value)  integrity,required TResult Function( ConfigurationFailure value)  configuration,required TResult Function( ConflictFailure value)  conflict,required TResult Function( UnexpectedFailure value)  unexpected,required TResult Function( CoreLibraryNotLoadedFailure value)  coreLibraryNotLoaded,required TResult Function( ApplicationDirectoryUnavailableFailure value)  applicationDirectoryUnavailable,required TResult Function( CoreInitializationFailedFailure value)  coreInitializationFailed,required TResult Function( CoreUnhealthyFailure value)  coreUnhealthy,required TResult Function( CoreVersionUnsupportedFailure value)  coreVersionUnsupported,required TResult Function( PreferencesUnreadableFailure value)  preferencesUnreadable,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( InvalidInputFailure value)  invalidInput,required TResult Function( RejectedFailure value)  rejected,required TResult Function( RateLimitedFailure value)  rateLimited,required TResult Function( ServiceUnavailableFailure value)  serviceUnavailable,required TResult Function( UnauthorizedFailure value)  unauthorized,required TResult Function( NotInitializedFailure value)  notInitialized,required TResult Function( NotFoundFailure value)  notFound,required TResult Function( InvalidStateFailure value)  invalidState,required TResult Function( DiskFailure value)  disk,required TResult Function( IntegrityFailure value)  integrity,required TResult Function( ConfigurationFailure value)  configuration,required TResult Function( ConflictFailure value)  conflict,required TResult Function( UnexpectedFailure value)  unexpected,required TResult Function( CoreLibraryNotLoadedFailure value)  coreLibraryNotLoaded,required TResult Function( ApplicationDirectoryUnavailableFailure value)  applicationDirectoryUnavailable,required TResult Function( CoreInitializationFailedFailure value)  coreInitializationFailed,required TResult Function( CoreUnhealthyFailure value)  coreUnhealthy,required TResult Function( CoreVersionUnsupportedFailure value)  coreVersionUnsupported,required TResult Function( PreferencesUnreadableFailure value)  preferencesUnreadable,}){
 final _that = this;
 switch (_that) {
 case InvalidInputFailure():
-return invalidInput(_that);case UnauthorizedFailure():
+return invalidInput(_that);case RejectedFailure():
+return rejected(_that);case RateLimitedFailure():
+return rateLimited(_that);case ServiceUnavailableFailure():
+return serviceUnavailable(_that);case UnauthorizedFailure():
 return unauthorized(_that);case NotInitializedFailure():
 return notInitialized(_that);case NotFoundFailure():
 return notFound(_that);case InvalidStateFailure():
@@ -125,11 +131,14 @@ return preferencesUnreadable(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( InvalidInputFailure value)?  invalidInput,TResult? Function( UnauthorizedFailure value)?  unauthorized,TResult? Function( NotInitializedFailure value)?  notInitialized,TResult? Function( NotFoundFailure value)?  notFound,TResult? Function( InvalidStateFailure value)?  invalidState,TResult? Function( DiskFailure value)?  disk,TResult? Function( IntegrityFailure value)?  integrity,TResult? Function( ConfigurationFailure value)?  configuration,TResult? Function( ConflictFailure value)?  conflict,TResult? Function( UnexpectedFailure value)?  unexpected,TResult? Function( CoreLibraryNotLoadedFailure value)?  coreLibraryNotLoaded,TResult? Function( ApplicationDirectoryUnavailableFailure value)?  applicationDirectoryUnavailable,TResult? Function( CoreInitializationFailedFailure value)?  coreInitializationFailed,TResult? Function( CoreUnhealthyFailure value)?  coreUnhealthy,TResult? Function( CoreVersionUnsupportedFailure value)?  coreVersionUnsupported,TResult? Function( PreferencesUnreadableFailure value)?  preferencesUnreadable,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( InvalidInputFailure value)?  invalidInput,TResult? Function( RejectedFailure value)?  rejected,TResult? Function( RateLimitedFailure value)?  rateLimited,TResult? Function( ServiceUnavailableFailure value)?  serviceUnavailable,TResult? Function( UnauthorizedFailure value)?  unauthorized,TResult? Function( NotInitializedFailure value)?  notInitialized,TResult? Function( NotFoundFailure value)?  notFound,TResult? Function( InvalidStateFailure value)?  invalidState,TResult? Function( DiskFailure value)?  disk,TResult? Function( IntegrityFailure value)?  integrity,TResult? Function( ConfigurationFailure value)?  configuration,TResult? Function( ConflictFailure value)?  conflict,TResult? Function( UnexpectedFailure value)?  unexpected,TResult? Function( CoreLibraryNotLoadedFailure value)?  coreLibraryNotLoaded,TResult? Function( ApplicationDirectoryUnavailableFailure value)?  applicationDirectoryUnavailable,TResult? Function( CoreInitializationFailedFailure value)?  coreInitializationFailed,TResult? Function( CoreUnhealthyFailure value)?  coreUnhealthy,TResult? Function( CoreVersionUnsupportedFailure value)?  coreVersionUnsupported,TResult? Function( PreferencesUnreadableFailure value)?  preferencesUnreadable,}){
 final _that = this;
 switch (_that) {
 case InvalidInputFailure() when invalidInput != null:
-return invalidInput(_that);case UnauthorizedFailure() when unauthorized != null:
+return invalidInput(_that);case RejectedFailure() when rejected != null:
+return rejected(_that);case RateLimitedFailure() when rateLimited != null:
+return rateLimited(_that);case ServiceUnavailableFailure() when serviceUnavailable != null:
+return serviceUnavailable(_that);case UnauthorizedFailure() when unauthorized != null:
 return unauthorized(_that);case NotInitializedFailure() when notInitialized != null:
 return notInitialized(_that);case NotFoundFailure() when notFound != null:
 return notFound(_that);case InvalidStateFailure() when invalidState != null:
@@ -161,10 +170,13 @@ return preferencesUnreadable(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( CoreStatusFamily family,  int code)?  invalidInput,TResult Function( CoreStatusFamily family,  int code)?  unauthorized,TResult Function( CoreStatusFamily family,  int code)?  notInitialized,TResult Function( CoreStatusFamily family,  int code)?  notFound,TResult Function( CoreStatusFamily family,  int code)?  invalidState,TResult Function( CoreStatusFamily family,  int code)?  disk,TResult Function( CoreStatusFamily family,  int code)?  integrity,TResult Function( CoreStatusFamily family,  int code)?  configuration,TResult Function( CoreStatusFamily family,  int code)?  conflict,TResult Function( CoreStatusFamily family,  int code)?  unexpected,TResult Function( String path)?  coreLibraryNotLoaded,TResult Function( String path)?  applicationDirectoryUnavailable,TResult Function( int code)?  coreInitializationFailed,TResult Function( int code)?  coreUnhealthy,TResult Function( String found,  String required)?  coreVersionUnsupported,TResult Function()?  preferencesUnreadable,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( CoreStatusFamily family,  int code)?  invalidInput,TResult Function( CoreStatusFamily family,  int code,  CoreRejection rejection)?  rejected,TResult Function( CoreStatusFamily family,  int code)?  rateLimited,TResult Function( CoreStatusFamily family,  int code)?  serviceUnavailable,TResult Function( CoreStatusFamily family,  int code)?  unauthorized,TResult Function( CoreStatusFamily family,  int code)?  notInitialized,TResult Function( CoreStatusFamily family,  int code)?  notFound,TResult Function( CoreStatusFamily family,  int code)?  invalidState,TResult Function( CoreStatusFamily family,  int code)?  disk,TResult Function( CoreStatusFamily family,  int code)?  integrity,TResult Function( CoreStatusFamily family,  int code)?  configuration,TResult Function( CoreStatusFamily family,  int code)?  conflict,TResult Function( CoreStatusFamily family,  int code)?  unexpected,TResult Function( String path)?  coreLibraryNotLoaded,TResult Function( String path)?  applicationDirectoryUnavailable,TResult Function( int code)?  coreInitializationFailed,TResult Function( int code)?  coreUnhealthy,TResult Function( String found,  String required)?  coreVersionUnsupported,TResult Function()?  preferencesUnreadable,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case InvalidInputFailure() when invalidInput != null:
-return invalidInput(_that.family,_that.code);case UnauthorizedFailure() when unauthorized != null:
+return invalidInput(_that.family,_that.code);case RejectedFailure() when rejected != null:
+return rejected(_that.family,_that.code,_that.rejection);case RateLimitedFailure() when rateLimited != null:
+return rateLimited(_that.family,_that.code);case ServiceUnavailableFailure() when serviceUnavailable != null:
+return serviceUnavailable(_that.family,_that.code);case UnauthorizedFailure() when unauthorized != null:
 return unauthorized(_that.family,_that.code);case NotInitializedFailure() when notInitialized != null:
 return notInitialized(_that.family,_that.code);case NotFoundFailure() when notFound != null:
 return notFound(_that.family,_that.code);case InvalidStateFailure() when invalidState != null:
@@ -197,10 +209,13 @@ return preferencesUnreadable();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( CoreStatusFamily family,  int code)  invalidInput,required TResult Function( CoreStatusFamily family,  int code)  unauthorized,required TResult Function( CoreStatusFamily family,  int code)  notInitialized,required TResult Function( CoreStatusFamily family,  int code)  notFound,required TResult Function( CoreStatusFamily family,  int code)  invalidState,required TResult Function( CoreStatusFamily family,  int code)  disk,required TResult Function( CoreStatusFamily family,  int code)  integrity,required TResult Function( CoreStatusFamily family,  int code)  configuration,required TResult Function( CoreStatusFamily family,  int code)  conflict,required TResult Function( CoreStatusFamily family,  int code)  unexpected,required TResult Function( String path)  coreLibraryNotLoaded,required TResult Function( String path)  applicationDirectoryUnavailable,required TResult Function( int code)  coreInitializationFailed,required TResult Function( int code)  coreUnhealthy,required TResult Function( String found,  String required)  coreVersionUnsupported,required TResult Function()  preferencesUnreadable,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( CoreStatusFamily family,  int code)  invalidInput,required TResult Function( CoreStatusFamily family,  int code,  CoreRejection rejection)  rejected,required TResult Function( CoreStatusFamily family,  int code)  rateLimited,required TResult Function( CoreStatusFamily family,  int code)  serviceUnavailable,required TResult Function( CoreStatusFamily family,  int code)  unauthorized,required TResult Function( CoreStatusFamily family,  int code)  notInitialized,required TResult Function( CoreStatusFamily family,  int code)  notFound,required TResult Function( CoreStatusFamily family,  int code)  invalidState,required TResult Function( CoreStatusFamily family,  int code)  disk,required TResult Function( CoreStatusFamily family,  int code)  integrity,required TResult Function( CoreStatusFamily family,  int code)  configuration,required TResult Function( CoreStatusFamily family,  int code)  conflict,required TResult Function( CoreStatusFamily family,  int code)  unexpected,required TResult Function( String path)  coreLibraryNotLoaded,required TResult Function( String path)  applicationDirectoryUnavailable,required TResult Function( int code)  coreInitializationFailed,required TResult Function( int code)  coreUnhealthy,required TResult Function( String found,  String required)  coreVersionUnsupported,required TResult Function()  preferencesUnreadable,}) {final _that = this;
 switch (_that) {
 case InvalidInputFailure():
-return invalidInput(_that.family,_that.code);case UnauthorizedFailure():
+return invalidInput(_that.family,_that.code);case RejectedFailure():
+return rejected(_that.family,_that.code,_that.rejection);case RateLimitedFailure():
+return rateLimited(_that.family,_that.code);case ServiceUnavailableFailure():
+return serviceUnavailable(_that.family,_that.code);case UnauthorizedFailure():
 return unauthorized(_that.family,_that.code);case NotInitializedFailure():
 return notInitialized(_that.family,_that.code);case NotFoundFailure():
 return notFound(_that.family,_that.code);case InvalidStateFailure():
@@ -229,10 +244,13 @@ return preferencesUnreadable();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( CoreStatusFamily family,  int code)?  invalidInput,TResult? Function( CoreStatusFamily family,  int code)?  unauthorized,TResult? Function( CoreStatusFamily family,  int code)?  notInitialized,TResult? Function( CoreStatusFamily family,  int code)?  notFound,TResult? Function( CoreStatusFamily family,  int code)?  invalidState,TResult? Function( CoreStatusFamily family,  int code)?  disk,TResult? Function( CoreStatusFamily family,  int code)?  integrity,TResult? Function( CoreStatusFamily family,  int code)?  configuration,TResult? Function( CoreStatusFamily family,  int code)?  conflict,TResult? Function( CoreStatusFamily family,  int code)?  unexpected,TResult? Function( String path)?  coreLibraryNotLoaded,TResult? Function( String path)?  applicationDirectoryUnavailable,TResult? Function( int code)?  coreInitializationFailed,TResult? Function( int code)?  coreUnhealthy,TResult? Function( String found,  String required)?  coreVersionUnsupported,TResult? Function()?  preferencesUnreadable,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( CoreStatusFamily family,  int code)?  invalidInput,TResult? Function( CoreStatusFamily family,  int code,  CoreRejection rejection)?  rejected,TResult? Function( CoreStatusFamily family,  int code)?  rateLimited,TResult? Function( CoreStatusFamily family,  int code)?  serviceUnavailable,TResult? Function( CoreStatusFamily family,  int code)?  unauthorized,TResult? Function( CoreStatusFamily family,  int code)?  notInitialized,TResult? Function( CoreStatusFamily family,  int code)?  notFound,TResult? Function( CoreStatusFamily family,  int code)?  invalidState,TResult? Function( CoreStatusFamily family,  int code)?  disk,TResult? Function( CoreStatusFamily family,  int code)?  integrity,TResult? Function( CoreStatusFamily family,  int code)?  configuration,TResult? Function( CoreStatusFamily family,  int code)?  conflict,TResult? Function( CoreStatusFamily family,  int code)?  unexpected,TResult? Function( String path)?  coreLibraryNotLoaded,TResult? Function( String path)?  applicationDirectoryUnavailable,TResult? Function( int code)?  coreInitializationFailed,TResult? Function( int code)?  coreUnhealthy,TResult? Function( String found,  String required)?  coreVersionUnsupported,TResult? Function()?  preferencesUnreadable,}) {final _that = this;
 switch (_that) {
 case InvalidInputFailure() when invalidInput != null:
-return invalidInput(_that.family,_that.code);case UnauthorizedFailure() when unauthorized != null:
+return invalidInput(_that.family,_that.code);case RejectedFailure() when rejected != null:
+return rejected(_that.family,_that.code,_that.rejection);case RateLimitedFailure() when rateLimited != null:
+return rateLimited(_that.family,_that.code);case ServiceUnavailableFailure() when serviceUnavailable != null:
+return serviceUnavailable(_that.family,_that.code);case UnauthorizedFailure() when unauthorized != null:
 return unauthorized(_that.family,_that.code);case NotInitializedFailure() when notInitialized != null:
 return notInitialized(_that.family,_that.code);case NotFoundFailure() when notFound != null:
 return notFound(_that.family,_that.code);case InvalidStateFailure() when invalidState != null:
@@ -314,6 +332,221 @@ class _$InvalidInputFailureCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? family = null,Object? code = null,}) {
   return _then(InvalidInputFailure(
+family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
+as CoreStatusFamily,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class RejectedFailure extends Failure {
+  const RejectedFailure({required this.family, required this.code, required this.rejection}): super._();
+  
+
+ final  CoreStatusFamily family;
+ final  int code;
+ final  CoreRejection rejection;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RejectedFailureCopyWith<RejectedFailure> get copyWith => _$RejectedFailureCopyWithImpl<RejectedFailure>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RejectedFailure&&(identical(other.family, family) || other.family == family)&&(identical(other.code, code) || other.code == code)&&(identical(other.rejection, rejection) || other.rejection == rejection));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,family,code,rejection);
+
+@override
+String toString() {
+  return 'Failure.rejected(family: $family, code: $code, rejection: $rejection)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RejectedFailureCopyWith<$Res> implements $FailureCopyWith<$Res> {
+  factory $RejectedFailureCopyWith(RejectedFailure value, $Res Function(RejectedFailure) _then) = _$RejectedFailureCopyWithImpl;
+@useResult
+$Res call({
+ CoreStatusFamily family, int code, CoreRejection rejection
+});
+
+
+$CoreRejectionCopyWith<$Res> get rejection;
+
+}
+/// @nodoc
+class _$RejectedFailureCopyWithImpl<$Res>
+    implements $RejectedFailureCopyWith<$Res> {
+  _$RejectedFailureCopyWithImpl(this._self, this._then);
+
+  final RejectedFailure _self;
+  final $Res Function(RejectedFailure) _then;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? family = null,Object? code = null,Object? rejection = null,}) {
+  return _then(RejectedFailure(
+family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
+as CoreStatusFamily,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
+as int,rejection: null == rejection ? _self.rejection : rejection // ignore: cast_nullable_to_non_nullable
+as CoreRejection,
+  ));
+}
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$CoreRejectionCopyWith<$Res> get rejection {
+  
+  return $CoreRejectionCopyWith<$Res>(_self.rejection, (value) {
+    return _then(_self.copyWith(rejection: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class RateLimitedFailure extends Failure {
+  const RateLimitedFailure({required this.family, required this.code}): super._();
+  
+
+ final  CoreStatusFamily family;
+ final  int code;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RateLimitedFailureCopyWith<RateLimitedFailure> get copyWith => _$RateLimitedFailureCopyWithImpl<RateLimitedFailure>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RateLimitedFailure&&(identical(other.family, family) || other.family == family)&&(identical(other.code, code) || other.code == code));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,family,code);
+
+@override
+String toString() {
+  return 'Failure.rateLimited(family: $family, code: $code)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RateLimitedFailureCopyWith<$Res> implements $FailureCopyWith<$Res> {
+  factory $RateLimitedFailureCopyWith(RateLimitedFailure value, $Res Function(RateLimitedFailure) _then) = _$RateLimitedFailureCopyWithImpl;
+@useResult
+$Res call({
+ CoreStatusFamily family, int code
+});
+
+
+
+
+}
+/// @nodoc
+class _$RateLimitedFailureCopyWithImpl<$Res>
+    implements $RateLimitedFailureCopyWith<$Res> {
+  _$RateLimitedFailureCopyWithImpl(this._self, this._then);
+
+  final RateLimitedFailure _self;
+  final $Res Function(RateLimitedFailure) _then;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? family = null,Object? code = null,}) {
+  return _then(RateLimitedFailure(
+family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
+as CoreStatusFamily,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class ServiceUnavailableFailure extends Failure {
+  const ServiceUnavailableFailure({required this.family, required this.code}): super._();
+  
+
+ final  CoreStatusFamily family;
+ final  int code;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ServiceUnavailableFailureCopyWith<ServiceUnavailableFailure> get copyWith => _$ServiceUnavailableFailureCopyWithImpl<ServiceUnavailableFailure>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ServiceUnavailableFailure&&(identical(other.family, family) || other.family == family)&&(identical(other.code, code) || other.code == code));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,family,code);
+
+@override
+String toString() {
+  return 'Failure.serviceUnavailable(family: $family, code: $code)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ServiceUnavailableFailureCopyWith<$Res> implements $FailureCopyWith<$Res> {
+  factory $ServiceUnavailableFailureCopyWith(ServiceUnavailableFailure value, $Res Function(ServiceUnavailableFailure) _then) = _$ServiceUnavailableFailureCopyWithImpl;
+@useResult
+$Res call({
+ CoreStatusFamily family, int code
+});
+
+
+
+
+}
+/// @nodoc
+class _$ServiceUnavailableFailureCopyWithImpl<$Res>
+    implements $ServiceUnavailableFailureCopyWith<$Res> {
+  _$ServiceUnavailableFailureCopyWithImpl(this._self, this._then);
+
+  final ServiceUnavailableFailure _self;
+  final $Res Function(ServiceUnavailableFailure) _then;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? family = null,Object? code = null,}) {
+  return _then(ServiceUnavailableFailure(
 family: null == family ? _self.family : family // ignore: cast_nullable_to_non_nullable
 as CoreStatusFamily,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as int,

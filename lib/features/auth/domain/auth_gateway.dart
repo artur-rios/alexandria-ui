@@ -19,11 +19,37 @@ part 'auth_gateway.freezed.dart';
 @freezed
 sealed class AuthOutcome with _$AuthOutcome {
   /// The core accepted the credentials and returned [session].
-  const factory AuthOutcome.authenticated({required Session session}) =
-      AuthenticatedOutcome;
+  ///
+  /// [confirmation] is what the core said about the confirmation message it
+  /// tried to send, and is present only for registration — logging in sends no
+  /// message and reports none (UC-01 AF-06).
+  const factory AuthOutcome.authenticated({
+    required Session session,
+    ConfirmationDelivery? confirmation,
+  }) = AuthenticatedOutcome;
 
   /// The call was made and did not authenticate the owner.
   const factory AuthOutcome.failed({required Failure failure}) = FailedOutcome;
+}
+
+/// What became of the confirmation message the core tried to send when the
+/// account was created (UC-01 AF-06).
+///
+/// A failed send is not a failed registration: the account exists and the
+/// session is open. It changes only what the owner is told next — that the
+/// message they are waiting for is not coming, rather than leaving them
+/// watching an empty inbox.
+@freezed
+abstract class ConfirmationDelivery with _$ConfirmationDelivery {
+  /// Creates a delivery outcome.
+  const factory ConfirmationDelivery({
+    /// Whether the message reached a transport.
+    required bool sent,
+
+    /// Why it did not, as the core's stable reason code — today
+    /// `mail_not_configured`. Absent when [sent] is `true`.
+    String? reasonCode,
+  }) = _ConfirmationDelivery;
 }
 
 /// The application's view of the core's authentication operations (IR-02,

@@ -27,6 +27,66 @@ class AlexandriaBindings {
     ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup,
   ) : _lookup = lookup;
 
+  /// Report the authenticated owner's account state (issue #102 / FR-AU-13):
+  /// the same body `GET /v1/auth/local/account` returns. `token` is the session
+  /// id.
+  ///
+  /// This is the call a client makes to decide whether the address has been
+  /// confirmed. The core answers it and gates nothing on the answer.
+  AuthJsonResult alexandria_auth_local_account(ffi.Pointer<ffi.Char> token) {
+    return _alexandria_auth_local_account(token);
+  }
+
+  late final _alexandria_auth_local_accountPtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_local_account');
+  late final _alexandria_auth_local_account = _alexandria_auth_local_accountPtr
+      .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
+  /// Complete a password reset (issue #102 / FR-AU-16). `json_body` is the JSON
+  /// body HTTP would send: an object with `token`, `password`, and
+  /// `passwordConfirmation`.
+  ///
+  /// Deliberately takes no session token: the reset token is the credential.
+  /// Every session is invalidated on success — a reset is what an owner does
+  /// when they believe someone else may hold their credentials.
+  AuthJsonResult alexandria_auth_local_complete_password_reset(
+    ffi.Pointer<ffi.Char> json_body,
+  ) {
+    return _alexandria_auth_local_complete_password_reset(json_body);
+  }
+
+  late final _alexandria_auth_local_complete_password_resetPtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_local_complete_password_reset');
+  late final _alexandria_auth_local_complete_password_reset =
+      _alexandria_auth_local_complete_password_resetPtr
+          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
+  /// Confirm the owner's e-mail address (issue #102 / FR-AU-14). `json_body` is
+  /// the JSON body HTTP would send, an object with a string `code`.
+  ///
+  /// Deliberately takes no `token`: the code is the proof of control, and
+  /// requiring a session as well would stop an owner confirming from the device
+  /// that received the message. A refusal carries `confirmation_invalid`,
+  /// `confirmation_already_used`, or `confirmation_expired` as the body's
+  /// `code` — the status is `AUTH_ERR_INVALID_INPUT` for all three.
+  AuthJsonResult alexandria_auth_local_confirm_email(
+    ffi.Pointer<ffi.Char> json_body,
+  ) {
+    return _alexandria_auth_local_confirm_email(json_body);
+  }
+
+  late final _alexandria_auth_local_confirm_emailPtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_local_confirm_email');
+  late final _alexandria_auth_local_confirm_email =
+      _alexandria_auth_local_confirm_emailPtr
+          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
   /// Local login (UC-34 / FR-AU-04): verify email + password and create a
   /// session. `json_body` is the JSON body HTTP would send (`email`,
   /// `password`). On success `json` carries the `LocalLoginResult` — the
@@ -67,6 +127,47 @@ class AlexandriaBindings {
       >('alexandria_auth_local_register');
   late final _alexandria_auth_local_register =
       _alexandria_auth_local_registerPtr
+          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
+  /// Request a password reset (issue #102 / FR-AU-16). `json_body` is the JSON
+  /// body HTTP would send, an object with a string `email`.
+  ///
+  /// The outcome is the same whether or not the address is the registered one —
+  /// an operation that answered differently would tell anyone who asked whether
+  /// a given person owns this library.
+  AuthJsonResult alexandria_auth_local_request_password_reset(
+    ffi.Pointer<ffi.Char> json_body,
+  ) {
+    return _alexandria_auth_local_request_password_reset(json_body);
+  }
+
+  late final _alexandria_auth_local_request_password_resetPtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_local_request_password_reset');
+  late final _alexandria_auth_local_request_password_reset =
+      _alexandria_auth_local_request_password_resetPtr
+          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
+  /// Send a fresh confirmation message to the stored address (issue #102 /
+  /// FR-AU-15). `token` is the session id: this takes no address, so it needs an
+  /// authenticated caller to have a subject at all.
+  ///
+  /// Until the mail integration ships this always answers
+  /// `AUTH_ERR_SERVICE_UNAVAILABLE` with `mail_not_configured` — an honest
+  /// refusal rather than a success that delivers nothing.
+  AuthJsonResult alexandria_auth_local_resend_confirmation(
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_auth_local_resend_confirmation(token);
+  }
+
+  late final _alexandria_auth_local_resend_confirmationPtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_local_resend_confirmation');
+  late final _alexandria_auth_local_resend_confirmation =
+      _alexandria_auth_local_resend_confirmationPtr
           .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Set or change local-login credentials (UC-35 / FR-AU-05, FR-AU-06).
@@ -1492,6 +1593,10 @@ const int AUTH_ERR_NOT_INITIALIZED = 3;
 
 const int AUTH_ERR_OTHER = 9;
 
+const int AUTH_ERR_RATE_LIMITED = 11;
+
+const int AUTH_ERR_SERVICE_UNAVAILABLE = 12;
+
 const int AUTH_ERR_UNAUTHORIZED = 2;
 
 const int AUTH_OK = 0;
@@ -1501,8 +1606,18 @@ const int AUTH_OK = 0;
 /// NUL-terminated JSON string of the `LocalLoginResult` /
 /// `LocalCredentialsResult` body — byte-for-byte the same shape HTTP
 /// returns from the matching `/v1/auth/local/*` endpoint (FR-FC-24 /
-/// NFR-09). On failure `json` is NULL and `status` carries the mapped
-/// error code. The caller must free `json` with `alexandria_free_string`.
+/// NFR-09).
+///
+/// On failure `status` carries the mapped error code and `json` carries the
+/// same error envelope HTTP returns for that failure (issue #101):
+/// `{"error": …}`, plus `"code"` and `"params"` when the rejection has a
+/// stable reason. `status` is the coarse class; `code` is the reason — six
+/// distinct password-policy rejections all arrive as
+/// `AUTH_ERR_INVALID_INPUT`, and only `code` tells them apart.
+///
+/// `json` is NULL only when the library was never initialized, so there was
+/// no service to answer at all. The caller must free `json` with
+/// `alexandria_free_string` on every path; freeing NULL is a no-op.
 final class AuthJsonResult extends ffi.Struct {
   @ffi.Int()
   external int status;

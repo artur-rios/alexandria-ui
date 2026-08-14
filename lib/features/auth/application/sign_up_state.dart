@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../core/failures/core_rejection.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/login_validation.dart';
 
@@ -11,11 +12,12 @@ part 'sign_up_state.freezed.dart';
 sealed class SignUpProblem with _$SignUpProblem {
   /// The core refused the credentials (UC-01 AF-03).
   ///
-  /// Carries no reason: the core owns the password policy and answers with a
-  /// status code alone — its explanation never crosses the FFI boundary. The
-  /// message therefore names the rules the core enforces rather than reporting
-  /// which one was broken.
-  const factory SignUpProblem.rejected() = SignUpRejectedProblem;
+  /// [rejection] is the rule it refused on, when the core named one — which it
+  /// does for every password and address rule it enforces. `null` only for a
+  /// core that answered with a bare status code, and then the message falls
+  /// back to naming the rules rather than the broken one.
+  const factory SignUpProblem.rejected({CoreRejection? rejection}) =
+      SignUpRejectedProblem;
 
   /// An account already exists, so registration is refused (AF-04).
   const factory SignUpProblem.accountExists() = AccountExistsProblem;

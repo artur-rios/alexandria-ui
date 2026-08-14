@@ -171,6 +171,22 @@
 #define AUTH_ERR_CONFLICT 10
 
 /**
+ * Issue #102 / FR-AU-15: refused because it came too soon after the last
+ * one — the confirmation resend interval. The FFI counterpart of HTTP's
+ * `429`. Its own code because it is a "not yet", not a mistake the caller
+ * made: `params.retryAfterSeconds` in the body says how long to wait.
+ */
+#define AUTH_ERR_RATE_LIMITED 11
+
+/**
+ * Issue #102: a dependency the operation needs is unavailable — today,
+ * always the mail transport, which is not yet integrated. The FFI
+ * counterpart of HTTP's `503`; the body's `code` says which
+ * (`mail_not_configured`).
+ */
+#define AUTH_ERR_SERVICE_UNAVAILABLE 12
+
+/**
  * FFI status codes returned by run-status operations (UC-42 / FR-FC-28).
  * Deliberately separate from `INDEX_*`, `FILE_*`, `COLLECTION_*`, `PLAYBACK_*`,
  * and `AUTH_*` — per the convention established above — so this surface can
@@ -292,8 +308,18 @@ typedef struct ReadingListJsonResult {
  * NUL-terminated JSON string of the `LocalLoginResult` /
  * `LocalCredentialsResult` body — byte-for-byte the same shape HTTP
  * returns from the matching `/v1/auth/local/*` endpoint (FR-FC-24 /
- * NFR-09). On failure `json` is NULL and `status` carries the mapped
- * error code. The caller must free `json` with `alexandria_free_string`.
+ * NFR-09).
+ *
+ * On failure `status` carries the mapped error code and `json` carries the
+ * same error envelope HTTP returns for that failure (issue #101):
+ * `{"error": …}`, plus `"code"` and `"params"` when the rejection has a
+ * stable reason. `status` is the coarse class; `code` is the reason — six
+ * distinct password-policy rejections all arrive as
+ * `AUTH_ERR_INVALID_INPUT`, and only `code` tells them apart.
+ *
+ * `json` is NULL only when the library was never initialized, so there was
+ * no service to answer at all. The caller must free `json` with
+ * `alexandria_free_string` on every path; freeing NULL is a no-op.
  */
 typedef struct AuthJsonResult {
   int status;
@@ -860,6 +886,60 @@ struct AuthJsonResult alexandria_auth_local_set_credentials(const char *json_bod
  * `AUTH_ERR_CONFLICT` (AF-02).
  */
 struct AuthJsonResult alexandria_auth_local_register(const char *json_body);
+
+/**
+ * Report the authenticated owner's account state (issue #102 / FR-AU-13):
+ * the same body `GET /v1/auth/local/account` returns. `token` is the session
+ * id.
+ *
+ * This is the call a client makes to decide whether the address has been
+ * confirmed. The core answers it and gates nothing on the answer.
+ */
+struct AuthJsonResult alexandria_auth_local_account(const char *token);
+
+/**
+ * Confirm the owner's e-mail address (issue #102 / FR-AU-14). `json_body` is
+ * the JSON body HTTP would send, an object with a string `code`.
+ *
+ * Deliberately takes no `token`: the code is the proof of control, and
+ * requiring a session as well would stop an owner confirming from the device
+ * that received the message. A refusal carries `confirmation_invalid`,
+ * `confirmation_already_used`, or `confirmation_expired` as the body's
+ * `code` — the status is `AUTH_ERR_INVALID_INPUT` for all three.
+ */
+struct AuthJsonResult alexandria_auth_local_confirm_email(const char *json_body);
+
+/**
+ * Send a fresh confirmation message to the stored address (issue #102 /
+ * FR-AU-15). `token` is the session id: this takes no address, so it needs an
+ * authenticated caller to have a subject at all.
+ *
+ * Until the mail integration ships this always answers
+ * `AUTH_ERR_SERVICE_UNAVAILABLE` with `mail_not_configured` — an honest
+ * refusal rather than a success that delivers nothing.
+ */
+struct AuthJsonResult alexandria_auth_local_resend_confirmation(const char *token);
+
+/**
+ * Request a password reset (issue #102 / FR-AU-16). `json_body` is the JSON
+ * body HTTP would send, an object with a string `email`.
+ *
+ * The outcome is the same whether or not the address is the registered one —
+ * an operation that answered differently would tell anyone who asked whether
+ * a given person owns this library.
+ */
+struct AuthJsonResult alexandria_auth_local_request_password_reset(const char *json_body);
+
+/**
+ * Complete a password reset (issue #102 / FR-AU-16). `json_body` is the JSON
+ * body HTTP would send: an object with `token`, `password`, and
+ * `passwordConfirmation`.
+ *
+ * Deliberately takes no session token: the reset token is the credential.
+ * Every session is invalidated on success — a reset is what an owner does
+ * when they believe someone else may hold their credentials.
+ */
+struct AuthJsonResult alexandria_auth_local_complete_password_reset(const char *json_body);
 
 /**
  * Report an index or re-index run's status and outcome (UC-42 / FR-FC-28).

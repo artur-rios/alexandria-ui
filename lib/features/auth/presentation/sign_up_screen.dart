@@ -9,6 +9,7 @@ import '../../../core/theme/breakpoints.dart';
 import '../application/sign_up_state.dart';
 import 'auth_field_messages.dart';
 import 'auth_notice.dart';
+import 'core_rejection_messages.dart';
 
 /// The sign-up screen (UC-01).
 ///
@@ -174,6 +175,12 @@ class _SignUpProblemNotice extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
 
     final message = switch (problem) {
+      // The rule the core named, when it named one. This is the difference
+      // between "try something else" and "use at least 12 characters".
+      SignUpRejectedProblem(:final rejection?) => coreRejectionMessage(
+        l10n,
+        rejection,
+      ),
       SignUpRejectedProblem() => l10n.signUpRejected,
       AccountExistsProblem() => l10n.signUpAccountExists,
       SignUpConfigurationProblem(:final failure) ||

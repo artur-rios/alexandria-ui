@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'core_rejection.dart';
 import 'core_status.dart';
 
 part 'failure.freezed.dart';
@@ -27,6 +28,39 @@ sealed class Failure with _$Failure {
     required CoreStatusFamily family,
     required int code,
   }) = InvalidInputFailure;
+
+  /// The core rejected the input and said which rule it broke.
+  ///
+  /// Distinct from [InvalidInputFailure] because the two produce different
+  /// messages: this one can tell the owner *what* to change, where the other
+  /// can only say that something was wrong. Both remain, because a core that
+  /// answers without a code — an older build, or a path that has none — must
+  /// still produce a readable failure.
+  const factory Failure.rejected({
+    required CoreStatusFamily family,
+    required int code,
+    required CoreRejection rejection,
+  }) = RejectedFailure;
+
+  /// The core refused because the caller is asking too often.
+  ///
+  /// Its own variant rather than an invalid-input one: nothing the owner typed
+  /// was wrong, and the remedy is to wait rather than to correct anything.
+  const factory Failure.rateLimited({
+    required CoreStatusFamily family,
+    required int code,
+  }) = RateLimitedFailure;
+
+  /// The core could not reach something it depends on — outbound mail being
+  /// the one that exists today.
+  ///
+  /// Distinct from [ConfigurationFailure] because the catalog is unaffected:
+  /// the operation the owner asked for may well have succeeded, and only the
+  /// message that should have followed it did not.
+  const factory Failure.serviceUnavailable({
+    required CoreStatusFamily family,
+    required int code,
+  }) = ServiceUnavailableFailure;
 
   /// The session is absent, expired, or rejected. Clearing the session is the
   /// caller's obligation.
@@ -141,6 +175,9 @@ sealed class Failure with _$Failure {
   /// (Operations & Infrastructure Document §4).
   int? get coreStatusCode => switch (this) {
     InvalidInputFailure(:final code) ||
+    RejectedFailure(:final code) ||
+    RateLimitedFailure(:final code) ||
+    ServiceUnavailableFailure(:final code) ||
     UnauthorizedFailure(:final code) ||
     NotInitializedFailure(:final code) ||
     NotFoundFailure(:final code) ||

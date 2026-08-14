@@ -30,7 +30,11 @@ class FakeCoreClient implements CoreClient {
              status: CoreStatusFamily.auth.okCode,
              json:
                  '{"success":true,'
-                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}',
+                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50",'
+                 // A confirmed account: the steady state a returning owner
+                 // logs in to. Registration's fake below is the unconfirmed
+                 // one, which is what the core answers there.
+                 '"emailConfirmed":true}',
            ),
        authLocalRegisterResult =
            authLocalRegisterResult ??
@@ -38,7 +42,11 @@ class FakeCoreClient implements CoreClient {
              status: CoreStatusFamily.auth.okCode,
              json:
                  '{"success":true,"email":"owner@example.com",'
-                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}',
+                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50",'
+                 // What the real core answers today: the account is created
+                 // unconfirmed, and nothing delivers the message.
+                 '"emailConfirmed":false,"confirmationSent":false,'
+                 '"confirmationError":"mail_not_configured"}',
            );
 
   /// What [version] returns.

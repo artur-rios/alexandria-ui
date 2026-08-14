@@ -77,9 +77,9 @@ class SignUpController extends Notifier<SignUpState> {
       // The core has no e-mail confirmation at all, so the session is
       // confirmed and the owner lands where a confirmed session lands. UC-40
       // is what changes this.
-      case AuthenticatedOutcome(:final session):
+      case AuthenticatedOutcome(:final session, :final confirmation):
         state = const SignUpState.editing();
-        _session.establish(session);
+        _session.establish(session, confirmation: confirmation);
 
       case FailedOutcome(:final failure):
         state = SignUpState.editing(problem: _problemFor(failure));
@@ -92,7 +92,11 @@ class SignUpController extends Notifier<SignUpState> {
     ConflictFailure() => const SignUpProblem.accountExists(),
 
     // AF-03: the core rejected the credentials — a password too short, too
-    // common, or containing the address.
+    // common, or containing the address. When it named which, the screen can
+    // say so; when it did not, the message names the rules instead.
+    RejectedFailure(:final rejection) => SignUpProblem.rejected(
+      rejection: rejection,
+    ),
     InvalidInputFailure() => const SignUpProblem.rejected(),
 
     // AF-05.

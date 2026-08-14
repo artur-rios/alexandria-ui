@@ -51,5 +51,18 @@
   "failureIntegrity": "O arquivo em disco não corresponde mais ao que o Alexandria registrou.",
   "failureConfiguration": "Não foi possível ler a configuração do Alexandria.",
   "failureConflict": "Isso já existe no Alexandria.",
+  "failureRateLimited": "Tentativas demais. Espere um momento e tente de novo.",
+  "failureServiceUnavailable": "O Alexandria não conseguiu acessar um serviço necessário, então essa etapa não aconteceu.",
+
+  "rejectionPasswordTooShort": "Use pelo menos {min} caracteres.",
+  "rejectionPasswordTooLong": "Use no máximo {max} caracteres.",
+  "rejectionPasswordWhitespace": "A senha não pode ser só espaços.",
+  "rejectionPasswordRepeatedCharacter": "A senha não pode ser um único caractere repetido.",
+  "rejectionPasswordTooCommon": "Essa senha é comum demais. Escolha algo menos previsível.",
+  "rejectionPasswordContainsEmail": "A senha não pode conter seu endereço de e-mail.",
+  "rejectionEmailUntrimmed": "Remova os espaços ao redor do seu endereço de e-mail.",
+
+  "catalogLockedUndeliverable": "Não foi possível enviar a mensagem de confirmação, então ela não está a caminho. O Alexandria ainda não consegue enviar e-mails.",
+
   "failureUnexpected": "Algo deu errado no Alexandria."
 }
