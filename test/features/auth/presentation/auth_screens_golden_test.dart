@@ -82,5 +82,26 @@ void main() {
         );
       },
     );
+
+    // UC-01 AF-06, and the state every owner actually reaches today: the core
+    // has no mail transport, so the confirmation message is never sent. Its own
+    // golden because the notice is a second visual state of the same screen,
+    // and because it is the one place the notice styling appears at all.
+    testWidgets(
+      'GivenThe${name}Theme_WhenTheConfirmationCouldNotBeSent_ThenItMatchesItsGolden',
+      (tester) async {
+        await tester.pumpSignUpScreen(
+          gateway: FakeAuthGateway.unconfirmed(),
+          themeMode: mode,
+          surfaceSize: surface,
+        );
+        await tester.signUp();
+
+        await expectLater(
+          find.byType(CatalogLockedScreen),
+          matchesGoldenFile('goldens/catalog_locked_undelivered_${mode.name}.png'),
+        );
+      },
+    );
   }
 }
