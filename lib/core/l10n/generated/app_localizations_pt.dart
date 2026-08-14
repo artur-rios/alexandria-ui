@@ -152,5 +152,46 @@ class AppLocalizationsPt extends AppLocalizations {
   String get failureConflict => 'Isso já existe no Alexandria.';
 
   @override
+  String get failureRateLimited =>
+      'Tentativas demais. Espere um momento e tente de novo.';
+
+  @override
+  String get failureServiceUnavailable =>
+      'O Alexandria não conseguiu acessar um serviço necessário, então essa etapa não aconteceu.';
+
+  @override
+  String rejectionPasswordTooShort(String min) {
+    return 'Use pelo menos $min caracteres.';
+  }
+
+  @override
+  String rejectionPasswordTooLong(String max) {
+    return 'Use no máximo $max caracteres.';
+  }
+
+  @override
+  String get rejectionPasswordWhitespace => 'A senha não pode ser só espaços.';
+
+  @override
+  String get rejectionPasswordRepeatedCharacter =>
+      'A senha não pode ser um único caractere repetido.';
+
+  @override
+  String get rejectionPasswordTooCommon =>
+      'Essa senha é comum demais. Escolha algo menos previsível.';
+
+  @override
+  String get rejectionPasswordContainsEmail =>
+      'A senha não pode conter seu endereço de e-mail.';
+
+  @override
+  String get rejectionEmailUntrimmed =>
+      'Remova os espaços ao redor do seu endereço de e-mail.';
+
+  @override
+  String get catalogLockedUndeliverable =>
+      'Não foi possível enviar a mensagem de confirmação, então ela não está a caminho. O Alexandria ainda não consegue enviar e-mails.';
+
+  @override
   String get failureUnexpected => 'Algo deu errado no Alexandria.';
 }

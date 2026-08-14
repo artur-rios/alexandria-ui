@@ -5,10 +5,10 @@ part 'local_register_result.g.dart';
 /// The core's `LocalRegisterResult` payload, as returned by
 /// `alexandria_auth_local_register`.
 ///
-/// The shape is the core's: `{"success": true, "email": "…", "sessionId":
-/// "…"}`, the session id being a UUID. Registration opens a session, so the
-/// owner is
-/// authenticated by the same call that creates the account (UC-01 step 7).
+/// The shape is the core's: `{"success": true, "email": "…", "sessionId": "…",
+/// "emailConfirmed": false, "confirmationSent": false, "confirmationError":
+/// "…"}`. Registration opens a session, so the owner is authenticated by the
+/// same call that creates the account (UC-01 step 7).
 ///
 /// Unlike the login payload this one echoes the address back, and it is the
 /// core's normalized form rather than the raw text typed — so it is what the
@@ -20,7 +20,9 @@ class LocalRegisterResult {
     required this.success,
     required this.email,
     required this.sessionId,
-    this.emailConfirmed = true,
+    required this.emailConfirmed,
+    required this.confirmationSent,
+    this.confirmationError,
   });
 
   /// Reads the payload the core returned.
@@ -41,14 +43,21 @@ class LocalRegisterResult {
 
   /// Whether the account's e-mail is confirmed (FR-AU-12).
   ///
-  /// **Absent from the core's current payload**, and defaulted to `true` for
-  /// the same reason as on the login result: the core has no e-mail
-  /// confirmation at all — no message, no token, no confirmed state — so there
-  /// is no unconfirmed account to represent yet.
-  ///
-  /// This is why UC-01's postcondition "an account whose e-mail is not yet
-  /// confirmed, and has sent a confirmation message" does not hold, and why
-  /// its AF-06 is unimplementable. Read from the payload when present so the
-  /// lock starts working the day the core publishes it.
+  /// Always `false` here — an account is confirmed by UC-40, never by being
+  /// created. Read rather than assumed, because the field is what the catalog
+  /// lock is decided from and this class should not be the thing that decides
+  /// it.
   final bool emailConfirmed;
+
+  /// Whether the confirmation message reached a transport (UC-01 AF-06).
+  ///
+  /// `false` on every install today: the core generates and stores the code,
+  /// but outbound mail is not yet integrated, so nothing delivers it. The
+  /// account exists and the session is open either way — a failed send is
+  /// reported, never rolled back.
+  final bool confirmationSent;
+
+  /// Why the confirmation message was not sent, as a stable code — today
+  /// `mail_not_configured`. Absent when [confirmationSent] is `true`.
+  final String? confirmationError;
 }

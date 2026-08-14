@@ -58,7 +58,8 @@ void main() {
             status: AUTH_OK,
             json:
                 '{"success":true,"email":"owner@example.com",'
-                '"sessionId":"6f1c9d02"}',
+                '"sessionId":"6f1c9d02","emailConfirmed":false,'
+                '"confirmationSent":true}',
           ),
         );
 
@@ -183,6 +184,139 @@ void main() {
     );
   });
 
+  // Issue #101 in the core: the reason it refused on now crosses the boundary,
+  // which is what lets the owner be told which rule to fix.
+  group('the reason the core gave', () {
+    test(
+      'GivenTheCoreNamedTheRule_WhenTheOwnerSignsUp_ThenTheRejectionCarriesIt',
+      () async {
+        final outcome = await registerWith(
+          FakeCoreClient(
+            authLocalRegisterResult: (
+              status: AUTH_ERR_INVALID_INPUT,
+              json:
+                  '{"error":"password must be at least 12 characters",'
+                  '"code":"password_too_short","params":{"min":"12"}}',
+            ),
+          ),
+        );
+
+        final failure = failureOf(outcome) as RejectedFailure;
+        expect(failure.rejection.code, 'password_too_short');
+        expect(failure.rejection.params, {'min': '12'});
+      },
+    );
+
+    // A core that answers with a bare status code still produces a readable
+    // failure, so an older build degrades rather than breaks.
+    test(
+      'GivenTheCoreNamedNoRule_WhenTheOwnerSignsUp_ThenItIsStillAnInvalidInputFailure',
+      () async {
+        final outcome = await registerWith(
+          FakeCoreClient(
+            authLocalRegisterResult: (
+              status: AUTH_ERR_INVALID_INPUT,
+              json: null,
+            ),
+          ),
+        );
+
+        expect(failureOf(outcome), isA<InvalidInputFailure>());
+      },
+    );
+
+    test(
+      'GivenTheCoreRefusedForAskingTooOften_WhenTheOwnerSignsUp_ThenItIsRateLimited',
+      () async {
+        final outcome = await registerWith(
+          FakeCoreClient(
+            authLocalRegisterResult: (
+              status: AUTH_ERR_RATE_LIMITED,
+              json: null,
+            ),
+          ),
+        );
+
+        expect(failureOf(outcome), isA<RateLimitedFailure>());
+      },
+    );
+
+    test(
+      'GivenTheCoreCouldNotReachAService_WhenTheOwnerSignsUp_ThenItIsServiceUnavailable',
+      () async {
+        final outcome = await registerWith(
+          FakeCoreClient(
+            authLocalRegisterResult: (
+              status: AUTH_ERR_SERVICE_UNAVAILABLE,
+              json: null,
+            ),
+          ),
+        );
+
+        expect(failureOf(outcome), isA<ServiceUnavailableFailure>());
+      },
+    );
+  });
+
+  // UC-01 AF-06: the account is created and the session opened either way; a
+  // failed send changes only what the owner is told next.
+  group('the confirmation message', () {
+    test(
+      'GivenTheCoreCouldNotSendIt_WhenTheOwnerSignsUp_ThenTheOutcomeSaysSo',
+      () async {
+        final outcome =
+            await registerWith(FakeCoreClient()) as AuthenticatedOutcome;
+
+        expect(outcome.confirmation?.sent, isFalse);
+        expect(outcome.confirmation?.reasonCode, 'mail_not_configured');
+      },
+    );
+
+    test(
+      'GivenTheCoreCouldNotSendIt_WhenTheOwnerSignsUp_ThenTheSessionIsStillEstablished',
+      () async {
+        expect(
+          await registerWith(FakeCoreClient()),
+          isA<AuthenticatedOutcome>(),
+        );
+      },
+    );
+
+    test(
+      'GivenTheCoreSentIt_WhenTheOwnerSignsUp_ThenTheOutcomeSaysSoWithNoReason',
+      () async {
+        final outcome =
+            await registerWith(
+                  FakeCoreClient(
+                    authLocalRegisterResult: (
+                      status: AUTH_OK,
+                      json:
+                          '{"success":true,"email":"owner@example.com",'
+                          '"sessionId":"6f1c9d02","emailConfirmed":false,'
+                          '"confirmationSent":true}',
+                    ),
+                  ),
+                )
+                as AuthenticatedOutcome;
+
+        expect(outcome.confirmation?.sent, isTrue);
+        expect(outcome.confirmation?.reasonCode, isNull);
+      },
+    );
+
+    // FR-AU-12: the core creates the account unconfirmed, and the session
+    // carries that so the catalog lock is decided from what the core said.
+    test(
+      'GivenAFreshRegistration_WhenTheSessionIsRead_ThenItIsUnconfirmed',
+      () async {
+        final outcome =
+            await registerWith(FakeCoreClient()) as AuthenticatedOutcome;
+
+        expect(outcome.session.emailConfirmed, isFalse);
+      },
+    );
+  });
+
   group('payloads that cannot be trusted', () {
     test(
       'GivenSuccessWithNoPayload_WhenTheOwnerSignsUp_ThenNoSessionIsEstablished',
@@ -219,7 +353,8 @@ void main() {
               status: AUTH_OK,
               json:
                   '{"success":false,"email":"owner@example.com",'
-                  '"sessionId":"6f1c9d02"}',
+                  '"sessionId":"6f1c9d02","emailConfirmed":false,'
+                  '"confirmationSent":true}',
             ),
           ),
         );

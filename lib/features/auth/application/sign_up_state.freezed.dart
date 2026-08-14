@@ -125,10 +125,10 @@ return other(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  rejected,TResult Function()?  accountExists,TResult Function( Failure failure)?  configuration,TResult Function( Failure failure)?  other,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( CoreRejection? rejection)?  rejected,TResult Function()?  accountExists,TResult Function( Failure failure)?  configuration,TResult Function( Failure failure)?  other,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case SignUpRejectedProblem() when rejected != null:
-return rejected();case AccountExistsProblem() when accountExists != null:
+return rejected(_that.rejection);case AccountExistsProblem() when accountExists != null:
 return accountExists();case SignUpConfigurationProblem() when configuration != null:
 return configuration(_that.failure);case SignUpOtherProblem() when other != null:
 return other(_that.failure);case _:
@@ -149,10 +149,10 @@ return other(_that.failure);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  rejected,required TResult Function()  accountExists,required TResult Function( Failure failure)  configuration,required TResult Function( Failure failure)  other,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( CoreRejection? rejection)  rejected,required TResult Function()  accountExists,required TResult Function( Failure failure)  configuration,required TResult Function( Failure failure)  other,}) {final _that = this;
 switch (_that) {
 case SignUpRejectedProblem():
-return rejected();case AccountExistsProblem():
+return rejected(_that.rejection);case AccountExistsProblem():
 return accountExists();case SignUpConfigurationProblem():
 return configuration(_that.failure);case SignUpOtherProblem():
 return other(_that.failure);}
@@ -169,10 +169,10 @@ return other(_that.failure);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  rejected,TResult? Function()?  accountExists,TResult? Function( Failure failure)?  configuration,TResult? Function( Failure failure)?  other,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( CoreRejection? rejection)?  rejected,TResult? Function()?  accountExists,TResult? Function( Failure failure)?  configuration,TResult? Function( Failure failure)?  other,}) {final _that = this;
 switch (_that) {
 case SignUpRejectedProblem() when rejected != null:
-return rejected();case AccountExistsProblem() when accountExists != null:
+return rejected(_that.rejection);case AccountExistsProblem() when accountExists != null:
 return accountExists();case SignUpConfigurationProblem() when configuration != null:
 return configuration(_that.failure);case SignUpOtherProblem() when other != null:
 return other(_that.failure);case _:
@@ -187,33 +187,79 @@ return other(_that.failure);case _:
 
 
 class SignUpRejectedProblem implements SignUpProblem {
-  const SignUpRejectedProblem();
+  const SignUpRejectedProblem({this.rejection});
   
 
+ final  CoreRejection? rejection;
 
-
+/// Create a copy of SignUpProblem
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SignUpRejectedProblemCopyWith<SignUpRejectedProblem> get copyWith => _$SignUpRejectedProblemCopyWithImpl<SignUpRejectedProblem>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SignUpRejectedProblem);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SignUpRejectedProblem&&(identical(other.rejection, rejection) || other.rejection == rejection));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode => Object.hash(runtimeType,rejection);
 
 @override
 String toString() {
-  return 'SignUpProblem.rejected()';
+  return 'SignUpProblem.rejected(rejection: $rejection)';
 }
 
 
 }
 
+/// @nodoc
+abstract mixin class $SignUpRejectedProblemCopyWith<$Res> implements $SignUpProblemCopyWith<$Res> {
+  factory $SignUpRejectedProblemCopyWith(SignUpRejectedProblem value, $Res Function(SignUpRejectedProblem) _then) = _$SignUpRejectedProblemCopyWithImpl;
+@useResult
+$Res call({
+ CoreRejection? rejection
+});
 
 
+$CoreRejectionCopyWith<$Res>? get rejection;
+
+}
+/// @nodoc
+class _$SignUpRejectedProblemCopyWithImpl<$Res>
+    implements $SignUpRejectedProblemCopyWith<$Res> {
+  _$SignUpRejectedProblemCopyWithImpl(this._self, this._then);
+
+  final SignUpRejectedProblem _self;
+  final $Res Function(SignUpRejectedProblem) _then;
+
+/// Create a copy of SignUpProblem
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? rejection = freezed,}) {
+  return _then(SignUpRejectedProblem(
+rejection: freezed == rejection ? _self.rejection : rejection // ignore: cast_nullable_to_non_nullable
+as CoreRejection?,
+  ));
+}
+
+/// Create a copy of SignUpProblem
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$CoreRejectionCopyWith<$Res>? get rejection {
+    if (_self.rejection == null) {
+    return null;
+  }
+
+  return $CoreRejectionCopyWith<$Res>(_self.rejection!, (value) {
+    return _then(_self.copyWith(rejection: value));
+  });
+}
+}
 
 /// @nodoc
 

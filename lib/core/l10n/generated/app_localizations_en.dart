@@ -152,5 +152,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failureConflict => 'That already exists in Alexandria.';
 
   @override
+  String get failureRateLimited =>
+      'Too many attempts. Wait a moment and try again.';
+
+  @override
+  String get failureServiceUnavailable =>
+      'Alexandria could not reach a service it needs, so that step did not happen.';
+
+  @override
+  String rejectionPasswordTooShort(String min) {
+    return 'Use at least $min characters.';
+  }
+
+  @override
+  String rejectionPasswordTooLong(String max) {
+    return 'Use at most $max characters.';
+  }
+
+  @override
+  String get rejectionPasswordWhitespace => 'A password cannot be only spaces.';
+
+  @override
+  String get rejectionPasswordRepeatedCharacter =>
+      'A password cannot be one character repeated.';
+
+  @override
+  String get rejectionPasswordTooCommon =>
+      'That password is too common. Choose something less predictable.';
+
+  @override
+  String get rejectionPasswordContainsEmail =>
+      'A password cannot contain your e-mail address.';
+
+  @override
+  String get rejectionEmailUntrimmed =>
+      'Remove the spaces around your e-mail address.';
+
+  @override
+  String get catalogLockedUndeliverable =>
+      'The confirmation message could not be sent, so it is not on its way. Alexandria cannot deliver e-mail yet.';
+
+  @override
   String get failureUnexpected => 'Something went wrong in Alexandria.';
 }

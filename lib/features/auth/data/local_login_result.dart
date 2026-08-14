@@ -13,7 +13,7 @@ class LocalLoginResult {
   const LocalLoginResult({
     required this.success,
     required this.sessionId,
-    this.emailConfirmed = true,
+    required this.emailConfirmed,
   });
 
   /// Reads the payload the core returned.
@@ -32,15 +32,10 @@ class LocalLoginResult {
 
   /// Whether the account's e-mail is confirmed (FR-AU-12).
   ///
-  /// **Absent from the core's current payload**, and so defaulted to `true`
-  /// here. Reporting confirmation state is one of the pending core operations
-  /// in [System Requirements §5.4]; until it lands there is no unconfirmed
-  /// account to represent, because the only thing that creates one is UC-01,
-  /// which is blocked on the same table.
-  ///
-  /// Read from the payload when present rather than hardcoded, so the day the
-  /// core publishes the field the lock in FR-AU-12 starts working without this
-  /// class changing. That is not the front-end inventing a call — it is
-  /// reading a field of a payload it already receives.
+  /// Required rather than defaulted: the core reports it on every auth
+  /// response now, and a default would decide the catalog lock for it. If the
+  /// field ever goes missing, this throws and the gateway reports an unreadable
+  /// payload — which is the honest outcome, because guessing `true` would
+  /// unlock the catalog and guessing `false` would lock the owner out.
   final bool emailConfirmed;
 }

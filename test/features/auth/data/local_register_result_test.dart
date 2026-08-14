@@ -11,7 +11,9 @@ void main() {
   // crates/alexandria-core/src/auth/local.rs.
   const corePayload =
       '{"success":true,"email":"owner@example.com",'
-      '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}';
+      '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50",'
+      '"emailConfirmed":false,"confirmationSent":false,'
+      '"confirmationError":"mail_not_configured"}';
 
   test(
     'GivenTheCoresRegisterPayload_WhenItIsDecoded_ThenTheSessionIdIsRead',
@@ -36,24 +38,54 @@ void main() {
     expect(decode(corePayload).success, isTrue);
   });
 
-  // The core has no e-mail confirmation at all, so the field is absent and an
-  // account that cannot be confirmed must not be locked out of its own
-  // catalog. This is why UC-01's confirmation postcondition does not hold.
+  // FR-AU-12. The core reports this on every auth response now, and the
+  // catalog lock is decided from it, so it is read rather than defaulted:
+  // guessing `true` would unlock the catalog and guessing `false` would lock
+  // the owner out of their own library.
   test(
-    'GivenAPayloadWithoutTheConfirmationField_WhenItIsDecoded_ThenTheEmailIsTreatedAsConfirmed',
+    'GivenTheCoresRegisterPayload_WhenItIsDecoded_ThenTheAccountIsUnconfirmed',
     () {
-      expect(decode(corePayload).emailConfirmed, isTrue);
+      expect(decode(corePayload).emailConfirmed, isFalse);
     },
   );
 
   test(
-    'GivenAPayloadReportingAnUnconfirmedEmail_WhenItIsDecoded_ThenThatIsRead',
+    'GivenAPayloadWithoutTheConfirmationField_WhenItIsDecoded_ThenItThrows',
+    () {
+      expect(
+        () => decode(
+          '{"success":true,"email":"owner@example.com",'
+          '"sessionId":"6f1c9d02","confirmationSent":true}',
+        ),
+        throwsA(anything),
+      );
+    },
+  );
+
+  // UC-01 AF-06.
+  test(
+    'GivenTheConfirmationCouldNotBeSent_WhenItIsDecoded_ThenThatIsRead',
+    () {
+      expect(decode(corePayload).confirmationSent, isFalse);
+    },
+  );
+
+  test(
+    'GivenTheConfirmationCouldNotBeSent_WhenItIsDecoded_ThenTheReasonIsRead',
+    () {
+      expect(decode(corePayload).confirmationError, 'mail_not_configured');
+    },
+  );
+
+  test(
+    'GivenTheConfirmationWasSent_WhenItIsDecoded_ThenThereIsNoReason',
     () {
       const payload =
           '{"success":true,"email":"owner@example.com",'
-          '"sessionId":"6f1c9d02","emailConfirmed":false}';
+          '"sessionId":"6f1c9d02","emailConfirmed":false,'
+          '"confirmationSent":true}';
 
-      expect(decode(payload).emailConfirmed, isFalse);
+      expect(decode(payload).confirmationError, isNull);
     },
   );
 

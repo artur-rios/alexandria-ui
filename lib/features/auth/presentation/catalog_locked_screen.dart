@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../domain/auth_gateway.dart';
+import 'auth_notice.dart';
 
 /// What stands in place of the catalog while the account's e-mail is
 /// unconfirmed (FR-AU-12, BR-25, UC-02 AF-06).
@@ -13,11 +15,15 @@ import '../../../core/theme/app_spacing.dart';
 /// than the lock being deferred along with the prompt.
 class CatalogLockedScreen extends StatelessWidget {
   /// Creates the locked state for the account at [email].
-  const CatalogLockedScreen({required this.email, super.key});
+  const CatalogLockedScreen({required this.email, this.confirmation, super.key});
 
   /// The address awaiting confirmation, named so the owner knows where to
   /// look.
   final String email;
+
+  /// What became of the confirmation message, when this session came from
+  /// registration (UC-01 AF-06). `null` after a login, which sends none.
+  final ConfirmationDelivery? confirmation;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +55,18 @@ class CatalogLockedScreen extends StatelessWidget {
                   l10n.catalogLockedBody(email),
                   style: theme.textTheme.bodyMedium,
                 ),
+
+                // UC-01 AF-06. Waiting for a message that is never coming is
+                // the worst version of this screen, so a failed send is said
+                // plainly. The resend action the specification pairs with this
+                // belongs to UC-40, which is not built yet.
+                if (confirmation case ConfirmationDelivery(sent: false)) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  AuthNotice(
+                    icon: Icons.mark_email_unread_outlined,
+                    child: Text(l10n.catalogLockedUndeliverable),
+                  ),
+                ],
               ],
             ),
           ),

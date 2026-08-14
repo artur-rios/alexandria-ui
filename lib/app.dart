@@ -75,8 +75,12 @@ class AlexandriaApp extends ConsumerWidget {
 
           // FR-AU-12 / BR-25: authenticated but unconfirmed keeps the catalog
           // locked. UC-40 replaces this with the confirmation prompt.
-          SessionActive(:final session) when !session.emailConfirmed =>
-            CatalogLockedScreen(email: session.email),
+          SessionActive(:final session, :final confirmation)
+              when !session.emailConfirmed =>
+            CatalogLockedScreen(
+              email: session.email,
+              confirmation: confirmation,
+            ),
 
           // The shell UC-38 builds lands here.
           SessionActive() => StartupReadyPlaceholder(coreVersion: coreVersion),

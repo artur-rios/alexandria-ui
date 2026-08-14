@@ -1,7 +1,9 @@
+import 'package:alexandria_desktop/core/failures/core_rejection.dart';
 import 'package:alexandria_desktop/core/failures/core_status.dart';
 import 'package:alexandria_desktop/core/failures/failure.dart';
 import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_desktop/core/theme/breakpoints.dart';
+import 'package:alexandria_desktop/features/auth/presentation/catalog_locked_screen.dart';
 import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_desktop/features/auth/presentation/sign_up_screen.dart';
 import 'package:flutter/material.dart';
@@ -228,6 +230,171 @@ void main() {
         await tester.signUp();
 
         expect(tester.emailField.controller?.text, 'owner@example.com');
+      },
+    );
+  });
+
+  // UC-01 AF-03, with the reason the core now names (core issue #101). This is
+  // the difference between "try something else" and being told what to change.
+  group('AF-03 — the rule the core named', () {
+    Future<void> pumpRefusedWith(
+      WidgetTester tester,
+      String code, {
+      Map<String, String> params = const {},
+    }) => tester.pumpSignUpScreen(
+      gateway: FakeAuthGateway.failing(
+        Failure.rejected(
+          family: CoreStatusFamily.auth,
+          code: 1,
+          rejection: CoreRejection(code: code, params: params),
+        ),
+      ),
+    );
+
+    testWidgets(
+      'GivenThePasswordIsTooShort_WhenTheOwnerSignsUp_ThenTheBoundIsStated',
+      (tester) async {
+        await pumpRefusedWith(
+          tester,
+          'password_too_short',
+          params: const {'min': '12'},
+        );
+
+        await tester.signUp();
+
+        expect(find.text(en.rejectionPasswordTooShort('12')), findsOneWidget);
+      },
+    );
+
+    // The bound is the core's, so a different one reads differently rather
+    // than being hardcoded here.
+    testWidgets(
+      'GivenTheCoreRaisesItsMinimum_WhenTheOwnerSignsUp_ThenTheNewBoundIsStated',
+      (tester) async {
+        await pumpRefusedWith(
+          tester,
+          'password_too_short',
+          params: const {'min': '16'},
+        );
+
+        await tester.signUp();
+
+        expect(find.text(en.rejectionPasswordTooShort('16')), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenThePasswordIsTooCommon_WhenTheOwnerSignsUp_ThenThatIsStated',
+      (tester) async {
+        await pumpRefusedWith(tester, 'password_too_common');
+
+        await tester.signUp();
+
+        expect(find.text(en.rejectionPasswordTooCommon), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenThePasswordContainsTheAddress_WhenTheOwnerSignsUp_ThenThatIsStated',
+      (tester) async {
+        await pumpRefusedWith(tester, 'password_contains_email');
+
+        await tester.signUp();
+
+        expect(find.text(en.rejectionPasswordContainsEmail), findsOneWidget);
+      },
+    );
+
+    // A rule this version has not caught up with still reads as a sentence,
+    // never as a code or a blank.
+    testWidgets(
+      'GivenACodeThisVersionDoesNotKnow_WhenTheOwnerSignsUp_ThenAReadableMessageIsStillShown',
+      (tester) async {
+        await pumpRefusedWith(tester, 'password_needs_a_haiku');
+
+        await tester.signUp();
+
+        expect(find.text(en.failureInvalidInput), findsOneWidget);
+        expect(find.text('password_needs_a_haiku'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenThePortugueseCatalog_WhenARuleIsNamed_ThenItIsTranslated',
+      (tester) async {
+        await tester.pumpSignUpScreen(
+          locale: const Locale('pt', 'BR'),
+          gateway: FakeAuthGateway.failing(
+            const Failure.rejected(
+              family: CoreStatusFamily.auth,
+              code: 1,
+              rejection: CoreRejection(
+                code: 'password_too_short',
+                params: {'min': '12'},
+              ),
+            ),
+          ),
+        );
+
+        await tester.signUp();
+
+        expect(find.text(pt.rejectionPasswordTooShort('12')), findsOneWidget);
+      },
+    );
+  });
+
+  // UC-01 AF-06: the account exists and the session is open, but the message
+  // the owner is waiting for is not coming.
+  group('AF-06 — the confirmation message could not be sent', () {
+    testWidgets(
+      'GivenTheMessageCouldNotBeSent_WhenTheOwnerSignsUp_ThenTheCatalogIsLocked',
+      (tester) async {
+        await tester.pumpSignUpScreen(gateway: FakeAuthGateway.unconfirmed());
+
+        await tester.signUp();
+
+        expect(find.byType(CatalogLockedScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheMessageCouldNotBeSent_WhenTheOwnerSignsUp_ThenTheyAreToldItIsNotComing',
+      (tester) async {
+        await tester.pumpSignUpScreen(gateway: FakeAuthGateway.unconfirmed());
+
+        await tester.signUp();
+
+        expect(find.text(en.catalogLockedUndeliverable), findsOneWidget);
+      },
+    );
+
+    // The delivery failure is worth saying only when there was one. An owner
+    // whose message is on its way should simply be told to go and read it.
+    testWidgets(
+      'GivenTheMessageWasSent_WhenTheOwnerSignsUp_ThenNoDeliveryFailureIsShown',
+      (tester) async {
+        await tester.pumpSignUpScreen(
+          gateway: FakeAuthGateway.unconfirmed(confirmationSent: true),
+        );
+
+        await tester.signUp();
+
+        expect(find.byType(CatalogLockedScreen), findsOneWidget);
+        expect(find.text(en.catalogLockedUndeliverable), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenThePortugueseCatalog_WhenTheMessageCouldNotBeSent_ThenItIsTranslated',
+      (tester) async {
+        await tester.pumpSignUpScreen(
+          locale: const Locale('pt', 'BR'),
+          gateway: FakeAuthGateway.unconfirmed(),
+        );
+
+        await tester.signUp();
+
+        expect(find.text(pt.catalogLockedUndeliverable), findsOneWidget);
       },
     );
   });
