@@ -164,7 +164,7 @@ abstract class AppLocalizations {
   /// **'That e-mail and password do not match an account.'**
   String get loginRejected;
 
-  /// UC-02 AF-03: the core holds no credentials. Signing up is UC-01, which is blocked on core support, so this states the condition rather than offering an action that does not exist yet.
+  /// UC-02 AF-03: the core holds no credentials, so the owner is sent to sign-up (UC-01) by the action beside this message.
   ///
   /// In en, this message translates to:
   /// **'No account has been set up on this computer yet.'**

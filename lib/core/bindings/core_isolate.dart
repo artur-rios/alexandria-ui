@@ -252,22 +252,6 @@ class CoreIsolate {
         );
       }),
 
-      // Two strings in, one out. Nested rather than sequential so each copy is
-      // released by its own finally, including if the call throws between them.
-      'authLocalSetCredentials' => withNativeString(
-        arguments.first! as String,
-        (body) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_auth_local_set_credentials(
-            body,
-            token,
-          );
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
       _ => throw CoreCallException('unknown core operation "$operation"'),
     };
   }

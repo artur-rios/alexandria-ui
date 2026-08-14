@@ -124,14 +124,5 @@ class FakeCoreClient implements CoreClient {
   }
 
   @override
-  Future<CoreJsonResponse> authLocalSetCredentials(
-    String jsonBody,
-    String token,
-  ) async => (
-    status: CoreStatusFamily.auth.okCode,
-    json: '{"success":true,"email":"owner@example.com"}',
-  );
-
-  @override
   Future<void> dispose() async => disposeCount++;
 }
