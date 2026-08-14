@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'dart:isolate';
 
 import 'alexandria_bindings.dart';
+import 'core_environment.dart';
 import 'core_strings.dart';
 
 /// A request for the worker isolate.
@@ -212,10 +213,13 @@ class CoreIsolate {
 
       'healthStatus' => bindings.alexandria_health_status_code(),
 
-      'init' => withNativeString(
-        arguments.first! as String,
-        bindings.alexandria_index_init,
-      ),
+      // The auth mode is settled here, immediately before the one call that
+      // reads the core's settings. Anywhere earlier would be a promise about
+      // ordering; anywhere later would be too late for the process.
+      'init' => withNativeString(arguments.first! as String, (path) {
+        ensureLocalAuthMode();
+        return bindings.alexandria_index_init(path);
+      }),
 
       'countFiles' => bindings.alexandria_index_count_files(),
 
