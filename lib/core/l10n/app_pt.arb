@@ -64,5 +64,35 @@
 
   "catalogLockedUndeliverable": "Não foi possível enviar a mensagem de confirmação, então ela não está a caminho. O Alexandria ainda não consegue enviar e-mails.",
 
-  "failureUnexpected": "Algo deu errado no Alexandria."
+  "failureUnexpected": "Algo deu errado no Alexandria.",
+
+  "cancel": "Cancelar",
+
+  "loading": "Carregando",
+
+  "shellAreaPending": "Nada para mostrar aqui ainda.",
+
+  "playbackBarLabel": "Reprodução",
+
+  "playbackNothingPlaying": "Nada em reprodução",
+
+  "destinationHome": "Início",
+
+  "destinationMusic": "Músicas",
+
+  "destinationMovies": "Filmes",
+
+  "destinationSeries": "Séries",
+
+  "destinationBooks": "Livros",
+
+  "destinationComicBooks": "Quadrinhos",
+
+  "destinationNotes": "Notas",
+
+  "destinationPages": "Páginas",
+
+  "destinationImages": "Imagens",
+
+  "destinationBookmarks": "Favoritos"
 }

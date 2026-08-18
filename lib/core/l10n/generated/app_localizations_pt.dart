@@ -194,4 +194,49 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get failureUnexpected => 'Algo deu errado no Alexandria.';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get loading => 'Carregando';
+
+  @override
+  String get shellAreaPending => 'Nada para mostrar aqui ainda.';
+
+  @override
+  String get playbackBarLabel => 'Reprodução';
+
+  @override
+  String get playbackNothingPlaying => 'Nada em reprodução';
+
+  @override
+  String get destinationHome => 'Início';
+
+  @override
+  String get destinationMusic => 'Músicas';
+
+  @override
+  String get destinationMovies => 'Filmes';
+
+  @override
+  String get destinationSeries => 'Séries';
+
+  @override
+  String get destinationBooks => 'Livros';
+
+  @override
+  String get destinationComicBooks => 'Quadrinhos';
+
+  @override
+  String get destinationNotes => 'Notas';
+
+  @override
+  String get destinationPages => 'Páginas';
+
+  @override
+  String get destinationImages => 'Imagens';
+
+  @override
+  String get destinationBookmarks => 'Favoritos';
 }

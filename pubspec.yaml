@@ -50,6 +50,17 @@ dependencies:
   # Localization for pt-BR and en (IR-11).
   intl: ^0.20.2
 
+  # The desktop shell (Technology Stack Document §3.5). Enforces the minimum
+  # window size and reads and writes the window's geometry, which is what
+  # UC-38's FR-UX-03 persists across runs.
+  window_manager: ^0.5.2
+
+  # The connected displays, declared directly rather than leaned on as a
+  # transitive dependency of window_manager. UC-38 AF-02 needs to know whether
+  # stored geometry still lands on a display that exists, and window_manager
+  # itself reports the window, not the screens.
+  screen_retriever: ^0.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
