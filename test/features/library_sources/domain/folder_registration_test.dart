@@ -94,22 +94,28 @@ void main() {
       );
     });
 
-    test('GivenAFolderContainingARegisteredOne_WhenChecked_ThenItConflicts', () {
-      final existing = source('/home/owner/media/music');
+    test(
+      'GivenAFolderContainingARegisteredOne_WhenChecked_ThenItConflicts',
+      () {
+        final existing = source('/home/owner/media/music');
 
-      expect(conflictingSource('/home/owner/media', [existing]), existing);
-    });
+        expect(conflictingSource('/home/owner/media', [existing]), existing);
+      },
+    );
 
-    test('GivenASiblingWithASharedPrefix_WhenChecked_ThenItDoesNotConflict', () {
-      // The bug this guards: without the separator, "/music" prefixes
-      // "/music-videos" and two unrelated folders read as overlapping.
-      expect(
-        conflictingSource('/home/owner/music-videos', [
-          source('/home/owner/music'),
-        ]),
-        isNull,
-      );
-    });
+    test(
+      'GivenASiblingWithASharedPrefix_WhenChecked_ThenItDoesNotConflict',
+      () {
+        // The bug this guards: without the separator, "/music" prefixes
+        // "/music-videos" and two unrelated folders read as overlapping.
+        expect(
+          conflictingSource('/home/owner/music-videos', [
+            source('/home/owner/music'),
+          ]),
+          isNull,
+        );
+      },
+    );
   });
 
   group('the verdict', () {

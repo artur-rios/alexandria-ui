@@ -77,17 +77,19 @@ void main() {
       expect(state.sources.single.path, '/home/owner/music');
     });
 
-    test('GivenAFolderIsChosen_WhenItIsRegistered_ThenItsNameIsTheLabel',
-        () async {
-      final sut = build();
+    test(
+      'GivenAFolderIsChosen_WhenItIsRegistered_ThenItsNameIsTheLabel',
+      () async {
+        final sut = build();
 
-      await register(sut.ref);
+        await register(sut.ref);
 
-      expect(
-        sut.ref.read(librarySourcesControllerProvider).sources.single.label,
-        'music',
-      );
-    });
+        expect(
+          sut.ref.read(librarySourcesControllerProvider).sources.single.label,
+          'music',
+        );
+      },
+    );
 
     test('GivenAFolderIsChosen_WhenItIsRegistered_ThenItIsPersisted', () async {
       final sut = build();
@@ -105,7 +107,10 @@ void main() {
 
       await register(sut.ref);
 
-      expect(sut.ref.read(librarySourcesControllerProvider).sources, hasLength(2));
+      expect(
+        sut.ref.read(librarySourcesControllerProvider).sources,
+        hasLength(2),
+      );
     });
   });
 
@@ -119,111 +124,127 @@ void main() {
       expect(sut.store.writeCount, 0);
     });
 
-    test('GivenTheOwnerCancels_WhenTheyAdd_ThenTheFolderIsNeverProbed',
-        () async {
-      final sut = build(picked: null);
+    test(
+      'GivenTheOwnerCancels_WhenTheyAdd_ThenTheFolderIsNeverProbed',
+      () async {
+        final sut = build(picked: null);
 
-      await register(sut.ref);
+        await register(sut.ref);
 
-      expect(sut.probe.readabilityChecks, isEmpty);
-    });
+        expect(sut.probe.readabilityChecks, isEmpty);
+      },
+    );
 
-    test('GivenANoticeIsShowing_WhenTheOwnerCancels_ThenItIsLeftAlone',
-        () async {
-      // The notice was about a different attempt, and cancelling this one does
-      // not answer it.
-      final sut = build(exists: false);
-      await register(sut.ref);
-      sut.picker.path = null;
+    test(
+      'GivenANoticeIsShowing_WhenTheOwnerCancels_ThenItIsLeftAlone',
+      () async {
+        // The notice was about a different attempt, and cancelling this one does
+        // not answer it.
+        final sut = build(exists: false);
+        await register(sut.ref);
+        sut.picker.path = null;
 
-      await register(sut.ref);
+        await register(sut.ref);
 
-      expect(
-        sut.ref.read(librarySourcesControllerProvider).refusal,
-        FolderRegistrationVerdict.missing,
-      );
-    });
+        expect(
+          sut.ref.read(librarySourcesControllerProvider).refusal,
+          FolderRegistrationVerdict.missing,
+        );
+      },
+    );
   });
 
   group('the folder is refused (AF-02, AF-03)', () {
-    test('GivenAMissingFolder_WhenItIsChosen_ThenItIsRefusedAsMissing',
-        () async {
-      final sut = build(exists: false);
+    test(
+      'GivenAMissingFolder_WhenItIsChosen_ThenItIsRefusedAsMissing',
+      () async {
+        final sut = build(exists: false);
 
-      await register(sut.ref);
+        await register(sut.ref);
 
-      final state = sut.ref.read(librarySourcesControllerProvider);
-      expect(state.refusal, FolderRegistrationVerdict.missing);
-      expect(state.refusedPath, '/home/owner/music');
-      expect(sut.store.writeCount, 0);
-    });
+        final state = sut.ref.read(librarySourcesControllerProvider);
+        expect(state.refusal, FolderRegistrationVerdict.missing);
+        expect(state.refusedPath, '/home/owner/music');
+        expect(sut.store.writeCount, 0);
+      },
+    );
 
-    test('GivenAMissingFolder_WhenItIsChosen_ThenReadabilityIsNotAsked',
-        () async {
-      // Reporting "cannot be read" about a folder that is not there sends the
-      // owner after the wrong problem (FR-LB-02).
-      final sut = build(exists: false);
+    test(
+      'GivenAMissingFolder_WhenItIsChosen_ThenReadabilityIsNotAsked',
+      () async {
+        // Reporting "cannot be read" about a folder that is not there sends the
+        // owner after the wrong problem (FR-LB-02).
+        final sut = build(exists: false);
 
-      await register(sut.ref);
+        await register(sut.ref);
 
-      expect(sut.probe.readabilityChecks, isEmpty);
-    });
+        expect(sut.probe.readabilityChecks, isEmpty);
+      },
+    );
 
-    test('GivenAnUnreadableFolder_WhenItIsChosen_ThenItIsRefusedAsUnreadable',
-        () async {
-      final sut = build(readable: false);
+    test(
+      'GivenAnUnreadableFolder_WhenItIsChosen_ThenItIsRefusedAsUnreadable',
+      () async {
+        final sut = build(readable: false);
 
-      await register(sut.ref);
+        await register(sut.ref);
 
-      expect(
-        sut.ref.read(librarySourcesControllerProvider).refusal,
-        FolderRegistrationVerdict.unreadable,
-      );
-      expect(sut.store.writeCount, 0);
-    });
+        expect(
+          sut.ref.read(librarySourcesControllerProvider).refusal,
+          FolderRegistrationVerdict.unreadable,
+        );
+        expect(sut.store.writeCount, 0);
+      },
+    );
 
-    test('GivenAnAlreadyRegisteredFolder_WhenItIsChosen_ThenItIsRefused',
-        () async {
-      final sut = build(registered: [source('/home/owner/music')]);
+    test(
+      'GivenAnAlreadyRegisteredFolder_WhenItIsChosen_ThenItIsRefused',
+      () async {
+        final sut = build(registered: [source('/home/owner/music')]);
 
-      await register(sut.ref);
+        await register(sut.ref);
 
-      final state = sut.ref.read(librarySourcesControllerProvider);
-      expect(state.refusal, FolderRegistrationVerdict.alreadyRegistered);
-      expect(state.sources, hasLength(1));
-      expect(sut.store.writeCount, 0);
-    });
+        final state = sut.ref.read(librarySourcesControllerProvider);
+        expect(state.refusal, FolderRegistrationVerdict.alreadyRegistered);
+        expect(state.sources, hasLength(1));
+        expect(sut.store.writeCount, 0);
+      },
+    );
 
-    test('GivenADuplicate_WhenItIsRefused_ThenTheExistingEntryIsNamed',
-        () async {
-      // AF-03 highlights the existing entry, which needs the entry itself.
-      final sut = build(registered: [source('/home/owner/music')]);
+    test(
+      'GivenADuplicate_WhenItIsRefused_ThenTheExistingEntryIsNamed',
+      () async {
+        // AF-03 highlights the existing entry, which needs the entry itself.
+        final sut = build(registered: [source('/home/owner/music')]);
 
-      await register(sut.ref);
+        await register(sut.ref);
 
-      expect(
+        expect(
+          sut.ref
+              .read(librarySourcesControllerProvider)
+              .conflictingSource
+              ?.path,
+          '/home/owner/music',
+        );
+      },
+    );
+
+    test(
+      'GivenARefusal_WhenTheOwnerAcknowledgesIt_ThenTheNoticeClears',
+      () async {
+        final sut = build(exists: false);
+        await register(sut.ref);
+
         sut.ref
-            .read(librarySourcesControllerProvider)
-            .conflictingSource
-            ?.path,
-        '/home/owner/music',
-      );
-    });
+            .read(librarySourcesControllerProvider.notifier)
+            .acknowledgeRefusal();
 
-    test('GivenARefusal_WhenTheOwnerAcknowledgesIt_ThenTheNoticeClears',
-        () async {
-      final sut = build(exists: false);
-      await register(sut.ref);
-
-      sut.ref
-          .read(librarySourcesControllerProvider.notifier)
-          .acknowledgeRefusal();
-
-      final state = sut.ref.read(librarySourcesControllerProvider);
-      expect(state.refusal, isNull);
-      expect(state.refusedPath, isNull);
-      expect(state.conflictingSource, isNull);
-    });
+        final state = sut.ref.read(librarySourcesControllerProvider);
+        expect(state.refusal, isNull);
+        expect(state.refusedPath, isNull);
+        expect(state.conflictingSource, isNull);
+      },
+    );
   });
 
   group('the folders overlap (AF-04)', () {
@@ -232,31 +253,41 @@ void main() {
 
       await register(sut.ref, confirmOverlap: true);
 
-      expect(sut.ref.read(librarySourcesControllerProvider).sources, hasLength(2));
+      expect(
+        sut.ref.read(librarySourcesControllerProvider).sources,
+        hasLength(2),
+      );
       expect(sut.store.writeCount, 1);
     });
 
-    test('GivenAnOverlap_WhenTheOwnerCancels_ThenNothingIsRegistered',
-        () async {
-      final sut = build(registered: [source('/home/owner')]);
+    test(
+      'GivenAnOverlap_WhenTheOwnerCancels_ThenNothingIsRegistered',
+      () async {
+        final sut = build(registered: [source('/home/owner')]);
 
-      await register(sut.ref, confirmOverlap: false);
+        await register(sut.ref, confirmOverlap: false);
 
-      expect(sut.ref.read(librarySourcesControllerProvider).sources, hasLength(1));
-      expect(sut.store.writeCount, 0);
-    });
+        expect(
+          sut.ref.read(librarySourcesControllerProvider).sources,
+          hasLength(1),
+        );
+        expect(sut.store.writeCount, 0);
+      },
+    );
 
-    test('GivenAnOverlap_WhenTheOwnerCancels_ThenNoRefusalIsRecorded',
-        () async {
-      // Being asked and saying no is not an error.
-      final sut = build(registered: [source('/home/owner')]);
+    test(
+      'GivenAnOverlap_WhenTheOwnerCancels_ThenNoRefusalIsRecorded',
+      () async {
+        // Being asked and saying no is not an error.
+        final sut = build(registered: [source('/home/owner')]);
 
-      await register(sut.ref, confirmOverlap: false);
+        await register(sut.ref, confirmOverlap: false);
 
-      final state = sut.ref.read(librarySourcesControllerProvider);
-      expect(state.refusal, isNull);
-      expect(state.registering, isFalse);
-    });
+        final state = sut.ref.read(librarySourcesControllerProvider);
+        expect(state.refusal, isNull);
+        expect(state.registering, isFalse);
+      },
+    );
 
     test('GivenNoOverlap_WhenAFolderIsRegistered_ThenNothingIsAsked', () async {
       var asked = false;
@@ -272,23 +303,31 @@ void main() {
           );
 
       expect(asked, isFalse);
-      expect(sut.ref.read(librarySourcesControllerProvider).sources, hasLength(2));
+      expect(
+        sut.ref.read(librarySourcesControllerProvider).sources,
+        hasLength(2),
+      );
     });
   });
 
-  test('GivenARegistrationInFlight_WhenAnotherStarts_ThenOnlyOneRuns',
-      () async {
-    final sut = build();
-    final controller = sut.ref.read(
-      librarySourcesControllerProvider.notifier,
-    );
+  test(
+    'GivenARegistrationInFlight_WhenAnotherStarts_ThenOnlyOneRuns',
+    () async {
+      final sut = build();
+      final controller = sut.ref.read(
+        librarySourcesControllerProvider.notifier,
+      );
 
-    final first = controller.registerFolder(
-      onOverlapConfirmed: (_, _) async => true,
-    );
-    await controller.registerFolder(onOverlapConfirmed: (_, _) async => true);
-    await first;
+      final first = controller.registerFolder(
+        onOverlapConfirmed: (_, _) async => true,
+      );
+      await controller.registerFolder(onOverlapConfirmed: (_, _) async => true);
+      await first;
 
-    expect(sut.ref.read(librarySourcesControllerProvider).sources, hasLength(1));
-  });
+      expect(
+        sut.ref.read(librarySourcesControllerProvider).sources,
+        hasLength(1),
+      );
+    },
+  );
 }

@@ -23,9 +23,7 @@ void main() {
   );
 
   /// Signs in, opens preferences, and opens the library-folders screen.
-  Future<
-    ({FakeFolderPicker picker, InMemoryLibrarySourceStore store})
-  >
+  Future<({FakeFolderPicker picker, InMemoryLibrarySourceStore store})>
   openScreen(
     WidgetTester tester, {
     String? picked = '/home/owner/music',
@@ -126,8 +124,9 @@ void main() {
   });
 
   group('the main flow', () {
-    testWidgets('GivenAFolderIsChosen_WhenItIsAdded_ThenItIsListed',
-        (tester) async {
+    testWidgets('GivenAFolderIsChosen_WhenItIsAdded_ThenItIsListed', (
+      tester,
+    ) async {
       await openScreen(tester);
 
       await addFolder(tester);
@@ -136,8 +135,9 @@ void main() {
       expect(find.text('/home/owner/music'), findsOneWidget);
     });
 
-    testWidgets('GivenAFolderIsAdded_WhenItSettles_ThenItIsPersisted',
-        (tester) async {
+    testWidgets('GivenAFolderIsAdded_WhenItSettles_ThenItIsPersisted', (
+      tester,
+    ) async {
       final opened = await openScreen(tester);
 
       await addFolder(tester);
@@ -147,8 +147,9 @@ void main() {
   });
 
   group('the owner cancels the picker (AF-01)', () {
-    testWidgets('GivenTheOwnerCancels_WhenTheyAdd_ThenTheScreenIsUnchanged',
-        (tester) async {
+    testWidgets('GivenTheOwnerCancels_WhenTheyAdd_ThenTheScreenIsUnchanged', (
+      tester,
+    ) async {
       final opened = await openScreen(tester, picked: null);
       final l10n = AppLocalizations.of(
         tester.element(find.byType(LibrarySourcesScreen)),
@@ -163,8 +164,9 @@ void main() {
   });
 
   group('the folder is refused (AF-02, AF-03)', () {
-    testWidgets('GivenAMissingFolder_WhenItIsAdded_ThenTheOwnerIsToldWhich',
-        (tester) async {
+    testWidgets('GivenAMissingFolder_WhenItIsAdded_ThenTheOwnerIsToldWhich', (
+      tester,
+    ) async {
       await openScreen(tester, exists: false);
 
       await addFolder(tester);
@@ -178,24 +180,27 @@ void main() {
       );
     });
 
-    testWidgets('GivenAnUnreadableFolder_WhenItIsAdded_ThenTheOwnerIsToldWhich',
-        (tester) async {
-      // FR-LB-02: the two conditions read differently.
-      await openScreen(tester, readable: false);
+    testWidgets(
+      'GivenAnUnreadableFolder_WhenItIsAdded_ThenTheOwnerIsToldWhich',
+      (tester) async {
+        // FR-LB-02: the two conditions read differently.
+        await openScreen(tester, readable: false);
 
-      await addFolder(tester);
+        await addFolder(tester);
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(LibrarySourcesScreen)),
-      );
-      expect(
-        find.text(l10n.librarySourcesUnreadable('/home/owner/music')),
-        findsOneWidget,
-      );
-    });
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(LibrarySourcesScreen)),
+        );
+        expect(
+          find.text(l10n.librarySourcesUnreadable('/home/owner/music')),
+          findsOneWidget,
+        );
+      },
+    );
 
-    testWidgets('GivenADuplicate_WhenItIsAdded_ThenTheOwnerIsTold',
-        (tester) async {
+    testWidgets('GivenADuplicate_WhenItIsAdded_ThenTheOwnerIsTold', (
+      tester,
+    ) async {
       await openScreen(tester, registered: [source('/home/owner/music')]);
 
       await addFolder(tester);
@@ -207,8 +212,9 @@ void main() {
       expect(sourceRows(), findsOneWidget);
     });
 
-    testWidgets('GivenARefusal_WhenItIsDismissed_ThenTheNoticeGoes',
-        (tester) async {
+    testWidgets('GivenARefusal_WhenItIsDismissed_ThenTheNoticeGoes', (
+      tester,
+    ) async {
       await openScreen(tester, exists: false);
       await addFolder(tester);
       final l10n = AppLocalizations.of(
@@ -226,8 +232,9 @@ void main() {
   });
 
   group('the folders overlap (AF-04)', () {
-    testWidgets('GivenAnOverlap_WhenItIsAdded_ThenTheOwnerIsWarnedFirst',
-        (tester) async {
+    testWidgets('GivenAnOverlap_WhenItIsAdded_ThenTheOwnerIsWarnedFirst', (
+      tester,
+    ) async {
       await openScreen(tester, registered: [source('/home/owner')]);
 
       await addFolder(tester);
@@ -239,8 +246,9 @@ void main() {
       expect(find.text(l10n.librarySourcesOverlapTitle), findsOneWidget);
     });
 
-    testWidgets('GivenTheWarning_WhenTheOwnerConfirms_ThenItIsRegistered',
-        (tester) async {
+    testWidgets('GivenTheWarning_WhenTheOwnerConfirms_ThenItIsRegistered', (
+      tester,
+    ) async {
       final opened = await openScreen(
         tester,
         registered: [source('/home/owner')],
@@ -257,8 +265,9 @@ void main() {
       expect(find.text('music'), findsOneWidget);
     });
 
-    testWidgets('GivenTheWarning_WhenTheOwnerCancels_ThenNothingIsRegistered',
-        (tester) async {
+    testWidgets('GivenTheWarning_WhenTheOwnerCancels_ThenNothingIsRegistered', (
+      tester,
+    ) async {
       final opened = await openScreen(
         tester,
         registered: [source('/home/owner')],
@@ -277,8 +286,9 @@ void main() {
   });
 
   group('themes, languages, and the keyboard', () {
-    testWidgets('GivenTheScreen_WhenItOpens_ThenItsPrimaryActionIsFocused',
-        (tester) async {
+    testWidgets('GivenTheScreen_WhenItOpens_ThenItsPrimaryActionIsFocused', (
+      tester,
+    ) async {
       // FR-UX-11.
       await openScreen(tester);
 

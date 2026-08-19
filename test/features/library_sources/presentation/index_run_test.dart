@@ -33,9 +33,7 @@ void main() {
 
   /// Opens the library-folders screen with [gateway] bound and one folder
   /// already registered.
-  Future<
-    ({InMemoryLibrarySourceStore store, ProviderContainer ref})
-  >
+  Future<({InMemoryLibrarySourceStore store, ProviderContainer ref})>
   openScreen(
     WidgetTester tester, {
     FakeIndexGateway? gateway,
@@ -76,18 +74,21 @@ void main() {
   }
 
   group('the main flow', () {
-    testWidgets('GivenARegisteredFolder_WhenTheScreenOpens_ThenIndexIsOffered',
-        (tester) async {
-      await openScreen(tester);
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(LibrarySourcesScreen)),
-      );
+    testWidgets(
+      'GivenARegisteredFolder_WhenTheScreenOpens_ThenIndexIsOffered',
+      (tester) async {
+        await openScreen(tester);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(LibrarySourcesScreen)),
+        );
 
-      expect(find.text(l10n.librarySourcesIndex), findsOneWidget);
-    });
+        expect(find.text(l10n.librarySourcesIndex), findsOneWidget);
+      },
+    );
 
-    testWidgets('GivenAScanIsStarted_WhenItIsRunning_ThenTheScreenSaysSo',
-        (tester) async {
+    testWidgets('GivenAScanIsStarted_WhenItIsRunning_ThenTheScreenSaysSo', (
+      tester,
+    ) async {
       // FR-LB-07: the run is visible and the interface stays usable.
       final opened = await openScreen(
         tester,
@@ -107,8 +108,9 @@ void main() {
       opened.ref.dispose();
     });
 
-    testWidgets('GivenAScanFinishes_WhenItSettles_ThenItsCountsAreShown',
-        (tester) async {
+    testWidgets('GivenAScanFinishes_WhenItSettles_ThenItsCountsAreShown', (
+      tester,
+    ) async {
       // FR-LB-08.
       await openScreen(tester);
 
@@ -141,8 +143,9 @@ void main() {
   });
 
   group('a second run is refused (AF-01)', () {
-    testWidgets('GivenARunInFlight_WhenIndexIsPressedAgain_ThenItIsRefused',
-        (tester) async {
+    testWidgets('GivenARunInFlight_WhenIndexIsPressedAgain_ThenItIsRefused', (
+      tester,
+    ) async {
       final gateway = FakeIndexGateway()..readOutcomes = [runningRun()];
       final opened = await openScreen(tester, gateway: gateway);
       await startIndex(tester);
@@ -168,8 +171,9 @@ void main() {
   });
 
   group('the core refuses the start (AF-02, AF-03)', () {
-    testWidgets('GivenTheCoreRefuses_WhenAScanIsStarted_ThenTheOwnerIsTold',
-        (tester) async {
+    testWidgets('GivenTheCoreRefuses_WhenAScanIsStarted_ThenTheOwnerIsTold', (
+      tester,
+    ) async {
       await openScreen(
         tester,
         gateway: FakeIndexGateway()
@@ -194,8 +198,9 @@ void main() {
   });
 
   group('the core rejects the session (AF-06)', () {
-    testWidgets('GivenTheStartIsUnauthorized_WhenItSettles_ThenLoginReturns',
-        (tester) async {
+    testWidgets('GivenTheStartIsUnauthorized_WhenItSettles_ThenLoginReturns', (
+      tester,
+    ) async {
       await openScreen(
         tester,
         gateway: FakeIndexGateway()
@@ -264,8 +269,9 @@ void main() {
     ('English', const Locale('en')),
     ('Portuguese', const Locale('pt', 'BR')),
   ]) {
-    testWidgets('Given${name}_WhenARunFinishes_ThenItsStringsAreLocalized',
-        (tester) async {
+    testWidgets('Given${name}_WhenARunFinishes_ThenItsStringsAreLocalized', (
+      tester,
+    ) async {
       await openScreen(tester, locale: locale);
 
       await startIndex(tester);
