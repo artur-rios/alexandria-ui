@@ -1,6 +1,7 @@
 import 'package:alexandria_desktop/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
+import 'package:alexandria_desktop/features/catalog/domain/listing_view.dart';
 
 /// A [CatalogGateway] that never reaches the core (Testing Specification §2.3).
 ///
@@ -8,11 +9,21 @@ import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
 /// one that fails must not take the others down with it (AF-02).
 class FakeCatalogGateway implements CatalogGateway {
   /// Creates a gateway whose types are empty unless a test fills them.
-  FakeCatalogGateway({Map<LibraryType, CatalogListing>? listings})
-    : listings = {...?listings};
+  FakeCatalogGateway({
+    Map<LibraryType, CatalogListing>? listings,
+    Map<LibraryType, CatalogListing>? deleted,
+  }) : listings = {...?listings},
+       deleted = {...?deleted};
 
-  /// What each type answers. A type with no entry answers an empty listing.
+  /// What each type answers for active records. A type with no entry answers
+  /// an empty listing.
   final Map<LibraryType, CatalogListing> listings;
+
+  /// What each type answers for deleted records.
+  ///
+  /// Empty by default, which is what a library nobody has deleted from holds —
+  /// and what makes UC-12 AF-01 reachable by filtering to it.
+  final Map<LibraryType, CatalogListing> deleted;
 
   /// Every type asked for, in order.
   ///
@@ -23,15 +34,32 @@ class FakeCatalogGateway implements CatalogGateway {
   /// The credentials each call was made with.
   final List<String> credentials = [];
 
+  /// The lifecycle filter each call was made with (UC-12).
+  final List<LifecycleFilter> lifecycles = [];
+
   @override
   Future<CatalogListing> listFiles({
     required LibraryType type,
     required String credential,
+    LifecycleFilter lifecycle = LifecycleFilter.active,
   }) async {
     requested.add(type);
     credentials.add(credential);
+    lifecycles.add(lifecycle);
 
-    return listings[type] ?? const CatalogListing.loaded(files: []);
+    return switch (lifecycle) {
+      LifecycleFilter.active =>
+        listings[type] ?? const CatalogListing.loaded(files: []),
+      LifecycleFilter.deleted =>
+        deleted[type] ?? const CatalogListing.loaded(files: []),
+      // Both together, which is what the core would answer.
+      LifecycleFilter.all => switch ((listings[type], deleted[type])) {
+        (final CatalogListingLoaded active, final CatalogListingLoaded gone) =>
+          CatalogListing.loaded(files: [...active.files, ...gone.files]),
+        (final CatalogListing only?, _) => only,
+        _ => const CatalogListing.loaded(files: []),
+      },
+    };
   }
 }
 
@@ -41,6 +69,7 @@ CatalogFile aFile({
   String name = 'Kind of Blue.flac',
   String? path,
   LibraryType type = LibraryType.audio,
+  DateTime? indexedAt,
   DateTime? missingAt,
 }) => CatalogFile(
   uuid: uuid,
@@ -50,5 +79,6 @@ CatalogFile aFile({
   // that is only in its neighbour name, which reads as a bug in the search.
   path: path ?? '/home/owner/music/$name',
   type: type,
+  indexedAt: indexedAt,
   missingAt: missingAt,
 );
