@@ -23,7 +23,9 @@ mixin _$LibrarySourcesState {
  bool get registering;/// Why the last attempt was refused, or `null` when there was none
 /// (AF-02, AF-03).
  FolderRegistrationVerdict? get refusal;/// The path the last refusal was about, so the message can name it.
- String? get refusedPath;/// The already-registered folder the last attempt conflicted with.
+ String? get refusedPath;/// The folder whose unregistration was refused because a run is in flight
+/// (UC-08 AF-02), or `null`.
+ String? get unregisterRefusedFor;/// The already-registered folder the last attempt conflicted with.
 ///
 /// AF-03 highlights this entry in the list, which is why the source is
 /// carried rather than only the verdict.
@@ -38,16 +40,16 @@ $LibrarySourcesStateCopyWith<LibrarySourcesState> get copyWith => _$LibrarySourc
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LibrarySourcesState&&const DeepCollectionEquality().equals(other.sources, sources)&&(identical(other.registering, registering) || other.registering == registering)&&(identical(other.refusal, refusal) || other.refusal == refusal)&&(identical(other.refusedPath, refusedPath) || other.refusedPath == refusedPath)&&(identical(other.conflictingSource, conflictingSource) || other.conflictingSource == conflictingSource));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LibrarySourcesState&&const DeepCollectionEquality().equals(other.sources, sources)&&(identical(other.registering, registering) || other.registering == registering)&&(identical(other.refusal, refusal) || other.refusal == refusal)&&(identical(other.refusedPath, refusedPath) || other.refusedPath == refusedPath)&&(identical(other.unregisterRefusedFor, unregisterRefusedFor) || other.unregisterRefusedFor == unregisterRefusedFor)&&(identical(other.conflictingSource, conflictingSource) || other.conflictingSource == conflictingSource));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(sources),registering,refusal,refusedPath,conflictingSource);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(sources),registering,refusal,refusedPath,unregisterRefusedFor,conflictingSource);
 
 @override
 String toString() {
-  return 'LibrarySourcesState(sources: $sources, registering: $registering, refusal: $refusal, refusedPath: $refusedPath, conflictingSource: $conflictingSource)';
+  return 'LibrarySourcesState(sources: $sources, registering: $registering, refusal: $refusal, refusedPath: $refusedPath, unregisterRefusedFor: $unregisterRefusedFor, conflictingSource: $conflictingSource)';
 }
 
 
@@ -58,7 +60,7 @@ abstract mixin class $LibrarySourcesStateCopyWith<$Res>  {
   factory $LibrarySourcesStateCopyWith(LibrarySourcesState value, $Res Function(LibrarySourcesState) _then) = _$LibrarySourcesStateCopyWithImpl;
 @useResult
 $Res call({
- List<LibrarySource> sources, bool registering, FolderRegistrationVerdict? refusal, String? refusedPath, LibrarySource? conflictingSource
+ List<LibrarySource> sources, bool registering, FolderRegistrationVerdict? refusal, String? refusedPath, String? unregisterRefusedFor, LibrarySource? conflictingSource
 });
 
 
@@ -75,12 +77,13 @@ class _$LibrarySourcesStateCopyWithImpl<$Res>
 
 /// Create a copy of LibrarySourcesState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sources = null,Object? registering = null,Object? refusal = freezed,Object? refusedPath = freezed,Object? conflictingSource = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sources = null,Object? registering = null,Object? refusal = freezed,Object? refusedPath = freezed,Object? unregisterRefusedFor = freezed,Object? conflictingSource = freezed,}) {
   return _then(_self.copyWith(
 sources: null == sources ? _self.sources : sources // ignore: cast_nullable_to_non_nullable
 as List<LibrarySource>,registering: null == registering ? _self.registering : registering // ignore: cast_nullable_to_non_nullable
 as bool,refusal: freezed == refusal ? _self.refusal : refusal // ignore: cast_nullable_to_non_nullable
 as FolderRegistrationVerdict?,refusedPath: freezed == refusedPath ? _self.refusedPath : refusedPath // ignore: cast_nullable_to_non_nullable
+as String?,unregisterRefusedFor: freezed == unregisterRefusedFor ? _self.unregisterRefusedFor : unregisterRefusedFor // ignore: cast_nullable_to_non_nullable
 as String?,conflictingSource: freezed == conflictingSource ? _self.conflictingSource : conflictingSource // ignore: cast_nullable_to_non_nullable
 as LibrarySource?,
   ));
@@ -179,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<LibrarySource> sources,  bool registering,  FolderRegistrationVerdict? refusal,  String? refusedPath,  LibrarySource? conflictingSource)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<LibrarySource> sources,  bool registering,  FolderRegistrationVerdict? refusal,  String? refusedPath,  String? unregisterRefusedFor,  LibrarySource? conflictingSource)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LibrarySourcesState() when $default != null:
-return $default(_that.sources,_that.registering,_that.refusal,_that.refusedPath,_that.conflictingSource);case _:
+return $default(_that.sources,_that.registering,_that.refusal,_that.refusedPath,_that.unregisterRefusedFor,_that.conflictingSource);case _:
   return orElse();
 
 }
@@ -200,10 +203,10 @@ return $default(_that.sources,_that.registering,_that.refusal,_that.refusedPath,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<LibrarySource> sources,  bool registering,  FolderRegistrationVerdict? refusal,  String? refusedPath,  LibrarySource? conflictingSource)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<LibrarySource> sources,  bool registering,  FolderRegistrationVerdict? refusal,  String? refusedPath,  String? unregisterRefusedFor,  LibrarySource? conflictingSource)  $default,) {final _that = this;
 switch (_that) {
 case _LibrarySourcesState():
-return $default(_that.sources,_that.registering,_that.refusal,_that.refusedPath,_that.conflictingSource);case _:
+return $default(_that.sources,_that.registering,_that.refusal,_that.refusedPath,_that.unregisterRefusedFor,_that.conflictingSource);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -220,10 +223,10 @@ return $default(_that.sources,_that.registering,_that.refusal,_that.refusedPath,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<LibrarySource> sources,  bool registering,  FolderRegistrationVerdict? refusal,  String? refusedPath,  LibrarySource? conflictingSource)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<LibrarySource> sources,  bool registering,  FolderRegistrationVerdict? refusal,  String? refusedPath,  String? unregisterRefusedFor,  LibrarySource? conflictingSource)?  $default,) {final _that = this;
 switch (_that) {
 case _LibrarySourcesState() when $default != null:
-return $default(_that.sources,_that.registering,_that.refusal,_that.refusedPath,_that.conflictingSource);case _:
+return $default(_that.sources,_that.registering,_that.refusal,_that.refusedPath,_that.unregisterRefusedFor,_that.conflictingSource);case _:
   return null;
 
 }
@@ -235,7 +238,7 @@ return $default(_that.sources,_that.registering,_that.refusal,_that.refusedPath,
 
 
 class _LibrarySourcesState extends LibrarySourcesState {
-  const _LibrarySourcesState({final  List<LibrarySource> sources = const <LibrarySource>[], this.registering = false, this.refusal, this.refusedPath, this.conflictingSource}): _sources = sources,super._();
+  const _LibrarySourcesState({final  List<LibrarySource> sources = const <LibrarySource>[], this.registering = false, this.refusal, this.refusedPath, this.unregisterRefusedFor, this.conflictingSource}): _sources = sources,super._();
   
 
 /// The registered folders, in registration order.
@@ -258,6 +261,9 @@ class _LibrarySourcesState extends LibrarySourcesState {
 @override final  FolderRegistrationVerdict? refusal;
 /// The path the last refusal was about, so the message can name it.
 @override final  String? refusedPath;
+/// The folder whose unregistration was refused because a run is in flight
+/// (UC-08 AF-02), or `null`.
+@override final  String? unregisterRefusedFor;
 /// The already-registered folder the last attempt conflicted with.
 ///
 /// AF-03 highlights this entry in the list, which is why the source is
@@ -274,16 +280,16 @@ _$LibrarySourcesStateCopyWith<_LibrarySourcesState> get copyWith => __$LibrarySo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LibrarySourcesState&&const DeepCollectionEquality().equals(other._sources, _sources)&&(identical(other.registering, registering) || other.registering == registering)&&(identical(other.refusal, refusal) || other.refusal == refusal)&&(identical(other.refusedPath, refusedPath) || other.refusedPath == refusedPath)&&(identical(other.conflictingSource, conflictingSource) || other.conflictingSource == conflictingSource));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LibrarySourcesState&&const DeepCollectionEquality().equals(other._sources, _sources)&&(identical(other.registering, registering) || other.registering == registering)&&(identical(other.refusal, refusal) || other.refusal == refusal)&&(identical(other.refusedPath, refusedPath) || other.refusedPath == refusedPath)&&(identical(other.unregisterRefusedFor, unregisterRefusedFor) || other.unregisterRefusedFor == unregisterRefusedFor)&&(identical(other.conflictingSource, conflictingSource) || other.conflictingSource == conflictingSource));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_sources),registering,refusal,refusedPath,conflictingSource);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_sources),registering,refusal,refusedPath,unregisterRefusedFor,conflictingSource);
 
 @override
 String toString() {
-  return 'LibrarySourcesState(sources: $sources, registering: $registering, refusal: $refusal, refusedPath: $refusedPath, conflictingSource: $conflictingSource)';
+  return 'LibrarySourcesState(sources: $sources, registering: $registering, refusal: $refusal, refusedPath: $refusedPath, unregisterRefusedFor: $unregisterRefusedFor, conflictingSource: $conflictingSource)';
 }
 
 
@@ -294,7 +300,7 @@ abstract mixin class _$LibrarySourcesStateCopyWith<$Res> implements $LibrarySour
   factory _$LibrarySourcesStateCopyWith(_LibrarySourcesState value, $Res Function(_LibrarySourcesState) _then) = __$LibrarySourcesStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<LibrarySource> sources, bool registering, FolderRegistrationVerdict? refusal, String? refusedPath, LibrarySource? conflictingSource
+ List<LibrarySource> sources, bool registering, FolderRegistrationVerdict? refusal, String? refusedPath, String? unregisterRefusedFor, LibrarySource? conflictingSource
 });
 
 
@@ -311,12 +317,13 @@ class __$LibrarySourcesStateCopyWithImpl<$Res>
 
 /// Create a copy of LibrarySourcesState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sources = null,Object? registering = null,Object? refusal = freezed,Object? refusedPath = freezed,Object? conflictingSource = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sources = null,Object? registering = null,Object? refusal = freezed,Object? refusedPath = freezed,Object? unregisterRefusedFor = freezed,Object? conflictingSource = freezed,}) {
   return _then(_LibrarySourcesState(
 sources: null == sources ? _self._sources : sources // ignore: cast_nullable_to_non_nullable
 as List<LibrarySource>,registering: null == registering ? _self.registering : registering // ignore: cast_nullable_to_non_nullable
 as bool,refusal: freezed == refusal ? _self.refusal : refusal // ignore: cast_nullable_to_non_nullable
 as FolderRegistrationVerdict?,refusedPath: freezed == refusedPath ? _self.refusedPath : refusedPath // ignore: cast_nullable_to_non_nullable
+as String?,unregisterRefusedFor: freezed == unregisterRefusedFor ? _self.unregisterRefusedFor : unregisterRefusedFor // ignore: cast_nullable_to_non_nullable
 as String?,conflictingSource: freezed == conflictingSource ? _self.conflictingSource : conflictingSource // ignore: cast_nullable_to_non_nullable
 as LibrarySource?,
   ));

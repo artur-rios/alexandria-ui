@@ -493,5 +493,35 @@
   "librarySourcesStartFailed": "This folder could not be scanned.",
   "@librarySourcesStartFailed": {
     "description": "UC-06 AF-02 and AF-03: the core refused to start the run. The reason from the core follows."
+  },
+
+  "librarySourcesUnregister": "Remove",
+  "@librarySourcesUnregister": {
+      "description": "The action that unregisters a library folder (UC-08 main flow step 1)."
+  },
+
+  "librarySourcesUnregisterTitle": "Remove {label} from your library folders?",
+  "@librarySourcesUnregisterTitle": {
+      "description": "Title of the unregister confirmation (UC-08 main flow step 2).",
+      "placeholders": {
+          "label": {
+              "type": "String"
+          }
+      }
+  },
+
+  "librarySourcesUnregisterBody": "Alexandria will stop scanning this folder. Everything already cataloged from it stays in your library, and nothing on disk is touched.",
+  "@librarySourcesUnregisterBody": {
+      "description": "Body of the unregister confirmation. FR-LB-10 requires it state that catalog records and on-disk files are left untouched (BR-12)."
+  },
+
+  "librarySourcesUnregisterConfirm": "Remove the folder",
+  "@librarySourcesUnregisterConfirm": {
+      "description": "The confirming action on the unregister confirmation."
+  },
+
+  "librarySourcesUnregisterRefused": "This folder is being scanned. It can be removed once the scan finishes.",
+  "@librarySourcesUnregisterRefused": {
+      "description": "UC-08 AF-02: a folder with a run in flight is refused until the run settles."
   }
 }

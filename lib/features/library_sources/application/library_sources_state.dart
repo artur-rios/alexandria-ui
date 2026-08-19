@@ -31,6 +31,10 @@ abstract class LibrarySourcesState with _$LibrarySourcesState {
     /// The path the last refusal was about, so the message can name it.
     String? refusedPath,
 
+    /// The folder whose unregistration was refused because a run is in flight
+    /// (UC-08 AF-02), or `null`.
+    String? unregisterRefusedFor,
+
     /// The already-registered folder the last attempt conflicted with.
     ///
     /// AF-03 highlights this entry in the list, which is why the source is

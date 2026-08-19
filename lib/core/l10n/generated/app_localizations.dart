@@ -727,6 +727,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This folder could not be scanned.'**
   String get librarySourcesStartFailed;
+
+  /// The action that unregisters a library folder (UC-08 main flow step 1).
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get librarySourcesUnregister;
+
+  /// Title of the unregister confirmation (UC-08 main flow step 2).
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {label} from your library folders?'**
+  String librarySourcesUnregisterTitle(String label);
+
+  /// Body of the unregister confirmation. FR-LB-10 requires it state that catalog records and on-disk files are left untouched (BR-12).
+  ///
+  /// In en, this message translates to:
+  /// **'Alexandria will stop scanning this folder. Everything already cataloged from it stays in your library, and nothing on disk is touched.'**
+  String get librarySourcesUnregisterBody;
+
+  /// The confirming action on the unregister confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the folder'**
+  String get librarySourcesUnregisterConfirm;
+
+  /// UC-08 AF-02: a folder with a run in flight is refused until the run settles.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is being scanned. It can be removed once the scan finishes.'**
+  String get librarySourcesUnregisterRefused;
 }
 
 class _AppLocalizationsDelegate

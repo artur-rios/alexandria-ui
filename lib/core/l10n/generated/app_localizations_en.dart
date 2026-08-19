@@ -374,4 +374,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get librarySourcesStartFailed => 'This folder could not be scanned.';
+
+  @override
+  String get librarySourcesUnregister => 'Remove';
+
+  @override
+  String librarySourcesUnregisterTitle(String label) {
+    return 'Remove $label from your library folders?';
+  }
+
+  @override
+  String get librarySourcesUnregisterBody =>
+      'Alexandria will stop scanning this folder. Everything already cataloged from it stays in your library, and nothing on disk is touched.';
+
+  @override
+  String get librarySourcesUnregisterConfirm => 'Remove the folder';
+
+  @override
+  String get librarySourcesUnregisterRefused =>
+      'This folder is being scanned. It can be removed once the scan finishes.';
 }
