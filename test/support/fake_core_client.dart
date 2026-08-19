@@ -24,6 +24,10 @@ class FakeCoreClient implements CoreClient {
     this.failOnAuthLocalRegister = false,
     CoreJsonResponse? authLocalSetCredentialsResult,
     this.failOnAuthLocalSetCredentials = false,
+    CoreRunStart? indexStartResult,
+    this.failOnIndexStart = false,
+    CoreJsonResponse? indexRunStatusResult,
+    this.failOnIndexRunStatus = false,
   }) : healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
        authLocalLoginResult =
@@ -37,6 +41,27 @@ class FakeCoreClient implements CoreClient {
                  // logs in to. Registration's fake below is the unconfirmed
                  // one, which is what the core answers there.
                  '"emailConfirmed":true}',
+           ),
+       indexStartResult =
+           indexStartResult ??
+           (
+             status: 0,
+             runId: '3f9a1b7c-2d4e-4a8b-9c1d-5e6f70819a2b',
+           ),
+       indexRunStatusResult =
+           indexRunStatusResult ??
+           (
+             status: 0,
+             // A finished index run, in the shape the core's CatalogRun body
+             // takes: the counts are flattened into it and the index kind
+             // carries scanned/indexed/skipped/failed.
+             json:
+                 '{"runId":"3f9a1b7c-2d4e-4a8b-9c1d-5e6f70819a2b",'
+                 '"kind":"index","status":"complete",'
+                 '"root":"/home/owner/music",'
+                 '"startedAt":"2026-08-19T10:30:00Z",'
+                 '"finishedAt":"2026-08-19T10:31:00Z",'
+                 '"scanned":120,"indexed":118,"skipped":2,"failed":0}',
            ),
        authLocalSetCredentialsResult =
            authLocalSetCredentialsResult ??
@@ -114,6 +139,24 @@ class FakeCoreClient implements CoreClient {
   final List<({String jsonBody, String token})> authLocalSetCredentialsCalls =
       [];
 
+  /// What [indexStart] answers (UC-06).
+  final CoreRunStart indexStartResult;
+
+  /// Whether [indexStart] throws instead of answering.
+  final bool failOnIndexStart;
+
+  /// What [indexRunStatus] answers (UC-06).
+  final CoreJsonResponse indexRunStatusResult;
+
+  /// Whether [indexRunStatus] throws instead of answering.
+  final bool failOnIndexRunStatus;
+
+  /// What [indexStart] was called with, in order.
+  final List<({String root, String token})> indexStarts = [];
+
+  /// What [indexRunStatus] was called with, in order.
+  final List<({String runId, String token})> indexRunStatusCalls = [];
+
   /// How many times [dispose] was called.
   int disposeCount = 0;
 
@@ -167,6 +210,24 @@ class FakeCoreClient implements CoreClient {
     // rather than with nothing (UC-04 main flow step 4).
     authLocalSetCredentialsCalls.add((jsonBody: jsonBody, token: token));
     return authLocalSetCredentialsResult;
+  }
+
+  @override
+  Future<CoreRunStart> indexStart(String root, String token) async {
+    if (failOnIndexStart) {
+      throw const CoreCallException('index start call failed');
+    }
+    indexStarts.add((root: root, token: token));
+    return indexStartResult;
+  }
+
+  @override
+  Future<CoreJsonResponse> indexRunStatus(String runId, String token) async {
+    if (failOnIndexRunStatus) {
+      throw const CoreCallException('index run status call failed');
+    }
+    indexRunStatusCalls.add((runId: runId, token: token));
+    return indexRunStatusResult;
   }
 
   @override
