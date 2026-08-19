@@ -393,4 +393,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get librarySourcesUnregisterRefused =>
       'This folder is being scanned. It can be removed once the scan finishes.';
+
+  @override
+  String get librarySourcesRefresh => 'Refresh the catalog';
+
+  @override
+  String get librarySourcesRefreshing => 'Re-checking the catalog…';
+
+  @override
+  String librarySourcesRefreshComplete(
+    int refreshed,
+    int unchanged,
+    int missing,
+  ) {
+    return '$refreshed files updated, $unchanged unchanged, $missing now missing.';
+  }
+
+  @override
+  String get librarySourcesRefreshRunning =>
+      'The catalog is already being re-checked.';
+
+  @override
+  String get librarySourcesRefreshEmpty =>
+      'There is nothing cataloged yet. Add a folder and index it first.';
+
+  @override
+  String get librarySourcesRefreshFailed =>
+      'The catalog could not be re-checked.';
+
+  @override
+  String get librarySourcesMissingReviewPending =>
+      'Reviewing missing files arrives with its own use case.';
 }

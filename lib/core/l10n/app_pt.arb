@@ -114,5 +114,19 @@
 
   "librarySourcesUnregisterConfirm": "Remover a pasta",
 
-  "librarySourcesUnregisterRefused": "Esta pasta est\u00e1 sendo analisada. Ela pode ser removida quando a an\u00e1lise terminar."
+  "librarySourcesUnregisterRefused": "Esta pasta est\u00e1 sendo analisada. Ela pode ser removida quando a an\u00e1lise terminar.",
+
+  "librarySourcesRefresh": "Atualizar o cat\u00e1logo",
+
+  "librarySourcesRefreshing": "Reverificando o cat\u00e1logo\u2026",
+
+  "librarySourcesRefreshComplete": "{refreshed} arquivos atualizados, {unchanged} sem altera\u00e7\u00e3o, {missing} agora ausentes.",
+
+  "librarySourcesRefreshRunning": "O cat\u00e1logo j\u00e1 est\u00e1 sendo reverificado.",
+
+  "librarySourcesRefreshEmpty": "Ainda n\u00e3o h\u00e1 nada catalogado. Adicione uma pasta e indexe-a primeiro.",
+
+  "librarySourcesRefreshFailed": "N\u00e3o foi poss\u00edvel reverificar o cat\u00e1logo.",
+
+  "librarySourcesMissingReviewPending": "A revis\u00e3o de arquivos ausentes chega com o caso de uso dela."
 }

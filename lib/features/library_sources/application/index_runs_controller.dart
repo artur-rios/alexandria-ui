@@ -78,6 +78,99 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     }
   }
 
+  /// Starts a refresh over everything already cataloged (UC-07, FR-LB-06).
+  ///
+  /// AF-01 refuses a second one while a refresh is running, and AF-02 refuses
+  /// an empty catalog — there is nothing to re-check, and registering a folder
+  /// is what the owner actually needs (UC-05, UC-06).
+  Future<void> startRefresh() async {
+    if (state.isRefreshing) {
+      state = state.copyWith(refreshRefusal: RefreshRefusal.alreadyRunning);
+      return;
+    }
+
+    final credential = _session.credential;
+    if (credential == null) return;
+
+    state = state.copyWith(
+      refreshRefusal: null,
+      refreshFailure: null,
+      refreshStarting: true,
+    );
+
+    // Asked before the call rather than after a refusal, because "nothing to
+    // refresh" is not a failure and should not read as one. A count the core
+    // could not answer is not treated as empty (AF-02).
+    final cataloged = await _gateway.countCatalogedFiles();
+    if (cataloged == 0) {
+      state = state.copyWith(
+        refreshStarting: false,
+        refreshRefusal: RefreshRefusal.catalogEmpty,
+      );
+      return;
+    }
+
+    final outcome = await _gateway.startRefresh(credential: credential);
+
+    switch (outcome) {
+      case IndexStarted(:final runId):
+        state = state.copyWith(
+          refreshStarting: false,
+          refreshRun: IndexRun(
+            runId: runId,
+            root: '',
+            kind: IndexRunKind.refresh,
+            status: IndexRunStatus.running,
+          ),
+        );
+        await _pollRefresh();
+        _schedulePolling();
+
+      // AF-04: the same rule every other call follows — a rejected session
+      // returns the owner to login.
+      case IndexStartFailed(failure: final UnauthorizedFailure failure):
+        state = state.copyWith(refreshStarting: false);
+        _session.invalidate(failure);
+
+      case IndexStartFailed(:final failure):
+        _log.info('refresh refused (${failure.coreStatusCode})');
+        state = state.copyWith(refreshStarting: false, refreshFailure: failure);
+    }
+  }
+
+  /// Clears the refresh's outcome, which stays until asked (FR-LB-08).
+  void dismissRefresh() => state = state.copyWith(
+    refreshRun: null,
+    refreshRefusal: null,
+    refreshFailure: null,
+  );
+
+  Future<void> _pollRefresh() async {
+    final run = state.refreshRun;
+    final credential = _session.credential;
+    if (run == null || credential == null) return;
+
+    final outcome = await _gateway.readRun(
+      runId: run.runId,
+      credential: credential,
+    );
+
+    switch (outcome) {
+      case IndexRunRead(run: final observed):
+        state = state.copyWith(
+          refreshRun: observed.copyWith(kind: IndexRunKind.refresh),
+        );
+
+      case IndexRunFailed(failure: final UnauthorizedFailure failure):
+        _stopPolling();
+        _session.invalidate(failure);
+
+      case IndexRunFailed(:final failure):
+        state = state.copyWith(refreshRun: null, refreshFailure: failure);
+        _stopPolling();
+    }
+  }
+
   /// Reads every in-flight run once (main flow step 4).
   ///
   /// Public so a test can advance the observation without waiting on a timer,
@@ -86,8 +179,9 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     for (final root in state.inFlightRoots) {
       await _poll(root);
     }
+    if (state.isRefreshing) await _pollRefresh();
 
-    if (state.inFlightRoots.isEmpty) _stopPolling();
+    if (state.inFlightRoots.isEmpty && !state.isRefreshing) _stopPolling();
   }
 
   /// Picks up runs the core is still doing, or finished while the application
@@ -204,7 +298,8 @@ class IndexRunsController extends Notifier<IndexRunsState> {
   }
 
   void _schedulePolling() {
-    if (_poller != null || state.inFlightRoots.isEmpty) return;
+    if (_poller != null) return;
+    if (state.inFlightRoots.isEmpty && !state.isRefreshing) return;
 
     // Polling rather than a subscription, because the core's FFI surface
     // publishes a status query and no callback. The interval is injected so a

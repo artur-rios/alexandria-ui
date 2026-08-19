@@ -393,4 +393,35 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get librarySourcesUnregisterRefused =>
       'Esta pasta está sendo analisada. Ela pode ser removida quando a análise terminar.';
+
+  @override
+  String get librarySourcesRefresh => 'Atualizar o catálogo';
+
+  @override
+  String get librarySourcesRefreshing => 'Reverificando o catálogo…';
+
+  @override
+  String librarySourcesRefreshComplete(
+    int refreshed,
+    int unchanged,
+    int missing,
+  ) {
+    return '$refreshed arquivos atualizados, $unchanged sem alteração, $missing agora ausentes.';
+  }
+
+  @override
+  String get librarySourcesRefreshRunning =>
+      'O catálogo já está sendo reverificado.';
+
+  @override
+  String get librarySourcesRefreshEmpty =>
+      'Ainda não há nada catalogado. Adicione uma pasta e indexe-a primeiro.';
+
+  @override
+  String get librarySourcesRefreshFailed =>
+      'Não foi possível reverificar o catálogo.';
+
+  @override
+  String get librarySourcesMissingReviewPending =>
+      'A revisão de arquivos ausentes chega com o caso de uso dela.';
 }

@@ -62,6 +62,49 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
+  Future<IndexStartOutcome> startRefresh({required String credential}) async {
+    final CoreRunStart result;
+    try {
+      result = await _core.indexRefreshStart(credential);
+    } on CoreCallException {
+      return const IndexStartOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.indexing,
+          code: callFailedCode,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.indexing.isOk(result.status)) {
+      return IndexStartOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.indexing, result.status),
+      );
+    }
+
+    if (result.runId.isEmpty) {
+      return const IndexStartOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.indexing,
+          code: callFailedCode,
+        ),
+      );
+    }
+
+    return IndexStartOutcome.started(runId: result.runId);
+  }
+
+  @override
+  Future<int> countCatalogedFiles() async {
+    try {
+      return await _core.indexCountFiles();
+    } on CoreCallException {
+      // Unknown rather than empty: offering to register a folder because the
+      // count could not be read would be answering AF-02 on a guess.
+      return -1;
+    }
+  }
+
+  @override
   Future<IndexRunOutcome> readRun({
     required String runId,
     required String credential,
@@ -109,18 +152,25 @@ class CoreIndexGateway implements IndexGateway {
   /// defaults rather than being required.
   IndexRun _runFrom(Map<String, dynamic> body, {required String fallbackId}) {
     final status = IndexRunStatus.parse(body['status'] as String?);
-    final hasCounts =
-        body.containsKey('scanned') || body.containsKey('indexed');
+    // A running run carries no counts at all, and the two kinds carry
+    // different ones — so the presence of any of them is what decides whether
+    // there is a tally to read.
+    const countKeys = ['scanned', 'indexed', 'refreshed', 'markedMissing'];
+    final hasCounts = countKeys.any(body.containsKey);
 
     return IndexRun(
       runId: body['runId'] as String? ?? fallbackId,
       root: body['root'] as String? ?? '',
+      kind: IndexRunKind.parse(body['kind'] as String?),
       status: status,
       counts: hasCounts
           ? IndexRunCounts(
               scanned: body['scanned'] as int? ?? 0,
               indexed: body['indexed'] as int? ?? 0,
               skipped: body['skipped'] as int? ?? 0,
+              refreshed: body['refreshed'] as int? ?? 0,
+              markedMissing: body['markedMissing'] as int? ?? 0,
+              unchanged: body['unchanged'] as int? ?? 0,
               failed: body['failed'] as int? ?? 0,
             )
           : null,

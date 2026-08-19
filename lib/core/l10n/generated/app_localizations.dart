@@ -757,6 +757,52 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This folder is being scanned. It can be removed once the scan finishes.'**
   String get librarySourcesUnregisterRefused;
+
+  /// The action that re-checks everything already cataloged, across every folder at once (UC-07 main flow step 1, FR-LB-06).
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh the catalog'**
+  String get librarySourcesRefresh;
+
+  /// Shown while a refresh is in flight (UC-07 main flow step 3).
+  ///
+  /// In en, this message translates to:
+  /// **'Re-checking the catalog…'**
+  String get librarySourcesRefreshing;
+
+  /// UC-07 main flow step 4: a finished refresh's tally, in the core's own counts for a refresh run.
+  ///
+  /// In en, this message translates to:
+  /// **'{refreshed} files updated, {unchanged} unchanged, {missing} now missing.'**
+  String librarySourcesRefreshComplete(
+    int refreshed,
+    int unchanged,
+    int missing,
+  );
+
+  /// UC-07 AF-01: a second refresh is refused while one is in flight.
+  ///
+  /// In en, this message translates to:
+  /// **'The catalog is already being re-checked.'**
+  String get librarySourcesRefreshRunning;
+
+  /// UC-07 AF-02: the catalog is empty, so registering and indexing a folder is offered instead of a refresh (UC-05, UC-06).
+  ///
+  /// In en, this message translates to:
+  /// **'There is nothing cataloged yet. Add a folder and index it first.'**
+  String get librarySourcesRefreshEmpty;
+
+  /// UC-07: the core refused to start the refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'The catalog could not be re-checked.'**
+  String get librarySourcesRefreshFailed;
+
+  /// UC-07 AF-03: the outcome reports how many files are now missing; the link to the missing-files review is UC-37, which is not built yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewing missing files arrives with its own use case.'**
+  String get librarySourcesMissingReviewPending;
 }
 
 class _AppLocalizationsDelegate

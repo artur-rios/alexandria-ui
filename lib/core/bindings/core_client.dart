@@ -77,6 +77,20 @@ abstract interface class CoreClient {
   /// numerically and disagree on what `4` means.
   Future<CoreJsonResponse> indexRunStatus(String runId, String token);
 
+  /// Starts a refresh run over everything already cataloged through
+  /// `alexandria_index_refresh_start` (FR-LB-06, UC-07).
+  ///
+  /// Takes no root: a refresh covers the whole catalog rather than one folder,
+  /// which is the difference between it and [indexStart].
+  Future<CoreRunStart> indexRefreshStart(String token);
+
+  /// How many files the catalog holds, through
+  /// `alexandria_index_count_files` (UC-07 AF-02).
+  ///
+  /// Answers the one question the refresh needs before it starts: there is
+  /// nothing to re-check in an empty catalog.
+  Future<int> indexCountFiles();
+
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
 }
@@ -142,6 +156,14 @@ class FfiCoreClient implements CoreClient {
   Future<CoreJsonResponse> indexRunStatus(String runId, String token) async =>
       await _isolate.call('indexRunStatus', [runId, token])
           as CoreJsonResponse;
+
+  @override
+  Future<CoreRunStart> indexRefreshStart(String token) async =>
+      await _isolate.call('indexRefreshStart', [token]) as CoreRunStart;
+
+  @override
+  Future<int> indexCountFiles() async =>
+      await _isolate.call('countFiles') as int;
 
   @override
   Future<void> dispose() => _isolate.dispose();

@@ -523,5 +523,51 @@
   "librarySourcesUnregisterRefused": "This folder is being scanned. It can be removed once the scan finishes.",
   "@librarySourcesUnregisterRefused": {
       "description": "UC-08 AF-02: a folder with a run in flight is refused until the run settles."
+  },
+
+  "librarySourcesRefresh": "Refresh the catalog",
+  "@librarySourcesRefresh": {
+      "description": "The action that re-checks everything already cataloged, across every folder at once (UC-07 main flow step 1, FR-LB-06)."
+  },
+
+  "librarySourcesRefreshing": "Re-checking the catalog\u2026",
+  "@librarySourcesRefreshing": {
+      "description": "Shown while a refresh is in flight (UC-07 main flow step 3)."
+  },
+
+  "librarySourcesRefreshComplete": "{refreshed} files updated, {unchanged} unchanged, {missing} now missing.",
+  "@librarySourcesRefreshComplete": {
+      "description": "UC-07 main flow step 4: a finished refresh's tally, in the core's own counts for a refresh run.",
+      "placeholders": {
+          "refreshed": {
+              "type": "int"
+          },
+          "unchanged": {
+              "type": "int"
+          },
+          "missing": {
+              "type": "int"
+          }
+      }
+  },
+
+  "librarySourcesRefreshRunning": "The catalog is already being re-checked.",
+  "@librarySourcesRefreshRunning": {
+      "description": "UC-07 AF-01: a second refresh is refused while one is in flight."
+  },
+
+  "librarySourcesRefreshEmpty": "There is nothing cataloged yet. Add a folder and index it first.",
+  "@librarySourcesRefreshEmpty": {
+      "description": "UC-07 AF-02: the catalog is empty, so registering and indexing a folder is offered instead of a refresh (UC-05, UC-06)."
+  },
+
+  "librarySourcesRefreshFailed": "The catalog could not be re-checked.",
+  "@librarySourcesRefreshFailed": {
+      "description": "UC-07: the core refused to start the refresh."
+  },
+
+  "librarySourcesMissingReviewPending": "Reviewing missing files arrives with its own use case.",
+  "@librarySourcesMissingReviewPending": {
+      "description": "UC-07 AF-03: the outcome reports how many files are now missing; the link to the missing-files review is UC-37, which is not built yet."
   }
 }

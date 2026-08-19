@@ -86,6 +86,8 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
               const SizedBox(height: AppSpacing.md),
             ],
 
+            const _RefreshReport(),
+
             Expanded(
               child: state.isEmpty
                   ? const _FirstRunGuidance()
@@ -93,21 +95,28 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
             ),
 
             const SizedBox(height: AppSpacing.md),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: FilledButton.icon(
-                // The screen's primary action, focused so it is reachable from
-                // the keyboard (FR-UX-11).
-                autofocus: true,
-                onPressed: state.registering ? null : () => _addFolder(context),
-                icon: state.registering
-                    ? const SizedBox.square(
-                        dimension: AppSpacing.md,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.create_new_folder_outlined),
-                label: Text(l10n.librarySourcesAdd),
-              ),
+            Row(
+              children: [
+                FilledButton.icon(
+                  // The screen's primary action, focused so it is reachable from
+                  // the keyboard (FR-UX-11).
+                  autofocus: true,
+                  onPressed: state.registering
+                      ? null
+                      : () => _addFolder(context),
+                  icon: state.registering
+                      ? const SizedBox.square(
+                          dimension: AppSpacing.md,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.create_new_folder_outlined),
+                  label: Text(l10n.librarySourcesAdd),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                // UC-07: catalog-wide, so it sits beside the folder list
+                // rather than on any row (FR-LB-06).
+                const _RefreshAction(),
+              ],
             ),
           ],
         ),
@@ -527,4 +536,86 @@ Future<void> _confirmUnregister(
   await ref
       .read(librarySourcesControllerProvider.notifier)
       .unregisterFolder(path);
+}
+
+/// The control that starts a catalog-wide refresh (UC-07, FR-LB-06).
+class _RefreshAction extends ConsumerWidget {
+  const _RefreshAction();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final runs = ref.watch(indexRunsControllerProvider);
+    final busy = runs.isRefreshing || runs.refreshStarting;
+
+    return OutlinedButton.icon(
+      onPressed: busy
+          ? null
+          : () => ref.read(indexRunsControllerProvider.notifier).startRefresh(),
+      icon: busy
+          ? const SizedBox.square(
+              dimension: AppSpacing.md,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.autorenew),
+      label: Text(
+        busy ? l10n.librarySourcesRefreshing : l10n.librarySourcesRefresh,
+      ),
+    );
+  }
+}
+
+/// What the refresh is doing, or did (UC-07 main flow step 4, FR-LB-08).
+class _RefreshReport extends ConsumerWidget {
+  const _RefreshReport();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final runs = ref.watch(indexRunsControllerProvider);
+    final run = runs.refreshRun;
+
+    final message = switch ((runs.refreshRefusal, runs.refreshFailure, run)) {
+      // AF-01.
+      (RefreshRefusal.alreadyRunning, _, _) =>
+        l10n.librarySourcesRefreshRunning,
+      // AF-02: nothing cataloged, so adding and indexing a folder is what the
+      // owner needs — and both actions are already on this screen.
+      (RefreshRefusal.catalogEmpty, _, _) => l10n.librarySourcesRefreshEmpty,
+      (_, final Failure problem, _) =>
+        '${l10n.librarySourcesRefreshFailed} ${problem.localizedMessage(l10n)}',
+      (_, _, final IndexRun finished)
+          when !finished.isInFlight && finished.counts != null =>
+        _outcomeOf(finished.counts!, l10n),
+      _ => null,
+    };
+
+    if (message == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: _NoticeBar(
+        message: message,
+        onDismiss: () =>
+            ref.read(indexRunsControllerProvider.notifier).dismissRefresh(),
+      ),
+    );
+  }
+
+  /// A finished refresh's tally, in the core's counts for a refresh run.
+  ///
+  /// AF-03 asks that the outcome link to the missing-files review. The count
+  /// is reported here — FR-LB-08 requires it — and the link is UC-37's, which
+  /// is why a missing count says so rather than going nowhere.
+  String _outcomeOf(IndexRunCounts counts, AppLocalizations l10n) {
+    final summary = l10n.librarySourcesRefreshComplete(
+      counts.refreshed,
+      counts.unchanged,
+      counts.markedMissing,
+    );
+
+    if (counts.markedMissing == 0) return summary;
+
+    return '$summary ${l10n.librarySourcesMissingReviewPending}';
+  }
 }

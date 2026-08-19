@@ -28,6 +28,9 @@ class FakeCoreClient implements CoreClient {
     this.failOnIndexStart = false,
     CoreJsonResponse? indexRunStatusResult,
     this.failOnIndexRunStatus = false,
+    CoreRunStart? indexRefreshStartResult,
+    this.failOnIndexRefreshStart = false,
+    this.countFilesResult = 120,
   }) : healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
        authLocalLoginResult =
@@ -48,6 +51,9 @@ class FakeCoreClient implements CoreClient {
              status: 0,
              runId: '3f9a1b7c-2d4e-4a8b-9c1d-5e6f70819a2b',
            ),
+       indexRefreshStartResult =
+           indexRefreshStartResult ??
+           (status: 0, runId: '8c2d0e51-77af-4b93-8a10-2f6c4d9b1e37'),
        indexRunStatusResult =
            indexRunStatusResult ??
            (
@@ -151,6 +157,18 @@ class FakeCoreClient implements CoreClient {
   /// Whether [indexRunStatus] throws instead of answering.
   final bool failOnIndexRunStatus;
 
+  /// What [indexRefreshStart] answers (UC-07).
+  final CoreRunStart indexRefreshStartResult;
+
+  /// Whether [indexRefreshStart] throws instead of answering.
+  final bool failOnIndexRefreshStart;
+
+  /// How many files [indexCountFiles] reports (UC-07 AF-02).
+  final int countFilesResult;
+
+  /// The tokens [indexRefreshStart] was called with, in order.
+  final List<String> indexRefreshStarts = [];
+
   /// What [indexStart] was called with, in order.
   final List<({String root, String token})> indexStarts = [];
 
@@ -229,6 +247,18 @@ class FakeCoreClient implements CoreClient {
     indexRunStatusCalls.add((runId: runId, token: token));
     return indexRunStatusResult;
   }
+
+  @override
+  Future<CoreRunStart> indexRefreshStart(String token) async {
+    if (failOnIndexRefreshStart) {
+      throw const CoreCallException('index refresh start call failed');
+    }
+    indexRefreshStarts.add(token);
+    return indexRefreshStartResult;
+  }
+
+  @override
+  Future<int> indexCountFiles() async => countFilesResult;
 
   @override
   Future<void> dispose() async => disposeCount++;
