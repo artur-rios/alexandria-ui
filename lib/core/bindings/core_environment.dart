@@ -95,9 +95,9 @@ final int Function(Pointer<Utf16>, Pointer<Utf16>) _setEnvironmentVariableW =
         )
         .asFunction();
 
-final int Function(Pointer<Char>, Pointer<Char>, int) _setenv = DynamicLibrary
-    .process()
-    .lookup<NativeFunction<Int32 Function(Pointer<Char>, Pointer<Char>, Int32)>>(
-      'setenv',
-    )
-    .asFunction();
+final int Function(Pointer<Char>, Pointer<Char>, int) _setenv =
+    DynamicLibrary.process()
+        .lookup<
+          NativeFunction<Int32 Function(Pointer<Char>, Pointer<Char>, Int32)>
+        >('setenv')
+        .asFunction();

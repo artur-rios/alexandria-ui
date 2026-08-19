@@ -64,10 +64,7 @@ abstract interface class AuthGateway {
   ///
   /// [password] is used for the duration of this call and not retained
   /// (FR-AU-11).
-  Future<AuthOutcome> logIn({
-    required String email,
-    required String password,
-  });
+  Future<AuthOutcome> logIn({required String email, required String password});
 
   /// Creates the owner's single account through the core and opens a session
   /// (FR-AU-02, UC-01).
@@ -83,11 +80,46 @@ abstract interface class AuthGateway {
     required String passwordConfirmation,
   });
 
+  /// Replaces the stored e-mail and password (FR-AU-10, UC-04).
+  ///
+  /// [credential] is the active session's, which the core requires: this
+  /// changes credentials that already exist. The session stays valid
+  /// afterwards, so the caller keeps the one it passed in.
+  ///
+  /// As with registration, the core takes the confirmation too — it is the
+  /// one that refuses a mismatch, and the application checks first only so an
+  /// attempt that cannot succeed never becomes a call (AF-01).
+  ///
+  /// Neither password nor [credential] is retained beyond this call
+  /// (FR-AU-11).
+  Future<CredentialChangeOutcome> changeCredentials({
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+    required String credential,
+  });
+
   /// Whether the core already holds an account (FR-AU-01).
   ///
   /// Answers main flow step 1: the application shows sign-up on a fresh
   /// installation and login otherwise, before the owner types anything.
   Future<AccountExistence> accountExists();
+}
+
+/// What a credential change produced (UC-04).
+///
+/// Its own union rather than reusing [AuthOutcome]: changing credentials does
+/// not authenticate anyone. The session that authorized the call is the one
+/// that stays valid afterwards, and an outcome carrying a `Session` would
+/// invite a caller to replace it with a new one that does not exist.
+@freezed
+sealed class CredentialChangeOutcome with _$CredentialChangeOutcome {
+  /// The core stored the new salted hash (main flow step 5).
+  const factory CredentialChangeOutcome.changed() = ChangedOutcome;
+
+  /// The core refused, and the stored credentials are unchanged (AF-03).
+  const factory CredentialChangeOutcome.failed({required Failure failure}) =
+      FailedChangeOutcome;
 }
 
 /// What the core answered when asked whether an account exists.

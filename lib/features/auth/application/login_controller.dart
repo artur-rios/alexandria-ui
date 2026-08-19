@@ -32,10 +32,7 @@ class LoginController extends Notifier<LoginState> {
   ///
   /// Returns without calling the core when local validation rejects the input
   /// (AF-01), and does nothing at all while an attempt is already in flight.
-  Future<void> submit({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> submit({required String email, required String password}) async {
     if (state is LoginSubmitting) return;
 
     // Step 4: validate before the call, so an attempt that cannot succeed

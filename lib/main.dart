@@ -117,7 +117,9 @@ Future<void> _startLogging() async {
     // A log file that cannot be opened must not stop the application starting:
     // the owner came here to read their library, not to write a log.
     AppLogger.initialize();
-    Logger('startup').warning('log file unavailable; logging to console', error);
+    Logger(
+      'startup',
+    ).warning('log file unavailable; logging to console', error);
   }
 }
 

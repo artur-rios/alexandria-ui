@@ -21,20 +21,19 @@ class CorePaths {
     Map<String, String> environment = const {},
     Future<Directory> Function()? resolveApplicationSupportDirectory,
   })
-  // An initializing formal is impossible here: the field is private and a
-  // named parameter cannot be, so `this._environment` is not expressible.
-  // ignore: prefer_initializing_formals
-  : _environment = environment,
-    _resolveApplicationSupportDirectory =
-        resolveApplicationSupportDirectory ?? getApplicationSupportDirectory;
+    // An initializing formal is impossible here: the field is private and a
+    // named parameter cannot be, so `this._environment` is not expressible.
+    // ignore: prefer_initializing_formals
+    : _environment = environment,
+       _resolveApplicationSupportDirectory =
+           resolveApplicationSupportDirectory ?? getApplicationSupportDirectory;
 
   /// Reads the environment as the process sees it.
   CorePaths.fromPlatform({
     Future<Directory> Function()? resolveApplicationSupportDirectory,
   }) : this(
          environment: Platform.environment,
-         resolveApplicationSupportDirectory:
-             resolveApplicationSupportDirectory,
+         resolveApplicationSupportDirectory: resolveApplicationSupportDirectory,
        );
 
   final Map<String, String> _environment;

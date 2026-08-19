@@ -553,6 +553,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get preferencesClose;
+
+  /// The action in preferences that opens the credential-change form (UC-04 main flow step 1). Offered only while a session is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your e-mail and password'**
+  String get changeCredentialsOpen;
+
+  /// Title of the credential-change dialog (UC-04).
+  ///
+  /// In en, this message translates to:
+  /// **'Change credentials'**
+  String get changeCredentialsTitle;
+
+  /// Explains that the e-mail and password change as one, and that the session survives the change (UC-04 postconditions).
+  ///
+  /// In en, this message translates to:
+  /// **'Both are replaced together. You stay signed in.'**
+  String get changeCredentialsIntro;
+
+  /// Label of the new e-mail field.
+  ///
+  /// In en, this message translates to:
+  /// **'New e-mail'**
+  String get changeCredentialsEmailLabel;
+
+  /// Label of the new password field.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get changeCredentialsPasswordLabel;
+
+  /// Label of the repeated-password field (FR-AU-10 requires it entered twice).
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat the new password'**
+  String get changeCredentialsConfirmationLabel;
+
+  /// The form's primary action.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get changeCredentialsSubmit;
+
+  /// UC-04 main flow step 6: the core stored the new hash and the change is confirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your e-mail and password have been changed.'**
+  String get changeCredentialsDone;
+
+  /// UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched.
+  ///
+  /// In en, this message translates to:
+  /// **'The change was refused, and your e-mail and password are unchanged.'**
+  String get changeCredentialsRejected;
 }
 
 class _AppLocalizationsDelegate

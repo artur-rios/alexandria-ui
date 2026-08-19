@@ -38,7 +38,8 @@ class RollingFileLogSink {
   /// The file records are currently appended to.
   File get currentFile => File(p.join(directory, '$baseName.log'));
 
-  File _rotatedFile(int index) => File(p.join(directory, '$baseName.$index.log'));
+  File _rotatedFile(int index) =>
+      File(p.join(directory, '$baseName.$index.log'));
 
   /// Appends one already-formatted, already-redacted record.
   ///
@@ -53,7 +54,11 @@ class RollingFileLogSink {
       _rotate();
     }
 
-    currentFile.writeAsStringSync('$line\n', mode: FileMode.append, flush: true);
+    currentFile.writeAsStringSync(
+      '$line\n',
+      mode: FileMode.append,
+      flush: true,
+    );
   }
 
   void _rotate() {

@@ -394,5 +394,50 @@
   "preferencesClose": "Done",
   "@preferencesClose": {
     "description": "The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made."
+  },
+
+  "changeCredentialsOpen": "Change your e-mail and password",
+  "@changeCredentialsOpen": {
+    "description": "The action in preferences that opens the credential-change form (UC-04 main flow step 1). Offered only while a session is active."
+  },
+
+  "changeCredentialsTitle": "Change credentials",
+  "@changeCredentialsTitle": {
+    "description": "Title of the credential-change dialog (UC-04)."
+  },
+
+  "changeCredentialsIntro": "Both are replaced together. You stay signed in.",
+  "@changeCredentialsIntro": {
+    "description": "Explains that the e-mail and password change as one, and that the session survives the change (UC-04 postconditions)."
+  },
+
+  "changeCredentialsEmailLabel": "New e-mail",
+  "@changeCredentialsEmailLabel": {
+    "description": "Label of the new e-mail field."
+  },
+
+  "changeCredentialsPasswordLabel": "New password",
+  "@changeCredentialsPasswordLabel": {
+    "description": "Label of the new password field."
+  },
+
+  "changeCredentialsConfirmationLabel": "Repeat the new password",
+  "@changeCredentialsConfirmationLabel": {
+    "description": "Label of the repeated-password field (FR-AU-10 requires it entered twice)."
+  },
+
+  "changeCredentialsSubmit": "Change",
+  "@changeCredentialsSubmit": {
+    "description": "The form's primary action."
+  },
+
+  "changeCredentialsDone": "Your e-mail and password have been changed.",
+  "@changeCredentialsDone": {
+    "description": "UC-04 main flow step 6: the core stored the new hash and the change is confirmed."
+  },
+
+  "changeCredentialsRejected": "The change was refused, and your e-mail and password are unchanged.",
+  "@changeCredentialsRejected": {
+    "description": "UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched."
   }
 }

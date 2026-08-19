@@ -50,7 +50,9 @@ class SessionController extends Notifier<SessionState> {
   /// Clears the explanation once the owner has seen it, so it does not
   /// reappear on every later visit to the login screen.
   void acknowledgeEnding() {
-    if (state case SessionAbsent(:final endedBecause) when endedBecause != null) {
+    if (state case SessionAbsent(
+      :final endedBecause,
+    ) when endedBecause != null) {
       state = const SessionState.absent();
     }
   }

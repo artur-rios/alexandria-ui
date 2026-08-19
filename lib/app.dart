@@ -62,9 +62,7 @@ class AlexandriaApp extends ConsumerWidget {
         // Startup ends where authentication begins: steps 6 and 7 of the
         // sequence — is there an account, and is its e-mail confirmed — are
         // answered by logging in (UC-02), not by the foundation.
-        StartupReady() => switch (ref.watch(
-          sessionControllerProvider,
-        )) {
+        StartupReady() => switch (ref.watch(sessionControllerProvider)) {
           // FR-AU-07: no session, so no catalog call. Which of the two
           // authentication screens depends on whether the core already holds
           // an account (FR-AU-01, UC-01 main flow step 1).

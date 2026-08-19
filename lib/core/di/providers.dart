@@ -13,6 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/application/auth_entry_controller.dart';
+import '../../features/auth/application/change_credentials_controller.dart';
+import '../../features/auth/application/change_credentials_state.dart';
 import '../../features/auth/application/login_controller.dart';
 import '../../features/auth/application/login_state.dart';
 import '../../features/auth/application/session_controller.dart';
@@ -101,6 +103,12 @@ final sessionControllerProvider =
 final loginControllerProvider = NotifierProvider<LoginController, LoginState>(
   LoginController.new,
 );
+
+/// The credential-change form's state (UC-04).
+final changeCredentialsControllerProvider =
+    NotifierProvider<ChangeCredentialsController, ChangeCredentialsState>(
+      ChangeCredentialsController.new,
+    );
 
 /// The sign-up form's state (UC-01).
 final signUpControllerProvider =
