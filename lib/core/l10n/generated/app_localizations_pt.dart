@@ -299,4 +299,52 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get changeCredentialsRejected =>
       'A alteração foi recusada, e seu e-mail e senha continuam os mesmos.';
+
+  @override
+  String get librarySourcesOpen => 'Pastas da biblioteca';
+
+  @override
+  String get librarySourcesTitle => 'Pastas da biblioteca';
+
+  @override
+  String get librarySourcesEmptyTitle => 'Nenhuma pasta da biblioteca ainda';
+
+  @override
+  String get librarySourcesEmptyBody =>
+      'Adicione uma pasta do seu disco e o Alexandria vai catalogar o que houver dentro dela. Nada é movido, copiado ou alterado.';
+
+  @override
+  String get librarySourcesAdd => 'Adicionar uma pasta';
+
+  @override
+  String librarySourcesMissing(String path) {
+    return 'Não há nenhuma pasta em $path. Nada foi adicionado.';
+  }
+
+  @override
+  String librarySourcesUnreadable(String path) {
+    return 'A pasta em $path não pode ser lida. Nada foi adicionado.';
+  }
+
+  @override
+  String get librarySourcesAlreadyRegistered =>
+      'Essa pasta já está na sua biblioteca.';
+
+  @override
+  String get librarySourcesOverlapTitle => 'Estas pastas se sobrepõem';
+
+  @override
+  String librarySourcesOverlapBody(String path, String existing) {
+    return '$path se sobrepõe a $existing, que já está na sua biblioteca. Os arquivos dentro das duas serão catalogados uma vez para cada pasta.';
+  }
+
+  @override
+  String get librarySourcesOverlapConfirm => 'Adicionar mesmo assim';
+
+  @override
+  String get librarySourcesIndexLater =>
+      'A indexação chega com o próximo caso de uso.';
+
+  @override
+  String get dismiss => 'Dispensar';
 }

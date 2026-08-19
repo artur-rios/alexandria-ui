@@ -23,6 +23,13 @@ import '../../features/auth/application/sign_up_controller.dart';
 import '../../features/auth/application/sign_up_state.dart';
 import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
+import '../../features/library_sources/application/library_sources_controller.dart';
+import '../../features/library_sources/application/library_sources_state.dart';
+import '../../features/library_sources/data/disk_folder_probe.dart';
+import '../../features/library_sources/data/native_folder_picker.dart';
+import '../../features/library_sources/data/settings_library_source_store.dart';
+import '../../features/library_sources/domain/folder_picker.dart';
+import '../../features/library_sources/domain/library_source_store.dart';
 import '../../features/shell/application/preferences_controller.dart';
 import '../../features/shell/application/preferences_state.dart';
 import '../../features/shell/application/shell_controller.dart';
@@ -136,3 +143,41 @@ final shellControllerProvider =
 final windowPlacementProvider = Provider<WindowPlacement>(
   (ref) => const DesktopWindowPlacement(),
 );
+
+/// The clock (Testing Specification §6.2).
+///
+/// Bound here so nothing below reaches for `DateTime.now()` directly and a
+/// test can register a folder at a time it chose.
+final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
+/// The platform's native folder picker (FR-LB-01).
+final folderPickerProvider = Provider<FolderPicker>(
+  (ref) => const NativeFolderPicker(),
+);
+
+/// Whether a folder on disk exists and can be read (FR-LB-02).
+final folderProbeProvider = Provider<FolderProbe>(
+  (ref) => const DiskFolderProbe(),
+);
+
+/// Where the registered library folders are kept (FR-LB-03).
+///
+/// Reads the settings store the startup sequence loaded, so it is only usable
+/// once startup has reached ready — which is when the shell, and so the
+/// library-sources screen, is reachable.
+final librarySourceStoreProvider = Provider<LibrarySourceStore>((ref) {
+  final settings = ref.read(startupControllerProvider.notifier).settings;
+  if (settings == null) {
+    throw StateError(
+      'the library source store was read before settings were loaded',
+    );
+  }
+
+  return SettingsLibrarySourceStore(settings);
+});
+
+/// The registered library folders and the screen that manages them (UC-05).
+final librarySourcesControllerProvider =
+    NotifierProvider<LibrarySourcesController, LibrarySourcesState>(
+      LibrarySourcesController.new,
+    );

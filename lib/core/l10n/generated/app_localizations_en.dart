@@ -300,4 +300,52 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get changeCredentialsRejected =>
       'The change was refused, and your e-mail and password are unchanged.';
+
+  @override
+  String get librarySourcesOpen => 'Library folders';
+
+  @override
+  String get librarySourcesTitle => 'Library folders';
+
+  @override
+  String get librarySourcesEmptyTitle => 'No library folders yet';
+
+  @override
+  String get librarySourcesEmptyBody =>
+      'Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.';
+
+  @override
+  String get librarySourcesAdd => 'Add a folder';
+
+  @override
+  String librarySourcesMissing(String path) {
+    return 'There is no folder at $path. Nothing was added.';
+  }
+
+  @override
+  String librarySourcesUnreadable(String path) {
+    return 'The folder at $path cannot be read. Nothing was added.';
+  }
+
+  @override
+  String get librarySourcesAlreadyRegistered =>
+      'That folder is already in your library.';
+
+  @override
+  String get librarySourcesOverlapTitle => 'These folders overlap';
+
+  @override
+  String librarySourcesOverlapBody(String path, String existing) {
+    return '$path overlaps $existing, which is already in your library. Files inside both will be cataloged once for each folder.';
+  }
+
+  @override
+  String get librarySourcesOverlapConfirm => 'Add it anyway';
+
+  @override
+  String get librarySourcesIndexLater =>
+      'Indexing arrives with the next use case.';
+
+  @override
+  String get dismiss => 'Dismiss';
 }

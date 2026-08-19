@@ -6,6 +6,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/application/session_state.dart';
 import '../../auth/presentation/change_credentials_dialog.dart';
+import '../../library_sources/presentation/library_sources_screen.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
 ///
@@ -99,6 +100,14 @@ class PreferencesDialog extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.md),
                 const Divider(),
                 const SizedBox(height: AppSpacing.sm),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => LibrarySourcesScreen.show(context),
+                    icon: const Icon(Icons.folder_outlined),
+                    label: Text(l10n.librarySourcesOpen),
+                  ),
+                ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(

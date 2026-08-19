@@ -1,0 +1,125 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
+
+import '../../../core/di/providers.dart';
+import '../domain/folder_picker.dart';
+import '../domain/folder_registration.dart';
+import '../domain/library_source.dart';
+import '../domain/library_source_store.dart';
+import 'library_sources_state.dart';
+
+/// Drives UC-05: registering a folder on disk as a source of files to index.
+///
+/// The order it works in is the specification's: pick, probe, check against
+/// what is registered, then record. Nothing is written until every check has
+/// answered, so a refused folder leaves the stored set exactly as it was.
+class LibrarySourcesController extends Notifier<LibrarySourcesState> {
+  static final Logger _log = Logger('library_sources');
+
+  late FolderPicker _picker;
+  late FolderProbe _probe;
+  late LibrarySourceStore _store;
+  late DateTime Function() _now;
+
+  @override
+  LibrarySourcesState build() {
+    _picker = ref.read(folderPickerProvider);
+    _probe = ref.read(folderProbeProvider);
+    _store = ref.read(librarySourceStoreProvider);
+    _now = ref.read(clockProvider);
+
+    return LibrarySourcesState(sources: _store.read());
+  }
+
+  /// Opens the picker and registers what the owner chose (main flow steps
+  /// 2–5).
+  ///
+  /// [onOverlapConfirmed] is asked only when the chosen folder overlaps one
+  /// already registered (AF-04); answering `false` cancels and changes
+  /// nothing. It is a callback rather than a second method because the
+  /// question belongs in the middle of this flow — the folder has been picked
+  /// and probed, and the owner is deciding whether to keep going. It takes
+  /// both folders because the warning names both.
+  Future<void> registerFolder({
+    required Future<bool> Function(String path, LibrarySource existing)
+    onOverlapConfirmed,
+  }) async {
+    if (state.registering) return;
+
+    final path = await _picker.pickFolder();
+    // AF-01: the owner cancelled. Nothing is registered and nothing on the
+    // screen changes — including any notice already there, which was about a
+    // different attempt and is not answered by this one.
+    if (path == null) return;
+
+    state = state.copyWith(
+      registering: true,
+      refusal: null,
+      refusedPath: null,
+      conflictingSource: null,
+    );
+
+    final exists = await _probe.exists(path);
+    // Probed only when it is there: `isReadable` on a missing folder answers
+    // false, and reporting "cannot be read" about a folder that is not there
+    // sends the owner after the wrong problem (FR-LB-02).
+    final readable = exists && await _probe.isReadable(path);
+
+    final verdict = verdictFor(
+      path: path,
+      exists: exists,
+      readable: readable,
+      registered: state.sources,
+    );
+
+    if (refuses(verdict)) {
+      _log.info('library folder refused (${verdict.name}): $path');
+      state = state.copyWith(
+        registering: false,
+        refusal: verdict,
+        refusedPath: path,
+        conflictingSource: conflictingSource(path, state.sources),
+      );
+      return;
+    }
+
+    if (verdict == FolderRegistrationVerdict.overlaps) {
+      final existing = conflictingSource(path, state.sources)!;
+      if (!await onOverlapConfirmed(path, existing)) {
+        // AF-04, cancelled: nothing is registered, and no refusal is recorded
+        // either — the owner was asked and said no, which is not an error.
+        state = state.copyWith(registering: false);
+        return;
+      }
+    }
+
+    await _record(path);
+  }
+
+  /// Records [path] and persists the set (main flow steps 4 and 5).
+  Future<void> _record(String path) async {
+    final source = LibrarySource(
+      path: path,
+      label: defaultLabelFor(path),
+      registeredAt: _now(),
+    );
+    final sources = [...state.sources, source];
+
+    await _store.write(sources);
+    _log.info('library folder registered: $path');
+
+    state = state.copyWith(sources: sources, registering: false);
+  }
+
+  /// Clears the notice once the owner has read it, so it does not outlive the
+  /// attempt it was about.
+  void acknowledgeRefusal() {
+    if (state.refusal == null) return;
+
+    state = state.copyWith(
+      refusal: null,
+      refusedPath: null,
+      conflictingSource: null,
+    );
+  }
+}

@@ -607,6 +607,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The change was refused, and your e-mail and password are unchanged.'**
   String get changeCredentialsRejected;
+
+  /// The action in preferences that opens the library-folders screen (UC-05).
+  ///
+  /// In en, this message translates to:
+  /// **'Library folders'**
+  String get librarySourcesOpen;
+
+  /// Title of the library-folders screen (UC-05).
+  ///
+  /// In en, this message translates to:
+  /// **'Library folders'**
+  String get librarySourcesTitle;
+
+  /// Heading of the first-run guidance shown whenever no folder is registered (FR-LB-11, UC-05 main flow step 1).
+  ///
+  /// In en, this message translates to:
+  /// **'No library folders yet'**
+  String get librarySourcesEmptyTitle;
+
+  /// Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06).
+  ///
+  /// In en, this message translates to:
+  /// **'Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.'**
+  String get librarySourcesEmptyBody;
+
+  /// The action that opens the platform's native folder picker (FR-LB-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Add a folder'**
+  String get librarySourcesAdd;
+
+  /// UC-05 AF-02: the chosen path does not exist.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no folder at {path}. Nothing was added.'**
+  String librarySourcesMissing(String path);
+
+  /// UC-05 AF-02: the folder exists but its contents cannot be listed.
+  ///
+  /// In en, this message translates to:
+  /// **'The folder at {path} cannot be read. Nothing was added.'**
+  String librarySourcesUnreadable(String path);
+
+  /// UC-05 AF-03: the chosen folder is already registered. The existing entry is highlighted in the list.
+  ///
+  /// In en, this message translates to:
+  /// **'That folder is already in your library.'**
+  String get librarySourcesAlreadyRegistered;
+
+  /// Title of the confirmation shown when the chosen folder contains, or sits inside, one already registered (UC-05 AF-04).
+  ///
+  /// In en, this message translates to:
+  /// **'These folders overlap'**
+  String get librarySourcesOverlapTitle;
+
+  /// Body of the overlap confirmation. Names both folders and states the consequence the owner is agreeing to (UC-05 AF-04).
+  ///
+  /// In en, this message translates to:
+  /// **'{path} overlaps {existing}, which is already in your library. Files inside both will be cataloged once for each folder.'**
+  String librarySourcesOverlapBody(String path, String existing);
+
+  /// The confirming action on the overlap warning (UC-05 AF-04).
+  ///
+  /// In en, this message translates to:
+  /// **'Add it anyway'**
+  String get librarySourcesOverlapConfirm;
+
+  /// Placeholder beside each registered folder. UC-05 lists the folder and offers indexing; the index action itself is UC-06.
+  ///
+  /// In en, this message translates to:
+  /// **'Indexing arrives with the next use case.'**
+  String get librarySourcesIndexLater;
+
+  /// Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get dismiss;
 }
 
 class _AppLocalizationsDelegate

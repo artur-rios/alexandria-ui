@@ -61,6 +61,11 @@ dependencies:
   # itself reports the window, not the screens.
   screen_retriever: ^0.2.2
 
+  # The platform's native folder picker (Technology Stack Document §3.5).
+  # FR-LB-01 asks for the native one specifically: a folder chosen through a
+  # dialog the owner recognizes, not a path typed into a text field.
+  file_selector: ^1.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
