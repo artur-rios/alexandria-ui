@@ -106,6 +106,18 @@ abstract interface class CoreClient {
   /// file — none of which a listing carries.
   Future<CoreJsonResponse> fileByUuid(String uuid, String token);
 
+  /// Replaces the type-specific metadata of the file [uuid] identifies
+  /// (FR-ME-01, UC-15).
+  ///
+  /// [jsonPatch] is the whole metadata object, tagged by type. The core
+  /// replaces the editable columns with it rather than merging: a field the
+  /// body omits is written as NULL, which is how a field is cleared.
+  Future<CoreJsonResponse> fileEditMetadata(
+    String uuid,
+    String jsonPatch,
+    String token,
+  );
+
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
 }
@@ -187,6 +199,15 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> fileByUuid(String uuid, String token) async =>
       await _isolate.call('fileByUuid', [uuid, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> fileEditMetadata(
+    String uuid,
+    String jsonPatch,
+    String token,
+  ) async =>
+      await _isolate.call('fileEditMetadata', [uuid, jsonPatch, token])
+          as CoreJsonResponse;
 
   @override
   Future<void> dispose() => _isolate.dispose();

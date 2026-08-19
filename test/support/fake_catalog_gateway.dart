@@ -3,6 +3,7 @@ import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart'
 import 'package:alexandria_desktop/features/catalog/domain/file_details.dart';
 import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
 import 'package:alexandria_desktop/features/catalog/domain/listing_view.dart';
+import 'package:alexandria_desktop/features/catalog/domain/music_metadata.dart';
 
 /// A [CatalogGateway] that never reaches the core (Testing Specification §2.3).
 ///
@@ -34,6 +35,18 @@ class FakeCatalogGateway implements CatalogGateway {
 
   /// Every uuid asked for, in order.
   final List<String> detailsRequested = [];
+
+  /// What [editMusicMetadata] answers, in order.
+  ///
+  /// A list rather than one outcome, so a test can have the core refuse once
+  /// and accept the retry — which is the whole of AF-02: the form stays open
+  /// and the owner corrects it.
+  final List<MetadataEditOutcome> editOutcomes = [];
+
+  /// Every edit asked for, in order.
+  ///
+  /// Empty is the assertion AF-01 and AF-04 need: neither one calls the core.
+  final List<({String uuid, MusicMetadata metadata})> edits = [];
 
   /// Every type asked for, in order.
   ///
@@ -84,6 +97,24 @@ class FakeCatalogGateway implements CatalogGateway {
           details: FileDetails(file: aFile(uuid: uuid)),
         );
   }
+  @override
+  Future<MetadataEditOutcome> editMusicMetadata({
+    required String uuid,
+    required MusicMetadata metadata,
+    required String credential,
+  }) async {
+    edits.add((uuid: uuid, metadata: metadata));
+    credentials.add(credential);
+
+    // Accepting by echoing what was sent is what the core does on success: a
+    // patch is a full replace, so what it stored is what it was given.
+    if (editOutcomes.isEmpty) {
+      return MetadataEditOutcome.saved(metadata: metadata);
+    }
+
+    return editOutcomes.removeAt(0);
+  }
+
 }
 
 /// A file of [type], for a test that needs one in a listing.

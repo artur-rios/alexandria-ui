@@ -35,7 +35,24 @@ class FakeCoreClient implements CoreClient {
     this.failOnFilesList = false,
     CoreJsonResponse? fileByUuidResult,
     this.failOnFileByUuid = false,
-  }) : healthResult = healthResult ?? coreHealthyStatusCode,
+    CoreJsonResponse? fileEditMetadataResult,
+    this.failOnFileEditMetadata = false,
+  }) : fileEditMetadataResult =
+           fileEditMetadataResult ??
+           (
+             status: 0,
+             // The FileMetadata body: the record, plus the metadata that was
+             // just written.
+             json:
+                 '{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
+                 '"name":"Kind of Blue.flac",'
+                 '"path":"/home/owner/music/Kind of Blue.flac",'
+                 '"fileType":"audio","state":"active"},'
+                 '"metadata":{"type":"audio","title":"So What",'
+                 '"artist":"Miles Davis","album":"Kind of Blue",'
+                 '"year":1959,"genre":"Jazz","track":1}}',
+           ),
+       healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
        authLocalLoginResult =
            authLocalLoginResult ??
@@ -209,6 +226,19 @@ class FakeCoreClient implements CoreClient {
   /// What [fileByUuid] was called with, in order.
   final List<({String uuid, String token})> fileByUuidCalls = [];
 
+  /// What [fileEditMetadata] answers (UC-15).
+  final CoreJsonResponse fileEditMetadataResult;
+
+  /// Whether [fileEditMetadata] throws instead of answering.
+  final bool failOnFileEditMetadata;
+
+  /// What [fileEditMetadata] was called with, in order.
+  ///
+  /// The patch is kept as sent, because the shape of the body is part of the
+  /// contract: the core reads the type tag off it to check the file's subtype.
+  final List<({String uuid, String patch, String token})>
+  fileEditMetadataCalls = [];
+
   /// What [filesList] was called with, in order.
   final List<({String filters, String token})> filesListCalls = [];
 
@@ -319,6 +349,19 @@ class FakeCoreClient implements CoreClient {
     }
     fileByUuidCalls.add((uuid: uuid, token: token));
     return fileByUuidResult;
+  }
+
+  @override
+  Future<CoreJsonResponse> fileEditMetadata(
+    String uuid,
+    String jsonPatch,
+    String token,
+  ) async {
+    if (failOnFileEditMetadata) {
+      throw const CoreCallException('metadata edit call failed');
+    }
+    fileEditMetadataCalls.add((uuid: uuid, patch: jsonPatch, token: token));
+    return fileEditMetadataResult;
   }
 
   @override

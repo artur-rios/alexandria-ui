@@ -27,6 +27,7 @@ import '../../features/library_sources/application/library_sources_controller.da
 import '../../features/library_sources/application/library_sources_state.dart';
 import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
+import '../../features/catalog/application/music_metadata_editor.dart';
 import '../../features/catalog/application/layout_controller.dart';
 import '../../features/catalog/application/listing_controller.dart';
 import '../../features/catalog/application/listing_view_controller.dart';
@@ -280,4 +281,10 @@ final fileDetailsControllerProvider =
 final recentFilesProvider =
     AsyncNotifierProvider<RecentFilesController, List<CatalogFile>>(
       RecentFilesController.new,
+    );
+
+/// The open metadata form (UC-15).
+final musicMetadataEditorProvider =
+    NotifierProvider<MusicMetadataEditor, MusicEditorState>(
+      MusicMetadataEditor.new,
     );

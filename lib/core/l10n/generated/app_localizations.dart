@@ -1145,6 +1145,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The last scan was interrupted when Alexandria closed.'**
   String get dashboardLastRunInterrupted;
+
+  /// Opens the music metadata form from an audio file's detail view (UC-15 main flow step 1).
+  ///
+  /// In en, this message translates to:
+  /// **'Edit metadata'**
+  String get detailsEditMetadata;
+
+  /// Title of the music metadata form (UC-15, FR-ME-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Music metadata'**
+  String get musicMetadataTitle;
+
+  /// Label of the track title field.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get musicMetadataFieldTitle;
+
+  /// Label of the artist field.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get musicMetadataFieldArtist;
+
+  /// Label of the album field.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get musicMetadataFieldAlbum;
+
+  /// Label of the release year field.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get musicMetadataFieldYear;
+
+  /// Label of the genre field.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get musicMetadataFieldGenre;
+
+  /// Label of the track number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Track number'**
+  String get musicMetadataFieldTrack;
+
+  /// Sends the edited metadata to the core (UC-15 main flow step 5).
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get musicMetadataSave;
+
+  /// Closes the metadata form without saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get musicMetadataCancel;
+
+  /// UC-15 AF-01: a numeric field holds something that is not a number, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number.'**
+  String get musicMetadataErrorNotANumber;
+
+  /// UC-15 AF-01: the year is earlier than any recording could carry, which is a typo rather than a year.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a four-digit year.'**
+  String get musicMetadataErrorYear;
+
+  /// UC-15 AF-01: the track number is zero or negative.
+  ///
+  /// In en, this message translates to:
+  /// **'A track number starts at 1.'**
+  String get musicMetadataErrorTrack;
+
+  /// UC-15 AF-01: a text field is longer than the core stores.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this under {max} characters.'**
+  String musicMetadataErrorTooLong(int max);
 }
 
 class _AppLocalizationsDelegate
