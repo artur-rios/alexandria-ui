@@ -613,5 +613,40 @@
   "layoutUnsaved": "The layout changed, but the choice could not be saved \u2014 it will not be remembered next time.",
   "@layoutUnsaved": {
       "description": "UC-10 AF-02: the settings store could not be written. The layout still applies for this session."
+  },
+
+  "searchLabel": "Search the library",
+  "@searchLabel": {
+      "description": "Label of the catalog-wide search field (UC-11 main flow step 1)."
+  },
+
+  "searchClear": "Clear the search",
+  "@searchClear": {
+      "description": "Accessible label of the control that clears the search and restores the previous listing (UC-11 AF-02)."
+  },
+
+  "searchNoResults": "Nothing matches \u201c{term}\u201d.",
+  "@searchNoResults": {
+      "description": "UC-11 AF-01: no file matched. Names the term so the owner can see what was searched for. Distinct from loading and from error (FR-CT-09).",
+      "placeholders": {
+          "term": {
+              "type": "String"
+          }
+      }
+  },
+
+  "searchPartial": "Some of the library could not be read, so more results may exist.",
+  "@searchPartial": {
+      "description": "UC-11 AF-03: at least one type could not be listed, so the results are a partial answer rather than the whole one."
+  },
+
+  "searchResultsFor": "Results for \u201c{term}\u201d",
+  "@searchResultsFor": {
+      "description": "Heading above the grouped search results.",
+      "placeholders": {
+          "term": {
+              "type": "String"
+          }
+      }
   }
 }

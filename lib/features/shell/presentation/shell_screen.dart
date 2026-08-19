@@ -5,7 +5,9 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/catalog_search.dart';
 import '../../catalog/presentation/catalog_listing.dart';
+import '../../catalog/presentation/catalog_search_view.dart';
 import '../domain/shell_destination.dart';
 import 'playback_bar.dart';
 import 'shell_navigation_panel.dart';
@@ -54,7 +56,7 @@ class ShellScreen extends ConsumerWidget {
 /// (UC-14) and bookmarks are still the bookmark manager's (UC-28) — neither is
 /// a file listing, and building either now would be building it without its
 /// specification.
-class ShellContentArea extends StatelessWidget {
+class ShellContentArea extends ConsumerWidget {
   /// Creates the content area for [destination].
   const ShellContentArea({required this.destination, super.key});
 
@@ -62,9 +64,14 @@ class ShellContentArea extends StatelessWidget {
   final ShellDestination destination;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+
+    // UC-11: the search is across every type at once, so it belongs to the
+    // shell rather than to any one listing — and while a term is present, the
+    // results are what the content area shows.
+    final searching = isSearchable(ref.watch(searchTermProvider));
 
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -72,19 +79,25 @@ class ShellContentArea extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(destination.label(l10n), style: theme.textTheme.headlineSmall),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.md),
+          const CatalogSearchField(),
+          const SizedBox(height: AppSpacing.md),
           Expanded(
-            child: libraryTypeFor(destination) == null
-                ? Center(
-                    child: Text(
-                      l10n.shellAreaPending,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  )
-                : const CatalogListing(),
+            child: switch ((searching, libraryTypeFor(destination))) {
+              // AF-02 needs nothing of its own: an empty term is not a search,
+              // and the listing is already what an absent search shows.
+              (true, _) => const CatalogSearchResults(),
+              (false, null) => Center(
+                child: Text(
+                  l10n.shellAreaPending,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              (false, _) => const CatalogListing(),
+            },
           ),
         ],
       ),

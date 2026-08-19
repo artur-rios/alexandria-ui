@@ -137,5 +137,15 @@
 
   "layoutSubstituted": "A janela \u00e9 estreita demais para esse layout, ent\u00e3o a lista \u00e9 exibida no lugar.",
 
-  "layoutUnsaved": "O layout mudou, mas a escolha n\u00e3o p\u00f4de ser salva \u2014 ela n\u00e3o ser\u00e1 lembrada na pr\u00f3xima vez."
+  "layoutUnsaved": "O layout mudou, mas a escolha n\u00e3o p\u00f4de ser salva \u2014 ela n\u00e3o ser\u00e1 lembrada na pr\u00f3xima vez.",
+
+  "searchLabel": "Pesquisar na biblioteca",
+
+  "searchClear": "Limpar a pesquisa",
+
+  "searchNoResults": "Nada corresponde a \u201c{term}\u201d.",
+
+  "searchPartial": "Parte da biblioteca n\u00e3o p\u00f4de ser lida, ent\u00e3o podem existir mais resultados.",
+
+  "searchResultsFor": "Resultados para \u201c{term}\u201d"
 }

@@ -459,4 +459,24 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get layoutUnsaved =>
       'O layout mudou, mas a escolha não pôde ser salva — ela não será lembrada na próxima vez.';
+
+  @override
+  String get searchLabel => 'Pesquisar na biblioteca';
+
+  @override
+  String get searchClear => 'Limpar a pesquisa';
+
+  @override
+  String searchNoResults(String term) {
+    return 'Nada corresponde a “$term”.';
+  }
+
+  @override
+  String get searchPartial =>
+      'Parte da biblioteca não pôde ser lida, então podem existir mais resultados.';
+
+  @override
+  String searchResultsFor(String term) {
+    return 'Resultados para “$term”';
+  }
 }

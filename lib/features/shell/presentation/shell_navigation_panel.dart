@@ -113,7 +113,17 @@ class _CountedIcon extends StatelessWidget {
     final value = count;
     if (value == null || value == 0) return Icon(icon);
 
-    return Badge.count(count: value, child: Icon(icon));
+    final theme = Theme.of(context);
+
+    // Not the badge's default colouring, which is the error one: a count is
+    // how much is there, and drawing it in the same red as a failure makes a
+    // stocked library look like a list of problems.
+    return Badge.count(
+      count: value,
+      backgroundColor: theme.colorScheme.secondaryContainer,
+      textColor: theme.colorScheme.onSecondaryContainer,
+      child: Icon(icon),
+    );
   }
 }
 
