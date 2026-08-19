@@ -39,13 +39,16 @@ class FakeCatalogGateway implements CatalogGateway {
 CatalogFile aFile({
   String uuid = '6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f',
   String name = 'Kind of Blue.flac',
-  String path = '/home/owner/music/Kind of Blue.flac',
+  String? path,
   LibraryType type = LibraryType.audio,
   DateTime? missingAt,
 }) => CatalogFile(
   uuid: uuid,
   name: name,
-  path: path,
+  // Derived from the name unless a test says otherwise, so two fixture files
+  // never share a path. A shared one makes a search match a file by a word
+  // that is only in its neighbour name, which reads as a bug in the search.
+  path: path ?? '/home/owner/music/$name',
   type: type,
   missingAt: missingAt,
 );

@@ -148,16 +148,26 @@ void main() {
         // reachable without a pointer.
         final container = await tester.pumpShell();
 
-        for (var press = 0; press < 3; press++) {
+        // Tabbed until a destination takes the focus rather than a fixed
+        // number of presses: the shell has grown focusable controls since
+        // UC-38 — the search field is one — and counting keystrokes would
+        // make this test about the tab order rather than about reachability.
+        for (var press = 0; press < 15; press++) {
           await tester.sendKeyEvent(LogicalKeyboardKey.tab);
           await tester.pumpAndSettle();
+          await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+          await tester.pumpAndSettle();
+
+          if (container.read(shellControllerProvider) !=
+              ShellDestination.home) {
+            break;
+          }
         }
-        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-        await tester.pumpAndSettle();
 
         expect(
           container.read(shellControllerProvider),
           isNot(ShellDestination.home),
+          reason: 'FR-UX-11: the panel is reachable without a pointer',
         );
       },
     );
