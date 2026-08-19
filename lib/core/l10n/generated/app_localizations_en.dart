@@ -439,4 +439,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String catalogCount(int count) {
     return '$count';
   }
+
+  @override
+  String get layoutList => 'List';
+
+  @override
+  String get layoutDetailedList => 'List with details';
+
+  @override
+  String get layoutGrid => 'Grid';
+
+  @override
+  String get layoutLabel => 'Layout';
+
+  @override
+  String get layoutSubstituted =>
+      'The window is too narrow for that layout, so the list is shown instead.';
+
+  @override
+  String get layoutUnsaved =>
+      'The layout changed, but the choice could not be saved — it will not be remembered next time.';
 }

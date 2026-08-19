@@ -827,6 +827,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count}'**
   String catalogCount(int count);
+
+  /// The plain list layout (FR-CT-03).
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get layoutList;
+
+  /// The list layout with each file's details alongside (FR-CT-03).
+  ///
+  /// In en, this message translates to:
+  /// **'List with details'**
+  String get layoutDetailedList;
+
+  /// The grid-of-tiles layout (FR-CT-03).
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get layoutGrid;
+
+  /// Accessible label of the control that switches between the three layouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get layoutLabel;
+
+  /// UC-10 AF-01: the chosen layout does not fit, so the closest one that does is drawn and the substitution is stated rather than columns being clipped.
+  ///
+  /// In en, this message translates to:
+  /// **'The window is too narrow for that layout, so the list is shown instead.'**
+  String get layoutSubstituted;
+
+  /// UC-10 AF-02: the settings store could not be written. The layout still applies for this session.
+  ///
+  /// In en, this message translates to:
+  /// **'The layout changed, but the choice could not be saved — it will not be remembered next time.'**
+  String get layoutUnsaved;
 }
 
 class _AppLocalizationsDelegate
