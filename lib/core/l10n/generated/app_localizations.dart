@@ -863,6 +863,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The layout changed, but the choice could not be saved — it will not be remembered next time.'**
   String get layoutUnsaved;
+
+  /// Label of the catalog-wide search field (UC-11 main flow step 1).
+  ///
+  /// In en, this message translates to:
+  /// **'Search the library'**
+  String get searchLabel;
+
+  /// Accessible label of the control that clears the search and restores the previous listing (UC-11 AF-02).
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the search'**
+  String get searchClear;
+
+  /// UC-11 AF-01: no file matched. Names the term so the owner can see what was searched for. Distinct from loading and from error (FR-CT-09).
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches “{term}”.'**
+  String searchNoResults(String term);
+
+  /// UC-11 AF-03: at least one type could not be listed, so the results are a partial answer rather than the whole one.
+  ///
+  /// In en, this message translates to:
+  /// **'Some of the library could not be read, so more results may exist.'**
+  String get searchPartial;
+
+  /// Heading above the grouped search results.
+  ///
+  /// In en, this message translates to:
+  /// **'Results for “{term}”'**
+  String searchResultsFor(String term);
 }
 
 class _AppLocalizationsDelegate

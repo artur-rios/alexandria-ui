@@ -459,4 +459,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get layoutUnsaved =>
       'The layout changed, but the choice could not be saved — it will not be remembered next time.';
+
+  @override
+  String get searchLabel => 'Search the library';
+
+  @override
+  String get searchClear => 'Clear the search';
+
+  @override
+  String searchNoResults(String term) {
+    return 'Nothing matches “$term”.';
+  }
+
+  @override
+  String get searchPartial =>
+      'Some of the library could not be read, so more results may exist.';
+
+  @override
+  String searchResultsFor(String term) {
+    return 'Results for “$term”';
+  }
 }
