@@ -9,6 +9,7 @@ import '../../../core/failures/failure.dart';
 import '../domain/catalog_file.dart';
 import '../domain/catalog_gateway.dart';
 import '../domain/library_type.dart';
+import '../domain/listing_view.dart';
 
 /// [CatalogGateway] over the generated bindings (IR-03, UC-09).
 class CoreCatalogGateway implements CatalogGateway {
@@ -21,15 +22,15 @@ class CoreCatalogGateway implements CatalogGateway {
   Future<CatalogListing> listFiles({
     required LibraryType type,
     required String credential,
+    LifecycleFilter lifecycle = LifecycleFilter.active,
   }) async {
     final CoreJsonResponse response;
     try {
       response = await _core.filesList(
-        // The filter the core's own HTTP route takes. `state: active` is
-        // explicit rather than left to the default: UC-09 step 3 asks for
-        // active records, and a default that changed would silently start
-        // listing deleted ones.
-        jsonEncode({'type': type.wireName, 'state': 'active'}),
+        // The filter the core's own HTTP route takes. The state is always
+        // stated rather than left to the core's default: a default that
+        // changed would silently start listing deleted records.
+        jsonEncode({'type': type.wireName, 'state': lifecycle.wireName}),
         credential,
       );
     } on CoreCallException {
@@ -75,12 +76,14 @@ class CoreCatalogGateway implements CatalogGateway {
     if (type == null) return null;
 
     final missingAt = row['missingAt'] as String?;
+    final indexedAt = row['indexedAt'] as String?;
 
     return CatalogFile(
       uuid: row['uuid'] as String,
       name: row['name'] as String,
       path: row['path'] as String? ?? '',
       type: type,
+      indexedAt: indexedAt == null ? null : DateTime.tryParse(indexedAt),
       missingAt: missingAt == null ? null : DateTime.tryParse(missingAt),
     );
   }

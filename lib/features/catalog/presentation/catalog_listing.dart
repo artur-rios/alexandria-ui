@@ -8,6 +8,7 @@ import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/catalog_file.dart';
 import '../domain/library_type.dart';
+import '../domain/listing_view.dart';
 import '../domain/view_layout.dart';
 
 /// The files of the selected type (UC-09, FR-CT-02, FR-CT-10).
@@ -64,24 +65,41 @@ class _LayoutBar extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: SegmentedButton<ViewLayout>(
-              segments: [
-                for (final layout in ViewLayout.values)
-                  ButtonSegment(
-                    value: layout,
-                    icon: Icon(layout.icon),
-                    tooltip: layout.label(l10n),
-                  ),
-              ],
-              selected: {chosen},
-              showSelectedIcon: false,
-              onSelectionChanged: (selection) => ref
-                  .read(layoutControllerProvider.notifier)
-                  .choose(type, selection.first),
-            ),
+          Row(
+            children: [
+              const _FilterControls(),
+              const Spacer(),
+              SegmentedButton<ViewLayout>(
+                segments: [
+                  for (final layout in ViewLayout.values)
+                    ButtonSegment(
+                      value: layout,
+                      icon: Icon(layout.icon),
+                      tooltip: layout.label(l10n),
+                    ),
+                ],
+                selected: {chosen},
+                showSelectedIcon: false,
+                onSelectionChanged: (selection) => ref
+                    .read(layoutControllerProvider.notifier)
+                    .choose(type, selection.first),
+              ),
+            ],
           ),
+
+          // AF-04: the core refused a filter, the previous one is back, and
+          // the owner is told why rather than watching the controls move on
+          // their own.
+          if (ref.watch(listingViewControllerProvider).rejection != null)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: Text(
+                l10n.filtersRejected,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+              ),
+            ),
 
           // AF-01: the chosen layout does not fit, so the closest one that
           // does is drawn and the substitution is said out loud rather than
@@ -286,6 +304,11 @@ class _EmptyListing extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    final type = libraryTypeFor(ref.watch(shellControllerProvider));
+    final filtered =
+        type != null &&
+        ref.watch(listingViewControllerProvider).forType(type).isFiltered;
+
     final counts = ref.watch(typeCountsControllerProvider);
     final catalogEmpty = counts.maybeWhen(
       data: (byType) => byType.values.every((count) => count == 0),
@@ -307,13 +330,37 @@ class _EmptyListing extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              catalogEmpty ? l10n.catalogEmptyFirstRun : l10n.catalogEmptyTitle,
+              switch ((catalogEmpty, filtered)) {
+                // AF-01: filters are narrowing the listing to nothing, which
+                // is a different thing from an empty library and has a
+                // different answer — clear them.
+                (_, true) => l10n.filtersEmpty,
+                (true, _) => l10n.catalogEmptyFirstRun,
+                (false, _) => l10n.catalogEmptyTitle,
+              },
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
-            if (catalogEmpty) ...[
+            if (filtered) ...[
+              const SizedBox(height: AppSpacing.lg),
+              FilledButton.icon(
+                onPressed: () {
+                  final type = libraryTypeFor(
+                    ref.read(shellControllerProvider),
+                  );
+                  if (type != null) {
+                    ref
+                        .read(listingViewControllerProvider.notifier)
+                        .clearFilters(type);
+                  }
+                },
+                icon: const Icon(Icons.filter_alt_off_outlined),
+                label: Text(l10n.filtersClear),
+              ),
+            ],
+            if (catalogEmpty && !filtered) ...[
               const SizedBox(height: AppSpacing.lg),
               FilledButton.icon(
                 onPressed: () => LibrarySourcesScreen.show(context),
@@ -326,4 +373,121 @@ class _EmptyListing extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// The filter and sort choices (UC-12, FR-CT-07, FR-CT-08).
+///
+/// A menu rather than a row of controls: the listing is what the owner came to
+/// read, and the choices that shape it belong one click away rather than
+/// across the top of it.
+class _FilterControls extends ConsumerWidget {
+  const _FilterControls();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final type = libraryTypeFor(ref.watch(shellControllerProvider));
+    if (type == null) return const SizedBox.shrink();
+
+    final view = ref.watch(listingViewControllerProvider).forType(type);
+    final controller = ref.read(listingViewControllerProvider.notifier);
+
+    return MenuAnchor(
+      builder: (context, anchor, child) => TextButton.icon(
+        onPressed: () => anchor.isOpen ? anchor.close() : anchor.open(),
+        icon: Icon(
+          view.isFiltered ? Icons.filter_alt : Icons.filter_alt_outlined,
+        ),
+        label: Text(l10n.filtersLabel),
+      ),
+      menuChildren: [
+        _MenuHeading(l10n.filterLifecycle),
+        for (final lifecycle in LifecycleFilter.values)
+          MenuItemButton(
+            leadingIcon: Icon(
+              view.lifecycle == lifecycle
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+            ),
+            onPressed: () =>
+                controller.apply(type, view.copyWith(lifecycle: lifecycle)),
+            child: Text(lifecycle.label(l10n)),
+          ),
+
+        const Divider(),
+        _MenuHeading(l10n.sortLabel),
+        for (final field in SortField.values)
+          MenuItemButton(
+            leadingIcon: Icon(
+              view.sortField == field
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+            ),
+            onPressed: () =>
+                controller.apply(type, view.copyWith(sortField: field)),
+            child: Text(field.label(l10n)),
+          ),
+        for (final direction in SortDirection.values)
+          MenuItemButton(
+            leadingIcon: Icon(
+              view.direction == direction
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+            ),
+            onPressed: () =>
+                controller.apply(type, view.copyWith(direction: direction)),
+            child: Text(direction.label(l10n)),
+          ),
+
+        if (view.isFiltered) ...[
+          const Divider(),
+          MenuItemButton(
+            leadingIcon: const Icon(Icons.filter_alt_off_outlined),
+            onPressed: () => controller.clearFilters(type),
+            child: Text(l10n.filtersClear),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _MenuHeading extends StatelessWidget {
+  const _MenuHeading(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(
+      AppSpacing.md,
+      AppSpacing.sm,
+      AppSpacing.md,
+      AppSpacing.xs,
+    ),
+    child: Text(text, style: Theme.of(context).textTheme.labelSmall),
+  );
+}
+
+/// How each filter and sort choice presents itself.
+extension _LifecycleLabel on LifecycleFilter {
+  String label(AppLocalizations l10n) => switch (this) {
+    LifecycleFilter.active => l10n.filterLifecycleActive,
+    LifecycleFilter.deleted => l10n.filterLifecycleDeleted,
+    LifecycleFilter.all => l10n.filterLifecycleAll,
+  };
+}
+
+extension _SortFieldLabel on SortField {
+  String label(AppLocalizations l10n) => switch (this) {
+    SortField.name => l10n.sortByName,
+    SortField.indexed => l10n.sortByIndexed,
+  };
+}
+
+extension _SortDirectionLabel on SortDirection {
+  String label(AppLocalizations l10n) => switch (this) {
+    SortDirection.ascending => l10n.sortAscending,
+    SortDirection.descending => l10n.sortDescending,
+  };
 }

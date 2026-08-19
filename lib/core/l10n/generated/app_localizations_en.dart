@@ -479,4 +479,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String searchResultsFor(String term) {
     return 'Results for “$term”';
   }
+
+  @override
+  String get filtersLabel => 'Filters and order';
+
+  @override
+  String get filterLifecycle => 'Show';
+
+  @override
+  String get filterLifecycleActive => 'In the library';
+
+  @override
+  String get filterLifecycleDeleted => 'Deleted';
+
+  @override
+  String get filterLifecycleAll => 'Everything';
+
+  @override
+  String get sortLabel => 'Order by';
+
+  @override
+  String get sortByName => 'Name';
+
+  @override
+  String get sortByIndexed => 'Date added';
+
+  @override
+  String get sortAscending => 'Ascending';
+
+  @override
+  String get sortDescending => 'Descending';
+
+  @override
+  String get filtersClear => 'Clear the filters';
+
+  @override
+  String get filtersEmpty => 'Nothing matches the filters you have set.';
+
+  @override
+  String get filtersRejected =>
+      'That filter was refused, so the previous one is back.';
 }

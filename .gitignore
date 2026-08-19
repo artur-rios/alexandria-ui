@@ -55,3 +55,8 @@ native/linux/*.so
 # gen_l10n's untranslated-messages record; the parity test in test/core/l10n is
 # what fails the build, not this file.
 /build/
+
+# Golden-comparison artifacts. flutter_test writes the actual, expected, and
+# diff images beside the suite when a golden fails; they are evidence for the
+# run that produced them and never something to commit.
+**/failures/

@@ -893,6 +893,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Results for “{term}”'**
   String searchResultsFor(String term);
+
+  /// Accessible label of the control that opens the filter and sort choices (UC-12).
+  ///
+  /// In en, this message translates to:
+  /// **'Filters and order'**
+  String get filtersLabel;
+
+  /// Heading of the lifecycle filter (FR-CT-07).
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get filterLifecycle;
+
+  /// Lifecycle filter: only records the core calls active. What a listing opens on.
+  ///
+  /// In en, this message translates to:
+  /// **'In the library'**
+  String get filterLifecycleActive;
+
+  /// Lifecycle filter: only soft-deleted records.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted'**
+  String get filterLifecycleDeleted;
+
+  /// Lifecycle filter: active and deleted records together.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything'**
+  String get filterLifecycleAll;
+
+  /// Heading of the sort choices (FR-CT-08).
+  ///
+  /// In en, this message translates to:
+  /// **'Order by'**
+  String get sortLabel;
+
+  /// Sort the listing by file name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get sortByName;
+
+  /// Sort the listing by when the core last indexed the file.
+  ///
+  /// In en, this message translates to:
+  /// **'Date added'**
+  String get sortByIndexed;
+
+  /// Sort direction: A to Z, oldest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get sortAscending;
+
+  /// Sort direction: Z to A, newest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get sortDescending;
+
+  /// The action that restores the unfiltered listing (UC-12 AF-02). The sort is left alone, because ordering hides nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the filters'**
+  String get filtersClear;
+
+  /// UC-12 AF-01: the filter combination matched nothing. Offers to clear them.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matches the filters you have set.'**
+  String get filtersEmpty;
+
+  /// UC-12 AF-04: the core rejected the filter as invalid input, and the previous filters were restored.
+  ///
+  /// In en, this message translates to:
+  /// **'That filter was refused, so the previous one is back.'**
+  String get filtersRejected;
 }
 
 class _AppLocalizationsDelegate

@@ -479,4 +479,44 @@ class AppLocalizationsPt extends AppLocalizations {
   String searchResultsFor(String term) {
     return 'Resultados para “$term”';
   }
+
+  @override
+  String get filtersLabel => 'Filtros e ordem';
+
+  @override
+  String get filterLifecycle => 'Exibir';
+
+  @override
+  String get filterLifecycleActive => 'Na biblioteca';
+
+  @override
+  String get filterLifecycleDeleted => 'Excluídos';
+
+  @override
+  String get filterLifecycleAll => 'Tudo';
+
+  @override
+  String get sortLabel => 'Ordenar por';
+
+  @override
+  String get sortByName => 'Nome';
+
+  @override
+  String get sortByIndexed => 'Data de inclusão';
+
+  @override
+  String get sortAscending => 'Crescente';
+
+  @override
+  String get sortDescending => 'Decrescente';
+
+  @override
+  String get filtersClear => 'Limpar os filtros';
+
+  @override
+  String get filtersEmpty => 'Nada corresponde aos filtros definidos.';
+
+  @override
+  String get filtersRejected =>
+      'Esse filtro foi recusado, então o anterior voltou.';
 }

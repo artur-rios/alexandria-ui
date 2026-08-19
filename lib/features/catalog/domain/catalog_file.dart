@@ -26,6 +26,12 @@ abstract class CatalogFile with _$CatalogFile {
     /// What the core classified it as.
     required LibraryType type,
 
+    /// When the core last indexed this file.
+    ///
+    /// What a date sort orders on (UC-12, FR-CT-08). Nullable because a core
+    /// that answers without it must not make the listing unreadable.
+    DateTime? indexedAt,
+
     /// When re-indexing last found the on-disk file gone.
     ///
     /// Orthogonal to the soft-delete lifecycle: a missing file is still an

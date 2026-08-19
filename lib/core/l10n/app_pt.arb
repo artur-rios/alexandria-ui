@@ -147,5 +147,31 @@
 
   "searchPartial": "Parte da biblioteca n\u00e3o p\u00f4de ser lida, ent\u00e3o podem existir mais resultados.",
 
-  "searchResultsFor": "Resultados para \u201c{term}\u201d"
+  "searchResultsFor": "Resultados para \u201c{term}\u201d",
+
+  "filtersLabel": "Filtros e ordem",
+
+  "filterLifecycle": "Exibir",
+
+  "filterLifecycleActive": "Na biblioteca",
+
+  "filterLifecycleDeleted": "Exclu\u00eddos",
+
+  "filterLifecycleAll": "Tudo",
+
+  "sortLabel": "Ordenar por",
+
+  "sortByName": "Nome",
+
+  "sortByIndexed": "Data de inclus\u00e3o",
+
+  "sortAscending": "Crescente",
+
+  "sortDescending": "Decrescente",
+
+  "filtersClear": "Limpar os filtros",
+
+  "filtersEmpty": "Nada corresponde aos filtros definidos.",
+
+  "filtersRejected": "Esse filtro foi recusado, ent\u00e3o o anterior voltou."
 }

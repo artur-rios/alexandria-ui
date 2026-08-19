@@ -27,6 +27,7 @@ import '../../features/library_sources/application/library_sources_controller.da
 import '../../features/library_sources/application/library_sources_state.dart';
 import '../../features/catalog/application/layout_controller.dart';
 import '../../features/catalog/application/listing_controller.dart';
+import '../../features/catalog/application/listing_view_controller.dart';
 import '../../features/catalog/application/search_controller.dart';
 import '../../features/catalog/data/core_catalog_gateway.dart';
 import '../../features/catalog/domain/catalog_file.dart';
@@ -252,4 +253,10 @@ final searchTermProvider =
 final catalogSearchProvider =
     AsyncNotifierProvider<CatalogSearchController, CatalogSearchIndex>(
       CatalogSearchController.new,
+    );
+
+/// How each file type's listing is filtered and ordered (UC-12).
+final listingViewControllerProvider =
+    NotifierProvider<ListingViewController, ListingViewState>(
+      ListingViewController.new,
     );
