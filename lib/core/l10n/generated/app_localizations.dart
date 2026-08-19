@@ -674,12 +674,6 @@ abstract class AppLocalizations {
   /// **'Add it anyway'**
   String get librarySourcesOverlapConfirm;
 
-  /// Placeholder beside each registered folder. UC-05 lists the folder and offers indexing; the index action itself is UC-06.
-  ///
-  /// In en, this message translates to:
-  /// **'Indexing arrives with the next use case.'**
-  String get librarySourcesIndexLater;
-
   /// Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action.
   ///
   /// In en, this message translates to:

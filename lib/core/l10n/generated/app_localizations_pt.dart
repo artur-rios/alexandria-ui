@@ -342,10 +342,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get librarySourcesOverlapConfirm => 'Adicionar mesmo assim';
 
   @override
-  String get librarySourcesIndexLater =>
-      'A indexação chega com o próximo caso de uso.';
-
-  @override
   String get dismiss => 'Dispensar';
 
   @override

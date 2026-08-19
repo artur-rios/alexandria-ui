@@ -343,10 +343,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get librarySourcesOverlapConfirm => 'Add it anyway';
 
   @override
-  String get librarySourcesIndexLater =>
-      'Indexing arrives with the next use case.';
-
-  @override
   String get dismiss => 'Dismiss';
 
   @override
