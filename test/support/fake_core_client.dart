@@ -22,6 +22,8 @@ class FakeCoreClient implements CoreClient {
     this.failOnAuthLocalLogin = false,
     CoreJsonResponse? authLocalRegisterResult,
     this.failOnAuthLocalRegister = false,
+    CoreJsonResponse? authLocalSetCredentialsResult,
+    this.failOnAuthLocalSetCredentials = false,
   }) : healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
        authLocalLoginResult =
@@ -35,6 +37,14 @@ class FakeCoreClient implements CoreClient {
                  // logs in to. Registration's fake below is the unconfirmed
                  // one, which is what the core answers there.
                  '"emailConfirmed":true}',
+           ),
+       authLocalSetCredentialsResult =
+           authLocalSetCredentialsResult ??
+           (
+             status: CoreStatusFamily.auth.okCode,
+             // The core answers with the account body. UC-04 reads nothing
+             // from it, so the shape here is only what the real core sends.
+             json: '{"email":"owner@example.com","emailConfirmed":true}',
            ),
        authLocalRegisterResult =
            authLocalRegisterResult ??
@@ -82,6 +92,12 @@ class FakeCoreClient implements CoreClient {
   /// Whether [authLocalRegister] throws instead of returning.
   final bool failOnAuthLocalRegister;
 
+  /// What [authLocalSetCredentials] answers (UC-04).
+  final CoreJsonResponse authLocalSetCredentialsResult;
+
+  /// Whether [authLocalSetCredentials] throws instead of answering.
+  final bool failOnAuthLocalSetCredentials;
+
   /// The JSON bodies [authLocalRegister] was called with, in order.
   final List<String> authLocalRegisterBodies = [];
 
@@ -90,6 +106,13 @@ class FakeCoreClient implements CoreClient {
   /// Recorded so a test can assert that the core was *not* called when local
   /// validation already rejected the input (Testing Specification §6.3).
   final List<String> authLocalLoginBodies = [];
+
+  /// What [authLocalSetCredentials] was called with, in order.
+  ///
+  /// Empty is the assertion that matters for UC-04 AF-01: local validation
+  /// failures never reach the core.
+  final List<({String jsonBody, String token})> authLocalSetCredentialsCalls =
+      [];
 
   /// How many times [dispose] was called.
   int disposeCount = 0;
@@ -129,6 +152,21 @@ class FakeCoreClient implements CoreClient {
     }
     authLocalRegisterBodies.add(jsonBody);
     return authLocalRegisterResult;
+  }
+
+  @override
+  Future<CoreJsonResponse> authLocalSetCredentials(
+    String jsonBody,
+    String token,
+  ) async {
+    if (failOnAuthLocalSetCredentials) {
+      throw const CoreCallException('auth local set-credentials call failed');
+    }
+    // Both are recorded: the body so a test can assert what was sent, and the
+    // token so it can assert the call was authorized with the active session
+    // rather than with nothing (UC-04 main flow step 4).
+    authLocalSetCredentialsCalls.add((jsonBody: jsonBody, token: token));
+    return authLocalSetCredentialsResult;
   }
 
   @override

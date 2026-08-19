@@ -13,12 +13,12 @@ class InMemorySettingsStore implements SettingsStore {
     Locale? locale,
     Map<String, String>? values,
   })
-  // The fields are private and a named parameter cannot be, so `this._themeMode`
-  // is not expressible.
-  // ignore_for_file: prefer_initializing_formals
-  : _themeMode = themeMode,
-    _locale = locale,
-    _values = {...?values};
+    // The fields are private and a named parameter cannot be, so `this._themeMode`
+    // is not expressible.
+    // ignore_for_file: prefer_initializing_formals
+    : _themeMode = themeMode,
+       _locale = locale,
+       _values = {...?values};
 
   ThemeMode _themeMode;
   Locale? _locale;

@@ -30,13 +30,14 @@ extension PumpShell on WidgetTester {
     ThemeMode themeMode = ThemeMode.light,
     Size surfaceSize = const Size(1280, 800),
     SettingsStore? settings,
+    FakeAuthGateway? gateway,
   }) async {
     view.devicePixelRatio = 1;
     view.physicalSize = surfaceSize;
     addTearDown(view.reset);
 
     final container = await pumpLoginScreen(
-      gateway: FakeAuthGateway(),
+      gateway: gateway ?? FakeAuthGateway(),
       locale: locale,
       themeMode: themeMode,
       surfaceSize: surfaceSize,

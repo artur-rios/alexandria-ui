@@ -51,6 +51,25 @@ class FakeAuthGateway implements AuthGateway {
   /// What [logIn] and [register] return.
   AuthOutcome outcome;
 
+  /// What [changeCredentials] returns. A successful change by default.
+  CredentialChangeOutcome changeOutcome =
+      const CredentialChangeOutcome.changed();
+
+  /// What [changeCredentials] was called with, in order.
+  ///
+  /// Empty is the assertion that matters for UC-04 AF-01: local validation
+  /// failures never reach the core. The credential is recorded so a test can
+  /// assert the call was authorized with the active session (step 4).
+  final List<
+    ({
+      String email,
+      String password,
+      String passwordConfirmation,
+      String credential,
+    })
+  >
+  credentialChanges = [];
+
   /// What [accountExists] answers. An existing account by default, so a test
   /// that says nothing about it gets the login screen.
   AccountExistence existence = AccountExistence.present;
@@ -65,9 +84,7 @@ class FakeAuthGateway implements AuthGateway {
   ///
   /// Empty is again the assertion that matters: UC-01 AF-01 and AF-02 both
   /// require that the core is never called.
-  final List<
-    ({String email, String password, String passwordConfirmation})
-  >
+  final List<({String email, String password, String passwordConfirmation})>
   registrations = [];
 
   /// Held open to keep an attempt in flight, so a test can observe the
@@ -103,6 +120,23 @@ class FakeAuthGateway implements AuthGateway {
     ));
     await _gate?.future;
     return outcome;
+  }
+
+  @override
+  Future<CredentialChangeOutcome> changeCredentials({
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+    required String credential,
+  }) async {
+    credentialChanges.add((
+      email: email,
+      password: password,
+      passwordConfirmation: passwordConfirmation,
+      credential: credential,
+    ));
+    await _gate?.future;
+    return changeOutcome;
   }
 
   @override

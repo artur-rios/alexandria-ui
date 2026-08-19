@@ -93,10 +93,7 @@ extension PumpLogin on WidgetTester {
         // before it loads anything.
         ...fakeCoreOverrides(
           libraryPath: 'no/such/library.dll',
-          settings: InMemorySettingsStore(
-            themeMode: themeMode,
-            locale: locale,
-          ),
+          settings: InMemorySettingsStore(themeMode: themeMode, locale: locale),
         ),
         authGatewayProvider.overrideWithValue(FakeAuthGateway()),
       ],
@@ -117,12 +114,10 @@ extension PumpLogin on WidgetTester {
   }
 
   /// The login form's e-mail field.
-  TextField get emailField =>
-      widget<TextField>(find.byType(TextField).first);
+  TextField get emailField => widget<TextField>(find.byType(TextField).first);
 
   /// The login form's password field.
-  TextField get passwordField =>
-      widget<TextField>(find.byType(TextField).last);
+  TextField get passwordField => widget<TextField>(find.byType(TextField).last);
 
   /// Types [email] and [password] into the form without submitting.
   Future<void> enterCredentials({
