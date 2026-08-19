@@ -30,6 +30,12 @@ env:
   # both, never a side effect of a fresh runner.
   FLUTTER_VERSION: 3.44.9
 
+  # The Windows ffmpeg development libraries, pinned. The 7.1 series
+  # specifically — see the comment on the install step for why a newer one
+  # does not build.
+  FFMPEG_RELEASE: autobuild-2026-08-16-13-00
+  FFMPEG_ARCHIVE: ffmpeg-n7.1.5-16-g9a4bb2c579-win64-gpl-shared-7.1.zip
+
 jobs:
   analyze:
     name: Analyze and generate
@@ -166,6 +172,12 @@ jobs:
       # fails on a header it cannot parse. A newer ffmpeg needs a version of
       # that crate that knows about it.
       #
+      # Pinned to a dated autobuild release rather than the `latest` tag. That
+      # tag's assets rotate as new series are cut: it carried a 7.1 build until
+      # it did not, and the download then 404'd on every pull request with
+      # nothing in this repository having changed. A dated tag is immutable, so
+      # the only way this moves now is somebody moving it.
+      #
       # The unpacked directory carries the exact build in its name, so it is
       # discovered rather than spelled out.
       - name: Install the ffmpeg development libraries (Windows)
@@ -174,7 +186,7 @@ jobs:
         run: |
           set -e
           curl -fsSL -o /tmp/ffmpeg.zip \
-            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-win64-gpl-shared-7.1.zip"
+            "https://github.com/BtbN/FFmpeg-Builds/releases/download/${FFMPEG_RELEASE}/${FFMPEG_ARCHIVE}"
           7z x /tmp/ffmpeg.zip -o/tmp/ffmpeg > /dev/null
           root=$(find /tmp/ffmpeg -maxdepth 1 -mindepth 1 -type d | head -1)
           test -f "$root/include/libavutil/hwcontext_cuda.h"
