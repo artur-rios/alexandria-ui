@@ -29,11 +29,7 @@ class FakeIndexGateway implements IndexGateway {
         runId: runId,
         root: '/home/owner/music',
         status: IndexRunStatus.complete,
-        counts: const IndexRunCounts(
-          scanned: 120,
-          indexed: 118,
-          skipped: 2,
-        ),
+        counts: const IndexRunCounts(scanned: 120, indexed: 118, skipped: 2),
       ),
     ),
   ];
