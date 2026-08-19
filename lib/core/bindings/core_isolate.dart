@@ -228,6 +228,15 @@ class CoreIsolate {
 
       'countFiles' => bindings.alexandria_index_count_files(),
 
+      // The session token in, a status and a run id out. No root: a refresh
+      // covers the whole catalog rather than one folder (FR-LB-06).
+      'indexRefreshStart' => withNativeString(arguments.first! as String, (
+        token,
+      ) {
+        final result = bindings.alexandria_index_refresh_start(token);
+        return (status: result.status, runId: _readRunId(result.run_id));
+      }),
+
       'countMissing' => bindings.alexandria_index_count_missing(),
 
       'indexedFilesJson' => strings.consume(

@@ -38,6 +38,25 @@ enum IndexRunStatus {
   bool get isInFlight => this == IndexRunStatus.running;
 }
 
+/// Which operation opened a run (System Requirements §4.8).
+///
+/// It decides which counts to read: the core's `RunCounts` is untagged and
+/// flattened into the run body, and `kind` is what says which shape to expect.
+enum IndexRunKind {
+  /// A scan of one folder (UC-06).
+  ///
+  /// Named `scan` rather than `index`, which every enum already has as its
+  /// ordinal.
+  scan,
+
+  /// A re-check of everything already cataloged (UC-07).
+  refresh;
+
+  /// The kind [raw] names, defaulting to [IndexRunKind.index].
+  static IndexRunKind parse(String? raw) =>
+      raw == 'refresh' ? IndexRunKind.refresh : IndexRunKind.scan;
+}
+
 /// What a finished index run counted (FR-LB-08).
 ///
 /// These are the core's four, not the specification's three. `FR-LB-08` asks
@@ -49,10 +68,23 @@ enum IndexRunStatus {
 @freezed
 abstract class IndexRunCounts with _$IndexRunCounts {
   /// Creates a tally.
+  ///
+  /// One class for both run kinds rather than a union, because the core sends
+  /// one flattened object and `kind` already says which half of these fields
+  /// it filled. Every field defaults, so reading the wrong half gives zeros
+  /// rather than a parse failure — and the screen reads the half the kind
+  /// names.
   const factory IndexRunCounts({
+    // An index run's four (UC-06).
     @Default(0) int scanned,
     @Default(0) int indexed,
     @Default(0) int skipped,
+
+    // A refresh run's three, plus the shared failure count (UC-07).
+    @Default(0) int refreshed,
+    @Default(0) int markedMissing,
+    @Default(0) int unchanged,
+
     @Default(0) int failed,
   }) = _IndexRunCounts;
 }
@@ -65,8 +97,12 @@ abstract class IndexRun with _$IndexRun {
     /// The identifier the core returned when the run was started.
     required String runId,
 
-    /// The folder being scanned.
+    /// The folder being scanned, or empty for a refresh, which covers the
+    /// whole catalog rather than one folder.
     required String root,
+
+    /// Which operation opened this run.
+    @Default(IndexRunKind.scan) IndexRunKind kind,
 
     /// Where the run is.
     required IndexRunStatus status,

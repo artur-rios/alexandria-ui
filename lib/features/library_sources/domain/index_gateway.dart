@@ -42,6 +42,19 @@ abstract interface class IndexGateway {
     required String credential,
   });
 
+  /// Starts a refresh over everything already cataloged (FR-LB-06, UC-07).
+  ///
+  /// Takes no folder: a refresh is catalog-wide, which is what separates it
+  /// from [startIndex].
+  Future<IndexStartOutcome> startRefresh({required String credential});
+
+  /// How many files the catalog holds, or a negative number when the core
+  /// could not be asked (UC-07 AF-02).
+  ///
+  /// Unknown is not empty: offering to register a folder because the count
+  /// failed would answer AF-02 on a guess.
+  Future<int> countCatalogedFiles();
+
   /// Reads a run's status and outcome (FR-LB-07, FR-LB-08).
   Future<IndexRunOutcome> readRun({
     required String runId,

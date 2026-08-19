@@ -14,7 +14,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$IndexRunCounts {
 
- int get scanned; int get indexed; int get skipped; int get failed;
+// An index run's four (UC-06).
+ int get scanned; int get indexed; int get skipped;// A refresh run's three, plus the shared failure count (UC-07).
+ int get refreshed; int get markedMissing; int get unchanged; int get failed;
 /// Create a copy of IndexRunCounts
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +27,16 @@ $IndexRunCountsCopyWith<IndexRunCounts> get copyWith => _$IndexRunCountsCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is IndexRunCounts&&(identical(other.scanned, scanned) || other.scanned == scanned)&&(identical(other.indexed, indexed) || other.indexed == indexed)&&(identical(other.skipped, skipped) || other.skipped == skipped)&&(identical(other.failed, failed) || other.failed == failed));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is IndexRunCounts&&(identical(other.scanned, scanned) || other.scanned == scanned)&&(identical(other.indexed, indexed) || other.indexed == indexed)&&(identical(other.skipped, skipped) || other.skipped == skipped)&&(identical(other.refreshed, refreshed) || other.refreshed == refreshed)&&(identical(other.markedMissing, markedMissing) || other.markedMissing == markedMissing)&&(identical(other.unchanged, unchanged) || other.unchanged == unchanged)&&(identical(other.failed, failed) || other.failed == failed));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,scanned,indexed,skipped,failed);
+int get hashCode => Object.hash(runtimeType,scanned,indexed,skipped,refreshed,markedMissing,unchanged,failed);
 
 @override
 String toString() {
-  return 'IndexRunCounts(scanned: $scanned, indexed: $indexed, skipped: $skipped, failed: $failed)';
+  return 'IndexRunCounts(scanned: $scanned, indexed: $indexed, skipped: $skipped, refreshed: $refreshed, markedMissing: $markedMissing, unchanged: $unchanged, failed: $failed)';
 }
 
 
@@ -45,7 +47,7 @@ abstract mixin class $IndexRunCountsCopyWith<$Res>  {
   factory $IndexRunCountsCopyWith(IndexRunCounts value, $Res Function(IndexRunCounts) _then) = _$IndexRunCountsCopyWithImpl;
 @useResult
 $Res call({
- int scanned, int indexed, int skipped, int failed
+ int scanned, int indexed, int skipped, int refreshed, int markedMissing, int unchanged, int failed
 });
 
 
@@ -62,11 +64,14 @@ class _$IndexRunCountsCopyWithImpl<$Res>
 
 /// Create a copy of IndexRunCounts
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? scanned = null,Object? indexed = null,Object? skipped = null,Object? failed = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? scanned = null,Object? indexed = null,Object? skipped = null,Object? refreshed = null,Object? markedMissing = null,Object? unchanged = null,Object? failed = null,}) {
   return _then(_self.copyWith(
 scanned: null == scanned ? _self.scanned : scanned // ignore: cast_nullable_to_non_nullable
 as int,indexed: null == indexed ? _self.indexed : indexed // ignore: cast_nullable_to_non_nullable
 as int,skipped: null == skipped ? _self.skipped : skipped // ignore: cast_nullable_to_non_nullable
+as int,refreshed: null == refreshed ? _self.refreshed : refreshed // ignore: cast_nullable_to_non_nullable
+as int,markedMissing: null == markedMissing ? _self.markedMissing : markedMissing // ignore: cast_nullable_to_non_nullable
+as int,unchanged: null == unchanged ? _self.unchanged : unchanged // ignore: cast_nullable_to_non_nullable
 as int,failed: null == failed ? _self.failed : failed // ignore: cast_nullable_to_non_nullable
 as int,
   ));
@@ -153,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int scanned,  int indexed,  int skipped,  int failed)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int scanned,  int indexed,  int skipped,  int refreshed,  int markedMissing,  int unchanged,  int failed)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _IndexRunCounts() when $default != null:
-return $default(_that.scanned,_that.indexed,_that.skipped,_that.failed);case _:
+return $default(_that.scanned,_that.indexed,_that.skipped,_that.refreshed,_that.markedMissing,_that.unchanged,_that.failed);case _:
   return orElse();
 
 }
@@ -174,10 +179,10 @@ return $default(_that.scanned,_that.indexed,_that.skipped,_that.failed);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int scanned,  int indexed,  int skipped,  int failed)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int scanned,  int indexed,  int skipped,  int refreshed,  int markedMissing,  int unchanged,  int failed)  $default,) {final _that = this;
 switch (_that) {
 case _IndexRunCounts():
-return $default(_that.scanned,_that.indexed,_that.skipped,_that.failed);case _:
+return $default(_that.scanned,_that.indexed,_that.skipped,_that.refreshed,_that.markedMissing,_that.unchanged,_that.failed);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +199,10 @@ return $default(_that.scanned,_that.indexed,_that.skipped,_that.failed);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int scanned,  int indexed,  int skipped,  int failed)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int scanned,  int indexed,  int skipped,  int refreshed,  int markedMissing,  int unchanged,  int failed)?  $default,) {final _that = this;
 switch (_that) {
 case _IndexRunCounts() when $default != null:
-return $default(_that.scanned,_that.indexed,_that.skipped,_that.failed);case _:
+return $default(_that.scanned,_that.indexed,_that.skipped,_that.refreshed,_that.markedMissing,_that.unchanged,_that.failed);case _:
   return null;
 
 }
@@ -209,12 +214,17 @@ return $default(_that.scanned,_that.indexed,_that.skipped,_that.failed);case _:
 
 
 class _IndexRunCounts implements IndexRunCounts {
-  const _IndexRunCounts({this.scanned = 0, this.indexed = 0, this.skipped = 0, this.failed = 0});
+  const _IndexRunCounts({this.scanned = 0, this.indexed = 0, this.skipped = 0, this.refreshed = 0, this.markedMissing = 0, this.unchanged = 0, this.failed = 0});
   
 
+// An index run's four (UC-06).
 @override@JsonKey() final  int scanned;
 @override@JsonKey() final  int indexed;
 @override@JsonKey() final  int skipped;
+// A refresh run's three, plus the shared failure count (UC-07).
+@override@JsonKey() final  int refreshed;
+@override@JsonKey() final  int markedMissing;
+@override@JsonKey() final  int unchanged;
 @override@JsonKey() final  int failed;
 
 /// Create a copy of IndexRunCounts
@@ -227,16 +237,16 @@ _$IndexRunCountsCopyWith<_IndexRunCounts> get copyWith => __$IndexRunCountsCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IndexRunCounts&&(identical(other.scanned, scanned) || other.scanned == scanned)&&(identical(other.indexed, indexed) || other.indexed == indexed)&&(identical(other.skipped, skipped) || other.skipped == skipped)&&(identical(other.failed, failed) || other.failed == failed));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IndexRunCounts&&(identical(other.scanned, scanned) || other.scanned == scanned)&&(identical(other.indexed, indexed) || other.indexed == indexed)&&(identical(other.skipped, skipped) || other.skipped == skipped)&&(identical(other.refreshed, refreshed) || other.refreshed == refreshed)&&(identical(other.markedMissing, markedMissing) || other.markedMissing == markedMissing)&&(identical(other.unchanged, unchanged) || other.unchanged == unchanged)&&(identical(other.failed, failed) || other.failed == failed));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,scanned,indexed,skipped,failed);
+int get hashCode => Object.hash(runtimeType,scanned,indexed,skipped,refreshed,markedMissing,unchanged,failed);
 
 @override
 String toString() {
-  return 'IndexRunCounts(scanned: $scanned, indexed: $indexed, skipped: $skipped, failed: $failed)';
+  return 'IndexRunCounts(scanned: $scanned, indexed: $indexed, skipped: $skipped, refreshed: $refreshed, markedMissing: $markedMissing, unchanged: $unchanged, failed: $failed)';
 }
 
 
@@ -247,7 +257,7 @@ abstract mixin class _$IndexRunCountsCopyWith<$Res> implements $IndexRunCountsCo
   factory _$IndexRunCountsCopyWith(_IndexRunCounts value, $Res Function(_IndexRunCounts) _then) = __$IndexRunCountsCopyWithImpl;
 @override @useResult
 $Res call({
- int scanned, int indexed, int skipped, int failed
+ int scanned, int indexed, int skipped, int refreshed, int markedMissing, int unchanged, int failed
 });
 
 
@@ -264,11 +274,14 @@ class __$IndexRunCountsCopyWithImpl<$Res>
 
 /// Create a copy of IndexRunCounts
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? scanned = null,Object? indexed = null,Object? skipped = null,Object? failed = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? scanned = null,Object? indexed = null,Object? skipped = null,Object? refreshed = null,Object? markedMissing = null,Object? unchanged = null,Object? failed = null,}) {
   return _then(_IndexRunCounts(
 scanned: null == scanned ? _self.scanned : scanned // ignore: cast_nullable_to_non_nullable
 as int,indexed: null == indexed ? _self.indexed : indexed // ignore: cast_nullable_to_non_nullable
 as int,skipped: null == skipped ? _self.skipped : skipped // ignore: cast_nullable_to_non_nullable
+as int,refreshed: null == refreshed ? _self.refreshed : refreshed // ignore: cast_nullable_to_non_nullable
+as int,markedMissing: null == markedMissing ? _self.markedMissing : markedMissing // ignore: cast_nullable_to_non_nullable
+as int,unchanged: null == unchanged ? _self.unchanged : unchanged // ignore: cast_nullable_to_non_nullable
 as int,failed: null == failed ? _self.failed : failed // ignore: cast_nullable_to_non_nullable
 as int,
   ));
@@ -281,8 +294,10 @@ as int,
 mixin _$IndexRun {
 
 /// The identifier the core returned when the run was started.
- String get runId;/// The folder being scanned.
- String get root;/// Where the run is.
+ String get runId;/// The folder being scanned, or empty for a refresh, which covers the
+/// whole catalog rather than one folder.
+ String get root;/// Which operation opened this run.
+ IndexRunKind get kind;/// Where the run is.
  IndexRunStatus get status;/// What it counted, once it has finished.
  IndexRunCounts? get counts;/// Why it failed, when it did.
  String? get error;
@@ -296,16 +311,16 @@ $IndexRunCopyWith<IndexRun> get copyWith => _$IndexRunCopyWithImpl<IndexRun>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is IndexRun&&(identical(other.runId, runId) || other.runId == runId)&&(identical(other.root, root) || other.root == root)&&(identical(other.status, status) || other.status == status)&&(identical(other.counts, counts) || other.counts == counts)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is IndexRun&&(identical(other.runId, runId) || other.runId == runId)&&(identical(other.root, root) || other.root == root)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.status, status) || other.status == status)&&(identical(other.counts, counts) || other.counts == counts)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,runId,root,status,counts,error);
+int get hashCode => Object.hash(runtimeType,runId,root,kind,status,counts,error);
 
 @override
 String toString() {
-  return 'IndexRun(runId: $runId, root: $root, status: $status, counts: $counts, error: $error)';
+  return 'IndexRun(runId: $runId, root: $root, kind: $kind, status: $status, counts: $counts, error: $error)';
 }
 
 
@@ -316,7 +331,7 @@ abstract mixin class $IndexRunCopyWith<$Res>  {
   factory $IndexRunCopyWith(IndexRun value, $Res Function(IndexRun) _then) = _$IndexRunCopyWithImpl;
 @useResult
 $Res call({
- String runId, String root, IndexRunStatus status, IndexRunCounts? counts, String? error
+ String runId, String root, IndexRunKind kind, IndexRunStatus status, IndexRunCounts? counts, String? error
 });
 
 
@@ -333,11 +348,12 @@ class _$IndexRunCopyWithImpl<$Res>
 
 /// Create a copy of IndexRun
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? runId = null,Object? root = null,Object? status = null,Object? counts = freezed,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? runId = null,Object? root = null,Object? kind = null,Object? status = null,Object? counts = freezed,Object? error = freezed,}) {
   return _then(_self.copyWith(
 runId: null == runId ? _self.runId : runId // ignore: cast_nullable_to_non_nullable
 as String,root: null == root ? _self.root : root // ignore: cast_nullable_to_non_nullable
-as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as IndexRunKind,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as IndexRunStatus,counts: freezed == counts ? _self.counts : counts // ignore: cast_nullable_to_non_nullable
 as IndexRunCounts?,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -437,10 +453,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String runId,  String root,  IndexRunStatus status,  IndexRunCounts? counts,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String runId,  String root,  IndexRunKind kind,  IndexRunStatus status,  IndexRunCounts? counts,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _IndexRun() when $default != null:
-return $default(_that.runId,_that.root,_that.status,_that.counts,_that.error);case _:
+return $default(_that.runId,_that.root,_that.kind,_that.status,_that.counts,_that.error);case _:
   return orElse();
 
 }
@@ -458,10 +474,10 @@ return $default(_that.runId,_that.root,_that.status,_that.counts,_that.error);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String runId,  String root,  IndexRunStatus status,  IndexRunCounts? counts,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String runId,  String root,  IndexRunKind kind,  IndexRunStatus status,  IndexRunCounts? counts,  String? error)  $default,) {final _that = this;
 switch (_that) {
 case _IndexRun():
-return $default(_that.runId,_that.root,_that.status,_that.counts,_that.error);case _:
+return $default(_that.runId,_that.root,_that.kind,_that.status,_that.counts,_that.error);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -478,10 +494,10 @@ return $default(_that.runId,_that.root,_that.status,_that.counts,_that.error);ca
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String runId,  String root,  IndexRunStatus status,  IndexRunCounts? counts,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String runId,  String root,  IndexRunKind kind,  IndexRunStatus status,  IndexRunCounts? counts,  String? error)?  $default,) {final _that = this;
 switch (_that) {
 case _IndexRun() when $default != null:
-return $default(_that.runId,_that.root,_that.status,_that.counts,_that.error);case _:
+return $default(_that.runId,_that.root,_that.kind,_that.status,_that.counts,_that.error);case _:
   return null;
 
 }
@@ -493,13 +509,16 @@ return $default(_that.runId,_that.root,_that.status,_that.counts,_that.error);ca
 
 
 class _IndexRun extends IndexRun {
-  const _IndexRun({required this.runId, required this.root, required this.status, this.counts, this.error}): super._();
+  const _IndexRun({required this.runId, required this.root, this.kind = IndexRunKind.scan, required this.status, this.counts, this.error}): super._();
   
 
 /// The identifier the core returned when the run was started.
 @override final  String runId;
-/// The folder being scanned.
+/// The folder being scanned, or empty for a refresh, which covers the
+/// whole catalog rather than one folder.
 @override final  String root;
+/// Which operation opened this run.
+@override@JsonKey() final  IndexRunKind kind;
 /// Where the run is.
 @override final  IndexRunStatus status;
 /// What it counted, once it has finished.
@@ -517,16 +536,16 @@ _$IndexRunCopyWith<_IndexRun> get copyWith => __$IndexRunCopyWithImpl<_IndexRun>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IndexRun&&(identical(other.runId, runId) || other.runId == runId)&&(identical(other.root, root) || other.root == root)&&(identical(other.status, status) || other.status == status)&&(identical(other.counts, counts) || other.counts == counts)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IndexRun&&(identical(other.runId, runId) || other.runId == runId)&&(identical(other.root, root) || other.root == root)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.status, status) || other.status == status)&&(identical(other.counts, counts) || other.counts == counts)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,runId,root,status,counts,error);
+int get hashCode => Object.hash(runtimeType,runId,root,kind,status,counts,error);
 
 @override
 String toString() {
-  return 'IndexRun(runId: $runId, root: $root, status: $status, counts: $counts, error: $error)';
+  return 'IndexRun(runId: $runId, root: $root, kind: $kind, status: $status, counts: $counts, error: $error)';
 }
 
 
@@ -537,7 +556,7 @@ abstract mixin class _$IndexRunCopyWith<$Res> implements $IndexRunCopyWith<$Res>
   factory _$IndexRunCopyWith(_IndexRun value, $Res Function(_IndexRun) _then) = __$IndexRunCopyWithImpl;
 @override @useResult
 $Res call({
- String runId, String root, IndexRunStatus status, IndexRunCounts? counts, String? error
+ String runId, String root, IndexRunKind kind, IndexRunStatus status, IndexRunCounts? counts, String? error
 });
 
 
@@ -554,11 +573,12 @@ class __$IndexRunCopyWithImpl<$Res>
 
 /// Create a copy of IndexRun
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? runId = null,Object? root = null,Object? status = null,Object? counts = freezed,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? runId = null,Object? root = null,Object? kind = null,Object? status = null,Object? counts = freezed,Object? error = freezed,}) {
   return _then(_IndexRun(
 runId: null == runId ? _self.runId : runId // ignore: cast_nullable_to_non_nullable
 as String,root: null == root ? _self.root : root // ignore: cast_nullable_to_non_nullable
-as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as IndexRunKind,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as IndexRunStatus,counts: freezed == counts ? _self.counts : counts // ignore: cast_nullable_to_non_nullable
 as IndexRunCounts?,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,

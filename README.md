@@ -247,7 +247,7 @@ untested.
 |---|---|---|
 | [#6](https://github.com/artur-rios/alexandria-desktop-front/issues/6) | UC-05 — Register a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#7](https://github.com/artur-rios/alexandria-desktop-front/issues/7) | UC-06 — Index a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#8](https://github.com/artur-rios/alexandria-desktop-front/issues/8) | UC-07 — Refresh the catalog | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#8](https://github.com/artur-rios/alexandria-desktop-front/issues/8) | UC-07 — Refresh the catalog — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#9](https://github.com/artur-rios/alexandria-desktop-front/issues/9) | UC-08 — Unregister a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-04 — Catalog browsing and search

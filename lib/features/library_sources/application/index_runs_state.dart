@@ -5,6 +5,17 @@ import '../domain/index_run.dart';
 
 part 'index_runs_state.freezed.dart';
 
+/// Why a refresh could not be started (UC-07 AF-01, AF-02).
+enum RefreshRefusal {
+  /// One is already running; the owner is pointed at it rather than given a
+  /// second (AF-01).
+  alreadyRunning,
+
+  /// There is nothing cataloged to re-check, so registering and indexing a
+  /// folder is what is offered instead (AF-02).
+  catalogEmpty,
+}
+
 /// Every run the application is following, keyed by the folder it scans
 /// (UC-06).
 ///
@@ -30,6 +41,22 @@ abstract class IndexRunsState with _$IndexRunsState {
 
     /// The folder a second run was refused for (AF-01), or `null`.
     String? refusedSecondRunFor,
+
+    /// Whether a refresh has been asked for but not yet answered (FR-UX-08).
+    @Default(false) bool refreshStarting,
+
+    /// The catalog-wide refresh, in flight or finished (UC-07).
+    ///
+    /// Its own field rather than an entry in [runs], because a refresh belongs
+    /// to no folder — keying it under one would make it look like that
+    /// folder's scan and would block UC-08 from removing an unrelated folder.
+    IndexRun? refreshRun,
+
+    /// Why the last refresh was refused (UC-07 AF-01, AF-02), or `null`.
+    RefreshRefusal? refreshRefusal,
+
+    /// Why the refresh failed, when the core refused the start.
+    Failure? refreshFailure,
   }) = _IndexRunsState;
 
   const IndexRunsState._();
@@ -42,6 +69,9 @@ abstract class IndexRunsState with _$IndexRunsState {
 
   /// Whether a start for [root] has been sent but not yet answered.
   bool isStarting(String root) => starting.contains(root);
+
+  /// Whether a catalog-wide refresh is running (UC-07 AF-01).
+  bool get isRefreshing => refreshRun?.isInFlight ?? false;
 
   /// Every folder the core is still scanning.
   List<String> get inFlightRoots => [
