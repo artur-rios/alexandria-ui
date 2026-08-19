@@ -91,6 +91,13 @@ abstract interface class CoreClient {
   /// nothing to re-check in an empty catalog.
   Future<int> indexCountFiles();
 
+  /// Lists files matching [jsonFilters] through `alexandria_files_list`
+  /// (FR-CT-02, UC-09).
+  ///
+  /// [jsonFilters] is the body the core's matching HTTP route takes —
+  /// `{"type":"audio","state":"active"}`.
+  Future<CoreJsonResponse> filesList(String jsonFilters, String token);
+
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
 }
@@ -164,6 +171,11 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<int> indexCountFiles() async =>
       await _isolate.call('countFiles') as int;
+
+  @override
+  Future<CoreJsonResponse> filesList(String jsonFilters, String token) async =>
+      await _isolate.call('filesList', [jsonFilters, token])
+          as CoreJsonResponse;
 
   @override
   Future<void> dispose() => _isolate.dispose();

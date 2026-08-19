@@ -115,11 +115,16 @@ void main() {
           // Either icon: the selected destination shows its filled variant,
           // and the loop starts on one that is already selected.
           await tester.tap(
-            find.byWidgetPredicate(
-              (widget) =>
-                  widget is Icon &&
-                  (widget.icon == destination.icon ||
-                      widget.icon == destination.selectedIcon),
+            find.descendant(
+              // Scoped to the panel: the content area's rows carry icons too,
+              // and an unscoped predicate matches whichever happens to agree.
+              of: find.byType(ShellNavigationPanel),
+              matching: find.byWidgetPredicate(
+                (widget) =>
+                    widget is Icon &&
+                    (widget.icon == destination.icon ||
+                        widget.icon == destination.selectedIcon),
+              ),
             ),
           );
           await tester.pumpAndSettle();

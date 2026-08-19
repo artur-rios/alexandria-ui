@@ -272,14 +272,6 @@
   "@destinationMusic": {
     "description": "Navigation panel entry for audio files (FR-CT-01)."
   },
-  "destinationMovies": "Movies",
-  "@destinationMovies": {
-    "description": "Navigation panel entry for standalone films (FR-CT-01)."
-  },
-  "destinationSeries": "Series",
-  "@destinationSeries": {
-    "description": "Navigation panel entry for episodic video (FR-CT-01)."
-  },
   "destinationBooks": "Books",
   "@destinationBooks": {
     "description": "Navigation panel entry for books and e-books (FR-CT-01)."
@@ -494,80 +486,102 @@
   "@librarySourcesStartFailed": {
     "description": "UC-06 AF-02 and AF-03: the core refused to start the run. The reason from the core follows."
   },
-
   "librarySourcesUnregister": "Remove",
   "@librarySourcesUnregister": {
-      "description": "The action that unregisters a library folder (UC-08 main flow step 1)."
+    "description": "The action that unregisters a library folder (UC-08 main flow step 1)."
   },
-
   "librarySourcesUnregisterTitle": "Remove {label} from your library folders?",
   "@librarySourcesUnregisterTitle": {
-      "description": "Title of the unregister confirmation (UC-08 main flow step 2).",
-      "placeholders": {
-          "label": {
-              "type": "String"
-          }
+    "description": "Title of the unregister confirmation (UC-08 main flow step 2).",
+    "placeholders": {
+      "label": {
+        "type": "String"
       }
+    }
   },
-
   "librarySourcesUnregisterBody": "Alexandria will stop scanning this folder. Everything already cataloged from it stays in your library, and nothing on disk is touched.",
   "@librarySourcesUnregisterBody": {
-      "description": "Body of the unregister confirmation. FR-LB-10 requires it state that catalog records and on-disk files are left untouched (BR-12)."
+    "description": "Body of the unregister confirmation. FR-LB-10 requires it state that catalog records and on-disk files are left untouched (BR-12)."
   },
-
   "librarySourcesUnregisterConfirm": "Remove the folder",
   "@librarySourcesUnregisterConfirm": {
-      "description": "The confirming action on the unregister confirmation."
+    "description": "The confirming action on the unregister confirmation."
   },
-
   "librarySourcesUnregisterRefused": "This folder is being scanned. It can be removed once the scan finishes.",
   "@librarySourcesUnregisterRefused": {
-      "description": "UC-08 AF-02: a folder with a run in flight is refused until the run settles."
+    "description": "UC-08 AF-02: a folder with a run in flight is refused until the run settles."
   },
-
   "librarySourcesRefresh": "Refresh the catalog",
   "@librarySourcesRefresh": {
-      "description": "The action that re-checks everything already cataloged, across every folder at once (UC-07 main flow step 1, FR-LB-06)."
+    "description": "The action that re-checks everything already cataloged, across every folder at once (UC-07 main flow step 1, FR-LB-06)."
   },
-
-  "librarySourcesRefreshing": "Re-checking the catalog\u2026",
+  "librarySourcesRefreshing": "Re-checking the catalog…",
   "@librarySourcesRefreshing": {
-      "description": "Shown while a refresh is in flight (UC-07 main flow step 3)."
+    "description": "Shown while a refresh is in flight (UC-07 main flow step 3)."
   },
-
   "librarySourcesRefreshComplete": "{refreshed} files updated, {unchanged} unchanged, {missing} now missing.",
   "@librarySourcesRefreshComplete": {
-      "description": "UC-07 main flow step 4: a finished refresh's tally, in the core's own counts for a refresh run.",
+    "description": "UC-07 main flow step 4: a finished refresh's tally, in the core's own counts for a refresh run.",
+    "placeholders": {
+      "refreshed": {
+        "type": "int"
+      },
+      "unchanged": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "librarySourcesRefreshRunning": "The catalog is already being re-checked.",
+  "@librarySourcesRefreshRunning": {
+    "description": "UC-07 AF-01: a second refresh is refused while one is in flight."
+  },
+  "librarySourcesRefreshEmpty": "There is nothing cataloged yet. Add a folder and index it first.",
+  "@librarySourcesRefreshEmpty": {
+    "description": "UC-07 AF-02: the catalog is empty, so registering and indexing a folder is offered instead of a refresh (UC-05, UC-06)."
+  },
+  "librarySourcesRefreshFailed": "The catalog could not be re-checked.",
+  "@librarySourcesRefreshFailed": {
+    "description": "UC-07: the core refused to start the refresh."
+  },
+  "librarySourcesMissingReviewPending": "Reviewing missing files arrives with its own use case.",
+  "@librarySourcesMissingReviewPending": {
+    "description": "UC-07 AF-03: the outcome reports how many files are now missing; the link to the missing-files review is UC-37, which is not built yet."
+  },
+  "destinationVideos": "Videos",
+  "@destinationVideos": {
+    "description": "Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog."
+  },
+
+  "catalogEmptyTitle": "Nothing of this type yet",
+  "@catalogEmptyTitle": {
+      "description": "UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states."
+  },
+
+  "catalogEmptyFirstRun": "Your library is empty. Add a folder and index it, and what is inside will appear here.",
+  "@catalogEmptyFirstRun": {
+      "description": "UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06)."
+  },
+
+  "catalogEmptyAddFolder": "Library folders",
+  "@catalogEmptyAddFolder": {
+      "description": "The action on the empty state that opens the library-folders screen (UC-05)."
+  },
+
+  "catalogFileMissing": "Missing from disk",
+  "@catalogFileMissing": {
+      "description": "Marks a file the last refresh could not find on disk. The record is still active; reviewing them is UC-37."
+  },
+
+  "catalogCount": "{count}",
+  "@catalogCount": {
+      "description": "The item count beside a type in the navigation panel (FR-CT-01).",
       "placeholders": {
-          "refreshed": {
-              "type": "int"
-          },
-          "unchanged": {
-              "type": "int"
-          },
-          "missing": {
+          "count": {
               "type": "int"
           }
       }
-  },
-
-  "librarySourcesRefreshRunning": "The catalog is already being re-checked.",
-  "@librarySourcesRefreshRunning": {
-      "description": "UC-07 AF-01: a second refresh is refused while one is in flight."
-  },
-
-  "librarySourcesRefreshEmpty": "There is nothing cataloged yet. Add a folder and index it first.",
-  "@librarySourcesRefreshEmpty": {
-      "description": "UC-07 AF-02: the catalog is empty, so registering and indexing a folder is offered instead of a refresh (UC-05, UC-06)."
-  },
-
-  "librarySourcesRefreshFailed": "The catalog could not be re-checked.",
-  "@librarySourcesRefreshFailed": {
-      "description": "UC-07: the core refused to start the refresh."
-  },
-
-  "librarySourcesMissingReviewPending": "Reviewing missing files arrives with its own use case.",
-  "@librarySourcesMissingReviewPending": {
-      "description": "UC-07 AF-03: the outcome reports how many files are now missing; the link to the missing-files review is UC-37, which is not built yet."
   }
 }

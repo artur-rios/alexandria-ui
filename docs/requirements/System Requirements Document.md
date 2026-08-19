@@ -164,7 +164,7 @@ replace the FFI one without touching a screen.
 
 | ID | Requirement |
 | --- | --- |
-| FR-CT-01 | The system shall present a navigation panel listing every file type in the library — music, movies, series, books, comic books, notes and text files, HTML pages, images, and bookmarks — with the count of items in each. |
+| FR-CT-01 | The system shall present a navigation panel listing every file type in the library — music, videos, books, comic books, notes and text files, HTML pages, and images — plus bookmarks, with the count of items in each. Corrected in UC-09: this originally listed movies and series separately, but the core classifies a file as `video` and carries no subtype, so the two would be the same query returning the same rows. That distinction is a watchlist's (UC-29), not the catalog's. Bookmarks are not files and are listed through their own core call (UC-28). |
 | FR-CT-02 | The system shall list the files of a selected type, retrieved from the core. |
 | FR-CT-03 | The system shall offer three view layouts — list, list with details, and grid — and switch between them on request. |
 | FR-CT-04 | The system shall remember the chosen layout per file type across restarts. |

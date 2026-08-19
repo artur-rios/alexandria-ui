@@ -58,8 +58,6 @@
   "playbackNothingPlaying": "Nada em reprodução",
   "destinationHome": "Início",
   "destinationMusic": "Músicas",
-  "destinationMovies": "Filmes",
-  "destinationSeries": "Séries",
   "destinationBooks": "Livros",
   "destinationComicBooks": "Quadrinhos",
   "destinationNotes": "Notas",
@@ -105,28 +103,27 @@
   "librarySourcesRunInterrupted": "A análise não foi concluída, porque o Alexandria foi fechado enquanto ela estava em andamento.",
   "librarySourcesRunRefused": "Já existe uma análise desta pasta em andamento.",
   "librarySourcesStartFailed": "Não foi possível analisar esta pasta.",
-
   "librarySourcesUnregister": "Remover",
-
   "librarySourcesUnregisterTitle": "Remover {label} das pastas da biblioteca?",
-
-  "librarySourcesUnregisterBody": "O Alexandria vai parar de analisar esta pasta. Tudo o que j\u00e1 foi catalogado a partir dela continua na sua biblioteca, e nada no disco \u00e9 alterado.",
-
+  "librarySourcesUnregisterBody": "O Alexandria vai parar de analisar esta pasta. Tudo o que já foi catalogado a partir dela continua na sua biblioteca, e nada no disco é alterado.",
   "librarySourcesUnregisterConfirm": "Remover a pasta",
+  "librarySourcesUnregisterRefused": "Esta pasta está sendo analisada. Ela pode ser removida quando a análise terminar.",
+  "librarySourcesRefresh": "Atualizar o catálogo",
+  "librarySourcesRefreshing": "Reverificando o catálogo…",
+  "librarySourcesRefreshComplete": "{refreshed} arquivos atualizados, {unchanged} sem alteração, {missing} agora ausentes.",
+  "librarySourcesRefreshRunning": "O catálogo já está sendo reverificado.",
+  "librarySourcesRefreshEmpty": "Ainda não há nada catalogado. Adicione uma pasta e indexe-a primeiro.",
+  "librarySourcesRefreshFailed": "Não foi possível reverificar o catálogo.",
+  "librarySourcesMissingReviewPending": "A revisão de arquivos ausentes chega com o caso de uso dela.",
+  "destinationVideos": "Vídeos",
 
-  "librarySourcesUnregisterRefused": "Esta pasta est\u00e1 sendo analisada. Ela pode ser removida quando a an\u00e1lise terminar.",
+  "catalogEmptyTitle": "Nada deste tipo ainda",
 
-  "librarySourcesRefresh": "Atualizar o cat\u00e1logo",
+  "catalogEmptyFirstRun": "Sua biblioteca est\u00e1 vazia. Adicione uma pasta e indexe-a, e o que estiver dentro aparecer\u00e1 aqui.",
 
-  "librarySourcesRefreshing": "Reverificando o cat\u00e1logo\u2026",
+  "catalogEmptyAddFolder": "Pastas da biblioteca",
 
-  "librarySourcesRefreshComplete": "{refreshed} arquivos atualizados, {unchanged} sem altera\u00e7\u00e3o, {missing} agora ausentes.",
+  "catalogFileMissing": "Ausente do disco",
 
-  "librarySourcesRefreshRunning": "O cat\u00e1logo j\u00e1 est\u00e1 sendo reverificado.",
-
-  "librarySourcesRefreshEmpty": "Ainda n\u00e3o h\u00e1 nada catalogado. Adicione uma pasta e indexe-a primeiro.",
-
-  "librarySourcesRefreshFailed": "N\u00e3o foi poss\u00edvel reverificar o cat\u00e1logo.",
-
-  "librarySourcesMissingReviewPending": "A revis\u00e3o de arquivos ausentes chega com o caso de uso dela."
+  "catalogCount": "{count}"
 }

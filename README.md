@@ -254,7 +254,7 @@ untested.
 
 | Issue | Work | Spec |
 |---|---|---|
-| [#10](https://github.com/artur-rios/alexandria-desktop-front/issues/10) | UC-09 — Browse the library by type | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#10](https://github.com/artur-rios/alexandria-desktop-front/issues/10) | UC-09 — Browse the library by type — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#11](https://github.com/artur-rios/alexandria-desktop-front/issues/11) | UC-10 — Switch the view layout | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#12](https://github.com/artur-rios/alexandria-desktop-front/issues/12) | UC-11 — Search the catalog | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#13](https://github.com/artur-rios/alexandria-desktop-front/issues/13) | UC-12 — Filter and sort a listing | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |

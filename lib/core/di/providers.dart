@@ -25,6 +25,11 @@ import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
 import '../../features/library_sources/application/library_sources_controller.dart';
 import '../../features/library_sources/application/library_sources_state.dart';
+import '../../features/catalog/application/listing_controller.dart';
+import '../../features/catalog/data/core_catalog_gateway.dart';
+import '../../features/catalog/domain/catalog_file.dart';
+import '../../features/catalog/domain/library_type.dart';
+import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/library_sources/application/index_runs_controller.dart';
 import '../../features/library_sources/application/index_runs_state.dart';
 import '../../features/library_sources/data/core_index_gateway.dart';
@@ -209,4 +214,26 @@ final runPollIntervalProvider = Provider<Duration>(
 final indexRunsControllerProvider =
     NotifierProvider<IndexRunsController, IndexRunsState>(
       IndexRunsController.new,
+    );
+
+/// The core's catalog queries (UC-09).
+final catalogGatewayProvider = Provider<CatalogGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError('the catalog gateway was read before the core was loaded');
+  }
+
+  return CoreCatalogGateway(core);
+});
+
+/// The selected type's files (UC-09).
+final listingControllerProvider =
+    AsyncNotifierProvider<ListingController, List<CatalogFile>>(
+      ListingController.new,
+    );
+
+/// Every type's item count, for the navigation panel (FR-CT-01).
+final typeCountsControllerProvider =
+    AsyncNotifierProvider<TypeCountsController, Map<LibraryType, int>>(
+      TypeCountsController.new,
     );

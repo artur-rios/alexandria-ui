@@ -31,6 +31,8 @@ class FakeCoreClient implements CoreClient {
     CoreRunStart? indexRefreshStartResult,
     this.failOnIndexRefreshStart = false,
     this.countFilesResult = 120,
+    CoreJsonResponse? filesListResult,
+    this.failOnFilesList = false,
   }) : healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
        authLocalLoginResult =
@@ -50,6 +52,16 @@ class FakeCoreClient implements CoreClient {
            (
              status: 0,
              runId: '3f9a1b7c-2d4e-4a8b-9c1d-5e6f70819a2b',
+           ),
+       filesListResult =
+           filesListResult ??
+           (
+             status: 0,
+             json:
+                 '[{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
+                 '"name":"Kind of Blue.flac",'
+                 '"path":"/home/owner/music/Kind of Blue.flac",'
+                 '"fileType":"audio","state":"active"}]',
            ),
        indexRefreshStartResult =
            indexRefreshStartResult ??
@@ -169,6 +181,15 @@ class FakeCoreClient implements CoreClient {
   /// The tokens [indexRefreshStart] was called with, in order.
   final List<String> indexRefreshStarts = [];
 
+  /// What [filesList] answers (UC-09).
+  final CoreJsonResponse filesListResult;
+
+  /// Whether [filesList] throws instead of answering.
+  final bool failOnFilesList;
+
+  /// What [filesList] was called with, in order.
+  final List<({String filters, String token})> filesListCalls = [];
+
   /// What [indexStart] was called with, in order.
   final List<({String root, String token})> indexStarts = [];
 
@@ -259,6 +280,15 @@ class FakeCoreClient implements CoreClient {
 
   @override
   Future<int> indexCountFiles() async => countFilesResult;
+
+  @override
+  Future<CoreJsonResponse> filesList(String jsonFilters, String token) async {
+    if (failOnFilesList) {
+      throw const CoreCallException('files list call failed');
+    }
+    filesListCalls.add((filters: jsonFilters, token: token));
+    return filesListResult;
+  }
 
   @override
   Future<void> dispose() async => disposeCount++;

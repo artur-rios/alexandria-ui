@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../catalog/domain/library_type.dart';
+import '../../catalog/presentation/catalog_listing.dart';
 import '../domain/shell_destination.dart';
 import 'playback_bar.dart';
 import 'shell_navigation_panel.dart';
@@ -46,12 +48,12 @@ class ShellScreen extends ConsumerWidget {
   }
 }
 
-/// The content area, and the seam every later use case fills (FR-UX-01).
+/// The content area (FR-UX-01).
 ///
-/// Each destination gets its heading here and nothing more: the listings are
-/// UC-09's, the dashboard is UC-14's, and the bookmark manager is UC-28's.
-/// Building any of them now would be building them without their
-/// specifications.
+/// A file type shows its listing (UC-09). Home is still the dashboard's seam
+/// (UC-14) and bookmarks are still the bookmark manager's (UC-28) — neither is
+/// a file listing, and building either now would be building it without its
+/// specification.
 class ShellContentArea extends StatelessWidget {
   /// Creates the content area for [destination].
   const ShellContentArea({required this.destination, super.key});
@@ -72,15 +74,17 @@ class ShellContentArea extends StatelessWidget {
           Text(destination.label(l10n), style: theme.textTheme.headlineSmall),
           const SizedBox(height: AppSpacing.lg),
           Expanded(
-            child: Center(
-              child: Text(
-                l10n.shellAreaPending,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
+            child: libraryTypeFor(destination) == null
+                ? Center(
+                    child: Text(
+                      l10n.shellAreaPending,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  )
+                : const CatalogListing(),
           ),
         ],
       ),

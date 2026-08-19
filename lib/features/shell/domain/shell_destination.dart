@@ -1,8 +1,8 @@
 /// The areas the navigation panel offers (FR-UX-01, FR-CT-01).
 ///
-/// Nine of these are FR-CT-01's file types, in its order: music, movies,
-/// series, books, comic books, notes and text files, HTML pages, images, and
-/// bookmarks. [home] is the tenth and is not a file type — it is where UC-14's
+/// Eight of these are the library's types: the seven the core classifies files
+/// into, plus bookmarks, which are not files at all and are listed through
+/// their own core call (UC-28). [home] is the tenth and is not a file type — it is where UC-14's
 /// dashboard lands, and the panel carries it because "the application opens the
 /// dashboard after login" (UC-14 main flow step 1) would otherwise describe a
 /// screen the owner can never navigate back to.
@@ -17,11 +17,15 @@ enum ShellDestination {
   /// Audio files.
   music,
 
-  /// Standalone films.
-  movies,
-
-  /// Episodic video.
-  series,
+  /// Video of every kind.
+  ///
+  /// One entry, not the two FR-CT-01 originally listed. The core classifies a
+  /// file as `video` and carries no subtype, so "movies" and "series" would be
+  /// the same query and the same list. The distinction is real in this product
+  /// — it is what a watchlist tracks (UC-29) — but it is not a property of the
+  /// catalog, and inventing one here would be the front-end doing domain
+  /// classification the core owns (BR-02).
+  videos,
 
   /// Books, including e-book formats and PDFs read as books.
   books,

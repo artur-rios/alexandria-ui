@@ -18,8 +18,13 @@ part 'failure.freezed.dart';
 /// arise before or around a core call — the library would not load, the
 /// application-support directory would not open — and carry what the owner
 /// needs to act on instead.
+///
+/// It implements [Exception] because it is thrown as well as returned: a
+/// listing that could not be fetched surfaces through `AsyncValue`'s error
+/// channel (UC-09 AF-02), and the thing carried there has to be the typed
+/// failure the screen already knows how to read.
 @freezed
-sealed class Failure with _$Failure {
+sealed class Failure with _$Failure implements Exception {
   const Failure._();
 
   /// The core rejected the input. Its verdict is always final and always

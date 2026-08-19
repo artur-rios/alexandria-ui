@@ -217,12 +217,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get destinationMusic => 'Músicas';
 
   @override
-  String get destinationMovies => 'Filmes';
-
-  @override
-  String get destinationSeries => 'Séries';
-
-  @override
   String get destinationBooks => 'Livros';
 
   @override
@@ -424,4 +418,25 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get librarySourcesMissingReviewPending =>
       'A revisão de arquivos ausentes chega com o caso de uso dela.';
+
+  @override
+  String get destinationVideos => 'Vídeos';
+
+  @override
+  String get catalogEmptyTitle => 'Nada deste tipo ainda';
+
+  @override
+  String get catalogEmptyFirstRun =>
+      'Sua biblioteca está vazia. Adicione uma pasta e indexe-a, e o que estiver dentro aparecerá aqui.';
+
+  @override
+  String get catalogEmptyAddFolder => 'Pastas da biblioteca';
+
+  @override
+  String get catalogFileMissing => 'Ausente do disco';
+
+  @override
+  String catalogCount(int count) {
+    return '$count';
+  }
 }
