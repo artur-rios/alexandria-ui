@@ -803,5 +803,60 @@
   "detailsDuration": "Duration",
   "@detailsDuration": {
       "description": "Label of a video's extracted duration."
+  },
+
+  "dashboardRecent": "Recently added",
+  "@dashboardRecent": {
+      "description": "Heading of the dashboard's recently added section (UC-14, FR-CT-11)."
+  },
+
+  "dashboardRecentNone": "Nothing has been added yet.",
+  "@dashboardRecentNone": {
+      "description": "The recently added section has nothing to show."
+  },
+
+  "dashboardInProgress": "In progress",
+  "@dashboardInProgress": {
+      "description": "Heading of the dashboard's in-progress section (UC-14, FR-CT-11)."
+  },
+
+  "dashboardInProgressNone": "Nothing is in progress. Watchlists and reading lists arrive with their own use cases.",
+  "@dashboardInProgressNone": {
+      "description": "UC-14 AF-02: the section states that nothing is in progress rather than rendering empty. Watchlists and reading lists are M-09, so this is always the state today."
+  },
+
+  "dashboardCounts": "What is in the library",
+  "@dashboardCounts": {
+      "description": "Heading of the dashboard's per-type counts (UC-14, FR-CT-11)."
+  },
+
+  "dashboardLastRun": "The last scan",
+  "@dashboardLastRun": {
+      "description": "Heading of the dashboard's most-recent-run section (UC-14, FR-CT-11)."
+  },
+
+  "dashboardLastRunNone": "Nothing has been scanned in this session.",
+  "@dashboardLastRunNone": {
+      "description": "No index or refresh run has been observed since the application started."
+  },
+
+  "dashboardLastRunRunning": "A scan is running now.",
+  "@dashboardLastRunRunning": {
+      "description": "UC-14 AF-04: a run is in flight, and the dashboard updates when it settles."
+  },
+
+  "dashboardLastRunComplete": "The last scan finished.",
+  "@dashboardLastRunComplete": {
+      "description": "The most recent run completed."
+  },
+
+  "dashboardLastRunFailed": "The last scan did not finish.",
+  "@dashboardLastRunFailed": {
+      "description": "The most recent run failed."
+  },
+
+  "dashboardLastRunInterrupted": "The last scan was interrupted when Alexandria closed.",
+  "@dashboardLastRunInterrupted": {
+      "description": "The most recent run was interrupted rather than failing."
   }
 }

@@ -576,4 +576,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailsDuration => 'Duration';
+
+  @override
+  String get dashboardRecent => 'Recently added';
+
+  @override
+  String get dashboardRecentNone => 'Nothing has been added yet.';
+
+  @override
+  String get dashboardInProgress => 'In progress';
+
+  @override
+  String get dashboardInProgressNone =>
+      'Nothing is in progress. Watchlists and reading lists arrive with their own use cases.';
+
+  @override
+  String get dashboardCounts => 'What is in the library';
+
+  @override
+  String get dashboardLastRun => 'The last scan';
+
+  @override
+  String get dashboardLastRunNone =>
+      'Nothing has been scanned in this session.';
+
+  @override
+  String get dashboardLastRunRunning => 'A scan is running now.';
+
+  @override
+  String get dashboardLastRunComplete => 'The last scan finished.';
+
+  @override
+  String get dashboardLastRunFailed => 'The last scan did not finish.';
+
+  @override
+  String get dashboardLastRunInterrupted =>
+      'The last scan was interrupted when Alexandria closed.';
 }

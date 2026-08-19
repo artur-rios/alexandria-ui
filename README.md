@@ -259,7 +259,7 @@ untested.
 | [#12](https://github.com/artur-rios/alexandria-desktop-front/issues/12) | UC-11 — Search the catalog — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#13](https://github.com/artur-rios/alexandria-desktop-front/issues/13) | UC-12 — Filter and sort a listing — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#14](https://github.com/artur-rios/alexandria-desktop-front/issues/14) | UC-13 — View a file's details — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#15](https://github.com/artur-rios/alexandria-desktop-front/issues/15) | UC-14 — View the home dashboard | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#15](https://github.com/artur-rios/alexandria-desktop-front/issues/15) | UC-14 — View the home dashboard — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-05 — Metadata and content editing
 

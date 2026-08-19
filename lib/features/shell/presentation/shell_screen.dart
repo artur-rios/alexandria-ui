@@ -8,6 +8,7 @@ import '../../catalog/domain/library_type.dart';
 import '../../catalog/domain/catalog_search.dart';
 import '../../catalog/presentation/catalog_listing.dart';
 import '../../catalog/presentation/catalog_search_view.dart';
+import '../../catalog/presentation/home_dashboard.dart';
 import '../domain/shell_destination.dart';
 import 'playback_bar.dart';
 import 'shell_navigation_panel.dart';
@@ -87,6 +88,10 @@ class ShellContentArea extends ConsumerWidget {
               // AF-02 needs nothing of its own: an empty term is not a search,
               // and the listing is already what an absent search shows.
               (true, _) => const CatalogSearchResults(),
+              // Home is the dashboard UC-14 builds; bookmarks are still
+              // UC-28's seam.
+              (false, null) when destination == ShellDestination.home =>
+                const HomeDashboard(),
               (false, null) => Center(
                 child: Text(
                   l10n.shellAreaPending,
