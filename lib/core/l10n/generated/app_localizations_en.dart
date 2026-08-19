@@ -217,12 +217,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get destinationMusic => 'Music';
 
   @override
-  String get destinationMovies => 'Movies';
-
-  @override
-  String get destinationSeries => 'Series';
-
-  @override
   String get destinationBooks => 'Books';
 
   @override
@@ -424,4 +418,25 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get librarySourcesMissingReviewPending =>
       'Reviewing missing files arrives with its own use case.';
+
+  @override
+  String get destinationVideos => 'Videos';
+
+  @override
+  String get catalogEmptyTitle => 'Nothing of this type yet';
+
+  @override
+  String get catalogEmptyFirstRun =>
+      'Your library is empty. Add a folder and index it, and what is inside will appear here.';
+
+  @override
+  String get catalogEmptyAddFolder => 'Library folders';
+
+  @override
+  String get catalogFileMissing => 'Missing from disk';
+
+  @override
+  String catalogCount(int count) {
+    return '$count';
+  }
 }

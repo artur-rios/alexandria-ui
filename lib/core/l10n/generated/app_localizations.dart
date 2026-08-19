@@ -446,18 +446,6 @@ abstract class AppLocalizations {
   /// **'Music'**
   String get destinationMusic;
 
-  /// Navigation panel entry for standalone films (FR-CT-01).
-  ///
-  /// In en, this message translates to:
-  /// **'Movies'**
-  String get destinationMovies;
-
-  /// Navigation panel entry for episodic video (FR-CT-01).
-  ///
-  /// In en, this message translates to:
-  /// **'Series'**
-  String get destinationSeries;
-
   /// Navigation panel entry for books and e-books (FR-CT-01).
   ///
   /// In en, this message translates to:
@@ -803,6 +791,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reviewing missing files arrives with its own use case.'**
   String get librarySourcesMissingReviewPending;
+
+  /// Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get destinationVideos;
+
+  /// UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing of this type yet'**
+  String get catalogEmptyTitle;
+
+  /// UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06).
+  ///
+  /// In en, this message translates to:
+  /// **'Your library is empty. Add a folder and index it, and what is inside will appear here.'**
+  String get catalogEmptyFirstRun;
+
+  /// The action on the empty state that opens the library-folders screen (UC-05).
+  ///
+  /// In en, this message translates to:
+  /// **'Library folders'**
+  String get catalogEmptyAddFolder;
+
+  /// Marks a file the last refresh could not find on disk. The record is still active; reviewing them is UC-37.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing from disk'**
+  String get catalogFileMissing;
+
+  /// The item count beside a type in the navigation panel (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'{count}'**
+  String catalogCount(int count);
 }
 
 class _AppLocalizationsDelegate

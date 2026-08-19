@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
+import '../../catalog/domain/library_type.dart';
 import '../domain/shell_destination.dart';
 import 'preferences_dialog.dart';
 
@@ -12,7 +15,7 @@ import 'preferences_dialog.dart';
 /// rail of icons with tooltips, and at the wider tiers the same entries carry
 /// their labels. No entry is ever dropped, which is the distinction
 /// FR-UX-02 draws between adapting and clipping.
-class ShellNavigationPanel extends StatelessWidget {
+class ShellNavigationPanel extends ConsumerWidget {
   /// Creates the panel.
   const ShellNavigationPanel({
     required this.selected,
@@ -27,9 +30,15 @@ class ShellNavigationPanel extends StatelessWidget {
   final ValueChanged<ShellDestination> onSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final breakpoint = Breakpoint.from(context);
+    // FR-CT-01 wants a count beside each type. A type whose query failed has
+    // no entry here and so shows no number, rather than a zero that would read
+    // as "nothing here".
+    final counts = ref
+        .watch(typeCountsControllerProvider)
+        .maybeWhen(data: (byType) => byType, orElse: () => null);
 
     // The breakpoints are widths, and a window can be wide and short: at the
     // medium tier the ten labelled entries need more height than a 640-pixel
@@ -70,8 +79,14 @@ class ShellNavigationPanel extends StatelessWidget {
               destinations: [
                 for (final destination in ShellDestination.values)
                   NavigationRailDestination(
-                    icon: Icon(destination.icon),
-                    selectedIcon: Icon(destination.selectedIcon),
+                    icon: _CountedIcon(
+                      icon: destination.icon,
+                      count: counts?[libraryTypeFor(destination)],
+                    ),
+                    selectedIcon: _CountedIcon(
+                      icon: destination.selectedIcon,
+                      count: counts?[libraryTypeFor(destination)],
+                    ),
                     label: Text(destination.label(l10n)),
                   ),
               ],
@@ -80,6 +95,25 @@ class ShellNavigationPanel extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// A destination's icon, with its item count when there is one (FR-CT-01).
+///
+/// A badge rather than a number in the label, because the panel collapses to
+/// icons at the minimum window (FR-UX-02) and the count has to survive that.
+class _CountedIcon extends StatelessWidget {
+  const _CountedIcon({required this.icon, this.count});
+
+  final IconData icon;
+  final int? count;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = count;
+    if (value == null || value == 0) return Icon(icon);
+
+    return Badge.count(count: value, child: Icon(icon));
   }
 }
 
@@ -93,8 +127,7 @@ extension ShellDestinationPresentation on ShellDestination {
   IconData get icon => switch (this) {
     ShellDestination.home => Icons.home_outlined,
     ShellDestination.music => Icons.library_music_outlined,
-    ShellDestination.movies => Icons.movie_outlined,
-    ShellDestination.series => Icons.live_tv_outlined,
+    ShellDestination.videos => Icons.movie_outlined,
     ShellDestination.books => Icons.menu_book_outlined,
     ShellDestination.comicBooks => Icons.auto_stories_outlined,
     ShellDestination.notes => Icons.description_outlined,
@@ -107,8 +140,7 @@ extension ShellDestinationPresentation on ShellDestination {
   IconData get selectedIcon => switch (this) {
     ShellDestination.home => Icons.home,
     ShellDestination.music => Icons.library_music,
-    ShellDestination.movies => Icons.movie,
-    ShellDestination.series => Icons.live_tv,
+    ShellDestination.videos => Icons.movie,
     ShellDestination.books => Icons.menu_book,
     ShellDestination.comicBooks => Icons.auto_stories,
     ShellDestination.notes => Icons.description,
@@ -121,8 +153,7 @@ extension ShellDestinationPresentation on ShellDestination {
   String label(AppLocalizations l10n) => switch (this) {
     ShellDestination.home => l10n.destinationHome,
     ShellDestination.music => l10n.destinationMusic,
-    ShellDestination.movies => l10n.destinationMovies,
-    ShellDestination.series => l10n.destinationSeries,
+    ShellDestination.videos => l10n.destinationVideos,
     ShellDestination.books => l10n.destinationBooks,
     ShellDestination.comicBooks => l10n.destinationComicBooks,
     ShellDestination.notes => l10n.destinationNotes,

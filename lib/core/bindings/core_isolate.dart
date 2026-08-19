@@ -319,6 +319,19 @@ class CoreIsolate {
         }),
       ),
 
+      // Filters and the session token in, a JSON array out — freed by consume
+      // on the way back, on the failure path too (IR-09, NFR-13).
+      'filesList' => withNativeString(
+        arguments.first! as String,
+        (filters) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_files_list(filters, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       _ => throw CoreCallException('unknown core operation "$operation"'),
     };
   }
