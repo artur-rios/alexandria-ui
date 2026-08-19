@@ -612,4 +612,48 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get dashboardLastRunInterrupted =>
       'A última análise foi interrompida quando o Alexandria fechou.';
+
+  @override
+  String get detailsEditMetadata => 'Editar metadados';
+
+  @override
+  String get musicMetadataTitle => 'Metadados da música';
+
+  @override
+  String get musicMetadataFieldTitle => 'Título';
+
+  @override
+  String get musicMetadataFieldArtist => 'Artista';
+
+  @override
+  String get musicMetadataFieldAlbum => 'Álbum';
+
+  @override
+  String get musicMetadataFieldYear => 'Ano';
+
+  @override
+  String get musicMetadataFieldGenre => 'Gênero';
+
+  @override
+  String get musicMetadataFieldTrack => 'Número da faixa';
+
+  @override
+  String get musicMetadataSave => 'Salvar';
+
+  @override
+  String get musicMetadataCancel => 'Cancelar';
+
+  @override
+  String get musicMetadataErrorNotANumber => 'Digite um número inteiro.';
+
+  @override
+  String get musicMetadataErrorYear => 'Digite um ano com quatro dígitos.';
+
+  @override
+  String get musicMetadataErrorTrack => 'O número da faixa começa em 1.';
+
+  @override
+  String musicMetadataErrorTooLong(int max) {
+    return 'Use menos de $max caracteres.';
+  }
 }

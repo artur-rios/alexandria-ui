@@ -5,6 +5,7 @@ import 'catalog_file.dart';
 import 'file_details.dart';
 import 'library_type.dart';
 import 'listing_view.dart';
+import 'music_metadata.dart';
 
 part 'catalog_gateway.freezed.dart';
 
@@ -32,6 +33,22 @@ sealed class FileDetailsOutcome with _$FileDetailsOutcome {
       FileDetailsFailed;
 }
 
+/// What editing a file's metadata produced (UC-15 main flow step 6).
+@freezed
+sealed class MetadataEditOutcome with _$MetadataEditOutcome {
+  /// The core validated, persisted, and echoed what it stored.
+  ///
+  /// It carries the stored metadata rather than nothing, so the form reports
+  /// what the core holds instead of what was sent — the two agree today, and
+  /// the day they do not, this is the one that is true.
+  const factory MetadataEditOutcome.saved({required MusicMetadata metadata}) =
+      MetadataEditSaved;
+
+  /// The core refused the change (AF-02, AF-03, AF-05).
+  const factory MetadataEditOutcome.failed({required Failure failure}) =
+      MetadataEditFailed;
+}
+
 /// The application's view of the core's catalog queries (IR-02, NFR-17).
 abstract interface class CatalogGateway {
   /// The files of [type] in [lifecycle], merged across every registered
@@ -49,6 +66,17 @@ abstract interface class CatalogGateway {
   /// One file, with everything the core knows about it (FR-CT-05, UC-13).
   Future<FileDetailsOutcome> fileDetails({
     required String uuid,
+    required String credential,
+  });
+
+  /// Replaces the music metadata of the audio file [uuid] identifies
+  /// (FR-ME-01, UC-15).
+  ///
+  /// The whole record is sent, not the fields that changed: the core's patch
+  /// is a full replace, so anything left out is cleared.
+  Future<MetadataEditOutcome> editMusicMetadata({
+    required String uuid,
+    required MusicMetadata metadata,
     required String credential,
   });
 }

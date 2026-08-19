@@ -8,6 +8,8 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/file_details.dart';
+import '../domain/library_type.dart';
+import 'music_metadata_form.dart';
 
 /// One file's details (UC-13, FR-CT-05, FR-CT-12).
 ///
@@ -114,6 +116,19 @@ class _Details extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
           _Section(l10n.detailsMetadata),
           _Metadata(details: details),
+
+          // UC-15 main flow step 1. Offered for audio only, because music
+          // metadata is the only shape there is a form for yet — video is
+          // UC-16's — and not for a deleted record, which the core refuses to
+          // edit until it is restored.
+          if (details.file.type == LibraryType.audio && !details.isDeleted) ...[
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              onPressed: () => MusicMetadataForm.show(context, ref, details),
+              icon: const Icon(Icons.edit_outlined),
+              label: Text(l10n.detailsEditMetadata),
+            ),
+          ],
 
           const SizedBox(height: AppSpacing.lg),
           // AF-04: no viewer is registered for any type yet — M-07 is what

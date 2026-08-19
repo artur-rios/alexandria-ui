@@ -628,4 +628,314 @@ $FailureCopyWith<$Res> get failure {
 }
 }
 
+/// @nodoc
+mixin _$MetadataEditOutcome {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MetadataEditOutcome);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'MetadataEditOutcome()';
+}
+
+
+}
+
+/// @nodoc
+class $MetadataEditOutcomeCopyWith<$Res>  {
+$MetadataEditOutcomeCopyWith(MetadataEditOutcome _, $Res Function(MetadataEditOutcome) __);
+}
+
+
+/// Adds pattern-matching-related methods to [MetadataEditOutcome].
+extension MetadataEditOutcomePatterns on MetadataEditOutcome {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( MetadataEditSaved value)?  saved,TResult Function( MetadataEditFailed value)?  failed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case MetadataEditSaved() when saved != null:
+return saved(_that);case MetadataEditFailed() when failed != null:
+return failed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( MetadataEditSaved value)  saved,required TResult Function( MetadataEditFailed value)  failed,}){
+final _that = this;
+switch (_that) {
+case MetadataEditSaved():
+return saved(_that);case MetadataEditFailed():
+return failed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( MetadataEditSaved value)?  saved,TResult? Function( MetadataEditFailed value)?  failed,}){
+final _that = this;
+switch (_that) {
+case MetadataEditSaved() when saved != null:
+return saved(_that);case MetadataEditFailed() when failed != null:
+return failed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( MusicMetadata metadata)?  saved,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case MetadataEditSaved() when saved != null:
+return saved(_that.metadata);case MetadataEditFailed() when failed != null:
+return failed(_that.failure);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( MusicMetadata metadata)  saved,required TResult Function( Failure failure)  failed,}) {final _that = this;
+switch (_that) {
+case MetadataEditSaved():
+return saved(_that.metadata);case MetadataEditFailed():
+return failed(_that.failure);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( MusicMetadata metadata)?  saved,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+switch (_that) {
+case MetadataEditSaved() when saved != null:
+return saved(_that.metadata);case MetadataEditFailed() when failed != null:
+return failed(_that.failure);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class MetadataEditSaved implements MetadataEditOutcome {
+  const MetadataEditSaved({required this.metadata});
+  
+
+ final  MusicMetadata metadata;
+
+/// Create a copy of MetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MetadataEditSavedCopyWith<MetadataEditSaved> get copyWith => _$MetadataEditSavedCopyWithImpl<MetadataEditSaved>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MetadataEditSaved&&(identical(other.metadata, metadata) || other.metadata == metadata));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,metadata);
+
+@override
+String toString() {
+  return 'MetadataEditOutcome.saved(metadata: $metadata)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MetadataEditSavedCopyWith<$Res> implements $MetadataEditOutcomeCopyWith<$Res> {
+  factory $MetadataEditSavedCopyWith(MetadataEditSaved value, $Res Function(MetadataEditSaved) _then) = _$MetadataEditSavedCopyWithImpl;
+@useResult
+$Res call({
+ MusicMetadata metadata
+});
+
+
+$MusicMetadataCopyWith<$Res> get metadata;
+
+}
+/// @nodoc
+class _$MetadataEditSavedCopyWithImpl<$Res>
+    implements $MetadataEditSavedCopyWith<$Res> {
+  _$MetadataEditSavedCopyWithImpl(this._self, this._then);
+
+  final MetadataEditSaved _self;
+  final $Res Function(MetadataEditSaved) _then;
+
+/// Create a copy of MetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+  return _then(MetadataEditSaved(
+metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+as MusicMetadata,
+  ));
+}
+
+/// Create a copy of MetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MusicMetadataCopyWith<$Res> get metadata {
+  
+  return $MusicMetadataCopyWith<$Res>(_self.metadata, (value) {
+    return _then(_self.copyWith(metadata: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class MetadataEditFailed implements MetadataEditOutcome {
+  const MetadataEditFailed({required this.failure});
+  
+
+ final  Failure failure;
+
+/// Create a copy of MetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MetadataEditFailedCopyWith<MetadataEditFailed> get copyWith => _$MetadataEditFailedCopyWithImpl<MetadataEditFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MetadataEditFailed&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,failure);
+
+@override
+String toString() {
+  return 'MetadataEditOutcome.failed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MetadataEditFailedCopyWith<$Res> implements $MetadataEditOutcomeCopyWith<$Res> {
+  factory $MetadataEditFailedCopyWith(MetadataEditFailed value, $Res Function(MetadataEditFailed) _then) = _$MetadataEditFailedCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+$FailureCopyWith<$Res> get failure;
+
+}
+/// @nodoc
+class _$MetadataEditFailedCopyWithImpl<$Res>
+    implements $MetadataEditFailedCopyWith<$Res> {
+  _$MetadataEditFailedCopyWithImpl(this._self, this._then);
+
+  final MetadataEditFailed _self;
+  final $Res Function(MetadataEditFailed) _then;
+
+/// Create a copy of MetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(MetadataEditFailed(
+failure: null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+/// Create a copy of MetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$FailureCopyWith<$Res> get failure {
+  
+  return $FailureCopyWith<$Res>(_self.failure, (value) {
+    return _then(_self.copyWith(failure: value));
+  });
+}
+}
+
 // dart format on

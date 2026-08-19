@@ -231,5 +231,33 @@
 
   "dashboardLastRunFailed": "A \u00faltima an\u00e1lise n\u00e3o foi conclu\u00edda.",
 
-  "dashboardLastRunInterrupted": "A \u00faltima an\u00e1lise foi interrompida quando o Alexandria fechou."
+  "dashboardLastRunInterrupted": "A \u00faltima an\u00e1lise foi interrompida quando o Alexandria fechou.",
+
+  "detailsEditMetadata": "Editar metadados",
+
+  "musicMetadataTitle": "Metadados da música",
+
+  "musicMetadataFieldTitle": "Título",
+
+  "musicMetadataFieldArtist": "Artista",
+
+  "musicMetadataFieldAlbum": "Álbum",
+
+  "musicMetadataFieldYear": "Ano",
+
+  "musicMetadataFieldGenre": "Gênero",
+
+  "musicMetadataFieldTrack": "Número da faixa",
+
+  "musicMetadataSave": "Salvar",
+
+  "musicMetadataCancel": "Cancelar",
+
+  "musicMetadataErrorNotANumber": "Digite um número inteiro.",
+
+  "musicMetadataErrorYear": "Digite um ano com quatro dígitos.",
+
+  "musicMetadataErrorTrack": "O número da faixa começa em 1.",
+
+  "musicMetadataErrorTooLong": "Use menos de {max} caracteres."
 }

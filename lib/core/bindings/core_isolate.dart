@@ -340,6 +340,26 @@ class CoreIsolate {
         }),
       ),
 
+      // Three strings, so three nestings: each pointer stays alive for the
+      // whole call and is freed on the way out, in the order it was taken.
+      'fileEditMetadata' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (patch) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_file_edit_metadata(
+              uuid,
+              patch,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
       _ => throw CoreCallException('unknown core operation "$operation"'),
     };
   }
