@@ -933,5 +933,29 @@
               "type": "int"
           }
       }
+  },
+  "signOut": "Sign out",
+  "@signOut": {
+      "description": "UC-03 main flow step 1: ends the session without closing the application."
+  },
+
+  "signOutUnsavedTitle": "Unsaved changes",
+  "@signOutUnsavedTitle": {
+      "description": "UC-03 AF-01: the heading of the warning shown when an editor is holding changes that were never saved."
+  },
+
+  "signOutUnsavedMessage": "Signing out now discards the changes you have not saved. Cancel to go back and save them first.",
+  "@signOutUnsavedMessage": {
+      "description": "UC-03 AF-01: names what signing out would lose, and says that cancelling is how to save it."
+  },
+
+  "signOutUnsavedConfirm": "Sign out and discard",
+  "@signOutUnsavedConfirm": {
+      "description": "UC-03 AF-01: confirms the sign-out, unsaved changes and all."
+  },
+
+  "signOutIndexRunContinues": "You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.",
+  "@signOutIndexRunContinues": {
+      "description": "UC-03 AF-02: the scan belongs to the core, so signing out neither stopped it nor lost its outcome."
   }
 }

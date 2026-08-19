@@ -19,6 +19,7 @@ import '../../features/auth/application/login_controller.dart';
 import '../../features/auth/application/login_state.dart';
 import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/application/session_state.dart';
+import '../../features/auth/application/sign_out_controller.dart';
 import '../../features/auth/application/sign_up_controller.dart';
 import '../../features/auth/application/sign_up_state.dart';
 import '../../features/auth/data/core_auth_gateway.dart';
@@ -32,6 +33,7 @@ import '../../features/catalog/application/layout_controller.dart';
 import '../../features/catalog/application/listing_controller.dart';
 import '../../features/catalog/application/listing_view_controller.dart';
 import '../../features/catalog/application/search_controller.dart';
+import '../../features/catalog/application/catalog_session_activity.dart';
 import '../../features/catalog/data/core_catalog_gateway.dart';
 import '../../features/catalog/domain/catalog_file.dart';
 import '../../features/catalog/domain/library_type.dart';
@@ -39,6 +41,7 @@ import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
 import '../../features/library_sources/application/index_runs_controller.dart';
 import '../../features/library_sources/application/index_runs_state.dart';
+import '../../features/library_sources/application/index_session_activity.dart';
 import '../../features/library_sources/data/core_index_gateway.dart';
 import '../../features/library_sources/data/disk_folder_probe.dart';
 import '../../features/library_sources/data/native_folder_picker.dart';
@@ -50,6 +53,7 @@ import '../../features/shell/application/preferences_controller.dart';
 import '../../features/shell/application/preferences_state.dart';
 import '../../features/shell/application/shell_controller.dart';
 import '../../features/shell/data/desktop_window_placement.dart';
+import '../../features/shell/domain/session_activity.dart';
 import '../../features/shell/domain/shell_destination.dart';
 import '../../features/shell/domain/window_placement.dart';
 import '../bindings/core_client.dart';
@@ -288,3 +292,17 @@ final musicMetadataEditorProvider =
     NotifierProvider<MusicMetadataEditor, MusicEditorState>(
       MusicMetadataEditor.new,
     );
+
+/// Everything that runs for the length of a session (UC-03, FR-AU-09).
+///
+/// The list is the registration point sign-out reads: a use case that opens
+/// something belonging to the session — a player, an editor — adds its
+/// activity here and changes nothing in the authentication layer.
+final sessionActivitiesProvider = Provider<List<SessionActivity>>(
+  (ref) => [CatalogSessionActivity(ref), IndexSessionActivity(ref)],
+);
+
+/// Ends the session on request (UC-03).
+final signOutControllerProvider = Provider<SignOutController>(
+  SignOutController.new,
+);

@@ -656,4 +656,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String musicMetadataErrorTooLong(int max) {
     return 'Use menos de $max caracteres.';
   }
+
+  @override
+  String get signOut => 'Sair';
+
+  @override
+  String get signOutUnsavedTitle => 'Alterações não salvas';
+
+  @override
+  String get signOutUnsavedMessage =>
+      'Sair agora descarta as alterações que você não salvou. Cancele para voltar e salvá-las antes.';
+
+  @override
+  String get signOutUnsavedConfirm => 'Sair e descartar';
+
+  @override
+  String get signOutIndexRunContinues =>
+      'Você saiu enquanto uma varredura ainda estava em andamento. Ela continua no núcleo, e o resultado aparece no seu próximo acesso.';
 }

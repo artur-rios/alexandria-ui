@@ -18,7 +18,15 @@ sealed class SessionState with _$SessionState {
   ///
   /// [endedBecause] is set only when a session was discarded by rejection
   /// rather than never having existed.
-  const factory SessionState.absent({Failure? endedBecause}) = SessionAbsent;
+  ///
+  /// [indexRunContinues] is set when the owner signed out while the core was
+  /// still scanning (UC-03 AF-02). It is not a failure and does not belong in
+  /// [endedBecause]: nothing went wrong, and the login screen states it in the
+  /// informational tone rather than the one it uses for a rejection.
+  const factory SessionState.absent({
+    Failure? endedBecause,
+    @Default(false) bool indexRunContinues,
+  }) = SessionAbsent;
 
   /// The owner is authenticated.
   ///

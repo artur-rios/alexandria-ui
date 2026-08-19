@@ -259,5 +259,29 @@
 
   "musicMetadataErrorTrack": "O número da faixa começa em 1.",
 
-  "musicMetadataErrorTooLong": "Use menos de {max} caracteres."
+  "musicMetadataErrorTooLong": "Use menos de {max} caracteres.",
+  "signOut": "Sair",
+  "@signOut": {
+      "description": "UC-03 main flow step 1: ends the session without closing the application."
+  },
+
+  "signOutUnsavedTitle": "Alterações não salvas",
+  "@signOutUnsavedTitle": {
+      "description": "UC-03 AF-01: the heading of the warning shown when an editor is holding changes that were never saved."
+  },
+
+  "signOutUnsavedMessage": "Sair agora descarta as alterações que você não salvou. Cancele para voltar e salvá-las antes.",
+  "@signOutUnsavedMessage": {
+      "description": "UC-03 AF-01: names what signing out would lose, and says that cancelling is how to save it."
+  },
+
+  "signOutUnsavedConfirm": "Sair e descartar",
+  "@signOutUnsavedConfirm": {
+      "description": "UC-03 AF-01: confirms the sign-out, unsaved changes and all."
+  },
+
+  "signOutIndexRunContinues": "Você saiu enquanto uma varredura ainda estava em andamento. Ela continua no núcleo, e o resultado aparece no seu próximo acesso.",
+  "@signOutIndexRunContinues": {
+      "description": "UC-03 AF-02: the scan belongs to the core, so signing out neither stopped it nor lost its outcome."
+  }
 }
