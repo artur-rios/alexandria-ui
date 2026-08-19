@@ -6,6 +6,7 @@ import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod/misc.dart';
 
 import 'fake_auth_gateway.dart';
 import 'in_memory_settings_store.dart';
@@ -45,6 +46,7 @@ extension PumpLogin on WidgetTester {
     ThemeMode themeMode = ThemeMode.light,
     Size surfaceSize = const Size(1280, 800),
     SettingsStore? settings,
+    List<Override> extraOverrides = const [],
   }) async {
     await binding.setSurfaceSize(surfaceSize);
     addTearDown(() => binding.setSurfaceSize(null));
@@ -60,6 +62,9 @@ extension PumpLogin on WidgetTester {
               InMemorySettingsStore(themeMode: themeMode, locale: locale),
         ),
         authGatewayProvider.overrideWithValue(gateway ?? FakeAuthGateway()),
+        // Appended, so a caller can substitute a feature's own dependencies
+        // without restating the whole fake set.
+        ...extraOverrides,
       ],
     );
     addTearDown(container.dispose);

@@ -132,5 +132,31 @@
 
   "changeCredentialsDone": "Seu e-mail e senha foram alterados.",
 
-  "changeCredentialsRejected": "A alteração foi recusada, e seu e-mail e senha continuam os mesmos."
+  "changeCredentialsRejected": "A alteração foi recusada, e seu e-mail e senha continuam os mesmos.",
+
+  "librarySourcesOpen": "Pastas da biblioteca",
+
+  "librarySourcesTitle": "Pastas da biblioteca",
+
+  "librarySourcesEmptyTitle": "Nenhuma pasta da biblioteca ainda",
+
+  "librarySourcesEmptyBody": "Adicione uma pasta do seu disco e o Alexandria vai catalogar o que houver dentro dela. Nada \u00e9 movido, copiado ou alterado.",
+
+  "librarySourcesAdd": "Adicionar uma pasta",
+
+  "librarySourcesMissing": "N\u00e3o h\u00e1 nenhuma pasta em {path}. Nada foi adicionado.",
+
+  "librarySourcesUnreadable": "A pasta em {path} n\u00e3o pode ser lida. Nada foi adicionado.",
+
+  "librarySourcesAlreadyRegistered": "Essa pasta j\u00e1 est\u00e1 na sua biblioteca.",
+
+  "librarySourcesOverlapTitle": "Estas pastas se sobrep\u00f5em",
+
+  "librarySourcesOverlapBody": "{path} se sobrep\u00f5e a {existing}, que j\u00e1 est\u00e1 na sua biblioteca. Os arquivos dentro das duas ser\u00e3o catalogados uma vez para cada pasta.",
+
+  "librarySourcesOverlapConfirm": "Adicionar mesmo assim",
+
+  "librarySourcesIndexLater": "A indexa\u00e7\u00e3o chega com o pr\u00f3ximo caso de uso.",
+
+  "dismiss": "Dispensar"
 }

@@ -2,6 +2,7 @@ import 'package:alexandria_desktop/core/settings/settings_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod/misc.dart';
 
 import 'failing_settings_store.dart';
 import 'fake_auth_gateway.dart';
@@ -31,6 +32,7 @@ extension PumpShell on WidgetTester {
     Size surfaceSize = const Size(1280, 800),
     SettingsStore? settings,
     FakeAuthGateway? gateway,
+    List<Override> extraOverrides = const [],
   }) async {
     view.devicePixelRatio = 1;
     view.physicalSize = surfaceSize;
@@ -42,6 +44,7 @@ extension PumpShell on WidgetTester {
       themeMode: themeMode,
       surfaceSize: surfaceSize,
       settings: settings,
+      extraOverrides: extraOverrides,
     );
 
     await signIn();

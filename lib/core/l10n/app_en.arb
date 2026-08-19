@@ -439,5 +439,88 @@
   "changeCredentialsRejected": "The change was refused, and your e-mail and password are unchanged.",
   "@changeCredentialsRejected": {
     "description": "UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched."
+  },
+
+  "librarySourcesOpen": "Library folders",
+  "@librarySourcesOpen": {
+      "description": "The action in preferences that opens the library-folders screen (UC-05)."
+  },
+
+  "librarySourcesTitle": "Library folders",
+  "@librarySourcesTitle": {
+      "description": "Title of the library-folders screen (UC-05)."
+  },
+
+  "librarySourcesEmptyTitle": "No library folders yet",
+  "@librarySourcesEmptyTitle": {
+      "description": "Heading of the first-run guidance shown whenever no folder is registered (FR-LB-11, UC-05 main flow step 1)."
+  },
+
+  "librarySourcesEmptyBody": "Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.",
+  "@librarySourcesEmptyBody": {
+      "description": "Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06)."
+  },
+
+  "librarySourcesAdd": "Add a folder",
+  "@librarySourcesAdd": {
+      "description": "The action that opens the platform's native folder picker (FR-LB-01)."
+  },
+
+  "librarySourcesMissing": "There is no folder at {path}. Nothing was added.",
+  "@librarySourcesMissing": {
+      "description": "UC-05 AF-02: the chosen path does not exist.",
+      "placeholders": {
+          "path": {
+              "type": "String"
+          }
+      }
+  },
+
+  "librarySourcesUnreadable": "The folder at {path} cannot be read. Nothing was added.",
+  "@librarySourcesUnreadable": {
+      "description": "UC-05 AF-02: the folder exists but its contents cannot be listed.",
+      "placeholders": {
+          "path": {
+              "type": "String"
+          }
+      }
+  },
+
+  "librarySourcesAlreadyRegistered": "That folder is already in your library.",
+  "@librarySourcesAlreadyRegistered": {
+      "description": "UC-05 AF-03: the chosen folder is already registered. The existing entry is highlighted in the list."
+  },
+
+  "librarySourcesOverlapTitle": "These folders overlap",
+  "@librarySourcesOverlapTitle": {
+      "description": "Title of the confirmation shown when the chosen folder contains, or sits inside, one already registered (UC-05 AF-04)."
+  },
+
+  "librarySourcesOverlapBody": "{path} overlaps {existing}, which is already in your library. Files inside both will be cataloged once for each folder.",
+  "@librarySourcesOverlapBody": {
+      "description": "Body of the overlap confirmation. Names both folders and states the consequence the owner is agreeing to (UC-05 AF-04).",
+      "placeholders": {
+          "path": {
+              "type": "String"
+          },
+          "existing": {
+              "type": "String"
+          }
+      }
+  },
+
+  "librarySourcesOverlapConfirm": "Add it anyway",
+  "@librarySourcesOverlapConfirm": {
+      "description": "The confirming action on the overlap warning (UC-05 AF-04)."
+  },
+
+  "librarySourcesIndexLater": "Indexing arrives with the next use case.",
+  "@librarySourcesIndexLater": {
+      "description": "Placeholder beside each registered folder. UC-05 lists the folder and offers indexing; the index action itself is UC-06."
+  },
+
+  "dismiss": "Dismiss",
+  "@dismiss": {
+    "description": "Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action."
   }
 }
