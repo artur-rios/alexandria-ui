@@ -19,8 +19,20 @@ env:
   # The core is a separate repository. Building it here rather than committing a
   # binary keeps the shared library out of git history and makes a drift between
   # the two repositories fail the build instead of going unnoticed.
+  #
+  # Pinned to a commit rather than tracking `main`, because on 2026-08-18 the
+  # core dropped its e-mail confirmation and password-reset operations and
+  # replaced them with recovery codes. That is not a drift to re-vendor past:
+  # `LocalLoginResult` and `LocalRegisterResult` lost the `emailConfirmed` and
+  # `confirmationSent` fields this application's auth layer requires, and UC-40,
+  # UC-41, and UC-42 are specified against calls that no longer exist. Following
+  # it is a change to the requirements documents, not to a header.
+  #
+  # This commit is the newest whose generated header matches the vendored copy
+  # byte for byte, and it still reports both fields. Tracking `main` again is
+  # the last step of reconciling the two repositories, not a way to start.
   CORE_REPOSITORY: artur-rios/alexandria-api
-  CORE_REF: main
+  CORE_REF: 0fa63c3b36eb2995e4ba2007338037bd2b0c480d
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned
