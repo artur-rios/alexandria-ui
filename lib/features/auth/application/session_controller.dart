@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/auth_gateway.dart';
 import '../domain/session.dart';
@@ -27,7 +30,23 @@ class SessionController extends Notifier<SessionState> {
   /// Records the session a successful login or registration produced.
   ///
   /// [confirmation] is passed on by registration alone (UC-01 AF-06).
+  ///
+  /// Whatever the previous session left in memory is wound down first
+  /// (UC-03 main flow step 3, BR-05). The same activities sign-out ends are
+  /// ended again here, and for the same reason from the other side: a
+  /// projection cached before the sign-out must not be what the new session
+  /// sees. Doing it *before* the session is recorded is what makes the reads
+  /// that follow use the new credential rather than answer from the old
+  /// session's cache.
   void establish(Session session, {ConfirmationDelivery? confirmation}) {
+    for (final activity in ref.read(sessionActivitiesProvider)) {
+      // Not awaited, and deliberately: establishing a session is what the
+      // login screen does on the way to the shell, and none of these ends
+      // blocks on anything — they drop what is held, they do not go and ask
+      // the core.
+      unawaited(activity.end());
+    }
+
     // Session.toString redacts the credential, so nothing here can leak it
     // into the log file this line lands in (FR-AU-11).
     _log.info('session established for ${session.email}');
@@ -47,12 +66,28 @@ class SessionController extends Notifier<SessionState> {
     state = SessionState.absent(endedBecause: reason);
   }
 
+  /// Discards the session because the owner asked to sign out (UC-03 main
+  /// flow steps 3 and 4, FR-AU-09).
+  ///
+  /// Separate from [invalidate] because the two endings owe the owner
+  /// different things: a rejection has to be explained, and a sign-out asked
+  /// for is explanation enough on its own. [indexRunContinues] carries the one
+  /// thing a sign-out does have to say (AF-02).
+  ///
+  /// The activities are wound down before this is called, so by the time the
+  /// credential goes nothing is still using it.
+  void end({bool indexRunContinues = false}) {
+    if (state is! SessionActive) return;
+
+    _log.info('session ended by the owner');
+    state = SessionState.absent(indexRunContinues: indexRunContinues);
+  }
+
   /// Clears the explanation once the owner has seen it, so it does not
   /// reappear on every later visit to the login screen.
   void acknowledgeEnding() {
-    if (state case SessionAbsent(
-      :final endedBecause,
-    ) when endedBecause != null) {
+    if (state case SessionAbsent(:final endedBecause, :final indexRunContinues)
+        when endedBecause != null || indexRunContinues) {
       state = const SessionState.absent();
     }
   }

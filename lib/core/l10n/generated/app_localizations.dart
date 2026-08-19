@@ -1229,6 +1229,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep this under {max} characters.'**
   String musicMetadataErrorTooLong(int max);
+
+  /// UC-03 main flow step 1: ends the session without closing the application.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOut;
+
+  /// UC-03 AF-01: the heading of the warning shown when an editor is holding changes that were never saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved changes'**
+  String get signOutUnsavedTitle;
+
+  /// UC-03 AF-01: names what signing out would lose, and says that cancelling is how to save it.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing out now discards the changes you have not saved. Cancel to go back and save them first.'**
+  String get signOutUnsavedMessage;
+
+  /// UC-03 AF-01: confirms the sign-out, unsaved changes and all.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out and discard'**
+  String get signOutUnsavedConfirm;
+
+  /// UC-03 AF-02: the scan belongs to the core, so signing out neither stopped it nor lost its outcome.
+  ///
+  /// In en, this message translates to:
+  /// **'You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.'**
+  String get signOutIndexRunContinues;
 }
 
 class _AppLocalizationsDelegate

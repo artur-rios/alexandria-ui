@@ -60,9 +60,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     });
 
-    final endedBecause = switch (ref.watch(sessionControllerProvider)) {
+    final session = ref.watch(sessionControllerProvider);
+    final endedBecause = switch (session) {
       SessionAbsent(:final endedBecause) => endedBecause,
       SessionActive() => null,
+    };
+    // UC-03 AF-02: the owner signed out while the core was still scanning.
+    final indexRunContinues = switch (session) {
+      SessionAbsent(:final indexRunContinues) => indexRunContinues,
+      SessionActive() => false,
     };
 
     return Scaffold(
@@ -86,6 +92,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                 if (endedBecause != null) ...[
                   _SessionEndedNotice(failure: endedBecause),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+
+                if (indexRunContinues) ...[
+                  const _IndexRunContinuesNotice(),
                   const SizedBox(height: AppSpacing.md),
                 ],
 
@@ -183,6 +194,23 @@ class _SessionEndedNotice extends StatelessWidget {
           Text(failure.localizedMessage(l10n)),
         ],
       ),
+    );
+  }
+}
+
+/// What UC-03 AF-02 tells the owner: the scan they signed out on is the
+/// core's, it did not stop, and they will see how it ended once they are back.
+class _IndexRunContinuesNotice extends StatelessWidget {
+  const _IndexRunContinuesNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return AuthNotice(
+      tone: AuthNoticeTone.information,
+      icon: Icons.sync_outlined,
+      child: Text(l10n.signOutIndexRunContinues),
     );
   }
 }

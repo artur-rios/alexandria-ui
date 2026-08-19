@@ -235,7 +235,7 @@ untested.
 | [#40](https://github.com/artur-rios/alexandria-desktop-front/issues/40) | UC-39 — Manage application preferences — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#2](https://github.com/artur-rios/alexandria-desktop-front/issues/2) | UC-01 — Sign up — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#3](https://github.com/artur-rios/alexandria-desktop-front/issues/3) | UC-02 — Log in — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#4](https://github.com/artur-rios/alexandria-desktop-front/issues/4) | UC-03 — Sign out | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#4](https://github.com/artur-rios/alexandria-desktop-front/issues/4) | UC-03 — Sign out — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#5](https://github.com/artur-rios/alexandria-desktop-front/issues/5) | UC-04 — Change credentials — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#41](https://github.com/artur-rios/alexandria-desktop-front/issues/41) | UC-40 — Confirm the e-mail address | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#42](https://github.com/artur-rios/alexandria-desktop-front/issues/42) | UC-41 — Request a password reset | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |

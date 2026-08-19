@@ -119,10 +119,10 @@ return active(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Failure? endedBecause)?  absent,TResult Function( Session session,  ConfirmationDelivery? confirmation)?  active,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult Function( Session session,  ConfirmationDelivery? confirmation)?  active,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case SessionAbsent() when absent != null:
-return absent(_that.endedBecause);case SessionActive() when active != null:
+return absent(_that.endedBecause,_that.indexRunContinues);case SessionActive() when active != null:
 return active(_that.session,_that.confirmation);case _:
   return orElse();
 
@@ -141,10 +141,10 @@ return active(_that.session,_that.confirmation);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Failure? endedBecause)  absent,required TResult Function( Session session,  ConfirmationDelivery? confirmation)  active,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Failure? endedBecause,  bool indexRunContinues)  absent,required TResult Function( Session session,  ConfirmationDelivery? confirmation)  active,}) {final _that = this;
 switch (_that) {
 case SessionAbsent():
-return absent(_that.endedBecause);case SessionActive():
+return absent(_that.endedBecause,_that.indexRunContinues);case SessionActive():
 return active(_that.session,_that.confirmation);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -159,10 +159,10 @@ return active(_that.session,_that.confirmation);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Failure? endedBecause)?  absent,TResult? Function( Session session,  ConfirmationDelivery? confirmation)?  active,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult? Function( Session session,  ConfirmationDelivery? confirmation)?  active,}) {final _that = this;
 switch (_that) {
 case SessionAbsent() when absent != null:
-return absent(_that.endedBecause);case SessionActive() when active != null:
+return absent(_that.endedBecause,_that.indexRunContinues);case SessionActive() when active != null:
 return active(_that.session,_that.confirmation);case _:
   return null;
 
@@ -175,10 +175,11 @@ return active(_that.session,_that.confirmation);case _:
 
 
 class SessionAbsent implements SessionState {
-  const SessionAbsent({this.endedBecause});
+  const SessionAbsent({this.endedBecause, this.indexRunContinues = false});
   
 
  final  Failure? endedBecause;
+@JsonKey() final  bool indexRunContinues;
 
 /// Create a copy of SessionState
 /// with the given fields replaced by the non-null parameter values.
@@ -190,16 +191,16 @@ $SessionAbsentCopyWith<SessionAbsent> get copyWith => _$SessionAbsentCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionAbsent&&(identical(other.endedBecause, endedBecause) || other.endedBecause == endedBecause));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionAbsent&&(identical(other.endedBecause, endedBecause) || other.endedBecause == endedBecause)&&(identical(other.indexRunContinues, indexRunContinues) || other.indexRunContinues == indexRunContinues));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,endedBecause);
+int get hashCode => Object.hash(runtimeType,endedBecause,indexRunContinues);
 
 @override
 String toString() {
-  return 'SessionState.absent(endedBecause: $endedBecause)';
+  return 'SessionState.absent(endedBecause: $endedBecause, indexRunContinues: $indexRunContinues)';
 }
 
 
@@ -210,7 +211,7 @@ abstract mixin class $SessionAbsentCopyWith<$Res> implements $SessionStateCopyWi
   factory $SessionAbsentCopyWith(SessionAbsent value, $Res Function(SessionAbsent) _then) = _$SessionAbsentCopyWithImpl;
 @useResult
 $Res call({
- Failure? endedBecause
+ Failure? endedBecause, bool indexRunContinues
 });
 
 
@@ -227,10 +228,11 @@ class _$SessionAbsentCopyWithImpl<$Res>
 
 /// Create a copy of SessionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? endedBecause = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? endedBecause = freezed,Object? indexRunContinues = null,}) {
   return _then(SessionAbsent(
 endedBecause: freezed == endedBecause ? _self.endedBecause : endedBecause // ignore: cast_nullable_to_non_nullable
-as Failure?,
+as Failure?,indexRunContinues: null == indexRunContinues ? _self.indexRunContinues : indexRunContinues // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

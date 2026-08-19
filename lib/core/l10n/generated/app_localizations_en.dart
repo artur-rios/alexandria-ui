@@ -656,4 +656,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String musicMetadataErrorTooLong(int max) {
     return 'Keep this under $max characters.';
   }
+
+  @override
+  String get signOut => 'Sign out';
+
+  @override
+  String get signOutUnsavedTitle => 'Unsaved changes';
+
+  @override
+  String get signOutUnsavedMessage =>
+      'Signing out now discards the changes you have not saved. Cancel to go back and save them first.';
+
+  @override
+  String get signOutUnsavedConfirm => 'Sign out and discard';
+
+  @override
+  String get signOutIndexRunContinues =>
+      'You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.';
 }
