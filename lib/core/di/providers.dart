@@ -21,6 +21,10 @@ import '../../features/auth/application/sign_up_controller.dart';
 import '../../features/auth/application/sign_up_state.dart';
 import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
+import '../../features/shell/application/shell_controller.dart';
+import '../../features/shell/data/desktop_window_placement.dart';
+import '../../features/shell/domain/shell_destination.dart';
+import '../../features/shell/domain/window_placement.dart';
 import '../bindings/core_client.dart';
 import '../settings/settings_store.dart';
 import '../settings/shared_preferences_settings_store.dart';
@@ -103,3 +107,16 @@ final localeProvider = Provider<Locale?>((ref) {
 
   return ref.read(startupControllerProvider.notifier).settings?.locale;
 });
+
+/// Which area of the shell the owner is in (UC-38).
+final shellControllerProvider =
+    NotifierProvider<ShellController, ShellDestination>(ShellController.new);
+
+/// The running window (FR-UX-03).
+///
+/// Bound here so a test substitutes a fake placement and the shell's restore
+/// rule is exercised without a desktop window; the application binds the
+/// implementation over `window_manager`.
+final windowPlacementProvider = Provider<WindowPlacement>(
+  (ref) => const DesktopWindowPlacement(),
+);

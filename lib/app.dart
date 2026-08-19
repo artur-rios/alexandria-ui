@@ -12,12 +12,13 @@ import 'features/auth/application/session_state.dart';
 import 'features/auth/presentation/catalog_locked_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/sign_up_screen.dart';
+import 'features/shell/presentation/shell_screen.dart';
 
 /// The application root.
 ///
 /// It owns three things and no more: the themes (IR-10), the locales (IR-11),
 /// and which of the startup states is on screen (IR-06). Everything the owner
-/// actually does lives under the shell that UC-38 builds.
+/// actually does lives under the shell (UC-38).
 class AlexandriaApp extends ConsumerWidget {
   /// Creates the root widget.
   const AlexandriaApp({super.key});
@@ -61,7 +62,7 @@ class AlexandriaApp extends ConsumerWidget {
         // Startup ends where authentication begins: steps 6 and 7 of the
         // sequence — is there an account, and is its e-mail confirmed — are
         // answered by logging in (UC-02), not by the foundation.
-        StartupReady(:final coreVersion) => switch (ref.watch(
+        StartupReady() => switch (ref.watch(
           sessionControllerProvider,
         )) {
           // FR-AU-07: no session, so no catalog call. Which of the two
@@ -82,8 +83,9 @@ class AlexandriaApp extends ConsumerWidget {
               confirmation: confirmation,
             ),
 
-          // The shell UC-38 builds lands here.
-          SessionActive() => StartupReadyPlaceholder(coreVersion: coreVersion),
+          // The shell (UC-38). Everything the owner actually does is inside
+          // it, which is why this switch stops here.
+          SessionActive() => const ShellScreen(),
         },
       },
     );

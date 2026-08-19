@@ -194,4 +194,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failureUnexpected => 'Something went wrong in Alexandria.';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get loading => 'Loading';
+
+  @override
+  String get shellAreaPending => 'Nothing to show here yet.';
+
+  @override
+  String get playbackBarLabel => 'Playback';
+
+  @override
+  String get playbackNothingPlaying => 'Nothing is playing';
+
+  @override
+  String get destinationHome => 'Home';
+
+  @override
+  String get destinationMusic => 'Music';
+
+  @override
+  String get destinationMovies => 'Movies';
+
+  @override
+  String get destinationSeries => 'Series';
+
+  @override
+  String get destinationBooks => 'Books';
+
+  @override
+  String get destinationComicBooks => 'Comic books';
+
+  @override
+  String get destinationNotes => 'Notes';
+
+  @override
+  String get destinationPages => 'Pages';
+
+  @override
+  String get destinationImages => 'Images';
+
+  @override
+  String get destinationBookmarks => 'Bookmarks';
 }

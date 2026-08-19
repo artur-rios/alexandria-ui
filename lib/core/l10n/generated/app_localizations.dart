@@ -403,6 +403,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong in Alexandria.'**
   String get failureUnexpected;
+
+  /// The declining action on every confirmation modal (UC-38 AF-05). Cancelling changes nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// Accessible label of the loading state every perceptible operation shows (FR-UX-08).
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get loading;
+
+  /// Placeholder in the shell's content area (UC-38). Each destination's listing arrives with its own use case; until then the area states that it is empty rather than rendering a spinner that never resolves.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to show here yet.'**
+  String get shellAreaPending;
+
+  /// Accessible label of the persistent playback bar (FR-UX-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Playback'**
+  String get playbackBarLabel;
+
+  /// The playback bar's idle state (FR-UX-01). The bar is present from the first frame, so it says what it is showing rather than sitting blank.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is playing'**
+  String get playbackNothingPlaying;
+
+  /// Navigation panel entry for the dashboard the application opens on (UC-14).
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get destinationHome;
+
+  /// Navigation panel entry for audio files (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get destinationMusic;
+
+  /// Navigation panel entry for standalone films (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Movies'**
+  String get destinationMovies;
+
+  /// Navigation panel entry for episodic video (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get destinationSeries;
+
+  /// Navigation panel entry for books and e-books (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get destinationBooks;
+
+  /// Navigation panel entry for comic book archives (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Comic books'**
+  String get destinationComicBooks;
+
+  /// Navigation panel entry for notes, Markdown, and plain text files (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get destinationNotes;
+
+  /// Navigation panel entry for saved HTML pages (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get destinationPages;
+
+  /// Navigation panel entry for still images (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get destinationImages;
+
+  /// Navigation panel entry for saved links, the one type holding no file on disk (FR-CT-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks'**
+  String get destinationBookmarks;
 }
 
 class _AppLocalizationsDelegate

@@ -269,5 +269,80 @@
   "failureUnexpected": "Something went wrong in Alexandria.",
   "@failureUnexpected": {
     "description": "A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number."
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "The declining action on every confirmation modal (UC-38 AF-05). Cancelling changes nothing."
+  },
+
+  "loading": "Loading",
+  "@loading": {
+    "description": "Accessible label of the loading state every perceptible operation shows (FR-UX-08)."
+  },
+
+  "shellAreaPending": "Nothing to show here yet.",
+  "@shellAreaPending": {
+    "description": "Placeholder in the shell's content area (UC-38). Each destination's listing arrives with its own use case; until then the area states that it is empty rather than rendering a spinner that never resolves."
+  },
+
+  "playbackBarLabel": "Playback",
+  "@playbackBarLabel": {
+    "description": "Accessible label of the persistent playback bar (FR-UX-01)."
+  },
+
+  "playbackNothingPlaying": "Nothing is playing",
+  "@playbackNothingPlaying": {
+    "description": "The playback bar's idle state (FR-UX-01). The bar is present from the first frame, so it says what it is showing rather than sitting blank."
+  },
+
+  "destinationHome": "Home",
+  "@destinationHome": {
+    "description": "Navigation panel entry for the dashboard the application opens on (UC-14)."
+  },
+
+  "destinationMusic": "Music",
+  "@destinationMusic": {
+    "description": "Navigation panel entry for audio files (FR-CT-01)."
+  },
+
+  "destinationMovies": "Movies",
+  "@destinationMovies": {
+    "description": "Navigation panel entry for standalone films (FR-CT-01)."
+  },
+
+  "destinationSeries": "Series",
+  "@destinationSeries": {
+    "description": "Navigation panel entry for episodic video (FR-CT-01)."
+  },
+
+  "destinationBooks": "Books",
+  "@destinationBooks": {
+    "description": "Navigation panel entry for books and e-books (FR-CT-01)."
+  },
+
+  "destinationComicBooks": "Comic books",
+  "@destinationComicBooks": {
+    "description": "Navigation panel entry for comic book archives (FR-CT-01)."
+  },
+
+  "destinationNotes": "Notes",
+  "@destinationNotes": {
+    "description": "Navigation panel entry for notes, Markdown, and plain text files (FR-CT-01)."
+  },
+
+  "destinationPages": "Pages",
+  "@destinationPages": {
+    "description": "Navigation panel entry for saved HTML pages (FR-CT-01)."
+  },
+
+  "destinationImages": "Images",
+  "@destinationImages": {
+    "description": "Navigation panel entry for still images (FR-CT-01)."
+  },
+
+  "destinationBookmarks": "Bookmarks",
+  "@destinationBookmarks": {
+    "description": "Navigation panel entry for saved links, the one type holding no file on disk (FR-CT-01)."
   }
 }

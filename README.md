@@ -231,7 +231,7 @@ untested.
 
 | Issue | Work | Spec |
 |---|---|---|
-| [#39](https://github.com/artur-rios/alexandria-desktop-front/issues/39) | UC-38 — Navigate the application shell | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#39](https://github.com/artur-rios/alexandria-desktop-front/issues/39) | UC-38 — Navigate the application shell — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#40](https://github.com/artur-rios/alexandria-desktop-front/issues/40) | UC-39 — Manage application preferences | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#2](https://github.com/artur-rios/alexandria-desktop-front/issues/2) | UC-01 — Sign up — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#3](https://github.com/artur-rios/alexandria-desktop-front/issues/3) | UC-02 — Log in — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |

@@ -6,7 +6,6 @@ import '../failures/failure.dart';
 import '../failures/failure_messages.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../theme/app_spacing.dart';
-import '../theme/breakpoints.dart';
 
 /// The `CoreUnavailable` state (IR-06, UC-38 AF-04).
 ///
@@ -83,42 +82,4 @@ class StartupProgressScreen extends StatelessWidget {
   Widget build(BuildContext context) => const Scaffold(
     body: Center(child: CircularProgressIndicator()),
   );
-}
-
-/// A placeholder for the shell, which UC-38 (issue #39) builds.
-///
-/// The foundation's job ends when the core is verified; this is the seam the
-/// shell lands in, and it exists so the startup sequence has a terminal state
-/// to reach rather than the foundation growing a shell it was not asked for.
-class StartupReadyPlaceholder extends StatelessWidget {
-  /// Creates the placeholder for a core reporting [coreVersion].
-  const StartupReadyPlaceholder({required this.coreVersion, super.key});
-
-  /// The verified core version.
-  final String coreVersion;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.all(
-            Breakpoint.from(context) == Breakpoint.compact
-                ? AppSpacing.lg
-                : AppSpacing.xxl,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(l10n.appTitle, style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: AppSpacing.sm),
-              Text(coreVersion, style: Theme.of(context).textTheme.bodySmall),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
