@@ -193,11 +193,24 @@ one, and every milestone after `M-01` depends on it.
 Once the issues exist, GitHub's milestone pages are the live view of progress;
 the counts here are as of creation time.
 
-**Blocked on the core.** `UC-40`, `UC-41`, and `UC-42` need e-mail confirmation,
-confirmation resend, and password-reset operations that the Alexandria core's FFI
-surface does not publish yet. They are specified and tracked, and each is
-implemented when its call lands — never by working around the missing call. The
-capabilities and what the front-end needs from each are in
+**Blocked on the core, and now diverging from it.** `UC-40`, `UC-41`, and `UC-42`
+need e-mail confirmation, confirmation resend, and password-reset operations. The
+Alexandria core published none of them, and on 2026-08-18 it went further and
+adopted a different design: `alexandria_auth_local_redeem_recovery_code` and
+`alexandria_auth_local_regenerate_recovery_codes` replace the four calls these
+three use cases are written against, and `LocalLoginResult` and
+`LocalRegisterResult` no longer report `emailConfirmed` or `confirmationSent`.
+
+The two repositories therefore disagree about how an owner who cannot sign in
+gets back in. Until that is settled, CI pins `CORE_REF` to the last core commit
+this application matches — see the comment in
+[`ci.yml`](.github/workflows/ci.yml) — so the drift check guards against drift
+from a known core rather than from a moving one. Settling it means changing
+`FR-AU-11`, `FR-AU-12`, and these three use cases, or the core restoring what it
+removed; it does not mean re-vendoring the header, which would leave sign-in
+compiling and then failing against a real core.
+
+The capabilities and what the front-end needs from each are in
 [System Requirements §5.4](docs/requirements/System%20Requirements%20Document.md).
 
 `UC-01` is no longer among them: account creation landed as
