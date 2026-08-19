@@ -38,6 +38,15 @@ class FakeIndexGateway implements IndexGateway {
     ),
   ];
 
+  /// What [startRefresh] answers, or `null` to reuse [startOutcome].
+  IndexStartOutcome? refreshOutcome;
+
+  /// How many files [countCatalogedFiles] reports. Negative is "unknown".
+  int catalogedFileCount = 120;
+
+  /// The credentials [startRefresh] was called with, in order.
+  final List<String> refreshStarts = [];
+
   /// What [startIndex] was called with, in order.
   final List<({String root, String credential})> starts = [];
 
@@ -52,6 +61,15 @@ class FakeIndexGateway implements IndexGateway {
     starts.add((root: root, credential: credential));
     return startOutcome;
   }
+
+  @override
+  Future<IndexStartOutcome> startRefresh({required String credential}) async {
+    refreshStarts.add(credential);
+    return refreshOutcome ?? startOutcome;
+  }
+
+  @override
+  Future<int> countCatalogedFiles() async => catalogedFileCount;
 
   @override
   Future<IndexRunOutcome> readRun({

@@ -29,7 +29,8 @@ void main() {
     registeredAt: registeredAt,
   );
 
-  Future<({InMemoryLibrarySourceStore store, ProviderContainer ref})> openScreen(
+  Future<({InMemoryLibrarySourceStore store, ProviderContainer ref})>
+  openScreen(
     WidgetTester tester, {
     FakeIndexGateway? gateway,
     List<LibrarySource>? registered,
@@ -68,8 +69,9 @@ void main() {
   }
 
   group('the confirmation (main flow step 2)', () {
-    testWidgets('GivenAFolder_WhenRemoveIsPressed_ThenAConfirmationAppears',
-        (tester) async {
+    testWidgets('GivenAFolder_WhenRemoveIsPressed_ThenAConfirmationAppears', (
+      tester,
+    ) async {
       await openScreen(tester);
 
       await pressRemove(tester);
@@ -77,8 +79,9 @@ void main() {
       expect(find.byType(ConfirmationDialog), findsOneWidget);
     });
 
-    testWidgets('GivenTheConfirmation_WhenItIsShown_ThenItNamesTheFolder',
-        (tester) async {
+    testWidgets('GivenTheConfirmation_WhenItIsShown_ThenItNamesTheFolder', (
+      tester,
+    ) async {
       await openScreen(tester);
 
       await pressRemove(tester);
@@ -110,8 +113,9 @@ void main() {
   });
 
   group('the owner confirms or cancels', () {
-    testWidgets('GivenTheConfirmation_WhenTheOwnerConfirms_ThenTheFolderGoes',
-        (tester) async {
+    testWidgets('GivenTheConfirmation_WhenTheOwnerConfirms_ThenTheFolderGoes', (
+      tester,
+    ) async {
       final opened = await openScreen(tester);
       await pressRemove(tester);
       final l10n = AppLocalizations.of(
@@ -125,8 +129,9 @@ void main() {
       expect(find.text('music'), findsNothing);
     });
 
-    testWidgets('GivenTheConfirmation_WhenTheOwnerCancels_ThenNothingChanges',
-        (tester) async {
+    testWidgets('GivenTheConfirmation_WhenTheOwnerCancels_ThenNothingChanges', (
+      tester,
+    ) async {
       // AF-01.
       final opened = await openScreen(tester);
       await pressRemove(tester);
@@ -143,8 +148,9 @@ void main() {
   });
 
   group('the last folder (AF-03)', () {
-    testWidgets('GivenTheOnlyFolder_WhenItIsRemoved_ThenGuidanceReturns',
-        (tester) async {
+    testWidgets('GivenTheOnlyFolder_WhenItIsRemoved_ThenGuidanceReturns', (
+      tester,
+    ) async {
       await openScreen(tester);
       await pressRemove(tester);
       final l10n = AppLocalizations.of(
@@ -185,60 +191,59 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenAFinishedRun_WhenTheOutcomeShows_ThenNoRemoveIsOffered',
-      (tester) async {
-        // A run that worked says nothing about whether the folder should stay.
-        await openScreen(tester);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(LibrarySourcesScreen)),
-        );
-
-        await tester.tap(find.text(l10n.librarySourcesIndex));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-
-        expect(find.text(l10n.librarySourcesUnregister), findsOneWidget);
-      },
-    );
-  });
-
-  group('a run is in flight (AF-02)', () {
-    testWidgets('GivenAFolderBeingScanned_WhenRemoveIsPressed_ThenItIsRefused',
-        (tester) async {
-      final opened = await openScreen(
-        tester,
-        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
-      );
+    testWidgets('GivenAFinishedRun_WhenTheOutcomeShows_ThenNoRemoveIsOffered', (
+      tester,
+    ) async {
+      // A run that worked says nothing about whether the folder should stay.
+      await openScreen(tester);
       final l10n = AppLocalizations.of(
         tester.element(find.byType(LibrarySourcesScreen)),
       );
+
       await tester.tap(find.text(l10n.librarySourcesIndex));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      await tester.tap(find.text(l10n.librarySourcesUnregister).first);
-      await tester.pump();
-
-      // No confirmation at all: the refusal comes before the question.
-      expect(find.byType(ConfirmationDialog), findsNothing);
-      expect(
-        find.text(l10n.librarySourcesUnregisterRefused),
-        findsOneWidget,
-      );
-      expect(opened.store.read(), hasLength(1));
-
-      // The run is deliberately still going, so the poller is stopped here.
-      opened.ref.dispose();
+      expect(find.text(l10n.librarySourcesUnregister), findsOneWidget);
     });
+  });
+
+  group('a run is in flight (AF-02)', () {
+    testWidgets(
+      'GivenAFolderBeingScanned_WhenRemoveIsPressed_ThenItIsRefused',
+      (tester) async {
+        final opened = await openScreen(
+          tester,
+          gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(LibrarySourcesScreen)),
+        );
+        await tester.tap(find.text(l10n.librarySourcesIndex));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        await tester.tap(find.text(l10n.librarySourcesUnregister).first);
+        await tester.pump();
+
+        // No confirmation at all: the refusal comes before the question.
+        expect(find.byType(ConfirmationDialog), findsNothing);
+        expect(find.text(l10n.librarySourcesUnregisterRefused), findsOneWidget);
+        expect(opened.store.read(), hasLength(1));
+
+        // The run is deliberately still going, so the poller is stopped here.
+        opened.ref.dispose();
+      },
+    );
   });
 
   for (final (name, locale) in [
     ('English', const Locale('en')),
     ('Portuguese', const Locale('pt', 'BR')),
   ]) {
-    testWidgets('Given${name}_WhenTheConfirmationShows_ThenItIsLocalized',
-        (tester) async {
+    testWidgets('Given${name}_WhenTheConfirmationShows_ThenItIsLocalized', (
+      tester,
+    ) async {
       await openScreen(tester, locale: locale);
 
       await pressRemove(tester);
