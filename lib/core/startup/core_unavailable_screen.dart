@@ -58,9 +58,8 @@ class CoreUnavailableScreen extends ConsumerWidget {
                 // the keyboard without a pointer (FR-UX-11).
                 FilledButton.icon(
                   autofocus: true,
-                  onPressed: () => ref
-                      .read(startupControllerProvider.notifier)
-                      .retry(),
+                  onPressed: () =>
+                      ref.read(startupControllerProvider.notifier).retry(),
                   icon: const Icon(Icons.refresh),
                   label: Text(l10n.retry),
                 ),
@@ -79,7 +78,6 @@ class StartupProgressScreen extends StatelessWidget {
   const StartupProgressScreen({super.key});
 
   @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: CircularProgressIndicator()),
-  );
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: CircularProgressIndicator()));
 }

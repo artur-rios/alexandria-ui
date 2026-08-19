@@ -114,5 +114,23 @@
 
   "preferencesUnsaved": "Sua escolha foi aplicada, mas não pôde ser salva — ela não será lembrada na próxima vez que o Alexandria iniciar.",
 
-  "preferencesClose": "Concluído"
+  "preferencesClose": "Concluído",
+
+  "changeCredentialsOpen": "Alterar seu e-mail e senha",
+
+  "changeCredentialsTitle": "Alterar credenciais",
+
+  "changeCredentialsIntro": "Os dois são substituídos juntos. Você continua conectado.",
+
+  "changeCredentialsEmailLabel": "Novo e-mail",
+
+  "changeCredentialsPasswordLabel": "Nova senha",
+
+  "changeCredentialsConfirmationLabel": "Repita a nova senha",
+
+  "changeCredentialsSubmit": "Alterar",
+
+  "changeCredentialsDone": "Seu e-mail e senha foram alterados.",
+
+  "changeCredentialsRejected": "A alteração foi recusada, e seu e-mail e senha continuam os mesmos."
 }

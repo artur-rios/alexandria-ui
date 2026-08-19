@@ -44,7 +44,9 @@ class SharedPreferencesSettingsStore implements SettingsStore {
     if (stored == null || stored.isEmpty) return null;
 
     final parts = stored.split('_');
-    return parts.length > 1 ? Locale(parts.first, parts[1]) : Locale(parts.first);
+    return parts.length > 1
+        ? Locale(parts.first, parts[1])
+        : Locale(parts.first);
   }
 
   @override

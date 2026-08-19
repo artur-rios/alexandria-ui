@@ -9,14 +9,14 @@ import 'failure.dart';
 extension FailureMessage on Failure {
   /// The message the owner reads. Never a raw status code, and never empty.
   String localizedMessage(AppLocalizations l10n) => switch (this) {
-    CoreLibraryNotLoadedFailure(:final path) => l10n
-        .failureCoreLibraryNotLoaded(path),
-    ApplicationDirectoryUnavailableFailure(:final path) => l10n
-        .failureApplicationDirectoryUnavailable(path),
+    CoreLibraryNotLoadedFailure(:final path) =>
+      l10n.failureCoreLibraryNotLoaded(path),
+    ApplicationDirectoryUnavailableFailure(:final path) =>
+      l10n.failureApplicationDirectoryUnavailable(path),
     CoreInitializationFailedFailure() => l10n.failureCoreInitializationFailed,
     CoreUnhealthyFailure() => l10n.failureCoreUnhealthy,
-    CoreVersionUnsupportedFailure(:final found, :final required) => l10n
-        .failureCoreVersionUnsupported(found, required),
+    CoreVersionUnsupportedFailure(:final found, :final required) =>
+      l10n.failureCoreVersionUnsupported(found, required),
     PreferencesUnreadableFailure() => l10n.failurePreferencesUnreadable,
     InvalidInputFailure() => l10n.failureInvalidInput,
     // A named rejection reads as the rule it broke, which needs the catalog of

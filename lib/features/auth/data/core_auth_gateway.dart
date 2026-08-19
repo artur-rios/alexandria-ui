@@ -173,6 +173,56 @@ class CoreAuthGateway implements AuthGateway {
     );
   }
 
+  @override
+  Future<CredentialChangeOutcome> changeCredentials({
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      // Both arguments are built here and referenced nowhere else, so the new
+      // plaintext and the session credential are unreachable once this call
+      // settles (FR-AU-11, NFR-11).
+      response = await _core.authLocalSetCredentials(
+        jsonEncode({
+          'email': email.trim(),
+          'password': password,
+          'passwordConfirmation': passwordConfirmation,
+        }),
+        credential,
+      );
+    } on CoreCallException {
+      return const CredentialChangeOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.auth,
+          code: AuthLoginStatus.callFailedCode,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.auth.isOk(response.status)) {
+      // AF-02 and AF-03 both land here and are told apart by the status the
+      // core returned: an unauthorized one is the session's problem and the
+      // caller discards it, anything else leaves the stored credentials
+      // untouched and is reported as a reason.
+      return CredentialChangeOutcome.failed(
+        failure: mapCoreStatus(
+          CoreStatusFamily.auth,
+          response.status,
+          rejection: readCoreRejection(response.json),
+        ),
+      );
+    }
+
+    // The core answers with the account body, which carries nothing this call
+    // needs: the session it authorized with stays valid, and the new address
+    // is what was just sent. Not reading it is deliberate — a payload change
+    // must not turn a successful change into a failure.
+    return const CredentialChangeOutcome.changed();
+  }
+
   /// Answers FR-AU-01 by asking the core to authenticate an address that
   /// cannot be registered.
   ///

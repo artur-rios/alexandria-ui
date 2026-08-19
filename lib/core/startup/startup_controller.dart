@@ -188,7 +188,10 @@ class StartupController extends Notifier<StartupState> {
       _settings = await _loadSettings();
       return null;
     } on Object catch (error) {
-      _log.warning('preferences could not be read; using system defaults', error);
+      _log.warning(
+        'preferences could not be read; using system defaults',
+        error,
+      );
       return const Failure.preferencesUnreadable();
     }
   }

@@ -601,4 +601,271 @@ as String?,
 
 }
 
+/// @nodoc
+mixin _$CredentialChangeOutcome {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CredentialChangeOutcome);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'CredentialChangeOutcome()';
+}
+
+
+}
+
+/// @nodoc
+class $CredentialChangeOutcomeCopyWith<$Res>  {
+$CredentialChangeOutcomeCopyWith(CredentialChangeOutcome _, $Res Function(CredentialChangeOutcome) __);
+}
+
+
+/// Adds pattern-matching-related methods to [CredentialChangeOutcome].
+extension CredentialChangeOutcomePatterns on CredentialChangeOutcome {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ChangedOutcome value)?  changed,TResult Function( FailedChangeOutcome value)?  failed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case ChangedOutcome() when changed != null:
+return changed(_that);case FailedChangeOutcome() when failed != null:
+return failed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ChangedOutcome value)  changed,required TResult Function( FailedChangeOutcome value)  failed,}){
+final _that = this;
+switch (_that) {
+case ChangedOutcome():
+return changed(_that);case FailedChangeOutcome():
+return failed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ChangedOutcome value)?  changed,TResult? Function( FailedChangeOutcome value)?  failed,}){
+final _that = this;
+switch (_that) {
+case ChangedOutcome() when changed != null:
+return changed(_that);case FailedChangeOutcome() when failed != null:
+return failed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  changed,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case ChangedOutcome() when changed != null:
+return changed();case FailedChangeOutcome() when failed != null:
+return failed(_that.failure);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  changed,required TResult Function( Failure failure)  failed,}) {final _that = this;
+switch (_that) {
+case ChangedOutcome():
+return changed();case FailedChangeOutcome():
+return failed(_that.failure);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  changed,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+switch (_that) {
+case ChangedOutcome() when changed != null:
+return changed();case FailedChangeOutcome() when failed != null:
+return failed(_that.failure);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class ChangedOutcome implements CredentialChangeOutcome {
+  const ChangedOutcome();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ChangedOutcome);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'CredentialChangeOutcome.changed()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class FailedChangeOutcome implements CredentialChangeOutcome {
+  const FailedChangeOutcome({required this.failure});
+  
+
+ final  Failure failure;
+
+/// Create a copy of CredentialChangeOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$FailedChangeOutcomeCopyWith<FailedChangeOutcome> get copyWith => _$FailedChangeOutcomeCopyWithImpl<FailedChangeOutcome>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FailedChangeOutcome&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,failure);
+
+@override
+String toString() {
+  return 'CredentialChangeOutcome.failed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $FailedChangeOutcomeCopyWith<$Res> implements $CredentialChangeOutcomeCopyWith<$Res> {
+  factory $FailedChangeOutcomeCopyWith(FailedChangeOutcome value, $Res Function(FailedChangeOutcome) _then) = _$FailedChangeOutcomeCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+$FailureCopyWith<$Res> get failure;
+
+}
+/// @nodoc
+class _$FailedChangeOutcomeCopyWithImpl<$Res>
+    implements $FailedChangeOutcomeCopyWith<$Res> {
+  _$FailedChangeOutcomeCopyWithImpl(this._self, this._then);
+
+  final FailedChangeOutcome _self;
+  final $Res Function(FailedChangeOutcome) _then;
+
+/// Create a copy of CredentialChangeOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(FailedChangeOutcome(
+failure: null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+/// Create a copy of CredentialChangeOutcome
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$FailureCopyWith<$Res> get failure {
+  
+  return $FailureCopyWith<$Res>(_self.failure, (value) {
+    return _then(_self.copyWith(failure: value));
+  });
+}
+}
+
 // dart format on

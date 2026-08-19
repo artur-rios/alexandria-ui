@@ -270,4 +270,33 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get preferencesClose => 'Concluído';
+
+  @override
+  String get changeCredentialsOpen => 'Alterar seu e-mail e senha';
+
+  @override
+  String get changeCredentialsTitle => 'Alterar credenciais';
+
+  @override
+  String get changeCredentialsIntro =>
+      'Os dois são substituídos juntos. Você continua conectado.';
+
+  @override
+  String get changeCredentialsEmailLabel => 'Novo e-mail';
+
+  @override
+  String get changeCredentialsPasswordLabel => 'Nova senha';
+
+  @override
+  String get changeCredentialsConfirmationLabel => 'Repita a nova senha';
+
+  @override
+  String get changeCredentialsSubmit => 'Alterar';
+
+  @override
+  String get changeCredentialsDone => 'Seu e-mail e senha foram alterados.';
+
+  @override
+  String get changeCredentialsRejected =>
+      'A alteração foi recusada, e seu e-mail e senha continuam os mesmos.';
 }

@@ -270,4 +270,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preferencesClose => 'Done';
+
+  @override
+  String get changeCredentialsOpen => 'Change your e-mail and password';
+
+  @override
+  String get changeCredentialsTitle => 'Change credentials';
+
+  @override
+  String get changeCredentialsIntro =>
+      'Both are replaced together. You stay signed in.';
+
+  @override
+  String get changeCredentialsEmailLabel => 'New e-mail';
+
+  @override
+  String get changeCredentialsPasswordLabel => 'New password';
+
+  @override
+  String get changeCredentialsConfirmationLabel => 'Repeat the new password';
+
+  @override
+  String get changeCredentialsSubmit => 'Change';
+
+  @override
+  String get changeCredentialsDone =>
+      'Your e-mail and password have been changed.';
+
+  @override
+  String get changeCredentialsRejected =>
+      'The change was refused, and your e-mail and password are unchanged.';
 }

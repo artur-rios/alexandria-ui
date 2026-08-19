@@ -39,7 +39,12 @@ class CoreCallException implements Exception {
 /// re-opens the shared library on every operation and gives up the ability to
 /// keep the bindings warm.
 class CoreIsolate {
-  CoreIsolate._(this._isolate, this._requests, this._responses, this.libraryPath);
+  CoreIsolate._(
+    this._isolate,
+    this._requests,
+    this._responses,
+    this.libraryPath,
+  );
 
   final Isolate _isolate;
   final SendPort _requests;
@@ -255,6 +260,25 @@ class CoreIsolate {
           json: strings.consume(result.json, (json) => json),
         );
       }),
+
+      // Two strings in, one out. The nesting is what frees both on every
+      // path: the inner withNativeString's finally runs before the outer's,
+      // and neither depends on the call succeeding. One carries the new
+      // plaintext password and the other the session credential, so leaking
+      // either would be exactly what FR-AU-11 forbids (IR-09, NFR-13).
+      'authLocalSetCredentials' => withNativeString(
+        arguments.first! as String,
+        (body) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_auth_local_set_credentials(
+            body,
+            token,
+          );
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
 
       _ => throw CoreCallException('unknown core operation "$operation"'),
     };
