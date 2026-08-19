@@ -5,6 +5,7 @@ import '../../../core/failures/failure.dart';
 import '../domain/catalog_file.dart';
 import '../domain/catalog_gateway.dart';
 import '../domain/library_type.dart';
+import '../domain/listing_view.dart';
 
 /// The files of the type the owner has selected (UC-09, FR-CT-02).
 ///
@@ -20,10 +21,19 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
   @override
   Future<List<CatalogFile>> build() {
     final destination = ref.watch(shellControllerProvider);
-    return _load(libraryTypeFor(destination));
+    final type = libraryTypeFor(destination);
+
+    // Watched, so changing a filter or a sort reloads the listing without
+    // anything having to remember to ask for it (UC-12 main flow steps 2
+    // and 4).
+    final view = type == null
+        ? ListingView.initial
+        : ref.watch(listingViewControllerProvider).forType(type);
+
+    return _load(type, view);
   }
 
-  Future<List<CatalogFile>> _load(LibraryType? type) async {
+  Future<List<CatalogFile>> _load(LibraryType? type, ListingView view) async {
     // Home is the dashboard (UC-14) and bookmarks are not files (UC-28), so
     // there is nothing for this to fetch.
     if (type == null) return const [];
@@ -35,11 +45,17 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
 
     final listing = await ref
         .read(catalogGatewayProvider)
-        .listFiles(type: type, credential: credential);
+        .listFiles(
+          type: type,
+          credential: credential,
+          lifecycle: view.lifecycle,
+        );
 
     switch (listing) {
+      // Ordered here rather than by the core, which publishes no sort on a
+      // listing (main flow step 4).
       case CatalogListingLoaded(:final files):
-        return files;
+        return sortFiles(files, view);
 
       // AF-04: the core rejected the session. Discarding it returns the owner
       // to login; the failure is still thrown so the listing does not read as
@@ -48,20 +64,33 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
         session.invalidate(failure);
         throw failure;
 
-      // AF-02: thrown rather than returned empty, so the shell's
+      // UC-09 AF-02: thrown rather than returned empty, so the shell's
       // AsyncStateView renders the failure and its retry — and so "we could
       // not ask" is never mistaken for "there is nothing here".
+      //
+      // UC-12 AF-04 is the same failure read differently: the core refusing a
+      // filter is invalid input, and the view reverts rather than the listing
+      // simply reporting an error it cannot act on.
+      case CatalogListingFailed(failure: final InvalidInputFailure failure):
+        await ref
+            .read(listingViewControllerProvider.notifier)
+            .revert(type, failure);
+        throw failure;
+
       case CatalogListingFailed(:final failure):
         throw failure;
     }
   }
 
-  /// Loads the current type again (AF-02's retry).
+  /// Loads the current type again (UC-09 AF-02's retry).
   Future<void> reload() async {
     final type = libraryTypeFor(ref.read(shellControllerProvider));
+    final view = type == null
+        ? ListingView.initial
+        : ref.read(listingViewControllerProvider).forType(type);
 
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _load(type));
+    state = await AsyncValue.guard(() => _load(type, view));
   }
 }
 
