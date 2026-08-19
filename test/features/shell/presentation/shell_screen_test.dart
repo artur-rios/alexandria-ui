@@ -265,6 +265,16 @@ void main() {
             expect(label, isNot(contains('destination')));
           }
           expect(find.text(l10n.playbackNothingPlaying), findsOneWidget);
+          // The shell opens on the dashboard now (UC-14), so the pending
+          // placeholder belongs to the one destination still waiting for its
+          // use case rather than to home.
+          await tester.tap(
+            find.descendant(
+              of: find.byType(ShellNavigationPanel),
+              matching: find.byIcon(ShellDestination.bookmarks.icon),
+            ),
+          );
+          await tester.pumpAndSettle();
           expect(find.text(l10n.shellAreaPending), findsOneWidget);
         },
       );
