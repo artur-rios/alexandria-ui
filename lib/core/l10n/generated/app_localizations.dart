@@ -971,6 +971,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That filter was refused, so the previous one is back.'**
   String get filtersRejected;
+
+  /// Title of the file detail view (UC-13, FR-CT-05).
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get detailsTitle;
+
+  /// Heading above the file's on-disk path.
+  ///
+  /// In en, this message translates to:
+  /// **'Where it is'**
+  String get detailsPath;
+
+  /// Heading above the file's type-specific metadata.
+  ///
+  /// In en, this message translates to:
+  /// **'About it'**
+  String get detailsMetadata;
+
+  /// Heading above the file's lifecycle state.
+  ///
+  /// In en, this message translates to:
+  /// **'State'**
+  String get detailsState;
+
+  /// The file's record is active.
+  ///
+  /// In en, this message translates to:
+  /// **'In the library'**
+  String get detailsStateActive;
+
+  /// UC-13 AF-02: the record is soft-deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted'**
+  String get detailsStateDeleted;
+
+  /// UC-13 AF-03: the record is active but the file was not where the catalog says it is.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing from disk'**
+  String get detailsStateMissing;
+
+  /// The action that hands the file to its viewer or player (FR-CT-12).
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get detailsOpen;
+
+  /// UC-13 AF-04: no viewer is registered for the type. The other actions stay available.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing can open this kind of file yet.'**
+  String get detailsNoViewer;
+
+  /// UC-13 AF-03: what a missing file means, and the re-scan offered for it (UC-07).
+  ///
+  /// In en, this message translates to:
+  /// **'Alexandria could not find this file where the catalog says it is. Re-check the catalog to find out whether it has come back.'**
+  String get detailsMissingHint;
+
+  /// The action AF-03 offers, which is UC-07's refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-check the catalog'**
+  String get detailsRescan;
+
+  /// UC-13 AF-02: the record is shown as deleted; restoring it is UC-34, which is not built yet.
+  ///
+  /// In en, this message translates to:
+  /// **'This record is deleted. Restoring it arrives with its own use case.'**
+  String get detailsDeletedHint;
+
+  /// UC-13 AF-01: the core reports the file as not found, so the listing is refreshed and the owner returns to it.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is no longer in the catalog.'**
+  String get detailsNotFound;
+
+  /// Shown when the core answers no type-specific metadata — text and HTML files have none, and a file whose metadata has not been written yet has none either.
+  ///
+  /// In en, this message translates to:
+  /// **'The core reports nothing else about this file.'**
+  String get detailsMetadataNone;
+
+  /// Label of an image's extracted pixel width.
+  ///
+  /// In en, this message translates to:
+  /// **'Width'**
+  String get detailsWidth;
+
+  /// Label of an image's extracted pixel height.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get detailsHeight;
+
+  /// Label of a document's or comic's extracted page count.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get detailsPages;
+
+  /// Label of a video's extracted duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get detailsDuration;
 }
 
 class _AppLocalizationsDelegate

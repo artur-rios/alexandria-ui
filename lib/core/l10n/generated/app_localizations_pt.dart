@@ -519,4 +519,62 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get filtersRejected =>
       'Esse filtro foi recusado, então o anterior voltou.';
+
+  @override
+  String get detailsTitle => 'Detalhes';
+
+  @override
+  String get detailsPath => 'Onde está';
+
+  @override
+  String get detailsMetadata => 'Sobre o arquivo';
+
+  @override
+  String get detailsState => 'Estado';
+
+  @override
+  String get detailsStateActive => 'Na biblioteca';
+
+  @override
+  String get detailsStateDeleted => 'Excluído';
+
+  @override
+  String get detailsStateMissing => 'Ausente do disco';
+
+  @override
+  String get detailsOpen => 'Abrir';
+
+  @override
+  String get detailsNoViewer =>
+      'Ainda não há nada que abra esse tipo de arquivo.';
+
+  @override
+  String get detailsMissingHint =>
+      'O Alexandria não encontrou este arquivo onde o catálogo diz que ele está. Reverifique o catálogo para saber se ele voltou.';
+
+  @override
+  String get detailsRescan => 'Reverificar o catálogo';
+
+  @override
+  String get detailsDeletedHint =>
+      'Este registro está excluído. A restauração chega com o caso de uso dela.';
+
+  @override
+  String get detailsNotFound => 'Esse arquivo não está mais no catálogo.';
+
+  @override
+  String get detailsMetadataNone =>
+      'O núcleo não informa mais nada sobre este arquivo.';
+
+  @override
+  String get detailsWidth => 'Largura';
+
+  @override
+  String get detailsHeight => 'Altura';
+
+  @override
+  String get detailsPages => 'Páginas';
+
+  @override
+  String get detailsDuration => 'Duração';
 }

@@ -9,6 +9,7 @@ import '../../shell/presentation/async_state_view.dart';
 import '../domain/catalog_file.dart';
 import '../domain/library_type.dart';
 import '../domain/listing_view.dart';
+import 'file_details_view.dart';
 import '../domain/view_layout.dart';
 
 /// The files of the selected type (UC-09, FR-CT-02, FR-CT-10).
@@ -170,13 +171,13 @@ extension _ViewLayoutPresentation on ViewLayout {
 }
 
 /// The tiles (FR-CT-03, FR-CT-10).
-class _FileGrid extends StatelessWidget {
+class _FileGrid extends ConsumerWidget {
   const _FileGrid({required this.files});
 
   final List<CatalogFile> files;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
     // A builder here too: a grid that built every tile would defeat FR-CT-10
@@ -193,26 +194,29 @@ class _FileGrid extends StatelessWidget {
         final file = files[index];
 
         return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  file.isMissing
-                      ? Icons.report_gmailerrorred_outlined
-                      : Icons.insert_drive_file_outlined,
-                  color: file.isMissing ? theme.colorScheme.error : null,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  file.name,
-                  style: theme.textTheme.bodySmall,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          child: InkWell(
+            onTap: () => FileDetailsView.show(context, ref, file.uuid),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    file.isMissing
+                        ? Icons.report_gmailerrorred_outlined
+                        : Icons.insert_drive_file_outlined,
+                    color: file.isMissing ? theme.colorScheme.error : null,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    file.name,
+                    style: theme.textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -243,7 +247,7 @@ class _FileList extends StatelessWidget {
 }
 
 /// One file.
-class _FileRow extends StatelessWidget {
+class _FileRow extends ConsumerWidget {
   const _FileRow({required this.file, this.detailed = false});
 
   final CatalogFile file;
@@ -252,11 +256,13 @@ class _FileRow extends StatelessWidget {
   final bool detailed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     return ListTile(
+      // UC-13 main flow step 1: a row opens its file's details.
+      onTap: () => FileDetailsView.show(context, ref, file.uuid),
       leading: Icon(
         // Deliberately not one of the navigation panel's icons: a row and a
         // destination that draw the same glyph are two different things

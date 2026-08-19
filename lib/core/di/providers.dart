@@ -25,6 +25,7 @@ import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
 import '../../features/library_sources/application/library_sources_controller.dart';
 import '../../features/library_sources/application/library_sources_state.dart';
+import '../../features/catalog/application/file_details_controller.dart';
 import '../../features/catalog/application/layout_controller.dart';
 import '../../features/catalog/application/listing_controller.dart';
 import '../../features/catalog/application/listing_view_controller.dart';
@@ -33,6 +34,7 @@ import '../../features/catalog/data/core_catalog_gateway.dart';
 import '../../features/catalog/domain/catalog_file.dart';
 import '../../features/catalog/domain/library_type.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
+import '../../features/catalog/domain/file_details.dart';
 import '../../features/library_sources/application/index_runs_controller.dart';
 import '../../features/library_sources/application/index_runs_state.dart';
 import '../../features/library_sources/data/core_index_gateway.dart';
@@ -246,8 +248,9 @@ final layoutControllerProvider =
     NotifierProvider<LayoutController, LayoutState>(LayoutController.new);
 
 /// What the owner has typed into the search (UC-11).
-final searchTermProvider =
-    NotifierProvider<SearchTermController, String>(SearchTermController.new);
+final searchTermProvider = NotifierProvider<SearchTermController, String>(
+  SearchTermController.new,
+);
 
 /// The catalog the search matches against (UC-11).
 final catalogSearchProvider =
@@ -259,4 +262,15 @@ final catalogSearchProvider =
 final listingViewControllerProvider =
     NotifierProvider<ListingViewController, ListingViewState>(
       ListingViewController.new,
+    );
+
+/// Which file's details are open, or `null` for none (UC-13).
+final openFileProvider = NotifierProvider<OpenFileController, String?>(
+  OpenFileController.new,
+);
+
+/// The open file's details (UC-13).
+final fileDetailsControllerProvider =
+    AsyncNotifierProvider<FileDetailsController, FileDetails?>(
+      FileDetailsController.new,
     );

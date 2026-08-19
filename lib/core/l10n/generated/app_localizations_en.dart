@@ -519,4 +519,61 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get filtersRejected =>
       'That filter was refused, so the previous one is back.';
+
+  @override
+  String get detailsTitle => 'Details';
+
+  @override
+  String get detailsPath => 'Where it is';
+
+  @override
+  String get detailsMetadata => 'About it';
+
+  @override
+  String get detailsState => 'State';
+
+  @override
+  String get detailsStateActive => 'In the library';
+
+  @override
+  String get detailsStateDeleted => 'Deleted';
+
+  @override
+  String get detailsStateMissing => 'Missing from disk';
+
+  @override
+  String get detailsOpen => 'Open';
+
+  @override
+  String get detailsNoViewer => 'Nothing can open this kind of file yet.';
+
+  @override
+  String get detailsMissingHint =>
+      'Alexandria could not find this file where the catalog says it is. Re-check the catalog to find out whether it has come back.';
+
+  @override
+  String get detailsRescan => 'Re-check the catalog';
+
+  @override
+  String get detailsDeletedHint =>
+      'This record is deleted. Restoring it arrives with its own use case.';
+
+  @override
+  String get detailsNotFound => 'That file is no longer in the catalog.';
+
+  @override
+  String get detailsMetadataNone =>
+      'The core reports nothing else about this file.';
+
+  @override
+  String get detailsWidth => 'Width';
+
+  @override
+  String get detailsHeight => 'Height';
+
+  @override
+  String get detailsPages => 'Pages';
+
+  @override
+  String get detailsDuration => 'Duration';
 }

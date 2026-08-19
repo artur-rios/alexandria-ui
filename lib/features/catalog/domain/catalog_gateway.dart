@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
 import 'catalog_file.dart';
+import 'file_details.dart';
 import 'library_type.dart';
 import 'listing_view.dart';
 
@@ -19,6 +20,18 @@ sealed class CatalogListing with _$CatalogListing {
       CatalogListingFailed;
 }
 
+/// What reading one file produced (UC-13 main flow steps 2 and 3).
+@freezed
+sealed class FileDetailsOutcome with _$FileDetailsOutcome {
+  /// The core answered with the record.
+  const factory FileDetailsOutcome.read({required FileDetails details}) =
+      FileDetailsRead;
+
+  /// The core could not answer (AF-01, AF-05).
+  const factory FileDetailsOutcome.failed({required Failure failure}) =
+      FileDetailsFailed;
+}
+
 /// The application's view of the core's catalog queries (IR-02, NFR-17).
 abstract interface class CatalogGateway {
   /// The files of [type] in [lifecycle], merged across every registered
@@ -31,5 +44,11 @@ abstract interface class CatalogGateway {
     required LibraryType type,
     required String credential,
     LifecycleFilter lifecycle = LifecycleFilter.active,
+  });
+
+  /// One file, with everything the core knows about it (FR-CT-05, UC-13).
+  Future<FileDetailsOutcome> fileDetails({
+    required String uuid,
+    required String credential,
   });
 }

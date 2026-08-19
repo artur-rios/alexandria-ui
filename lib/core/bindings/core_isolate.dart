@@ -298,10 +298,7 @@ class CoreIsolate {
         arguments.first! as String,
         (root) => withNativeString(arguments[1]! as String, (token) {
           final result = bindings.alexandria_index_start(root, token);
-          return (
-            status: result.status,
-            runId: _readRunId(result.run_id),
-          );
+          return (status: result.status, runId: _readRunId(result.run_id));
         }),
       ),
 
@@ -325,6 +322,17 @@ class CoreIsolate {
         arguments.first! as String,
         (filters) => withNativeString(arguments[1]! as String, (token) {
           final result = bindings.alexandria_files_list(filters, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'fileByUuid' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_file_get_by_uuid(uuid, token);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
