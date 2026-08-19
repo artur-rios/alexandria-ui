@@ -33,9 +33,7 @@ void main() {
   })
   build({FakeIndexGateway? gateway, List<LibrarySource>? registered}) {
     final indexGateway = gateway ?? FakeIndexGateway();
-    final store = InMemoryLibrarySourceStore(
-      registered ?? [source(root)],
-    );
+    final store = InMemoryLibrarySourceStore(registered ?? [source(root)]);
 
     final container = ProviderContainer(
       overrides: [
@@ -57,45 +55,57 @@ void main() {
   }
 
   group('the main flow', () {
-    test('GivenARegisteredFolder_WhenAScanStarts_ThenTheCoreIsCalled',
-        () async {
-      final sut = build();
+    test(
+      'GivenARegisteredFolder_WhenAScanStarts_ThenTheCoreIsCalled',
+      () async {
+        final sut = build();
 
-      await sut.ref.read(indexRunsControllerProvider.notifier).startIndex(root);
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .startIndex(root);
 
-      expect(sut.gateway.starts.single.root, root);
-      expect(
-        sut.gateway.starts.single.credential,
-        FakeAuthGateway.defaultSession.credential,
-      );
-    });
+        expect(sut.gateway.starts.single.root, root);
+        expect(
+          sut.gateway.starts.single.credential,
+          FakeAuthGateway.defaultSession.credential,
+        );
+      },
+    );
 
-    test('GivenAScanStarts_WhenTheCoreAnswers_ThenTheRunIdIsRetained',
-        () async {
-      // FR-LB-05.
-      final sut = build(
-        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
-      );
+    test(
+      'GivenAScanStarts_WhenTheCoreAnswers_ThenTheRunIdIsRetained',
+      () async {
+        // FR-LB-05.
+        final sut = build(
+          gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+        );
 
-      await sut.ref.read(indexRunsControllerProvider.notifier).startIndex(root);
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .startIndex(root);
 
-      expect(
-        sut.ref.read(indexRunsControllerProvider).runFor(root)?.runId,
-        sut.gateway.runId,
-      );
-    });
+        expect(
+          sut.ref.read(indexRunsControllerProvider).runFor(root)?.runId,
+          sut.gateway.runId,
+        );
+      },
+    );
 
-    test('GivenAScanStarts_WhenItIsRecorded_ThenTheFolderRemembersTheRun',
-        () async {
-      // AF-05 depends on this: the run must be findable after a restart.
-      final sut = build(
-        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
-      );
+    test(
+      'GivenAScanStarts_WhenItIsRecorded_ThenTheFolderRemembersTheRun',
+      () async {
+        // AF-05 depends on this: the run must be findable after a restart.
+        final sut = build(
+          gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+        );
 
-      await sut.ref.read(indexRunsControllerProvider.notifier).startIndex(root);
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .startIndex(root);
 
-      expect(sut.store.read().single.lastRunId, sut.gateway.runId);
-    });
+        expect(sut.store.read().single.lastRunId, sut.gateway.runId);
+      },
+    );
 
     test('GivenARunInFlight_WhenItFinishes_ThenItsCountsAreShown', () async {
       // FR-LB-08.
@@ -124,17 +134,22 @@ void main() {
       expect(stored.lastRunAt, now);
     });
 
-    test('GivenAFinishedRun_WhenItIsNotDismissed_ThenItStaysOnScreen',
-        () async {
-      // FR-LB-08: visible until the owner dismisses it.
-      final sut = build();
-      final controller = sut.ref.read(indexRunsControllerProvider.notifier);
-      await controller.startIndex(root);
+    test(
+      'GivenAFinishedRun_WhenItIsNotDismissed_ThenItStaysOnScreen',
+      () async {
+        // FR-LB-08: visible until the owner dismisses it.
+        final sut = build();
+        final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+        await controller.startIndex(root);
 
-      await controller.refresh();
+        await controller.refresh();
 
-      expect(sut.ref.read(indexRunsControllerProvider).runFor(root), isNotNull);
-    });
+        expect(
+          sut.ref.read(indexRunsControllerProvider).runFor(root),
+          isNotNull,
+        );
+      },
+    );
 
     test('GivenAFinishedRun_WhenItIsDismissed_ThenItGoes', () async {
       final sut = build();
@@ -148,34 +163,38 @@ void main() {
   });
 
   group('a second run is refused (AF-01, FR-LB-09)', () {
-    test('GivenARunInFlight_WhenAnotherIsStarted_ThenTheCoreIsNotCalledAgain',
-        () async {
-      final sut = build(
-        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
-      );
-      final controller = sut.ref.read(indexRunsControllerProvider.notifier);
-      await controller.startIndex(root);
+    test(
+      'GivenARunInFlight_WhenAnotherIsStarted_ThenTheCoreIsNotCalledAgain',
+      () async {
+        final sut = build(
+          gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+        );
+        final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+        await controller.startIndex(root);
 
-      await controller.startIndex(root);
+        await controller.startIndex(root);
 
-      expect(sut.gateway.starts, hasLength(1));
-    });
+        expect(sut.gateway.starts, hasLength(1));
+      },
+    );
 
-    test('GivenARunInFlight_WhenAnotherIsStarted_ThenTheRefusalNamesTheFolder',
-        () async {
-      final sut = build(
-        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
-      );
-      final controller = sut.ref.read(indexRunsControllerProvider.notifier);
-      await controller.startIndex(root);
+    test(
+      'GivenARunInFlight_WhenAnotherIsStarted_ThenTheRefusalNamesTheFolder',
+      () async {
+        final sut = build(
+          gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+        );
+        final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+        await controller.startIndex(root);
 
-      await controller.startIndex(root);
+        await controller.startIndex(root);
 
-      expect(
-        sut.ref.read(indexRunsControllerProvider).refusedSecondRunFor,
-        root,
-      );
-    });
+        expect(
+          sut.ref.read(indexRunsControllerProvider).refusedSecondRunFor,
+          root,
+        );
+      },
+    );
 
     test('GivenAFinishedRun_WhenAnotherIsStarted_ThenItRuns', () async {
       // The refusal is about a run in flight, not about ever having run.
@@ -190,21 +209,28 @@ void main() {
   });
 
   group('the core refuses the start (AF-02, AF-03)', () {
-    test('GivenTheCoreRejectsTheStart_WhenItIsSent_ThenTheReasonIsKept',
-        () async {
-      const failure = Failure.invalidInput(
-        family: CoreStatusFamily.indexing,
-        code: 1,
-      );
-      final sut = build(
-        gateway: FakeIndexGateway()
-          ..startOutcome = const IndexStartOutcome.failed(failure: failure),
-      );
+    test(
+      'GivenTheCoreRejectsTheStart_WhenItIsSent_ThenTheReasonIsKept',
+      () async {
+        const failure = Failure.invalidInput(
+          family: CoreStatusFamily.indexing,
+          code: 1,
+        );
+        final sut = build(
+          gateway: FakeIndexGateway()
+            ..startOutcome = const IndexStartOutcome.failed(failure: failure),
+        );
 
-      await sut.ref.read(indexRunsControllerProvider.notifier).startIndex(root);
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .startIndex(root);
 
-      expect(sut.ref.read(indexRunsControllerProvider).failureFor(root), failure);
-    });
+        expect(
+          sut.ref.read(indexRunsControllerProvider).failureFor(root),
+          failure,
+        );
+      },
+    );
 
     test('GivenTheStartIsRefused_WhenItSettles_ThenNoRunIsRecorded', () async {
       final sut = build(
@@ -225,87 +251,102 @@ void main() {
   });
 
   group('the core rejects the session (AF-06)', () {
-    test('GivenTheStartIsUnauthorized_WhenItSettles_ThenTheOwnerIsSignedOut',
-        () async {
-      const failure = Failure.unauthorized(
-        family: CoreStatusFamily.indexing,
-        code: 2,
-      );
-      final sut = build(
-        gateway: FakeIndexGateway()
-          ..startOutcome = const IndexStartOutcome.failed(failure: failure),
-      );
+    test(
+      'GivenTheStartIsUnauthorized_WhenItSettles_ThenTheOwnerIsSignedOut',
+      () async {
+        const failure = Failure.unauthorized(
+          family: CoreStatusFamily.indexing,
+          code: 2,
+        );
+        final sut = build(
+          gateway: FakeIndexGateway()
+            ..startOutcome = const IndexStartOutcome.failed(failure: failure),
+        );
 
-      await sut.ref.read(indexRunsControllerProvider.notifier).startIndex(root);
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .startIndex(root);
 
-      expect(
-        sut.ref.read(sessionControllerProvider),
-        const SessionState.absent(endedBecause: failure),
-      );
-    });
+        expect(
+          sut.ref.read(sessionControllerProvider),
+          const SessionState.absent(endedBecause: failure),
+        );
+      },
+    );
 
-    test('GivenAReadIsUnauthorized_WhenItSettles_ThenTheOwnerIsSignedOut',
-        () async {
-      const failure = Failure.unauthorized(
-        family: CoreStatusFamily.run,
-        code: 2,
-      );
-      final sut = build(
-        gateway: FakeIndexGateway()
-          ..readOutcomes = [
-            const IndexRunOutcome.failed(failure: failure),
-          ],
-      );
+    test(
+      'GivenAReadIsUnauthorized_WhenItSettles_ThenTheOwnerIsSignedOut',
+      () async {
+        const failure = Failure.unauthorized(
+          family: CoreStatusFamily.run,
+          code: 2,
+        );
+        final sut = build(
+          gateway: FakeIndexGateway()
+            ..readOutcomes = [const IndexRunOutcome.failed(failure: failure)],
+        );
 
-      await sut.ref.read(indexRunsControllerProvider.notifier).startIndex(root);
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .startIndex(root);
 
-      expect(sut.ref.read(sessionControllerProvider), isA<SessionAbsent>());
-    });
+        expect(sut.ref.read(sessionControllerProvider), isA<SessionAbsent>());
+      },
+    );
   });
 
   group('a run outlives the application (AF-05)', () {
-    test('GivenARecordedRun_WhenTheApplicationStarts_ThenItsOutcomeIsRead',
-        () async {
-      // The run belongs to the core, so its outcome is waiting rather than
-      // lost.
-      final sut = build(
-        registered: [source(root, lastRunId: 'a-recorded-run')],
-      );
+    test(
+      'GivenARecordedRun_WhenTheApplicationStarts_ThenItsOutcomeIsRead',
+      () async {
+        // The run belongs to the core, so its outcome is waiting rather than
+        // lost.
+        final sut = build(
+          registered: [source(root, lastRunId: 'a-recorded-run')],
+        );
 
-      await sut.ref
-          .read(indexRunsControllerProvider.notifier)
-          .resumeRecordedRuns();
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .resumeRecordedRuns();
 
-      expect(sut.gateway.reads.single.runId, 'a-recorded-run');
-      expect(
-        sut.ref.read(indexRunsControllerProvider).runFor(root)?.status,
-        IndexRunStatus.complete,
-      );
-    });
+        expect(sut.gateway.reads.single.runId, 'a-recorded-run');
+        expect(
+          sut.ref.read(indexRunsControllerProvider).runFor(root)?.status,
+          IndexRunStatus.complete,
+        );
+      },
+    );
 
-    test('GivenARunStillGoing_WhenTheApplicationStarts_ThenItIsFollowed',
-        () async {
-      final sut = build(
-        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
-        registered: [source(root, lastRunId: 'a-recorded-run')],
-      );
+    test(
+      'GivenARunStillGoing_WhenTheApplicationStarts_ThenItIsFollowed',
+      () async {
+        final sut = build(
+          gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+          registered: [source(root, lastRunId: 'a-recorded-run')],
+        );
 
-      await sut.ref
-          .read(indexRunsControllerProvider.notifier)
-          .resumeRecordedRuns();
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .resumeRecordedRuns();
 
-      expect(sut.ref.read(indexRunsControllerProvider).hasRunInFlight, isTrue);
-    });
+        expect(
+          sut.ref.read(indexRunsControllerProvider).hasRunInFlight,
+          isTrue,
+        );
+      },
+    );
 
-    test('GivenNoRecordedRun_WhenTheApplicationStarts_ThenNothingIsRead',
-        () async {
-      final sut = build();
+    test(
+      'GivenNoRecordedRun_WhenTheApplicationStarts_ThenNothingIsRead',
+      () async {
+        final sut = build();
 
-      await sut.ref
-          .read(indexRunsControllerProvider.notifier)
-          .resumeRecordedRuns();
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .resumeRecordedRuns();
 
-      expect(sut.gateway.reads, isEmpty);
-    });
+        expect(sut.gateway.reads, isEmpty);
+      },
+    );
   });
 }

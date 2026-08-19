@@ -111,6 +111,49 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
     state = state.copyWith(sources: sources, registering: false);
   }
 
+  /// Removes [path] from the registered sources (UC-08 main flow step 4,
+  /// FR-LB-10).
+  ///
+  /// The catalog is not touched and neither is the disk: this un-registers a
+  /// source, and the records the core made from it stay exactly as they are
+  /// (BR-12). That is what the confirmation the screen shows first promises,
+  /// and this method is the whole of what it promises.
+  ///
+  /// AF-02: a folder the core is still scanning is refused until the run
+  /// settles. Removing it mid-run would leave a run reporting against a source
+  /// the application no longer knows.
+  Future<void> unregisterFolder(String path) async {
+    if (ref.read(indexRunsControllerProvider).runFor(path)?.isInFlight ??
+        false) {
+      _log.info('unregister refused while a run is in flight: $path');
+      state = state.copyWith(unregisterRefusedFor: path);
+      return;
+    }
+
+    final sources = [
+      for (final source in state.sources)
+        if (source.path != path) source,
+    ];
+
+    await _store.write(sources);
+    _log.info('library folder unregistered: $path');
+
+    // AF-03 needs nothing of its own: removing the last folder empties the
+    // list, and an empty list is already what puts the first-run guidance back
+    // on screen (FR-LB-11).
+    state = state.copyWith(
+      sources: sources,
+      unregisterRefusedFor: null,
+      refusal: null,
+      refusedPath: null,
+      conflictingSource: null,
+    );
+  }
+
+  /// Clears the AF-02 notice once the owner has read it.
+  void acknowledgeUnregisterRefusal() =>
+      state = state.copyWith(unregisterRefusedFor: null);
+
   /// Clears the notice once the owner has read it, so it does not outlive the
   /// attempt it was about.
   void acknowledgeRefusal() {

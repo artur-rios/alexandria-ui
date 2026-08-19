@@ -374,4 +374,23 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get librarySourcesStartFailed =>
       'Não foi possível analisar esta pasta.';
+
+  @override
+  String get librarySourcesUnregister => 'Remover';
+
+  @override
+  String librarySourcesUnregisterTitle(String label) {
+    return 'Remover $label das pastas da biblioteca?';
+  }
+
+  @override
+  String get librarySourcesUnregisterBody =>
+      'O Alexandria vai parar de analisar esta pasta. Tudo o que já foi catalogado a partir dela continua na sua biblioteca, e nada no disco é alterado.';
+
+  @override
+  String get librarySourcesUnregisterConfirm => 'Remover a pasta';
+
+  @override
+  String get librarySourcesUnregisterRefused =>
+      'Esta pasta está sendo analisada. Ela pode ser removida quando a análise terminar.';
 }

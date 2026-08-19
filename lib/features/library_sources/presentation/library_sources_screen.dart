@@ -8,6 +8,7 @@ import '../../shell/presentation/confirmation_dialog.dart';
 import '../../../core/failures/failure.dart';
 import '../../../core/failures/failure_messages.dart';
 import '../application/index_runs_state.dart';
+import '../domain/library_source.dart';
 import '../application/library_sources_state.dart';
 import '../domain/folder_registration.dart';
 import '../domain/index_run.dart';
@@ -69,6 +70,19 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
           children: [
             if (state.refusal != null) ...[
               _RefusalNotice(state: state),
+              const SizedBox(height: AppSpacing.md),
+            ],
+
+            // AF-02: a folder the core is still scanning cannot be removed
+            // yet. Its own notice rather than the registration one's, because
+            // it is about a different attempt and clears on its own.
+            if (state.unregisterRefusedFor != null) ...[
+              _NoticeBar(
+                message: l10n.librarySourcesUnregisterRefused,
+                onDismiss: () => ref
+                    .read(librarySourcesControllerProvider.notifier)
+                    .acknowledgeUnregisterRefusal(),
+              ),
               const SizedBox(height: AppSpacing.md),
             ],
 
@@ -198,7 +212,14 @@ class _SourceList extends ConsumerWidget {
                   style: theme.textTheme.bodySmall,
                   overflow: TextOverflow.ellipsis,
                 ),
-                trailing: _IndexAction(root: source.path, runs: runs),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _IndexAction(root: source.path, runs: runs),
+                    const SizedBox(width: AppSpacing.sm),
+                    _UnregisterAction(source: source),
+                  ],
+                ),
               ),
               _RunReport(root: source.path, runs: runs),
             ],
@@ -277,6 +298,11 @@ class _RunReport extends ConsumerWidget {
 
     if (message == null) return const SizedBox.shrink();
 
+    // UC-06 AF-03: a folder the core could not scan is one the owner may want
+    // rid of, so the failure carries the offer. Only on a start failure —
+    // a finished run says nothing about whether the folder should stay.
+    final offersUnregister = failure != null && !refused;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -287,6 +313,11 @@ class _RunReport extends ConsumerWidget {
       child: Row(
         children: [
           Expanded(child: Text(message, style: theme.textTheme.bodySmall)),
+          if (offersUnregister)
+            TextButton(
+              onPressed: () => _confirmUnregister(context, ref, root),
+              child: Text(l10n.librarySourcesUnregister),
+            ),
           IconButton(
             icon: const Icon(Icons.close),
             tooltip: l10n.dismiss,
@@ -328,7 +359,48 @@ class _RunReport extends ConsumerWidget {
   }
 }
 
-/// Why the last attempt was refused (AF-02, AF-03).
+/// A message the owner can dismiss, in the screen's warning colours.
+class _NoticeBar extends StatelessWidget {
+  const _NoticeBar({required this.message, required this.onDismiss});
+
+  final String message;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: theme.colorScheme.onErrorContainer),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onErrorContainer,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: l10n.dismiss,
+            onPressed: onDismiss,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Why the last registration attempt was refused (UC-05 AF-02, AF-03).
 class _RefusalNotice extends ConsumerWidget {
   const _RefusalNotice({required this.state});
 
@@ -386,4 +458,73 @@ class _RefusalNotice extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// The control that unregisters a folder (UC-08 main flow step 1).
+class _UnregisterAction extends ConsumerWidget {
+  const _UnregisterAction({required this.source});
+
+  final LibrarySource source;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
+    return TextButton.icon(
+      onPressed: () => _confirmUnregister(context, ref, source.path),
+      icon: const Icon(Icons.delete_outline),
+      label: Text(l10n.librarySourcesUnregister),
+    );
+  }
+}
+
+/// Confirms and then unregisters [path] (UC-08 main flow steps 2–4).
+///
+/// Through the shell's confirmation modal, which is where FR-UX-10 puts every
+/// destructive action — and this one is destructive only in the narrow sense
+/// that a registration goes away. The message says so: the catalog and the
+/// disk are untouched, which is exactly what FR-LB-10 requires be stated.
+Future<void> _confirmUnregister(
+  BuildContext context,
+  WidgetRef ref,
+  String path,
+) async {
+  // AF-02 first: a folder the core is still scanning is refused before the
+  // owner is asked anything. Confirming a removal that then quietly does not
+  // happen is worse than being told up front, and the controller's own rule is
+  // what answers — this does not restate it.
+  if (ref.read(indexRunsControllerProvider).runFor(path)?.isInFlight ?? false) {
+    await ref
+        .read(librarySourcesControllerProvider.notifier)
+        .unregisterFolder(path);
+    return;
+  }
+
+  final l10n = AppLocalizations.of(context);
+  final label = ref
+      .read(librarySourcesControllerProvider)
+      .sources
+      .firstWhere(
+        (source) => source.path == path,
+        orElse: () => LibrarySource(
+          path: path,
+          label: path,
+          registeredAt: DateTime.fromMillisecondsSinceEpoch(0),
+        ),
+      )
+      .label;
+
+  final confirmed = await ConfirmationDialog.show(
+    context,
+    title: l10n.librarySourcesUnregisterTitle(label),
+    message: l10n.librarySourcesUnregisterBody,
+    confirmLabel: l10n.librarySourcesUnregisterConfirm,
+  );
+
+  // AF-01: cancelling changes nothing at all.
+  if (!confirmed) return;
+
+  await ref
+      .read(librarySourcesControllerProvider.notifier)
+      .unregisterFolder(path);
 }

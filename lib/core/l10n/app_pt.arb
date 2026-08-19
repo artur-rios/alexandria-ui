@@ -104,5 +104,15 @@
   "librarySourcesRunFailed": "A análise não foi concluída.",
   "librarySourcesRunInterrupted": "A análise não foi concluída, porque o Alexandria foi fechado enquanto ela estava em andamento.",
   "librarySourcesRunRefused": "Já existe uma análise desta pasta em andamento.",
-  "librarySourcesStartFailed": "Não foi possível analisar esta pasta."
+  "librarySourcesStartFailed": "Não foi possível analisar esta pasta.",
+
+  "librarySourcesUnregister": "Remover",
+
+  "librarySourcesUnregisterTitle": "Remover {label} das pastas da biblioteca?",
+
+  "librarySourcesUnregisterBody": "O Alexandria vai parar de analisar esta pasta. Tudo o que j\u00e1 foi catalogado a partir dela continua na sua biblioteca, e nada no disco \u00e9 alterado.",
+
+  "librarySourcesUnregisterConfirm": "Remover a pasta",
+
+  "librarySourcesUnregisterRefused": "Esta pasta est\u00e1 sendo analisada. Ela pode ser removida quando a an\u00e1lise terminar."
 }
