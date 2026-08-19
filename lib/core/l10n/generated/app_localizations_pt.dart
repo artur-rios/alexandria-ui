@@ -577,4 +577,39 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get detailsDuration => 'Duração';
+
+  @override
+  String get dashboardRecent => 'Adicionados recentemente';
+
+  @override
+  String get dashboardRecentNone => 'Nada foi adicionado ainda.';
+
+  @override
+  String get dashboardInProgress => 'Em andamento';
+
+  @override
+  String get dashboardInProgressNone =>
+      'Nada em andamento. As listas de reprodução e de leitura chegam com os casos de uso delas.';
+
+  @override
+  String get dashboardCounts => 'O que há na biblioteca';
+
+  @override
+  String get dashboardLastRun => 'A última análise';
+
+  @override
+  String get dashboardLastRunNone => 'Nada foi analisado nesta sessão.';
+
+  @override
+  String get dashboardLastRunRunning => 'Uma análise está em andamento agora.';
+
+  @override
+  String get dashboardLastRunComplete => 'A última análise foi concluída.';
+
+  @override
+  String get dashboardLastRunFailed => 'A última análise não foi concluída.';
+
+  @override
+  String get dashboardLastRunInterrupted =>
+      'A última análise foi interrompida quando o Alexandria fechou.';
 }

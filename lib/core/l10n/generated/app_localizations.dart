@@ -1079,6 +1079,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Duration'**
   String get detailsDuration;
+
+  /// Heading of the dashboard's recently added section (UC-14, FR-CT-11).
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get dashboardRecent;
+
+  /// The recently added section has nothing to show.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been added yet.'**
+  String get dashboardRecentNone;
+
+  /// Heading of the dashboard's in-progress section (UC-14, FR-CT-11).
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get dashboardInProgress;
+
+  /// UC-14 AF-02: the section states that nothing is in progress rather than rendering empty. Watchlists and reading lists are M-09, so this is always the state today.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is in progress. Watchlists and reading lists arrive with their own use cases.'**
+  String get dashboardInProgressNone;
+
+  /// Heading of the dashboard's per-type counts (UC-14, FR-CT-11).
+  ///
+  /// In en, this message translates to:
+  /// **'What is in the library'**
+  String get dashboardCounts;
+
+  /// Heading of the dashboard's most-recent-run section (UC-14, FR-CT-11).
+  ///
+  /// In en, this message translates to:
+  /// **'The last scan'**
+  String get dashboardLastRun;
+
+  /// No index or refresh run has been observed since the application started.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been scanned in this session.'**
+  String get dashboardLastRunNone;
+
+  /// UC-14 AF-04: a run is in flight, and the dashboard updates when it settles.
+  ///
+  /// In en, this message translates to:
+  /// **'A scan is running now.'**
+  String get dashboardLastRunRunning;
+
+  /// The most recent run completed.
+  ///
+  /// In en, this message translates to:
+  /// **'The last scan finished.'**
+  String get dashboardLastRunComplete;
+
+  /// The most recent run failed.
+  ///
+  /// In en, this message translates to:
+  /// **'The last scan did not finish.'**
+  String get dashboardLastRunFailed;
+
+  /// The most recent run was interrupted rather than failing.
+  ///
+  /// In en, this message translates to:
+  /// **'The last scan was interrupted when Alexandria closed.'**
+  String get dashboardLastRunInterrupted;
 }
 
 class _AppLocalizationsDelegate

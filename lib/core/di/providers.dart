@@ -25,6 +25,7 @@ import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
 import '../../features/library_sources/application/library_sources_controller.dart';
 import '../../features/library_sources/application/library_sources_state.dart';
+import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
 import '../../features/catalog/application/layout_controller.dart';
 import '../../features/catalog/application/listing_controller.dart';
@@ -273,4 +274,10 @@ final openFileProvider = NotifierProvider<OpenFileController, String?>(
 final fileDetailsControllerProvider =
     AsyncNotifierProvider<FileDetailsController, FileDetails?>(
       FileDetailsController.new,
+    );
+
+/// The most recently added files, for the dashboard (UC-14).
+final recentFilesProvider =
+    AsyncNotifierProvider<RecentFilesController, List<CatalogFile>>(
+      RecentFilesController.new,
     );
