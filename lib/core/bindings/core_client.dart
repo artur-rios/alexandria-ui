@@ -59,9 +59,31 @@ abstract interface class CoreClient {
     String token,
   );
 
+  /// Starts an index scan of [root] through `alexandria_index_start`
+  /// (FR-LB-05, UC-06).
+  ///
+  /// The scan runs in the background on the core's own runtime; this returns
+  /// as soon as it has been started. [token] is the active session's
+  /// credential.
+  ///
+  /// The run id comes back in a fixed-size array inside the result struct
+  /// rather than as an allocation, so there is nothing to free on this path.
+  Future<CoreRunStart> indexStart(String root, String token);
+
+  /// Reads a run's status and outcome through
+  /// `alexandria_index_run_status_json` (FR-LB-07, FR-LB-08, UC-06).
+  ///
+  /// The status codes are the `RUN_*` family, not `INDEX_*`: they overlap
+  /// numerically and disagree on what `4` means.
+  Future<CoreJsonResponse> indexRunStatus(String runId, String token);
+
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
 }
+
+/// What starting a run answered: the core's status code and, on success, the
+/// run's identifier.
+typedef CoreRunStart = ({int status, String runId});
 
 /// A core call's status code and its JSON payload, if it returned one.
 ///
@@ -110,6 +132,15 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async =>
       await _isolate.call('authLocalSetCredentials', [jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreRunStart> indexStart(String root, String token) async =>
+      await _isolate.call('indexStart', [root, token]) as CoreRunStart;
+
+  @override
+  Future<CoreJsonResponse> indexRunStatus(String runId, String token) async =>
+      await _isolate.call('indexRunStatus', [runId, token])
           as CoreJsonResponse;
 
   @override

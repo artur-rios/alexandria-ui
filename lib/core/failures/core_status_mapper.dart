@@ -36,8 +36,32 @@ Failure mapCoreStatus(
     CoreStatusFamily.watchlist => _mapWatchlist(code),
     CoreStatusFamily.readingList => _mapReadingList(code),
     CoreStatusFamily.auth => _mapAuth(code),
+    CoreStatusFamily.run => _mapRun(code),
   };
 }
+
+// The run family reserves 4 for "not found" and 9 for "other", where the index
+// family it sits beside uses 4 for "other". Mapping one through the other is
+// exactly the misread the separate families exist to prevent.
+Failure _mapRun(int code) => switch (code) {
+  RUN_ERR_INVALID_INPUT => Failure.invalidInput(
+    family: CoreStatusFamily.run,
+    code: code,
+  ),
+  RUN_ERR_UNAUTHORIZED => Failure.unauthorized(
+    family: CoreStatusFamily.run,
+    code: code,
+  ),
+  RUN_ERR_NOT_INITIALIZED => Failure.notInitialized(
+    family: CoreStatusFamily.run,
+    code: code,
+  ),
+  RUN_ERR_NOT_FOUND => Failure.notFound(
+    family: CoreStatusFamily.run,
+    code: code,
+  ),
+  _ => Failure.unexpected(family: CoreStatusFamily.run, code: code),
+};
 
 // The index family is the one that predates the others: its "other" is 4, where
 // every later family uses 9 and reserves 4 for "not found".

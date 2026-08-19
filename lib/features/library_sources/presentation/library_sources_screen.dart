@@ -5,8 +5,12 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
+import '../../../core/failures/failure.dart';
+import '../../../core/failures/failure_messages.dart';
+import '../application/index_runs_state.dart';
 import '../application/library_sources_state.dart';
 import '../domain/folder_registration.dart';
+import '../domain/index_run.dart';
 
 /// The library-sources screen (UC-05, FR-LB-01 … FR-LB-04, FR-LB-11).
 ///
@@ -14,7 +18,7 @@ import '../domain/folder_registration.dart';
 /// folders are application settings (System Requirements §4.11), and the
 /// navigation panel is specified as the file types (FR-CT-01) — so this is not
 /// a destination of its own.
-class LibrarySourcesScreen extends ConsumerWidget {
+class LibrarySourcesScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
   const LibrarySourcesScreen({super.key});
 
@@ -26,7 +30,26 @@ class LibrarySourcesScreen extends ConsumerWidget {
   );
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LibrarySourcesScreen> createState() =>
+      _LibrarySourcesScreenState();
+}
+
+class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // AF-05: a run the core is still doing, or finished while the application
+    // was closed, is picked up here rather than lost. The run belongs to the
+    // core, so its outcome is waiting to be read.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(indexRunsControllerProvider.notifier).resumeRecordedRuns();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(librarySourcesControllerProvider);
 
@@ -62,9 +85,7 @@ class LibrarySourcesScreen extends ConsumerWidget {
                 // The screen's primary action, focused so it is reachable from
                 // the keyboard (FR-UX-11).
                 autofocus: true,
-                onPressed: state.registering
-                    ? null
-                    : () => _addFolder(context, ref),
+                onPressed: state.registering ? null : () => _addFolder(context),
                 icon: state.registering
                     ? const SizedBox.square(
                         dimension: AppSpacing.md,
@@ -82,7 +103,7 @@ class LibrarySourcesScreen extends ConsumerWidget {
 
   /// Opens the picker, answering AF-04's question through the shell's
   /// confirmation modal when it is asked.
-  Future<void> _addFolder(BuildContext context, WidgetRef ref) async {
+  Future<void> _addFolder(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
 
     await ref
@@ -145,47 +166,165 @@ class _FirstRunGuidance extends StatelessWidget {
   }
 }
 
-/// The registered folders (main flow step 5).
-class _SourceList extends StatelessWidget {
+/// The registered folders, each with its run (main flow steps 1, 3 and 5).
+class _SourceList extends ConsumerWidget {
   const _SourceList({required this.state});
 
   final LibrarySourcesState state;
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final runs = ref.watch(indexRunsControllerProvider);
 
     return ListView.builder(
       itemCount: state.sources.length,
       itemBuilder: (context, index) {
         final source = state.sources[index];
-        // AF-03 highlights the entry the refused folder duplicated, so the
-        // owner can see the one they already have rather than hunting for it.
+        // UC-05 AF-03 highlights the entry the refused folder duplicated, so
+        // the owner can see the one they already have rather than hunting.
         final highlighted = state.conflictingSource?.path == source.path;
 
         return Card(
           color: highlighted ? theme.colorScheme.secondaryContainer : null,
-          child: ListTile(
-            leading: const Icon(Icons.folder_outlined),
-            title: Text(source.label),
-            subtitle: Text(
-              source.path,
-              style: theme.textTheme.bodySmall,
-              overflow: TextOverflow.ellipsis,
-            ),
-            // UC-06 replaces this with the action that starts a run. The row
-            // exists now so registering a folder visibly produces one.
-            trailing: Text(
-              l10n.librarySourcesIndexLater,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.folder_outlined),
+                title: Text(source.label),
+                subtitle: Text(
+                  source.path,
+                  style: theme.textTheme.bodySmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: _IndexAction(root: source.path, runs: runs),
               ),
-            ),
+              _RunReport(root: source.path, runs: runs),
+            ],
           ),
         );
       },
     );
+  }
+}
+
+/// The control that starts a scan, or says one is running (FR-LB-07).
+class _IndexAction extends ConsumerWidget {
+  const _IndexAction({required this.root, required this.runs});
+
+  final String root;
+  final IndexRunsState runs;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final inFlight = runs.runFor(root)?.isInFlight ?? false;
+    final starting = runs.isStarting(root);
+
+    if (inFlight || starting) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox.square(
+            dimension: AppSpacing.md,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Text(l10n.librarySourcesIndexing),
+        ],
+      );
+    }
+
+    return TextButton.icon(
+      onPressed: () =>
+          ref.read(indexRunsControllerProvider.notifier).startIndex(root),
+      icon: const Icon(Icons.sync),
+      label: Text(l10n.librarySourcesIndex),
+    );
+  }
+}
+
+/// A run's outcome, which stays until dismissed (FR-LB-08).
+class _RunReport extends ConsumerWidget {
+  const _RunReport({required this.root, required this.runs});
+
+  final String root;
+  final IndexRunsState runs;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final run = runs.runFor(root);
+    final failure = runs.failureFor(root);
+    final refused = runs.refusedSecondRunFor == root;
+
+    final message = switch ((run, failure, refused)) {
+      // AF-01.
+      (_, _, true) => l10n.librarySourcesRunRefused,
+      // AF-02 and AF-03: the core refused the start. AF-03's offer to
+      // unregister the folder arrives with UC-08, which is the use case that
+      // owns unregistering.
+      (_, final Failure problem, _) =>
+        '${l10n.librarySourcesStartFailed} ${problem.localizedMessage(l10n)}',
+      (final IndexRun finished, _, _) when !finished.isInFlight => _outcomeOf(
+        finished,
+        l10n,
+      ),
+      _ => null,
+    };
+
+    if (message == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        0,
+        AppSpacing.sm,
+        AppSpacing.sm,
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text(message, style: theme.textTheme.bodySmall)),
+          IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: l10n.dismiss,
+            onPressed: () {
+              final controller = ref.read(indexRunsControllerProvider.notifier);
+              refused
+                  ? controller.acknowledgeRefusal()
+                  : controller.dismiss(root);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// What a finished run reports (main flow step 5).
+  ///
+  /// The counts are the core's own for an index run — scanned, indexed,
+  /// skipped, failed. FR-LB-08 asks for "added, updated, missing"; the core
+  /// reports none of those three for this run kind, and only a refresh run
+  /// (UC-07) reports anything missing at all.
+  String _outcomeOf(IndexRun run, AppLocalizations l10n) {
+    final counts = run.counts;
+
+    final summary = switch (run.status) {
+      IndexRunStatus.interrupted => l10n.librarySourcesRunInterrupted,
+      IndexRunStatus.failed => l10n.librarySourcesRunFailed,
+      _ when counts == null => l10n.librarySourcesRunFailed,
+      _ => l10n.librarySourcesRunComplete(
+        counts.scanned,
+        counts.indexed,
+        counts.skipped,
+      ),
+    };
+
+    if (counts == null || counts.failed == 0) return summary;
+
+    return '$summary ${l10n.librarySourcesRunFailedCount(counts.failed)}';
   }
 }
 

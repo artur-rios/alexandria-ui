@@ -685,6 +685,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dismiss'**
   String get dismiss;
+
+  /// The action that starts a scan of a registered folder (UC-06 main flow step 1).
+  ///
+  /// In en, this message translates to:
+  /// **'Index'**
+  String get librarySourcesIndex;
+
+  /// Shown while a run is in flight. The scan belongs to the core, so the rest of the application stays usable (FR-LB-07).
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning…'**
+  String get librarySourcesIndexing;
+
+  /// UC-06 main flow step 5: a finished run's tally. These are the core's own counts for an index run.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanned {scanned} files, cataloged {indexed}, skipped {skipped}.'**
+  String librarySourcesRunComplete(int scanned, int indexed, int skipped);
+
+  /// Appended to a run's outcome when the core reports files it failed on.
+  ///
+  /// In en, this message translates to:
+  /// **'{failed} files could not be read.'**
+  String librarySourcesRunFailedCount(int failed);
+
+  /// UC-06: the core reports the run as failed.
+  ///
+  /// In en, this message translates to:
+  /// **'The scan did not finish.'**
+  String get librarySourcesRunFailed;
+
+  /// UC-06 AF-05: the run was interrupted. Its outcome is read at the next launch rather than lost.
+  ///
+  /// In en, this message translates to:
+  /// **'The scan did not finish, because Alexandria was closed while it was running.'**
+  String get librarySourcesRunInterrupted;
+
+  /// UC-06 AF-01: a second run is refused while one is in flight (FR-LB-09).
+  ///
+  /// In en, this message translates to:
+  /// **'A scan of this folder is already running.'**
+  String get librarySourcesRunRefused;
+
+  /// UC-06 AF-02 and AF-03: the core refused to start the run. The reason from the core follows.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder could not be scanned.'**
+  String get librarySourcesStartFailed;
 }
 
 class _AppLocalizationsDelegate

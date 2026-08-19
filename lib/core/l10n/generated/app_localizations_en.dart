@@ -348,4 +348,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dismiss => 'Dismiss';
+
+  @override
+  String get librarySourcesIndex => 'Index';
+
+  @override
+  String get librarySourcesIndexing => 'Scanning…';
+
+  @override
+  String librarySourcesRunComplete(int scanned, int indexed, int skipped) {
+    return 'Scanned $scanned files, cataloged $indexed, skipped $skipped.';
+  }
+
+  @override
+  String librarySourcesRunFailedCount(int failed) {
+    return '$failed files could not be read.';
+  }
+
+  @override
+  String get librarySourcesRunFailed => 'The scan did not finish.';
+
+  @override
+  String get librarySourcesRunInterrupted =>
+      'The scan did not finish, because Alexandria was closed while it was running.';
+
+  @override
+  String get librarySourcesRunRefused =>
+      'A scan of this folder is already running.';
+
+  @override
+  String get librarySourcesStartFailed => 'This folder could not be scanned.';
 }

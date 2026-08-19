@@ -25,10 +25,14 @@ import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
 import '../../features/library_sources/application/library_sources_controller.dart';
 import '../../features/library_sources/application/library_sources_state.dart';
+import '../../features/library_sources/application/index_runs_controller.dart';
+import '../../features/library_sources/application/index_runs_state.dart';
+import '../../features/library_sources/data/core_index_gateway.dart';
 import '../../features/library_sources/data/disk_folder_probe.dart';
 import '../../features/library_sources/data/native_folder_picker.dart';
 import '../../features/library_sources/data/settings_library_source_store.dart';
 import '../../features/library_sources/domain/folder_picker.dart';
+import '../../features/library_sources/domain/index_gateway.dart';
 import '../../features/library_sources/domain/library_source_store.dart';
 import '../../features/shell/application/preferences_controller.dart';
 import '../../features/shell/application/preferences_state.dart';
@@ -180,4 +184,29 @@ final librarySourceStoreProvider = Provider<LibrarySourceStore>((ref) {
 final librarySourcesControllerProvider =
     NotifierProvider<LibrarySourcesController, LibrarySourcesState>(
       LibrarySourcesController.new,
+    );
+
+/// The core's indexing operations (UC-06).
+final indexGatewayProvider = Provider<IndexGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError('the index gateway was read before the core was loaded');
+  }
+
+  return CoreIndexGateway(core);
+});
+
+/// How often an in-flight run's status is read (FR-LB-07).
+///
+/// The core publishes a status query and no callback, so the run is followed
+/// by asking. Injected so a test drives the observation directly instead of
+/// waiting on a clock.
+final runPollIntervalProvider = Provider<Duration>(
+  (ref) => const Duration(seconds: 1),
+);
+
+/// The index runs the application is following (UC-06).
+final indexRunsControllerProvider =
+    NotifierProvider<IndexRunsController, IndexRunsState>(
+      IndexRunsController.new,
     );
