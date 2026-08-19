@@ -47,13 +47,17 @@ void main() {
   }
 
   group('the main flow', () {
-    testWidgets('GivenATypeWithFiles_WhenItIsSelected_ThenItsFilesAreListed',
-        (tester) async {
+    testWidgets('GivenATypeWithFiles_WhenItIsSelected_ThenItsFilesAreListed', (
+      tester,
+    ) async {
       await openListing(
         tester,
         listings: {
           LibraryType.audio: CatalogListing.loaded(
-            files: [aFile(), aFile(uuid: 'b', name: 'Blue Train.flac')],
+            files: [
+              aFile(),
+              aFile(uuid: 'b', name: 'Blue Train.flac'),
+            ],
           ),
         },
       );
@@ -62,8 +66,9 @@ void main() {
       expect(find.text('Blue Train.flac'), findsOneWidget);
     });
 
-    testWidgets('GivenALargeListing_WhenItIsShown_ThenRowsAreBuiltOnDemand',
-        (tester) async {
+    testWidgets('GivenALargeListing_WhenItIsShown_ThenRowsAreBuiltOnDemand', (
+      tester,
+    ) async {
       // FR-CT-10: the scroll cost must not grow with the library. A builder
       // materializes only what fits, which is what this asserts.
       await openListing(
@@ -86,8 +91,9 @@ void main() {
       );
     });
 
-    testWidgets('GivenAMissingFile_WhenItIsListed_ThenItIsMarked',
-        (tester) async {
+    testWidgets('GivenAMissingFile_WhenItIsListed_ThenItIsMarked', (
+      tester,
+    ) async {
       await openListing(
         tester,
         listings: {
@@ -97,29 +103,30 @@ void main() {
         },
       );
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.text(l10n.catalogFileMissing), findsOneWidget);
     });
   });
 
   group('the type is empty (AF-01)', () {
-    testWidgets(
-      'GivenAnEmptyTypeInAStockedLibrary_WhenSelected_ThenItSaysSo',
-      (tester) async {
-        await openListing(
-          tester,
-          listings: {
-            LibraryType.image: CatalogListing.loaded(files: [aFile()]),
-          },
-        );
+    testWidgets('GivenAnEmptyTypeInAStockedLibrary_WhenSelected_ThenItSaysSo', (
+      tester,
+    ) async {
+      await openListing(
+        tester,
+        listings: {
+          LibraryType.image: CatalogListing.loaded(files: [aFile()]),
+        },
+      );
 
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
-        expect(find.text(l10n.catalogEmptyTitle), findsOneWidget);
-        expect(find.byType(ShellFailureView), findsNothing);
-      },
-    );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+      expect(find.text(l10n.catalogEmptyTitle), findsOneWidget);
+      expect(find.byType(ShellFailureView), findsNothing);
+    });
 
     testWidgets(
       'GivenAnEmptyCatalog_WhenATypeIsSelected_ThenAddingAFolderIsOffered',
@@ -140,8 +147,9 @@ void main() {
   });
 
   group('the core fails (AF-02)', () {
-    testWidgets('GivenTheCoreFails_WhenATypeIsSelected_ThenAMessageAndRetry',
-        (tester) async {
+    testWidgets('GivenTheCoreFails_WhenATypeIsSelected_ThenAMessageAndRetry', (
+      tester,
+    ) async {
       await openListing(
         tester,
         listings: {
@@ -151,14 +159,17 @@ void main() {
         },
       );
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.byType(ShellFailureView), findsOneWidget);
       expect(find.text(l10n.retry), findsOneWidget);
       expect(find.textContaining('6'), findsNothing);
     });
 
-    testWidgets('GivenAFailedType_WhenAnotherIsSelected_ThenItLists',
-        (tester) async {
+    testWidgets('GivenAFailedType_WhenAnotherIsSelected_ThenItLists', (
+      tester,
+    ) async {
       await openListing(
         tester,
         listings: {
@@ -186,13 +197,17 @@ void main() {
   });
 
   group('the panel counts (FR-CT-01)', () {
-    testWidgets('GivenTypesWithFiles_WhenTheShellOpens_ThenCountsAreShown',
-        (tester) async {
+    testWidgets('GivenTypesWithFiles_WhenTheShellOpens_ThenCountsAreShown', (
+      tester,
+    ) async {
       await openListing(
         tester,
         listings: {
           LibraryType.audio: CatalogListing.loaded(
-            files: [aFile(), aFile(uuid: 'b')],
+            files: [
+              aFile(),
+              aFile(uuid: 'b'),
+            ],
           ),
         },
       );
@@ -202,12 +217,15 @@ void main() {
   });
 
   group('the seams that are not listings', () {
-    testWidgets('GivenBookmarks_WhenSelected_ThenTheAreaIsStillPending',
-        (tester) async {
+    testWidgets('GivenBookmarks_WhenSelected_ThenTheAreaIsStillPending', (
+      tester,
+    ) async {
       // Bookmarks are not files; UC-28 fills this.
       await openListing(tester, destination: ShellDestination.bookmarks);
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.text(l10n.shellAreaPending), findsOneWidget);
     });
   });
@@ -216,8 +234,9 @@ void main() {
     ('English', const Locale('en')),
     ('Portuguese', const Locale('pt', 'BR')),
   ]) {
-    testWidgets('Given${name}_WhenAnEmptyTypeIsShown_ThenItIsLocalized',
-        (tester) async {
+    testWidgets('Given${name}_WhenAnEmptyTypeIsShown_ThenItIsLocalized', (
+      tester,
+    ) async {
       await openListing(
         tester,
         locale: locale,
@@ -226,7 +245,9 @@ void main() {
         },
       );
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(l10n.catalogEmptyTitle, isNot(startsWith('catalog')));
       expect(find.text(l10n.catalogEmptyTitle), findsOneWidget);
     });
