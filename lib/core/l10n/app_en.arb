@@ -713,5 +713,95 @@
   "filtersRejected": "That filter was refused, so the previous one is back.",
   "@filtersRejected": {
       "description": "UC-12 AF-04: the core rejected the filter as invalid input, and the previous filters were restored."
+  },
+
+  "detailsTitle": "Details",
+  "@detailsTitle": {
+      "description": "Title of the file detail view (UC-13, FR-CT-05)."
+  },
+
+  "detailsPath": "Where it is",
+  "@detailsPath": {
+      "description": "Heading above the file's on-disk path."
+  },
+
+  "detailsMetadata": "About it",
+  "@detailsMetadata": {
+      "description": "Heading above the file's type-specific metadata."
+  },
+
+  "detailsState": "State",
+  "@detailsState": {
+      "description": "Heading above the file's lifecycle state."
+  },
+
+  "detailsStateActive": "In the library",
+  "@detailsStateActive": {
+      "description": "The file's record is active."
+  },
+
+  "detailsStateDeleted": "Deleted",
+  "@detailsStateDeleted": {
+      "description": "UC-13 AF-02: the record is soft-deleted."
+  },
+
+  "detailsStateMissing": "Missing from disk",
+  "@detailsStateMissing": {
+      "description": "UC-13 AF-03: the record is active but the file was not where the catalog says it is."
+  },
+
+  "detailsOpen": "Open",
+  "@detailsOpen": {
+      "description": "The action that hands the file to its viewer or player (FR-CT-12)."
+  },
+
+  "detailsNoViewer": "Nothing can open this kind of file yet.",
+  "@detailsNoViewer": {
+      "description": "UC-13 AF-04: no viewer is registered for the type. The other actions stay available."
+  },
+
+  "detailsMissingHint": "Alexandria could not find this file where the catalog says it is. Re-check the catalog to find out whether it has come back.",
+  "@detailsMissingHint": {
+      "description": "UC-13 AF-03: what a missing file means, and the re-scan offered for it (UC-07)."
+  },
+
+  "detailsRescan": "Re-check the catalog",
+  "@detailsRescan": {
+      "description": "The action AF-03 offers, which is UC-07's refresh."
+  },
+
+  "detailsDeletedHint": "This record is deleted. Restoring it arrives with its own use case.",
+  "@detailsDeletedHint": {
+      "description": "UC-13 AF-02: the record is shown as deleted; restoring it is UC-34, which is not built yet."
+  },
+
+  "detailsNotFound": "That file is no longer in the catalog.",
+  "@detailsNotFound": {
+      "description": "UC-13 AF-01: the core reports the file as not found, so the listing is refreshed and the owner returns to it."
+  },
+
+  "detailsMetadataNone": "The core reports nothing else about this file.",
+  "@detailsMetadataNone": {
+      "description": "Shown when the core answers no type-specific metadata \u2014 text and HTML files have none, and a file whose metadata has not been written yet has none either."
+  },
+
+  "detailsWidth": "Width",
+  "@detailsWidth": {
+      "description": "Label of an image's extracted pixel width."
+  },
+
+  "detailsHeight": "Height",
+  "@detailsHeight": {
+      "description": "Label of an image's extracted pixel height."
+  },
+
+  "detailsPages": "Pages",
+  "@detailsPages": {
+      "description": "Label of a document's or comic's extracted page count."
+  },
+
+  "detailsDuration": "Duration",
+  "@detailsDuration": {
+      "description": "Label of a video's extracted duration."
   }
 }

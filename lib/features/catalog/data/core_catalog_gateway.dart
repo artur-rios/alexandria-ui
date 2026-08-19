@@ -8,6 +8,7 @@ import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/catalog_file.dart';
 import '../domain/catalog_gateway.dart';
+import '../domain/file_details.dart';
 import '../domain/library_type.dart';
 import '../domain/listing_view.dart';
 
@@ -64,6 +65,86 @@ class CoreCatalogGateway implements CatalogGateway {
       return _unreadable();
     }
   }
+
+  @override
+  Future<FileDetailsOutcome> fileDetails({
+    required String uuid,
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.fileByUuid(uuid, credential);
+    } on CoreCallException {
+      return const FileDetailsOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.file,
+          code: FILE_ERR_OTHER,
+        ),
+      );
+    }
+
+    // AF-01 and AF-05 both arrive here and are told apart by the status: a
+    // record the core does not have is not found, and a rejected session is
+    // unauthorized. The mapper draws that line, not this method.
+    if (!CoreStatusFamily.file.isOk(response.status)) {
+      return FileDetailsOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.file, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unreadableDetails();
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+      final file = _fileFrom(body['file'] as Map<String, dynamic>);
+      if (file == null) return _unreadableDetails();
+
+      return FileDetailsOutcome.read(
+        details: FileDetails(
+          file: file,
+          metadata: _metadataFrom(body['metadata']),
+          width: body['width'] as int?,
+          height: body['height'] as int?,
+          // The core names a comic's page count separately from a document's,
+          // because a FileView carries both fields and they are never both
+          // answered for one file. Either is "how many pages" to a reader.
+          pageCount:
+              body['pageCount'] as int? ?? body['comicPageCount'] as int?,
+          durationSeconds: (body['durationSeconds'] as num?)?.toDouble(),
+          isDeleted:
+              (body['file'] as Map<String, dynamic>)['state'] == 'deleted',
+        ),
+      );
+    } on Object {
+      return _unreadableDetails();
+    }
+  }
+
+  /// The metadata object as labelled fields.
+  ///
+  /// Read generically rather than per subtype: this screen displays what the
+  /// core sent, and a core that grows a field should show it rather than have
+  /// it silently dropped by a model that predates it. The typed shape belongs
+  /// to the use cases that edit metadata (UC-15, UC-16).
+  Map<String, String> _metadataFrom(Object? metadata) {
+    if (metadata is! Map<String, dynamic>) return const {};
+
+    return {
+      for (final entry in metadata.entries)
+        // The tag serde adds to name the variant is not a field the owner
+        // reads: the file's type already says which shape this is.
+        if (entry.key != 'type' && entry.value != null)
+          entry.key: '${entry.value}',
+    };
+  }
+
+  FileDetailsOutcome _unreadableDetails() => const FileDetailsOutcome.failed(
+    failure: Failure.unexpected(
+      family: CoreStatusFamily.file,
+      code: FILE_ERR_OTHER,
+    ),
+  );
 
   /// The file [row] describes, or `null` when its type is one this
   /// application does not know.

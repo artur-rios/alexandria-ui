@@ -1,5 +1,6 @@
 import 'package:alexandria_desktop/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart';
+import 'package:alexandria_desktop/features/catalog/domain/file_details.dart';
 import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
 import 'package:alexandria_desktop/features/catalog/domain/listing_view.dart';
 
@@ -24,6 +25,15 @@ class FakeCatalogGateway implements CatalogGateway {
   /// Empty by default, which is what a library nobody has deleted from holds —
   /// and what makes UC-12 AF-01 reachable by filtering to it.
   final Map<LibraryType, CatalogListing> deleted;
+
+  /// What [fileDetails] answers, keyed by uuid.
+  ///
+  /// A uuid with no entry answers the details of [aFile], so a test that only
+  /// cares about the screen does not have to build one.
+  final Map<String, FileDetailsOutcome> details = {};
+
+  /// Every uuid asked for, in order.
+  final List<String> detailsRequested = [];
 
   /// Every type asked for, in order.
   ///
@@ -60,6 +70,19 @@ class FakeCatalogGateway implements CatalogGateway {
         _ => const CatalogListing.loaded(files: []),
       },
     };
+  }
+
+  @override
+  Future<FileDetailsOutcome> fileDetails({
+    required String uuid,
+    required String credential,
+  }) async {
+    detailsRequested.add(uuid);
+
+    return details[uuid] ??
+        FileDetailsOutcome.read(
+          details: FileDetails(file: aFile(uuid: uuid)),
+        );
   }
 }
 

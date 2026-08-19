@@ -33,10 +33,7 @@ class FakeFolderPicker implements FolderPicker {
 class FakeFolderProbe implements FolderProbe {
   /// Creates a probe where every folder exists and is readable unless a test
   /// says otherwise.
-  FakeFolderProbe({
-    this.existing = true,
-    this.readable = true,
-  });
+  FakeFolderProbe({this.existing = true, this.readable = true});
 
   /// What [exists] answers.
   bool existing;

@@ -33,6 +33,8 @@ class FakeCoreClient implements CoreClient {
     this.countFilesResult = 120,
     CoreJsonResponse? filesListResult,
     this.failOnFilesList = false,
+    CoreJsonResponse? fileByUuidResult,
+    this.failOnFileByUuid = false,
   }) : healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
        authLocalLoginResult =
@@ -49,9 +51,20 @@ class FakeCoreClient implements CoreClient {
            ),
        indexStartResult =
            indexStartResult ??
+           (status: 0, runId: '3f9a1b7c-2d4e-4a8b-9c1d-5e6f70819a2b'),
+       fileByUuidResult =
+           fileByUuidResult ??
            (
              status: 0,
-             runId: '3f9a1b7c-2d4e-4a8b-9c1d-5e6f70819a2b',
+             // The FileView body: the record, plus what only this call
+             // answers.
+             json:
+                 '{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
+                 '"name":"Kind of Blue.flac",'
+                 '"path":"/home/owner/music/Kind of Blue.flac",'
+                 '"fileType":"audio","state":"active"},'
+                 '"metadata":{"type":"audio","artist":"Miles Davis",'
+                 '"album":"Kind of Blue","year":1959}}',
            ),
        filesListResult =
            filesListResult ??
@@ -187,6 +200,15 @@ class FakeCoreClient implements CoreClient {
   /// Whether [filesList] throws instead of answering.
   final bool failOnFilesList;
 
+  /// What [fileByUuid] answers (UC-13).
+  final CoreJsonResponse fileByUuidResult;
+
+  /// Whether [fileByUuid] throws instead of answering.
+  final bool failOnFileByUuid;
+
+  /// What [fileByUuid] was called with, in order.
+  final List<({String uuid, String token})> fileByUuidCalls = [];
+
   /// What [filesList] was called with, in order.
   final List<({String filters, String token})> filesListCalls = [];
 
@@ -288,6 +310,15 @@ class FakeCoreClient implements CoreClient {
     }
     filesListCalls.add((filters: jsonFilters, token: token));
     return filesListResult;
+  }
+
+  @override
+  Future<CoreJsonResponse> fileByUuid(String uuid, String token) async {
+    if (failOnFileByUuid) {
+      throw const CoreCallException('file get call failed');
+    }
+    fileByUuidCalls.add((uuid: uuid, token: token));
+    return fileByUuidResult;
   }
 
   @override

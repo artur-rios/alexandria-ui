@@ -98,6 +98,14 @@ abstract interface class CoreClient {
   /// `{"type":"audio","state":"active"}`.
   Future<CoreJsonResponse> filesList(String jsonFilters, String token);
 
+  /// Reads one file by its UUID through `alexandria_file_get_by_uuid`
+  /// (FR-CT-05, UC-13).
+  ///
+  /// Answers the `FileView` body: the record a listing would show, plus
+  /// the type-specific metadata and the values the core extracted from the
+  /// file — none of which a listing carries.
+  Future<CoreJsonResponse> fileByUuid(String uuid, String token);
+
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
 }
@@ -161,8 +169,7 @@ class FfiCoreClient implements CoreClient {
 
   @override
   Future<CoreJsonResponse> indexRunStatus(String runId, String token) async =>
-      await _isolate.call('indexRunStatus', [runId, token])
-          as CoreJsonResponse;
+      await _isolate.call('indexRunStatus', [runId, token]) as CoreJsonResponse;
 
   @override
   Future<CoreRunStart> indexRefreshStart(String token) async =>
@@ -176,6 +183,10 @@ class FfiCoreClient implements CoreClient {
   Future<CoreJsonResponse> filesList(String jsonFilters, String token) async =>
       await _isolate.call('filesList', [jsonFilters, token])
           as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> fileByUuid(String uuid, String token) async =>
+      await _isolate.call('fileByUuid', [uuid, token]) as CoreJsonResponse;
 
   @override
   Future<void> dispose() => _isolate.dispose();
