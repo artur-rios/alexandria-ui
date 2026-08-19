@@ -1,7 +1,9 @@
+import 'package:alexandria_desktop/core/settings/settings_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'failing_settings_store.dart';
 import 'fake_auth_gateway.dart';
 import 'login_harness.dart';
 
@@ -27,6 +29,7 @@ extension PumpShell on WidgetTester {
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
     Size surfaceSize = const Size(1280, 800),
+    SettingsStore? settings,
   }) async {
     view.devicePixelRatio = 1;
     view.physicalSize = surfaceSize;
@@ -37,10 +40,22 @@ extension PumpShell on WidgetTester {
       locale: locale,
       themeMode: themeMode,
       surfaceSize: surfaceSize,
+      settings: settings,
     );
 
     await signIn();
 
     return container;
   }
+
+  /// Signs in and lands on the shell over a settings store that refuses every
+  /// write (UC-39 AF-02).
+  Future<ProviderContainer> pumpShellWithFailingSettings({
+    Locale? locale,
+    ThemeMode themeMode = ThemeMode.light,
+  }) => pumpShell(
+    locale: locale,
+    themeMode: themeMode,
+    settings: FailingSettingsStore(themeMode: themeMode, locale: locale),
+  );
 }
