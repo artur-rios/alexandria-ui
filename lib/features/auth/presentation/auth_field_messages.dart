@@ -49,6 +49,8 @@ String? authFieldMessage(
   (AuthField.email, LoginFieldError.mismatched) ||
   (AuthField.password, LoginFieldError.malformed) ||
   (AuthField.password, LoginFieldError.mismatched) ||
-  (AuthField.passwordConfirmation, LoginFieldError.malformed) =>
-    l10n.failureUnexpected,
+  (
+    AuthField.passwordConfirmation,
+    LoginFieldError.malformed,
+  ) => l10n.failureUnexpected,
 };

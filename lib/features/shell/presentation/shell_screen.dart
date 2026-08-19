@@ -69,10 +69,7 @@ class ShellContentArea extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            destination.label(l10n),
-            style: theme.textTheme.headlineSmall,
-          ),
+          Text(destination.label(l10n), style: theme.textTheme.headlineSmall),
           const SizedBox(height: AppSpacing.lg),
           Expanded(
             child: Center(

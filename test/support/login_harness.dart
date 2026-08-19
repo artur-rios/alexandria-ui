@@ -1,5 +1,6 @@
 import 'package:alexandria_desktop/app.dart';
 import 'package:alexandria_desktop/core/di/providers.dart';
+import 'package:alexandria_desktop/core/settings/settings_store.dart';
 import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,7 @@ extension PumpLogin on WidgetTester {
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
     Size surfaceSize = const Size(1280, 800),
+    SettingsStore? settings,
   }) async {
     await binding.setSurfaceSize(surfaceSize);
     addTearDown(() => binding.setSurfaceSize(null));
@@ -50,10 +52,12 @@ extension PumpLogin on WidgetTester {
     final container = ProviderContainer(
       overrides: [
         ...fakeCoreOverrides(
-          settings: InMemorySettingsStore(
-            themeMode: themeMode,
-            locale: locale,
-          ),
+          // A caller-supplied store replaces the default rather than being
+          // merged into it: that is how a test asks for one that cannot be
+          // written (UC-39 AF-02).
+          settings:
+              settings ??
+              InMemorySettingsStore(themeMode: themeMode, locale: locale),
         ),
         authGatewayProvider.overrideWithValue(gateway ?? FakeAuthGateway()),
       ],

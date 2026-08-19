@@ -7,6 +7,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import '../application/sign_up_state.dart';
+import '../../shell/presentation/preferences_dialog.dart';
 import 'auth_field_messages.dart';
 import 'auth_notice.dart';
 import 'core_rejection_messages.dart';
@@ -155,6 +156,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         )
                       : Text(l10n.signUpSubmit),
                 ),
+
+                // UC-39 main flow step 1: preferences are reachable with or
+                // without a session, and a first launch lands here before it
+                // lands anywhere else — which makes this the first chance the
+                // owner has to pick a language they can read.
+                const SizedBox(height: AppSpacing.sm),
+                const Align(
+                  alignment: Alignment.centerRight,
+                  child: PreferencesButton(),
+                ),
               ],
             ),
           ),
@@ -200,8 +211,7 @@ class _SignUpProblemNotice extends ConsumerWidget {
           if (problem is AccountExistsProblem) ...[
             const SizedBox(height: AppSpacing.sm),
             OutlinedButton.icon(
-              onPressed: () =>
-                  ref.read(authEntryProvider.notifier).goToLogin(),
+              onPressed: () => ref.read(authEntryProvider.notifier).goToLogin(),
               icon: const Icon(Icons.login),
               label: Text(l10n.signUpGoToLogin),
             ),

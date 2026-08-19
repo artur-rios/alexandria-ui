@@ -94,5 +94,25 @@
 
   "destinationImages": "Imagens",
 
-  "destinationBookmarks": "Favoritos"
+  "destinationBookmarks": "Favoritos",
+
+  "preferencesTitle": "Preferências",
+
+  "preferencesOpen": "Abrir preferências",
+
+  "preferencesThemeLabel": "Tema",
+
+  "preferencesThemeSystem": "Acompanhar o sistema",
+
+  "preferencesThemeLight": "Claro",
+
+  "preferencesThemeDark": "Escuro",
+
+  "preferencesLanguageLabel": "Idioma",
+
+  "preferencesLanguageSystem": "Acompanhar o sistema",
+
+  "preferencesUnsaved": "Sua escolha foi aplicada, mas não pôde ser salva — ela não será lembrada na próxima vez que o Alexandria iniciar.",
+
+  "preferencesClose": "Concluído"
 }

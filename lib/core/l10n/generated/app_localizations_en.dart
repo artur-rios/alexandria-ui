@@ -239,4 +239,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get destinationBookmarks => 'Bookmarks';
+
+  @override
+  String get preferencesTitle => 'Preferences';
+
+  @override
+  String get preferencesOpen => 'Open preferences';
+
+  @override
+  String get preferencesThemeLabel => 'Theme';
+
+  @override
+  String get preferencesThemeSystem => 'Match the system';
+
+  @override
+  String get preferencesThemeLight => 'Light';
+
+  @override
+  String get preferencesThemeDark => 'Dark';
+
+  @override
+  String get preferencesLanguageLabel => 'Language';
+
+  @override
+  String get preferencesLanguageSystem => 'Match the system';
+
+  @override
+  String get preferencesUnsaved =>
+      'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.';
+
+  @override
+  String get preferencesClose => 'Done';
 }
