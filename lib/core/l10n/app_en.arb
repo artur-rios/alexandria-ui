@@ -1,526 +1,497 @@
 {
   "@@locale": "en",
-
   "appTitle": "Alexandria",
   "@appTitle": {
     "description": "The application name, shown in the window title bar."
   },
-
   "retry": "Try again",
   "@retry": {
     "description": "The action on every failure state that can be retried."
   },
-
   "coreUnavailableTitle": "Alexandria's core is not available",
   "@coreUnavailableTitle": {
     "description": "Heading of the core-unavailable state (UC-38 AF-04). The catalog is not reachable and no catalog call is attempted from here."
   },
-
   "loginTitle": "Sign in to Alexandria",
   "@loginTitle": {
     "description": "Heading of the login screen (UC-02). Presented whenever there is no active session."
   },
-
   "loginEmailLabel": "E-mail",
   "@loginEmailLabel": {
     "description": "Label of the login form's e-mail field."
   },
-
   "loginPasswordLabel": "Password",
   "@loginPasswordLabel": {
     "description": "Label of the login form's password field."
   },
-
   "loginSubmit": "Sign in",
   "@loginSubmit": {
     "description": "The login form's primary action."
   },
-
   "loginEmailMissing": "Enter your e-mail address.",
   "@loginEmailMissing": {
     "description": "UC-02 AF-01: the e-mail field was left empty. The core is not called."
   },
-
   "loginEmailMalformed": "That does not look like an e-mail address.",
   "@loginEmailMalformed": {
     "description": "UC-02 AF-01: the e-mail field does not hold an address. The core is not called."
   },
-
   "loginPasswordMissing": "Enter your password.",
   "@loginPasswordMissing": {
     "description": "UC-02 AF-01: the password field was left empty. The core is not called."
   },
-
   "loginRejected": "That e-mail and password do not match an account.",
   "@loginRejected": {
     "description": "UC-02 AF-02: the core rejected the credentials. Deliberately does not say which of the two was wrong, and does not reveal whether the address is registered."
   },
-
   "loginNoAccount": "No account has been set up on this computer yet.",
   "@loginNoAccount": {
     "description": "UC-02 AF-03: the core holds no credentials, so the owner is sent to sign-up (UC-01) by the action beside this message."
   },
-
   "signUpTitle": "Create your Alexandria account",
   "@signUpTitle": {
     "description": "Heading of the sign-up screen (UC-01). Presented on first launch, when the core holds no account."
   },
-
   "signUpIntro": "This is the only account. Its password cannot be recovered, so choose one you will not lose.",
   "@signUpIntro": {
     "description": "UC-01: explains the stakes before the owner chooses. The core owns no mail transport, so there is no reset to fall back on."
   },
-
   "signUpPasswordConfirmationLabel": "Repeat password",
   "@signUpPasswordConfirmationLabel": {
     "description": "Label of the sign-up form's second password field."
   },
-
   "signUpSubmit": "Create account",
   "@signUpSubmit": {
     "description": "The sign-up form's primary action."
   },
-
   "signUpPasswordConfirmationMissing": "Repeat your password.",
   "@signUpPasswordConfirmationMissing": {
     "description": "UC-01 AF-02: the second password field was left empty. The core is not called."
   },
-
   "signUpPasswordMismatch": "The two passwords do not match.",
   "@signUpPasswordMismatch": {
     "description": "UC-01 AF-02: the two entries differ. The core is not called."
   },
-
   "signUpRejected": "Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.",
   "@signUpRejected": {
     "description": "UC-01 AF-03: the core rejected the credentials. The core owns the password policy and does not send its reason across the boundary, so this names the rules it enforces without restating them as front-end validation."
   },
-
   "signUpAccountExists": "An account already exists on this computer. Sign in instead.",
   "@signUpAccountExists": {
     "description": "UC-01 AF-04: the core already holds an account, so registration is refused and the owner is sent to the login screen."
   },
-
   "signUpGoToLogin": "Go to sign in",
   "@signUpGoToLogin": {
     "description": "UC-01 AF-04: the action that leaves sign-up for the login screen."
   },
-
   "loginGoToSignUp": "Create an account",
   "@loginGoToSignUp": {
     "description": "UC-02 AF-03: the action that leaves login for the sign-up screen, offered when the core holds no account."
   },
-
   "loginSessionEndedTitle": "You were signed out",
   "@loginSessionEndedTitle": {
     "description": "UC-02 AF-04: heading shown on the login screen when a session was discarded because the core rejected a call, rather than because the owner signed out."
   },
-
   "catalogLockedTitle": "Confirm your e-mail address",
   "@catalogLockedTitle": {
     "description": "FR-AU-12 / BR-25: heading of the state that stands in place of the catalog while the account's e-mail is unconfirmed. The prompt itself is UC-40."
   },
-
   "catalogLockedBody": "Alexandria stays locked until the address {email} is confirmed.",
   "@catalogLockedBody": {
     "description": "FR-AU-12: explains why the catalog is not reachable. The address is named so the owner knows where to look.",
     "placeholders": {
-      "email": { "type": "String", "example": "owner@example.com" }
+      "email": {
+        "type": "String",
+        "example": "owner@example.com"
+      }
     }
   },
-
   "failureCoreLibraryNotLoaded": "The Alexandria core could not be loaded from {path}.",
   "@failureCoreLibraryNotLoaded": {
     "description": "Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.",
     "placeholders": {
-      "path": { "type": "String", "example": "C:\\Program Files\\Alexandria\\alexandria_ffi.dll" }
+      "path": {
+        "type": "String",
+        "example": "C:\\Program Files\\Alexandria\\alexandria_ffi.dll"
+      }
     }
   },
-
   "failureApplicationDirectoryUnavailable": "The application folder {path} could not be created.",
   "@failureApplicationDirectoryUnavailable": {
     "description": "Startup step 2 failed: the application-support directory could not be resolved or created.",
     "placeholders": {
-      "path": { "type": "String", "example": "C:\\Users\\me\\AppData\\Roaming\\Alexandria" }
+      "path": {
+        "type": "String",
+        "example": "C:\\Users\\me\\AppData\\Roaming\\Alexandria"
+      }
     }
   },
-
   "failureCoreInitializationFailed": "The Alexandria core could not open the catalog.",
   "@failureCoreInitializationFailed": {
     "description": "Startup step 3 failed: alexandria_index_init returned a non-success code."
   },
-
   "failureCoreUnhealthy": "The Alexandria core reported that it is not healthy.",
   "@failureCoreUnhealthy": {
     "description": "Startup step 4 failed: the core's health status is not the success code."
   },
-
   "failureCoreVersionUnsupported": "This version of Alexandria needs a core matching {required}, but found {found}.",
   "@failureCoreVersionUnsupported": {
     "description": "Startup step 4 failed: the core's version is outside the supported range. Both versions are stated.",
     "placeholders": {
-      "found": { "type": "String", "example": "0.4.0" },
-      "required": { "type": "String", "example": ">=0.1.0 <0.2.0" }
+      "found": {
+        "type": "String",
+        "example": "0.4.0"
+      },
+      "required": {
+        "type": "String",
+        "example": ">=0.1.0 <0.2.0"
+      }
     }
   },
-
   "failurePreferencesUnreadable": "Your preferences could not be read, so the system theme and language are being used.",
   "@failurePreferencesUnreadable": {
     "description": "Startup step 5 fell back. Reported, not fatal."
   },
-
   "failureInvalidInput": "Alexandria rejected that as invalid.",
   "@failureInvalidInput": {
     "description": "The core rejected the input. Its verdict is final even when local validation passed."
   },
-
   "failureUnauthorized": "Your session has ended. Please sign in again.",
   "@failureUnauthorized": {
     "description": "The session is absent, expired, or rejected."
   },
-
   "failureNotInitialized": "Alexandria is not ready yet. Please restart the application.",
   "@failureNotInitialized": {
     "description": "A call was made before the core was initialized — a fault in the startup sequence rather than something the owner did."
   },
-
   "failureNotFound": "That item no longer exists.",
   "@failureNotFound": {
     "description": "The record does not exist, or has passed the retention window that made it reachable."
   },
-
   "failureInvalidState": "That cannot be done to this item right now.",
   "@failureInvalidState": {
     "description": "The record exists but is in the wrong state for the operation."
   },
-
   "failureDisk": "The file could not be read or written on disk. Nothing was changed.",
   "@failureDisk": {
     "description": "A filesystem operation failed. The core leaves the catalog untouched when this happens."
   },
-
   "failureIntegrity": "The file on disk no longer matches what Alexandria recorded.",
   "@failureIntegrity": {
     "description": "The on-disk file and the catalog record have diverged."
   },
-
   "failureConfiguration": "Alexandria's configuration could not be read.",
   "@failureConfiguration": {
     "description": "The core's own configuration is missing or unusable."
   },
-
   "failureConflict": "That already exists in Alexandria.",
   "@failureConflict": {
     "description": "The operation would create something that already exists. Nothing the owner typed was wrong."
   },
-
   "failureRateLimited": "Too many attempts. Wait a moment and try again.",
   "@failureRateLimited": {
     "description": "The core refused because the caller is asking too often. Nothing the owner typed was wrong; the remedy is to wait."
   },
-
   "failureServiceUnavailable": "Alexandria could not reach a service it needs, so that step did not happen.",
   "@failureServiceUnavailable": {
     "description": "The core could not reach a dependency — outbound mail being the one that exists today. The catalog is unaffected."
   },
-
   "rejectionPasswordTooShort": "Use at least {min} characters.",
   "@rejectionPasswordTooShort": {
     "description": "Core rejection password_too_short. The bound comes from the core, which owns the policy.",
-    "placeholders": { "min": { "type": "String", "example": "12" } }
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "12"
+      }
+    }
   },
-
   "rejectionPasswordTooLong": "Use at most {max} characters.",
   "@rejectionPasswordTooLong": {
     "description": "Core rejection password_too_long.",
-    "placeholders": { "max": { "type": "String", "example": "128" } }
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "128"
+      }
+    }
   },
-
   "rejectionPasswordWhitespace": "A password cannot be only spaces.",
   "@rejectionPasswordWhitespace": {
     "description": "Core rejection password_whitespace."
   },
-
   "rejectionPasswordRepeatedCharacter": "A password cannot be one character repeated.",
   "@rejectionPasswordRepeatedCharacter": {
     "description": "Core rejection password_repeated_character."
   },
-
   "rejectionPasswordTooCommon": "That password is too common. Choose something less predictable.",
   "@rejectionPasswordTooCommon": {
     "description": "Core rejection password_too_common."
   },
-
   "rejectionPasswordContainsEmail": "A password cannot contain your e-mail address.",
   "@rejectionPasswordContainsEmail": {
     "description": "Core rejection password_contains_email, which covers both being the address and containing it."
   },
-
   "rejectionEmailUntrimmed": "Remove the spaces around your e-mail address.",
   "@rejectionEmailUntrimmed": {
     "description": "Core rejection email_untrimmed."
   },
-
   "catalogLockedUndeliverable": "The confirmation message could not be sent, so it is not on its way. Alexandria cannot deliver e-mail yet.",
   "@catalogLockedUndeliverable": {
     "description": "UC-01 AF-06: the account was created and the session is open, but the core reported that the confirmation message was not sent. Stated plainly so the owner does not wait for a message that is never coming."
   },
-
   "failureUnexpected": "Something went wrong in Alexandria.",
   "@failureUnexpected": {
     "description": "A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number."
   },
-
   "cancel": "Cancel",
   "@cancel": {
     "description": "The declining action on every confirmation modal (UC-38 AF-05). Cancelling changes nothing."
   },
-
   "loading": "Loading",
   "@loading": {
     "description": "Accessible label of the loading state every perceptible operation shows (FR-UX-08)."
   },
-
   "shellAreaPending": "Nothing to show here yet.",
   "@shellAreaPending": {
     "description": "Placeholder in the shell's content area (UC-38). Each destination's listing arrives with its own use case; until then the area states that it is empty rather than rendering a spinner that never resolves."
   },
-
   "playbackBarLabel": "Playback",
   "@playbackBarLabel": {
     "description": "Accessible label of the persistent playback bar (FR-UX-01)."
   },
-
   "playbackNothingPlaying": "Nothing is playing",
   "@playbackNothingPlaying": {
     "description": "The playback bar's idle state (FR-UX-01). The bar is present from the first frame, so it says what it is showing rather than sitting blank."
   },
-
   "destinationHome": "Home",
   "@destinationHome": {
     "description": "Navigation panel entry for the dashboard the application opens on (UC-14)."
   },
-
   "destinationMusic": "Music",
   "@destinationMusic": {
     "description": "Navigation panel entry for audio files (FR-CT-01)."
   },
-
   "destinationMovies": "Movies",
   "@destinationMovies": {
     "description": "Navigation panel entry for standalone films (FR-CT-01)."
   },
-
   "destinationSeries": "Series",
   "@destinationSeries": {
     "description": "Navigation panel entry for episodic video (FR-CT-01)."
   },
-
   "destinationBooks": "Books",
   "@destinationBooks": {
     "description": "Navigation panel entry for books and e-books (FR-CT-01)."
   },
-
   "destinationComicBooks": "Comic books",
   "@destinationComicBooks": {
     "description": "Navigation panel entry for comic book archives (FR-CT-01)."
   },
-
   "destinationNotes": "Notes",
   "@destinationNotes": {
     "description": "Navigation panel entry for notes, Markdown, and plain text files (FR-CT-01)."
   },
-
   "destinationPages": "Pages",
   "@destinationPages": {
     "description": "Navigation panel entry for saved HTML pages (FR-CT-01)."
   },
-
   "destinationImages": "Images",
   "@destinationImages": {
     "description": "Navigation panel entry for still images (FR-CT-01)."
   },
-
   "destinationBookmarks": "Bookmarks",
   "@destinationBookmarks": {
     "description": "Navigation panel entry for saved links, the one type holding no file on disk (FR-CT-01)."
   },
-
   "preferencesTitle": "Preferences",
   "@preferencesTitle": {
     "description": "Title of the preferences dialog (UC-39). Reachable with or without a session."
   },
-
   "preferencesOpen": "Open preferences",
   "@preferencesOpen": {
     "description": "Accessible label and tooltip of the control that opens the preferences dialog."
   },
-
   "preferencesThemeLabel": "Theme",
   "@preferencesThemeLabel": {
     "description": "Heading of the theme group in preferences (FR-UX-04)."
   },
-
   "preferencesThemeSystem": "Match the system",
   "@preferencesThemeSystem": {
     "description": "Theme option: follow the operating system's light or dark setting, and follow it when it changes (UC-39 AF-01)."
   },
-
   "preferencesThemeLight": "Light",
   "@preferencesThemeLight": {
     "description": "Theme option: always the light theme."
   },
-
   "preferencesThemeDark": "Dark",
   "@preferencesThemeDark": {
     "description": "Theme option: always the dark theme."
   },
-
   "preferencesLanguageLabel": "Language",
   "@preferencesLanguageLabel": {
     "description": "Heading of the language group in preferences (FR-UX-05)."
   },
-
   "preferencesLanguageSystem": "Match the system",
   "@preferencesLanguageSystem": {
     "description": "Language option: follow the operating system's language when it is one of the two supported, and English otherwise (UC-39 AF-03)."
   },
-
   "preferencesUnsaved": "Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.",
   "@preferencesUnsaved": {
     "description": "UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered."
   },
-
   "preferencesClose": "Done",
   "@preferencesClose": {
     "description": "The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made."
   },
-
   "changeCredentialsOpen": "Change your e-mail and password",
   "@changeCredentialsOpen": {
     "description": "The action in preferences that opens the credential-change form (UC-04 main flow step 1). Offered only while a session is active."
   },
-
   "changeCredentialsTitle": "Change credentials",
   "@changeCredentialsTitle": {
     "description": "Title of the credential-change dialog (UC-04)."
   },
-
   "changeCredentialsIntro": "Both are replaced together. You stay signed in.",
   "@changeCredentialsIntro": {
     "description": "Explains that the e-mail and password change as one, and that the session survives the change (UC-04 postconditions)."
   },
-
   "changeCredentialsEmailLabel": "New e-mail",
   "@changeCredentialsEmailLabel": {
     "description": "Label of the new e-mail field."
   },
-
   "changeCredentialsPasswordLabel": "New password",
   "@changeCredentialsPasswordLabel": {
     "description": "Label of the new password field."
   },
-
   "changeCredentialsConfirmationLabel": "Repeat the new password",
   "@changeCredentialsConfirmationLabel": {
     "description": "Label of the repeated-password field (FR-AU-10 requires it entered twice)."
   },
-
   "changeCredentialsSubmit": "Change",
   "@changeCredentialsSubmit": {
     "description": "The form's primary action."
   },
-
   "changeCredentialsDone": "Your e-mail and password have been changed.",
   "@changeCredentialsDone": {
     "description": "UC-04 main flow step 6: the core stored the new hash and the change is confirmed."
   },
-
   "changeCredentialsRejected": "The change was refused, and your e-mail and password are unchanged.",
   "@changeCredentialsRejected": {
     "description": "UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched."
   },
-
   "librarySourcesOpen": "Library folders",
   "@librarySourcesOpen": {
-      "description": "The action in preferences that opens the library-folders screen (UC-05)."
+    "description": "The action in preferences that opens the library-folders screen (UC-05)."
   },
-
   "librarySourcesTitle": "Library folders",
   "@librarySourcesTitle": {
-      "description": "Title of the library-folders screen (UC-05)."
+    "description": "Title of the library-folders screen (UC-05)."
   },
-
   "librarySourcesEmptyTitle": "No library folders yet",
   "@librarySourcesEmptyTitle": {
-      "description": "Heading of the first-run guidance shown whenever no folder is registered (FR-LB-11, UC-05 main flow step 1)."
+    "description": "Heading of the first-run guidance shown whenever no folder is registered (FR-LB-11, UC-05 main flow step 1)."
   },
-
   "librarySourcesEmptyBody": "Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.",
   "@librarySourcesEmptyBody": {
-      "description": "Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06)."
+    "description": "Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06)."
   },
-
   "librarySourcesAdd": "Add a folder",
   "@librarySourcesAdd": {
-      "description": "The action that opens the platform's native folder picker (FR-LB-01)."
+    "description": "The action that opens the platform's native folder picker (FR-LB-01)."
   },
-
   "librarySourcesMissing": "There is no folder at {path}. Nothing was added.",
   "@librarySourcesMissing": {
-      "description": "UC-05 AF-02: the chosen path does not exist.",
-      "placeholders": {
-          "path": {
-              "type": "String"
-          }
+    "description": "UC-05 AF-02: the chosen path does not exist.",
+    "placeholders": {
+      "path": {
+        "type": "String"
       }
+    }
   },
-
   "librarySourcesUnreadable": "The folder at {path} cannot be read. Nothing was added.",
   "@librarySourcesUnreadable": {
-      "description": "UC-05 AF-02: the folder exists but its contents cannot be listed.",
-      "placeholders": {
-          "path": {
-              "type": "String"
-          }
+    "description": "UC-05 AF-02: the folder exists but its contents cannot be listed.",
+    "placeholders": {
+      "path": {
+        "type": "String"
       }
+    }
   },
-
   "librarySourcesAlreadyRegistered": "That folder is already in your library.",
   "@librarySourcesAlreadyRegistered": {
-      "description": "UC-05 AF-03: the chosen folder is already registered. The existing entry is highlighted in the list."
+    "description": "UC-05 AF-03: the chosen folder is already registered. The existing entry is highlighted in the list."
   },
-
   "librarySourcesOverlapTitle": "These folders overlap",
   "@librarySourcesOverlapTitle": {
-      "description": "Title of the confirmation shown when the chosen folder contains, or sits inside, one already registered (UC-05 AF-04)."
+    "description": "Title of the confirmation shown when the chosen folder contains, or sits inside, one already registered (UC-05 AF-04)."
   },
-
   "librarySourcesOverlapBody": "{path} overlaps {existing}, which is already in your library. Files inside both will be cataloged once for each folder.",
   "@librarySourcesOverlapBody": {
-      "description": "Body of the overlap confirmation. Names both folders and states the consequence the owner is agreeing to (UC-05 AF-04).",
-      "placeholders": {
-          "path": {
-              "type": "String"
-          },
-          "existing": {
-              "type": "String"
-          }
+    "description": "Body of the overlap confirmation. Names both folders and states the consequence the owner is agreeing to (UC-05 AF-04).",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      },
+      "existing": {
+        "type": "String"
       }
+    }
   },
-
   "librarySourcesOverlapConfirm": "Add it anyway",
   "@librarySourcesOverlapConfirm": {
-      "description": "The confirming action on the overlap warning (UC-05 AF-04)."
+    "description": "The confirming action on the overlap warning (UC-05 AF-04)."
   },
-
-  "librarySourcesIndexLater": "Indexing arrives with the next use case.",
-  "@librarySourcesIndexLater": {
-      "description": "Placeholder beside each registered folder. UC-05 lists the folder and offers indexing; the index action itself is UC-06."
-  },
-
   "dismiss": "Dismiss",
   "@dismiss": {
     "description": "Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action."
+  },
+  "librarySourcesIndex": "Index",
+  "@librarySourcesIndex": {
+    "description": "The action that starts a scan of a registered folder (UC-06 main flow step 1)."
+  },
+  "librarySourcesIndexing": "Scanning…",
+  "@librarySourcesIndexing": {
+    "description": "Shown while a run is in flight. The scan belongs to the core, so the rest of the application stays usable (FR-LB-07)."
+  },
+  "librarySourcesRunComplete": "Scanned {scanned} files, cataloged {indexed}, skipped {skipped}.",
+  "@librarySourcesRunComplete": {
+    "description": "UC-06 main flow step 5: a finished run's tally. These are the core's own counts for an index run.",
+    "placeholders": {
+      "scanned": {
+        "type": "int"
+      },
+      "indexed": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "librarySourcesRunFailedCount": "{failed} files could not be read.",
+  "@librarySourcesRunFailedCount": {
+    "description": "Appended to a run's outcome when the core reports files it failed on.",
+    "placeholders": {
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "librarySourcesRunFailed": "The scan did not finish.",
+  "@librarySourcesRunFailed": {
+    "description": "UC-06: the core reports the run as failed."
+  },
+  "librarySourcesRunInterrupted": "The scan did not finish, because Alexandria was closed while it was running.",
+  "@librarySourcesRunInterrupted": {
+    "description": "UC-06 AF-05: the run was interrupted. Its outcome is read at the next launch rather than lost."
+  },
+  "librarySourcesRunRefused": "A scan of this folder is already running.",
+  "@librarySourcesRunRefused": {
+    "description": "UC-06 AF-01: a second run is refused while one is in flight (FR-LB-09)."
+  },
+  "librarySourcesStartFailed": "This folder could not be scanned.",
+  "@librarySourcesStartFailed": {
+    "description": "UC-06 AF-02 and AF-03: the core refused to start the run. The reason from the core follows."
   }
 }

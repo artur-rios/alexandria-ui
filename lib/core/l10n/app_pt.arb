@@ -1,47 +1,36 @@
 {
   "@@locale": "pt",
-
   "appTitle": "Alexandria",
   "retry": "Tentar novamente",
-
   "coreUnavailableTitle": "O núcleo do Alexandria não está disponível",
-
   "loginTitle": "Entrar no Alexandria",
   "loginEmailLabel": "E-mail",
   "loginPasswordLabel": "Senha",
   "loginSubmit": "Entrar",
-
   "loginEmailMissing": "Informe seu endereço de e-mail.",
   "loginEmailMalformed": "Isso não parece um endereço de e-mail.",
   "loginPasswordMissing": "Informe sua senha.",
-
   "loginRejected": "Esse e-mail e essa senha não correspondem a uma conta.",
   "loginNoAccount": "Ainda não há uma conta configurada neste computador.",
   "signUpTitle": "Crie sua conta do Alexandria",
   "signUpIntro": "Esta é a única conta. A senha dela não pode ser recuperada, então escolha uma que você não vá perder.",
   "signUpPasswordConfirmationLabel": "Repita a senha",
   "signUpSubmit": "Criar conta",
-
   "signUpPasswordConfirmationMissing": "Repita sua senha.",
   "signUpPasswordMismatch": "As duas senhas não coincidem.",
-
   "signUpRejected": "O Alexandria não aceitou essas credenciais. Tente uma senha mais longa e menos previsível, que não seja seu endereço de e-mail.",
   "signUpAccountExists": "Já existe uma conta neste computador. Entre com ela.",
   "signUpGoToLogin": "Ir para o login",
-
   "loginGoToSignUp": "Criar uma conta",
   "loginSessionEndedTitle": "Sua sessão foi encerrada",
-
   "catalogLockedTitle": "Confirme seu endereço de e-mail",
   "catalogLockedBody": "O Alexandria permanece bloqueado até que o endereço {email} seja confirmado.",
-
   "failureCoreLibraryNotLoaded": "Não foi possível carregar o núcleo do Alexandria a partir de {path}.",
   "failureApplicationDirectoryUnavailable": "Não foi possível criar a pasta do aplicativo {path}.",
   "failureCoreInitializationFailed": "O núcleo do Alexandria não conseguiu abrir o catálogo.",
   "failureCoreUnhealthy": "O núcleo do Alexandria informou que não está saudável.",
   "failureCoreVersionUnsupported": "Esta versão do Alexandria precisa de um núcleo compatível com {required}, mas encontrou {found}.",
   "failurePreferencesUnreadable": "Não foi possível ler suas preferências, então o tema e o idioma do sistema estão sendo usados.",
-
   "failureInvalidInput": "O Alexandria recusou esse valor como inválido.",
   "failureUnauthorized": "Sua sessão terminou. Entre novamente.",
   "failureNotInitialized": "O Alexandria ainda não está pronto. Reinicie o aplicativo.",
@@ -53,7 +42,6 @@
   "failureConflict": "Isso já existe no Alexandria.",
   "failureRateLimited": "Tentativas demais. Espere um momento e tente de novo.",
   "failureServiceUnavailable": "O Alexandria não conseguiu acessar um serviço necessário, então essa etapa não aconteceu.",
-
   "rejectionPasswordTooShort": "Use pelo menos {min} caracteres.",
   "rejectionPasswordTooLong": "Use no máximo {max} caracteres.",
   "rejectionPasswordWhitespace": "A senha não pode ser só espaços.",
@@ -61,102 +49,60 @@
   "rejectionPasswordTooCommon": "Essa senha é comum demais. Escolha algo menos previsível.",
   "rejectionPasswordContainsEmail": "A senha não pode conter seu endereço de e-mail.",
   "rejectionEmailUntrimmed": "Remova os espaços ao redor do seu endereço de e-mail.",
-
   "catalogLockedUndeliverable": "Não foi possível enviar a mensagem de confirmação, então ela não está a caminho. O Alexandria ainda não consegue enviar e-mails.",
-
   "failureUnexpected": "Algo deu errado no Alexandria.",
-
   "cancel": "Cancelar",
-
   "loading": "Carregando",
-
   "shellAreaPending": "Nada para mostrar aqui ainda.",
-
   "playbackBarLabel": "Reprodução",
-
   "playbackNothingPlaying": "Nada em reprodução",
-
   "destinationHome": "Início",
-
   "destinationMusic": "Músicas",
-
   "destinationMovies": "Filmes",
-
   "destinationSeries": "Séries",
-
   "destinationBooks": "Livros",
-
   "destinationComicBooks": "Quadrinhos",
-
   "destinationNotes": "Notas",
-
   "destinationPages": "Páginas",
-
   "destinationImages": "Imagens",
-
   "destinationBookmarks": "Favoritos",
-
   "preferencesTitle": "Preferências",
-
   "preferencesOpen": "Abrir preferências",
-
   "preferencesThemeLabel": "Tema",
-
   "preferencesThemeSystem": "Acompanhar o sistema",
-
   "preferencesThemeLight": "Claro",
-
   "preferencesThemeDark": "Escuro",
-
   "preferencesLanguageLabel": "Idioma",
-
   "preferencesLanguageSystem": "Acompanhar o sistema",
-
   "preferencesUnsaved": "Sua escolha foi aplicada, mas não pôde ser salva — ela não será lembrada na próxima vez que o Alexandria iniciar.",
-
   "preferencesClose": "Concluído",
-
   "changeCredentialsOpen": "Alterar seu e-mail e senha",
-
   "changeCredentialsTitle": "Alterar credenciais",
-
   "changeCredentialsIntro": "Os dois são substituídos juntos. Você continua conectado.",
-
   "changeCredentialsEmailLabel": "Novo e-mail",
-
   "changeCredentialsPasswordLabel": "Nova senha",
-
   "changeCredentialsConfirmationLabel": "Repita a nova senha",
-
   "changeCredentialsSubmit": "Alterar",
-
   "changeCredentialsDone": "Seu e-mail e senha foram alterados.",
-
   "changeCredentialsRejected": "A alteração foi recusada, e seu e-mail e senha continuam os mesmos.",
-
   "librarySourcesOpen": "Pastas da biblioteca",
-
   "librarySourcesTitle": "Pastas da biblioteca",
-
   "librarySourcesEmptyTitle": "Nenhuma pasta da biblioteca ainda",
-
-  "librarySourcesEmptyBody": "Adicione uma pasta do seu disco e o Alexandria vai catalogar o que houver dentro dela. Nada \u00e9 movido, copiado ou alterado.",
-
+  "librarySourcesEmptyBody": "Adicione uma pasta do seu disco e o Alexandria vai catalogar o que houver dentro dela. Nada é movido, copiado ou alterado.",
   "librarySourcesAdd": "Adicionar uma pasta",
-
-  "librarySourcesMissing": "N\u00e3o h\u00e1 nenhuma pasta em {path}. Nada foi adicionado.",
-
-  "librarySourcesUnreadable": "A pasta em {path} n\u00e3o pode ser lida. Nada foi adicionado.",
-
-  "librarySourcesAlreadyRegistered": "Essa pasta j\u00e1 est\u00e1 na sua biblioteca.",
-
-  "librarySourcesOverlapTitle": "Estas pastas se sobrep\u00f5em",
-
-  "librarySourcesOverlapBody": "{path} se sobrep\u00f5e a {existing}, que j\u00e1 est\u00e1 na sua biblioteca. Os arquivos dentro das duas ser\u00e3o catalogados uma vez para cada pasta.",
-
+  "librarySourcesMissing": "Não há nenhuma pasta em {path}. Nada foi adicionado.",
+  "librarySourcesUnreadable": "A pasta em {path} não pode ser lida. Nada foi adicionado.",
+  "librarySourcesAlreadyRegistered": "Essa pasta já está na sua biblioteca.",
+  "librarySourcesOverlapTitle": "Estas pastas se sobrepõem",
+  "librarySourcesOverlapBody": "{path} se sobrepõe a {existing}, que já está na sua biblioteca. Os arquivos dentro das duas serão catalogados uma vez para cada pasta.",
   "librarySourcesOverlapConfirm": "Adicionar mesmo assim",
-
-  "librarySourcesIndexLater": "A indexa\u00e7\u00e3o chega com o pr\u00f3ximo caso de uso.",
-
-  "dismiss": "Dispensar"
+  "dismiss": "Dispensar",
+  "librarySourcesIndex": "Indexar",
+  "librarySourcesIndexing": "Analisando…",
+  "librarySourcesRunComplete": "{scanned} arquivos analisados, {indexed} catalogados, {skipped} ignorados.",
+  "librarySourcesRunFailedCount": "{failed} arquivos não puderam ser lidos.",
+  "librarySourcesRunFailed": "A análise não foi concluída.",
+  "librarySourcesRunInterrupted": "A análise não foi concluída, porque o Alexandria foi fechado enquanto ela estava em andamento.",
+  "librarySourcesRunRefused": "Já existe uma análise desta pasta em andamento.",
+  "librarySourcesStartFailed": "Não foi possível analisar esta pasta."
 }

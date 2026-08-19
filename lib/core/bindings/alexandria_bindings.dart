@@ -1816,6 +1816,18 @@ const int READING_LIST_ERR_UNAUTHORIZED = 2;
 
 const int READING_LIST_OK = 0;
 
+const int RUN_ERR_INVALID_INPUT = 1;
+
+const int RUN_ERR_NOT_FOUND = 4;
+
+const int RUN_ERR_NOT_INITIALIZED = 3;
+
+const int RUN_ERR_OTHER = 9;
+
+const int RUN_ERR_UNAUTHORIZED = 2;
+
+const int RUN_OK = 0;
+
 /// Result of `alexandria_reading_list_create` (UC-26). On success `status`
 /// is `READING_LIST_OK` and `json` is a NUL-terminated JSON string of the
 /// `ReadingList` body — byte-for-byte the same shape HTTP returns from

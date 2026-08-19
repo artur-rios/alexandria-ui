@@ -27,7 +27,16 @@ enum CoreStatusFamily {
   readingList,
 
   /// `alexandria_auth_local_*` — see `AUTH_*`.
-  auth;
+  auth,
+
+  /// `alexandria_index_run_status_json` — see `RUN_*`.
+  ///
+  /// Its own family rather than [CoreStatusFamily.indexing]'s, on the header's
+  /// own instruction that the two "grow independently". They already differ
+  /// where it matters: `4` is `RUN_ERR_NOT_FOUND` here and `INDEX_ERR_OTHER`
+  /// there, so reading a run's status through the index family would report a
+  /// run that does not exist as an unexpected failure.
+  run;
 
   /// The success code for this family.
   ///
@@ -41,6 +50,7 @@ enum CoreStatusFamily {
     CoreStatusFamily.watchlist => WATCHLIST_OK,
     CoreStatusFamily.readingList => READING_LIST_OK,
     CoreStatusFamily.auth => AUTH_OK,
+    CoreStatusFamily.run => RUN_OK,
   };
 
   /// Whether [code] means the operation succeeded.

@@ -342,9 +342,36 @@ class AppLocalizationsPt extends AppLocalizations {
   String get librarySourcesOverlapConfirm => 'Adicionar mesmo assim';
 
   @override
-  String get librarySourcesIndexLater =>
-      'A indexação chega com o próximo caso de uso.';
+  String get dismiss => 'Dispensar';
 
   @override
-  String get dismiss => 'Dispensar';
+  String get librarySourcesIndex => 'Indexar';
+
+  @override
+  String get librarySourcesIndexing => 'Analisando…';
+
+  @override
+  String librarySourcesRunComplete(int scanned, int indexed, int skipped) {
+    return '$scanned arquivos analisados, $indexed catalogados, $skipped ignorados.';
+  }
+
+  @override
+  String librarySourcesRunFailedCount(int failed) {
+    return '$failed arquivos não puderam ser lidos.';
+  }
+
+  @override
+  String get librarySourcesRunFailed => 'A análise não foi concluída.';
+
+  @override
+  String get librarySourcesRunInterrupted =>
+      'A análise não foi concluída, porque o Alexandria foi fechado enquanto ela estava em andamento.';
+
+  @override
+  String get librarySourcesRunRefused =>
+      'Já existe uma análise desta pasta em andamento.';
+
+  @override
+  String get librarySourcesStartFailed =>
+      'Não foi possível analisar esta pasta.';
 }

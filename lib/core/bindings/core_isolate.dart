@@ -280,7 +280,54 @@ class CoreIsolate {
         }),
       ),
 
+      // The root and the session token in, a status and a run id out. The run
+      // id is a fixed-size array inside the struct rather than an allocation,
+      // so it is read straight off and there is nothing to free on the way
+      // back — only the two strings passed in, which the nesting handles
+      // (IR-09, NFR-13).
+      'indexStart' => withNativeString(
+        arguments.first! as String,
+        (root) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_index_start(root, token);
+          return (
+            status: result.status,
+            runId: _readRunId(result.run_id),
+          );
+        }),
+      ),
+
+      'indexRunStatus' => withNativeString(
+        arguments.first! as String,
+        (runId) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_index_run_status_json(
+            runId,
+            token,
+          );
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       _ => throw CoreCallException('unknown core operation "$operation"'),
     };
+  }
+
+  /// Reads the run id out of the fixed-size array the core filled.
+  ///
+  /// The array is 37 bytes — a 36-character UUID and its terminator — and is
+  /// part of the struct rather than an allocation, so it is copied out here
+  /// and never freed. It is empty on failure, which reads as an empty string
+  /// and is what the caller checks the status for.
+  static String _readRunId(Array<Char> runId) {
+    final bytes = <int>[];
+    for (var index = 0; index < 37; index++) {
+      final byte = runId[index];
+      if (byte == 0) break;
+      bytes.add(byte);
+    }
+
+    return String.fromCharCodes(bytes);
   }
 }
