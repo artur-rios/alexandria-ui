@@ -493,6 +493,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bookmarks'**
   String get destinationBookmarks;
+
+  /// Title of the preferences dialog (UC-39). Reachable with or without a session.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferencesTitle;
+
+  /// Accessible label and tooltip of the control that opens the preferences dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Open preferences'**
+  String get preferencesOpen;
+
+  /// Heading of the theme group in preferences (FR-UX-04).
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get preferencesThemeLabel;
+
+  /// Theme option: follow the operating system's light or dark setting, and follow it when it changes (UC-39 AF-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Match the system'**
+  String get preferencesThemeSystem;
+
+  /// Theme option: always the light theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get preferencesThemeLight;
+
+  /// Theme option: always the dark theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get preferencesThemeDark;
+
+  /// Heading of the language group in preferences (FR-UX-05).
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get preferencesLanguageLabel;
+
+  /// Language option: follow the operating system's language when it is one of the two supported, and English otherwise (UC-39 AF-03).
+  ///
+  /// In en, this message translates to:
+  /// **'Match the system'**
+  String get preferencesLanguageSystem;
+
+  /// UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered.
+  ///
+  /// In en, this message translates to:
+  /// **'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.'**
+  String get preferencesUnsaved;
+
+  /// The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get preferencesClose;
 }
 
 class _AppLocalizationsDelegate

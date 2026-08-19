@@ -88,11 +88,7 @@ class ShellLoadingView extends StatelessWidget {
 /// goes to the log and never to the screen.
 class ShellFailureView extends StatelessWidget {
   /// Creates the failure state for [failure].
-  const ShellFailureView({
-    required this.onRetry,
-    this.failure,
-    super.key,
-  });
+  const ShellFailureView({required this.onRetry, this.failure, super.key});
 
   /// What went wrong, when it was a typed failure.
   ///

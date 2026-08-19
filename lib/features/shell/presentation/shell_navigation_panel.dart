@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import '../domain/shell_destination.dart';
+import 'preferences_dialog.dart';
 
 /// The navigation panel (FR-UX-01, FR-UX-02).
 ///
@@ -52,6 +54,19 @@ class ShellNavigationPanel extends StatelessWidget {
                   ? NavigationRailLabelType.all
                   : NavigationRailLabelType.none,
               groupAlignment: -1,
+              // Preferences sit below the destinations rather than among them:
+              // they are not an area of the library, and UC-39 reaches them
+              // from here and from the authentication screens alike.
+              //
+              // Placed in the flow after the destinations rather than pinned
+              // to the bottom with an Expanded: the rail already sits inside a
+              // scroll view with an intrinsic height, and an unbounded child
+              // in that arrangement is a layout error at the short windows
+              // UC-38 added the scrolling for.
+              trailing: const Padding(
+                padding: EdgeInsets.only(top: AppSpacing.sm),
+                child: PreferencesButton(),
+              ),
               destinations: [
                 for (final destination in ShellDestination.values)
                   NavigationRailDestination(

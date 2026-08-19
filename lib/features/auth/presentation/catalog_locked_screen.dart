@@ -15,7 +15,11 @@ import 'auth_notice.dart';
 /// than the lock being deferred along with the prompt.
 class CatalogLockedScreen extends StatelessWidget {
   /// Creates the locked state for the account at [email].
-  const CatalogLockedScreen({required this.email, this.confirmation, super.key});
+  const CatalogLockedScreen({
+    required this.email,
+    this.confirmation,
+    super.key,
+  });
 
   /// The address awaiting confirmation, named so the owner knows where to
   /// look.

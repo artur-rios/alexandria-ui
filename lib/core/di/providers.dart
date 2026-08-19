@@ -21,6 +21,8 @@ import '../../features/auth/application/sign_up_controller.dart';
 import '../../features/auth/application/sign_up_state.dart';
 import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
+import '../../features/shell/application/preferences_controller.dart';
+import '../../features/shell/application/preferences_state.dart';
 import '../../features/shell/application/shell_controller.dart';
 import '../../features/shell/data/desktop_window_placement.dart';
 import '../../features/shell/domain/shell_destination.dart';
@@ -58,14 +60,21 @@ final settingsLoaderProvider = Provider<Future<SettingsStore> Function()>(
 final startupControllerProvider =
     NotifierProvider<StartupController, StartupState>(StartupController.new);
 
-/// The theme the owner chose. [ThemeMode.system] until settings have loaded.
-final themeModeProvider = Provider<ThemeMode>((ref) {
-  final startup = ref.watch(startupControllerProvider);
-  if (startup is! StartupReady) return ThemeMode.system;
+/// The owner's theme and language, and whether the last change was saved
+/// (UC-39).
+final preferencesControllerProvider =
+    NotifierProvider<PreferencesController, PreferencesState>(
+      PreferencesController.new,
+    );
 
-  return ref.read(startupControllerProvider.notifier).settings?.themeMode ??
-      ThemeMode.system;
-});
+/// The theme the owner chose. [ThemeMode.system] until settings have loaded.
+///
+/// A thin read over [preferencesControllerProvider] rather than its own read
+/// of the settings store: the store answers what was saved, and after UC-39
+/// what is *applied* can differ from it for a session (AF-02).
+final themeModeProvider = Provider<ThemeMode>(
+  (ref) => ref.watch(preferencesControllerProvider).themeMode,
+);
 
 /// The core's authentication operations (UC-02).
 ///
@@ -89,24 +98,23 @@ final sessionControllerProvider =
     NotifierProvider<SessionController, SessionState>(SessionController.new);
 
 /// The login form's state (UC-02).
-final loginControllerProvider =
-    NotifierProvider<LoginController, LoginState>(LoginController.new);
+final loginControllerProvider = NotifierProvider<LoginController, LoginState>(
+  LoginController.new,
+);
 
 /// The sign-up form's state (UC-01).
 final signUpControllerProvider =
     NotifierProvider<SignUpController, SignUpState>(SignUpController.new);
 
 /// Which screen a session-less owner is shown (FR-AU-01).
-final authEntryProvider =
-    NotifierProvider<AuthEntryController, AuthEntry>(AuthEntryController.new);
+final authEntryProvider = NotifierProvider<AuthEntryController, AuthEntry>(
+  AuthEntryController.new,
+);
 
 /// The language the owner chose, or `null` to follow the system.
-final localeProvider = Provider<Locale?>((ref) {
-  final startup = ref.watch(startupControllerProvider);
-  if (startup is! StartupReady) return null;
-
-  return ref.read(startupControllerProvider.notifier).settings?.locale;
-});
+final localeProvider = Provider<Locale?>(
+  (ref) => ref.watch(preferencesControllerProvider).locale,
+);
 
 /// Which area of the shell the owner is in (UC-38).
 final shellControllerProvider =

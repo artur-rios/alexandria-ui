@@ -344,5 +344,55 @@
   "destinationBookmarks": "Bookmarks",
   "@destinationBookmarks": {
     "description": "Navigation panel entry for saved links, the one type holding no file on disk (FR-CT-01)."
+  },
+
+  "preferencesTitle": "Preferences",
+  "@preferencesTitle": {
+    "description": "Title of the preferences dialog (UC-39). Reachable with or without a session."
+  },
+
+  "preferencesOpen": "Open preferences",
+  "@preferencesOpen": {
+    "description": "Accessible label and tooltip of the control that opens the preferences dialog."
+  },
+
+  "preferencesThemeLabel": "Theme",
+  "@preferencesThemeLabel": {
+    "description": "Heading of the theme group in preferences (FR-UX-04)."
+  },
+
+  "preferencesThemeSystem": "Match the system",
+  "@preferencesThemeSystem": {
+    "description": "Theme option: follow the operating system's light or dark setting, and follow it when it changes (UC-39 AF-01)."
+  },
+
+  "preferencesThemeLight": "Light",
+  "@preferencesThemeLight": {
+    "description": "Theme option: always the light theme."
+  },
+
+  "preferencesThemeDark": "Dark",
+  "@preferencesThemeDark": {
+    "description": "Theme option: always the dark theme."
+  },
+
+  "preferencesLanguageLabel": "Language",
+  "@preferencesLanguageLabel": {
+    "description": "Heading of the language group in preferences (FR-UX-05)."
+  },
+
+  "preferencesLanguageSystem": "Match the system",
+  "@preferencesLanguageSystem": {
+    "description": "Language option: follow the operating system's language when it is one of the two supported, and English otherwise (UC-39 AF-03)."
+  },
+
+  "preferencesUnsaved": "Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.",
+  "@preferencesUnsaved": {
+    "description": "UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered."
+  },
+
+  "preferencesClose": "Done",
+  "@preferencesClose": {
+    "description": "The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made."
   }
 }

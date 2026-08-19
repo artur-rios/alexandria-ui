@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import '../application/login_state.dart';
 import '../application/session_state.dart';
+import '../../shell/presentation/preferences_dialog.dart';
 import 'auth_field_messages.dart';
 import 'auth_notice.dart';
 
@@ -142,6 +143,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         )
                       : Text(l10n.loginSubmit),
                 ),
+
+                // UC-39 main flow step 1: preferences are reachable with or
+                // without a session, so the entry point is here as well as in
+                // the shell. Below the primary action, because the owner came
+                // here to sign in.
+                const SizedBox(height: AppSpacing.sm),
+                const Align(
+                  alignment: Alignment.centerRight,
+                  child: PreferencesButton(),
+                ),
               ],
             ),
           ),
@@ -149,7 +160,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
-
 }
 
 /// The explanation shown when a session ended by rejection (AF-04, FR-AU-08).
@@ -168,10 +178,7 @@ class _SessionEndedNotice extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.loginSessionEndedTitle,
-            style: theme.textTheme.titleSmall,
-          ),
+          Text(l10n.loginSessionEndedTitle, style: theme.textTheme.titleSmall),
           const SizedBox(height: AppSpacing.xs),
           Text(failure.localizedMessage(l10n)),
         ],
