@@ -2165,6 +2165,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} tracked'**
   String readingListItemCount(int count);
+
+  /// UC-32 main flow step 4: which issue of the series the owner is on.
+  ///
+  /// In en, this message translates to:
+  /// **'Current issue'**
+  String get readCurrentIssueLabel;
+
+  /// UC-32 main flow step 4: how many issues there are, when the owner knows.
+  ///
+  /// In en, this message translates to:
+  /// **'Total issues'**
+  String get readTotalIssuesLabel;
+
+  /// UC-32 AF-02: the issue field holds something that is not a number, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a whole number.'**
+  String get readIssueNotANumber;
+
+  /// UC-32 AF-02: the issue number is zero or negative.
+  ///
+  /// In en, this message translates to:
+  /// **'Issues are counted from one.'**
+  String get readIssueNotPositive;
+
+  /// UC-32 AF-02: the current issue exceeds the stated total.
+  ///
+  /// In en, this message translates to:
+  /// **'That is past the total you gave.'**
+  String get readIssueBeyondTotal;
+
+  /// UC-32 main flow step 5: sends the read state and the issue to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Save progress'**
+  String get readProgressSave;
+
+  /// UC-32: where in a series the owner is, with no total stated.
+  ///
+  /// In en, this message translates to:
+  /// **'issue {current}'**
+  String readIssue(int current);
+
+  /// UC-32: where in a series the owner is, out of the total they gave.
+  ///
+  /// In en, this message translates to:
+  /// **'issue {current} of {total}'**
+  String readIssueOf(int current, int total);
 }
 
 class _AppLocalizationsDelegate

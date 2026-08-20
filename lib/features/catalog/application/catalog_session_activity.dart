@@ -60,6 +60,8 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(watchProgressEditorProvider);
     _ref.invalidate(readingListsControllerProvider);
     _ref.invalidate(readingListsFormProvider);
+    _ref.invalidate(trackedReadingItemsProvider);
+    _ref.invalidate(readingProgressEditorProvider);
 
     // The layout and the per-type filters are deliberately left alone: they
     // are how the owner prefers to see their library, not a projection of it,

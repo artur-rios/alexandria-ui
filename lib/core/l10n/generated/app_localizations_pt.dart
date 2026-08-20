@@ -1190,4 +1190,32 @@ class AppLocalizationsPt extends AppLocalizations {
   String readingListItemCount(int count) {
     return '$count acompanhados';
   }
+
+  @override
+  String get readCurrentIssueLabel => 'Edição atual';
+
+  @override
+  String get readTotalIssuesLabel => 'Total de edições';
+
+  @override
+  String get readIssueNotANumber => 'Use um número inteiro.';
+
+  @override
+  String get readIssueNotPositive => 'As edições são contadas a partir de um.';
+
+  @override
+  String get readIssueBeyondTotal => 'Isso passa do total que você informou.';
+
+  @override
+  String get readProgressSave => 'Salvar progresso';
+
+  @override
+  String readIssue(int current) {
+    return 'edição $current';
+  }
+
+  @override
+  String readIssueOf(int current, int total) {
+    return 'edição $current de $total';
+  }
 }

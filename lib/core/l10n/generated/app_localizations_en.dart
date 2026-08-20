@@ -1188,4 +1188,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String readingListItemCount(int count) {
     return '$count tracked';
   }
+
+  @override
+  String get readCurrentIssueLabel => 'Current issue';
+
+  @override
+  String get readTotalIssuesLabel => 'Total issues';
+
+  @override
+  String get readIssueNotANumber => 'Use a whole number.';
+
+  @override
+  String get readIssueNotPositive => 'Issues are counted from one.';
+
+  @override
+  String get readIssueBeyondTotal => 'That is past the total you gave.';
+
+  @override
+  String get readProgressSave => 'Save progress';
+
+  @override
+  String readIssue(int current) {
+    return 'issue $current';
+  }
+
+  @override
+  String readIssueOf(int current, int total) {
+    return 'issue $current of $total';
+  }
 }

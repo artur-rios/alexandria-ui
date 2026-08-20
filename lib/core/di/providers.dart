@@ -98,6 +98,8 @@ import '../../features/viewers/domain/document_gateway.dart';
 import '../../features/viewers/domain/reading_position_store.dart';
 import '../../features/viewers/domain/viewer_registry.dart';
 import '../../features/tracking/application/reading_lists_controller.dart';
+import '../../features/tracking/application/reading_progress_editor.dart';
+import '../../features/tracking/application/tracked_reading_items_controller.dart';
 import '../../features/tracking/application/tracked_videos_controller.dart';
 import '../../features/tracking/application/watch_progress_editor.dart';
 import '../../features/tracking/application/watchlists_controller.dart';
@@ -629,6 +631,18 @@ final readingListsControllerProvider =
 /// The reading-lists screen's own state (UC-31).
 final readingListsFormProvider =
     NotifierProvider<ReadingListsForm, ReadingListsState>(ReadingListsForm.new);
+
+/// The tracked books' and comics' names (UC-32 main flow step 2).
+final trackedReadingItemsProvider =
+    AsyncNotifierProvider<TrackedReadingItemsController, Map<String, String>>(
+      TrackedReadingItemsController.new,
+    );
+
+/// The reading-progress entry being edited (UC-32).
+final readingProgressEditorProvider =
+    NotifierProvider<ReadingProgressEditor, ReadingProgressEditorState>(
+      ReadingProgressEditor.new,
+    );
 
 /// The core's watch-progress read (UC-16 AF-03).
 ///
