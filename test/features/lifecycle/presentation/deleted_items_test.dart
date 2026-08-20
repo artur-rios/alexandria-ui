@@ -7,7 +7,6 @@ import 'package:alexandria_desktop/features/auth/application/session_state.dart'
 import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
 import 'package:alexandria_desktop/features/lifecycle/domain/lifecycle_gateway.dart';
-import 'package:alexandria_desktop/features/lifecycle/domain/retention.dart';
 import 'package:alexandria_desktop/features/lifecycle/presentation/deleted_items_screen.dart';
 import 'package:alexandria_desktop/features/organization/domain/bookmark.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
@@ -39,7 +38,7 @@ void main() {
     uuid: 'e1a2b3c4-5d6e-4f70-8912-a3b4c5d6e7f8',
     name: 'Old notes.md',
     type: LibraryType.text,
-    deletedAt: now.subtract(retentionWindow + const Duration(days: 1)),
+    deletedAt: now.subtract(const Duration(days: 31)),
   );
 
   final deletedBookmark = Bookmark(

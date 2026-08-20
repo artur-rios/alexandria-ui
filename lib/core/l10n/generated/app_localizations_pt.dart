@@ -1539,4 +1539,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get bookmarkFilterAll => 'Todos os favoritos';
+
+  @override
+  String get collectionItemWrongKind => 'não é do tipo desta coleção';
+
+  @override
+  String get collectionItemGone => 'ele não existe mais';
 }

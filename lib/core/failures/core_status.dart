@@ -29,6 +29,9 @@ enum CoreStatusFamily {
   /// `alexandria_auth_local_*` — see `AUTH_*`.
   auth,
 
+  /// `alexandria_settings_json` — see `SETTINGS_*`.
+  settings,
+
   /// `alexandria_file_playback_source`, `alexandria_file_thumbnail`, and
   /// `alexandria_comic_page` — see `PLAYBACK_*`.
   ///
@@ -58,6 +61,7 @@ enum CoreStatusFamily {
     CoreStatusFamily.watchlist => WATCHLIST_OK,
     CoreStatusFamily.readingList => READING_LIST_OK,
     CoreStatusFamily.auth => AUTH_OK,
+    CoreStatusFamily.settings => SETTINGS_OK,
     CoreStatusFamily.playback => PLAYBACK_OK,
     CoreStatusFamily.run => RUN_OK,
   };

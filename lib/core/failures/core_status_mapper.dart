@@ -38,8 +38,24 @@ Failure mapCoreStatus(
     CoreStatusFamily.auth => _mapAuth(code),
     CoreStatusFamily.playback => _mapPlayback(code),
     CoreStatusFamily.run => _mapRun(code),
+    CoreStatusFamily.settings => _mapSettings(code),
   };
 }
+
+// The settings read carries only these three failures: it reads a value the
+// core process already holds, so there is no input to reject and nothing to
+// look up.
+Failure _mapSettings(int code) => switch (code) {
+  SETTINGS_ERR_UNAUTHORIZED => Failure.unauthorized(
+    family: CoreStatusFamily.settings,
+    code: code,
+  ),
+  SETTINGS_ERR_NOT_INITIALIZED => Failure.notInitialized(
+    family: CoreStatusFamily.settings,
+    code: code,
+  ),
+  _ => Failure.unexpected(family: CoreStatusFamily.settings, code: code),
+};
 
 // The run family reserves 4 for "not found" and 9 for "other", where the index
 // family it sits beside uses 4 for "other". Mapping one through the other is

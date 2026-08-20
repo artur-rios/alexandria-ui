@@ -546,6 +546,15 @@ class FakeCoreClient implements CoreClient {
     return collectionWriteResult;
   }
 
+  /// What the settings read answers (UC-34, core UC-47).
+  CoreJsonResponse settingsResult = (
+    status: SETTINGS_OK,
+    json: '{"deletion":{"retentionDays":30}}',
+  );
+
+  @override
+  Future<CoreJsonResponse> settings(String token) async => settingsResult;
+
   @override
   Future<CoreJsonResponse> collectionsList(
     String jsonFilters,

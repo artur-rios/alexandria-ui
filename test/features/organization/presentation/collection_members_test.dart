@@ -175,7 +175,15 @@ void main() {
 
       await addItems(tester, ['Kind of Blue.flac']);
 
-      expect(opened.gateway.added, [(uuid: 'c-1', itemUuid: fileUuid)]);
+      // One call carrying the batch, not one call per item: the core links
+      // what it can and reports each, so there is nothing left to recover by
+      // splitting the request up.
+      //
+      // Compared field by field: a record holding a List compares that field
+      // by identity, so two equal-but-distinct batches would never match.
+      expect(opened.gateway.added, hasLength(1));
+      expect(opened.gateway.added.single.uuid, 'c-1');
+      expect(opened.gateway.added.single.itemUuids, [fileUuid]);
     });
 
     testWidgets('GivenAnItemWasAdded_WhenItSettles_ThenTheReportNamesIt', (
@@ -287,20 +295,11 @@ void main() {
 
   // AF-04: exactly which succeeded and which did not.
   group('an addition the core partly refuses', () {
-    testWidgets('GivenTheCoreRefusesOne_WhenItAnswers_ThenTheReportSaysWhich', (
+    testWidgets('GivenAWrongKindItem_WhenItAnswers_ThenTheReportSaysWhich', (
       tester,
     ) async {
-      await openCollection(
-        tester,
-        writeOutcomes: const [
-          CollectionWrite.failed(
-            failure: Failure.invalidInput(
-              family: CoreStatusFamily.collection,
-              code: COLLECTION_ERR_INVALID_INPUT,
-            ),
-          ),
-        ],
-      );
+      final opened = await openCollection(tester);
+      opened.gateway.rejections[fileUuid] = ItemRejection.wrongKind;
 
       await addItems(tester, ['Kind of Blue.flac']);
 
@@ -308,7 +307,28 @@ void main() {
         find.text(
           messages(tester).collectionItemNotAdded(
             'Kind of Blue.flac',
-            messages(tester).failureInvalidInput,
+            messages(tester).collectionItemWrongKind,
+          ),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    // AF-04's other reason, told apart from the one above — which is the whole
+    // point of the core reporting per item rather than per request.
+    testWidgets('GivenAnItemThatIsGone_WhenItAnswers_ThenTheReasonDiffers', (
+      tester,
+    ) async {
+      final opened = await openCollection(tester);
+      opened.gateway.rejections[fileUuid] = ItemRejection.notFound;
+
+      await addItems(tester, ['Kind of Blue.flac']);
+
+      expect(
+        find.text(
+          messages(tester).collectionItemNotAdded(
+            'Kind of Blue.flac',
+            messages(tester).collectionItemGone,
           ),
         ),
         findsOneWidget,
@@ -321,16 +341,14 @@ void main() {
     testWidgets(
       'GivenTheCoreRejectsTheSession_WhenAnItemIsAdded_ThenTheOwnerSignsOut',
       (tester) async {
-        final opened = await openCollection(
-          tester,
-          writeOutcomes: const [
-            CollectionWrite.failed(
-              failure: Failure.unauthorized(
-                family: CoreStatusFamily.collection,
-                code: COLLECTION_ERR_UNAUTHORIZED,
-              ),
-            ),
-          ],
+        final opened = await openCollection(tester);
+        // The refusal is the request's, not an item's: an unauthorized call
+        // never gets far enough to report on anything.
+        opened.gateway.additionsOutcome = const CollectionAdditions.failed(
+          failure: Failure.unauthorized(
+            family: CoreStatusFamily.collection,
+            code: COLLECTION_ERR_UNAUTHORIZED,
+          ),
         );
 
         await addItems(tester, ['Kind of Blue.flac']);

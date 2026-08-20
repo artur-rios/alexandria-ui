@@ -57,25 +57,6 @@ class CollectionMembersController
   }
 }
 
-/// What became of one item in an addition (UC-27 AF-04).
-class ItemAddition {
-  /// Records that [name] was added, or was not and why.
-  const ItemAddition({
-    required this.name,
-    required this.succeeded,
-    this.failure,
-  });
-
-  /// What the item is called, so the report names it rather than a uuid.
-  final String name;
-
-  /// Whether the core linked it.
-  final bool succeeded;
-
-  /// Why it did not, when it did not.
-  final Failure? failure;
-}
-
 /// What the members screen is reporting, if anything (UC-27).
 class MembershipReport {
   /// Creates a report.
@@ -83,10 +64,11 @@ class MembershipReport {
     this.additions = const [],
     this.alreadyPresent = const [],
     this.notFound = false,
+    this.requestFailure,
   });
 
   /// What became of each item an addition covered (AF-04).
-  final List<ItemAddition> additions;
+  final List<ReportedAddition> additions;
 
   /// The items that were already members, which the core was not asked about
   /// (AF-02).
@@ -95,14 +77,43 @@ class MembershipReport {
   /// Whether the core reported the collection or an item as gone (AF-03).
   final bool notFound;
 
+  /// Why the request itself was refused, when it was.
+  final Failure? requestFailure;
+
   /// Whether there is anything to say.
-  bool get isEmpty => additions.isEmpty && alreadyPresent.isEmpty && !notFound;
+  bool get isEmpty =>
+      additions.isEmpty &&
+      alreadyPresent.isEmpty &&
+      !notFound &&
+      requestFailure == null;
 
   /// The additions that did not land.
-  List<ItemAddition> get failed => [
+  List<ReportedAddition> get failed => [
     for (final addition in additions)
-      if (!addition.succeeded) addition,
+      if (!addition.added) addition,
   ];
+}
+
+/// One item's outcome, named as the owner chose it (UC-27 AF-04).
+///
+/// The core answers by uuid; a report that showed uuids would be telling the
+/// owner about identifiers they never saw.
+class ReportedAddition {
+  /// Creates an outcome.
+  const ReportedAddition({
+    required this.name,
+    required this.added,
+    this.reason,
+  });
+
+  /// What the item is called.
+  final String name;
+
+  /// Whether the core linked it.
+  final bool added;
+
+  /// Why it did not, when the core named a reason this version knows.
+  final ItemRejection? reason;
 }
 
 /// Drives UC-27: adding items to a collection and taking them out again.
@@ -115,9 +126,9 @@ class CollectionMembershipForm extends Notifier<MembershipReport> {
 
   /// Adds [candidates] to the open collection (main flow steps 3 and 4).
   ///
-  /// One core call per item, so the report can name which landed and which did
-  /// not (AF-04). The core's own call validates a whole batch before linking
-  /// any of it, which would answer a single reason for the lot.
+  /// One core call for the batch. The core links what it can and answers what
+  /// became of each item, which is what AF-04 reports — this used to be a call
+  /// per item, because the core rejected a whole batch over one bad member.
   Future<void> add(List<CollectionMember> candidates) async {
     final collection = ref.read(openCollectionProvider);
     final session = ref.read(sessionControllerProvider.notifier);
@@ -125,7 +136,8 @@ class CollectionMembershipForm extends Notifier<MembershipReport> {
     if (collection == null || credential == null) return;
 
     // AF-02: an item already in the collection is reported as such, and the
-    // core is not asked — it would link it a second time to no effect.
+    // core is not asked about it — it would link it a second time to no
+    // effect.
     final present = {
       for (final member
           in ref.read(collectionMembersControllerProvider).value ??
@@ -133,63 +145,64 @@ class CollectionMembershipForm extends Notifier<MembershipReport> {
         member.uuid,
     };
 
-    final gateway = ref.read(collectionGatewayProvider);
-    final additions = <ItemAddition>[];
     final alreadyPresent = <String>[];
-    var sawNotFound = false;
-
+    final toAdd = <CollectionMember>[];
     for (final candidate in candidates) {
       if (present.contains(candidate.uuid)) {
         alreadyPresent.add(candidate.name);
-        continue;
-      }
-
-      final outcome = await gateway.addItem(
-        uuid: collection.uuid,
-        itemUuid: candidate.uuid,
-        credential: credential,
-      );
-
-      switch (outcome) {
-        case CollectionWriteDone():
-          additions.add(ItemAddition(name: candidate.name, succeeded: true));
-
-        // AF-05: the session is discarded, and the rest of the batch is
-        // abandoned — every remaining call would be refused the same way.
-        case CollectionWriteFailed(failure: final UnauthorizedFailure failure):
-          session.invalidate(failure);
-          return;
-
-        case CollectionWriteFailed(failure: final NotFoundFailure failure):
-          sawNotFound = true;
-          additions.add(
-            ItemAddition(
-              name: candidate.name,
-              succeeded: false,
-              failure: failure,
-            ),
-          );
-
-        // AF-01 as the core sees it: an item of the wrong kind. The screen
-        // does not offer one, so reaching this means the owner got here
-        // another way — and the core's reason is what says why.
-        case CollectionWriteFailed(:final failure):
-          additions.add(
-            ItemAddition(
-              name: candidate.name,
-              succeeded: false,
-              failure: failure,
-            ),
-          );
+      } else {
+        toAdd.add(candidate);
       }
     }
 
-    state = MembershipReport(
-      additions: additions,
-      alreadyPresent: alreadyPresent,
-      notFound: sawNotFound,
-    );
-    await ref.read(collectionMembersControllerProvider.notifier).reload();
+    if (toAdd.isEmpty) {
+      state = MembershipReport(alreadyPresent: alreadyPresent);
+      return;
+    }
+
+    final outcome = await ref
+        .read(collectionGatewayProvider)
+        .addItems(
+          uuid: collection.uuid,
+          itemUuids: [for (final candidate in toAdd) candidate.uuid],
+          credential: credential,
+        );
+
+    switch (outcome) {
+      case CollectionAdditionsReported(:final items):
+        // The core answers by uuid; the report names what the owner chose.
+        final names = {
+          for (final candidate in toAdd) candidate.uuid: candidate.name,
+        };
+
+        state = MembershipReport(
+          additions: [
+            for (final item in items)
+              ReportedAddition(
+                name: names[item.itemUuid] ?? item.itemUuid,
+                added: item.added,
+                reason: item.reason,
+              ),
+          ],
+          alreadyPresent: alreadyPresent,
+        );
+        await ref.read(collectionMembersControllerProvider.notifier).reload();
+
+      // AF-05: the session is discarded, which returns the owner to login.
+      case CollectionAdditionsFailed(
+        failure: final UnauthorizedFailure failure,
+      ):
+        session.invalidate(failure);
+
+      // AF-03: the collection is gone. Nothing was linked, and there is
+      // nothing to report per item.
+      case CollectionAdditionsFailed(failure: NotFoundFailure()):
+        state = const MembershipReport(notFound: true);
+        await ref.read(collectionMembersControllerProvider.notifier).reload();
+
+      case CollectionAdditionsFailed(:final failure):
+        state = MembershipReport(requestFailure: failure);
+    }
   }
 
   /// Removes [member] from the open collection (steps 5 and 6).
@@ -226,11 +239,7 @@ class CollectionMembershipForm extends Notifier<MembershipReport> {
         await ref.read(collectionMembersControllerProvider.notifier).reload();
 
       case CollectionWriteFailed(:final failure):
-        state = MembershipReport(
-          additions: [
-            ItemAddition(name: member.name, succeeded: false, failure: failure),
-          ],
-        );
+        state = MembershipReport(requestFailure: failure);
     }
   }
 }

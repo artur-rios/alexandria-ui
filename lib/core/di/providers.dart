@@ -112,9 +112,11 @@ import '../../features/lifecycle/application/missing_files_controller.dart';
 import '../../features/lifecycle/application/purge_controller.dart';
 import '../../features/lifecycle/application/open_file_holds.dart';
 import '../../features/lifecycle/data/core_lifecycle_gateway.dart';
+import '../../features/lifecycle/data/core_retention_gateway.dart';
 import '../../features/lifecycle/domain/deleted_record.dart';
 import '../../features/lifecycle/domain/file_hold.dart';
 import '../../features/lifecycle/domain/lifecycle_gateway.dart';
+import '../../features/lifecycle/domain/retention.dart';
 import '../../features/playback/application/playback_file_holds.dart';
 import '../../features/tracking/application/reading_lists_controller.dart';
 import '../../features/tracking/application/reading_progress_editor.dart';
@@ -753,6 +755,24 @@ final fileHoldsProvider = Provider<List<FileHold>>(
 /// What a deletion is reporting (UC-33).
 final deletionControllerProvider =
     NotifierProvider<DeletionController, DeletionState>(DeletionController.new);
+
+/// The core's settings read (UC-34, FR-LC-03).
+final retentionGatewayProvider = Provider<RetentionGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the retention gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreRetentionGateway(core);
+});
+
+/// The retention window the core enforces (UC-34).
+final retentionWindowProvider =
+    AsyncNotifierProvider<RetentionWindowController, int?>(
+      RetentionWindowController.new,
+    );
 
 /// Everything the core holds as deleted (UC-34).
 final deletedItemsControllerProvider =

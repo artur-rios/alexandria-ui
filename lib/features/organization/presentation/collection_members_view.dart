@@ -110,7 +110,7 @@ class _Report extends ConsumerWidget {
 
     final added = [
       for (final addition in report.additions)
-        if (addition.succeeded) addition.name,
+        if (addition.added) addition.name,
     ];
 
     return Padding(
@@ -143,16 +143,29 @@ class _Report extends ConsumerWidget {
                   Text(
                     l10n.collectionItemNotAdded(
                       failure.name,
-                      failure.failure?.localizedMessage(l10n) ??
-                          l10n.failureInvalidInput,
+                      // The core's own reason, named per item. A rejection it
+                      // gave a code this version does not know still reads as
+                      // "not added", generically.
+                      switch (failure.reason) {
+                        ItemRejection.wrongKind => l10n.collectionItemWrongKind,
+                        ItemRejection.notFound => l10n.collectionItemGone,
+                        null => l10n.failureInvalidInput,
+                      },
                     ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.error,
                     ),
                   ),
 
-                // AF-03.
-                if (report.notFound && report.failed.isEmpty)
+                // AF-03, and a request the core refused outright.
+                if (report.requestFailure case final failure?)
+                  Text(
+                    failure.localizedMessage(l10n),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                if (report.notFound)
                   Text(
                     l10n.collectionNotFound,
                     style: theme.textTheme.bodySmall?.copyWith(

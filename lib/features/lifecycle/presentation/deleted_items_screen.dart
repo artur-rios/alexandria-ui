@@ -135,7 +135,10 @@ class _RecordTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final retention = record.retentionAt(ref.watch(clockProvider)());
+    final retention = record.retentionAt(
+      ref.watch(clockProvider)(),
+      days: ref.watch(retentionWindowProvider).value,
+    );
 
     return ListTile(
       leading: Icon(

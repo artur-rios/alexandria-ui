@@ -7,6 +7,7 @@ import '../../catalog/domain/library_type.dart';
 import '../../catalog/domain/listing_view.dart';
 import '../../organization/domain/bookmark_gateway.dart';
 import '../domain/deleted_record.dart';
+import '../domain/retention.dart';
 import '../domain/lifecycle_gateway.dart';
 
 /// Everything the core holds as deleted (UC-34 main flow steps 2 and 3).
@@ -85,6 +86,31 @@ class DeletedItemsController extends AsyncNotifier<List<DeletedRecord>> {
   Future<void> reload() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(build);
+  }
+}
+
+/// The retention window the core enforces (UC-34, FR-LC-03).
+///
+/// Read once per session and held: it is configuration, not state, and a call
+/// per row would ask the same question of the same process repeatedly.
+class RetentionWindowController extends AsyncNotifier<int?> {
+  @override
+  Future<int?> build() async {
+    final credential = ref.read(sessionControllerProvider.notifier).credential;
+    // No session, no call (FR-AU-07).
+    if (credential == null) return null;
+
+    final window = await ref
+        .read(retentionGatewayProvider)
+        .window(credential: credential);
+
+    return switch (window) {
+      RetentionWindowLoaded(:final days) => days,
+      // The view still lists what is deleted and still restores; it simply
+      // shows no countdown. That is the honest outcome — the alternative is
+      // the assumption this call exists to remove.
+      RetentionWindowFailed() => null,
+    };
   }
 }
 

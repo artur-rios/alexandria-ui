@@ -2723,6 +2723,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All bookmarks'**
   String get bookmarkFilterAll;
+
+  /// UC-27 AF-04: the core rejected the item because it belongs to the other kind.
+  ///
+  /// In en, this message translates to:
+  /// **'it is not this collection\'s kind'**
+  String get collectionItemWrongKind;
+
+  /// UC-27 AF-04: the core rejected the item because no such item exists.
+  ///
+  /// In en, this message translates to:
+  /// **'it no longer exists'**
+  String get collectionItemGone;
 }
 
 class _AppLocalizationsDelegate

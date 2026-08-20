@@ -71,5 +71,11 @@ class DeletedRecord {
   final LibraryType? type;
 
   /// Where this record stands in its retention window, as of [now].
-  Retention retentionAt(DateTime now) => Retention.since(deletedAt, now: now);
+  /// Where this record stands, as of [now], against a window of [days].
+  ///
+  /// The window is the core's, read rather than assumed: this application
+  /// enforces nothing, and a number invented here would be wrong the moment an
+  /// operator configures something else.
+  Retention retentionAt(DateTime now, {required int? days}) =>
+      Retention.since(deletedAt, now: now, days: days);
 }

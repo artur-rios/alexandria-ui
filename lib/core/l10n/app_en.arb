@@ -2179,5 +2179,15 @@
   "bookmarkFilterAll": "All bookmarks",
   "@bookmarkFilterAll": {
       "description": "UC-28 main flow step 1: the unfiltered listing, which is what the screen opens on."
+  },
+
+  "collectionItemWrongKind": "it is not this collection's kind",
+  "@collectionItemWrongKind": {
+      "description": "UC-27 AF-04: the core rejected the item because it belongs to the other kind."
+  },
+
+  "collectionItemGone": "it no longer exists",
+  "@collectionItemGone": {
+      "description": "UC-27 AF-04: the core rejected the item because no such item exists."
   }
 }

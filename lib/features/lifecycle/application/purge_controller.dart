@@ -107,7 +107,10 @@ class PurgeController extends Notifier<PurgeState> {
           notice: PurgeNotice.tooSoon,
           refusal: failure,
           daysRemaining: record
-              .retentionAt(ref.read(clockProvider)())
+              .retentionAt(
+                ref.read(clockProvider)(),
+                days: ref.read(retentionWindowProvider).value,
+              )
               .daysRemaining,
         );
 

@@ -1154,4 +1154,578 @@ $FailureCopyWith<$Res> get failure {
 }
 }
 
+/// @nodoc
+mixin _$ItemAddition {
+
+ String get itemUuid; bool get added;/// Why it was not, when it was not. `null` when the core named a reason
+/// this version does not know — the item still reads as not added.
+ ItemRejection? get reason;
+/// Create a copy of ItemAddition
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ItemAdditionCopyWith<ItemAddition> get copyWith => _$ItemAdditionCopyWithImpl<ItemAddition>(this as ItemAddition, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItemAddition&&(identical(other.itemUuid, itemUuid) || other.itemUuid == itemUuid)&&(identical(other.added, added) || other.added == added)&&(identical(other.reason, reason) || other.reason == reason));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,itemUuid,added,reason);
+
+@override
+String toString() {
+  return 'ItemAddition(itemUuid: $itemUuid, added: $added, reason: $reason)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ItemAdditionCopyWith<$Res>  {
+  factory $ItemAdditionCopyWith(ItemAddition value, $Res Function(ItemAddition) _then) = _$ItemAdditionCopyWithImpl;
+@useResult
+$Res call({
+ String itemUuid, bool added, ItemRejection? reason
+});
+
+
+
+
+}
+/// @nodoc
+class _$ItemAdditionCopyWithImpl<$Res>
+    implements $ItemAdditionCopyWith<$Res> {
+  _$ItemAdditionCopyWithImpl(this._self, this._then);
+
+  final ItemAddition _self;
+  final $Res Function(ItemAddition) _then;
+
+/// Create a copy of ItemAddition
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? itemUuid = null,Object? added = null,Object? reason = freezed,}) {
+  return _then(_self.copyWith(
+itemUuid: null == itemUuid ? _self.itemUuid : itemUuid // ignore: cast_nullable_to_non_nullable
+as String,added: null == added ? _self.added : added // ignore: cast_nullable_to_non_nullable
+as bool,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
+as ItemRejection?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ItemAddition].
+extension ItemAdditionPatterns on ItemAddition {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ItemAddition value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ItemAddition() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ItemAddition value)  $default,){
+final _that = this;
+switch (_that) {
+case _ItemAddition():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ItemAddition value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ItemAddition() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String itemUuid,  bool added,  ItemRejection? reason)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ItemAddition() when $default != null:
+return $default(_that.itemUuid,_that.added,_that.reason);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String itemUuid,  bool added,  ItemRejection? reason)  $default,) {final _that = this;
+switch (_that) {
+case _ItemAddition():
+return $default(_that.itemUuid,_that.added,_that.reason);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String itemUuid,  bool added,  ItemRejection? reason)?  $default,) {final _that = this;
+switch (_that) {
+case _ItemAddition() when $default != null:
+return $default(_that.itemUuid,_that.added,_that.reason);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _ItemAddition implements ItemAddition {
+  const _ItemAddition({required this.itemUuid, required this.added, this.reason});
+  
+
+@override final  String itemUuid;
+@override final  bool added;
+/// Why it was not, when it was not. `null` when the core named a reason
+/// this version does not know — the item still reads as not added.
+@override final  ItemRejection? reason;
+
+/// Create a copy of ItemAddition
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ItemAdditionCopyWith<_ItemAddition> get copyWith => __$ItemAdditionCopyWithImpl<_ItemAddition>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItemAddition&&(identical(other.itemUuid, itemUuid) || other.itemUuid == itemUuid)&&(identical(other.added, added) || other.added == added)&&(identical(other.reason, reason) || other.reason == reason));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,itemUuid,added,reason);
+
+@override
+String toString() {
+  return 'ItemAddition(itemUuid: $itemUuid, added: $added, reason: $reason)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ItemAdditionCopyWith<$Res> implements $ItemAdditionCopyWith<$Res> {
+  factory _$ItemAdditionCopyWith(_ItemAddition value, $Res Function(_ItemAddition) _then) = __$ItemAdditionCopyWithImpl;
+@override @useResult
+$Res call({
+ String itemUuid, bool added, ItemRejection? reason
+});
+
+
+
+
+}
+/// @nodoc
+class __$ItemAdditionCopyWithImpl<$Res>
+    implements _$ItemAdditionCopyWith<$Res> {
+  __$ItemAdditionCopyWithImpl(this._self, this._then);
+
+  final _ItemAddition _self;
+  final $Res Function(_ItemAddition) _then;
+
+/// Create a copy of ItemAddition
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? itemUuid = null,Object? added = null,Object? reason = freezed,}) {
+  return _then(_ItemAddition(
+itemUuid: null == itemUuid ? _self.itemUuid : itemUuid // ignore: cast_nullable_to_non_nullable
+as String,added: null == added ? _self.added : added // ignore: cast_nullable_to_non_nullable
+as bool,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
+as ItemRejection?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$CollectionAdditions {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CollectionAdditions);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'CollectionAdditions()';
+}
+
+
+}
+
+/// @nodoc
+class $CollectionAdditionsCopyWith<$Res>  {
+$CollectionAdditionsCopyWith(CollectionAdditions _, $Res Function(CollectionAdditions) __);
+}
+
+
+/// Adds pattern-matching-related methods to [CollectionAdditions].
+extension CollectionAdditionsPatterns on CollectionAdditions {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CollectionAdditionsReported value)?  reported,TResult Function( CollectionAdditionsFailed value)?  failed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case CollectionAdditionsReported() when reported != null:
+return reported(_that);case CollectionAdditionsFailed() when failed != null:
+return failed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CollectionAdditionsReported value)  reported,required TResult Function( CollectionAdditionsFailed value)  failed,}){
+final _that = this;
+switch (_that) {
+case CollectionAdditionsReported():
+return reported(_that);case CollectionAdditionsFailed():
+return failed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CollectionAdditionsReported value)?  reported,TResult? Function( CollectionAdditionsFailed value)?  failed,}){
+final _that = this;
+switch (_that) {
+case CollectionAdditionsReported() when reported != null:
+return reported(_that);case CollectionAdditionsFailed() when failed != null:
+return failed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<ItemAddition> items)?  reported,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case CollectionAdditionsReported() when reported != null:
+return reported(_that.items);case CollectionAdditionsFailed() when failed != null:
+return failed(_that.failure);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<ItemAddition> items)  reported,required TResult Function( Failure failure)  failed,}) {final _that = this;
+switch (_that) {
+case CollectionAdditionsReported():
+return reported(_that.items);case CollectionAdditionsFailed():
+return failed(_that.failure);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<ItemAddition> items)?  reported,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+switch (_that) {
+case CollectionAdditionsReported() when reported != null:
+return reported(_that.items);case CollectionAdditionsFailed() when failed != null:
+return failed(_that.failure);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class CollectionAdditionsReported implements CollectionAdditions {
+  const CollectionAdditionsReported({required final  List<ItemAddition> items}): _items = items;
+  
+
+ final  List<ItemAddition> _items;
+ List<ItemAddition> get items {
+  if (_items is EqualUnmodifiableListView) return _items;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_items);
+}
+
+
+/// Create a copy of CollectionAdditions
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CollectionAdditionsReportedCopyWith<CollectionAdditionsReported> get copyWith => _$CollectionAdditionsReportedCopyWithImpl<CollectionAdditionsReported>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CollectionAdditionsReported&&const DeepCollectionEquality().equals(other._items, _items));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items));
+
+@override
+String toString() {
+  return 'CollectionAdditions.reported(items: $items)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CollectionAdditionsReportedCopyWith<$Res> implements $CollectionAdditionsCopyWith<$Res> {
+  factory $CollectionAdditionsReportedCopyWith(CollectionAdditionsReported value, $Res Function(CollectionAdditionsReported) _then) = _$CollectionAdditionsReportedCopyWithImpl;
+@useResult
+$Res call({
+ List<ItemAddition> items
+});
+
+
+
+
+}
+/// @nodoc
+class _$CollectionAdditionsReportedCopyWithImpl<$Res>
+    implements $CollectionAdditionsReportedCopyWith<$Res> {
+  _$CollectionAdditionsReportedCopyWithImpl(this._self, this._then);
+
+  final CollectionAdditionsReported _self;
+  final $Res Function(CollectionAdditionsReported) _then;
+
+/// Create a copy of CollectionAdditions
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? items = null,}) {
+  return _then(CollectionAdditionsReported(
+items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
+as List<ItemAddition>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class CollectionAdditionsFailed implements CollectionAdditions {
+  const CollectionAdditionsFailed({required this.failure});
+  
+
+ final  Failure failure;
+
+/// Create a copy of CollectionAdditions
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CollectionAdditionsFailedCopyWith<CollectionAdditionsFailed> get copyWith => _$CollectionAdditionsFailedCopyWithImpl<CollectionAdditionsFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CollectionAdditionsFailed&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,failure);
+
+@override
+String toString() {
+  return 'CollectionAdditions.failed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CollectionAdditionsFailedCopyWith<$Res> implements $CollectionAdditionsCopyWith<$Res> {
+  factory $CollectionAdditionsFailedCopyWith(CollectionAdditionsFailed value, $Res Function(CollectionAdditionsFailed) _then) = _$CollectionAdditionsFailedCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+$FailureCopyWith<$Res> get failure;
+
+}
+/// @nodoc
+class _$CollectionAdditionsFailedCopyWithImpl<$Res>
+    implements $CollectionAdditionsFailedCopyWith<$Res> {
+  _$CollectionAdditionsFailedCopyWithImpl(this._self, this._then);
+
+  final CollectionAdditionsFailed _self;
+  final $Res Function(CollectionAdditionsFailed) _then;
+
+/// Create a copy of CollectionAdditions
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(CollectionAdditionsFailed(
+failure: null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+/// Create a copy of CollectionAdditions
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$FailureCopyWith<$Res> get failure {
+  
+  return $FailureCopyWith<$Res>(_self.failure, (value) {
+    return _then(_self.copyWith(failure: value));
+  });
+}
+}
+
 // dart format on

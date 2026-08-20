@@ -8,7 +8,6 @@ import 'package:alexandria_desktop/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
 import 'package:alexandria_desktop/features/lifecycle/domain/lifecycle_gateway.dart';
-import 'package:alexandria_desktop/features/lifecycle/domain/retention.dart';
 import 'package:alexandria_desktop/features/organization/domain/bookmark.dart';
 import 'package:alexandria_desktop/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
@@ -34,7 +33,7 @@ void main() {
     name: 'Old notes.md',
     type: LibraryType.text,
     isDeleted: true,
-    deletedAt: now.subtract(retentionWindow + const Duration(days: 1)),
+    deletedAt: now.subtract(const Duration(days: 31)),
   );
 
   /// Still inside its window, which is AF-02.
@@ -51,7 +50,7 @@ void main() {
     uuid: fileUuid,
     name: 'Old notes.md',
     type: LibraryType.text,
-    deletedAt: now.subtract(retentionWindow + const Duration(days: 1)),
+    deletedAt: now.subtract(const Duration(days: 31)),
   );
 
   final deletedBookmark = Bookmark(
@@ -59,7 +58,7 @@ void main() {
     url: 'https://example.org/notes',
     title: 'Saved article',
     isDeleted: true,
-    deletedAt: now.subtract(retentionWindow + const Duration(days: 1)),
+    deletedAt: now.subtract(const Duration(days: 31)),
   );
 
   /// Signs in and opens the deleted-items view holding [file].
