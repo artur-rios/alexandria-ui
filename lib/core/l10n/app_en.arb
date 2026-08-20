@@ -1458,5 +1458,33 @@
               "type": "String"
           }
       }
+  },
+
+  "imageFit": "Fit to the window",
+  "@imageFit": {
+      "description": "UC-24 main flow step 4 / FR-VW-04: returns a zoomed image to fitting the window."
+  },
+
+  "imageNext": "Next image",
+  "@imageNext": {
+      "description": "UC-24 main flow step 5: moves to the next image in the current listing."
+  },
+
+  "imagePrevious": "Previous image",
+  "@imagePrevious": {
+      "description": "UC-24 main flow step 5: moves to the previous one."
+  },
+
+  "imageOf": "{position} of {total}",
+  "@imageOf": {
+      "description": "UC-24: where the owner is in the listing they opened the image from.",
+      "placeholders": {
+          "position": {
+              "type": "int"
+          },
+          "total": {
+              "type": "int"
+          }
+      }
   }
 }

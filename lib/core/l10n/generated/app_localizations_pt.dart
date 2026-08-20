@@ -976,4 +976,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String comicPagesSkipped(String pages) {
     return 'Não foi possível ler estas páginas: $pages';
   }
+
+  @override
+  String get imageFit => 'Ajustar à janela';
+
+  @override
+  String get imageNext => 'Próxima imagem';
+
+  @override
+  String get imagePrevious => 'Imagem anterior';
+
+  @override
+  String imageOf(int position, int total) {
+    return '$position de $total';
+  }
 }

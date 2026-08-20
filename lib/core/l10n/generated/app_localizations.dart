@@ -1793,6 +1793,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'These pages could not be read: {pages}'**
   String comicPagesSkipped(String pages);
+
+  /// UC-24 main flow step 4 / FR-VW-04: returns a zoomed image to fitting the window.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to the window'**
+  String get imageFit;
+
+  /// UC-24 main flow step 5: moves to the next image in the current listing.
+  ///
+  /// In en, this message translates to:
+  /// **'Next image'**
+  String get imageNext;
+
+  /// UC-24 main flow step 5: moves to the previous one.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous image'**
+  String get imagePrevious;
+
+  /// UC-24: where the owner is in the listing they opened the image from.
+  ///
+  /// In en, this message translates to:
+  /// **'{position} of {total}'**
+  String imageOf(int position, int total);
 }
 
 class _AppLocalizationsDelegate
