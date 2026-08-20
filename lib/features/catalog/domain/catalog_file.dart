@@ -40,6 +40,13 @@ abstract class CatalogFile with _$CatalogFile {
     /// that answers without it must not make the listing unreadable.
     DateTime? indexedAt,
 
+    /// Whether the core reports the record as deleted.
+    ///
+    /// The core's verdict and not this application's: a purge is offered for a
+    /// deleted record and refused for an active one (UC-35 AF-03), and the
+    /// answer to which it is has to come from the same listing the record did.
+    @Default(false) bool isDeleted,
+
     /// When the record was soft-deleted.
     ///
     /// What the deleted view counts the retention window from (UC-34,

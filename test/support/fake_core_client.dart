@@ -416,6 +416,36 @@ class FakeCoreClient implements CoreClient {
   /// What a bookmark restore answers.
   CoreJsonResponse bookmarkRestoreResponse = (status: BOOKMARK_OK, json: null);
 
+  /// Every record purged, in order (UC-35, UC-36).
+  final List<String> purged = [];
+
+  /// What a file purge answers.
+  CoreJsonResponse filePurgeResponse = (status: FILE_OK, json: null);
+
+  /// What a purge on disk answers.
+  CoreJsonResponse filePurgeOnDiskResponse = (status: FILE_OK, json: null);
+
+  /// What a bookmark purge answers.
+  CoreJsonResponse bookmarkPurgeResponse = (status: BOOKMARK_OK, json: null);
+
+  @override
+  Future<CoreJsonResponse> filePurge(String uuid, String token) async {
+    purged.add(uuid);
+    return filePurgeResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> filePurgeOnDisk(String uuid, String token) async {
+    purged.add(uuid);
+    return filePurgeOnDiskResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> bookmarkPurge(String uuid, String token) async {
+    purged.add(uuid);
+    return bookmarkPurgeResponse;
+  }
+
   @override
   Future<CoreJsonResponse> fileRestore(String uuid, String token) async {
     restored.add(uuid);

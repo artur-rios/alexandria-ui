@@ -19,6 +19,19 @@ sealed class LifecycleWrite with _$LifecycleWrite {
       LifecycleWriteFailed;
 }
 
+/// What a purge on disk produced (UC-36 main flow step 5).
+@freezed
+sealed class PurgeOnDiskOutcome with _$PurgeOnDiskOutcome {
+  /// The core removed the record, and [diskFilePresent] says whether there was
+  /// a file on disk to remove with it (AF-02).
+  const factory PurgeOnDiskOutcome.purged({required bool diskFilePresent}) =
+      PurgeOnDiskPurged;
+
+  /// The core refused, or the disk did (AF-03, AF-04, AF-06).
+  const factory PurgeOnDiskOutcome.failed({required Failure failure}) =
+      PurgeOnDiskFailed;
+}
+
 /// The core's deletion-lifecycle operations (FR-LC-01, UC-33).
 abstract interface class LifecycleGateway {
   /// Soft-deletes the file [uuid] identifies (FR-LC-01).
@@ -47,6 +60,31 @@ abstract interface class LifecycleGateway {
 
   /// Restores the bookmark [uuid] identifies (FR-LC-04, UC-34).
   Future<LifecycleWrite> restoreBookmark({
+    required String uuid,
+    required String credential,
+  });
+
+  /// Purges the file [uuid] identifies from the catalog (FR-LC-05, UC-35).
+  ///
+  /// The record only. The file on disk is untouched, which is what the
+  /// confirmation promises.
+  Future<LifecycleWrite> purgeFile({
+    required String uuid,
+    required String credential,
+  });
+
+  /// Purges the bookmark [uuid] identifies (FR-LC-05, UC-35).
+  Future<LifecycleWrite> purgeBookmark({
+    required String uuid,
+    required String credential,
+  });
+
+  /// Purges the file [uuid] identifies from disk and from the catalog
+  /// (FR-LC-06, UC-36).
+  ///
+  /// The one operation in this application that removes the owner's data from
+  /// disk. Answers whether there was a file to remove (AF-02).
+  Future<PurgeOnDiskOutcome> purgeFileOnDisk({
     required String uuid,
     required String credential,
   });

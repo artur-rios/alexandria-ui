@@ -1789,5 +1789,55 @@
               "type": "num"
           }
       }
+  },
+
+  "purgeRecord": "Purge",
+  "@purgeRecord": {
+      "description": "UC-35 main flow step 1: removes the record from the catalog for good."
+  },
+
+  "purgeRecordOnDisk": "The file on disk is not removed.",
+  "@purgeRecordOnDisk": {
+      "description": "UC-35 main flow step 2 and FR-LC-05: the confirmation says so explicitly."
+  },
+
+  "purgeNotDeleted": "Delete that record first \u2014 only a deleted record can be purged.",
+  "@purgeNotDeleted": {
+      "description": "UC-35 AF-03: the record is not soft-deleted, so the core is not called."
+  },
+
+  "purgeNotFound": "That record is no longer there.",
+  "@purgeNotFound": {
+      "description": "UC-35 AF-04 and UC-36 AF-04: the core has no such record, so the view is read again."
+  },
+
+  "purgeNothingOnDisk": "The record was removed, and no file was found on disk.",
+  "@purgeNothingOnDisk": {
+      "description": "UC-36 AF-02: the core succeeded and there was nothing on disk to remove."
+  },
+
+  "purgeDiskFailed": "Nothing was removed \u2014 neither the file nor the record.",
+  "@purgeDiskFailed": {
+      "description": "UC-36 AF-03: the disk refused, and the core left both alone."
+  },
+
+  "purgeRecordMessage": "Remove {name} from the catalog permanently? This cannot be undone.",
+  "@purgeRecordMessage": {
+      "description": "UC-35 main flow step 2: the confirmation names the record and says the removal is permanent.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "purgeTooSoon": "{days, plural, =1{That record can be purged in 1 day.} other{That record can be purged in {days} days.}}",
+  "@purgeTooSoon": {
+      "description": "UC-35 AF-02 and FR-LC-07: the core refused because the retention window has not elapsed, and this says when it will have.",
+      "placeholders": {
+          "days": {
+              "type": "num"
+          }
+      }
   }
 }

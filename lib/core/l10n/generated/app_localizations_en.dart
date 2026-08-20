@@ -1279,4 +1279,41 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get purgeRecord => 'Purge';
+
+  @override
+  String get purgeRecordOnDisk => 'The file on disk is not removed.';
+
+  @override
+  String get purgeNotDeleted =>
+      'Delete that record first — only a deleted record can be purged.';
+
+  @override
+  String get purgeNotFound => 'That record is no longer there.';
+
+  @override
+  String get purgeNothingOnDisk =>
+      'The record was removed, and no file was found on disk.';
+
+  @override
+  String get purgeDiskFailed =>
+      'Nothing was removed — neither the file nor the record.';
+
+  @override
+  String purgeRecordMessage(String name) {
+    return 'Remove $name from the catalog permanently? This cannot be undone.';
+  }
+
+  @override
+  String purgeTooSoon(num days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'That record can be purged in $days days.',
+      one: 'That record can be purged in 1 day.',
+    );
+    return '$_temp0';
+  }
 }

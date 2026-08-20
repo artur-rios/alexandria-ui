@@ -8,7 +8,9 @@ import '../../../core/failures/failure_messages.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
+import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/deleted_items_controller.dart';
+import '../application/purge_controller.dart';
 import '../domain/deleted_record.dart';
 
 /// The deleted-items view (UC-34, FR-LC-03, FR-LC-04).
@@ -79,15 +81,24 @@ class _Notice extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final state = ref.watch(restoreControllerProvider);
-    if (state.notice == RestoreNotice.none) return const SizedBox.shrink();
+    final restore = ref.watch(restoreControllerProvider);
+    final purge = ref.watch(purgeControllerProvider);
 
-    final message = switch (state.notice) {
-      RestoreNotice.notFound => l10n.restoreNotFound,
-      RestoreNotice.refused =>
-        state.refusal?.localizedMessage(l10n) ?? l10n.restoreNotFound,
-      RestoreNotice.none => '',
+    final message = switch ((restore.notice, purge.notice)) {
+      (RestoreNotice.notFound, _) => l10n.restoreNotFound,
+      (RestoreNotice.refused, _) =>
+        restore.refusal?.localizedMessage(l10n) ?? l10n.restoreNotFound,
+      (_, PurgeNotice.notDeleted) => l10n.purgeNotDeleted,
+      // FR-LC-07: when it becomes possible, not a status code.
+      (_, PurgeNotice.tooSoon) => l10n.purgeTooSoon(purge.daysRemaining ?? 0),
+      (_, PurgeNotice.notFound) => l10n.purgeNotFound,
+      (_, PurgeNotice.nothingOnDisk) => l10n.purgeNothingOnDisk,
+      (_, PurgeNotice.diskFailed) => l10n.purgeDiskFailed,
+      (_, PurgeNotice.refused) =>
+        purge.refusal?.localizedMessage(l10n) ?? l10n.purgeNotFound,
+      _ => null,
     };
+    if (message == null) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -102,7 +113,10 @@ class _Notice extends ConsumerWidget {
             ),
           ),
           TextButton(
-            onPressed: ref.read(restoreControllerProvider.notifier).acknowledge,
+            onPressed: () {
+              ref.read(restoreControllerProvider.notifier).acknowledge();
+              ref.read(purgeControllerProvider.notifier).acknowledge();
+            },
             child: Text(l10n.editorDismiss),
           ),
         ],
@@ -146,15 +160,49 @@ class _RecordTile extends ConsumerWidget {
               )
             : null,
       ),
-      trailing: retention.hasElapsed
-          ? null
-          : TextButton.icon(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // AF-02: past the window there is nothing left to restore, so only
+          // the purge is offered.
+          if (!retention.hasElapsed)
+            TextButton.icon(
               onPressed: () => unawaited(
                 ref.read(restoreControllerProvider.notifier).restore(record),
               ),
               icon: const Icon(Icons.restore),
               label: Text(l10n.restoreRecord),
             ),
+          // UC-35 main flow step 1.
+          TextButton.icon(
+            onPressed: () => unawaited(_purge(context, ref)),
+            icon: const Icon(Icons.delete_forever_outlined),
+            label: Text(l10n.purgeRecord),
+          ),
+        ],
+      ),
     );
+  }
+
+  /// UC-35 main flow step 2: the confirmation states that the record goes
+  /// permanently and that the file on disk does not (FR-LC-05, BR-07). AF-01
+  /// is declining it.
+  Future<void> _purge(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+
+    final confirmed = await ConfirmationDialog.show(
+      context,
+      title: l10n.purgeRecord,
+      message: l10n.purgeRecordMessage(record.name),
+      confirmLabel: l10n.purgeRecord,
+      // A bookmark has no file on disk, so a dialog that promised one was
+      // spared would be describing something that is not there.
+      fileOnDiskNotice: record.kind == DeletedRecordKind.file
+          ? l10n.purgeRecordOnDisk
+          : null,
+    );
+    if (!confirmed) return;
+
+    await ref.read(purgeControllerProvider.notifier).purge(record);
   }
 }

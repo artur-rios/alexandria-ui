@@ -184,6 +184,7 @@ CatalogFile aFile({
   DateTime? indexedAt,
   DateTime? missingAt,
   DateTime? deletedAt,
+  bool isDeleted = false,
 }) => CatalogFile(
   uuid: uuid,
   name: name,
@@ -196,4 +197,5 @@ CatalogFile aFile({
   indexedAt: indexedAt,
   missingAt: missingAt,
   deletedAt: deletedAt,
+  isDeleted: isDeleted,
 );

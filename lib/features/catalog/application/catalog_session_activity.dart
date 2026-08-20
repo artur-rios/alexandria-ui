@@ -66,6 +66,7 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(openFileHoldsProvider);
     _ref.invalidate(deletedItemsControllerProvider);
     _ref.invalidate(restoreControllerProvider);
+    _ref.invalidate(purgeControllerProvider);
 
     // The layout and the per-type filters are deliberately left alone: they
     // are how the owner prefers to see their library, not a projection of it,
