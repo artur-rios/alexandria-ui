@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../organization/presentation/collections_screen.dart';
 import '../../lifecycle/presentation/deleted_items_screen.dart';
 import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
@@ -72,6 +73,14 @@ class _DeletedItemsSection extends StatelessWidget {
       child: Wrap(
         spacing: AppSpacing.md,
         children: [
+          // UC-26 main flow step 1: a collection holds files or bookmarks, so
+          // it belongs to no single area of the library (FR-CT-01) — and the
+          // dashboard is the screen that is already about all of it.
+          TextButton.icon(
+            onPressed: () => CollectionsScreen.show(context),
+            icon: const Icon(Icons.folder_outlined),
+            label: Text(l10n.collectionsOpen),
+          ),
           TextButton.icon(
             onPressed: () => DeletedItemsScreen.show(context),
             icon: const Icon(Icons.delete_outline),

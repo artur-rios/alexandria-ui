@@ -217,6 +217,36 @@ abstract interface class CoreClient {
   /// and leaves both the file and the record alone.
   Future<CoreJsonResponse> filePurgeOnDisk(String uuid, String token);
 
+  /// Lists the owner's collections through `alexandria_collections_list`
+  /// (FR-OG-06, UC-26).
+  ///
+  /// [jsonFilters] optionally narrows to one `kind`; an empty string is every
+  /// collection. Answers an array of `CollectionSummary` — each collection and
+  /// the number of items it holds.
+  Future<CoreJsonResponse> collectionsList(String jsonFilters, String token);
+
+  /// Creates a collection through `alexandria_collection_create` (FR-OG-01,
+  /// UC-26).
+  ///
+  /// [jsonBody] carries `name` and `kind`; the kind is fixed at creation and
+  /// decides which items the collection will accept.
+  Future<CoreJsonResponse> collectionCreate(String jsonBody, String token);
+
+  /// Renames a collection through `alexandria_collection_rename` (FR-OG-02,
+  /// UC-26).
+  Future<CoreJsonResponse> collectionRename(
+    String uuid,
+    String jsonBody,
+    String token,
+  );
+
+  /// Deletes a collection through `alexandria_collection_delete` (FR-OG-03,
+  /// UC-26).
+  ///
+  /// The items it held are unlinked, never deleted — which is what the
+  /// confirmation promises before this is called.
+  Future<CoreJsonResponse> collectionDelete(String uuid, String token);
+
   /// Creates a browser bookmark through `alexandria_bookmark_create`
   /// (FR-OG-08, UC-28).
   Future<CoreJsonResponse> bookmarkCreate(String jsonBody, String token);
@@ -493,6 +523,36 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> bookmarkPurge(String uuid, String token) async =>
       await _isolate.call('bookmarkPurge', [uuid, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> collectionsList(
+    String jsonFilters,
+    String token,
+  ) async =>
+      await _isolate.call('collectionsList', [jsonFilters, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> collectionCreate(
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('collectionCreate', [jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> collectionRename(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('collectionRename', [uuid, jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> collectionDelete(String uuid, String token) async =>
+      await _isolate.call('collectionDelete', [uuid, token])
+          as CoreJsonResponse;
 
   @override
   Future<CoreJsonResponse> bookmarkCreate(

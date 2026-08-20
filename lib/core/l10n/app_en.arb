@@ -2016,5 +2016,90 @@
               "type": "num"
           }
       }
+  },
+
+  "collectionsTitle": "Collections",
+  "@collectionsTitle": {
+      "description": "UC-26 main flow step 1: the collections screen heading."
+  },
+
+  "collectionsOpen": "Collections",
+  "@collectionsOpen": {
+      "description": "UC-26 main flow step 1: opens the collections screen from the dashboard."
+  },
+
+  "collectionsNone": "You have not made a collection yet.",
+  "@collectionsNone": {
+      "description": "UC-26: there are no collections, which is a state and not a failure."
+  },
+
+  "collectionNameLabel": "Collection name",
+  "@collectionNameLabel": {
+      "description": "UC-26 main flow step 2: what the new collection is called."
+  },
+
+  "collectionRenameLabel": "New name",
+  "@collectionRenameLabel": {
+      "description": "UC-26 main flow step 5: what the collection is being renamed to."
+  },
+
+  "collectionCreate": "Create",
+  "@collectionCreate": {
+      "description": "UC-26 main flow step 3: sends the new collection to the core."
+  },
+
+  "collectionRenameSave": "Rename",
+  "@collectionRenameSave": {
+      "description": "UC-26 main flow step 5: sends the new name to the core."
+  },
+
+  "collectionRename": "Rename this collection",
+  "@collectionRename": {
+      "description": "UC-26 main flow step 5: opens the collection for renaming."
+  },
+
+  "collectionDelete": "Delete this collection",
+  "@collectionDelete": {
+      "description": "UC-26 main flow step 6: removes the grouping and keeps its items."
+  },
+
+  "collectionNameEmpty": "Give the collection a name.",
+  "@collectionNameEmpty": {
+      "description": "UC-26 AF-01: the name is blank after trimming, so the core is not called."
+  },
+
+  "collectionNotFound": "That collection is no longer there.",
+  "@collectionNotFound": {
+      "description": "UC-26 AF-04: the core has no such collection, so the list is read again."
+  },
+
+  "collectionKindFile": "Files",
+  "@collectionKindFile": {
+      "description": "UC-26 main flow step 2: a collection that holds catalog files."
+  },
+
+  "collectionKindBookmark": "Bookmarks",
+  "@collectionKindBookmark": {
+      "description": "UC-26 main flow step 2: a collection that holds bookmarks."
+  },
+
+  "collectionDeleteMessage": "Delete {name}? The items in it are kept \u2014 only the grouping is removed.",
+  "@collectionDeleteMessage": {
+      "description": "UC-26 main flow step 6, FR-OG-03 and BR-07: the confirmation names what goes and what does not.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "collectionItemCount": "{count, plural, =0{Empty} =1{1 item} other{{count} items}}",
+  "@collectionItemCount": {
+      "description": "UC-26: how many items a collection holds, as the core counts them.",
+      "placeholders": {
+          "count": {
+              "type": "num"
+          }
+      }
   }
 }

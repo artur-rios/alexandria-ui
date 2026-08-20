@@ -2561,6 +2561,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 recovery code left} other{{count} recovery codes left}}'**
   String recoveryCodesRemaining(num count);
+
+  /// UC-26 main flow step 1: the collections screen heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get collectionsTitle;
+
+  /// UC-26 main flow step 1: opens the collections screen from the dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get collectionsOpen;
+
+  /// UC-26: there are no collections, which is a state and not a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not made a collection yet.'**
+  String get collectionsNone;
+
+  /// UC-26 main flow step 2: what the new collection is called.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection name'**
+  String get collectionNameLabel;
+
+  /// UC-26 main flow step 5: what the collection is being renamed to.
+  ///
+  /// In en, this message translates to:
+  /// **'New name'**
+  String get collectionRenameLabel;
+
+  /// UC-26 main flow step 3: sends the new collection to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get collectionCreate;
+
+  /// UC-26 main flow step 5: sends the new name to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get collectionRenameSave;
+
+  /// UC-26 main flow step 5: opens the collection for renaming.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename this collection'**
+  String get collectionRename;
+
+  /// UC-26 main flow step 6: removes the grouping and keeps its items.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this collection'**
+  String get collectionDelete;
+
+  /// UC-26 AF-01: the name is blank after trimming, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the collection a name.'**
+  String get collectionNameEmpty;
+
+  /// UC-26 AF-04: the core has no such collection, so the list is read again.
+  ///
+  /// In en, this message translates to:
+  /// **'That collection is no longer there.'**
+  String get collectionNotFound;
+
+  /// UC-26 main flow step 2: a collection that holds catalog files.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get collectionKindFile;
+
+  /// UC-26 main flow step 2: a collection that holds bookmarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks'**
+  String get collectionKindBookmark;
+
+  /// UC-26 main flow step 6, FR-OG-03 and BR-07: the confirmation names what goes and what does not.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}? The items in it are kept — only the grouping is removed.'**
+  String collectionDeleteMessage(String name);
+
+  /// UC-26: how many items a collection holds, as the core counts them.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Empty} =1{1 item} other{{count} items}}'**
+  String collectionItemCount(num count);
 }
 
 class _AppLocalizationsDelegate

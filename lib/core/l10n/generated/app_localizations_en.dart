@@ -1437,4 +1437,60 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get collectionsTitle => 'Collections';
+
+  @override
+  String get collectionsOpen => 'Collections';
+
+  @override
+  String get collectionsNone => 'You have not made a collection yet.';
+
+  @override
+  String get collectionNameLabel => 'Collection name';
+
+  @override
+  String get collectionRenameLabel => 'New name';
+
+  @override
+  String get collectionCreate => 'Create';
+
+  @override
+  String get collectionRenameSave => 'Rename';
+
+  @override
+  String get collectionRename => 'Rename this collection';
+
+  @override
+  String get collectionDelete => 'Delete this collection';
+
+  @override
+  String get collectionNameEmpty => 'Give the collection a name.';
+
+  @override
+  String get collectionNotFound => 'That collection is no longer there.';
+
+  @override
+  String get collectionKindFile => 'Files';
+
+  @override
+  String get collectionKindBookmark => 'Bookmarks';
+
+  @override
+  String collectionDeleteMessage(String name) {
+    return 'Delete $name? The items in it are kept — only the grouping is removed.';
+  }
+
+  @override
+  String collectionItemCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+      zero: 'Empty',
+    );
+    return '$_temp0';
+  }
 }

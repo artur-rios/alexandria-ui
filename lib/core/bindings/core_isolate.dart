@@ -541,6 +541,57 @@ class CoreIsolate {
         }),
       ),
 
+      'collectionsList' => withNativeString(
+        arguments.first! as String,
+        (first) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_collections_list(first, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'collectionCreate' => withNativeString(
+        arguments.first! as String,
+        (first) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_collection_create(first, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'collectionRename' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (body) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_collection_rename(
+              uuid,
+              body,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      'collectionDelete' => withNativeString(
+        arguments.first! as String,
+        (first) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_collection_delete(first, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       'bookmarkCreate' => withNativeString(
         arguments.first! as String,
         (body) => withNativeString(arguments[1]! as String, (token) {
