@@ -27,9 +27,14 @@ import '../../../support/shell_harness.dart';
 /// the dashboard's first-run block and they went to 0.59%, past the 0.5%
 /// tolerance, on antialiasing alone. Text is what rasterizes differently
 /// across platforms, so the more text a golden holds the less of its budget is
-/// left for the regressions it exists to catch. Whoever builds UC-28 will make
-/// bookmarks render something, and should move this to whatever is still a
-/// single line then.
+/// left for the regressions it exists to catch.
+///
+/// UC-28 then filled bookmarks, as that note predicted, and there is no
+/// single-line destination left to move to: every other one is a file type
+/// with a listing. Bookmarks stays, because with none saved it is the
+/// emptiest area there is — one button and one sentence — and the images were
+/// regenerated for it. If it grows, the next place to look is a file type
+/// with an empty library.
 ///
 /// Regenerate with `flutter test --update-goldens`, and look at the images.
 void main() {

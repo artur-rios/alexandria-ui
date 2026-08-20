@@ -159,6 +159,23 @@ abstract interface class CoreClient {
   /// `FILE_ERR_DISK` and leaves the catalog untouched.
   Future<CoreJsonResponse> fileRename(String uuid, String name, String token);
 
+  /// Creates a browser bookmark through `alexandria_bookmark_create`
+  /// (FR-OG-08, UC-28).
+  Future<CoreJsonResponse> bookmarkCreate(String jsonBody, String token);
+
+  /// Updates a bookmark through `alexandria_bookmark_update` (FR-OG-09).
+  Future<CoreJsonResponse> bookmarkUpdate(
+    String uuid,
+    String jsonBody,
+    String token,
+  );
+
+  /// Browses bookmarks through `alexandria_bookmarks_list` (FR-OG-10).
+  ///
+  /// [jsonFilters] optionally carries a containing collection; an empty
+  /// string is every bookmark.
+  Future<CoreJsonResponse> bookmarksList(String jsonFilters, String token);
+
   /// Browses watchlists and the watch progress of everything they track
   /// through `alexandria_watchlists_list` (FR-WL-08).
   ///
@@ -294,6 +311,31 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async =>
       await _isolate.call('fileRename', [uuid, name, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> bookmarkCreate(
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('bookmarkCreate', [jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> bookmarkUpdate(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('bookmarkUpdate', [uuid, jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> bookmarksList(
+    String jsonFilters,
+    String token,
+  ) async =>
+      await _isolate.call('bookmarksList', [jsonFilters, token])
           as CoreJsonResponse;
 
   @override

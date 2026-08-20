@@ -429,6 +429,46 @@ class CoreIsolate {
         ),
       ),
 
+      'bookmarkCreate' => withNativeString(
+        arguments.first! as String,
+        (body) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_bookmark_create(body, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'bookmarkUpdate' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (body) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_bookmark_update(
+              uuid,
+              body,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      'bookmarksList' => withNativeString(
+        arguments.first! as String,
+        (filters) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_bookmarks_list(filters, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       // UC-16 AF-03 reads this to find out whether a video's progress is
       // counted per episode; UC-29 and UC-30 are what browse it.
       'watchlistsList' => withNativeString(

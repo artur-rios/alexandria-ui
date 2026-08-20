@@ -380,6 +380,37 @@ class FakeCoreClient implements CoreClient {
     String token,
   ) async => playbackSourceResponse;
 
+  /// What [bookmarksList] answers (UC-28).
+  CoreJsonResponse bookmarksResponse = (status: BOOKMARK_OK, json: '[]');
+
+  /// What [bookmarkCreate] and [bookmarkUpdate] answer (UC-28).
+  CoreJsonResponse bookmarkWriteResponse = (status: BOOKMARK_OK, json: null);
+
+  /// Every bookmark write asked for, in order.
+  final List<({String? uuid, String body})> bookmarkWrites = [];
+
+  @override
+  Future<CoreJsonResponse> bookmarksList(
+    String jsonFilters,
+    String token,
+  ) async => bookmarksResponse;
+
+  @override
+  Future<CoreJsonResponse> bookmarkCreate(String jsonBody, String token) async {
+    bookmarkWrites.add((uuid: null, body: jsonBody));
+    return bookmarkWriteResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> bookmarkUpdate(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async {
+    bookmarkWrites.add((uuid: uuid, body: jsonBody));
+    return bookmarkWriteResponse;
+  }
+
   /// What [comicPage] answers (UC-23).
   CoreJsonResponse comicPageResponse = (status: PLAYBACK_OK, json: null);
 

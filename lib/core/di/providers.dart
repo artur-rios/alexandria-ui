@@ -64,6 +64,12 @@ import '../../features/editing/application/editing_session_activity.dart';
 import '../../features/editing/application/text_editor_controller.dart';
 import '../../features/editing/data/core_text_content_gateway.dart';
 import '../../features/editing/domain/text_content_gateway.dart';
+import '../../features/organization/application/bookmarks_controller.dart';
+import '../../features/organization/data/core_bookmark_gateway.dart';
+import '../../features/organization/data/url_launcher_browser.dart';
+import '../../features/organization/domain/bookmark.dart';
+import '../../features/organization/domain/bookmark_gateway.dart';
+import '../../features/organization/domain/browser_launcher.dart';
 import '../../features/playback/application/audio_playback_controller.dart';
 import '../../features/playback/application/audio_playback_session.dart';
 import '../../features/playback/application/music_library_controller.dart';
@@ -529,6 +535,34 @@ final documentViewerControllerProvider =
     NotifierProvider<DocumentViewerController, DocumentViewerState>(
       DocumentViewerController.new,
     );
+
+/// The core's bookmark operations (UC-28, FR-OG-08 … FR-OG-10).
+final bookmarkGatewayProvider = Provider<BookmarkGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the bookmark gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreBookmarkGateway(core);
+});
+
+/// The platform's default browser (UC-28, FR-OG-11).
+final browserLauncherProvider = Provider<BrowserLauncher>(
+  (ref) => const UrlLauncherBrowser(),
+);
+
+/// The owner's bookmarks (UC-28).
+final bookmarksControllerProvider =
+    AsyncNotifierProvider<BookmarksController, List<Bookmark>>(
+      BookmarksController.new,
+    );
+
+/// The open bookmark form (UC-28).
+final bookmarkFormProvider = NotifierProvider<BookmarkForm, BookmarkFormState>(
+  BookmarkForm.new,
+);
 
 /// The core's watch-progress read (UC-16 AF-03).
 ///

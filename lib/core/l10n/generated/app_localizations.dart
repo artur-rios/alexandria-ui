@@ -416,12 +416,6 @@ abstract class AppLocalizations {
   /// **'Loading'**
   String get loading;
 
-  /// Placeholder in the shell's content area (UC-38). Each destination's listing arrives with its own use case; until then the area states that it is empty rather than rendering a spinner that never resolves.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing to show here yet.'**
-  String get shellAreaPending;
-
   /// Accessible label of the persistent playback bar (FR-UX-01).
   ///
   /// In en, this message translates to:
@@ -1835,6 +1829,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'These files the page refers to are not on disk: {assets}'**
   String pageMissingAssets(String assets);
+
+  /// UC-28 main flow step 3: opens the form that creates one.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a bookmark'**
+  String get bookmarkAdd;
+
+  /// UC-28 main flow step 5: opens the form on an existing bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit this bookmark'**
+  String get bookmarkEdit;
+
+  /// UC-28 main flow step 4: sends the new bookmark to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get bookmarkCreate;
+
+  /// UC-28 main flow step 5: sends the changed bookmark to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get bookmarkSave;
+
+  /// UC-28: what the bookmark is called in the listing.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get bookmarkTitleLabel;
+
+  /// UC-28: the address the bookmark opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get bookmarkUrlLabel;
+
+  /// UC-28 main flow step 2: the listing is empty, which is a state and not a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not saved any bookmarks yet.'**
+  String get bookmarksNone;
+
+  /// UC-28 AF-01 / FR-OG-12: a blank title or address, refused before the core is called.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be empty.'**
+  String get bookmarkFieldEmpty;
+
+  /// UC-28 AF-01 / FR-OG-12: the address does not parse.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not an address.'**
+  String get bookmarkUrlMalformed;
+
+  /// UC-28 AF-01: it parses, but not as something a browser could open.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a web address starting with http:// or https://.'**
+  String get bookmarkUrlUnopenable;
+
+  /// UC-28 AF-04: the platform would not launch one.
+  ///
+  /// In en, this message translates to:
+  /// **'No browser could be opened for this bookmark.'**
+  String get bookmarkNoBrowser;
+
+  /// UC-28 AF-04: the only useful thing left when no browser opens — the owner takes the address elsewhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the address'**
+  String get bookmarkCopyUrl;
 }
 
 class _AppLocalizationsDelegate

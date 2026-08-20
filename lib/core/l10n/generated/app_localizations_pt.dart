@@ -202,9 +202,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get loading => 'Carregando';
 
   @override
-  String get shellAreaPending => 'Nada para mostrar aqui ainda.';
-
-  @override
   String get playbackBarLabel => 'Reprodução';
 
   @override
@@ -1003,4 +1000,42 @@ class AppLocalizationsPt extends AppLocalizations {
   String pageMissingAssets(String assets) {
     return 'Estes arquivos referenciados pela página não estão no disco: $assets';
   }
+
+  @override
+  String get bookmarkAdd => 'Adicionar favorito';
+
+  @override
+  String get bookmarkEdit => 'Editar este favorito';
+
+  @override
+  String get bookmarkCreate => 'Criar';
+
+  @override
+  String get bookmarkSave => 'Salvar';
+
+  @override
+  String get bookmarkTitleLabel => 'Título';
+
+  @override
+  String get bookmarkUrlLabel => 'Endereço';
+
+  @override
+  String get bookmarksNone => 'Você ainda não salvou nenhum favorito.';
+
+  @override
+  String get bookmarkFieldEmpty => 'Isto não pode ficar vazio.';
+
+  @override
+  String get bookmarkUrlMalformed => 'Isto não é um endereço.';
+
+  @override
+  String get bookmarkUrlUnopenable =>
+      'Digite um endereço começando com http:// ou https://.';
+
+  @override
+  String get bookmarkNoBrowser =>
+      'Não foi possível abrir um navegador para este favorito.';
+
+  @override
+  String get bookmarkCopyUrl => 'Copiar o endereço';
 }
