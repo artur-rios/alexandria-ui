@@ -367,5 +367,13 @@
   "restoreNotFound": "Esse registro não pode ser restaurado — ele sumiu ou o prazo passou.",
   "retentionElapsed": "Não é mais restaurável — só pode ser expurgado.",
   "retentionUnknown": "Restaurável",
-  "retentionRemaining": "{days, plural, =1{Restaurável por mais 1 dia} other{Restaurável por mais {days} dias}}"
+  "retentionRemaining": "{days, plural, =1{Restaurável por mais 1 dia} other{Restaurável por mais {days} dias}}",
+  "purgeRecord": "Expurgar",
+  "purgeRecordOnDisk": "O arquivo no disco não é removido.",
+  "purgeNotDeleted": "Exclua esse registro primeiro — só um registro excluído pode ser expurgado.",
+  "purgeNotFound": "Esse registro não está mais lá.",
+  "purgeNothingOnDisk": "O registro foi removido e nenhum arquivo foi encontrado no disco.",
+  "purgeDiskFailed": "Nada foi removido — nem o arquivo nem o registro.",
+  "purgeRecordMessage": "Remover {name} do catálogo permanentemente? Isso não pode ser desfeito.",
+  "purgeTooSoon": "{days, plural, =1{Esse registro pode ser expurgado em 1 dia.} other{Esse registro pode ser expurgado em {days} dias.}}"
 }

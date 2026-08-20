@@ -173,6 +173,22 @@ abstract interface class CoreClient {
   /// `FILE_ERR_NOT_FOUND`.
   Future<CoreJsonResponse> fileRestore(String uuid, String token);
 
+  /// Purges the file [uuid] identifies through `alexandria_file_purge`
+  /// (FR-LC-05, UC-35).
+  ///
+  /// The catalog row only; the file on disk is untouched. The core enforces
+  /// the retention window and answers `FILE_ERR_INVALID_STATE` for a record
+  /// still inside it, or one that is not deleted at all.
+  Future<CoreJsonResponse> filePurge(String uuid, String token);
+
+  /// Purges the file [uuid] identifies from disk as well as from the catalog,
+  /// through `alexandria_file_purge_on_disk` (FR-LC-06, UC-36).
+  ///
+  /// Answers a `PurgeOnDiskOutcome`, whose `diskFilePresent` says whether
+  /// there was a file to remove. A disk failure comes back as `FILE_ERR_DISK`
+  /// and leaves both the file and the record alone.
+  Future<CoreJsonResponse> filePurgeOnDisk(String uuid, String token);
+
   /// Creates a browser bookmark through `alexandria_bookmark_create`
   /// (FR-OG-08, UC-28).
   Future<CoreJsonResponse> bookmarkCreate(String jsonBody, String token);
@@ -197,6 +213,10 @@ abstract interface class CoreClient {
   /// Restores the bookmark [uuid] identifies through
   /// `alexandria_bookmark_restore` (FR-LC-04, UC-34).
   Future<CoreJsonResponse> bookmarkRestore(String uuid, String token);
+
+  /// Purges the bookmark [uuid] identifies through
+  /// `alexandria_bookmark_purge` (FR-LC-05, UC-35).
+  Future<CoreJsonResponse> bookmarkPurge(String uuid, String token);
 
   /// Creates a watchlist through `alexandria_watchlist_create` (FR-TR-01).
   Future<CoreJsonResponse> watchlistCreate(String jsonBody, String token);
@@ -417,6 +437,18 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> bookmarkRestore(String uuid, String token) async =>
       await _isolate.call('bookmarkRestore', [uuid, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> filePurge(String uuid, String token) async =>
+      await _isolate.call('filePurge', [uuid, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> filePurgeOnDisk(String uuid, String token) async =>
+      await _isolate.call('filePurgeOnDisk', [uuid, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> bookmarkPurge(String uuid, String token) async =>
+      await _isolate.call('bookmarkPurge', [uuid, token]) as CoreJsonResponse;
 
   @override
   Future<CoreJsonResponse> bookmarkCreate(

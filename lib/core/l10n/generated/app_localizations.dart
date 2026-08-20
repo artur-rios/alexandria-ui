@@ -2309,6 +2309,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days, plural, =1{Restorable for 1 more day} other{Restorable for {days} more days}}'**
   String retentionRemaining(num days);
+
+  /// UC-35 main flow step 1: removes the record from the catalog for good.
+  ///
+  /// In en, this message translates to:
+  /// **'Purge'**
+  String get purgeRecord;
+
+  /// UC-35 main flow step 2 and FR-LC-05: the confirmation says so explicitly.
+  ///
+  /// In en, this message translates to:
+  /// **'The file on disk is not removed.'**
+  String get purgeRecordOnDisk;
+
+  /// UC-35 AF-03: the record is not soft-deleted, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete that record first — only a deleted record can be purged.'**
+  String get purgeNotDeleted;
+
+  /// UC-35 AF-04 and UC-36 AF-04: the core has no such record, so the view is read again.
+  ///
+  /// In en, this message translates to:
+  /// **'That record is no longer there.'**
+  String get purgeNotFound;
+
+  /// UC-36 AF-02: the core succeeded and there was nothing on disk to remove.
+  ///
+  /// In en, this message translates to:
+  /// **'The record was removed, and no file was found on disk.'**
+  String get purgeNothingOnDisk;
+
+  /// UC-36 AF-03: the disk refused, and the core left both alone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was removed — neither the file nor the record.'**
+  String get purgeDiskFailed;
+
+  /// UC-35 main flow step 2: the confirmation names the record and says the removal is permanent.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from the catalog permanently? This cannot be undone.'**
+  String purgeRecordMessage(String name);
+
+  /// UC-35 AF-02 and FR-LC-07: the core refused because the retention window has not elapsed, and this says when it will have.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{That record can be purged in 1 day.} other{That record can be purged in {days} days.}}'**
+  String purgeTooSoon(num days);
 }
 
 class _AppLocalizationsDelegate

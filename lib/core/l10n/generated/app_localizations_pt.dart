@@ -1281,4 +1281,41 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get purgeRecord => 'Expurgar';
+
+  @override
+  String get purgeRecordOnDisk => 'O arquivo no disco não é removido.';
+
+  @override
+  String get purgeNotDeleted =>
+      'Exclua esse registro primeiro — só um registro excluído pode ser expurgado.';
+
+  @override
+  String get purgeNotFound => 'Esse registro não está mais lá.';
+
+  @override
+  String get purgeNothingOnDisk =>
+      'O registro foi removido e nenhum arquivo foi encontrado no disco.';
+
+  @override
+  String get purgeDiskFailed =>
+      'Nada foi removido — nem o arquivo nem o registro.';
+
+  @override
+  String purgeRecordMessage(String name) {
+    return 'Remover $name do catálogo permanentemente? Isso não pode ser desfeito.';
+  }
+
+  @override
+  String purgeTooSoon(num days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Esse registro pode ser expurgado em $days dias.',
+      one: 'Esse registro pode ser expurgado em 1 dia.',
+    );
+    return '$_temp0';
+  }
 }

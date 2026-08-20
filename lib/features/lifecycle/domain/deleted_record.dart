@@ -25,6 +25,7 @@ class DeletedRecord {
     required this.kind,
     required this.name,
     required this.deletedAt,
+    required this.isDeleted,
     this.type,
   });
 
@@ -34,6 +35,7 @@ class DeletedRecord {
     kind: DeletedRecordKind.file,
     name: file.name,
     deletedAt: file.deletedAt,
+    isDeleted: file.isDeleted,
     type: file.type,
   );
 
@@ -43,6 +45,7 @@ class DeletedRecord {
     kind: DeletedRecordKind.bookmark,
     name: bookmark.title,
     deletedAt: bookmark.deletedAt,
+    isDeleted: bookmark.isDeleted,
   );
 
   /// The public identifier the restore is sent with.
@@ -56,6 +59,13 @@ class DeletedRecord {
 
   /// When it was deleted, when the core said.
   final DateTime? deletedAt;
+
+  /// Whether the core still holds it as deleted (UC-35 AF-03).
+  ///
+  /// Carried rather than assumed from the listing it came out of: a record
+  /// restored since this view was read is not purgeable, and the answer to
+  /// which it is belongs to the core.
+  final bool isDeleted;
 
   /// The file's type, and `null` for a bookmark.
   final LibraryType? type;

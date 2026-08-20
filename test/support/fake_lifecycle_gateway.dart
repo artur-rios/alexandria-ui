@@ -51,6 +51,41 @@ class FakeLifecycleGateway implements LifecycleGateway {
     return _next();
   }
 
+  /// What a purge on disk answers.
+  PurgeOnDiskOutcome purgeOnDiskOutcome = const PurgeOnDiskOutcome.purged(
+    diskFilePresent: true,
+  );
+
+  /// Every record purged, in order.
+  final List<String> purged = [];
+
+  @override
+  Future<LifecycleWrite> purgeFile({
+    required String uuid,
+    required String credential,
+  }) async {
+    purged.add(uuid);
+    return _next();
+  }
+
+  @override
+  Future<LifecycleWrite> purgeBookmark({
+    required String uuid,
+    required String credential,
+  }) async {
+    purged.add(uuid);
+    return _next();
+  }
+
+  @override
+  Future<PurgeOnDiskOutcome> purgeFileOnDisk({
+    required String uuid,
+    required String credential,
+  }) async {
+    purged.add(uuid);
+    return purgeOnDiskOutcome;
+  }
+
   LifecycleWrite _next() =>
       outcomes.isEmpty ? const LifecycleWrite.done() : outcomes.removeAt(0);
 }

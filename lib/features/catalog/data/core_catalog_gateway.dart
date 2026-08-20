@@ -315,6 +315,7 @@ class CoreCatalogGateway implements CatalogGateway {
       path: row['path'] as String? ?? '',
       type: type,
       contentHash: row['contentHash'] as String? ?? '',
+      isDeleted: row['state'] == 'deleted',
       indexedAt: indexedAt == null ? null : DateTime.tryParse(indexedAt),
       missingAt: missingAt == null ? null : DateTime.tryParse(missingAt),
       deletedAt: deletedAt == null ? null : DateTime.tryParse(deletedAt),
