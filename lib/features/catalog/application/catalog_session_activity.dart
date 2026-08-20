@@ -56,6 +56,8 @@ class CatalogSessionActivity implements SessionActivity {
     // (UC-29).
     _ref.invalidate(watchlistsControllerProvider);
     _ref.invalidate(watchlistsFormProvider);
+    _ref.invalidate(trackedVideosProvider);
+    _ref.invalidate(watchProgressEditorProvider);
 
     // The layout and the per-type filters are deliberately left alone: they
     // are how the owner prefers to see their library, not a projection of it,

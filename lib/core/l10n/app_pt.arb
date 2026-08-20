@@ -317,5 +317,13 @@
   "watchStateWatched": "Assistido",
   "watchlistDeleteMessage": "Excluir {name}? Os vídeos são mantidos — apenas o acompanhamento é removido.",
   "watchlistAlreadyIn": "{name} — já está lá",
-  "watchlistItemCount": "{count} acompanhados"
+  "watchlistItemCount": "{count} acompanhados",
+  "watchProgressSave": "Salvar progresso",
+  "watchCurrentEpisodeLabel": "Episódio",
+  "watchTotalEpisodesLabel": "de quantos",
+  "watchEpisodeNotANumber": "Digite um número inteiro.",
+  "watchEpisodeNotPositive": "Os episódios são contados a partir de 1.",
+  "watchEpisodeBeyondTotal": "Isso passa do total que você informou.",
+  "watchEpisode": "episódio {episode}",
+  "watchEpisodeOf": "episódio {episode} de {total}"
 }

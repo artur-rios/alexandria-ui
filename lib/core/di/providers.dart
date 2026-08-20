@@ -97,6 +97,8 @@ import '../../features/viewers/domain/comic_gateway.dart';
 import '../../features/viewers/domain/document_gateway.dart';
 import '../../features/viewers/domain/reading_position_store.dart';
 import '../../features/viewers/domain/viewer_registry.dart';
+import '../../features/tracking/application/tracked_videos_controller.dart';
+import '../../features/tracking/application/watch_progress_editor.dart';
 import '../../features/tracking/application/watchlists_controller.dart';
 import '../../features/tracking/data/core_watch_progress_gateway.dart';
 import '../../features/tracking/data/core_watchlist_gateway.dart';
@@ -589,6 +591,18 @@ final watchlistsControllerProvider =
 /// The watchlists screen's own state (UC-29).
 final watchlistsFormProvider =
     NotifierProvider<WatchlistsForm, WatchlistsState>(WatchlistsForm.new);
+
+/// The tracked videos' names and markings (UC-30 main flow step 2).
+final trackedVideosProvider =
+    AsyncNotifierProvider<TrackedVideosController, Map<String, TrackedVideo>>(
+      TrackedVideosController.new,
+    );
+
+/// The progress entry being edited (UC-30).
+final watchProgressEditorProvider =
+    NotifierProvider<WatchProgressEditor, WatchProgressEditorState>(
+      WatchProgressEditor.new,
+    );
 
 /// The core's watch-progress read (UC-16 AF-03).
 ///

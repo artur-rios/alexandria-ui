@@ -1098,4 +1098,34 @@ class AppLocalizationsPt extends AppLocalizations {
   String watchlistItemCount(int count) {
     return '$count acompanhados';
   }
+
+  @override
+  String get watchProgressSave => 'Salvar progresso';
+
+  @override
+  String get watchCurrentEpisodeLabel => 'Episódio';
+
+  @override
+  String get watchTotalEpisodesLabel => 'de quantos';
+
+  @override
+  String get watchEpisodeNotANumber => 'Digite um número inteiro.';
+
+  @override
+  String get watchEpisodeNotPositive =>
+      'Os episódios são contados a partir de 1.';
+
+  @override
+  String get watchEpisodeBeyondTotal =>
+      'Isso passa do total que você informou.';
+
+  @override
+  String watchEpisode(int episode) {
+    return 'episódio $episode';
+  }
+
+  @override
+  String watchEpisodeOf(int episode, int total) {
+    return 'episódio $episode de $total';
+  }
 }
