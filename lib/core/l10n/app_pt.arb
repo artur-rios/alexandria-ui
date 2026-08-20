@@ -380,5 +380,12 @@
   "purgeOnDiskAction": "Excluir o arquivo do disco",
   "purgeOnDiskExplanation": "Esta é a única ação aqui que remove seus dados do disco. Todas as outras mantêm o arquivo e alteram apenas o catálogo.",
   "purgeOnDiskIrreversible": "Isso não pode ser desfeito.",
-  "purgeOnDiskMessage": "Excluir {path} do disco e remover seu registro?"
+  "purgeOnDiskMessage": "Excluir {path} do disco e remover seu registro?",
+  "missingFilesTitle": "Arquivos ausentes",
+  "missingFilesOpen": "Arquivos ausentes",
+  "missingFilesNone": "Todos os arquivos catalogados foram encontrados no disco.",
+  "missingFilesExplanation": "Estes registros continuam no catálogo — nada é removido porque um arquivo está ausente. Reexamine para ver se eles voltaram, ou abra um registro para decidir o que fazer.",
+  "missingFilesRescan": "Reexaminar a biblioteca",
+  "missingFilesOpenDetails": "Abrir",
+  "missingFilesUnregisteredFolder": "De uma pasta que não está mais registrada."
 }

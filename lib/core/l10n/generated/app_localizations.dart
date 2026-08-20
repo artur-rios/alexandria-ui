@@ -2387,6 +2387,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete {path} from disk and remove its record?'**
   String purgeOnDiskMessage(String path);
+
+  /// UC-37 main flow step 1: the missing-files review heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing files'**
+  String get missingFilesTitle;
+
+  /// UC-37 main flow step 1: opens the review from the dashboard, beside the last index run.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing files'**
+  String get missingFilesOpen;
+
+  /// UC-37 AF-01: nothing is missing, which is a state and the good outcome besides.
+  ///
+  /// In en, this message translates to:
+  /// **'Every cataloged file was found on disk.'**
+  String get missingFilesNone;
+
+  /// UC-37 and BR-16: missing is never a reason to delete, and the review says so.
+  ///
+  /// In en, this message translates to:
+  /// **'These records are still in the catalog — nothing is removed because a file is absent. Re-scan to check whether they came back, or open a record to decide what to do about it.'**
+  String get missingFilesExplanation;
+
+  /// UC-37 main flow step 4: starts a refresh over everything cataloged (UC-07).
+  ///
+  /// In en, this message translates to:
+  /// **'Re-scan the library'**
+  String get missingFilesRescan;
+
+  /// UC-37 AF-02: opens the record's own detail view, where deleting it lives.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get missingFilesOpenDetails;
+
+  /// UC-37 AF-03: the record came from a folder the owner has since unregistered.
+  ///
+  /// In en, this message translates to:
+  /// **'From a folder that is no longer registered.'**
+  String get missingFilesUnregisteredFolder;
 }
 
 class _AppLocalizationsDelegate

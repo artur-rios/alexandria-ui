@@ -1334,4 +1334,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String purgeOnDiskMessage(String path) {
     return 'Delete $path from disk and remove its record?';
   }
+
+  @override
+  String get missingFilesTitle => 'Missing files';
+
+  @override
+  String get missingFilesOpen => 'Missing files';
+
+  @override
+  String get missingFilesNone => 'Every cataloged file was found on disk.';
+
+  @override
+  String get missingFilesExplanation =>
+      'These records are still in the catalog — nothing is removed because a file is absent. Re-scan to check whether they came back, or open a record to decide what to do about it.';
+
+  @override
+  String get missingFilesRescan => 'Re-scan the library';
+
+  @override
+  String get missingFilesOpenDetails => 'Open';
+
+  @override
+  String get missingFilesUnregisteredFolder =>
+      'From a folder that is no longer registered.';
 }

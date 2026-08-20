@@ -1336,4 +1336,28 @@ class AppLocalizationsPt extends AppLocalizations {
   String purgeOnDiskMessage(String path) {
     return 'Excluir $path do disco e remover seu registro?';
   }
+
+  @override
+  String get missingFilesTitle => 'Arquivos ausentes';
+
+  @override
+  String get missingFilesOpen => 'Arquivos ausentes';
+
+  @override
+  String get missingFilesNone =>
+      'Todos os arquivos catalogados foram encontrados no disco.';
+
+  @override
+  String get missingFilesExplanation =>
+      'Estes registros continuam no catálogo — nada é removido porque um arquivo está ausente. Reexamine para ver se eles voltaram, ou abra um registro para decidir o que fazer.';
+
+  @override
+  String get missingFilesRescan => 'Reexaminar a biblioteca';
+
+  @override
+  String get missingFilesOpenDetails => 'Abrir';
+
+  @override
+  String get missingFilesUnregisteredFolder =>
+      'De uma pasta que não está mais registrada.';
 }

@@ -5,6 +5,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../lifecycle/presentation/deleted_items_screen.dart';
+import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/catalog_file.dart';
@@ -52,7 +53,8 @@ class HomeDashboard extends ConsumerWidget {
   }
 }
 
-/// Where the deleted-items view is reached from (UC-34 main flow step 1).
+/// Where the deleted-items and missing-files views are reached from
+/// (UC-34 and UC-37, main flow step 1 of each).
 ///
 /// On the dashboard rather than in the navigation panel: what is deleted spans
 /// every type and the bookmarks alike, so it is not an area of the library
@@ -67,10 +69,22 @@ class _DeletedItemsSection extends StatelessWidget {
 
     return Align(
       alignment: Alignment.centerLeft,
-      child: TextButton.icon(
-        onPressed: () => DeletedItemsScreen.show(context),
-        icon: const Icon(Icons.delete_outline),
-        label: Text(l10n.deletedItemsOpen),
+      child: Wrap(
+        spacing: AppSpacing.md,
+        children: [
+          TextButton.icon(
+            onPressed: () => DeletedItemsScreen.show(context),
+            icon: const Icon(Icons.delete_outline),
+            label: Text(l10n.deletedItemsOpen),
+          ),
+          // UC-37 main flow step 1: beside the last index run's outcome, which
+          // is what an owner is looking at when files turn out to be missing.
+          TextButton.icon(
+            onPressed: () => MissingFilesScreen.show(context),
+            icon: const Icon(Icons.help_outline),
+            label: Text(l10n.missingFilesOpen),
+          ),
+        ],
       ),
     );
   }

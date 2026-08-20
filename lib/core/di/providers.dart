@@ -100,6 +100,7 @@ import '../../features/viewers/domain/reading_position_store.dart';
 import '../../features/viewers/domain/viewer_registry.dart';
 import '../../features/lifecycle/application/deleted_items_controller.dart';
 import '../../features/lifecycle/application/deletion_controller.dart';
+import '../../features/lifecycle/application/missing_files_controller.dart';
 import '../../features/lifecycle/application/purge_controller.dart';
 import '../../features/lifecycle/application/open_file_holds.dart';
 import '../../features/lifecycle/data/core_lifecycle_gateway.dart';
@@ -665,6 +666,12 @@ final restoreControllerProvider =
       RestoreController,
       ({RestoreNotice notice, Failure? refusal})
     >(RestoreController.new);
+
+/// The files the core reports as missing on disk (UC-37).
+final missingFilesControllerProvider =
+    AsyncNotifierProvider<MissingFilesController, List<CatalogFile>>(
+      MissingFilesController.new,
+    );
 
 /// What a purge is reporting (UC-35, UC-36).
 final purgeControllerProvider = NotifierProvider<PurgeController, PurgeState>(
