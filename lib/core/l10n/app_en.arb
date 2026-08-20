@@ -1869,5 +1869,40 @@
               "type": "String"
           }
       }
+  },
+
+  "missingFilesTitle": "Missing files",
+  "@missingFilesTitle": {
+      "description": "UC-37 main flow step 1: the missing-files review heading."
+  },
+
+  "missingFilesOpen": "Missing files",
+  "@missingFilesOpen": {
+      "description": "UC-37 main flow step 1: opens the review from the dashboard, beside the last index run."
+  },
+
+  "missingFilesNone": "Every cataloged file was found on disk.",
+  "@missingFilesNone": {
+      "description": "UC-37 AF-01: nothing is missing, which is a state and the good outcome besides."
+  },
+
+  "missingFilesExplanation": "These records are still in the catalog \u2014 nothing is removed because a file is absent. Re-scan to check whether they came back, or open a record to decide what to do about it.",
+  "@missingFilesExplanation": {
+      "description": "UC-37 and BR-16: missing is never a reason to delete, and the review says so."
+  },
+
+  "missingFilesRescan": "Re-scan the library",
+  "@missingFilesRescan": {
+      "description": "UC-37 main flow step 4: starts a refresh over everything cataloged (UC-07)."
+  },
+
+  "missingFilesOpenDetails": "Open",
+  "@missingFilesOpenDetails": {
+      "description": "UC-37 AF-02: opens the record's own detail view, where deleting it lives."
+  },
+
+  "missingFilesUnregisteredFolder": "From a folder that is no longer registered.",
+  "@missingFilesUnregisteredFolder": {
+      "description": "UC-37 AF-03: the record came from a folder the owner has since unregistered."
   }
 }
