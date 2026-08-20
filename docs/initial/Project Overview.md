@@ -57,7 +57,7 @@ library.
 - **Searches and filters** the catalog across types and lifecycle states.
 - **Deletes safely** through the core's two-phase model: soft delete, restore,
   and an explicit purge that is the only thing that ever touches a file on disk.
-- **Authenticates the owner**: sign-up, e-mail confirmation, login, credential
+- **Authenticates the owner**: sign-up, recovery codes, login, credential
   change, and password recovery, gating the library behind the core's local-auth
   mode.
 - **Adapts** to window size and screen size, in light and dark themes, in

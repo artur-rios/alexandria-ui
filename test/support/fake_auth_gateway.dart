@@ -20,33 +20,12 @@ class FakeAuthGateway implements AuthGateway {
   static final Session defaultSession = Session(
     credential: 'a-real-looking-session-id',
     establishedAt: DateTime.utc(2026, 8, 12, 9, 30),
-    emailConfirmed: true,
     email: 'owner@example.com',
   );
 
   /// A fake that fails every attempt with [failure].
   factory FakeAuthGateway.failing(Failure failure) =>
       FakeAuthGateway(outcome: AuthOutcome.failed(failure: failure));
-
-  /// A fake whose registration creates an unconfirmed account, reporting what
-  /// became of the confirmation message (UC-01 AF-06).
-  factory FakeAuthGateway.unconfirmed({
-    bool confirmationSent = false,
-    String? reasonCode = 'mail_not_configured',
-  }) => FakeAuthGateway(
-    outcome: AuthOutcome.authenticated(
-      session: Session(
-        credential: 'a-real-looking-session-id',
-        establishedAt: DateTime.utc(2026, 8, 12, 9, 30),
-        emailConfirmed: false,
-        email: 'owner@example.com',
-      ),
-      confirmation: ConfirmationDelivery(
-        sent: confirmationSent,
-        reasonCode: confirmationSent ? null : reasonCode,
-      ),
-    ),
-  );
 
   /// What [logIn] and [register] return.
   AuthOutcome outcome;

@@ -84,14 +84,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginSessionEndedTitle => 'You were signed out';
 
   @override
-  String get catalogLockedTitle => 'Confirm your e-mail address';
-
-  @override
-  String catalogLockedBody(String email) {
-    return 'Alexandria stays locked until the address $email is confirmed.';
-  }
-
-  @override
   String failureCoreLibraryNotLoaded(String path) {
     return 'The Alexandria core could not be loaded from $path.';
   }
@@ -187,10 +179,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get rejectionEmailUntrimmed =>
       'Remove the spaces around your e-mail address.';
-
-  @override
-  String get catalogLockedUndeliverable =>
-      'The confirmation message could not be sent, so it is not on its way. Alexandria cannot deliver e-mail yet.';
 
   @override
   String get failureUnexpected => 'Something went wrong in Alexandria.';

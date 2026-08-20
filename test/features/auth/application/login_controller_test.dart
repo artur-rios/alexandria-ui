@@ -6,7 +6,6 @@ import 'package:alexandria_desktop/features/auth/application/login_state.dart';
 import 'package:alexandria_desktop/features/auth/application/session_state.dart';
 import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_desktop/features/auth/domain/login_validation.dart';
-import 'package:alexandria_desktop/features/auth/domain/session.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -314,40 +313,18 @@ void main() {
     );
   });
 
-  // FR-AU-12 / BR-25: an authenticated but unconfirmed owner does not reach the
-  // catalog. The core cannot report this state yet (System Requirements §5.4),
-  // so the branch is proven here rather than through the core.
+  // FR-AU-07. The core dropped e-mail confirmation on 2026-08-18, so a
+  // session is the whole of the question now; the branch that used to lock a
+  // confirmed-but-unverified owner out has nothing left to read.
   group('the catalog lock', () {
-    Session sessionWith({required bool confirmed}) => Session(
-      credential: 'a-real-looking-session-id',
-      establishedAt: DateTime.utc(2026, 8, 12, 9, 30),
-      emailConfirmed: confirmed,
-      email: 'owner@example.com',
-    );
-
-    test(
-      'GivenAConfirmedSession_WhenTheLockIsChecked_ThenTheCatalogIsReachable',
-      () {
-        expect(
-          catalogIsReachable(
-            SessionState.active(session: sessionWith(confirmed: true)),
-          ),
-          isTrue,
-        );
-      },
-    );
-
-    test(
-      'GivenAnUnconfirmedSession_WhenTheLockIsChecked_ThenTheCatalogIsLocked',
-      () {
-        expect(
-          catalogIsReachable(
-            SessionState.active(session: sessionWith(confirmed: false)),
-          ),
-          isFalse,
-        );
-      },
-    );
+    test('GivenASession_WhenTheLockIsChecked_ThenTheCatalogIsReachable', () {
+      expect(
+        catalogIsReachable(
+          SessionState.active(session: FakeAuthGateway.defaultSession),
+        ),
+        isTrue,
+      );
+    });
 
     test('GivenNoSession_WhenTheLockIsChecked_ThenTheCatalogIsLocked', () {
       expect(catalogIsReachable(const SessionState.absent()), isFalse);

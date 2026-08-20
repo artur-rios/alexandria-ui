@@ -117,19 +117,16 @@ void main() {
   );
 
   // UC-02 AF-02, against the core that actually decides it.
-  test(
-    'GivenTheWrongPassword_WhenTheOwnerLogsIn_ThenTheCoreRefuses',
-    () async {
-      final core = await initializedCore();
-      await createAccount(core);
+  test('GivenTheWrongPassword_WhenTheOwnerLogsIn_ThenTheCoreRefuses', () async {
+    final core = await initializedCore();
+    await createAccount(core);
 
-      final outcome = await CoreAuthGateway(
-        core,
-      ).logIn(email: email, password: 'not the password');
+    final outcome = await CoreAuthGateway(
+      core,
+    ).logIn(email: email, password: 'not the password');
 
-      expect(outcome, isA<FailedOutcome>());
-    },
-  );
+    expect(outcome, isA<FailedOutcome>());
+  });
 
   test(
     'GivenAnUnknownAddress_WhenTheOwnerLogsIn_ThenTheCoreRefusesTheSameWay',

@@ -17,11 +17,9 @@ mixin _$Session {
 /// The material the core returned — its `sessionId`. Presented on every
 /// subsequent core call that requires one (FR-AU-06).
  String get credential;/// When the session began.
- DateTime get establishedAt;/// Whether the core reports the account's e-mail as confirmed. `false`
-/// locks the catalog (FR-AU-12).
- bool get emailConfirmed;/// The account's address. Held because the confirmation prompt shows the
-/// owner where to look, and because the login result does not echo it
-/// back — it is what the owner typed.
+ DateTime get establishedAt;/// The account's address. Held because the account screen shows it, and
+/// because the login result does not echo it back — it is what the owner
+/// typed.
  String get email;
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
@@ -33,12 +31,12 @@ $SessionCopyWith<Session> get copyWith => _$SessionCopyWithImpl<Session>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Session&&(identical(other.credential, credential) || other.credential == credential)&&(identical(other.establishedAt, establishedAt) || other.establishedAt == establishedAt)&&(identical(other.emailConfirmed, emailConfirmed) || other.emailConfirmed == emailConfirmed)&&(identical(other.email, email) || other.email == email));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Session&&(identical(other.credential, credential) || other.credential == credential)&&(identical(other.establishedAt, establishedAt) || other.establishedAt == establishedAt)&&(identical(other.email, email) || other.email == email));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,credential,establishedAt,emailConfirmed,email);
+int get hashCode => Object.hash(runtimeType,credential,establishedAt,email);
 
 
 
@@ -49,7 +47,7 @@ abstract mixin class $SessionCopyWith<$Res>  {
   factory $SessionCopyWith(Session value, $Res Function(Session) _then) = _$SessionCopyWithImpl;
 @useResult
 $Res call({
- String credential, DateTime establishedAt, bool emailConfirmed, String email
+ String credential, DateTime establishedAt, String email
 });
 
 
@@ -66,12 +64,11 @@ class _$SessionCopyWithImpl<$Res>
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? credential = null,Object? establishedAt = null,Object? emailConfirmed = null,Object? email = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? credential = null,Object? establishedAt = null,Object? email = null,}) {
   return _then(_self.copyWith(
 credential: null == credential ? _self.credential : credential // ignore: cast_nullable_to_non_nullable
 as String,establishedAt: null == establishedAt ? _self.establishedAt : establishedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,emailConfirmed: null == emailConfirmed ? _self.emailConfirmed : emailConfirmed // ignore: cast_nullable_to_non_nullable
-as bool,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as DateTime,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -157,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String credential,  DateTime establishedAt,  bool emailConfirmed,  String email)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String credential,  DateTime establishedAt,  String email)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Session() when $default != null:
-return $default(_that.credential,_that.establishedAt,_that.emailConfirmed,_that.email);case _:
+return $default(_that.credential,_that.establishedAt,_that.email);case _:
   return orElse();
 
 }
@@ -178,10 +175,10 @@ return $default(_that.credential,_that.establishedAt,_that.emailConfirmed,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String credential,  DateTime establishedAt,  bool emailConfirmed,  String email)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String credential,  DateTime establishedAt,  String email)  $default,) {final _that = this;
 switch (_that) {
 case _Session():
-return $default(_that.credential,_that.establishedAt,_that.emailConfirmed,_that.email);case _:
+return $default(_that.credential,_that.establishedAt,_that.email);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +195,10 @@ return $default(_that.credential,_that.establishedAt,_that.emailConfirmed,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String credential,  DateTime establishedAt,  bool emailConfirmed,  String email)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String credential,  DateTime establishedAt,  String email)?  $default,) {final _that = this;
 switch (_that) {
 case _Session() when $default != null:
-return $default(_that.credential,_that.establishedAt,_that.emailConfirmed,_that.email);case _:
+return $default(_that.credential,_that.establishedAt,_that.email);case _:
   return null;
 
 }
@@ -213,7 +210,7 @@ return $default(_that.credential,_that.establishedAt,_that.emailConfirmed,_that.
 
 
 class _Session extends Session {
-  const _Session({required this.credential, required this.establishedAt, required this.emailConfirmed, required this.email}): super._();
+  const _Session({required this.credential, required this.establishedAt, required this.email}): super._();
   
 
 /// The material the core returned — its `sessionId`. Presented on every
@@ -221,12 +218,9 @@ class _Session extends Session {
 @override final  String credential;
 /// When the session began.
 @override final  DateTime establishedAt;
-/// Whether the core reports the account's e-mail as confirmed. `false`
-/// locks the catalog (FR-AU-12).
-@override final  bool emailConfirmed;
-/// The account's address. Held because the confirmation prompt shows the
-/// owner where to look, and because the login result does not echo it
-/// back — it is what the owner typed.
+/// The account's address. Held because the account screen shows it, and
+/// because the login result does not echo it back — it is what the owner
+/// typed.
 @override final  String email;
 
 /// Create a copy of Session
@@ -239,12 +233,12 @@ _$SessionCopyWith<_Session> get copyWith => __$SessionCopyWithImpl<_Session>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Session&&(identical(other.credential, credential) || other.credential == credential)&&(identical(other.establishedAt, establishedAt) || other.establishedAt == establishedAt)&&(identical(other.emailConfirmed, emailConfirmed) || other.emailConfirmed == emailConfirmed)&&(identical(other.email, email) || other.email == email));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Session&&(identical(other.credential, credential) || other.credential == credential)&&(identical(other.establishedAt, establishedAt) || other.establishedAt == establishedAt)&&(identical(other.email, email) || other.email == email));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,credential,establishedAt,emailConfirmed,email);
+int get hashCode => Object.hash(runtimeType,credential,establishedAt,email);
 
 
 
@@ -255,7 +249,7 @@ abstract mixin class _$SessionCopyWith<$Res> implements $SessionCopyWith<$Res> {
   factory _$SessionCopyWith(_Session value, $Res Function(_Session) _then) = __$SessionCopyWithImpl;
 @override @useResult
 $Res call({
- String credential, DateTime establishedAt, bool emailConfirmed, String email
+ String credential, DateTime establishedAt, String email
 });
 
 
@@ -272,12 +266,11 @@ class __$SessionCopyWithImpl<$Res>
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? credential = null,Object? establishedAt = null,Object? emailConfirmed = null,Object? email = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? credential = null,Object? establishedAt = null,Object? email = null,}) {
   return _then(_Session(
 credential: null == credential ? _self.credential : credential // ignore: cast_nullable_to_non_nullable
 as String,establishedAt: null == establishedAt ? _self.establishedAt : establishedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,emailConfirmed: null == emailConfirmed ? _self.emailConfirmed : emailConfirmed // ignore: cast_nullable_to_non_nullable
-as bool,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as DateTime,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

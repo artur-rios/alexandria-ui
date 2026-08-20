@@ -193,51 +193,24 @@ one, and every milestone after `M-01` depends on it.
 Once the issues exist, GitHub's milestone pages are the live view of progress;
 the counts here are as of creation time.
 
-**Blocked on the core, and now diverging from it.** `UC-40`, `UC-41`, and `UC-42`
-need e-mail confirmation, confirmation resend, and password-reset operations. The
-Alexandria core published none of them, and on 2026-08-18 it went further and
-adopted a different design: `alexandria_auth_local_redeem_recovery_code` and
-`alexandria_auth_local_regenerate_recovery_codes` replace the four calls these
-three use cases are written against, and `LocalLoginResult` and
-`LocalRegisterResult` no longer report `emailConfirmed` or `confirmationSent`.
+**The two repositories agree again.** `CORE_REF` tracks
+[`alexandria-api` UC-46](https://github.com/artur-rios/alexandria-api/pull/107),
+and the divergence that opened on 2026-08-18 is closed on both sides:
 
-The two repositories therefore disagree about how an owner who cannot sign in
-gets back in. Until that is settled, CI pins `CORE_REF` to the last core commit
-this application matches — see the comment in
-[`ci.yml`](.github/workflows/ci.yml) — so the drift check guards against drift
-from a known core rather than from a moving one. Settling it means changing
-`FR-AU-11`, `FR-AU-12`, and these three use cases, or the core restoring what it
-removed; it does not mean re-vendoring the header, which would leave sign-in
-compiling and then failing against a real core.
+- **Account recovery is recovery codes.** The core dropped e-mail confirmation
+  and password reset and replaced them with ten single-use codes minted at
+  registration. `UC-40`, `UC-41`, and `UC-42` are specified against those calls
+  now — *Save the recovery codes*, *Recover access with a recovery code*, and
+  *Regenerate the recovery codes* — and `FR-AU-12` … `FR-AU-19` with them. The
+  catalog is no longer gated on a confirmation the core does not perform.
+- **Collections can be listed.** `alexandria_collections_list` answers which
+  collections exist, with the number of items in each. That was the one thing
+  `UC-26` and `UC-27` were missing, and it unblocks `UC-28`'s optional filing of
+  a bookmark into a bookmark collection at the same time.
 
-The capabilities and what the front-end needs from each are in
-[System Requirements §5.4](docs/requirements/System%20Requirements%20Document.md).
-
-**Blocked on the core: collections cannot be listed.** `UC-26` and `UC-27` need
-a way to enumerate the owner's collections — the collections screen opens on
-one, and organizing items starts by opening a collection. The core publishes
-every write (`alexandria_collection_create`, `_rename`, `_delete`,
-`_add_items`, `_remove_item`) and the members of *one* collection addressed by
-its uuid (`alexandria_collection_list_items`), and no query that answers which
-collections exist: `crates/alexandria-core/src/collections/queries/` holds
-`list_items.rs` and nothing else. A collections screen could therefore create a
-collection and never show it again. `BR-02` makes that back-end work rather
-than something to route around, and keeping the list in the settings store
-instead would be the second source of truth that store's own contract forbids.
-
-Two smaller disagreements sit in the same area. `UC-27` step 2 asks for
-breadcrumbs "reflecting the owner's position in the collection hierarchy", but
-the core's `Collection` is `{uuid, name, kind}` — collections are flat, with no
-parent. And `UC-28`'s optional filing of a bookmark into a bookmark collection
-needs the same missing enumeration to offer one, so bookmarks ship without it;
-everything else in that use case is reachable through
-`alexandria_bookmarks_list`.
-
-`UC-01` is no longer among them: account creation landed as
-`alexandria_auth_local_register`. Its `AF-06` did not — reporting that a
-confirmation message could not be sent needs the same e-mail confirmation the
-three above are waiting for, so that one alternative flow is unimplemented and
-untested.
+`UC-27` step 2's breadcrumbs are not a problem: `FR-OG-07` fixes the present
+depth of the hierarchy at one, so a flat `Collection` is the model it asks for,
+and nesting stays a change of data rather than of interface.
 
 ## Backlog
 
@@ -257,9 +230,9 @@ untested.
 | [#3](https://github.com/artur-rios/alexandria-desktop-front/issues/3) | UC-02 — Log in — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#4](https://github.com/artur-rios/alexandria-desktop-front/issues/4) | UC-03 — Sign out — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#5](https://github.com/artur-rios/alexandria-desktop-front/issues/5) | UC-04 — Change credentials — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#41](https://github.com/artur-rios/alexandria-desktop-front/issues/41) | UC-40 — Confirm the e-mail address | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#42](https://github.com/artur-rios/alexandria-desktop-front/issues/42) | UC-41 — Request a password reset | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#43](https://github.com/artur-rios/alexandria-desktop-front/issues/43) | UC-42 — Complete a password reset | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#41](https://github.com/artur-rios/alexandria-desktop-front/issues/41) | UC-40 — Save the recovery codes | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#42](https://github.com/artur-rios/alexandria-desktop-front/issues/42) | UC-41 — Recover access with a recovery code | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#43](https://github.com/artur-rios/alexandria-desktop-front/issues/43) | UC-42 — Regenerate the recovery codes | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-03 — Library sources and indexing
 

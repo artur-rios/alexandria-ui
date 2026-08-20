@@ -9,7 +9,6 @@ import 'core/startup/startup_state.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/application/auth_entry_controller.dart';
 import 'features/auth/application/session_state.dart';
-import 'features/auth/presentation/catalog_locked_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/sign_up_screen.dart';
 import 'features/shell/presentation/shell_screen.dart';
@@ -71,15 +70,6 @@ class AlexandriaApp extends ConsumerWidget {
             AuthEntry.signUp => const SignUpScreen(),
             AuthEntry.login => const LoginScreen(),
           },
-
-          // FR-AU-12 / BR-25: authenticated but unconfirmed keeps the catalog
-          // locked. UC-40 replaces this with the confirmation prompt.
-          SessionActive(:final session, :final confirmation)
-              when !session.emailConfirmed =>
-            CatalogLockedScreen(
-              email: session.email,
-              confirmation: confirmation,
-            ),
 
           // The shell (UC-38). Everything the owner actually does is inside
           // it, which is why this switch stops here.

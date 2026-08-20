@@ -73,13 +73,13 @@ class SignUpController extends Notifier<SignUpState> {
       // plaintext entries are left behind with this call's arguments
       // (FR-AU-05, FR-AU-11).
       //
-      // The specification has the owner land on the confirmation prompt here.
-      // The core has no e-mail confirmation at all, so the session is
-      // confirmed and the owner lands where a confirmed session lands. UC-40
-      // is what changes this.
-      case AuthenticatedOutcome(:final session, :final confirmation):
+      // The owner lands in the shell. The specification once had them land on
+      // an e-mail confirmation prompt; the core has no confirmation to give,
+      // so there is nothing to hold them here. UC-40 puts the recovery codes
+      // in front of them at this point instead.
+      case AuthenticatedOutcome(:final session):
         state = const SignUpState.editing();
-        _session.establish(session, confirmation: confirmation);
+        _session.establish(session);
 
       case FailedOutcome(:final failure):
         state = SignUpState.editing(problem: _problemFor(failure));

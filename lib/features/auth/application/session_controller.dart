@@ -5,7 +5,6 @@ import 'package:logging/logging.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
-import '../domain/auth_gateway.dart';
 import '../domain/session.dart';
 import 'session_state.dart';
 
@@ -29,8 +28,6 @@ class SessionController extends Notifier<SessionState> {
 
   /// Records the session a successful login or registration produced.
   ///
-  /// [confirmation] is passed on by registration alone (UC-01 AF-06).
-  ///
   /// Whatever the previous session left in memory is wound down first
   /// (UC-03 main flow step 3, BR-05). The same activities sign-out ends are
   /// ended again here, and for the same reason from the other side: a
@@ -38,7 +35,7 @@ class SessionController extends Notifier<SessionState> {
   /// sees. Doing it *before* the session is recorded is what makes the reads
   /// that follow use the new credential rather than answer from the old
   /// session's cache.
-  void establish(Session session, {ConfirmationDelivery? confirmation}) {
+  void establish(Session session) {
     for (final activity in ref.read(sessionActivitiesProvider)) {
       // Not awaited, and deliberately: establishing a session is what the
       // login screen does on the way to the shell, and none of these ends
@@ -50,7 +47,7 @@ class SessionController extends Notifier<SessionState> {
     // Session.toString redacts the credential, so nothing here can leak it
     // into the log file this line lands in (FR-AU-11).
     _log.info('session established for ${session.email}');
-    state = SessionState.active(session: session, confirmation: confirmation);
+    state = SessionState.active(session: session);
   }
 
   /// Discards the session and returns the owner to the login screen, stating

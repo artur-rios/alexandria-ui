@@ -236,18 +236,6 @@ abstract class AppLocalizations {
   /// **'You were signed out'**
   String get loginSessionEndedTitle;
 
-  /// FR-AU-12 / BR-25: heading of the state that stands in place of the catalog while the account's e-mail is unconfirmed. The prompt itself is UC-40.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm your e-mail address'**
-  String get catalogLockedTitle;
-
-  /// FR-AU-12: explains why the catalog is not reachable. The address is named so the owner knows where to look.
-  ///
-  /// In en, this message translates to:
-  /// **'Alexandria stays locked until the address {email} is confirmed.'**
-  String catalogLockedBody(String email);
-
   /// Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.
   ///
   /// In en, this message translates to:
@@ -391,12 +379,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove the spaces around your e-mail address.'**
   String get rejectionEmailUntrimmed;
-
-  /// UC-01 AF-06: the account was created and the session is open, but the core reported that the confirmation message was not sent. Stated plainly so the owner does not wait for a message that is never coming.
-  ///
-  /// In en, this message translates to:
-  /// **'The confirmation message could not be sent, so it is not on its way. Alexandria cannot deliver e-mail yet.'**
-  String get catalogLockedUndeliverable;
 
   /// A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number.
   ///

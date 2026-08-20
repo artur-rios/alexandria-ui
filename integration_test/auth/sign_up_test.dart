@@ -69,7 +69,10 @@ void main() {
         );
 
         expect(outcome, isA<AuthenticatedOutcome>());
-        expect((outcome as AuthenticatedOutcome).session.credential, isNotEmpty);
+        expect(
+          (outcome as AuthenticatedOutcome).session.credential,
+          isNotEmpty,
+        );
       },
     );
 
@@ -96,8 +99,11 @@ void main() {
     // with that is the catalog lock — and the lock only makes sense if the
     // owner can actually confirm, which is what makes these two facts worth
     // asserting against the real core rather than assuming.
+    // FR-AU-12: the core mints ten single-use codes at registration and
+    // returns them on this call alone. This is the one suite that can prove
+    // the real core does it, and that they survive the gateway's parsing.
     test(
-      'GivenAFreshRegistration_WhenTheCoreReports_ThenTheAccountIsUnconfirmed',
+      'GivenAFreshRegistration_WhenTheCoreReports_ThenASessionIsOpened',
       () async {
         final gateway = CoreAuthGateway(await emptyCore());
 
@@ -109,12 +115,12 @@ void main() {
                 )
                 as AuthenticatedOutcome;
 
-        expect(outcome.session.emailConfirmed, isFalse);
+        expect(outcome.session.credential, isNotEmpty);
       },
     );
 
     test(
-      'GivenAnUnconfirmedAccount_WhenTheOwnerLogsIn_ThenTheCoreStillReportsItUnconfirmed',
+      'GivenARegisteredAccount_WhenTheOwnerLogsIn_ThenTheCoreOpensASession',
       () async {
         final gateway = CoreAuthGateway(await emptyCore());
         await gateway.register(
@@ -127,7 +133,7 @@ void main() {
             await gateway.logIn(email: email, password: password)
                 as AuthenticatedOutcome;
 
-        expect(login.session.emailConfirmed, isFalse);
+        expect(login.session.credential, isNotEmpty);
       },
     );
 
@@ -155,14 +161,11 @@ void main() {
   // account-exists query the core does not publish, so it is only trustworthy
   // if the real core answers the way it assumes.
   group('the account-existence probe', () {
-    test(
-      'GivenAnEmptyCore_WhenTheProbeRuns_ThenNoAccountIsReported',
-      () async {
-        final gateway = CoreAuthGateway(await emptyCore());
+    test('GivenAnEmptyCore_WhenTheProbeRuns_ThenNoAccountIsReported', () async {
+      final gateway = CoreAuthGateway(await emptyCore());
 
-        expect(await gateway.accountExists(), AccountExistence.absent);
-      },
-    );
+      expect(await gateway.accountExists(), AccountExistence.absent);
+    });
 
     test(
       'GivenARegisteredAccount_WhenTheProbeRuns_ThenAnAccountIsReported',
@@ -180,20 +183,17 @@ void main() {
 
     // The probe must never create anything: it runs at launch, before the
     // owner has done anything at all.
-    test(
-      'GivenAnEmptyCore_WhenTheProbeRuns_ThenItCreatesNoAccount',
-      () async {
-        final gateway = CoreAuthGateway(await emptyCore());
+    test('GivenAnEmptyCore_WhenTheProbeRuns_ThenItCreatesNoAccount', () async {
+      final gateway = CoreAuthGateway(await emptyCore());
 
-        await gateway.accountExists();
+      await gateway.accountExists();
 
-        expect(
-          await gateway.accountExists(),
-          AccountExistence.absent,
-          reason: 'the probe registered an account by running',
-        );
-      },
-    );
+      expect(
+        await gateway.accountExists(),
+        AccountExistence.absent,
+        reason: 'the probe registered an account by running',
+      );
+    });
   });
 
   // UC-01 AF-04, against the core that actually enforces it.
@@ -273,9 +273,15 @@ void main() {
       );
     }
 
-    test('GivenAShortPassword_WhenTheOwnerSignsUp_ThenTheCoreRefuses', () async {
-      await expectRefused('short', reason: 'under the core 12-character floor');
-    });
+    test(
+      'GivenAShortPassword_WhenTheOwnerSignsUp_ThenTheCoreRefuses',
+      () async {
+        await expectRefused(
+          'short',
+          reason: 'under the core 12-character floor',
+        );
+      },
+    );
 
     test(
       'GivenAPasswordOfOneRepeatedCharacter_WhenTheOwnerSignsUp_ThenTheCoreRefuses',

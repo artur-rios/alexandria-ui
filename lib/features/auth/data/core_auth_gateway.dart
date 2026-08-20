@@ -91,7 +91,6 @@ class CoreAuthGateway implements AuthGateway {
       session: Session(
         credential: result.sessionId,
         establishedAt: _now(),
-        emailConfirmed: result.emailConfirmed,
         email: trimmedEmail,
       ),
     );
@@ -159,16 +158,9 @@ class CoreAuthGateway implements AuthGateway {
       session: Session(
         credential: result.sessionId,
         establishedAt: _now(),
-        emailConfirmed: result.emailConfirmed,
         // The core's normalized address rather than the raw text typed: it is
         // what the account actually holds.
         email: result.email,
-      ),
-      // UC-01 AF-06: registration is the one call that tries to send a
-      // message, so it is the one outcome that reports on it.
-      confirmation: ConfirmationDelivery(
-        sent: result.confirmationSent,
-        reasonCode: result.confirmationError,
       ),
     );
   }

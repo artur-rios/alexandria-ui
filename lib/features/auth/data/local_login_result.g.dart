@@ -10,5 +10,4 @@ LocalLoginResult _$LocalLoginResultFromJson(Map<String, dynamic> json) =>
     LocalLoginResult(
       success: json['success'] as bool,
       sessionId: json['sessionId'] as String,
-      emailConfirmed: json['emailConfirmed'] as bool,
     );

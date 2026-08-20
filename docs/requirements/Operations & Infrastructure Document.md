@@ -223,7 +223,7 @@ usable, and must say so rather than crashing.
 | 4 | Read the core's version and health status | Present an incompatible-version or unhealthy-core message, with a retry. |
 | 5 | Load the local settings and apply the theme and language | Fall back to system theme and language and report that preferences could not be read. |
 | 6 | Determine whether an account exists, and present sign-up or login | Present the core's reason, with a retry. |
-| 7 | After login, read the account's e-mail confirmation state | Present the core's reason, with a retry. An unconfirmed account lands on the confirmation prompt with the catalog locked. |
+| 7 | After signing up, present the recovery codes the core minted | Present the core's reason, with a retry. An account created without codes is said so plainly, and regenerating a set is offered. |
 
 ### 5.2 Health contract
 
