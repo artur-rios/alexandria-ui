@@ -900,4 +900,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String audioResumePrompt(String position) {
     return 'You stopped this track at $position.';
   }
+
+  @override
+  String get audioPlayer => 'Player';
+
+  @override
+  String get audioOpenPlayer => 'Open the player';
+
+  @override
+  String get albumMediumVinyl => 'A record turning on a turntable';
+
+  @override
+  String get albumMediumTape => 'A cassette turning in a tape deck';
+
+  @override
+  String get albumMediumDisc => 'A disc turning in a player';
 }

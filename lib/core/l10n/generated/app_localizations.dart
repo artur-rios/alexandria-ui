@@ -1667,6 +1667,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You stopped this track at {position}.'**
   String audioResumePrompt(String position);
+
+  /// UC-21: the full player's heading when nothing names an album or an artist.
+  ///
+  /// In en, this message translates to:
+  /// **'Player'**
+  String get audioPlayer;
+
+  /// UC-21 main flow step 2: opens the full player, where the album's medium is shown.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the player'**
+  String get audioOpenPlayer;
+
+  /// UC-21 / FR-PL-07: what the animation is, for a screen reader.
+  ///
+  /// In en, this message translates to:
+  /// **'A record turning on a turntable'**
+  String get albumMediumVinyl;
+
+  /// UC-21 / FR-PL-07: what the animation is, for a screen reader.
+  ///
+  /// In en, this message translates to:
+  /// **'A cassette turning in a tape deck'**
+  String get albumMediumTape;
+
+  /// UC-21 / FR-PL-07: what the animation is, for a screen reader.
+  ///
+  /// In en, this message translates to:
+  /// **'A disc turning in a player'**
+  String get albumMediumDisc;
 }
 
 class _AppLocalizationsDelegate

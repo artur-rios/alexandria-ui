@@ -1327,5 +1327,30 @@
               "type": "String"
           }
       }
+  },
+
+  "audioPlayer": "Player",
+  "@audioPlayer": {
+      "description": "UC-21: the full player's heading when nothing names an album or an artist."
+  },
+
+  "audioOpenPlayer": "Open the player",
+  "@audioOpenPlayer": {
+      "description": "UC-21 main flow step 2: opens the full player, where the album's medium is shown."
+  },
+
+  "albumMediumVinyl": "A record turning on a turntable",
+  "@albumMediumVinyl": {
+      "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
+  },
+
+  "albumMediumTape": "A cassette turning in a tape deck",
+  "@albumMediumTape": {
+      "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
+  },
+
+  "albumMediumDisc": "A disc turning in a player",
+  "@albumMediumDisc": {
+      "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
   }
 }

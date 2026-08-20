@@ -260,5 +260,10 @@
   "audioStop": "Parar",
   "audioNothingPlayable": "Não foi possível reproduzir nada desta seleção.",
   "audioSkipped": "{name} foi pulado — não foi possível reproduzi-lo.",
-  "audioResumePrompt": "Você parou esta faixa em {position}."
+  "audioResumePrompt": "Você parou esta faixa em {position}.",
+  "audioPlayer": "Player",
+  "audioOpenPlayer": "Abrir o player",
+  "albumMediumVinyl": "Um disco de vinil girando em uma vitrola",
+  "albumMediumTape": "Uma fita cassete girando em um toca-fitas",
+  "albumMediumDisc": "Um disco girando em um player"
 }

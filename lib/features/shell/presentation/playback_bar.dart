@@ -7,6 +7,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../playback/application/audio_playback_controller.dart';
+import '../../playback/presentation/album_player_screen.dart';
 
 /// The persistent playback bar (FR-UX-01, FR-PL-05).
 ///
@@ -149,6 +150,15 @@ class _Bar extends ConsumerWidget {
           tooltip: l10n.audioStop,
           icon: const Icon(Icons.stop),
           onPressed: () => unawaited(controller.stop()),
+        ),
+        // UC-21 main flow step 2: the full player, where the medium is shown.
+        // Offered whenever something is playing rather than for albums alone —
+        // the full player is also where a single track's transport is larger,
+        // and AF-02 is about the animation, not about the player.
+        IconButton(
+          tooltip: l10n.audioOpenPlayer,
+          icon: const Icon(Icons.expand_less),
+          onPressed: () => unawaited(AlbumPlayerScreen.show(context)),
         ),
         const SizedBox(width: AppSpacing.md),
       ],
