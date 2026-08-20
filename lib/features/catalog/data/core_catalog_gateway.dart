@@ -213,6 +213,48 @@ class CoreCatalogGateway implements CatalogGateway {
     }
   }
 
+  @override
+  Future<FileRenameOutcome> renameFile({
+    required String uuid,
+    required String name,
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.fileRename(uuid, name, credential);
+    } on CoreCallException {
+      return _unreadableRename();
+    }
+
+    // AF-02, AF-03 and AF-05 are told apart by the status the mapper reads: a
+    // disk that refused the rename, a record the core does not have, and a
+    // rejected session.
+    if (!CoreStatusFamily.file.isOk(response.status)) {
+      return FileRenameOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.file, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unreadableRename();
+
+    try {
+      final file = _fileFrom(jsonDecode(json) as Map<String, dynamic>);
+      if (file == null) return _unreadableRename();
+
+      return FileRenameOutcome.renamed(file: file);
+    } on Object {
+      return _unreadableRename();
+    }
+  }
+
+  FileRenameOutcome _unreadableRename() => const FileRenameOutcome.failed(
+    failure: Failure.unexpected(
+      family: CoreStatusFamily.file,
+      code: FILE_ERR_OTHER,
+    ),
+  );
+
   VideoMetadataEditOutcome _unreadableVideoEdit() =>
       const VideoMetadataEditOutcome.failed(
         failure: Failure.unexpected(

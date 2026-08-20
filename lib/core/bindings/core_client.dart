@@ -118,6 +118,13 @@ abstract interface class CoreClient {
     String token,
   );
 
+  /// Renames the file [uuid] identifies, on disk and in the catalog, through
+  /// `alexandria_file_rename` (FR-ME-04, UC-17).
+  ///
+  /// Answers the `File` body the core echoed. A disk failure comes back as
+  /// `FILE_ERR_DISK` and leaves the catalog untouched.
+  Future<CoreJsonResponse> fileRename(String uuid, String name, String token);
+
   /// Browses watchlists and the watch progress of everything they track
   /// through `alexandria_watchlists_list` (FR-WL-08).
   ///
@@ -215,6 +222,15 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async =>
       await _isolate.call('fileEditMetadata', [uuid, jsonPatch, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> fileRename(
+    String uuid,
+    String name,
+    String token,
+  ) async =>
+      await _isolate.call('fileRename', [uuid, name, token])
           as CoreJsonResponse;
 
   @override

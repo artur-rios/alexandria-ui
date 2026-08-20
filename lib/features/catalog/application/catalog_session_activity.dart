@@ -45,6 +45,7 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(fileDetailsControllerProvider);
     _ref.invalidate(musicMetadataEditorProvider);
     _ref.invalidate(videoMetadataEditorProvider);
+    _ref.invalidate(fileRenameControllerProvider);
 
     // The layout and the per-type filters are deliberately left alone: they
     // are how the owner prefers to see their library, not a projection of it,

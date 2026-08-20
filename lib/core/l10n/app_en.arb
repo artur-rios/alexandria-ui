@@ -1037,5 +1037,60 @@
   "videoMetadataMarkingCancel": "Keep it as a series",
   "@videoMetadataMarkingCancel": {
       "description": "UC-16 AF-03: declines the marking change, which is what keeps the per-episode progress. Named rather than \"Cancel\", because the form's own cancel sits beside it and means something else."
+  },
+
+  "renameOpen": "Rename",
+  "@renameOpen": {
+      "description": "UC-17 main flow step 1: opens the rename dialog from a file's detail view."
+  },
+
+  "renameTitle": "Rename file",
+  "@renameTitle": {
+      "description": "UC-17: the heading of the rename dialog."
+  },
+
+  "renameFieldLabel": "File name",
+  "@renameFieldLabel": {
+      "description": "UC-17: the field holding the new name, on disk and in the catalog."
+  },
+
+  "renameSubmit": "Rename",
+  "@renameSubmit": {
+      "description": "UC-17 main flow step 3: sends the new name to the core."
+  },
+
+  "renameNothingChanged": "Neither the catalog nor the file on disk was changed.",
+  "@renameNothingChanged": {
+      "description": "UC-17 AF-02: what the core guarantees when the rename failed on disk."
+  },
+
+  "renameErrorEmpty": "Enter a file name.",
+  "@renameErrorEmpty": {
+      "description": "UC-17 AF-01: the name is empty, so the core is not called."
+  },
+
+  "renameErrorForbidden": "This name uses a character the file system does not allow.",
+  "@renameErrorForbidden": {
+      "description": "UC-17 AF-01: the name holds a character the host operating system forbids."
+  },
+
+  "renameErrorReserved": "This name is reserved by the operating system.",
+  "@renameErrorReserved": {
+      "description": "UC-17 AF-01: Windows reserves a handful of device names, whatever extension follows them."
+  },
+
+  "renameErrorTrailingDot": "A file name cannot end in a dot.",
+  "@renameErrorTrailingDot": {
+      "description": "UC-17 AF-01: Windows strips a trailing dot silently, which would leave the catalog and the disk disagreeing."
+  },
+
+  "renameErrorTooLong": "Keep the name under {max} characters.",
+  "@renameErrorTooLong": {
+      "description": "UC-17 AF-01: the name is longer than a single path component may be.",
+      "placeholders": {
+          "max": {
+              "type": "int"
+          }
+      }
   }
 }

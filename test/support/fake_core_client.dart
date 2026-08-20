@@ -368,6 +368,22 @@ class FakeCoreClient implements CoreClient {
   @override
   Future<void> dispose() async => disposeCount++;
 
+  /// What [fileRename] answers (UC-17).
+  CoreJsonResponse renameResponse = (status: FILE_OK, json: null);
+
+  /// Every rename asked for, in order.
+  final List<({String uuid, String name})> renames = [];
+
+  @override
+  Future<CoreJsonResponse> fileRename(
+    String uuid,
+    String name,
+    String token,
+  ) async {
+    renames.add((uuid: uuid, name: name));
+    return renameResponse;
+  }
+
   /// What [watchlistsList] answers (UC-16 AF-03).
   ///
   /// An empty array by default: a library nobody has built a watchlist in

@@ -67,6 +67,21 @@ sealed class VideoMetadataEditOutcome with _$VideoMetadataEditOutcome {
       VideoMetadataEditFailed;
 }
 
+/// What renaming a file produced (UC-17 main flow step 4).
+@freezed
+sealed class FileRenameOutcome with _$FileRenameOutcome {
+  /// The core renamed the file on disk and updated the record.
+  ///
+  /// It carries the record the core echoed rather than the name that was
+  /// sent, so what the interface shows is what the catalog holds.
+  const factory FileRenameOutcome.renamed({required CatalogFile file}) =
+      FileRenamed;
+
+  /// The core refused, or the disk did (AF-02, AF-03, AF-05).
+  const factory FileRenameOutcome.failed({required Failure failure}) =
+      FileRenameFailed;
+}
+
 /// The application's view of the core's catalog queries (IR-02, NFR-17).
 abstract interface class CatalogGateway {
   /// The files of [type] in [lifecycle], merged across every registered
@@ -108,6 +123,18 @@ abstract interface class CatalogGateway {
   Future<VideoMetadataEditOutcome> editVideoMetadata({
     required String uuid,
     required VideoMetadata metadata,
+    required String credential,
+  });
+
+  /// Renames the file [uuid] identifies, on disk and in the catalog
+  /// (FR-ME-04, UC-17).
+  ///
+  /// One call for both, because the core owns the file as well as the record:
+  /// a disk failure leaves the catalog untouched, which is what AF-02 is able
+  /// to promise.
+  Future<FileRenameOutcome> renameFile({
+    required String uuid,
+    required String name,
     required String credential,
   });
 }

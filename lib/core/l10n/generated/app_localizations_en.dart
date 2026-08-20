@@ -721,4 +721,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get videoMetadataMarkingCancel => 'Keep it as a series';
+
+  @override
+  String get renameOpen => 'Rename';
+
+  @override
+  String get renameTitle => 'Rename file';
+
+  @override
+  String get renameFieldLabel => 'File name';
+
+  @override
+  String get renameSubmit => 'Rename';
+
+  @override
+  String get renameNothingChanged =>
+      'Neither the catalog nor the file on disk was changed.';
+
+  @override
+  String get renameErrorEmpty => 'Enter a file name.';
+
+  @override
+  String get renameErrorForbidden =>
+      'This name uses a character the file system does not allow.';
+
+  @override
+  String get renameErrorReserved =>
+      'This name is reserved by the operating system.';
+
+  @override
+  String get renameErrorTrailingDot => 'A file name cannot end in a dot.';
+
+  @override
+  String renameErrorTooLong(int max) {
+    return 'Keep the name under $max characters.';
+  }
 }
