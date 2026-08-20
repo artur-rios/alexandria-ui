@@ -1352,5 +1352,68 @@
   "albumMediumDisc": "A disc turning in a player",
   "@albumMediumDisc": {
       "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
+  },
+
+  "viewerOpen": "Open",
+  "@viewerOpen": {
+      "description": "UC-22 main flow step 1: opens the viewer registered for this file's type."
+  },
+
+  "viewerClose": "Close the viewer",
+  "@viewerClose": {
+      "description": "UC-22 main flow step 6: leaves the viewer, retaining nothing."
+  },
+
+  "viewerNext": "Next chapter",
+  "@viewerNext": {
+      "description": "UC-22 main flow step 5: moves on through an e-book."
+  },
+
+  "viewerPrevious": "Previous chapter",
+  "@viewerPrevious": {
+      "description": "UC-22 main flow step 5: moves back through an e-book."
+  },
+
+  "viewerFileMissing": "This file is not where the catalog says it is.",
+  "@viewerFileMissing": {
+      "description": "UC-22 AF-01: the record is there and the file on disk is not."
+  },
+
+  "viewerUnreadable": "This file could not be read. It may be damaged, or not the format its name claims.",
+  "@viewerUnreadable": {
+      "description": "UC-22 AF-02: the bytes are not what the extension says they are."
+  },
+
+  "viewerEncrypted": "This document is protected by a password, which this application does not ask for or store.",
+  "@viewerEncrypted": {
+      "description": "UC-22 AF-03: an encrypted document, reported rather than prompted for."
+  },
+
+  "viewerNone": "There is no viewer for this kind of file yet. Its other actions are still available.",
+  "@viewerNone": {
+      "description": "UC-22 AF-04 / FR-VW-08: no viewer is registered for the type."
+  },
+
+  "viewerUnsupportedFormat": "{name} is in a format no bundled decoder can open.",
+  "@viewerUnsupportedFormat": {
+      "description": "UC-23 AF-03: the archive format has no bundled decoder; the file is named so the owner knows which one.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "viewerChapterOf": "Chapter {position} of {total}",
+  "@viewerChapterOf": {
+      "description": "UC-22: where the owner is in an e-book.",
+      "placeholders": {
+          "position": {
+              "type": "int"
+          },
+          "total": {
+              "type": "int"
+          }
+      }
   }
 }

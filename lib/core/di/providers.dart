@@ -78,6 +78,12 @@ import '../../features/playback/domain/music_grouping.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/shell/domain/session_activity.dart';
+import '../../features/viewers/application/document_viewer_controller.dart';
+import '../../features/viewers/data/epub_document_gateway.dart';
+import '../../features/viewers/data/settings_reading_position_store.dart';
+import '../../features/viewers/domain/document_gateway.dart';
+import '../../features/viewers/domain/reading_position_store.dart';
+import '../../features/viewers/domain/viewer_registry.dart';
 import '../../features/tracking/data/core_watch_progress_gateway.dart';
 import '../../features/tracking/domain/watch_progress_gateway.dart';
 import '../../features/shell/domain/shell_destination.dart';
@@ -435,6 +441,39 @@ final hostFileSystemProvider = Provider<HostFileSystem>(
 final fileRenameControllerProvider =
     NotifierProvider<FileRenameController, RenameState>(
       FileRenameController.new,
+    );
+
+/// The viewers, keyed by the type each presents (UC-22, FR-VW-01).
+///
+/// A registration rather than a conditional in the detail screen: a type gains
+/// a viewer by appearing here, and the screens that offer one do not change
+/// for it. The types absent from this map are the ones whose use case has not
+/// been built, and FR-VW-08 is what the detail view shows for them.
+final viewerRegistryProvider = Provider<ViewerRegistry>(
+  (ref) => const ViewerRegistry({LibraryType.document: ViewerKind.document}),
+);
+
+/// Reads a document at the moment it is opened (UC-22, FR-VW-07).
+final documentGatewayProvider = Provider<DocumentGateway>(
+  (ref) => const EpubDocumentGateway(),
+);
+
+/// Where the owner had read to, per file (FR-VW-02).
+final readingPositionsProvider = Provider<ReadingPositionStore>((ref) {
+  final settings = ref.read(startupControllerProvider.notifier).settings;
+  if (settings == null) {
+    throw StateError(
+      'the reading positions were read before settings were loaded',
+    );
+  }
+
+  return SettingsReadingPositionStore(settings);
+});
+
+/// The open document (UC-22).
+final documentViewerControllerProvider =
+    NotifierProvider<DocumentViewerController, DocumentViewerState>(
+      DocumentViewerController.new,
     );
 
 /// The core's watch-progress read (UC-16 AF-03).

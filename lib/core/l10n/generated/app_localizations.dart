@@ -1697,6 +1697,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A disc turning in a player'**
   String get albumMediumDisc;
+
+  /// UC-22 main flow step 1: opens the viewer registered for this file's type.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get viewerOpen;
+
+  /// UC-22 main flow step 6: leaves the viewer, retaining nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the viewer'**
+  String get viewerClose;
+
+  /// UC-22 main flow step 5: moves on through an e-book.
+  ///
+  /// In en, this message translates to:
+  /// **'Next chapter'**
+  String get viewerNext;
+
+  /// UC-22 main flow step 5: moves back through an e-book.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous chapter'**
+  String get viewerPrevious;
+
+  /// UC-22 AF-01: the record is there and the file on disk is not.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is not where the catalog says it is.'**
+  String get viewerFileMissing;
+
+  /// UC-22 AF-02: the bytes are not what the extension says they are.
+  ///
+  /// In en, this message translates to:
+  /// **'This file could not be read. It may be damaged, or not the format its name claims.'**
+  String get viewerUnreadable;
+
+  /// UC-22 AF-03: an encrypted document, reported rather than prompted for.
+  ///
+  /// In en, this message translates to:
+  /// **'This document is protected by a password, which this application does not ask for or store.'**
+  String get viewerEncrypted;
+
+  /// UC-22 AF-04 / FR-VW-08: no viewer is registered for the type.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no viewer for this kind of file yet. Its other actions are still available.'**
+  String get viewerNone;
+
+  /// UC-23 AF-03: the archive format has no bundled decoder; the file is named so the owner knows which one.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is in a format no bundled decoder can open.'**
+  String viewerUnsupportedFormat(String name);
+
+  /// UC-22: where the owner is in an e-book.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {position} of {total}'**
+  String viewerChapterOf(int position, int total);
 }
 
 class _AppLocalizationsDelegate
