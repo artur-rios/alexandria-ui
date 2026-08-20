@@ -28,5 +28,14 @@ sealed class SessionState with _$SessionState {
   }) = SessionAbsent;
 
   /// The owner is authenticated.
-  const factory SessionState.active({required Session session}) = SessionActive;
+  ///
+  /// [recoveryCodes] is set while a freshly minted set is still on screen and
+  /// `null` at every other time, which is what holds the catalog back until
+  /// the owner has stored them (FR-AU-12, BR-25). An empty list is a set the
+  /// core did not issue — UC-40 AF-03 — and still holds the catalog, because
+  /// the owner needs telling.
+  const factory SessionState.active({
+    required Session session,
+    List<String>? recoveryCodes,
+  }) = SessionActive;
 }

@@ -19,8 +19,15 @@ part 'auth_gateway.freezed.dart';
 @freezed
 sealed class AuthOutcome with _$AuthOutcome {
   /// The core accepted the credentials and returned [session].
-  const factory AuthOutcome.authenticated({required Session session}) =
-      AuthenticatedOutcome;
+  ///
+  /// [recoveryCodes] is the set registration minted, and is `null` for a
+  /// login: only the call that creates the account returns them, and only
+  /// once (FR-AU-12). An empty list is not the same as `null` — it is an
+  /// account created without codes, which UC-40 AF-03 reports.
+  const factory AuthOutcome.authenticated({
+    required Session session,
+    List<String>? recoveryCodes,
+  }) = AuthenticatedOutcome;
 
   /// The call was made and did not authenticate the owner.
   const factory AuthOutcome.failed({required Failure failure}) = FailedOutcome;

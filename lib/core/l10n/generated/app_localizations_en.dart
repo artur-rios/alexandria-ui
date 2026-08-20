@@ -1345,4 +1345,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get missingFilesUnregisteredFolder =>
       'From a folder that is no longer registered.';
+
+  @override
+  String get recoveryCodesTitle => 'Save your recovery codes';
+
+  @override
+  String get recoveryCodesExplanation =>
+      'This is the only time these are shown. Each one replaces a forgotten password exactly once — without them, a forgotten password means a lost library.';
+
+  @override
+  String get recoveryCodesCopy => 'Copy the codes';
+
+  @override
+  String get recoveryCodesCopied => 'Copied to the clipboard.';
+
+  @override
+  String get recoveryCodesAcknowledge => 'I have stored them';
+
+  @override
+  String get recoveryCodesNone =>
+      'Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.';
 }

@@ -35,7 +35,7 @@ class SessionController extends Notifier<SessionState> {
   /// sees. Doing it *before* the session is recorded is what makes the reads
   /// that follow use the new credential rather than answer from the old
   /// session's cache.
-  void establish(Session session) {
+  void establish(Session session, {List<String>? recoveryCodes}) {
     for (final activity in ref.read(sessionActivitiesProvider)) {
       // Not awaited, and deliberately: establishing a session is what the
       // login screen does on the way to the shell, and none of these ends
@@ -47,7 +47,18 @@ class SessionController extends Notifier<SessionState> {
     // Session.toString redacts the credential, so nothing here can leak it
     // into the log file this line lands in (FR-AU-11).
     _log.info('session established for ${session.email}');
-    state = SessionState.active(session: session);
+    state = SessionState.active(session: session, recoveryCodes: recoveryCodes);
+  }
+
+  /// Records that the owner has stored the recovery codes (UC-40 step 4).
+  ///
+  /// Dropping them from the state is what opens the catalog, and it is also
+  /// the whole of FR-AU-13's "no way back": nothing wrote them anywhere, so
+  /// forgetting the list is forgetting the codes.
+  void acknowledgeRecoveryCodes() {
+    if (state case SessionActive(:final session)) {
+      state = SessionState.active(session: session);
+    }
   }
 
   /// Discards the session and returns the owner to the login screen, stating
