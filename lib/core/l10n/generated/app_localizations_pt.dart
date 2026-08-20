@@ -1218,4 +1218,33 @@ class AppLocalizationsPt extends AppLocalizations {
   String readIssueOf(int current, int total) {
     return 'edição $current de $total';
   }
+
+  @override
+  String get deleteFile => 'Excluir este arquivo';
+
+  @override
+  String get deleteFileOnDisk => 'O arquivo no disco não é afetado.';
+
+  @override
+  String get deleteFileInUse =>
+      'Ele está tocando ou aberto agora — confirmar interrompe isso.';
+
+  @override
+  String get deleteBookmark => 'Excluir este favorito';
+
+  @override
+  String get deleteAlreadyDeleted => 'Esse registro já havia sido excluído.';
+
+  @override
+  String get deleteNotFound => 'Esse registro não está mais lá.';
+
+  @override
+  String deleteFileMessage(String name) {
+    return 'Ocultar $name da biblioteca? Ele continua restaurável.';
+  }
+
+  @override
+  String deleteBookmarkMessage(String title) {
+    return 'Ocultar $title dos seus favoritos? Ele continua restaurável.';
+  }
 }

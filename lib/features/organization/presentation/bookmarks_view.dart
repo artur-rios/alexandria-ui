@@ -8,6 +8,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/failures/failure_messages.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../lifecycle/presentation/delete_record_button.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/bookmark.dart';
 
@@ -44,6 +45,7 @@ class BookmarksView extends ConsumerWidget {
           const _BookmarkForm(),
           const SizedBox(height: AppSpacing.md),
         ],
+        const DeletionNoticeBar(),
 
         Expanded(
           child: AsyncStateView(
@@ -80,10 +82,18 @@ class _BookmarkTile extends ConsumerWidget {
       // Step 6: opening it is the ordinary thing to do with a bookmark, so it
       // is the tile's own tap rather than an action beside it.
       onTap: () => unawaited(_open(context, ref, bookmark)),
-      trailing: IconButton(
-        tooltip: l10n.bookmarkEdit,
-        icon: const Icon(Icons.edit_outlined),
-        onPressed: () => ref.read(bookmarkFormProvider.notifier).edit(bookmark),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: l10n.bookmarkEdit,
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () =>
+                ref.read(bookmarkFormProvider.notifier).edit(bookmark),
+          ),
+          // UC-33 main flow step 1.
+          DeleteBookmarkButton(bookmark: bookmark),
+        ],
       ),
     );
   }

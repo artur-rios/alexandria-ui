@@ -429,6 +429,28 @@ class CoreIsolate {
         ),
       ),
 
+      'fileSoftDelete' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_file_soft_delete(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'bookmarkSoftDelete' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_bookmark_soft_delete(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       'bookmarkCreate' => withNativeString(
         arguments.first! as String,
         (body) => withNativeString(arguments[1]! as String, (token) {

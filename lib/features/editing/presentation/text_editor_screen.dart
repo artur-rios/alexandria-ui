@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../lifecycle/application/open_file_holds.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure_messages.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
@@ -37,13 +38,27 @@ class TextEditorScreen extends ConsumerStatefulWidget {
           ),
     );
 
+    // UC-33 AF-04: while the editor has the file open, a deletion knows about
+    // it and can close it.
+    final navigator = Navigator.of(context);
+    final forget = ref
+        .read(openFileHoldsProvider.notifier)
+        .register(
+          OpenFileHold(
+            uuid: file.uuid,
+            close: () async {
+              if (navigator.canPop()) navigator.pop();
+            },
+          ),
+        );
+
     return showDialog<void>(
       context: context,
       // Dismissing from outside would be a way past AF-02's warning, so the
       // only way out is the editor's own close.
       barrierDismissible: false,
       builder: (context) => const Dialog.fullscreen(child: TextEditorScreen()),
-    );
+    ).whenComplete(forget);
   }
 
   @override

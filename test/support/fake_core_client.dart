@@ -395,6 +395,30 @@ class FakeCoreClient implements CoreClient {
     String token,
   ) async => bookmarksResponse;
 
+  /// Every record soft-deleted, in order (UC-33).
+  final List<String> softDeleted = [];
+
+  /// What a file soft-delete answers.
+  CoreJsonResponse fileSoftDeleteResponse = (status: FILE_OK, json: null);
+
+  /// What a bookmark soft-delete answers.
+  CoreJsonResponse bookmarkSoftDeleteResponse = (
+    status: BOOKMARK_OK,
+    json: null,
+  );
+
+  @override
+  Future<CoreJsonResponse> fileSoftDelete(String uuid, String token) async {
+    softDeleted.add(uuid);
+    return fileSoftDeleteResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> bookmarkSoftDelete(String uuid, String token) async {
+    softDeleted.add(uuid);
+    return bookmarkSoftDeleteResponse;
+  }
+
   @override
   Future<CoreJsonResponse> bookmarkCreate(String jsonBody, String token) async {
     bookmarkWrites.add((uuid: null, body: jsonBody));
