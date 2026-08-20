@@ -68,6 +68,8 @@ import '../../features/editing/application/text_editor_controller.dart';
 import '../../features/editing/data/core_text_content_gateway.dart';
 import '../../features/editing/domain/text_content_gateway.dart';
 import '../../features/organization/application/bookmarks_controller.dart';
+import '../../features/organization/application/collection_candidates_controller.dart';
+import '../../features/organization/application/collection_members_controller.dart';
 import '../../features/organization/application/collections_controller.dart';
 import '../../features/organization/data/core_bookmark_gateway.dart';
 import '../../features/organization/data/core_collection_gateway.dart';
@@ -659,6 +661,30 @@ final collectionGatewayProvider = Provider<CollectionGateway>((ref) {
 final collectionsControllerProvider =
     AsyncNotifierProvider<CollectionsController, List<Collection>>(
       CollectionsController.new,
+    );
+
+/// The collection whose members are open, or `null` when none is (UC-27).
+final openCollectionProvider = NotifierProvider<OpenCollection, Collection?>(
+  OpenCollection.new,
+);
+
+/// The open collection's members (UC-27).
+final collectionMembersControllerProvider =
+    AsyncNotifierProvider<CollectionMembersController, List<CollectionMember>>(
+      CollectionMembersController.new,
+    );
+
+/// What the open collection could accept (UC-27 main flow step 3).
+final collectionCandidatesControllerProvider =
+    AsyncNotifierProvider<
+      CollectionCandidatesController,
+      List<CollectionMember>
+    >(CollectionCandidatesController.new);
+
+/// What became of the last membership change (UC-27).
+final collectionMembershipFormProvider =
+    NotifierProvider<CollectionMembershipForm, MembershipReport>(
+      CollectionMembershipForm.new,
     );
 
 /// The collections screen's own state (UC-26).

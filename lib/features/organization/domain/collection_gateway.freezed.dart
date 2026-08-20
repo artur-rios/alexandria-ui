@@ -585,4 +585,573 @@ $FailureCopyWith<$Res> get failure {
 }
 }
 
+/// @nodoc
+mixin _$CollectionMember {
+
+ String get uuid; String get name;
+/// Create a copy of CollectionMember
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CollectionMemberCopyWith<CollectionMember> get copyWith => _$CollectionMemberCopyWithImpl<CollectionMember>(this as CollectionMember, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CollectionMember&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,uuid,name);
+
+@override
+String toString() {
+  return 'CollectionMember(uuid: $uuid, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CollectionMemberCopyWith<$Res>  {
+  factory $CollectionMemberCopyWith(CollectionMember value, $Res Function(CollectionMember) _then) = _$CollectionMemberCopyWithImpl;
+@useResult
+$Res call({
+ String uuid, String name
+});
+
+
+
+
+}
+/// @nodoc
+class _$CollectionMemberCopyWithImpl<$Res>
+    implements $CollectionMemberCopyWith<$Res> {
+  _$CollectionMemberCopyWithImpl(this._self, this._then);
+
+  final CollectionMember _self;
+  final $Res Function(CollectionMember) _then;
+
+/// Create a copy of CollectionMember
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? name = null,}) {
+  return _then(_self.copyWith(
+uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [CollectionMember].
+extension CollectionMemberPatterns on CollectionMember {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CollectionMember value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _CollectionMember() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CollectionMember value)  $default,){
+final _that = this;
+switch (_that) {
+case _CollectionMember():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CollectionMember value)?  $default,){
+final _that = this;
+switch (_that) {
+case _CollectionMember() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String name)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _CollectionMember() when $default != null:
+return $default(_that.uuid,_that.name);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String name)  $default,) {final _that = this;
+switch (_that) {
+case _CollectionMember():
+return $default(_that.uuid,_that.name);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String name)?  $default,) {final _that = this;
+switch (_that) {
+case _CollectionMember() when $default != null:
+return $default(_that.uuid,_that.name);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _CollectionMember implements CollectionMember {
+  const _CollectionMember({required this.uuid, required this.name});
+  
+
+@override final  String uuid;
+@override final  String name;
+
+/// Create a copy of CollectionMember
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CollectionMemberCopyWith<_CollectionMember> get copyWith => __$CollectionMemberCopyWithImpl<_CollectionMember>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CollectionMember&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,uuid,name);
+
+@override
+String toString() {
+  return 'CollectionMember(uuid: $uuid, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CollectionMemberCopyWith<$Res> implements $CollectionMemberCopyWith<$Res> {
+  factory _$CollectionMemberCopyWith(_CollectionMember value, $Res Function(_CollectionMember) _then) = __$CollectionMemberCopyWithImpl;
+@override @useResult
+$Res call({
+ String uuid, String name
+});
+
+
+
+
+}
+/// @nodoc
+class __$CollectionMemberCopyWithImpl<$Res>
+    implements _$CollectionMemberCopyWith<$Res> {
+  __$CollectionMemberCopyWithImpl(this._self, this._then);
+
+  final _CollectionMember _self;
+  final $Res Function(_CollectionMember) _then;
+
+/// Create a copy of CollectionMember
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? name = null,}) {
+  return _then(_CollectionMember(
+uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+mixin _$CollectionMembers {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CollectionMembers);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'CollectionMembers()';
+}
+
+
+}
+
+/// @nodoc
+class $CollectionMembersCopyWith<$Res>  {
+$CollectionMembersCopyWith(CollectionMembers _, $Res Function(CollectionMembers) __);
+}
+
+
+/// Adds pattern-matching-related methods to [CollectionMembers].
+extension CollectionMembersPatterns on CollectionMembers {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( CollectionMembersLoaded value)?  loaded,TResult Function( CollectionMembersFailed value)?  failed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case CollectionMembersLoaded() when loaded != null:
+return loaded(_that);case CollectionMembersFailed() when failed != null:
+return failed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( CollectionMembersLoaded value)  loaded,required TResult Function( CollectionMembersFailed value)  failed,}){
+final _that = this;
+switch (_that) {
+case CollectionMembersLoaded():
+return loaded(_that);case CollectionMembersFailed():
+return failed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( CollectionMembersLoaded value)?  loaded,TResult? Function( CollectionMembersFailed value)?  failed,}){
+final _that = this;
+switch (_that) {
+case CollectionMembersLoaded() when loaded != null:
+return loaded(_that);case CollectionMembersFailed() when failed != null:
+return failed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( CollectionKind kind,  List<CollectionMember> members)?  loaded,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case CollectionMembersLoaded() when loaded != null:
+return loaded(_that.kind,_that.members);case CollectionMembersFailed() when failed != null:
+return failed(_that.failure);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( CollectionKind kind,  List<CollectionMember> members)  loaded,required TResult Function( Failure failure)  failed,}) {final _that = this;
+switch (_that) {
+case CollectionMembersLoaded():
+return loaded(_that.kind,_that.members);case CollectionMembersFailed():
+return failed(_that.failure);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( CollectionKind kind,  List<CollectionMember> members)?  loaded,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+switch (_that) {
+case CollectionMembersLoaded() when loaded != null:
+return loaded(_that.kind,_that.members);case CollectionMembersFailed() when failed != null:
+return failed(_that.failure);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class CollectionMembersLoaded implements CollectionMembers {
+  const CollectionMembersLoaded({required this.kind, required final  List<CollectionMember> members}): _members = members;
+  
+
+ final  CollectionKind kind;
+ final  List<CollectionMember> _members;
+ List<CollectionMember> get members {
+  if (_members is EqualUnmodifiableListView) return _members;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_members);
+}
+
+
+/// Create a copy of CollectionMembers
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CollectionMembersLoadedCopyWith<CollectionMembersLoaded> get copyWith => _$CollectionMembersLoadedCopyWithImpl<CollectionMembersLoaded>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CollectionMembersLoaded&&(identical(other.kind, kind) || other.kind == kind)&&const DeepCollectionEquality().equals(other._members, _members));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,kind,const DeepCollectionEquality().hash(_members));
+
+@override
+String toString() {
+  return 'CollectionMembers.loaded(kind: $kind, members: $members)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CollectionMembersLoadedCopyWith<$Res> implements $CollectionMembersCopyWith<$Res> {
+  factory $CollectionMembersLoadedCopyWith(CollectionMembersLoaded value, $Res Function(CollectionMembersLoaded) _then) = _$CollectionMembersLoadedCopyWithImpl;
+@useResult
+$Res call({
+ CollectionKind kind, List<CollectionMember> members
+});
+
+
+
+
+}
+/// @nodoc
+class _$CollectionMembersLoadedCopyWithImpl<$Res>
+    implements $CollectionMembersLoadedCopyWith<$Res> {
+  _$CollectionMembersLoadedCopyWithImpl(this._self, this._then);
+
+  final CollectionMembersLoaded _self;
+  final $Res Function(CollectionMembersLoaded) _then;
+
+/// Create a copy of CollectionMembers
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? kind = null,Object? members = null,}) {
+  return _then(CollectionMembersLoaded(
+kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as CollectionKind,members: null == members ? _self._members : members // ignore: cast_nullable_to_non_nullable
+as List<CollectionMember>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class CollectionMembersFailed implements CollectionMembers {
+  const CollectionMembersFailed({required this.failure});
+  
+
+ final  Failure failure;
+
+/// Create a copy of CollectionMembers
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CollectionMembersFailedCopyWith<CollectionMembersFailed> get copyWith => _$CollectionMembersFailedCopyWithImpl<CollectionMembersFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CollectionMembersFailed&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,failure);
+
+@override
+String toString() {
+  return 'CollectionMembers.failed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $CollectionMembersFailedCopyWith<$Res> implements $CollectionMembersCopyWith<$Res> {
+  factory $CollectionMembersFailedCopyWith(CollectionMembersFailed value, $Res Function(CollectionMembersFailed) _then) = _$CollectionMembersFailedCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+$FailureCopyWith<$Res> get failure;
+
+}
+/// @nodoc
+class _$CollectionMembersFailedCopyWithImpl<$Res>
+    implements $CollectionMembersFailedCopyWith<$Res> {
+  _$CollectionMembersFailedCopyWithImpl(this._self, this._then);
+
+  final CollectionMembersFailed _self;
+  final $Res Function(CollectionMembersFailed) _then;
+
+/// Create a copy of CollectionMembers
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(CollectionMembersFailed(
+failure: null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+/// Create a copy of CollectionMembers
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$FailureCopyWith<$Res> get failure {
+  
+  return $FailureCopyWith<$Res>(_self.failure, (value) {
+    return _then(_self.copyWith(failure: value));
+  });
+}
+}
+
 // dart format on

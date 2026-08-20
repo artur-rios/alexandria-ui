@@ -1493,4 +1493,35 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get collectionAddItems => 'Add items';
+
+  @override
+  String get collectionAddChosen => 'Add';
+
+  @override
+  String get collectionRemoveItem => 'Remove from this collection';
+
+  @override
+  String get collectionEmpty => 'This collection is empty.';
+
+  @override
+  String get collectionNoCandidates =>
+      'There is nothing of this collection\'s kind to add.';
+
+  @override
+  String collectionItemsAdded(String names) {
+    return 'Added: $names';
+  }
+
+  @override
+  String collectionItemsAlreadyPresent(String names) {
+    return 'Already in this collection: $names';
+  }
+
+  @override
+  String collectionItemNotAdded(String name, String reason) {
+    return '$name was not added — $reason';
+  }
 }

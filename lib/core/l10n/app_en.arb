@@ -2101,5 +2101,63 @@
               "type": "num"
           }
       }
+  },
+
+  "collectionAddItems": "Add items",
+  "@collectionAddItems": {
+      "description": "UC-27 main flow step 3: opens the picker of items the collection can accept."
+  },
+
+  "collectionAddChosen": "Add",
+  "@collectionAddChosen": {
+      "description": "UC-27 main flow step 3: sends the chosen items to the core."
+  },
+
+  "collectionRemoveItem": "Remove from this collection",
+  "@collectionRemoveItem": {
+      "description": "UC-27 main flow step 5: unlinks the item, which stays in the catalog."
+  },
+
+  "collectionEmpty": "This collection is empty.",
+  "@collectionEmpty": {
+      "description": "UC-27: the collection holds nothing yet, which is a state and not a failure."
+  },
+
+  "collectionNoCandidates": "There is nothing of this collection's kind to add.",
+  "@collectionNoCandidates": {
+      "description": "UC-27 AF-01 from the other side: a collection accepts one kind, and nothing of that kind exists to offer."
+  },
+
+  "collectionItemsAdded": "Added: {names}",
+  "@collectionItemsAdded": {
+      "description": "UC-27 AF-04: exactly which items the core linked, named.",
+      "placeholders": {
+          "names": {
+              "type": "String"
+          }
+      }
+  },
+
+  "collectionItemsAlreadyPresent": "Already in this collection: {names}",
+  "@collectionItemsAlreadyPresent": {
+      "description": "UC-27 AF-02: the items that were already members, which the core was not asked about.",
+      "placeholders": {
+          "names": {
+              "type": "String"
+          }
+      }
+  },
+
+  "collectionItemNotAdded": "{name} was not added \u2014 {reason}",
+  "@collectionItemNotAdded": {
+      "description": "UC-27 AF-04: exactly which items did not land, and the core's reason for each.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          },
+          "reason": {
+              "type": "String"
+          }
+      }
   }
 }
