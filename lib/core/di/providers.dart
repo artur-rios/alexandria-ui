@@ -68,10 +68,14 @@ import '../../features/editing/application/text_editor_controller.dart';
 import '../../features/editing/data/core_text_content_gateway.dart';
 import '../../features/editing/domain/text_content_gateway.dart';
 import '../../features/organization/application/bookmarks_controller.dart';
+import '../../features/organization/application/collections_controller.dart';
 import '../../features/organization/data/core_bookmark_gateway.dart';
+import '../../features/organization/data/core_collection_gateway.dart';
 import '../../features/organization/data/url_launcher_browser.dart';
 import '../../features/organization/domain/bookmark.dart';
 import '../../features/organization/domain/bookmark_gateway.dart';
+import '../../features/organization/domain/collection.dart';
+import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
 import '../../features/playback/application/audio_playback_controller.dart';
 import '../../features/playback/application/audio_playback_session.dart';
@@ -638,6 +642,28 @@ final watchProgressEditorProvider =
     NotifierProvider<WatchProgressEditor, WatchProgressEditorState>(
       WatchProgressEditor.new,
     );
+
+/// The core's collection operations (UC-26, UC-27, FR-OG-01 ... FR-OG-06).
+final collectionGatewayProvider = Provider<CollectionGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the collection gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreCollectionGateway(core);
+});
+
+/// The owner's collections (UC-26).
+final collectionsControllerProvider =
+    AsyncNotifierProvider<CollectionsController, List<Collection>>(
+      CollectionsController.new,
+    );
+
+/// The collections screen's own state (UC-26).
+final collectionsFormProvider =
+    NotifierProvider<CollectionsForm, CollectionsState>(CollectionsForm.new);
 
 /// The core's deletion-lifecycle operations (UC-33, FR-LC-01).
 final lifecycleGatewayProvider = Provider<LifecycleGateway>((ref) {

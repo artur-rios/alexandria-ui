@@ -505,6 +505,46 @@ class FakeCoreClient implements CoreClient {
     return bookmarkSoftDeleteResponse;
   }
 
+  /// What listing the collections answers (UC-26).
+  CoreJsonResponse collectionsListResult = (status: COLLECTION_OK, json: '[]');
+
+  /// What a collection write answers (UC-26).
+  CoreJsonResponse collectionWriteResult = (status: COLLECTION_OK, json: null);
+
+  /// Every collection write asked for, in order.
+  final List<({String? uuid, String? body})> collectionWrites = [];
+
+  @override
+  Future<CoreJsonResponse> collectionsList(
+    String jsonFilters,
+    String token,
+  ) async => collectionsListResult;
+
+  @override
+  Future<CoreJsonResponse> collectionCreate(
+    String jsonBody,
+    String token,
+  ) async {
+    collectionWrites.add((uuid: null, body: jsonBody));
+    return collectionWriteResult;
+  }
+
+  @override
+  Future<CoreJsonResponse> collectionRename(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async {
+    collectionWrites.add((uuid: uuid, body: jsonBody));
+    return collectionWriteResult;
+  }
+
+  @override
+  Future<CoreJsonResponse> collectionDelete(String uuid, String token) async {
+    collectionWrites.add((uuid: uuid, body: null));
+    return collectionWriteResult;
+  }
+
   @override
   Future<CoreJsonResponse> bookmarkCreate(String jsonBody, String token) async {
     bookmarkWrites.add((uuid: null, body: jsonBody));

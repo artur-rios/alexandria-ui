@@ -409,5 +409,20 @@
   "recoveryCodesRegenerate": "Gerar novos códigos de recuperação",
   "recoveryCodesRegenerateMessage": "Todos os códigos que você tem agora deixam de funcionar, e dez novos tomam o lugar deles. Eles são exibidos uma única vez.",
   "recoveryCodesNoneLeft": "Não resta nenhum código de recuperação. Gere um conjunto enquanto você ainda sabe sua senha.",
-  "recoveryCodesRemaining": "{count, plural, =1{1 código de recuperação restante} other{{count} códigos de recuperação restantes}}"
+  "recoveryCodesRemaining": "{count, plural, =1{1 código de recuperação restante} other{{count} códigos de recuperação restantes}}",
+  "collectionsTitle": "Coleções",
+  "collectionsOpen": "Coleções",
+  "collectionsNone": "Você ainda não criou uma coleção.",
+  "collectionNameLabel": "Nome da coleção",
+  "collectionRenameLabel": "Novo nome",
+  "collectionCreate": "Criar",
+  "collectionRenameSave": "Renomear",
+  "collectionRename": "Renomear esta coleção",
+  "collectionDelete": "Excluir esta coleção",
+  "collectionNameEmpty": "Dê um nome à coleção.",
+  "collectionNotFound": "Essa coleção não está mais lá.",
+  "collectionKindFile": "Arquivos",
+  "collectionKindBookmark": "Favoritos",
+  "collectionDeleteMessage": "Excluir {name}? Os itens dentro dela são mantidos — apenas o agrupamento é removido.",
+  "collectionItemCount": "{count, plural, =0{Vazia} =1{1 item} other{{count} itens}}"
 }
