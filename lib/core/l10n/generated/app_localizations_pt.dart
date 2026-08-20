@@ -916,4 +916,42 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get albumMediumDisc => 'Um disco girando em um player';
+
+  @override
+  String get viewerOpen => 'Abrir';
+
+  @override
+  String get viewerClose => 'Fechar o visualizador';
+
+  @override
+  String get viewerNext => 'Próximo capítulo';
+
+  @override
+  String get viewerPrevious => 'Capítulo anterior';
+
+  @override
+  String get viewerFileMissing =>
+      'Este arquivo não está onde o catálogo diz que está.';
+
+  @override
+  String get viewerUnreadable =>
+      'Não foi possível ler este arquivo. Ele pode estar danificado ou não ser o formato que o nome indica.';
+
+  @override
+  String get viewerEncrypted =>
+      'Este documento está protegido por senha, que este aplicativo não pede nem armazena.';
+
+  @override
+  String get viewerNone =>
+      'Ainda não há um visualizador para este tipo de arquivo. As outras ações continuam disponíveis.';
+
+  @override
+  String viewerUnsupportedFormat(String name) {
+    return '$name está em um formato que nenhum decodificador incluído consegue abrir.';
+  }
+
+  @override
+  String viewerChapterOf(int position, int total) {
+    return 'Capítulo $position de $total';
+  }
 }

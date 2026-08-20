@@ -915,4 +915,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get albumMediumDisc => 'A disc turning in a player';
+
+  @override
+  String get viewerOpen => 'Open';
+
+  @override
+  String get viewerClose => 'Close the viewer';
+
+  @override
+  String get viewerNext => 'Next chapter';
+
+  @override
+  String get viewerPrevious => 'Previous chapter';
+
+  @override
+  String get viewerFileMissing =>
+      'This file is not where the catalog says it is.';
+
+  @override
+  String get viewerUnreadable =>
+      'This file could not be read. It may be damaged, or not the format its name claims.';
+
+  @override
+  String get viewerEncrypted =>
+      'This document is protected by a password, which this application does not ask for or store.';
+
+  @override
+  String get viewerNone =>
+      'There is no viewer for this kind of file yet. Its other actions are still available.';
+
+  @override
+  String viewerUnsupportedFormat(String name) {
+    return '$name is in a format no bundled decoder can open.';
+  }
+
+  @override
+  String viewerChapterOf(int position, int total) {
+    return 'Chapter $position of $total';
+  }
 }

@@ -265,5 +265,15 @@
   "audioOpenPlayer": "Abrir o player",
   "albumMediumVinyl": "Um disco de vinil girando em uma vitrola",
   "albumMediumTape": "Uma fita cassete girando em um toca-fitas",
-  "albumMediumDisc": "Um disco girando em um player"
+  "albumMediumDisc": "Um disco girando em um player",
+  "viewerOpen": "Abrir",
+  "viewerClose": "Fechar o visualizador",
+  "viewerNext": "Próximo capítulo",
+  "viewerPrevious": "Capítulo anterior",
+  "viewerFileMissing": "Este arquivo não está onde o catálogo diz que está.",
+  "viewerUnreadable": "Não foi possível ler este arquivo. Ele pode estar danificado ou não ser o formato que o nome indica.",
+  "viewerEncrypted": "Este documento está protegido por senha, que este aplicativo não pede nem armazena.",
+  "viewerNone": "Ainda não há um visualizador para este tipo de arquivo. As outras ações continuam disponíveis.",
+  "viewerUnsupportedFormat": "{name} está em um formato que nenhum decodificador incluído consegue abrir.",
+  "viewerChapterOf": "Capítulo {position} de {total}"
 }

@@ -12,6 +12,9 @@ import '../domain/library_type.dart';
 import 'music_metadata_form.dart';
 import '../../editing/presentation/text_editor_screen.dart';
 import '../../playback/application/audio_playback_controller.dart';
+import '../../viewers/domain/viewer_registry.dart';
+import '../../viewers/presentation/document_viewer_screen.dart';
+import '../domain/catalog_file.dart';
 import '../../playback/presentation/video_player_screen.dart';
 import 'rename_file_dialog.dart';
 import 'video_metadata_form.dart';
@@ -219,16 +222,26 @@ class _Details extends ConsumerWidget {
           ],
 
           const SizedBox(height: AppSpacing.lg),
-          // AF-04: no viewer is registered for any type yet — M-07 is what
-          // builds them — so the details are presented and this says plainly
-          // that the file cannot be opened, rather than offering an action
-          // that would do nothing. The other actions stay available.
-          Text(
-            l10n.detailsNoViewer,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          // UC-22 main flow steps 1 and 2: the viewer is resolved from the
+          // registry keyed by type (FR-VW-01), so a type gains an Open action
+          // by being registered and nothing here changes for it.
+          //
+          // AF-04 / FR-VW-08: a type with no viewer says so and keeps every
+          // other action, rather than offering an Open that would do nothing.
+          if (ref.watch(viewerRegistryProvider).viewerFor(details.file.type)
+              case final viewer?)
+            FilledButton.icon(
+              onPressed: () => openViewer(context, ref, viewer, details.file),
+              icon: const Icon(Icons.open_in_full),
+              label: Text(l10n.viewerOpen),
+            )
+          else
+            Text(
+              l10n.detailsNoViewer,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -312,6 +325,25 @@ class _Section extends StatelessWidget {
     child: Text(text, style: Theme.of(context).textTheme.labelLarge),
   );
 }
+
+/// Opens the viewer registered for a file (UC-22 main flow steps 1 and 2).
+///
+/// The one place a [ViewerKind] becomes a screen. Everything above it works in
+/// terms of the registry, which is what FR-VW-01 asks for: a new viewer is a
+/// registration and one line here.
+Future<void> openViewer(
+  BuildContext context,
+  WidgetRef ref,
+  ViewerKind viewer,
+  CatalogFile file,
+) => switch (viewer) {
+  ViewerKind.document => DocumentViewerScreen.show(context, ref, file),
+  // UC-23, UC-24, and UC-25 register theirs. Until they do, no type resolves
+  // to them, so these are unreachable rather than pending.
+  ViewerKind.comic ||
+  ViewerKind.image ||
+  ViewerKind.page => Future<void>.value(),
+};
 
 /// Starts audio playback and leaves the detail view (UC-20 main flow step 4).
 ///
