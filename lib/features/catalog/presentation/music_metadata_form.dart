@@ -126,9 +126,7 @@ class _MusicMetadataFormState extends ConsumerState<MusicMetadataForm> {
       ),
       actions: [
         TextButton(
-          onPressed: state.isSaving
-              ? null
-              : () => Navigator.of(context).pop(),
+          onPressed: state.isSaving ? null : () => Navigator.of(context).pop(),
           child: Text(l10n.musicMetadataCancel),
         ),
         FilledButton(

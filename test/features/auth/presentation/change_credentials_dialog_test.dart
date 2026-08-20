@@ -93,8 +93,9 @@ void main() {
       },
     );
 
-    testWidgets('GivenPreferences_WhenTheChangeIsChosen_ThenTheFormOpens',
-        (tester) async {
+    testWidgets('GivenPreferences_WhenTheChangeIsChosen_ThenTheFormOpens', (
+      tester,
+    ) async {
       await openForm(tester);
 
       expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
@@ -102,21 +103,21 @@ void main() {
   });
 
   group('the main flow', () {
-    testWidgets(
-      'GivenAValidForm_WhenItIsSubmitted_ThenTheCoreIsCalledOnce',
-      (tester) async {
-        final gateway = FakeAuthGateway();
-        await openForm(tester, gateway: gateway);
+    testWidgets('GivenAValidForm_WhenItIsSubmitted_ThenTheCoreIsCalledOnce', (
+      tester,
+    ) async {
+      final gateway = FakeAuthGateway();
+      await openForm(tester, gateway: gateway);
 
-        await submitForm(tester);
+      await submitForm(tester);
 
-        expect(gateway.credentialChanges, hasLength(1));
-        expect(gateway.credentialChanges.single.email, 'new@example.com');
-      },
-    );
+      expect(gateway.credentialChanges, hasLength(1));
+      expect(gateway.credentialChanges.single.email, 'new@example.com');
+    });
 
-    testWidgets('GivenTheCoreAccepts_WhenItSettles_ThenTheChangeIsConfirmed',
-        (tester) async {
+    testWidgets('GivenTheCoreAccepts_WhenItSettles_ThenTheChangeIsConfirmed', (
+      tester,
+    ) async {
       await openForm(tester);
 
       await submitForm(tester);
@@ -127,43 +128,41 @@ void main() {
       expect(find.text(l10n.changeCredentialsDone), findsOneWidget);
     });
 
-    testWidgets(
-      'GivenTheCoreAccepts_WhenItSettles_ThenThePlaintextIsCleared',
-      (tester) async {
-        // FR-AU-11: the plaintext lives no longer than the call needs it.
-        await openForm(tester);
+    testWidgets('GivenTheCoreAccepts_WhenItSettles_ThenThePlaintextIsCleared', (
+      tester,
+    ) async {
+      // FR-AU-11: the plaintext lives no longer than the call needs it.
+      await openForm(tester);
 
-        await submitForm(tester);
+      await submitForm(tester);
 
-        expect(
-          find.descendant(
-            of: find.byType(ChangeCredentialsDialog),
-            matching: find.byType(TextField),
-          ),
-          findsNothing,
-          reason: 'the confirmed form replaces the fields entirely',
-        );
-      },
-    );
+      expect(
+        find.descendant(
+          of: find.byType(ChangeCredentialsDialog),
+          matching: find.byType(TextField),
+        ),
+        findsNothing,
+        reason: 'the confirmed form replaces the fields entirely',
+      );
+    });
 
-    testWidgets(
-      'GivenTheCoreAccepts_WhenItSettles_ThenTheOwnerStaysSignedIn',
-      (tester) async {
-        final container = await tester.pumpShell();
-        await tester.tap(find.byType(PreferencesButton));
-        await tester.pumpAndSettle();
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-        await tester.tap(find.text(l10n.changeCredentialsOpen));
-        await tester.pumpAndSettle();
+    testWidgets('GivenTheCoreAccepts_WhenItSettles_ThenTheOwnerStaysSignedIn', (
+      tester,
+    ) async {
+      final container = await tester.pumpShell();
+      await tester.tap(find.byType(PreferencesButton));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(PreferencesDialog)),
+      );
+      await tester.tap(find.text(l10n.changeCredentialsOpen));
+      await tester.pumpAndSettle();
 
-        await submitForm(tester);
+      await submitForm(tester);
 
-        expect(find.byType(LoginScreen), findsNothing);
-        expect(container.read(sessionControllerProvider), isA<SessionActive>());
-      },
-    );
+      expect(find.byType(LoginScreen), findsNothing);
+      expect(container.read(sessionControllerProvider), isA<SessionActive>());
+    });
   });
 
   group('local validation (AF-01)', () {
@@ -271,23 +270,22 @@ void main() {
   });
 
   group('themes, languages, and the keyboard', () {
-    testWidgets(
-      'GivenTheForm_WhenItOpens_ThenTheFirstFieldTakesFocus',
-      (tester) async {
-        // FR-UX-11: usable from the keyboard alone.
-        await openForm(tester);
+    testWidgets('GivenTheForm_WhenItOpens_ThenTheFirstFieldTakesFocus', (
+      tester,
+    ) async {
+      // FR-UX-11: usable from the keyboard alone.
+      await openForm(tester);
 
-        final first = tester.widget<TextField>(
-          find
-              .descendant(
-                of: find.byType(ChangeCredentialsDialog),
-                matching: find.byType(TextField),
-              )
-              .first,
-        );
-        expect(first.autofocus, isTrue);
-      },
-    );
+      final first = tester.widget<TextField>(
+        find
+            .descendant(
+              of: find.byType(ChangeCredentialsDialog),
+              matching: find.byType(TextField),
+            )
+            .first,
+      );
+      expect(first.autofocus, isTrue);
+    });
 
     for (final (name, mode) in [
       ('Light', ThemeMode.light),
@@ -312,25 +310,24 @@ void main() {
       ('English', const Locale('en')),
       ('Portuguese', const Locale('pt', 'BR')),
     ]) {
-      testWidgets(
-        'Given${name}_WhenTheFormOpens_ThenNoStringRendersAsItsKey',
-        (tester) async {
-          await openForm(tester, locale: locale);
-          final l10n = AppLocalizations.of(
-            tester.element(find.byType(ChangeCredentialsDialog)),
-          );
+      testWidgets('Given${name}_WhenTheFormOpens_ThenNoStringRendersAsItsKey', (
+        tester,
+      ) async {
+        await openForm(tester, locale: locale);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ChangeCredentialsDialog)),
+        );
 
-          for (final label in [
-            l10n.changeCredentialsTitle,
-            l10n.changeCredentialsIntro,
-            l10n.changeCredentialsSubmit,
-          ]) {
-            expect(label, isNotEmpty);
-            expect(label, isNot(startsWith('changeCredentials')));
-            expect(find.text(label), findsWidgets);
-          }
-        },
-      );
+        for (final label in [
+          l10n.changeCredentialsTitle,
+          l10n.changeCredentialsIntro,
+          l10n.changeCredentialsSubmit,
+        ]) {
+          expect(label, isNotEmpty);
+          expect(label, isNot(startsWith('changeCredentials')));
+          expect(find.text(label), findsWidgets);
+        }
+      });
     }
   });
 }

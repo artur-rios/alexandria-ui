@@ -28,15 +28,14 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenTheLoginScreen_WhenItOpens_ThenNoFailureIsShown',
-      (tester) async {
-        await tester.pumpLoginScreen();
+    testWidgets('GivenTheLoginScreen_WhenItOpens_ThenNoFailureIsShown', (
+      tester,
+    ) async {
+      await tester.pumpLoginScreen();
 
-        expect(find.text(en.loginRejected), findsNothing);
-        expect(find.text(en.loginNoAccount), findsNothing);
-      },
-    );
+      expect(find.text(en.loginRejected), findsNothing);
+      expect(find.text(en.loginNoAccount), findsNothing);
+    });
 
     testWidgets(
       'GivenValidCredentials_WhenTheOwnerSignsIn_ThenTheLoginScreenIsReplaced',
@@ -115,16 +114,15 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenAnEmptyEmail_WhenTheOwnerSignsIn_ThenTheFieldIsMarked',
-      (tester) async {
-        await tester.pumpLoginScreen();
+    testWidgets('GivenAnEmptyEmail_WhenTheOwnerSignsIn_ThenTheFieldIsMarked', (
+      tester,
+    ) async {
+      await tester.pumpLoginScreen();
 
-        await tester.signIn(email: '');
+      await tester.signIn(email: '');
 
-        expect(find.text(en.loginEmailMissing), findsOneWidget);
-      },
-    );
+      expect(find.text(en.loginEmailMissing), findsOneWidget);
+    });
   });
 
   // UC-02 AF-02.
@@ -226,9 +224,14 @@ void main() {
         final container = await tester.pumpLoginScreen();
 
         await tester.signIn();
-        container.read(sessionControllerProvider.notifier).invalidate(
-          const Failure.unauthorized(family: CoreStatusFamily.file, code: 2),
-        );
+        container
+            .read(sessionControllerProvider.notifier)
+            .invalidate(
+              const Failure.unauthorized(
+                family: CoreStatusFamily.file,
+                code: 2,
+              ),
+            );
         await tester.pumpAndSettle();
 
         expect(find.byType(LoginScreen), findsOneWidget);
@@ -401,20 +404,19 @@ void main() {
 
     // NFR-07: at the minimum supported window the action must still be
     // reachable, not merely present in the tree.
-    testWidgets(
-      'GivenTheMinimumWindow_WhenTheActionIsTapped_ThenItResponds',
-      (tester) async {
-        final gateway = FakeAuthGateway();
-        await tester.pumpLoginScreen(
-          gateway: gateway,
-          surfaceSize: Breakpoint.minimumWindowSize,
-        );
+    testWidgets('GivenTheMinimumWindow_WhenTheActionIsTapped_ThenItResponds', (
+      tester,
+    ) async {
+      final gateway = FakeAuthGateway();
+      await tester.pumpLoginScreen(
+        gateway: gateway,
+        surfaceSize: Breakpoint.minimumWindowSize,
+      );
 
-        await tester.signIn();
+      await tester.signIn();
 
-        expect(gateway.calls, hasLength(1));
-      },
-    );
+      expect(gateway.calls, hasLength(1));
+    });
 
     // FR-UX-11: the screen is usable without a pointer. The first field takes
     // focus on open, and Enter in the password field submits.

@@ -20,10 +20,7 @@ void main() {
     InMemorySettingsStore settings,
   })
   build({String? storedValue, List<Rect>? displays, WindowGeometry? current}) {
-    final placement = FakeWindowPlacement(
-      displays: displays,
-      current: current,
-    );
+    final placement = FakeWindowPlacement(displays: displays, current: current);
     final settings = InMemorySettingsStore(
       values: storedValue == null
           ? null

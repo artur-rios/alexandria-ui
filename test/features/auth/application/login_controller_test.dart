@@ -71,10 +71,10 @@ void main() {
 
         await submitValid(container);
 
-        expect(
-          gateway.calls.single,
-          (email: 'owner@example.com', password: 'correct horse'),
-        );
+        expect(gateway.calls.single, (
+          email: 'owner@example.com',
+          password: 'correct horse',
+        ));
       },
     );
 
@@ -349,11 +349,8 @@ void main() {
       },
     );
 
-    test(
-      'GivenNoSession_WhenTheLockIsChecked_ThenTheCatalogIsLocked',
-      () {
-        expect(catalogIsReachable(const SessionState.absent()), isFalse);
-      },
-    );
+    test('GivenNoSession_WhenTheLockIsChecked_ThenTheCatalogIsLocked', () {
+      expect(catalogIsReachable(const SessionState.absent()), isFalse);
+    });
   });
 }

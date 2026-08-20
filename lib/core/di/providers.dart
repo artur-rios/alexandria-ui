@@ -29,6 +29,7 @@ import '../../features/library_sources/application/library_sources_state.dart';
 import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
 import '../../features/catalog/application/music_metadata_editor.dart';
+import '../../features/catalog/application/video_metadata_editor.dart';
 import '../../features/catalog/application/layout_controller.dart';
 import '../../features/catalog/application/listing_controller.dart';
 import '../../features/catalog/application/listing_view_controller.dart';
@@ -54,6 +55,8 @@ import '../../features/shell/application/preferences_state.dart';
 import '../../features/shell/application/shell_controller.dart';
 import '../../features/shell/data/desktop_window_placement.dart';
 import '../../features/shell/domain/session_activity.dart';
+import '../../features/tracking/data/core_watch_progress_gateway.dart';
+import '../../features/tracking/domain/watch_progress_gateway.dart';
 import '../../features/shell/domain/shell_destination.dart';
 import '../../features/shell/domain/window_placement.dart';
 import '../bindings/core_client.dart';
@@ -291,6 +294,27 @@ final recentFilesProvider =
 final musicMetadataEditorProvider =
     NotifierProvider<MusicMetadataEditor, MusicEditorState>(
       MusicMetadataEditor.new,
+    );
+
+/// The core's watch-progress read (UC-16 AF-03).
+///
+/// Bound here for the one question UC-16 asks of it; UC-29 and UC-30 grow it
+/// into the watchlists they present.
+final watchProgressGatewayProvider = Provider<WatchProgressGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the watch progress gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreWatchProgressGateway(core);
+});
+
+/// The open video metadata form (UC-16).
+final videoMetadataEditorProvider =
+    NotifierProvider<VideoMetadataEditor, VideoEditorState>(
+      VideoMetadataEditor.new,
     );
 
 /// Everything that runs for the length of a session (UC-03, FR-AU-09).

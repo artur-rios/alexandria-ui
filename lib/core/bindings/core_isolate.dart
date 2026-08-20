@@ -360,6 +360,19 @@ class CoreIsolate {
         ),
       ),
 
+      // UC-16 AF-03 reads this to find out whether a video's progress is
+      // counted per episode; UC-29 and UC-30 are what browse it.
+      'watchlistsList' => withNativeString(
+        arguments.first! as String,
+        (filters) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_watchlists_list(filters, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       _ => throw CoreCallException('unknown core operation "$operation"'),
     };
   }

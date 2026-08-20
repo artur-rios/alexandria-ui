@@ -6,6 +6,7 @@ import 'file_details.dart';
 import 'library_type.dart';
 import 'listing_view.dart';
 import 'music_metadata.dart';
+import 'video_metadata.dart';
 
 part 'catalog_gateway.freezed.dart';
 
@@ -49,6 +50,23 @@ sealed class MetadataEditOutcome with _$MetadataEditOutcome {
       MetadataEditFailed;
 }
 
+/// What editing a video file's metadata produced (UC-16 main flow step 5).
+///
+/// Its own union rather than a reuse of [MetadataEditOutcome]: the two carry
+/// different metadata shapes, and a single outcome holding either would push
+/// the "which kind is this?" question into every caller that reads a success.
+@freezed
+sealed class VideoMetadataEditOutcome with _$VideoMetadataEditOutcome {
+  /// The core validated, persisted, and echoed what it stored.
+  const factory VideoMetadataEditOutcome.saved({
+    required VideoMetadata metadata,
+  }) = VideoMetadataEditSaved;
+
+  /// The core refused the change (AF-02, AF-04, AF-05).
+  const factory VideoMetadataEditOutcome.failed({required Failure failure}) =
+      VideoMetadataEditFailed;
+}
+
 /// The application's view of the core's catalog queries (IR-02, NFR-17).
 abstract interface class CatalogGateway {
   /// The files of [type] in [lifecycle], merged across every registered
@@ -77,6 +95,19 @@ abstract interface class CatalogGateway {
   Future<MetadataEditOutcome> editMusicMetadata({
     required String uuid,
     required MusicMetadata metadata,
+    required String credential,
+  });
+
+  /// Replaces the video metadata of the file [uuid] identifies (FR-ME-02,
+  /// UC-16).
+  ///
+  /// The same core call as the music edit, tagged `video` instead — the core
+  /// checks the tag against the file's own type and refuses a patch aimed at
+  /// the wrong one. As there, the whole record is sent, because the patch is
+  /// a full replace.
+  Future<VideoMetadataEditOutcome> editVideoMetadata({
+    required String uuid,
+    required VideoMetadata metadata,
     required String credential,
   });
 }

@@ -3,12 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('validateEmail', () {
-    test(
-      'GivenAWellFormedAddress_WhenItIsValidated_ThenThereIsNoError',
-      () {
-        expect(validateEmail('owner@example.com'), isNull);
-      },
-    );
+    test('GivenAWellFormedAddress_WhenItIsValidated_ThenThereIsNoError', () {
+      expect(validateEmail('owner@example.com'), isNull);
+    });
 
     test(
       'GivenAnAddressWithASubdomainAndPlusTag_WhenItIsValidated_ThenThereIsNoError',
@@ -17,12 +14,9 @@ void main() {
       },
     );
 
-    test(
-      'GivenAnEmptyAddress_WhenItIsValidated_ThenItIsReportedAsMissing',
-      () {
-        expect(validateEmail(''), LoginFieldError.missing);
-      },
-    );
+    test('GivenAnEmptyAddress_WhenItIsValidated_ThenItIsReportedAsMissing', () {
+      expect(validateEmail(''), LoginFieldError.missing);
+    });
 
     test(
       'GivenAnAddressOfOnlyWhitespace_WhenItIsValidated_ThenItIsReportedAsMissing',
@@ -77,12 +71,9 @@ void main() {
   });
 
   group('validatePassword', () {
-    test(
-      'GivenANonEmptyPassword_WhenItIsValidated_ThenThereIsNoError',
-      () {
-        expect(validatePassword('correct horse'), isNull);
-      },
-    );
+    test('GivenANonEmptyPassword_WhenItIsValidated_ThenThereIsNoError', () {
+      expect(validatePassword('correct horse'), isNull);
+    });
 
     test(
       'GivenAnEmptyPassword_WhenItIsValidated_ThenItIsReportedAsMissing',
@@ -93,12 +84,9 @@ void main() {
 
     // A password of spaces is a password. Only emptiness is rejected here, and
     // the core's verdict on anything else is final (FR-AU-03).
-    test(
-      'GivenAPasswordOfOnlySpaces_WhenItIsValidated_ThenThereIsNoError',
-      () {
-        expect(validatePassword('   '), isNull);
-      },
-    );
+    test('GivenAPasswordOfOnlySpaces_WhenItIsValidated_ThenThereIsNoError', () {
+      expect(validatePassword('   '), isNull);
+    });
 
     test(
       'GivenASingleCharacterPassword_WhenItIsValidated_ThenThereIsNoError',
@@ -153,15 +141,12 @@ void main() {
     );
 
     // The owner has not made a mistake yet — they have not finished.
-    test(
-      'GivenAnEmptyRepeat_WhenItIsValidated_ThenItIsReportedAsMissing',
-      () {
-        expect(
-          validatePasswordConfirmation('correct horse', ''),
-          LoginFieldError.missing,
-        );
-      },
-    );
+    test('GivenAnEmptyRepeat_WhenItIsValidated_ThenItIsReportedAsMissing', () {
+      expect(
+        validatePasswordConfirmation('correct horse', ''),
+        LoginFieldError.missing,
+      );
+    });
 
     test(
       'GivenBothEntriesEmpty_WhenTheyAreValidated_ThenTheRepeatIsReportedAsMissing',

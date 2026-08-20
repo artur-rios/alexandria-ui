@@ -118,6 +118,14 @@ abstract interface class CoreClient {
     String token,
   );
 
+  /// Browses watchlists and the watch progress of everything they track
+  /// through `alexandria_watchlists_list` (FR-WL-08).
+  ///
+  /// [jsonFilters] is the filter body; an empty string means every watchlist.
+  /// UC-16 reads it to answer one question — is this video's progress counted
+  /// per episode — and UC-29 and UC-30 are what present it.
+  Future<CoreJsonResponse> watchlistsList(String jsonFilters, String token);
+
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
 }
@@ -207,6 +215,14 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async =>
       await _isolate.call('fileEditMetadata', [uuid, jsonPatch, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistsList(
+    String jsonFilters,
+    String token,
+  ) async =>
+      await _isolate.call('watchlistsList', [jsonFilters, token])
           as CoreJsonResponse;
 
   @override

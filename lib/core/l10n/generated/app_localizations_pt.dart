@@ -673,4 +673,52 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get signOutIndexRunContinues =>
       'Você saiu enquanto uma varredura ainda estava em andamento. Ela continua no núcleo, e o resultado aparece no seu próximo acesso.';
+
+  @override
+  String get videoMetadataTitle => 'Editar metadados do vídeo';
+
+  @override
+  String get videoMetadataFieldTitle => 'Título';
+
+  @override
+  String get videoMetadataFieldYear => 'Ano';
+
+  @override
+  String get videoMetadataFieldResolution => 'Resolução';
+
+  @override
+  String get videoMetadataFieldMediaKind => 'Tipo';
+
+  @override
+  String get videoMetadataMovie => 'Filme';
+
+  @override
+  String get videoMetadataSeries => 'Série';
+
+  @override
+  String get videoMetadataSave => 'Salvar';
+
+  @override
+  String get videoMetadataCancel => 'Cancelar';
+
+  @override
+  String get videoMetadataMarkingWarning =>
+      'Este vídeo é acompanhado por episódio. Marcá-lo como filme substitui isso pelo progresso do item inteiro.';
+
+  @override
+  String get videoMetadataMarkingConfirm => 'Marcar como filme';
+
+  @override
+  String get videoMetadataErrorNotANumber => 'Digite um número inteiro.';
+
+  @override
+  String get videoMetadataErrorYear => 'Digite um ano com quatro dígitos.';
+
+  @override
+  String videoMetadataErrorTooLong(int max) {
+    return 'Use menos de $max caracteres.';
+  }
+
+  @override
+  String get videoMetadataMarkingCancel => 'Manter como série';
 }

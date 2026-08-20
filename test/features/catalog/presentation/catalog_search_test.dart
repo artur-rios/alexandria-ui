@@ -50,16 +50,20 @@ void main() {
   };
 
   group('the main flow', () {
-    testWidgets('GivenTheShell_WhenItOpens_ThenASearchFieldIsOffered',
-        (tester) async {
+    testWidgets('GivenTheShell_WhenItOpens_ThenASearchFieldIsOffered', (
+      tester,
+    ) async {
       await openShell(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       expect(find.widgetWithText(TextField, l10n.searchLabel), findsOneWidget);
     });
 
-    testWidgets('GivenATerm_WhenItIsEntered_ThenMatchesAcrossTypesAreShown',
-        (tester) async {
+    testWidgets('GivenATerm_WhenItIsEntered_ThenMatchesAcrossTypesAreShown', (
+      tester,
+    ) async {
       await openShell(tester, listings: aLibrary());
 
       await search(tester, 'blue');
@@ -69,20 +73,24 @@ void main() {
       expect(find.text('Giant Steps.flac'), findsNothing);
     });
 
-    testWidgets('GivenMatchesOfTwoTypes_WhenShown_ThenTheyAreGroupedByType',
-        (tester) async {
+    testWidgets('GivenMatchesOfTwoTypes_WhenShown_ThenTheyAreGroupedByType', (
+      tester,
+    ) async {
       await openShell(tester, listings: aLibrary());
 
       await search(tester, 'blue');
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       // The group headings are the panel's own words for the types.
       expect(find.text(l10n.destinationMusic), findsWidgets);
       expect(find.text(l10n.destinationImages), findsWidgets);
     });
 
-    testWidgets('GivenAMatch_WhenItIsShown_ThenTheTermIsHighlighted',
-        (tester) async {
+    testWidgets('GivenAMatch_WhenItIsShown_ThenTheTermIsHighlighted', (
+      tester,
+    ) async {
       await openShell(tester, listings: aLibrary());
 
       await search(tester, 'blue');
@@ -90,10 +98,7 @@ void main() {
       // A rich-text title is what carries the marked span; a plain Text would
       // mean the highlight was never applied.
       final titles = tester.widgetList<Text>(
-        find.descendant(
-          of: find.byType(ListTile),
-          matching: find.byType(Text),
-        ),
+        find.descendant(of: find.byType(ListTile), matching: find.byType(Text)),
       );
       expect(
         titles.any((text) => text.textSpan != null),
@@ -104,23 +109,29 @@ void main() {
   });
 
   group('nothing matches (AF-01, FR-CT-09)', () {
-    testWidgets('GivenNoMatch_WhenTheTermIsEntered_ThenTheTermIsNamed',
-        (tester) async {
+    testWidgets('GivenNoMatch_WhenTheTermIsEntered_ThenTheTermIsNamed', (
+      tester,
+    ) async {
       await openShell(tester, listings: aLibrary());
 
       await search(tester, 'reggae');
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.text(l10n.searchNoResults('reggae')), findsOneWidget);
     });
   });
 
   group('the term is cleared (AF-02)', () {
-    testWidgets('GivenASearch_WhenTheTermIsCleared_ThenTheListingReturns',
-        (tester) async {
+    testWidgets('GivenASearch_WhenTheTermIsCleared_ThenTheListingReturns', (
+      tester,
+    ) async {
       await openShell(tester, listings: aLibrary());
       await search(tester, 'blue');
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.text(l10n.searchResultsFor('blue')), findsOneWidget);
 
       await tester.tap(find.byTooltip(l10n.searchClear));
@@ -129,20 +140,24 @@ void main() {
       expect(find.text(l10n.searchResultsFor('blue')), findsNothing);
     });
 
-    testWidgets('GivenAWhitespaceTerm_WhenItIsEntered_ThenNoSearchRuns',
-        (tester) async {
+    testWidgets('GivenAWhitespaceTerm_WhenItIsEntered_ThenNoSearchRuns', (
+      tester,
+    ) async {
       await openShell(tester, listings: aLibrary());
 
       await search(tester, '   ');
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.text(l10n.searchResultsFor('   ')), findsNothing);
     });
   });
 
   group('part of the catalog could not be read (AF-03)', () {
-    testWidgets('GivenAFailedType_WhenTheCatalogIsSearched_ThenItSaysSo',
-        (tester) async {
+    testWidgets('GivenAFailedType_WhenTheCatalogIsSearched_ThenItSaysSo', (
+      tester,
+    ) async {
       await openShell(
         tester,
         listings: {
@@ -155,31 +170,39 @@ void main() {
 
       await search(tester, 'blue');
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       // The results are a partial answer, and saying so is the difference
       // between a partial answer and a wrong one.
       expect(find.text(l10n.searchPartial), findsOneWidget);
     });
 
-    testWidgets('GivenEveryTypeAnswers_WhenSearched_ThenNoPartialIsClaimed',
-        (tester) async {
+    testWidgets('GivenEveryTypeAnswers_WhenSearched_ThenNoPartialIsClaimed', (
+      tester,
+    ) async {
       await openShell(tester, listings: aLibrary());
 
       await search(tester, 'blue');
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.text(l10n.searchPartial), findsNothing);
     });
   });
 
   group('the catalog is empty (AF-04)', () {
-    testWidgets('GivenNothingCatalogued_WhenSearched_ThenAFolderIsOffered',
-        (tester) async {
+    testWidgets('GivenNothingCatalogued_WhenSearched_ThenAFolderIsOffered', (
+      tester,
+    ) async {
       await openShell(tester);
 
       await search(tester, 'blue');
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
 
       await tester.tap(find.text(l10n.catalogEmptyAddFolder));
@@ -193,13 +216,16 @@ void main() {
     ('English', const Locale('en')),
     ('Portuguese', const Locale('pt', 'BR')),
   ]) {
-    testWidgets('Given${name}_WhenNothingMatches_ThenItIsLocalized',
-        (tester) async {
+    testWidgets('Given${name}_WhenNothingMatches_ThenItIsLocalized', (
+      tester,
+    ) async {
       await openShell(tester, listings: aLibrary(), locale: locale);
 
       await search(tester, 'reggae');
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(l10n.searchNoResults('reggae'), isNot(startsWith('search')));
       expect(find.text(l10n.searchNoResults('reggae')), findsOneWidget);
     });

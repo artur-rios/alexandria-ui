@@ -64,51 +64,64 @@ void main() {
   }
 
   group('the main flow', () {
-    testWidgets('GivenAListing_WhenItOpens_ThenFiltersAndOrderAreOffered',
-        (tester) async {
+    testWidgets('GivenAListing_WhenItOpens_ThenFiltersAndOrderAreOffered', (
+      tester,
+    ) async {
       await openListing(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       expect(find.text(l10n.filtersLabel), findsOneWidget);
     });
 
-    testWidgets('GivenTheMenu_WhenItOpens_ThenBothFiltersAndSortsAreThere',
-        (tester) async {
+    testWidgets('GivenTheMenu_WhenItOpens_ThenBothFiltersAndSortsAreThere', (
+      tester,
+    ) async {
       await openListing(tester);
 
       await openMenu(tester);
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.text(l10n.filterLifecycleDeleted), findsOneWidget);
       expect(find.text(l10n.sortByIndexed), findsOneWidget);
       expect(find.text(l10n.sortDescending), findsOneWidget);
     });
 
-    testWidgets('GivenTheDefaultOrder_WhenItIsReversed_ThenTheListingReorders',
-        (tester) async {
+    testWidgets(
+      'GivenTheDefaultOrder_WhenItIsReversed_ThenTheListingReorders',
+      (tester) async {
+        final container = await openListing(tester);
+        expect(
+          container.read(listingControllerProvider).value!.first.name,
+          'apple.flac',
+        );
+
+        await openMenu(tester);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+        await tester.tap(find.text(l10n.sortDescending));
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(listingControllerProvider).value!.first.name,
+          'zebra.flac',
+        );
+      },
+    );
+
+    testWidgets('GivenADeletedFilter_WhenItIsChosen_ThenTheCoreIsAskedForIt', (
+      tester,
+    ) async {
       final container = await openListing(tester);
-      expect(
-        container.read(listingControllerProvider).value!.first.name,
-        'apple.flac',
-      );
 
       await openMenu(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-      await tester.tap(find.text(l10n.sortDescending));
-      await tester.pumpAndSettle();
-
-      expect(
-        container.read(listingControllerProvider).value!.first.name,
-        'zebra.flac',
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
       );
-    });
-
-    testWidgets('GivenADeletedFilter_WhenItIsChosen_ThenTheCoreIsAskedForIt',
-        (tester) async {
-      final container = await openListing(tester);
-
-      await openMenu(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
       await tester.tap(find.text(l10n.filterLifecycleDeleted));
       await tester.pumpAndSettle();
 
@@ -123,8 +136,9 @@ void main() {
   });
 
   group('nothing matches the filters (AF-01)', () {
-    testWidgets('GivenFiltersThatMatchNothing_WhenApplied_ThenClearIsOffered',
-        (tester) async {
+    testWidgets('GivenFiltersThatMatchNothing_WhenApplied_ThenClearIsOffered', (
+      tester,
+    ) async {
       final container = await openListing(
         tester,
         listings: {
@@ -141,7 +155,9 @@ void main() {
           );
       await tester.pumpAndSettle();
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       // The message names the filters rather than claiming the library is
       // empty, which is a different thing with a different answer.
       expect(find.text(l10n.filtersEmpty), findsOneWidget);
@@ -149,8 +165,9 @@ void main() {
       expect(find.text(l10n.filtersClear), findsWidgets);
     });
 
-    testWidgets('GivenTheEmptyState_WhenClearIsPressed_ThenTheListingReturns',
-        (tester) async {
+    testWidgets('GivenTheEmptyState_WhenClearIsPressed_ThenTheListingReturns', (
+      tester,
+    ) async {
       final container = await openListing(
         tester,
         listings: {
@@ -164,7 +181,9 @@ void main() {
             const ListingView(lifecycle: LifecycleFilter.deleted),
           );
       await tester.pumpAndSettle();
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await tester.tap(find.text(l10n.filtersClear).last);
       await tester.pumpAndSettle();
@@ -174,8 +193,9 @@ void main() {
   });
 
   group('the core refuses the filter (AF-04)', () {
-    testWidgets('GivenTheCoreRefuses_WhenAFilterIsApplied_ThenItSaysSo',
-        (tester) async {
+    testWidgets('GivenTheCoreRefuses_WhenAFilterIsApplied_ThenItSaysSo', (
+      tester,
+    ) async {
       final container = await openListing(
         tester,
         listings: {
@@ -196,7 +216,9 @@ void main() {
           );
       await tester.pumpAndSettle();
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       expect(find.text(l10n.filtersRejected), findsOneWidget);
     });
   });
@@ -205,13 +227,16 @@ void main() {
     ('English', const Locale('en')),
     ('Portuguese', const Locale('pt', 'BR')),
   ]) {
-    testWidgets('Given${name}_WhenTheMenuOpens_ThenItIsLocalized',
-        (tester) async {
+    testWidgets('Given${name}_WhenTheMenuOpens_ThenItIsLocalized', (
+      tester,
+    ) async {
       await openListing(tester, locale: locale);
 
       await openMenu(tester);
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       for (final label in [
         l10n.filterLifecycle,
         l10n.sortLabel,

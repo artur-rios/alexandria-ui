@@ -957,5 +957,85 @@
   "signOutIndexRunContinues": "You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.",
   "@signOutIndexRunContinues": {
       "description": "UC-03 AF-02: the scan belongs to the core, so signing out neither stopped it nor lost its outcome."
+  },
+
+  "videoMetadataTitle": "Edit video metadata",
+  "@videoMetadataTitle": {
+      "description": "UC-16 main flow step 2: the heading of the video metadata form."
+  },
+
+  "videoMetadataFieldTitle": "Title",
+  "@videoMetadataFieldTitle": {
+      "description": "UC-16: the video's title."
+  },
+
+  "videoMetadataFieldYear": "Year",
+  "@videoMetadataFieldYear": {
+      "description": "UC-16: the year the video was released."
+  },
+
+  "videoMetadataFieldResolution": "Resolution",
+  "@videoMetadataFieldResolution": {
+      "description": "UC-16: the video's resolution, as the core recorded or the owner corrects it."
+  },
+
+  "videoMetadataFieldMediaKind": "Kind",
+  "@videoMetadataFieldMediaKind": {
+      "description": "UC-16 / FR-ME-02: whether the video is a movie or a series."
+  },
+
+  "videoMetadataMovie": "Movie",
+  "@videoMetadataMovie": {
+      "description": "UC-16: the video is a standalone film, tracked as a single item."
+  },
+
+  "videoMetadataSeries": "Series",
+  "@videoMetadataSeries": {
+      "description": "UC-16: the video belongs to a series, tracked per episode."
+  },
+
+  "videoMetadataSave": "Save",
+  "@videoMetadataSave": {
+      "description": "UC-16 main flow step 4: sends the edited metadata to the core."
+  },
+
+  "videoMetadataCancel": "Cancel",
+  "@videoMetadataCancel": {
+      "description": "Closes the video metadata form without saving."
+  },
+
+  "videoMetadataMarkingWarning": "This video is tracked per episode. Marking it as a movie replaces that with progress for the item as a whole.",
+  "@videoMetadataMarkingWarning": {
+      "description": "UC-16 AF-03: what changing the marking from series to movie costs, asked before the core is called."
+  },
+
+  "videoMetadataMarkingConfirm": "Mark as a movie",
+  "@videoMetadataMarkingConfirm": {
+      "description": "UC-16 AF-03: confirms the marking change and sends it."
+  },
+
+  "videoMetadataErrorNotANumber": "Enter a whole number.",
+  "@videoMetadataErrorNotANumber": {
+      "description": "UC-16 AF-01: the year holds something that is not a number, so the core is not called."
+  },
+
+  "videoMetadataErrorYear": "Enter a four-digit year.",
+  "@videoMetadataErrorYear": {
+      "description": "UC-16 AF-01: the year is earlier than any film could carry, which is a typo rather than a year."
+  },
+
+  "videoMetadataErrorTooLong": "Keep this under {max} characters.",
+  "@videoMetadataErrorTooLong": {
+      "description": "UC-16 AF-01: a text field is longer than the core stores.",
+      "placeholders": {
+          "max": {
+              "type": "int"
+          }
+      }
+  },
+
+  "videoMetadataMarkingCancel": "Keep it as a series",
+  "@videoMetadataMarkingCancel": {
+      "description": "UC-16 AF-03: declines the marking change, which is what keeps the per-episode progress. Named rather than \"Cancel\", because the form's own cancel sits beside it and means something else."
   }
 }

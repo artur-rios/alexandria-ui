@@ -20,9 +20,7 @@ void main() {
       // A sort orders without hiding anything, which is why clearing the
       // filters does not un-order the listing.
       expect(
-        ListingView.initial
-            .copyWith(sortField: SortField.indexed)
-            .isFiltered,
+        ListingView.initial.copyWith(sortField: SortField.indexed).isFiltered,
         isFalse,
       );
     });
@@ -71,9 +69,21 @@ void main() {
 
   group('ordering (FR-CT-08)', () {
     final files = [
-      aFile(uuid: '1', name: 'giant steps.flac', indexedAt: DateTime.utc(2026, 3)),
-      aFile(uuid: '2', name: 'Blue Train.flac', indexedAt: DateTime.utc(2026, 1)),
-      aFile(uuid: '3', name: 'Kind of Blue.flac', indexedAt: DateTime.utc(2026, 2)),
+      aFile(
+        uuid: '1',
+        name: 'giant steps.flac',
+        indexedAt: DateTime.utc(2026, 3),
+      ),
+      aFile(
+        uuid: '2',
+        name: 'Blue Train.flac',
+        indexedAt: DateTime.utc(2026, 1),
+      ),
+      aFile(
+        uuid: '3',
+        name: 'Kind of Blue.flac',
+        indexedAt: DateTime.utc(2026, 2),
+      ),
     ];
 
     test('GivenNameAscending_WhenSorted_ThenItIgnoresCase', () {
@@ -105,10 +115,10 @@ void main() {
     test('GivenAFileWithNoDate_WhenSortedByDate_ThenItIsTheOldest', () {
       // Missing information, not a reason to refuse to sort.
       final undated = aFile(uuid: '4', name: 'undated.flac');
-      final sorted = sortFiles(
-        [...files, undated],
-        ListingView.initial.copyWith(sortField: SortField.indexed),
-      );
+      final sorted = sortFiles([
+        ...files,
+        undated,
+      ], ListingView.initial.copyWith(sortField: SortField.indexed));
 
       expect(sorted.first.uuid, '4');
     });

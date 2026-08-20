@@ -34,13 +34,14 @@ void main() {
 
   setUpAll(() {
     templateKeys = messageKeys(readCatalog(templateFile));
-    translationFiles = Directory(catalogDirectory)
-        .listSync()
-        .whereType<File>()
-        .map((file) => file.uri.pathSegments.last)
-        .where((name) => name.endsWith('.arb') && name != templateFile)
-        .toList()
-      ..sort();
+    translationFiles =
+        Directory(catalogDirectory)
+            .listSync()
+            .whereType<File>()
+            .map((file) => file.uri.pathSegments.last)
+            .where((name) => name.endsWith('.arb') && name != templateFile)
+            .toList()
+          ..sort();
   });
 
   test('GivenTheCatalogFolder_WhenItIsRead_ThenBothLanguagesArePresent', () {

@@ -95,15 +95,17 @@ void main() {
     );
   });
 
-  test('GivenSeveralRotations_WhenTheFilesAreRead_ThenTheNewestIsTheLiveOne',
-      () {
-    final sink = sinkWith(maxBytes: 32, maxFiles: 3);
+  test(
+    'GivenSeveralRotations_WhenTheFilesAreRead_ThenTheNewestIsTheLiveOne',
+    () {
+      final sink = sinkWith(maxBytes: 32, maxFiles: 3);
 
-    sink.write('oldest record here');
-    sink.write('middle record here');
-    sink.write('newest record here');
+      sink.write('oldest record here');
+      sink.write('middle record here');
+      sink.write('newest record here');
 
-    expect(sink.currentFile.readAsStringSync(), contains('newest'));
-    expect(sink.files.first.path, sink.currentFile.path);
-  });
+      expect(sink.currentFile.readAsStringSync(), contains('newest'));
+      expect(sink.files.first.path, sink.currentFile.path);
+    },
+  );
 }

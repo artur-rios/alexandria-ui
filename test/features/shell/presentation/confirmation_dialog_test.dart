@@ -99,17 +99,16 @@ void main() {
     },
   );
 
-  testWidgets(
-    'GivenTheDialog_WhenTheOwnerConfirms_ThenItResolvesToTrue',
-    (tester) async {
-      final opened = await open(tester);
+  testWidgets('GivenTheDialog_WhenTheOwnerConfirms_ThenItResolvesToTrue', (
+    tester,
+  ) async {
+    final opened = await open(tester);
 
-      await tester.tap(find.text('Delete'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
 
-      expect(opened.answers, [true]);
-    },
-  );
+    expect(opened.answers, [true]);
+  });
 
   testWidgets(
     'GivenTheDialog_WhenTheOwnerCancels_ThenItResolvesToFalseAndNothingChanges',

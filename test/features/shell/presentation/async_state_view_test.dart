@@ -64,15 +64,14 @@ void main() {
     },
   );
 
-  testWidgets(
-    'GivenALoadedOperation_WhenItIsPresented_ThenItsContentIsShown',
-    (tester) async {
-      await pump(tester, const AsyncValue.data(['one', 'two']));
+  testWidgets('GivenALoadedOperation_WhenItIsPresented_ThenItsContentIsShown', (
+    tester,
+  ) async {
+    await pump(tester, const AsyncValue.data(['one', 'two']));
 
-      expect(find.text('one, two'), findsOneWidget);
-      expect(find.byType(ShellLoadingView), findsNothing);
-    },
-  );
+    expect(find.text('one, two'), findsOneWidget);
+    expect(find.byType(ShellLoadingView), findsNothing);
+  });
 
   testWidgets(
     'GivenAFailure_WhenItArrivesDuringLoading_ThenTheSpinnerIsReplacedByIt',
@@ -101,25 +100,24 @@ void main() {
     },
   );
 
-  testWidgets(
-    'GivenAFailure_WhenTheOwnerRetries_ThenTheOperationIsRunAgain',
-    (tester) async {
-      var retried = 0;
-      await pump(
-        tester,
-        const AsyncValue.error(failure, StackTrace.empty),
-        onRetry: () => retried++,
-      );
+  testWidgets('GivenAFailure_WhenTheOwnerRetries_ThenTheOperationIsRunAgain', (
+    tester,
+  ) async {
+    var retried = 0;
+    await pump(
+      tester,
+      const AsyncValue.error(failure, StackTrace.empty),
+      onRetry: () => retried++,
+    );
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellFailureView)),
-      );
-      await tester.tap(find.widgetWithText(FilledButton, l10n.retry));
-      await tester.pump();
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(ShellFailureView)),
+    );
+    await tester.tap(find.widgetWithText(FilledButton, l10n.retry));
+    await tester.pump();
 
-      expect(retried, 1);
-    },
-  );
+    expect(retried, 1);
+  });
 
   testWidgets(
     'GivenAFailure_WhenTheOwnerPressesEnter_ThenTheRetryIsReachable',
@@ -145,7 +143,10 @@ void main() {
     (tester) async {
       await pump(
         tester,
-        AsyncValue.error(StateError('a bug, not a condition'), StackTrace.empty),
+        AsyncValue.error(
+          StateError('a bug, not a condition'),
+          StackTrace.empty,
+        ),
       );
 
       final l10n = AppLocalizations.of(
@@ -159,11 +160,7 @@ void main() {
   testWidgets(
     'GivenAnEmptyResult_WhenItIsPresented_ThenTheEmptyStateIsNotLoadingOrError',
     (tester) async {
-      await pump(
-        tester,
-        const AsyncValue.data([]),
-        withEmptyState: true,
-      );
+      await pump(tester, const AsyncValue.data([]), withEmptyState: true);
 
       expect(find.text('nothing here'), findsOneWidget);
       expect(find.byType(ShellLoadingView), findsNothing);

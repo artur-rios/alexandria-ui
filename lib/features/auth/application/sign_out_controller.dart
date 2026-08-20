@@ -38,9 +38,7 @@ class SignOutController {
   Future<void> signOut() async {
     final activities = _activities;
 
-    final continues = activities.any(
-      (activity) => activity.continuesInTheCore,
-    );
+    final continues = activities.any((activity) => activity.continuesInTheCore);
 
     for (final activity in activities) {
       await activity.end();

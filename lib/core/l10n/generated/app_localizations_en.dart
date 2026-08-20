@@ -673,4 +673,52 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signOutIndexRunContinues =>
       'You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.';
+
+  @override
+  String get videoMetadataTitle => 'Edit video metadata';
+
+  @override
+  String get videoMetadataFieldTitle => 'Title';
+
+  @override
+  String get videoMetadataFieldYear => 'Year';
+
+  @override
+  String get videoMetadataFieldResolution => 'Resolution';
+
+  @override
+  String get videoMetadataFieldMediaKind => 'Kind';
+
+  @override
+  String get videoMetadataMovie => 'Movie';
+
+  @override
+  String get videoMetadataSeries => 'Series';
+
+  @override
+  String get videoMetadataSave => 'Save';
+
+  @override
+  String get videoMetadataCancel => 'Cancel';
+
+  @override
+  String get videoMetadataMarkingWarning =>
+      'This video is tracked per episode. Marking it as a movie replaces that with progress for the item as a whole.';
+
+  @override
+  String get videoMetadataMarkingConfirm => 'Mark as a movie';
+
+  @override
+  String get videoMetadataErrorNotANumber => 'Enter a whole number.';
+
+  @override
+  String get videoMetadataErrorYear => 'Enter a four-digit year.';
+
+  @override
+  String videoMetadataErrorTooLong(int max) {
+    return 'Keep this under $max characters.';
+  }
+
+  @override
+  String get videoMetadataMarkingCancel => 'Keep it as a series';
 }

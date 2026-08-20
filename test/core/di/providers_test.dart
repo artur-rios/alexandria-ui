@@ -22,35 +22,39 @@ void main() {
     expect(container.read(startupControllerProvider), isA<StartupIdle>());
   });
 
-  test('GivenAFakeCore_WhenTheGraphIsOverridden_ThenNoNativeLibraryIsLoaded',
-      () async {
-    final fake = FakeCoreClient();
-    final container = buildTestContainer(
-      overrides: fakeCoreOverrides(core: fake),
-    );
+  test(
+    'GivenAFakeCore_WhenTheGraphIsOverridden_ThenNoNativeLibraryIsLoaded',
+    () async {
+      final fake = FakeCoreClient();
+      final container = buildTestContainer(
+        overrides: fakeCoreOverrides(core: fake),
+      );
 
-    await container.read(startupControllerProvider.notifier).start();
+      await container.read(startupControllerProvider.notifier).start();
 
-    expect(
-      container.read(startupControllerProvider.notifier).core,
-      same(fake),
-      reason:
-          'this substitution is what makes the whole application testable '
-          'without a native library present',
-    );
-  });
+      expect(
+        container.read(startupControllerProvider.notifier).core,
+        same(fake),
+        reason:
+            'this substitution is what makes the whole application testable '
+            'without a native library present',
+      );
+    },
+  );
 
-  test('GivenAFakeSettingsStore_WhenTheGraphIsOverridden_ThenItIsTheOneUsed',
-      () async {
-    final settings = InMemorySettingsStore(themeMode: ThemeMode.dark);
-    final container = buildTestContainer(
-      overrides: fakeCoreOverrides(settings: settings),
-    );
+  test(
+    'GivenAFakeSettingsStore_WhenTheGraphIsOverridden_ThenItIsTheOneUsed',
+    () async {
+      final settings = InMemorySettingsStore(themeMode: ThemeMode.dark);
+      final container = buildTestContainer(
+        overrides: fakeCoreOverrides(settings: settings),
+      );
 
-    await container.read(startupControllerProvider.notifier).start();
+      await container.read(startupControllerProvider.notifier).start();
 
-    expect(container.read(themeModeProvider), ThemeMode.dark);
-  });
+      expect(container.read(themeModeProvider), ThemeMode.dark);
+    },
+  );
 
   test('GivenAStoredLocale_WhenStartupSettles_ThenTheGraphExposesIt', () async {
     final container = buildTestContainer(
@@ -64,19 +68,21 @@ void main() {
     expect(container.read(localeProvider), const Locale('pt', 'BR'));
   });
 
-  test('GivenStartupHasNotSettled_WhenTheThemeIsRead_ThenItFollowsTheSystem',
-      () {
-    final container = buildTestContainer();
+  test(
+    'GivenStartupHasNotSettled_WhenTheThemeIsRead_ThenItFollowsTheSystem',
+    () {
+      final container = buildTestContainer();
 
-    expect(
-      container.read(themeModeProvider),
-      ThemeMode.system,
-      reason:
-          'the owner has not been asked yet; guessing would flash the wrong '
-          'theme on every launch',
-    );
-    expect(container.read(localeProvider), isNull);
-  });
+      expect(
+        container.read(themeModeProvider),
+        ThemeMode.system,
+        reason:
+            'the owner has not been asked yet; guessing would flash the wrong '
+            'theme on every launch',
+      );
+      expect(container.read(localeProvider), isNull);
+    },
+  );
 
   test('GivenTheGraph_WhenItIsDisposed_ThenTheLoadedCoreIsReleased', () async {
     final fake = FakeCoreClient();
@@ -95,21 +101,23 @@ void main() {
     );
   });
 
-  test('GivenTheLoaderBinding_WhenItIsRead_ThenItsTypeIsTheGatewayInterface',
-      () {
-    final container = buildTestContainer();
+  test(
+    'GivenTheLoaderBinding_WhenItIsRead_ThenItsTypeIsTheGatewayInterface',
+    () {
+      final container = buildTestContainer();
 
-    // The binding is declared in terms of CoreClient, not FfiCoreClient: the
-    // future HTTP transport the Technology Stack Document mentions is a
-    // substitution here rather than a rewrite everywhere.
-    final Future<CoreClient> Function(String) loader = container.read(
-      coreLoaderProvider,
-    );
-    final Future<SettingsStore> Function() settings = container.read(
-      settingsLoaderProvider,
-    );
+      // The binding is declared in terms of CoreClient, not FfiCoreClient: the
+      // future HTTP transport the Technology Stack Document mentions is a
+      // substitution here rather than a rewrite everywhere.
+      final Future<CoreClient> Function(String) loader = container.read(
+        coreLoaderProvider,
+      );
+      final Future<SettingsStore> Function() settings = container.read(
+        settingsLoaderProvider,
+      );
 
-    expect(loader, isNotNull);
-    expect(settings, isNotNull);
-  });
+      expect(loader, isNotNull);
+      expect(settings, isNotNull);
+    },
+  );
 }

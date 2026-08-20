@@ -152,65 +152,71 @@ void main() {
       },
     );
 
-    test('GivenTheCoreAccepts_WhenTheChangeSettles_ThenItIsConfirmed',
-        () async {
-      final container = signedIn(FakeAuthGateway());
+    test(
+      'GivenTheCoreAccepts_WhenTheChangeSettles_ThenItIsConfirmed',
+      () async {
+        final container = signedIn(FakeAuthGateway());
 
-      await container
-          .read(changeCredentialsControllerProvider.notifier)
-          .submit(
-            email: 'new@example.com',
-            password: 'a decent long passphrase',
-            passwordConfirmation: 'a decent long passphrase',
-          );
+        await container
+            .read(changeCredentialsControllerProvider.notifier)
+            .submit(
+              email: 'new@example.com',
+              password: 'a decent long passphrase',
+              passwordConfirmation: 'a decent long passphrase',
+            );
 
-      expect(
-        container.read(changeCredentialsControllerProvider),
-        isA<ChangeCredentialsChanged>(),
-      );
-    });
+        expect(
+          container.read(changeCredentialsControllerProvider),
+          isA<ChangeCredentialsChanged>(),
+        );
+      },
+    );
 
-    test('GivenTheCoreAccepts_WhenTheChangeSettles_ThenTheSessionSurvives',
-        () async {
-      // The postcondition: the existing session remains valid.
-      final container = signedIn(FakeAuthGateway());
-      final before = container.read(sessionControllerProvider);
+    test(
+      'GivenTheCoreAccepts_WhenTheChangeSettles_ThenTheSessionSurvives',
+      () async {
+        // The postcondition: the existing session remains valid.
+        final container = signedIn(FakeAuthGateway());
+        final before = container.read(sessionControllerProvider);
 
-      await container
-          .read(changeCredentialsControllerProvider.notifier)
-          .submit(
-            email: 'new@example.com',
-            password: 'a decent long passphrase',
-            passwordConfirmation: 'a decent long passphrase',
-          );
+        await container
+            .read(changeCredentialsControllerProvider.notifier)
+            .submit(
+              email: 'new@example.com',
+              password: 'a decent long passphrase',
+              passwordConfirmation: 'a decent long passphrase',
+            );
 
-      expect(container.read(sessionControllerProvider), before);
-      expect(container.read(sessionControllerProvider), isA<SessionActive>());
-    });
+        expect(container.read(sessionControllerProvider), before);
+        expect(container.read(sessionControllerProvider), isA<SessionActive>());
+      },
+    );
 
-    test('GivenAnAttemptInFlight_WhenItIsSubmittedAgain_ThenOnlyOneCallIsMade',
-        () async {
-      final gateway = FakeAuthGateway()..hold();
-      final container = signedIn(gateway);
-      final controller = container.read(
-        changeCredentialsControllerProvider.notifier,
-      );
+    test(
+      'GivenAnAttemptInFlight_WhenItIsSubmittedAgain_ThenOnlyOneCallIsMade',
+      () async {
+        final gateway = FakeAuthGateway()..hold();
+        final container = signedIn(gateway);
+        final controller = container.read(
+          changeCredentialsControllerProvider.notifier,
+        );
 
-      final first = controller.submit(
-        email: 'new@example.com',
-        password: 'a decent long passphrase',
-        passwordConfirmation: 'a decent long passphrase',
-      );
-      await controller.submit(
-        email: 'new@example.com',
-        password: 'a decent long passphrase',
-        passwordConfirmation: 'a decent long passphrase',
-      );
-      gateway.release();
-      await first;
+        final first = controller.submit(
+          email: 'new@example.com',
+          password: 'a decent long passphrase',
+          passwordConfirmation: 'a decent long passphrase',
+        );
+        await controller.submit(
+          email: 'new@example.com',
+          password: 'a decent long passphrase',
+          passwordConfirmation: 'a decent long passphrase',
+        );
+        gateway.release();
+        await first;
 
-      expect(gateway.credentialChanges, hasLength(1));
-    });
+        expect(gateway.credentialChanges, hasLength(1));
+      },
+    );
   });
 
   group('the core refuses', () {
@@ -298,25 +304,27 @@ void main() {
     );
   });
 
-  test('GivenNoSession_WhenAChangeIsSubmitted_ThenTheCoreIsNeverCalled',
-      () async {
-    // Defensive: the form is only offered inside a session.
-    final gateway = FakeAuthGateway();
-    final container = buildTestContainer(
-      overrides: [
-        ...fakeCoreOverrides(),
-        authGatewayProvider.overrideWithValue(gateway),
-      ],
-    );
+  test(
+    'GivenNoSession_WhenAChangeIsSubmitted_ThenTheCoreIsNeverCalled',
+    () async {
+      // Defensive: the form is only offered inside a session.
+      final gateway = FakeAuthGateway();
+      final container = buildTestContainer(
+        overrides: [
+          ...fakeCoreOverrides(),
+          authGatewayProvider.overrideWithValue(gateway),
+        ],
+      );
 
-    await container
-        .read(changeCredentialsControllerProvider.notifier)
-        .submit(
-          email: 'new@example.com',
-          password: 'a decent long passphrase',
-          passwordConfirmation: 'a decent long passphrase',
-        );
+      await container
+          .read(changeCredentialsControllerProvider.notifier)
+          .submit(
+            email: 'new@example.com',
+            password: 'a decent long passphrase',
+            passwordConfirmation: 'a decent long passphrase',
+          );
 
-    expect(gateway.credentialChanges, isEmpty);
-  });
+      expect(gateway.credentialChanges, isEmpty);
+    },
+  );
 }

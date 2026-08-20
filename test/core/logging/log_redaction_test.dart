@@ -22,15 +22,17 @@ void main() {
       expect(line, contains('password=$redacted'));
     });
 
-    test('GivenASessionCredential_WhenTheMessageIsRedacted_ThenItIsRemoved',
-        () {
-      final line = LogRedaction.redactMessage(
-        'call made with sessionId: 3f9a-not-a-real-session',
-      );
+    test(
+      'GivenASessionCredential_WhenTheMessageIsRedacted_ThenItIsRemoved',
+      () {
+        final line = LogRedaction.redactMessage(
+          'call made with sessionId: 3f9a-not-a-real-session',
+        );
 
-      expect(line, isNot(contains('3f9a-not-a-real-session')));
-      expect(line, contains(redacted));
-    });
+        expect(line, isNot(contains('3f9a-not-a-real-session')));
+        expect(line, contains(redacted));
+      },
+    );
 
     test('GivenAJsonBody_WhenTheMessageIsRedacted_ThenTheTokenIsRemoved', () {
       final line = LogRedaction.redactMessage(

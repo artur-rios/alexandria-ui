@@ -938,4 +938,314 @@ $FailureCopyWith<$Res> get failure {
 }
 }
 
+/// @nodoc
+mixin _$VideoMetadataEditOutcome {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoMetadataEditOutcome);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'VideoMetadataEditOutcome()';
+}
+
+
+}
+
+/// @nodoc
+class $VideoMetadataEditOutcomeCopyWith<$Res>  {
+$VideoMetadataEditOutcomeCopyWith(VideoMetadataEditOutcome _, $Res Function(VideoMetadataEditOutcome) __);
+}
+
+
+/// Adds pattern-matching-related methods to [VideoMetadataEditOutcome].
+extension VideoMetadataEditOutcomePatterns on VideoMetadataEditOutcome {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( VideoMetadataEditSaved value)?  saved,TResult Function( VideoMetadataEditFailed value)?  failed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case VideoMetadataEditSaved() when saved != null:
+return saved(_that);case VideoMetadataEditFailed() when failed != null:
+return failed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( VideoMetadataEditSaved value)  saved,required TResult Function( VideoMetadataEditFailed value)  failed,}){
+final _that = this;
+switch (_that) {
+case VideoMetadataEditSaved():
+return saved(_that);case VideoMetadataEditFailed():
+return failed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( VideoMetadataEditSaved value)?  saved,TResult? Function( VideoMetadataEditFailed value)?  failed,}){
+final _that = this;
+switch (_that) {
+case VideoMetadataEditSaved() when saved != null:
+return saved(_that);case VideoMetadataEditFailed() when failed != null:
+return failed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( VideoMetadata metadata)?  saved,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case VideoMetadataEditSaved() when saved != null:
+return saved(_that.metadata);case VideoMetadataEditFailed() when failed != null:
+return failed(_that.failure);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( VideoMetadata metadata)  saved,required TResult Function( Failure failure)  failed,}) {final _that = this;
+switch (_that) {
+case VideoMetadataEditSaved():
+return saved(_that.metadata);case VideoMetadataEditFailed():
+return failed(_that.failure);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( VideoMetadata metadata)?  saved,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+switch (_that) {
+case VideoMetadataEditSaved() when saved != null:
+return saved(_that.metadata);case VideoMetadataEditFailed() when failed != null:
+return failed(_that.failure);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class VideoMetadataEditSaved implements VideoMetadataEditOutcome {
+  const VideoMetadataEditSaved({required this.metadata});
+  
+
+ final  VideoMetadata metadata;
+
+/// Create a copy of VideoMetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$VideoMetadataEditSavedCopyWith<VideoMetadataEditSaved> get copyWith => _$VideoMetadataEditSavedCopyWithImpl<VideoMetadataEditSaved>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoMetadataEditSaved&&(identical(other.metadata, metadata) || other.metadata == metadata));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,metadata);
+
+@override
+String toString() {
+  return 'VideoMetadataEditOutcome.saved(metadata: $metadata)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $VideoMetadataEditSavedCopyWith<$Res> implements $VideoMetadataEditOutcomeCopyWith<$Res> {
+  factory $VideoMetadataEditSavedCopyWith(VideoMetadataEditSaved value, $Res Function(VideoMetadataEditSaved) _then) = _$VideoMetadataEditSavedCopyWithImpl;
+@useResult
+$Res call({
+ VideoMetadata metadata
+});
+
+
+$VideoMetadataCopyWith<$Res> get metadata;
+
+}
+/// @nodoc
+class _$VideoMetadataEditSavedCopyWithImpl<$Res>
+    implements $VideoMetadataEditSavedCopyWith<$Res> {
+  _$VideoMetadataEditSavedCopyWithImpl(this._self, this._then);
+
+  final VideoMetadataEditSaved _self;
+  final $Res Function(VideoMetadataEditSaved) _then;
+
+/// Create a copy of VideoMetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? metadata = null,}) {
+  return _then(VideoMetadataEditSaved(
+metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+as VideoMetadata,
+  ));
+}
+
+/// Create a copy of VideoMetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$VideoMetadataCopyWith<$Res> get metadata {
+  
+  return $VideoMetadataCopyWith<$Res>(_self.metadata, (value) {
+    return _then(_self.copyWith(metadata: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class VideoMetadataEditFailed implements VideoMetadataEditOutcome {
+  const VideoMetadataEditFailed({required this.failure});
+  
+
+ final  Failure failure;
+
+/// Create a copy of VideoMetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$VideoMetadataEditFailedCopyWith<VideoMetadataEditFailed> get copyWith => _$VideoMetadataEditFailedCopyWithImpl<VideoMetadataEditFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoMetadataEditFailed&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,failure);
+
+@override
+String toString() {
+  return 'VideoMetadataEditOutcome.failed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $VideoMetadataEditFailedCopyWith<$Res> implements $VideoMetadataEditOutcomeCopyWith<$Res> {
+  factory $VideoMetadataEditFailedCopyWith(VideoMetadataEditFailed value, $Res Function(VideoMetadataEditFailed) _then) = _$VideoMetadataEditFailedCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+$FailureCopyWith<$Res> get failure;
+
+}
+/// @nodoc
+class _$VideoMetadataEditFailedCopyWithImpl<$Res>
+    implements $VideoMetadataEditFailedCopyWith<$Res> {
+  _$VideoMetadataEditFailedCopyWithImpl(this._self, this._then);
+
+  final VideoMetadataEditFailed _self;
+  final $Res Function(VideoMetadataEditFailed) _then;
+
+/// Create a copy of VideoMetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(VideoMetadataEditFailed(
+failure: null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+/// Create a copy of VideoMetadataEditOutcome
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$FailureCopyWith<$Res> get failure {
+  
+  return $FailureCopyWith<$Res>(_self.failure, (value) {
+    return _then(_self.copyWith(failure: value));
+  });
+}
+}
+
 // dart format on
