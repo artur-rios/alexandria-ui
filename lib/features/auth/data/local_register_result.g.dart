@@ -11,7 +11,9 @@ LocalRegisterResult _$LocalRegisterResultFromJson(Map<String, dynamic> json) =>
       success: json['success'] as bool,
       email: json['email'] as String,
       sessionId: json['sessionId'] as String,
-      emailConfirmed: json['emailConfirmed'] as bool,
-      confirmationSent: json['confirmationSent'] as bool,
-      confirmationError: json['confirmationError'] as String?,
+      recoveryCodes:
+          (json['recoveryCodes'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
     );

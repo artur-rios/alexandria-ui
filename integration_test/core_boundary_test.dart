@@ -42,35 +42,39 @@ void main() {
     expect(client.libraryPath, libraryPath);
   });
 
-  test('GivenTheLoadedCore_WhenItsHealthIsRead_ThenItReportsTheHealthyCode',
-      () async {
-    final client = await FfiCoreClient.load(libraryPath);
-    addTearDown(client.dispose);
+  test(
+    'GivenTheLoadedCore_WhenItsHealthIsRead_ThenItReportsTheHealthyCode',
+    () async {
+      final client = await FfiCoreClient.load(libraryPath);
+      addTearDown(client.dispose);
 
-    expect(
-      await client.healthStatus(),
-      coreHealthyStatusCode,
-      reason:
-          'the whole startup verification branches on this value; if the core '
-          'ever changes it, this is where that surfaces',
-    );
-  });
+      expect(
+        await client.healthStatus(),
+        coreHealthyStatusCode,
+        reason:
+            'the whole startup verification branches on this value; if the core '
+            'ever changes it, this is where that surfaces',
+      );
+    },
+  );
 
-  test('GivenTheLoadedCore_WhenItsVersionIsRead_ThenItIsInTheSupportedRange',
-      () async {
-    final client = await FfiCoreClient.load(libraryPath);
-    addTearDown(client.dispose);
+  test(
+    'GivenTheLoadedCore_WhenItsVersionIsRead_ThenItIsInTheSupportedRange',
+    () async {
+      final client = await FfiCoreClient.load(libraryPath);
+      addTearDown(client.dispose);
 
-    final version = await client.version();
+      final version = await client.version();
 
-    expect(version, isNotNull);
-    expect(
-      CoreVersionRange.supports(version),
-      isTrue,
-      reason:
-          'the bundled core reports $version, outside ${CoreVersionRange.description}',
-    );
-  });
+      expect(version, isNotNull);
+      expect(
+        CoreVersionRange.supports(version),
+        isTrue,
+        reason:
+            'the bundled core reports $version, outside ${CoreVersionRange.description}',
+      );
+    },
+  );
 
   test(
     'GivenATemporaryDatabasePath_WhenTheCoreIsInitialized_ThenItReportsSuccess',
@@ -84,79 +88,89 @@ void main() {
     },
   );
 
-  test('GivenAnInitializedCore_WhenTheDatabaseIsInspected_ThenItWasCreated',
-      () async {
-    final client = await FfiCoreClient.load(libraryPath);
-    addTearDown(client.dispose);
+  test(
+    'GivenAnInitializedCore_WhenTheDatabaseIsInspected_ThenItWasCreated',
+    () async {
+      final client = await FfiCoreClient.load(libraryPath);
+      addTearDown(client.dispose);
 
-    await client.initialize(catalog.databasePath);
+      await client.initialize(catalog.databasePath);
 
-    expect(
-      File(catalog.databasePath).existsSync(),
-      isTrue,
-      reason: 'the core creates and migrates the database on demand',
-    );
-  });
+      expect(
+        File(catalog.databasePath).existsSync(),
+        isTrue,
+        reason: 'the core creates and migrates the database on demand',
+      );
+    },
+  );
 
-  test('GivenTheCore_WhenItIsInitializedTwice_ThenItAcceptsTheSecondDatabase',
-      () async {
-    final client = await FfiCoreClient.load(libraryPath);
-    addTearDown(client.dispose);
-    final second = TemporaryCatalog.create();
-    addTearDown(second.dispose);
+  test(
+    'GivenTheCore_WhenItIsInitializedTwice_ThenItAcceptsTheSecondDatabase',
+    () async {
+      final client = await FfiCoreClient.load(libraryPath);
+      addTearDown(client.dispose);
+      final second = TemporaryCatalog.create();
+      addTearDown(second.dispose);
 
-    await client.initialize(catalog.databasePath);
-    final status = await client.initialize(second.databasePath);
+      await client.initialize(catalog.databasePath);
+      final status = await client.initialize(second.databasePath);
 
-    expect(
-      CoreStatusFamily.indexing.isOk(status),
-      isTrue,
-      reason:
-          'the core documents init as safe to call again to point at a '
-          'different database — the retry in startup step 3 depends on it',
-    );
-  });
+      expect(
+        CoreStatusFamily.indexing.isOk(status),
+        isTrue,
+        reason:
+            'the core documents init as safe to call again to point at a '
+            'different database — the retry in startup step 3 depends on it',
+      );
+    },
+  );
 
-  test('GivenTheCoreIsInitialized_WhenTheCatalogIsEmpty_ThenNoFilesAreCounted',
-      () async {
-    final client = await FfiCoreClient.load(libraryPath);
-    addTearDown(client.dispose);
+  test(
+    'GivenTheCoreIsInitialized_WhenTheCatalogIsEmpty_ThenNoFilesAreCounted',
+    () async {
+      final client = await FfiCoreClient.load(libraryPath);
+      addTearDown(client.dispose);
 
-    await client.initialize(catalog.databasePath);
+      await client.initialize(catalog.databasePath);
 
-    expect(
-      File(catalog.databasePath).lengthSync(),
-      greaterThan(0),
-      reason: 'an initialized catalog is a real database, not an empty file',
-    );
-  });
+      expect(
+        File(catalog.databasePath).lengthSync(),
+        greaterThan(0),
+        reason: 'an initialized catalog is a real database, not an empty file',
+      );
+    },
+  );
 
-  test('GivenAFixtureLibrary_WhenItIsCreated_ThenItIsUnderATemporaryRoot',
-      () async {
-    final fixture = catalog.addFixture('note.md', '# a note');
+  test(
+    'GivenAFixtureLibrary_WhenItIsCreated_ThenItIsUnderATemporaryRoot',
+    () async {
+      final fixture = catalog.addFixture('note.md', '# a note');
 
-    expect(fixture.existsSync(), isTrue);
-    expect(
-      fixture.path,
-      contains('alexandria_it'),
-      reason:
-          'no integration test touches a real library folder or the real '
-          'application-support directory',
-    );
-  });
+      expect(fixture.existsSync(), isTrue);
+      expect(
+        fixture.path,
+        contains('alexandria_it'),
+        reason:
+            'no integration test touches a real library folder or the real '
+            'application-support directory',
+      );
+    },
+  );
 
-  test('GivenAClientInUse_WhenItIsDisposed_ThenFurtherCallsAreRefused',
-      () async {
-    final client = await FfiCoreClient.load(libraryPath);
+  test(
+    'GivenAClientInUse_WhenItIsDisposed_ThenFurtherCallsAreRefused',
+    () async {
+      final client = await FfiCoreClient.load(libraryPath);
 
-    await client.dispose();
+      await client.dispose();
 
-    expect(
-      client.healthStatus,
-      throwsA(isA<Exception>()),
-      reason:
-          'a disposed client must fail loudly rather than silently reopening '
-          'the library on a worker that is gone',
-    );
-  });
+      expect(
+        client.healthStatus,
+        throwsA(isA<Exception>()),
+        reason:
+            'a disposed client must fail loudly rather than silently reopening '
+            'the library on a worker that is gone',
+      );
+    },
+  );
 }

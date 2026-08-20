@@ -92,20 +92,6 @@
   "@loginSessionEndedTitle": {
     "description": "UC-02 AF-04: heading shown on the login screen when a session was discarded because the core rejected a call, rather than because the owner signed out."
 },
-  "catalogLockedTitle": "Confirm your e-mail address",
-  "@catalogLockedTitle": {
-    "description": "FR-AU-12 / BR-25: heading of the state that stands in place of the catalog while the account's e-mail is unconfirmed. The prompt itself is UC-40."
-},
-  "catalogLockedBody": "Alexandria stays locked until the address {email} is confirmed.",
-  "@catalogLockedBody": {
-    "description": "FR-AU-12: explains why the catalog is not reachable. The address is named so the owner knows where to look.",
-    "placeholders": {
-        "email": {
-            "type": "String",
-            "example": "owner@example.com"
-        }
-    }
-},
   "failureCoreLibraryNotLoaded": "The Alexandria core could not be loaded from {path}.",
   "@failureCoreLibraryNotLoaded": {
     "description": "Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.",
@@ -235,10 +221,6 @@
   "rejectionEmailUntrimmed": "Remove the spaces around your e-mail address.",
   "@rejectionEmailUntrimmed": {
     "description": "Core rejection email_untrimmed."
-},
-  "catalogLockedUndeliverable": "The confirmation message could not be sent, so it is not on its way. Alexandria cannot deliver e-mail yet.",
-  "@catalogLockedUndeliverable": {
-    "description": "UC-01 AF-06: the account was created and the session is open, but the core reported that the confirmation message was not sent. Stated plainly so the owner does not wait for a message that is never coming."
 },
   "failureUnexpected": "Something went wrong in Alexandria.",
   "@failureUnexpected": {

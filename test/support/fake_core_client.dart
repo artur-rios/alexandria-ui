@@ -61,11 +61,7 @@ class FakeCoreClient implements CoreClient {
              status: CoreStatusFamily.auth.okCode,
              json:
                  '{"success":true,'
-                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50",'
-                 // A confirmed account: the steady state a returning owner
-                 // logs in to. Registration's fake below is the unconfirmed
-                 // one, which is what the core answers there.
-                 '"emailConfirmed":true}',
+                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}',
            ),
        indexStartResult =
            indexStartResult ??
@@ -118,7 +114,7 @@ class FakeCoreClient implements CoreClient {
              status: CoreStatusFamily.auth.okCode,
              // The core answers with the account body. UC-04 reads nothing
              // from it, so the shape here is only what the real core sends.
-             json: '{"email":"owner@example.com","emailConfirmed":true}',
+             json: '{"success":true,"email":"owner@example.com"}',
            ),
        authLocalRegisterResult =
            authLocalRegisterResult ??
@@ -127,10 +123,11 @@ class FakeCoreClient implements CoreClient {
              json:
                  '{"success":true,"email":"owner@example.com",'
                  '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50",'
-                 // What the real core answers today: the account is created
-                 // unconfirmed, and nothing delivers the message.
-                 '"emailConfirmed":false,"confirmationSent":false,'
-                 '"confirmationError":"mail_not_configured"}',
+                 // The ten codes the core mints at registration, returned on
+                 // this call and never again (FR-AU-12). Two here: the count
+                 // is the core's business, and a fake that insisted on ten
+                 // would be asserting it.
+                 '"recoveryCodes":["aaaa-bbbb","cccc-dddd"]}',
            );
 
   /// What [version] returns.

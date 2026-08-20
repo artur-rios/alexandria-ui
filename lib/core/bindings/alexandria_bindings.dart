@@ -27,12 +27,11 @@ class AlexandriaBindings {
     ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup,
   ) : _lookup = lookup;
 
-  /// Report the authenticated owner's account state (issue #102 / FR-AU-13):
-  /// the same body `GET /v1/auth/local/account` returns. `token` is the session
-  /// id.
+  /// Report the authenticated owner's account state (FR-AU-18): the same body
+  /// `GET /v1/auth/local/account` returns. `token` is the session id.
   ///
-  /// This is the call a client makes to decide whether the address has been
-  /// confirmed. The core answers it and gates nothing on the answer.
+  /// This is the call a client makes to learn the stored address and how many
+  /// recovery codes remain unspent.
   AuthJsonResult alexandria_auth_local_account(ffi.Pointer<ffi.Char> token) {
     return _alexandria_auth_local_account(token);
   }
@@ -43,49 +42,6 @@ class AlexandriaBindings {
       >('alexandria_auth_local_account');
   late final _alexandria_auth_local_account = _alexandria_auth_local_accountPtr
       .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
-  /// Complete a password reset (issue #102 / FR-AU-16). `json_body` is the JSON
-  /// body HTTP would send: an object with `token`, `password`, and
-  /// `passwordConfirmation`.
-  ///
-  /// Deliberately takes no session token: the reset token is the credential.
-  /// Every session is invalidated on success — a reset is what an owner does
-  /// when they believe someone else may hold their credentials.
-  AuthJsonResult alexandria_auth_local_complete_password_reset(
-    ffi.Pointer<ffi.Char> json_body,
-  ) {
-    return _alexandria_auth_local_complete_password_reset(json_body);
-  }
-
-  late final _alexandria_auth_local_complete_password_resetPtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_local_complete_password_reset');
-  late final _alexandria_auth_local_complete_password_reset =
-      _alexandria_auth_local_complete_password_resetPtr
-          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
-  /// Confirm the owner's e-mail address (issue #102 / FR-AU-14). `json_body` is
-  /// the JSON body HTTP would send, an object with a string `code`.
-  ///
-  /// Deliberately takes no `token`: the code is the proof of control, and
-  /// requiring a session as well would stop an owner confirming from the device
-  /// that received the message. A refusal carries `confirmation_invalid`,
-  /// `confirmation_already_used`, or `confirmation_expired` as the body's
-  /// `code` — the status is `AUTH_ERR_INVALID_INPUT` for all three.
-  AuthJsonResult alexandria_auth_local_confirm_email(
-    ffi.Pointer<ffi.Char> json_body,
-  ) {
-    return _alexandria_auth_local_confirm_email(json_body);
-  }
-
-  late final _alexandria_auth_local_confirm_emailPtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_local_confirm_email');
-  late final _alexandria_auth_local_confirm_email =
-      _alexandria_auth_local_confirm_emailPtr
-          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Local login (UC-34 / FR-AU-04): verify email + password and create a
   /// session. `json_body` is the JSON body HTTP would send (`email`,
@@ -105,6 +61,45 @@ class AlexandriaBindings {
       >('alexandria_auth_local_login');
   late final _alexandria_auth_local_login = _alexandria_auth_local_loginPtr
       .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
+  /// Redeem a recovery code for a new password (UC-43 / FR-AU-14 … FR-AU-16).
+  /// `json_body` is the JSON body HTTP would send: an object with `code`,
+  /// `newPassword`, and `passwordConfirmation`.
+  ///
+  /// Deliberately takes no session token: the code is the credential, and this
+  /// is the operation a caller who cannot authenticate uses to get back in.
+  /// Every session is invalidated on success.
+  AuthJsonResult alexandria_auth_local_redeem_recovery_code(
+    ffi.Pointer<ffi.Char> json_body,
+  ) {
+    return _alexandria_auth_local_redeem_recovery_code(json_body);
+  }
+
+  late final _alexandria_auth_local_redeem_recovery_codePtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_local_redeem_recovery_code');
+  late final _alexandria_auth_local_redeem_recovery_code =
+      _alexandria_auth_local_redeem_recovery_codePtr
+          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
+  /// Replace the owner's recovery codes with a fresh set of ten (UC-44 /
+  /// FR-AU-17), invalidating every old one. `token` is the session id the
+  /// caller authenticates with, exactly as `alexandria_auth_local_account`
+  /// takes it.
+  AuthJsonResult alexandria_auth_local_regenerate_recovery_codes(
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_auth_local_regenerate_recovery_codes(token);
+  }
+
+  late final _alexandria_auth_local_regenerate_recovery_codesPtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_local_regenerate_recovery_codes');
+  late final _alexandria_auth_local_regenerate_recovery_codes =
+      _alexandria_auth_local_regenerate_recovery_codesPtr
+          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Register the local account (UC-41 / FR-AU-10, FR-AU-11): create the
   /// single owner's credentials and open a session. `json_body` is the JSON
@@ -127,47 +122,6 @@ class AlexandriaBindings {
       >('alexandria_auth_local_register');
   late final _alexandria_auth_local_register =
       _alexandria_auth_local_registerPtr
-          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
-  /// Request a password reset (issue #102 / FR-AU-16). `json_body` is the JSON
-  /// body HTTP would send, an object with a string `email`.
-  ///
-  /// The outcome is the same whether or not the address is the registered one —
-  /// an operation that answered differently would tell anyone who asked whether
-  /// a given person owns this library.
-  AuthJsonResult alexandria_auth_local_request_password_reset(
-    ffi.Pointer<ffi.Char> json_body,
-  ) {
-    return _alexandria_auth_local_request_password_reset(json_body);
-  }
-
-  late final _alexandria_auth_local_request_password_resetPtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_local_request_password_reset');
-  late final _alexandria_auth_local_request_password_reset =
-      _alexandria_auth_local_request_password_resetPtr
-          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
-  /// Send a fresh confirmation message to the stored address (issue #102 /
-  /// FR-AU-15). `token` is the session id: this takes no address, so it needs an
-  /// authenticated caller to have a subject at all.
-  ///
-  /// Until the mail integration ships this always answers
-  /// `AUTH_ERR_SERVICE_UNAVAILABLE` with `mail_not_configured` — an honest
-  /// refusal rather than a success that delivers nothing.
-  AuthJsonResult alexandria_auth_local_resend_confirmation(
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_auth_local_resend_confirmation(token);
-  }
-
-  late final _alexandria_auth_local_resend_confirmationPtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_local_resend_confirmation');
-  late final _alexandria_auth_local_resend_confirmation =
-      _alexandria_auth_local_resend_confirmationPtr
           .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Set or change local-login credentials (UC-35 / FR-AU-05, FR-AU-06).
@@ -195,6 +149,26 @@ class AlexandriaBindings {
               ffi.Pointer<ffi.Char>,
             )
           >();
+
+  /// Windows login (UC-45 / FR-AU-20, FR-AU-22): open a session for the
+  /// Windows account this process runs as. Takes no credentials — the account
+  /// was already verified against the configured SID at startup. `json_body`
+  /// is accepted but ignored: it exists only for signature consistency with
+  /// this surface's other `alexandria_auth_*` neighbours, which all take a
+  /// body. On success `json` carries the `LocalLoginResult`, the same shape
+  /// `alexandria_auth_local_login` returns.
+  AuthJsonResult alexandria_auth_windows_login(
+    ffi.Pointer<ffi.Char> _json_body,
+  ) {
+    return _alexandria_auth_windows_login(_json_body);
+  }
+
+  late final _alexandria_auth_windows_loginPtr =
+      _lookup<
+        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_auth_windows_login');
+  late final _alexandria_auth_windows_login = _alexandria_auth_windows_loginPtr
+      .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Create a browser bookmark, optionally in an existing bookmark collection
   /// (UC-15 / FR-BM-01).
@@ -586,6 +560,42 @@ class AlexandriaBindings {
       .asFunction<
         CollectionJsonResult Function(
           ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
+  /// List the owner's collections (UC-46 / FR-CO-08).
+  ///
+  /// `json_filters` is the JSON filter HTTP would build from its query string
+  /// (`kind`); an empty string or `null` means every collection. On success
+  /// `json` carries a JSON array of `CollectionSummary` — each collection with
+  /// the number of items it holds — byte-for-byte the same shape HTTP returns
+  /// from `GET /v1/collections` (parity, FR-FC-24 / NFR-09). `token` is the
+  /// bearer auth token.
+  ///
+  /// An owner with no collections gets an empty array and `COLLECTION_OK`, not
+  /// an error (AF-01). An unrecognised `kind` is `COLLECTION_ERR_INVALID_INPUT`
+  /// and nothing is queried (AF-02).
+  CollectionJsonResult alexandria_collections_list(
+    ffi.Pointer<ffi.Char> json_filters,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_collections_list(json_filters, token);
+  }
+
+  late final _alexandria_collections_listPtr =
+      _lookup<
+        ffi.NativeFunction<
+          CollectionJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_collections_list');
+  late final _alexandria_collections_list = _alexandria_collections_listPtr
+      .asFunction<
+        CollectionJsonResult Function(
           ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,
         )

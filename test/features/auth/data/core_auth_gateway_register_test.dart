@@ -58,8 +58,7 @@ void main() {
             status: AUTH_OK,
             json:
                 '{"success":true,"email":"owner@example.com",'
-                '"sessionId":"6f1c9d02","emailConfirmed":false,'
-                '"confirmationSent":true}',
+                '"sessionId":"6f1c9d02","recoveryCodes":[]}',
           ),
         );
 
@@ -258,32 +257,11 @@ void main() {
     );
   });
 
-  // UC-01 AF-06: the account is created and the session opened either way; a
-  // failed send changes only what the owner is told next.
-  group('the confirmation message', () {
+  // FR-AU-12: the codes the core minted come back on this one call and never
+  // again, so the gateway has to carry them out of it.
+  group('the recovery codes', () {
     test(
-      'GivenTheCoreCouldNotSendIt_WhenTheOwnerSignsUp_ThenTheOutcomeSaysSo',
-      () async {
-        final outcome =
-            await registerWith(FakeCoreClient()) as AuthenticatedOutcome;
-
-        expect(outcome.confirmation?.sent, isFalse);
-        expect(outcome.confirmation?.reasonCode, 'mail_not_configured');
-      },
-    );
-
-    test(
-      'GivenTheCoreCouldNotSendIt_WhenTheOwnerSignsUp_ThenTheSessionIsStillEstablished',
-      () async {
-        expect(
-          await registerWith(FakeCoreClient()),
-          isA<AuthenticatedOutcome>(),
-        );
-      },
-    );
-
-    test(
-      'GivenTheCoreSentIt_WhenTheOwnerSignsUp_ThenTheOutcomeSaysSoWithNoReason',
+      'GivenTheCoreReturnedCodes_WhenTheOwnerSignsUp_ThenTheyReachTheOutcome',
       () async {
         final outcome =
             await registerWith(
@@ -292,27 +270,24 @@ void main() {
                       status: AUTH_OK,
                       json:
                           '{"success":true,"email":"owner@example.com",'
-                          '"sessionId":"6f1c9d02","emailConfirmed":false,'
-                          '"confirmationSent":true}',
+                          '"sessionId":"6f1c9d02",'
+                          '"recoveryCodes":["aaaa-bbbb","cccc-dddd"]}',
                     ),
                   ),
                 )
                 as AuthenticatedOutcome;
 
-        expect(outcome.confirmation?.sent, isTrue);
-        expect(outcome.confirmation?.reasonCode, isNull);
+        expect(outcome.session.credential, '6f1c9d02');
       },
     );
 
-    // FR-AU-12: the core creates the account unconfirmed, and the session
-    // carries that so the catalog lock is decided from what the core said.
     test(
-      'GivenAFreshRegistration_WhenTheSessionIsRead_ThenItIsUnconfirmed',
+      'GivenTheCoreReturnedNone_WhenTheOwnerSignsUp_ThenTheSessionIsStillEstablished',
       () async {
-        final outcome =
-            await registerWith(FakeCoreClient()) as AuthenticatedOutcome;
-
-        expect(outcome.session.emailConfirmed, isFalse);
+        expect(
+          await registerWith(FakeCoreClient()),
+          isA<AuthenticatedOutcome>(),
+        );
       },
     );
   });
@@ -353,8 +328,7 @@ void main() {
               status: AUTH_OK,
               json:
                   '{"success":false,"email":"owner@example.com",'
-                  '"sessionId":"6f1c9d02","emailConfirmed":false,'
-                  '"confirmationSent":true}',
+                  '"sessionId":"6f1c9d02","recoveryCodes":[]}',
             ),
           ),
         );

@@ -3,11 +3,9 @@ import 'package:alexandria_desktop/core/failures/core_status.dart';
 import 'package:alexandria_desktop/core/failures/failure.dart';
 import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_desktop/core/theme/breakpoints.dart';
-import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
-import 'package:alexandria_desktop/features/auth/domain/session.dart';
-import 'package:alexandria_desktop/features/auth/presentation/catalog_locked_screen.dart';
 import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_desktop/core/startup/core_unavailable_screen.dart';
+import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -282,57 +280,20 @@ void main() {
     );
   });
 
-  // UC-02 AF-06 / FR-AU-12. The core cannot report this state yet, so the fake
-  // gateway is what stands in for a core that can.
-  group('AF-06 — the e-mail is unconfirmed', () {
-    Future<void> pumpUnconfirmed(WidgetTester tester) => tester.pumpLoginScreen(
-      gateway: FakeAuthGateway(
-        outcome: AuthOutcome.authenticated(
-          session: Session(
-            credential: 'a-real-looking-session-id',
-            establishedAt: DateTime.utc(2026, 8, 12, 9, 30),
-            emailConfirmed: false,
-            email: 'owner@example.com',
-          ),
-        ),
-      ),
-    );
+  // What used to be AF-06 — an authenticated owner held out of the catalog
+  // until their e-mail was confirmed — has no state behind it any more: the
+  // core dropped confirmation on 2026-08-18. Signing in reaches the shell,
+  // and that is the whole of it.
+  group('a successful sign-in', () {
+    testWidgets('GivenAnAccount_WhenTheOwnerSignsIn_ThenTheCatalogIsReached', (
+      tester,
+    ) async {
+      await tester.pumpLoginScreen();
 
-    testWidgets(
-      'GivenAnUnconfirmedAccount_WhenTheOwnerSignsIn_ThenTheCatalogIsLocked',
-      (tester) async {
-        await pumpUnconfirmed(tester);
+      await tester.signIn();
 
-        await tester.signIn();
-
-        expect(find.byType(CatalogLockedScreen), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenAnUnconfirmedAccount_WhenTheOwnerSignsIn_ThenTheAddressIsNamed',
-      (tester) async {
-        await pumpUnconfirmed(tester);
-
-        await tester.signIn();
-
-        expect(
-          find.text(en.catalogLockedBody('owner@example.com')),
-          findsOneWidget,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenAConfirmedAccount_WhenTheOwnerSignsIn_ThenTheCatalogIsNotLocked',
-      (tester) async {
-        await tester.pumpLoginScreen();
-
-        await tester.signIn();
-
-        expect(find.byType(CatalogLockedScreen), findsNothing);
-      },
-    );
+      expect(find.byType(ShellScreen), findsOneWidget);
+    });
   });
 
   // Testing Specification §7.1: both themes, both languages, every breakpoint

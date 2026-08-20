@@ -83,11 +83,14 @@ class LoginController extends Notifier<LoginState> {
   };
 }
 
-/// Whether the catalog is reachable for [state] (FR-AU-12, BR-25).
+/// Whether the catalog is reachable for [state] (FR-AU-07).
 ///
-/// An authenticated owner whose e-mail is unconfirmed gets the confirmation
-/// prompt in place of the catalog, and no catalog call is issued.
+/// A session and nothing else. The core used to gate this on the account's
+/// e-mail being confirmed; it dropped confirmation entirely on 2026-08-18 and
+/// no longer reports the flag, so there is nothing left to lock the catalog
+/// behind. An owner who cannot sign in recovers with a recovery code (UC-41)
+/// rather than through their inbox.
 bool catalogIsReachable(SessionState state) => switch (state) {
-  SessionActive(:final session) => session.emailConfirmed,
+  SessionActive() => true,
   SessionAbsent() => false,
 };

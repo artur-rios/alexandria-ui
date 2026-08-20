@@ -10,11 +10,7 @@ part 'local_login_result.g.dart';
 @JsonSerializable(createToJson: false)
 class LocalLoginResult {
   /// Creates a result.
-  const LocalLoginResult({
-    required this.success,
-    required this.sessionId,
-    required this.emailConfirmed,
-  });
+  const LocalLoginResult({required this.success, required this.sessionId});
 
   /// Reads the payload the core returned.
   ///
@@ -29,13 +25,4 @@ class LocalLoginResult {
 
   /// The session material presented on subsequent calls (FR-AU-06).
   final String sessionId;
-
-  /// Whether the account's e-mail is confirmed (FR-AU-12).
-  ///
-  /// Required rather than defaulted: the core reports it on every auth
-  /// response now, and a default would decide the catalog lock for it. If the
-  /// field ever goes missing, this throws and the gateway reports an unreadable
-  /// payload — which is the honest outcome, because guessing `true` would
-  /// unlock the catalog and guessing `false` would lock the owner out.
-  final bool emailConfirmed;
 }

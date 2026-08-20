@@ -64,8 +64,8 @@ It explicitly does **not** cover:
 | **Purge** | Permanently removing a catalog record after its retention window. The on-disk file is untouched. |
 | **Purge on disk** | The separate, explicit operation that removes both the record and the physical file. The only operation in the product that deletes the owner's data. |
 | **Missing file** | A cataloged record whose on-disk file was not found during the last scan. |
-| **Session** | The credential material the core returns at login, held in memory for the run of the application. A session whose account e-mail is unconfirmed is *locked*: it reaches the confirmation screen and nothing else. |
-| **Account** | The single owner's credentials and e-mail confirmation state, owned by the core. Created at sign-up; there is never a second one. |
+| **Session** | The credential material the core returns at login, held in memory for the run of the application. A session whose new account's recovery codes are still on screen reaches the acknowledgement and nothing else. |
+| **Account** | The single owner's credentials and recovery codes, owned by the core. Created at sign-up; there is never a second one. |
 | **Viewer** | A component responsible for presenting one file type — a player, a document reader, or a renderer. |
 | **FFI** | Foreign Function Interface: the C ABI through which the application calls the Alexandria core in process. |
 
@@ -146,7 +146,7 @@ the core.
 
 | ID | Feature | Description |
 | --- | --- | --- |
-| F-01 | Authentication and session | Sign-up, e-mail confirmation, local login, sign-out, credential change, and password recovery, gating every catalog operation behind an active, confirmed session. |
+| F-01 | Authentication and session | Sign-up, recovery codes, local login, sign-out, credential change, and recovery of a forgotten password, gating every catalog operation behind an active session. |
 | F-02 | Library sources and indexing | Registering one or more library folders, starting and observing index runs, refreshing the catalog, and unregistering a folder without losing data. |
 | F-03 | Catalog browsing, search, and filtering | A type panel, three view layouts, a detail view, search across the catalog, filters and sorting, and a home dashboard. |
 | F-04 | Metadata and content editing | Editing music and video metadata, renaming any file, and editing Markdown and text content in place with a live preview. |
@@ -240,20 +240,21 @@ authenticated and an unauthenticated application state:
 ```mermaid
 graph TD
     GUEST["Owner (no active session)"]
-    LOCKED["Owner (authenticated, e-mail unconfirmed)"]
-    OWNER["Owner (authenticated and confirmed)"]
-    GUEST -->|"signs up, or logs in"| LOCKED
-    GUEST -->|"logs in to a confirmed account"| OWNER
-    LOCKED -->|"confirms the e-mail"| OWNER
-    LOCKED -->|"signs out"| GUEST
-    OWNER -->|"signs out, resets the password,<br/>or the session is rejected"| GUEST
+    CODES["Owner (authenticated, codes on screen)"]
+    OWNER["Owner (authenticated)"]
+    GUEST -->|"signs up"| CODES
+    GUEST -->|"logs in"| OWNER
+    CODES -->|"acknowledges the codes"| OWNER
+    CODES -->|"signs out"| GUEST
+    OWNER -->|"regenerates the codes"| CODES
+    OWNER -->|"signs out, recovers with a code,<br/>or the session is rejected"| GUEST
 ```
 
 | Role | Relationship to the domain | Permissions |
 | --- | --- | --- |
-| **Owner (authenticated and confirmed)** | Holds a session the core accepted, for an account whose e-mail is confirmed | Every catalog operation, every library-folder operation, and every application preference. |
-| **Owner (authenticated, e-mail unconfirmed)** | Holds a session, but the account is not yet confirmed | The confirmation screen, resending the confirmation, signing out, and the theme and language selectors. The catalog is locked and no catalog call is attempted. |
-| **Owner (no active session)** | Has not signed up or logged in, or has been signed out | Sign-up, login, password recovery, and the theme and language selectors. No catalog operation is reachable, and none is attempted. |
+| **Owner (authenticated)** | Holds a session the core accepted | Every catalog operation, every library-folder operation, and every application preference. |
+| **Owner (authenticated, codes on screen)** | Holds a session, but has not yet acknowledged the recovery codes a new account was given | Acknowledging the codes, signing out, and the theme and language selectors. The catalog waits, and no catalog call is attempted. |
+| **Owner (no active session)** | Has not signed up or logged in, or has been signed out | Sign-up, login, recovery with a recovery code, and the theme and language selectors. No catalog operation is reachable, and none is attempted. |
 
 ---
 

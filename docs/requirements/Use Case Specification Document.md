@@ -21,11 +21,10 @@ than repeated as an alternative flow in each:
   and issues no call (`FR-AU-07`). Where the *core* rejects a call as
   unauthorized mid-session, that is specified per use case, because it returns
   the owner to login and loses their place.
-- **An unconfirmed e-mail.** Every use case below except UC-01 through UC-04 and
-  UC-38 through UC-42 additionally requires the account's e-mail to be confirmed.
-  While it is not, the application presents the confirmation prompt in place of
-  the catalog and issues no catalog call (`FR-AU-12`, `BR-25`); UC-40 is how that
-  state ends.
+- **Recovery codes not yet acknowledged.** A newly created account shows its ten
+  recovery codes in place of the catalog until the owner confirms having stored
+  them (`FR-AU-12`); UC-40 is that step. It is the only thing between signing up
+  and the library, and it happens once.
 - **The core is unavailable.** A failure to reach or initialize the core is
   presented as a readable message with a retry rather than terminating the
   application (`NFR-14`).
@@ -54,9 +53,9 @@ graph LR
         UC02[UC-02: Log in]
         UC03[UC-03: Sign out]
         UC04[UC-04: Change credentials]
-        UC40[UC-40: Confirm the e-mail]
-        UC41[UC-41: Request a reset]
-        UC42[UC-42: Complete a reset]
+        UC40[UC-40: Save the recovery codes]
+        UC41[UC-41: Recover with a code]
+        UC42[UC-42: Regenerate the codes]
     end
 
     subgraph "Library sources (LB)"
@@ -148,9 +147,8 @@ graph LR
 | **Actors** | Owner, Alexandria core |
 | **Description** | On first launch, the owner creates the single account — the e-mail and password that will gate the library from then on. |
 | **Preconditions** | The core is initialized. No account exists yet. |
-| **Postconditions** | The core holds a salted password hash for an account whose e-mail is not yet confirmed, and has sent a confirmation message. The owner is authenticated, and the library is locked until UC-40 completes. |
+| **Postconditions** | The core holds a salted password hash and ten single-use recovery codes for the new account. The owner is authenticated, and the codes are shown once before the library opens (UC-40). |
 | **Requirements** | FR-AU-01, FR-AU-02, FR-AU-03, FR-AU-11 |
-| **Depends on** | Core support for account creation — see [System Requirements §5.4](System%20Requirements%20Document.md) |
 
 **Main Flow**
 
@@ -160,10 +158,10 @@ graph LR
 4. The application validates the e-mail format, that the password is not empty,
    and that the two entries match.
 5. The application creates the account through the core.
-6. The core stores the salted hash, sends the confirmation message, and confirms
-   the account was created.
+6. The core stores the salted hash, mints ten single-use recovery codes, and
+   returns them with the new session.
 7. The application discards the plaintext password, establishes the session, and
-   presents the confirmation prompt (UC-40) rather than the catalog.
+   presents the recovery codes (UC-40) rather than the catalog.
 
 **Alternative Flows**
 
@@ -174,7 +172,7 @@ graph LR
 | AF-03 | The core rejects the credentials as invalid | The application presents the core's reason and keeps the owner on the screen with the password fields cleared. |
 | AF-04 | An account already exists | The application presents the login screen instead; changing the credentials is UC-04, and recovering them is UC-41. |
 | AF-05 | The core reports a configuration failure | The application explains that the account cannot be created, offers a retry, and remains on the screen. |
-| AF-06 | The account is created but the core reports that the confirmation message could not be sent | The account exists and the session is established; the application presents the confirmation prompt with the delivery failure explained and the resend action available (UC-40 AF-04). |
+| AF-06 | The account is created but the core returns no recovery codes | The account exists and the session is established; the application says so and offers to generate a set (UC-42), rather than showing an empty list (UC-40 AF-03). |
 
 ---
 
@@ -196,12 +194,10 @@ graph LR
 2. The owner enters the e-mail and password.
 3. The application validates the e-mail format and that the password is not empty.
 4. The application calls the core's local-login operation.
-5. The core verifies the credentials and returns the session material, including
-   whether the account's e-mail is confirmed.
+5. The core verifies the credentials and returns the session material.
 6. The application holds the session in memory and discards the plaintext
    password.
-7. The application opens the home dashboard when the e-mail is confirmed, and the
-   confirmation prompt (UC-40) when it is not.
+7. The application opens the home dashboard.
 
 **Alternative Flows**
 
@@ -212,8 +208,7 @@ graph LR
 | AF-03 | No account exists in the core | The application presents sign-up instead (UC-01). |
 | AF-04 | The core rejects a later call as unauthorized | The application discards the session, returns to the login screen, and states why the owner was signed out. |
 | AF-05 | The core is not initialized | The application presents the core-unavailable message with a retry. |
-| AF-06 | The account's e-mail is unconfirmed | The session is established, the catalog stays locked, and the confirmation prompt is presented (UC-40). No catalog call is issued. |
-| AF-07 | The owner cannot remember the password | The login screen offers password recovery (UC-41). |
+| AF-06 | The owner cannot remember the password | The login screen offers recovery with a recovery code (UC-41). |
 
 ---
 
@@ -1483,118 +1478,111 @@ graph LR
 
 ---
 
-### UC-40: Confirm the e-mail address
+### UC-40: Save the recovery codes
 
 | Field | Value |
 | --- | --- |
 | **ID** | UC-40 |
-| **Name** | Confirm the e-mail address |
+| **Name** | Save the recovery codes |
 | **Actors** | Owner, Alexandria core |
-| **Description** | The owner proves they control the account's e-mail address by submitting the code the core sent, which unlocks the library. |
-| **Preconditions** | An active session exists for an account whose e-mail is unconfirmed. |
-| **Postconditions** | The core records the e-mail as confirmed and the catalog becomes reachable. |
-| **Requirements** | FR-AU-12, FR-AU-13, FR-AU-14, FR-AU-17, FR-AU-18, FR-AU-20 |
-| **Depends on** | Core support for confirmation state, confirmation, and resend — see [System Requirements §5.4](System%20Requirements%20Document.md) |
+| **Description** | The owner is shown the ten single-use codes the core minted at sign-up, once, and confirms having stored them before the library opens. |
+| **Preconditions** | An account has just been created and a session is active. |
+| **Postconditions** | The owner has seen the codes and acknowledged them. Nothing about them is retained by the application. |
+| **Requirements** | FR-AU-12, FR-AU-13, FR-AU-14, FR-AU-19 |
 
 **Main Flow**
 
-1. The application determines that the authenticated account's e-mail is
-   unconfirmed.
-2. The application presents the confirmation prompt in place of the catalog,
-   naming the address the code was sent to, and issues no catalog call.
-3. The owner enters the confirmation code.
-4. The application checks that the code is not blank and submits it to the core.
-5. The core validates the code and records the e-mail as confirmed.
-6. The application discards the code, unlocks the catalog, and opens the home
-   dashboard.
+1. Sign-up returns the ten recovery codes with the new session (UC-01 step 6).
+2. The application presents them in place of the catalog, states that this is the
+   only time they will be shown, and explains that each one replaces a forgotten
+   password exactly once.
+3. The owner copies or saves the codes.
+4. The owner confirms having stored them.
+5. The application discards the codes from memory and opens the home dashboard.
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The code is blank | The application marks the field and does not call the core. |
-| AF-02 | The core rejects the code as invalid or already used | The application explains which, clears the field, and keeps the resend action available. |
-| AF-03 | The core reports the code as expired | The application says so and presents requesting a new one as the next step. |
-| AF-04 | The owner requests a new code | The application asks the core to resend and reports the outcome, including a delivery failure. |
-| AF-05 | The core refuses to resend yet | The application presents the core's reason — such as a wait before the next attempt — as a readable message, and does not retry on its own. |
-| AF-06 | The owner signs out from the prompt | The session is discarded and the login screen is presented; the account remains unconfirmed. |
-| AF-07 | The core reports the account as already confirmed | The application unlocks the catalog and opens the dashboard. |
-| AF-08 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-01 | The owner tries to continue without confirming | The application keeps the codes on screen; the confirmation is the only way past it. |
+| AF-02 | The owner asks to copy the codes | The application places them on the clipboard and says so. It writes no file, because a file is a stored value (`FR-AU-13`). |
+| AF-03 | The core returned no codes with the session | The application says the account was created but no codes were issued, and offers regenerating a set (UC-42) rather than showing an empty list. |
+| AF-04 | The owner signs out from the prompt | The session is discarded and the login screen is presented. The codes are gone, and the account has none the owner has seen — which is what UC-42 exists to fix. |
+
+> This use case replaces the e-mail confirmation the core removed on
+> 2026-08-18. The account's address is a login identifier and nothing else: the
+> core never writes to it, so there is nothing to confirm, and a recovery code
+> is what gets a locked-out owner back in.
 
 ---
 
-### UC-41: Request a password reset
+### UC-41: Recover access with a recovery code
 
 | Field | Value |
 | --- | --- |
 | **ID** | UC-41 |
-| **Name** | Request a password reset |
+| **Name** | Recover access with a recovery code |
 | **Actors** | Owner, Alexandria core |
-| **Description** | An owner who cannot remember their password asks for a reset message to be sent to their address. |
-| **Preconditions** | The core is initialized. No active session. |
-| **Postconditions** | If the address is registered, the core has sent a reset message. The owner is told the same thing either way. |
-| **Requirements** | FR-AU-15, FR-AU-17, FR-AU-18, FR-AU-20 |
-| **Depends on** | Core support for reset requests — see [System Requirements §5.4](System%20Requirements%20Document.md) |
+| **Description** | An owner who cannot remember their password spends one of the recovery codes to set a new one. |
+| **Preconditions** | The core is initialized. No active session. The owner holds a recovery code. |
+| **Postconditions** | The core holds the new salted hash, the code is spent, every existing session is invalidated, and the owner is at the login screen. |
+| **Requirements** | FR-AU-15, FR-AU-16, FR-AU-18, FR-AU-19 |
 
 **Main Flow**
 
-1. The owner chooses password recovery from the login screen.
-2. The owner enters an e-mail address.
-3. The application validates the address format and submits the request to the
-   core.
-4. The core sends a reset message if the address is registered.
-5. The application presents a message stating that if the address is registered, a
-   reset message has been sent — the same message in either case.
-6. The application offers to continue to UC-42 with the token, or to return to
-   login.
+1. The owner chooses account recovery from the login screen.
+2. The owner enters a recovery code, a new password, and repeats the password.
+3. The application checks that the code is not blank, the password is not empty,
+   and the two entries match.
+4. The application submits the code and the new password to the core.
+5. The core validates the code, replaces the credentials, consumes that code, and
+   invalidates every session.
+6. The application discards the plaintext and the code, discards any session, and
+   presents the login screen stating that the password was replaced.
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The address is malformed | The application marks the field and does not call the core. |
-| AF-02 | The address is not registered | The core sends nothing; the application presents the identical message, revealing nothing (`BR-29`). |
-| AF-03 | The core refuses to send yet | The application presents the core's reason — such as a wait before the next attempt — and does not retry on its own. |
-| AF-04 | The core reports a delivery failure | The application says the message could not be sent and offers to try again, without stating whether the address is registered. |
+| AF-01 | The code is blank, the password is empty, or the two entries differ | The application marks the field and does not call the core. |
+| AF-02 | The core does not recognise the code | The application says the code was not recognised, clears it, and keeps the screen open. |
+| AF-03 | The core reports the code as already used | The application says so — distinctly from AF-02, because the two mean different things to an owner working through a list — and keeps the screen open. |
+| AF-04 | The core rejects the new password | The application presents the core's own reason and keeps the screen open with the password fields cleared. The code is not spent (`FR-AU-16`). |
 | AF-05 | An account is signed in | Recovery is not offered; changing a known password is UC-04. |
+| AF-06 | No account exists | Recovery is not offered; the sign-up screen is what launch presents (UC-01). |
 
 ---
 
-### UC-42: Complete a password reset
+### UC-42: Regenerate the recovery codes
 
 | Field | Value |
 | --- | --- |
 | **ID** | UC-42 |
-| **Name** | Complete a password reset |
+| **Name** | Regenerate the recovery codes |
 | **Actors** | Owner, Alexandria core |
-| **Description** | The owner sets a new password using the reset token the core sent. |
-| **Preconditions** | The core is initialized. The owner holds a reset token. No active session. |
-| **Postconditions** | The core holds the new salted hash, the token is spent, and the owner is at the login screen. |
-| **Requirements** | FR-AU-16, FR-AU-17, FR-AU-18, FR-AU-19 |
-| **Depends on** | Core support for reset completion — see [System Requirements §5.4](System%20Requirements%20Document.md) |
+| **Description** | The owner replaces the whole set of recovery codes with ten new ones — because the old set ran low, or was lost, or was seen by someone else. |
+| **Preconditions** | An active session exists. |
+| **Postconditions** | The core holds ten new codes and none of the old ones. The owner has seen the new set once. |
+| **Requirements** | FR-AU-14, FR-AU-17, FR-AU-19 |
 
 **Main Flow**
 
-1. The owner opens the reset screen and enters the token from the message.
-2. The owner enters a new password and repeats it.
-3. The application validates that the token is not blank, the password is not
-   empty, and the two entries match.
-4. The application submits the token and the new password to the core.
-5. The core validates the token, replaces the credentials, and spends the token.
-6. The application discards the plaintext and the token, discards any session,
-   and presents the login screen with confirmation that the password was
-   changed.
+1. The owner opens the account section of preferences, which states how many
+   codes remain unconsumed.
+2. The owner asks for a new set.
+3. The application confirms, stating that every existing code stops working.
+4. The application asks the core to regenerate, and presents the ten new codes
+   under the same rules as UC-40: once, with no way back to them.
+5. The owner confirms having stored them, and the application discards them.
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The token is blank, the password is empty, or the entries differ | The application marks the field and does not call the core. |
-| AF-02 | The core rejects the token as invalid or already used | The application explains which and offers to request a new one (UC-41). |
-| AF-03 | The core reports the token as expired | The application says so and offers to request a new one (UC-41). |
-| AF-04 | The core rejects the new password | The application presents the core's reason and leaves the stored credentials unchanged. |
-| AF-05 | A session was active | It is discarded when the reset completes (`BR-28`), and the owner logs in again. |
-| AF-06 | The account's e-mail is unconfirmed | The reset still completes; the owner logs in and lands on the confirmation prompt (UC-40). |
+| AF-01 | The owner cancels the confirmation | Nothing changes and the existing codes keep working. |
+| AF-02 | The core refuses the regeneration | The application presents the core's reason; the existing codes are unchanged, because the core replaced nothing. |
+| AF-03 | The core cannot report how many codes remain | The application offers the regeneration without the count rather than hiding the action behind a number it does not have. |
+| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
 
 ---
 
@@ -1641,9 +1629,9 @@ graph LR
 | UC-37: Review missing files | FR-LC-08 |
 | UC-38: Navigate the application shell | FR-UX-01, FR-UX-02, FR-UX-03, FR-UX-08, FR-UX-09, FR-UX-10, FR-UX-11 |
 | UC-39: Manage application preferences | FR-UX-04, FR-UX-05, FR-UX-06, FR-UX-07, FR-UX-12 |
-| UC-40: Confirm the e-mail address | FR-AU-12, FR-AU-13, FR-AU-14, FR-AU-17, FR-AU-18, FR-AU-20 |
-| UC-41: Request a password reset | FR-AU-15, FR-AU-17, FR-AU-18, FR-AU-20 |
-| UC-42: Complete a password reset | FR-AU-16, FR-AU-17, FR-AU-18, FR-AU-19 |
+| UC-40: Save the recovery codes | FR-AU-12, FR-AU-13, FR-AU-14, FR-AU-19 |
+| UC-41: Recover access with a recovery code | FR-AU-15, FR-AU-16, FR-AU-18, FR-AU-19 |
+| UC-42: Regenerate the recovery codes | FR-AU-14, FR-AU-17, FR-AU-19 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) appears at least
@@ -1662,17 +1650,16 @@ stateDiagram-v2
     Uninitialized --> LoggedOut : core initialized, account exists
     Uninitialized --> CoreUnavailable : initialization failed
     CoreUnavailable --> Uninitialized : retry
-    NoAccount --> Locked : signed up (UC-01)
-    LoggedOut --> Locked : login succeeds, e-mail unconfirmed (UC-02)
-    LoggedOut --> Authenticated : login succeeds, e-mail confirmed (UC-02)
+    NoAccount --> ShowingCodes : signed up (UC-01)
+    ShowingCodes --> Authenticated : codes acknowledged (UC-40)
+    ShowingCodes --> LoggedOut : sign out (UC-40 AF-04)
+    LoggedOut --> Authenticated : login succeeds (UC-02)
     LoggedOut --> LoggedOut : login rejected
-    LoggedOut --> LoggedOut : password reset completed (UC-41, UC-42)
-    Locked --> Authenticated : e-mail confirmed (UC-40)
-    Locked --> LoggedOut : sign out (UC-03)
-    Locked --> LoggedOut : core rejects a call as unauthorized
+    LoggedOut --> LoggedOut : password replaced with a code (UC-41)
+    Authenticated --> ShowingCodes : codes regenerated (UC-42)
     Authenticated --> LoggedOut : sign out (UC-03)
     Authenticated --> LoggedOut : core rejects a call as unauthorized
-    Locked --> [*] : application closed
+    ShowingCodes --> [*] : application closed
     Authenticated --> [*] : application closed
 ```
 

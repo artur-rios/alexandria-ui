@@ -22,13 +22,9 @@ abstract class Session with _$Session {
     /// When the session began.
     required DateTime establishedAt,
 
-    /// Whether the core reports the account's e-mail as confirmed. `false`
-    /// locks the catalog (FR-AU-12).
-    required bool emailConfirmed,
-
-    /// The account's address. Held because the confirmation prompt shows the
-    /// owner where to look, and because the login result does not echo it
-    /// back — it is what the owner typed.
+    /// The account's address. Held because the account screen shows it, and
+    /// because the login result does not echo it back — it is what the owner
+    /// typed.
     required String email,
   }) = _Session;
 
@@ -42,5 +38,5 @@ abstract class Session with _$Session {
   @override
   String toString() =>
       'Session(credential: <redacted>, establishedAt: $establishedAt, '
-      'emailConfirmed: $emailConfirmed, email: $email)';
+      'email: $email)';
 }

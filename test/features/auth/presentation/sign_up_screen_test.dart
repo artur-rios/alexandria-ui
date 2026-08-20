@@ -3,9 +3,9 @@ import 'package:alexandria_desktop/core/failures/core_status.dart';
 import 'package:alexandria_desktop/core/failures/failure.dart';
 import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_desktop/core/theme/breakpoints.dart';
-import 'package:alexandria_desktop/features/auth/presentation/catalog_locked_screen.dart';
 import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_desktop/features/auth/presentation/sign_up_screen.dart';
+import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -341,58 +341,19 @@ void main() {
     );
   });
 
-  // UC-01 AF-06: the account exists and the session is open, but the message
-  // the owner is waiting for is not coming.
-  group('AF-06 — the confirmation message could not be sent', () {
+  // UC-01 step 7. What used to be AF-06 — the account created but the
+  // confirmation message undeliverable — cannot happen: the core sends no
+  // message, and dropped confirmation entirely on 2026-08-18. Signing up
+  // opens a session and lands the owner in the shell.
+  group('a successful sign-up', () {
     testWidgets(
-      'GivenTheMessageCouldNotBeSent_WhenTheOwnerSignsUp_ThenTheCatalogIsLocked',
+      'GivenValidCredentials_WhenTheOwnerSignsUp_ThenTheCatalogIsReached',
       (tester) async {
-        await tester.pumpSignUpScreen(gateway: FakeAuthGateway.unconfirmed());
+        await tester.pumpSignUpScreen();
 
         await tester.signUp();
 
-        expect(find.byType(CatalogLockedScreen), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenTheMessageCouldNotBeSent_WhenTheOwnerSignsUp_ThenTheyAreToldItIsNotComing',
-      (tester) async {
-        await tester.pumpSignUpScreen(gateway: FakeAuthGateway.unconfirmed());
-
-        await tester.signUp();
-
-        expect(find.text(en.catalogLockedUndeliverable), findsOneWidget);
-      },
-    );
-
-    // The delivery failure is worth saying only when there was one. An owner
-    // whose message is on its way should simply be told to go and read it.
-    testWidgets(
-      'GivenTheMessageWasSent_WhenTheOwnerSignsUp_ThenNoDeliveryFailureIsShown',
-      (tester) async {
-        await tester.pumpSignUpScreen(
-          gateway: FakeAuthGateway.unconfirmed(confirmationSent: true),
-        );
-
-        await tester.signUp();
-
-        expect(find.byType(CatalogLockedScreen), findsOneWidget);
-        expect(find.text(en.catalogLockedUndeliverable), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenThePortugueseCatalog_WhenTheMessageCouldNotBeSent_ThenItIsTranslated',
-      (tester) async {
-        await tester.pumpSignUpScreen(
-          locale: const Locale('pt', 'BR'),
-          gateway: FakeAuthGateway.unconfirmed(),
-        );
-
-        await tester.signUp();
-
-        expect(find.text(pt.catalogLockedUndeliverable), findsOneWidget);
+        expect(find.byType(ShellScreen), findsOneWidget);
       },
     );
   });

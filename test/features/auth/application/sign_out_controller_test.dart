@@ -14,7 +14,7 @@ void main() {
   final session = Session(
     credential: 'a-real-looking-session-id',
     establishedAt: DateTime.utc(2026, 8, 19, 10),
-    emailConfirmed: true,
+
     email: 'owner@example.com',
   );
 

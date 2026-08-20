@@ -85,7 +85,7 @@ rather than a rewrite (see **BR-14**).
 | **BR-22** | Only one playback session is active at a time. Starting audio stops video and vice versa. | Two audio sources at once is never what the owner meant. |
 | **BR-23** | SOLID and feature-first layering are the baseline. The domain layer declares the interfaces; the FFI gateway, filesystem access, players, and local storage implement them and are injected. | Mandated design approach, and what makes a later HTTP transport a substitution rather than a rewrite. |
 | **BR-24** | The app is single-user. One account exists; there is no sharing, no profile switching, and no per-user data partition. Signing up creates that one account, and it is the only account there will ever be. | Inherited from the core (`BR-01` back-end). |
-| **BR-25** | An account whose e-mail is unconfirmed can sign in, but the library stays locked: the app presents the confirmation prompt and a resend action instead of the catalog, and issues no catalog call. | Confirmation must have an enforcement point, but a confirmation e-mail that never arrives must not lock the owner out of a library that sits on their own disk. |
+| **BR-25** | The recovery codes a new account receives are shown once, in place of the catalog, until the owner confirms having stored them. The app keeps none of them and offers no way back to a dismissed set. | They are the only way back into a library that sits on the owner's own disk, and the core keeps only their hashes — so the single moment they exist is the only moment to record them. |
 | **BR-26** | Confirmation codes and password-reset tokens are held only for the moment they are submitted. They are never persisted, never logged, and never placed in a URL the app constructs. | They are bearer credentials; anything that stores one turns a transient secret into a durable one. |
 | **BR-27** | The app never sends e-mail. It asks the core to send, and reports what the core says about the attempt. Delivery, templating, rate limiting, and token lifetime belong to the core. | The app has no mail transport and no business owning one; duplicating that logic would make two places able to disagree about whether a code is still valid. |
 | **BR-28** | A password reset that completes invalidates the current session. The owner logs in again with the new password. | A reset is the response to a credential the owner no longer trusts; leaving the old session alive defeats it. |
@@ -116,9 +116,9 @@ to give immediate feedback, and always surfaces the core's verdict as final.
 
 | Role | Operations |
 | --- | --- |
-| **Owner (authenticated, e-mail confirmed)** | Everything: browse, search, play, view, edit metadata and text content, rename, organize into collections, track watchlists and reading lists, soft-delete, restore, purge, purge-on-disk, manage library folders, run indexing, and change credentials, theme, and language. |
-| **Owner (authenticated, e-mail unconfirmed)** | Only the confirmation prompt, resending the confirmation, signing out, and the theme and language selection. No catalog operation is reachable. |
-| **Owner (not yet authenticated)** | Only sign-up, login, requesting a password reset, completing a password reset, and the theme and language selection. No catalog operation is reachable. |
+| **Owner (authenticated)** | Everything: browse, search, play, view, edit metadata and text content, rename, organize into collections, track watchlists and reading lists, soft-delete, restore, purge, purge-on-disk, manage library folders, run indexing, regenerate the recovery codes, and change credentials, theme, and language. |
+| **Owner (authenticated, codes on screen)** | Only acknowledging the recovery codes, signing out, and the theme and language selection. No catalog operation is reachable. |
+| **Owner (not yet authenticated)** | Only sign-up, login, recovering access with a recovery code, and the theme and language selection. No catalog operation is reachable. |
 
 There is a single role in three states. No administrative or read-only role
 exists.
@@ -128,20 +128,20 @@ exists.
 **Account**
 
 1. **Signed up** — no account exists in the core; the app collects an e-mail and
-   password and creates it. The account starts unconfirmed.
-2. **Unconfirmed** — the owner may sign in, but the library stays locked
-   (**BR-25**). The app shows the confirmation prompt and a resend action.
-3. **Confirmed** — the owner submits the code the core sent; the library unlocks.
-4. **Credentials changed** — through preferences with an active session, or
-   through a password reset from the login screen.
+   password and creates it. The core mints ten single-use recovery codes.
+2. **Showing codes** — the owner is signed in, but the library waits while the
+   codes are on screen (**BR-25**).
+3. **Open** — the owner confirms having stored them; the library opens.
+4. **Credentials changed** — through preferences with an active session, or by
+   spending a recovery code from the login screen.
 
 **Session**
 
 1. **Login** — credentials are verified by the core, which returns the session
    material the app holds in memory.
-2. **Locked** — authenticated but unconfirmed: the session exists and only the
-   confirmation operations are reachable.
-3. **Active** — confirmed; every call carries the session. A call rejected as
+2. **Showing codes** — authenticated, but the new account's recovery codes are
+   still on screen and only acknowledging them is reachable.
+3. **Active** — every call carries the session. A call rejected as
    unauthorized returns the owner to the login screen with the reason shown.
 4. **End** — the session dies with the app process, on an explicit sign-out, or
    when a password reset completes (**BR-28**).
@@ -185,7 +185,7 @@ changes a preference, and applied immediately without a restart.
   or rate limiting instead of the core's.
 - Revealing whether an e-mail address is registered, in a recovery flow or
   anywhere else.
-- Reaching the catalog while the account's e-mail is unconfirmed.
+- Reaching the catalog before a new account's recovery codes are acknowledged.
 - Deleting or moving any file on disk except through the core's explicit
   purge-on-disk operation, confirmed by the owner.
 - Re-encoding, transcoding, or otherwise rewriting audio, video, or image bytes.

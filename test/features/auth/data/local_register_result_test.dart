@@ -12,8 +12,7 @@ void main() {
   const corePayload =
       '{"success":true,"email":"owner@example.com",'
       '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50",'
-      '"emailConfirmed":false,"confirmationSent":false,'
-      '"confirmationError":"mail_not_configured"}';
+      '"recoveryCodes":["aaaa-bbbb","cccc-dddd"]}';
 
   test(
     'GivenTheCoresRegisterPayload_WhenItIsDecoded_ThenTheSessionIdIsRead',
@@ -35,50 +34,27 @@ void main() {
     expect(decode(corePayload).success, isTrue);
   });
 
-  // FR-AU-12. The core reports this on every auth response now, and the
-  // catalog lock is decided from it, so it is read rather than defaulted:
-  // guessing `true` would unlock the catalog and guessing `false` would lock
-  // the owner out of their own library.
+  // FR-AU-12: the codes are returned exactly once, so this payload is the
+  // only place they exist. Reading them is what makes UC-40 possible at all.
   test(
-    'GivenTheCoresRegisterPayload_WhenItIsDecoded_ThenTheAccountIsUnconfirmed',
+    'GivenTheCoresRegisterPayload_WhenItIsDecoded_ThenTheRecoveryCodesAreRead',
     () {
-      expect(decode(corePayload).emailConfirmed, isFalse);
+      expect(decode(corePayload).recoveryCodes, ['aaaa-bbbb', 'cccc-dddd']);
     },
   );
 
+  // Defaulted rather than required: an account the core created without codes
+  // is a state UC-40 AF-03 reports, not a payload this class should refuse.
   test(
-    'GivenAPayloadWithoutTheConfirmationField_WhenItIsDecoded_ThenItThrows',
+    'GivenAPayloadWithoutRecoveryCodes_WhenItIsDecoded_ThenTheyAreEmpty',
     () {
-      expect(
-        () => decode(
+      const payload =
           '{"success":true,"email":"owner@example.com",'
-          '"sessionId":"6f1c9d02","confirmationSent":true}',
-        ),
-        throwsA(anything),
-      );
+          '"sessionId":"6f1c9d02"}';
+
+      expect(decode(payload).recoveryCodes, isEmpty);
     },
   );
-
-  // UC-01 AF-06.
-  test('GivenTheConfirmationCouldNotBeSent_WhenItIsDecoded_ThenThatIsRead', () {
-    expect(decode(corePayload).confirmationSent, isFalse);
-  });
-
-  test(
-    'GivenTheConfirmationCouldNotBeSent_WhenItIsDecoded_ThenTheReasonIsRead',
-    () {
-      expect(decode(corePayload).confirmationError, 'mail_not_configured');
-    },
-  );
-
-  test('GivenTheConfirmationWasSent_WhenItIsDecoded_ThenThereIsNoReason', () {
-    const payload =
-        '{"success":true,"email":"owner@example.com",'
-        '"sessionId":"6f1c9d02","emailConfirmed":false,'
-        '"confirmationSent":true}';
-
-    expect(decode(payload).confirmationError, isNull);
-  });
 
   test('GivenAPayloadMissingTheSessionId_WhenItIsDecoded_ThenItThrows', () {
     expect(

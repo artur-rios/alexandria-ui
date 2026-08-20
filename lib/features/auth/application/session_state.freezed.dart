@@ -119,11 +119,11 @@ return active(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult Function( Session session,  ConfirmationDelivery? confirmation)?  active,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult Function( Session session)?  active,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case SessionAbsent() when absent != null:
 return absent(_that.endedBecause,_that.indexRunContinues);case SessionActive() when active != null:
-return active(_that.session,_that.confirmation);case _:
+return active(_that.session);case _:
   return orElse();
 
 }
@@ -141,11 +141,11 @@ return active(_that.session,_that.confirmation);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Failure? endedBecause,  bool indexRunContinues)  absent,required TResult Function( Session session,  ConfirmationDelivery? confirmation)  active,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Failure? endedBecause,  bool indexRunContinues)  absent,required TResult Function( Session session)  active,}) {final _that = this;
 switch (_that) {
 case SessionAbsent():
 return absent(_that.endedBecause,_that.indexRunContinues);case SessionActive():
-return active(_that.session,_that.confirmation);}
+return active(_that.session);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -159,11 +159,11 @@ return active(_that.session,_that.confirmation);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult? Function( Session session,  ConfirmationDelivery? confirmation)?  active,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult? Function( Session session)?  active,}) {final _that = this;
 switch (_that) {
 case SessionAbsent() when absent != null:
 return absent(_that.endedBecause,_that.indexRunContinues);case SessionActive() when active != null:
-return active(_that.session,_that.confirmation);case _:
+return active(_that.session);case _:
   return null;
 
 }
@@ -255,11 +255,10 @@ $FailureCopyWith<$Res>? get endedBecause {
 
 
 class SessionActive implements SessionState {
-  const SessionActive({required this.session, this.confirmation});
+  const SessionActive({required this.session});
   
 
  final  Session session;
- final  ConfirmationDelivery? confirmation;
 
 /// Create a copy of SessionState
 /// with the given fields replaced by the non-null parameter values.
@@ -271,16 +270,16 @@ $SessionActiveCopyWith<SessionActive> get copyWith => _$SessionActiveCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionActive&&(identical(other.session, session) || other.session == session)&&(identical(other.confirmation, confirmation) || other.confirmation == confirmation));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionActive&&(identical(other.session, session) || other.session == session));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,session,confirmation);
+int get hashCode => Object.hash(runtimeType,session);
 
 @override
 String toString() {
-  return 'SessionState.active(session: $session, confirmation: $confirmation)';
+  return 'SessionState.active(session: $session)';
 }
 
 
@@ -291,11 +290,11 @@ abstract mixin class $SessionActiveCopyWith<$Res> implements $SessionStateCopyWi
   factory $SessionActiveCopyWith(SessionActive value, $Res Function(SessionActive) _then) = _$SessionActiveCopyWithImpl;
 @useResult
 $Res call({
- Session session, ConfirmationDelivery? confirmation
+ Session session
 });
 
 
-$SessionCopyWith<$Res> get session;$ConfirmationDeliveryCopyWith<$Res>? get confirmation;
+$SessionCopyWith<$Res> get session;
 
 }
 /// @nodoc
@@ -308,11 +307,10 @@ class _$SessionActiveCopyWithImpl<$Res>
 
 /// Create a copy of SessionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? session = null,Object? confirmation = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? session = null,}) {
   return _then(SessionActive(
 session: null == session ? _self.session : session // ignore: cast_nullable_to_non_nullable
-as Session,confirmation: freezed == confirmation ? _self.confirmation : confirmation // ignore: cast_nullable_to_non_nullable
-as ConfirmationDelivery?,
+as Session,
   ));
 }
 
@@ -324,18 +322,6 @@ $SessionCopyWith<$Res> get session {
   
   return $SessionCopyWith<$Res>(_self.session, (value) {
     return _then(_self.copyWith(session: value));
-  });
-}/// Create a copy of SessionState
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$ConfirmationDeliveryCopyWith<$Res>? get confirmation {
-    if (_self.confirmation == null) {
-    return null;
-  }
-
-  return $ConfirmationDeliveryCopyWith<$Res>(_self.confirmation!, (value) {
-    return _then(_self.copyWith(confirmation: value));
   });
 }
 }

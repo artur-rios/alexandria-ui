@@ -8,7 +8,6 @@ void main() {
       Session(
         credential: credential,
         establishedAt: establishedAt,
-        emailConfirmed: true,
         email: 'owner@example.com',
       );
 

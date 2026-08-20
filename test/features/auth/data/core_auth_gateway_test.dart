@@ -260,24 +260,13 @@ void main() {
     );
   });
 
-  // FR-AU-12: the field is absent from the core's payload today and defaults to
-  // confirmed, but the branch that locks the catalog is implemented and works
-  // the moment the core publishes it (System Requirements §5.4).
-  group('the confirmation state', () {
+  // The core dropped e-mail confirmation on 2026-08-18: a login payload
+  // carries the session and nothing about the account's address. A payload
+  // that still names confirmation is an older core, and the gateway reads
+  // straight past it rather than acting on a flag nothing decides any more.
+  group('a payload from an older core', () {
     test(
-      'GivenTheCoreDoesNotReportConfirmationState_WhenTheOwnerLogsIn_ThenTheSessionIsConfirmed',
-      () async {
-        final outcome = await logInWith(FakeCoreClient());
-
-        expect(
-          (outcome as AuthenticatedOutcome).session.emailConfirmed,
-          isTrue,
-        );
-      },
-    );
-
-    test(
-      'GivenTheCoreReportsAnUnconfirmedEmail_WhenTheOwnerLogsIn_ThenTheSessionIsUnconfirmed',
+      'GivenAPayloadNamingConfirmation_WhenTheOwnerLogsIn_ThenItIsStillRead',
       () async {
         final outcome = await logInWith(
           FakeCoreClient(
@@ -291,8 +280,8 @@ void main() {
         );
 
         expect(
-          (outcome as AuthenticatedOutcome).session.emailConfirmed,
-          isFalse,
+          (outcome as AuthenticatedOutcome).session.credential,
+          '6f1c9d02',
         );
       },
     );

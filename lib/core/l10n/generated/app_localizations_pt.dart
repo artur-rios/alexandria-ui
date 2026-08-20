@@ -84,14 +84,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get loginSessionEndedTitle => 'Sua sessão foi encerrada';
 
   @override
-  String get catalogLockedTitle => 'Confirme seu endereço de e-mail';
-
-  @override
-  String catalogLockedBody(String email) {
-    return 'O Alexandria permanece bloqueado até que o endereço $email seja confirmado.';
-  }
-
-  @override
   String failureCoreLibraryNotLoaded(String path) {
     return 'Não foi possível carregar o núcleo do Alexandria a partir de $path.';
   }
@@ -187,10 +179,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get rejectionEmailUntrimmed =>
       'Remova os espaços ao redor do seu endereço de e-mail.';
-
-  @override
-  String get catalogLockedUndeliverable =>
-      'Não foi possível enviar a mensagem de confirmação, então ela não está a caminho. O Alexandria ainda não consegue enviar e-mails.';
 
   @override
   String get failureUnexpected => 'Algo deu errado no Alexandria.';

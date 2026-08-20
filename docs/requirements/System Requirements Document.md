@@ -51,7 +51,7 @@ this document.
 | **Viewer registry** | The registration table binding a file type to the component that presents it. |
 | **Breakpoint** | A window-width threshold at which the shell changes layout. |
 | **Session credential** | The material the core returns on successful login, presented on every subsequent call. Held in memory only. |
-| **Locked session** | An authenticated session whose account e-mail is unconfirmed. It reaches the confirmation operations and nothing else. |
+| **Unacknowledged session** | An authenticated session whose new account's recovery codes are still on screen. It reaches the acknowledgement and sign-out, and nothing else. |
 | **Confirmation code** | The value the core sends to the account's e-mail to prove the owner controls it. Submitted once, never stored. |
 | **Reset token** | The value the core sends to the account's e-mail to authorize replacing the password. Submitted once, never stored. |
 | **Perceptible operation** | Any operation that may take longer than 150 ms — every core call, every disk read, and every media load. |
@@ -133,16 +133,15 @@ replace the FFI one without touching a screen.
 | FR-AU-08 | The system shall return the owner to the login screen, stating the reason, when the core rejects a call as unauthorized. |
 | FR-AU-09 | The system shall sign the owner out on request, discarding the session credential and stopping any active playback. |
 | FR-AU-10 | The system shall allow the owner to change the stored credentials while a session is active, requiring the new password to be entered twice. |
-| FR-AU-11 | The system shall never write a plaintext password, a session credential, a confirmation code, or a reset token to disk, to a log, or to any diagnostic output. |
-| FR-AU-12 | The system shall present the confirmation prompt in place of the catalog, and issue no catalog call, while the authenticated account's e-mail is unconfirmed. |
-| FR-AU-13 | The system shall confirm the account's e-mail through the core using the code the owner received. |
-| FR-AU-14 | The system shall request a new confirmation message through the core on the owner's request, and shall present the core's response — including a refusal to resend yet — as a readable message. |
-| FR-AU-15 | The system shall request a password reset through the core for an entered e-mail address, and shall report the same outcome whether or not that address is registered. |
-| FR-AU-16 | The system shall complete a password reset through the core with the token the owner received and a new password entered twice and matching. |
-| FR-AU-17 | The system shall present a rejected confirmation code or reset token — invalid, already used, or expired — as a readable explanation together with the action that obtains a new one. |
-| FR-AU-18 | The system shall retain a confirmation code or a reset token only for the duration of the call that submits it, and shall never place either in a link, a log, or a stored value. |
-| FR-AU-19 | The system shall discard the active session and return to the login screen when a password reset completes. |
-| FR-AU-20 | The system shall send no e-mail itself, and shall neither generate nor judge the validity, expiry, or rate limiting of any confirmation code or reset token. |
+| FR-AU-11 | The system shall never write a plaintext password, a session credential, or a recovery code to disk, to a log, or to any diagnostic output. |
+| FR-AU-12 | The system shall present the recovery codes the core returns exactly once, in place of the catalog, and shall require the owner to acknowledge having stored them before the catalog is reached. |
+| FR-AU-13 | The system shall never store a recovery code, and shall offer no way to see a set again once it has been dismissed. |
+| FR-AU-14 | The system shall report how many recovery codes remain unconsumed, as the core reports it. |
+| FR-AU-15 | The system shall replace a forgotten password through the core with a recovery code and a new password entered twice and matching, without an active session. |
+| FR-AU-16 | The system shall present a rejected recovery code as a readable explanation that distinguishes one the core does not recognise from one already consumed. |
+| FR-AU-17 | The system shall replace the whole recovery-code set through the core on the authenticated owner's request, after a confirmation stating that every existing code stops working. |
+| FR-AU-18 | The system shall discard the active session and return to the login screen when a password is replaced through a recovery code. |
+| FR-AU-19 | The system shall neither generate, validate, nor consume a recovery code itself, and shall neither count what remains nor decide when a set should be replaced. |
 
 ### 3.2 Library Sources and Indexing — `LB`
 
@@ -412,8 +411,8 @@ in the local settings store.
 | --- | --- | --- | --- |
 | credential | string | Required while authenticated | The material the core returned at login. Never persisted, never logged. |
 | establishedAt | timestamp | Required | When the session began. |
-| emailConfirmed | boolean | Required | Whether the core reports the account's e-mail as confirmed. `false` locks the catalog (`FR-AU-12`). |
-| email | string | Required | The account's address, shown on the confirmation prompt so the owner knows where to look. |
+| recoveryCodesRemaining | integer | Optional | How many recovery codes the core reports as unconsumed, shown where the owner can act on it (`FR-AU-14`). Absent when the core does not report it, which is a missing number and not a zero. |
+| email | string | Required | The account's address, shown in the account section of preferences. |
 
 A confirmation code and a reset token are deliberately **absent** from this table
 and from every other: they exist only as arguments to the call that submits them
@@ -453,9 +452,9 @@ does not already publish.
 | Screen | Purpose | Requirements |
 | --- | --- | --- |
 | Sign-up | Create the single account with an e-mail and password | FR-AU-01, FR-AU-02, FR-AU-03 |
-| E-mail confirmation | Submit the confirmation code, or resend it | FR-AU-12, FR-AU-13, FR-AU-14, FR-AU-17 |
+| Recovery codes | Present a new set once, and take the owner's acknowledgement | FR-AU-12, FR-AU-13 |
 | Login | Authenticate the owner | FR-AU-04, FR-AU-05, FR-AU-07 |
-| Password recovery | Request a reset, and complete it with the token and a new password | FR-AU-15, FR-AU-16, FR-AU-17, FR-AU-19 |
+| Password recovery | Spend a recovery code on a new password | FR-AU-15, FR-AU-16, FR-AU-18 |
 | Home dashboard | Recent items, items in progress, counts, last run outcome | FR-CT-11 |
 | Library sources | Register, scan, refresh, and unregister folders | FR-LB-01 … FR-LB-11 |
 | Catalog listing | Type-filtered listing in three layouts, with search, filters, and sorting | FR-CT-01 … FR-CT-04, FR-CT-06 … FR-CT-10, FR-CT-12 |
@@ -485,7 +484,7 @@ Calls are grouped by the gateway that owns them.
 | --- | --- | --- |
 | Bootstrap | `alexandria_index_init`, `alexandria_version`, `alexandria_health_status_code` | FR-LB-03, and the startup checks in [Operations & Infrastructure §5](Operations%20%26%20Infrastructure%20Document.md) |
 | Auth | `alexandria_auth_local_login`, `alexandria_auth_local_set_credentials` | FR-AU-01, FR-AU-04, FR-AU-10 |
-| Auth — pending core support (see §5.4) | Account creation, e-mail confirmation, confirmation resend, reset request, reset completion | FR-AU-02, FR-AU-12 … FR-AU-19 |
+| Auth — recovery codes | `alexandria_auth_local_register`, `alexandria_auth_local_account`, `alexandria_auth_local_redeem_recovery_code`, `alexandria_auth_local_regenerate_recovery_codes` | FR-AU-02, FR-AU-12 … FR-AU-19 |
 | Indexing | `alexandria_index_start`, `alexandria_index_refresh_start`, `alexandria_index_count_files`, `alexandria_index_count_missing`, `alexandria_index_files_json` | FR-LB-05 … FR-LB-09, FR-LC-08 |
 | Files | `alexandria_files_list`, `alexandria_file_get_by_uuid` | FR-CT-02, FR-CT-05 … FR-CT-08, FR-CT-11 |
 | File editing | `alexandria_file_edit_metadata`, `alexandria_file_rename`, `alexandria_file_read_content`, `alexandria_file_edit_content` | FR-ME-01, FR-ME-02, FR-ME-04, FR-ME-06, FR-ME-08 |
@@ -507,31 +506,26 @@ Calls are grouped by the gateway that owns them.
 The application performs no other filesystem write. Renaming, content saving, and
 file deletion happen through the core.
 
-### 5.4 Pending Core Operations
+### 5.4 Account Recovery
 
-The core's published FFI surface exposes local login and set-credentials. It does
-**not** yet expose account creation as a distinct operation, e-mail confirmation,
-confirmation resend, reset request, or reset completion. Those capabilities are
-planned on the core, and the requirements that depend on them are specified here
-so the front-end work is defined and traceable — not so it can be built against
-something that does not exist.
+The core does not verify the account's e-mail address and never writes to it:
+the address is a login identifier and nothing more. An owner who cannot sign in
+gets back in with a **recovery code** — one of ten single-use values the core
+mints at registration, returns exactly once, and stores only as hashes.
 
-| Capability | Front-end requirements | What the front-end needs from it |
+That shapes what this application does and, more importantly, what it does not.
+It presents a set once and takes an acknowledgement (`FR-AU-12`); it never
+stores one and never shows a set twice (`FR-AU-13`); it submits a code the owner
+typed and explains what the core answers (`FR-AU-15`, `FR-AU-16`). It does not
+generate codes, judge them, count them, or decide when a set is running low —
+all of that is the core's (`FR-AU-19`), and `BR-02` is why.
+
+| Capability | Core call | Front-end requirements |
 | --- | --- | --- |
-| Create the account | FR-AU-02 | Accept an e-mail and password, create the single account in an unconfirmed state, and trigger the confirmation message. |
-| Report confirmation state | FR-AU-12 | Report whether the authenticated account's e-mail is confirmed, so the application knows whether to unlock the catalog. |
-| Confirm the e-mail | FR-AU-13, FR-AU-17 | Accept a code, confirm the account, and distinguish invalid from already-used from expired. |
-| Resend the confirmation | FR-AU-14 | Send a new confirmation message, and report a refusal to resend yet as its own outcome. |
-| Request a password reset | FR-AU-15 | Accept an e-mail, send a reset message when it is registered, and return an outcome that does not distinguish registered from unregistered. |
-| Complete a password reset | FR-AU-16, FR-AU-17, FR-AU-19 | Accept a token and a new password, replace the credentials, and distinguish invalid from already-used from expired. |
-
-Two constraints bind this table. First, **[BR-02](../initial/Business%20Rules.md)
-still holds**: no requirement above is implemented by working around the missing
-call, by reaching past the core, or by the application taking on token or mail
-behavior of its own. Each is implemented when its call is published, and its use
-case stays blocked until then. Second, the core owns e-mail delivery, token
-generation, token lifetime, and rate limiting in full (`FR-AU-20`); the
-application submits what the owner typed and explains what the core answers.
+| Create the account and mint the first set | `alexandria_auth_local_register` | FR-AU-02, FR-AU-12 |
+| Report the address and how many codes remain | `alexandria_auth_local_account` | FR-AU-14 |
+| Replace a forgotten password with a code | `alexandria_auth_local_redeem_recovery_code` | FR-AU-15, FR-AU-16, FR-AU-18 |
+| Replace the whole set | `alexandria_auth_local_regenerate_recovery_codes` | FR-AU-17 |
 
 The performance thresholds below are the project's initial targets, measured on
 the reference machine defined in
@@ -565,17 +559,16 @@ after release.
 
 ## 7. Authorization Matrix
 
-There is one actor, in one of three states: no active session, authenticated with
-the e-mail still unconfirmed, and authenticated and confirmed.
+There is one actor, in one of three states: no active session, authenticated
+with the new account's recovery codes still on screen, and authenticated.
 
-| Operation | Confirmed | Unconfirmed | No session |
+| Operation | Authenticated | Showing codes | No session |
 | --- | --- | --- | --- |
 | Sign up | ❌ | ❌ | ⚠️ Only when no account exists yet |
 | Log in | ⚠️ Already authenticated | ⚠️ Already authenticated | ✅ |
-| Confirm the e-mail | ❌ Already confirmed | ✅ | ❌ |
-| Resend the confirmation | ❌ Already confirmed | ✅ | ❌ |
-| Request a password reset | ❌ | ❌ | ✅ |
-| Complete a password reset | ❌ | ❌ | ✅ |
+| Acknowledge the recovery codes | ❌ None on screen | ✅ | ❌ |
+| Recover access with a recovery code | ❌ | ❌ | ✅ |
+| Regenerate the recovery codes | ✅ | ❌ Already showing a set | ❌ |
 | Change credentials | ✅ | ❌ | ❌ |
 | Sign out | ✅ | ✅ | ❌ |
 | Register, scan, refresh, or unregister a library folder | ✅ | ❌ | ❌ |
@@ -594,14 +587,15 @@ the e-mail still unconfirmed, and authenticated and confirmed.
 Legend: ✅ allowed · ⚠️ allowed under the stated condition · ❌ denied.
 
 The denials are enforced twice, and deliberately so: the application issues no
-catalog call without a confirmed session (FR-AU-07, FR-AU-12), and the core
+catalog call without an active session (FR-AU-07), and the core
 rejects any call that arrives without a valid credential regardless. The
 interface is a convenience, not the boundary.
 
-The unconfirmed column is where that distinction earns its keep. The application
-locks the catalog there as a product decision (`BR-25`); whether the core also
-refuses catalog calls from an unconfirmed account is the core's to decide, and
-the application's behavior does not depend on the answer.
+The showing-codes column is where that distinction earns its keep. The core
+would answer those calls perfectly well — the session is valid the moment
+registration returns it. Holding the catalog back until the owner has stored
+their codes is this application's decision (`BR-25`), and the one moment it can
+be made: the codes exist in that response and nowhere else.
 
 ---
 
@@ -652,7 +646,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 
 | Feature | Requirements |
 | --- | --- |
-| F-01 Authentication and session | FR-AU-01 through FR-AU-20 |
+| F-01 Authentication and session | FR-AU-01 through FR-AU-19 |
 | F-02 Library sources and indexing | FR-LB-01 through FR-LB-11 |
 | F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-12 |
 | F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
@@ -667,7 +661,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 
 | Domain area | Code | Requirement IDs |
 | --- | --- | --- |
-| Authentication and session | `AU` | FR-AU-01 … FR-AU-20 |
+| Authentication and session | `AU` | FR-AU-01 … FR-AU-19 |
 | Library sources and indexing | `LB` | FR-LB-01 … FR-LB-11 |
 | Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-12 |
 | Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
@@ -688,7 +682,7 @@ appears exactly once.
 | BR-01 The application is a client | FR-ME-03, FR-LC-07, NFR-15 |
 | BR-02 No operation the core does not expose | §5.2, NFR-17 |
 | BR-03 Every call carries the session | FR-AU-06, FR-AU-07 |
-| BR-04 Plaintext password never persisted or logged | FR-AU-11, FR-AU-18, NFR-11 |
+| BR-04 Plaintext password never persisted or logged | FR-AU-11, FR-AU-13, NFR-11 |
 | BR-05 Session in memory for the run only | FR-AU-05, FR-AU-09 |
 | BR-06 The application writes only text content and its own settings | §5.3, FR-UX-12 |
 | BR-07 Every destructive action is confirmed | FR-LC-01, FR-LC-05, FR-OG-03, FR-TR-02, FR-TR-09, FR-UX-10 |
@@ -709,7 +703,7 @@ appears exactly once.
 | BR-22 One playback session at a time | FR-PL-08 |
 | BR-23 SOLID and domain-owned interfaces | NFR-17 |
 | BR-24 Single user, one account | §7, FR-AU-01, FR-AU-02 |
-| BR-25 Unconfirmed accounts sign in but the library stays locked | FR-AU-12, FR-AU-13, FR-AU-14 |
+| BR-25 Recovery codes are shown once, before the library opens | FR-AU-12, FR-AU-13 |
 | BR-26 Codes and tokens never persisted | FR-AU-11, FR-AU-18 |
 | BR-27 The application never sends e-mail | FR-AU-14, FR-AU-20 |
 | BR-28 A completed reset ends the session | FR-AU-19 |
