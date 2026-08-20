@@ -901,4 +901,19 @@ class AppLocalizationsPt extends AppLocalizations {
   String audioResumePrompt(String position) {
     return 'Você parou esta faixa em $position.';
   }
+
+  @override
+  String get audioPlayer => 'Player';
+
+  @override
+  String get audioOpenPlayer => 'Abrir o player';
+
+  @override
+  String get albumMediumVinyl => 'Um disco de vinil girando em uma vitrola';
+
+  @override
+  String get albumMediumTape => 'Uma fita cassete girando em um toca-fitas';
+
+  @override
+  String get albumMediumDisc => 'Um disco girando em um player';
 }

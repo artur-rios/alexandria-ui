@@ -245,6 +245,8 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
         tracks: tracks,
         kind: kind,
         label: label,
+        // What UC-21 picks the medium from.
+        year: entry.metadata.year,
         index: startIndex < 0 ? 0 : startIndex,
       ),
       at: Duration.zero,
