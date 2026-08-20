@@ -1368,4 +1368,54 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get recoveryCodesNone =>
       'Sua conta foi criada, mas nenhum código de recuperação veio com ela. Gere um conjunto nas preferências antes de precisar de um.';
+
+  @override
+  String get recoveryTitle => 'Recuperar acesso';
+
+  @override
+  String get recoveryOpen => 'Não consigo entrar';
+
+  @override
+  String get recoveryExplanation =>
+      'Digite um dos códigos de recuperação que você guardou quando a conta foi criada e escolha uma nova senha. O código é consumido ao ser usado, e todas as sessões abertas são encerradas.';
+
+  @override
+  String get recoveryCodeLabel => 'Código de recuperação';
+
+  @override
+  String get recoveryNewPassword => 'Nova senha';
+
+  @override
+  String get recoveryConfirmPassword => 'Repita a nova senha';
+
+  @override
+  String get recoveryCodeMissing => 'Digite um código de recuperação.';
+
+  @override
+  String get recoveryPasswordMissing => 'Digite uma nova senha.';
+
+  @override
+  String get recoverySubmit => 'Substituir a senha';
+
+  @override
+  String get recoveryCodeUnknown =>
+      'Esse não é um dos códigos de recuperação desta conta. Verifique e tente novamente.';
+
+  @override
+  String get recoveryCodeUsed =>
+      'Esse código de recuperação já foi usado. Cada um funciona uma vez — tente outro da sua lista.';
+
+  @override
+  String get recoveryRefused =>
+      'Não foi possível substituir a senha. Verifique o código e tente novamente.';
+
+  @override
+  String get recoveryDone => 'Sua senha foi substituída';
+
+  @override
+  String get recoveryDoneExplanation =>
+      'O código usado foi consumido e todas as sessões abertas foram encerradas. Entre com a nova senha.';
+
+  @override
+  String get recoveryBackToLogin => 'Voltar para entrar';
 }

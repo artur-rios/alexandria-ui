@@ -231,7 +231,7 @@ and nesting stays a change of data rather than of interface.
 | [#4](https://github.com/artur-rios/alexandria-desktop-front/issues/4) | UC-03 — Sign out — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#5](https://github.com/artur-rios/alexandria-desktop-front/issues/5) | UC-04 — Change credentials — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#41](https://github.com/artur-rios/alexandria-desktop-front/issues/41) | UC-40 — Save the recovery codes — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#42](https://github.com/artur-rios/alexandria-desktop-front/issues/42) | UC-41 — Recover access with a recovery code | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#42](https://github.com/artur-rios/alexandria-desktop-front/issues/42) | UC-41 — Recover access with a recovery code — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#43](https://github.com/artur-rios/alexandria-desktop-front/issues/43) | UC-42 — Regenerate the recovery codes | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-03 — Library sources and indexing

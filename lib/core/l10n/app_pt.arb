@@ -390,5 +390,20 @@
   "recoveryCodesCopy": "Copiar os códigos",
   "recoveryCodesCopied": "Copiados para a área de transferência.",
   "recoveryCodesAcknowledge": "Eu os guardei",
-  "recoveryCodesNone": "Sua conta foi criada, mas nenhum código de recuperação veio com ela. Gere um conjunto nas preferências antes de precisar de um."
+  "recoveryCodesNone": "Sua conta foi criada, mas nenhum código de recuperação veio com ela. Gere um conjunto nas preferências antes de precisar de um.",
+  "recoveryTitle": "Recuperar acesso",
+  "recoveryOpen": "Não consigo entrar",
+  "recoveryExplanation": "Digite um dos códigos de recuperação que você guardou quando a conta foi criada e escolha uma nova senha. O código é consumido ao ser usado, e todas as sessões abertas são encerradas.",
+  "recoveryCodeLabel": "Código de recuperação",
+  "recoveryNewPassword": "Nova senha",
+  "recoveryConfirmPassword": "Repita a nova senha",
+  "recoveryCodeMissing": "Digite um código de recuperação.",
+  "recoveryPasswordMissing": "Digite uma nova senha.",
+  "recoverySubmit": "Substituir a senha",
+  "recoveryCodeUnknown": "Esse não é um dos códigos de recuperação desta conta. Verifique e tente novamente.",
+  "recoveryCodeUsed": "Esse código de recuperação já foi usado. Cada um funciona uma vez — tente outro da sua lista.",
+  "recoveryRefused": "Não foi possível substituir a senha. Verifique o código e tente novamente.",
+  "recoveryDone": "Sua senha foi substituída",
+  "recoveryDoneExplanation": "O código usado foi consumido e todas as sessões abertas foram encerradas. Entre com a nova senha.",
+  "recoveryBackToLogin": "Voltar para entrar"
 }

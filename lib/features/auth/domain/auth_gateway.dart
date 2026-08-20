@@ -33,6 +33,20 @@ sealed class AuthOutcome with _$AuthOutcome {
   const factory AuthOutcome.failed({required Failure failure}) = FailedOutcome;
 }
 
+/// What redeeming a recovery code produced (UC-41 main flow step 5).
+@freezed
+sealed class RecoveryOutcome with _$RecoveryOutcome {
+  /// The core replaced the password, spent the code, and invalidated every
+  /// session.
+  const factory RecoveryOutcome.recovered() = RecoveredOutcome;
+
+  /// The core refused, and the stored password is unchanged (AF-02, AF-03,
+  /// AF-04). The code is spent only on success — the core does not consume it
+  /// for a redemption that failed for any other reason.
+  const factory RecoveryOutcome.failed({required Failure failure}) =
+      FailedRecoveryOutcome;
+}
+
 /// The application's view of the core's authentication operations (IR-02,
 /// NFR-17).
 ///
@@ -78,6 +92,17 @@ abstract interface class AuthGateway {
     required String password,
     required String passwordConfirmation,
     required String credential,
+  });
+
+  /// Replaces a forgotten password with a recovery code (FR-AU-15, UC-41).
+  ///
+  /// Takes no session credential: this is the call for an owner who cannot
+  /// sign in. Every plaintext is used for the duration of this call and not
+  /// retained (FR-AU-11).
+  Future<RecoveryOutcome> redeemRecoveryCode({
+    required String code,
+    required String newPassword,
+    required String passwordConfirmation,
   });
 
   /// Whether the core already holds an account (FR-AU-01).

@@ -218,6 +218,52 @@ class CoreAuthGateway implements AuthGateway {
     return const CredentialChangeOutcome.changed();
   }
 
+  @override
+  Future<RecoveryOutcome> redeemRecoveryCode({
+    required String code,
+    required String newPassword,
+    required String passwordConfirmation,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.authLocalRedeemRecoveryCode(
+        jsonEncode({
+          'code': code.trim(),
+          'newPassword': newPassword,
+          'passwordConfirmation': passwordConfirmation,
+        }),
+      );
+    } on CoreCallException {
+      return const RecoveryOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.auth,
+          code: AuthLoginStatus.callFailedCode,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.auth.isOk(response.status)) {
+      // AF-02, AF-03, and AF-04 all land here and are told apart by the
+      // reason code the core named — `recovery_code_unknown`,
+      // `recovery_code_used`, or one of the password-policy codes. The
+      // application does not judge any of them (FR-AU-19); it reads which one
+      // and says it in the owner's language.
+      return RecoveryOutcome.failed(
+        failure: mapCoreStatus(
+          CoreStatusFamily.auth,
+          response.status,
+          rejection: readCoreRejection(response.json),
+        ),
+      );
+    }
+
+    // The core answers with the account body and how many codes are left.
+    // Neither is read: the session is gone — the core invalidated every one —
+    // so the owner is going back to the login screen regardless, and a
+    // payload change must not turn a successful recovery into a failure.
+    return const RecoveryOutcome.recovered();
+  }
+
   /// Answers FR-AU-01 by asking the core to authenticate an address that
   /// cannot be registered.
   ///

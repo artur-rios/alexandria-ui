@@ -1365,4 +1365,54 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get recoveryCodesNone =>
       'Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.';
+
+  @override
+  String get recoveryTitle => 'Recover access';
+
+  @override
+  String get recoveryOpen => 'I cannot sign in';
+
+  @override
+  String get recoveryExplanation =>
+      'Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.';
+
+  @override
+  String get recoveryCodeLabel => 'Recovery code';
+
+  @override
+  String get recoveryNewPassword => 'New password';
+
+  @override
+  String get recoveryConfirmPassword => 'Repeat the new password';
+
+  @override
+  String get recoveryCodeMissing => 'Enter a recovery code.';
+
+  @override
+  String get recoveryPasswordMissing => 'Enter a new password.';
+
+  @override
+  String get recoverySubmit => 'Replace the password';
+
+  @override
+  String get recoveryCodeUnknown =>
+      'That is not one of this account\'s recovery codes. Check it and try again.';
+
+  @override
+  String get recoveryCodeUsed =>
+      'That recovery code has already been used. Each one works once — try another from your list.';
+
+  @override
+  String get recoveryRefused =>
+      'The password could not be replaced. Check the code and try again.';
+
+  @override
+  String get recoveryDone => 'Your password was replaced';
+
+  @override
+  String get recoveryDoneExplanation =>
+      'The code you used is spent, and every open session was signed out. Sign in with the new password.';
+
+  @override
+  String get recoveryBackToLogin => 'Back to sign in';
 }
