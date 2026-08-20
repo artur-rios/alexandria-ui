@@ -1247,4 +1247,38 @@ class AppLocalizationsPt extends AppLocalizations {
   String deleteBookmarkMessage(String title) {
     return 'Ocultar $title dos seus favoritos? Ele continua restaurável.';
   }
+
+  @override
+  String get deletedItemsTitle => 'Itens excluídos';
+
+  @override
+  String get deletedItemsOpen => 'Itens excluídos';
+
+  @override
+  String get deletedItemsNone => 'Nada foi excluído.';
+
+  @override
+  String get restoreRecord => 'Restaurar';
+
+  @override
+  String get restoreNotFound =>
+      'Esse registro não pode ser restaurado — ele sumiu ou o prazo passou.';
+
+  @override
+  String get retentionElapsed =>
+      'Não é mais restaurável — só pode ser expurgado.';
+
+  @override
+  String get retentionUnknown => 'Restaurável';
+
+  @override
+  String retentionRemaining(num days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Restaurável por mais $days dias',
+      one: 'Restaurável por mais 1 dia',
+    );
+    return '$_temp0';
+  }
 }

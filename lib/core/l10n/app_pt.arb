@@ -359,5 +359,13 @@
   "deleteAlreadyDeleted": "Esse registro já havia sido excluído.",
   "deleteNotFound": "Esse registro não está mais lá.",
   "deleteFileMessage": "Ocultar {name} da biblioteca? Ele continua restaurável.",
-  "deleteBookmarkMessage": "Ocultar {title} dos seus favoritos? Ele continua restaurável."
+  "deleteBookmarkMessage": "Ocultar {title} dos seus favoritos? Ele continua restaurável.",
+  "deletedItemsTitle": "Itens excluídos",
+  "deletedItemsOpen": "Itens excluídos",
+  "deletedItemsNone": "Nada foi excluído.",
+  "restoreRecord": "Restaurar",
+  "restoreNotFound": "Esse registro não pode ser restaurado — ele sumiu ou o prazo passou.",
+  "retentionElapsed": "Não é mais restaurável — só pode ser expurgado.",
+  "retentionUnknown": "Restaurável",
+  "retentionRemaining": "{days, plural, =1{Restaurável por mais 1 dia} other{Restaurável por mais {days} dias}}"
 }

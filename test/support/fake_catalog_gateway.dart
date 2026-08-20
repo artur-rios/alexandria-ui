@@ -183,6 +183,7 @@ CatalogFile aFile({
   String contentHash = 'a-content-hash',
   DateTime? indexedAt,
   DateTime? missingAt,
+  DateTime? deletedAt,
 }) => CatalogFile(
   uuid: uuid,
   name: name,
@@ -194,4 +195,5 @@ CatalogFile aFile({
   contentHash: contentHash,
   indexedAt: indexedAt,
   missingAt: missingAt,
+  deletedAt: deletedAt,
 );

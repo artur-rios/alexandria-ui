@@ -1245,4 +1245,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String deleteBookmarkMessage(String title) {
     return 'Hide $title from your bookmarks? It stays restorable.';
   }
+
+  @override
+  String get deletedItemsTitle => 'Deleted items';
+
+  @override
+  String get deletedItemsOpen => 'Deleted items';
+
+  @override
+  String get deletedItemsNone => 'Nothing has been deleted.';
+
+  @override
+  String get restoreRecord => 'Restore';
+
+  @override
+  String get restoreNotFound =>
+      'That record cannot be restored — it is gone, or its window has passed.';
+
+  @override
+  String get retentionElapsed =>
+      'No longer restorable — it can only be purged.';
+
+  @override
+  String get retentionUnknown => 'Restorable';
+
+  @override
+  String retentionRemaining(num days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Restorable for $days more days',
+      one: 'Restorable for 1 more day',
+    );
+    return '$_temp0';
+  }
 }

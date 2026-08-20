@@ -307,6 +307,7 @@ class CoreCatalogGateway implements CatalogGateway {
 
     final missingAt = row['missingAt'] as String?;
     final indexedAt = row['indexedAt'] as String?;
+    final deletedAt = row['deletedAt'] as String?;
 
     return CatalogFile(
       uuid: row['uuid'] as String,
@@ -316,6 +317,7 @@ class CoreCatalogGateway implements CatalogGateway {
       contentHash: row['contentHash'] as String? ?? '',
       indexedAt: indexedAt == null ? null : DateTime.tryParse(indexedAt),
       missingAt: missingAt == null ? null : DateTime.tryParse(missingAt),
+      deletedAt: deletedAt == null ? null : DateTime.tryParse(deletedAt),
     );
   }
 

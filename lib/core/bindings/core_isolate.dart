@@ -429,6 +429,28 @@ class CoreIsolate {
         ),
       ),
 
+      'fileRestore' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_file_restore(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'bookmarkRestore' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_bookmark_restore(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       'fileSoftDelete' => withNativeString(
         arguments.first! as String,
         (uuid) => withNativeString(arguments[1]! as String, (token) {

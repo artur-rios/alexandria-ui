@@ -40,6 +40,14 @@ abstract class CatalogFile with _$CatalogFile {
     /// that answers without it must not make the listing unreadable.
     DateTime? indexedAt,
 
+    /// When the record was soft-deleted.
+    ///
+    /// What the deleted view counts the retention window from (UC-34,
+    /// FR-LC-03). `null` on an active record, and on a deleted one the core
+    /// answered without a timestamp — which reads as "restorable, for an
+    /// unknown while" rather than as "not restorable".
+    DateTime? deletedAt,
+
     /// When re-indexing last found the on-disk file gone.
     ///
     /// Orthogonal to the soft-delete lifecycle: a missing file is still an

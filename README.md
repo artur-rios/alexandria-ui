@@ -329,7 +329,7 @@ untested.
 | Issue | Work | Spec |
 |---|---|---|
 | [#34](https://github.com/artur-rios/alexandria-desktop-front/issues/34) | UC-33 — Delete an item — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#35](https://github.com/artur-rios/alexandria-desktop-front/issues/35) | UC-34 — Browse and restore deleted items | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#35](https://github.com/artur-rios/alexandria-desktop-front/issues/35) | UC-34 — Browse and restore deleted items — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#36](https://github.com/artur-rios/alexandria-desktop-front/issues/36) | UC-35 — Purge a record | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#37](https://github.com/artur-rios/alexandria-desktop-front/issues/37) | UC-36 — Purge a file on disk | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#38](https://github.com/artur-rios/alexandria-desktop-front/issues/38) | UC-37 — Review missing files | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |

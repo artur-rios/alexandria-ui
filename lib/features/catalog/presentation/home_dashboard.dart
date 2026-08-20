@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../lifecycle/presentation/deleted_items_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/catalog_file.dart';
@@ -44,7 +45,33 @@ class HomeDashboard extends ConsumerWidget {
         _CountsSection(),
         SizedBox(height: AppSpacing.lg),
         _LastRunSection(),
+        SizedBox(height: AppSpacing.lg),
+        _DeletedItemsSection(),
       ],
+    );
+  }
+}
+
+/// Where the deleted-items view is reached from (UC-34 main flow step 1).
+///
+/// On the dashboard rather than in the navigation panel: what is deleted spans
+/// every type and the bookmarks alike, so it is not an area of the library
+/// (FR-CT-01) — and the dashboard is the one screen that is already about the
+/// library as a whole.
+class _DeletedItemsSection extends StatelessWidget {
+  const _DeletedItemsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        onPressed: () => DeletedItemsScreen.show(context),
+        icon: const Icon(Icons.delete_outline),
+        label: Text(l10n.deletedItemsOpen),
+      ),
     );
   }
 }

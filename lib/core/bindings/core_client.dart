@@ -166,6 +166,13 @@ abstract interface class CoreClient {
   /// is untouched: only the catalog row changes.
   Future<CoreJsonResponse> fileSoftDelete(String uuid, String token);
 
+  /// Restores the file [uuid] identifies through `alexandria_file_restore`
+  /// (FR-LC-04, UC-34).
+  ///
+  /// The core enforces the retention window: a record past it comes back as
+  /// `FILE_ERR_NOT_FOUND`.
+  Future<CoreJsonResponse> fileRestore(String uuid, String token);
+
   /// Creates a browser bookmark through `alexandria_bookmark_create`
   /// (FR-OG-08, UC-28).
   Future<CoreJsonResponse> bookmarkCreate(String jsonBody, String token);
@@ -186,6 +193,10 @@ abstract interface class CoreClient {
   /// Soft-deletes the bookmark [uuid] identifies through
   /// `alexandria_bookmark_soft_delete` (FR-LC-01, UC-33).
   Future<CoreJsonResponse> bookmarkSoftDelete(String uuid, String token);
+
+  /// Restores the bookmark [uuid] identifies through
+  /// `alexandria_bookmark_restore` (FR-LC-04, UC-34).
+  Future<CoreJsonResponse> bookmarkRestore(String uuid, String token);
 
   /// Creates a watchlist through `alexandria_watchlist_create` (FR-TR-01).
   Future<CoreJsonResponse> watchlistCreate(String jsonBody, String token);
@@ -398,6 +409,14 @@ class FfiCoreClient implements CoreClient {
   ) async =>
       await _isolate.call('bookmarkSoftDelete', [uuid, token])
           as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> fileRestore(String uuid, String token) async =>
+      await _isolate.call('fileRestore', [uuid, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> bookmarkRestore(String uuid, String token) async =>
+      await _isolate.call('bookmarkRestore', [uuid, token]) as CoreJsonResponse;
 
   @override
   Future<CoreJsonResponse> bookmarkCreate(

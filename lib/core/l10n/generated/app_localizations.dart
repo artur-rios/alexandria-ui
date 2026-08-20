@@ -2261,6 +2261,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide {title} from your bookmarks? It stays restorable.'**
   String deleteBookmarkMessage(String title);
+
+  /// UC-34 main flow step 1: the deleted-items screen heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted items'**
+  String get deletedItemsTitle;
+
+  /// UC-34 main flow step 1: opens the deleted-items view from the dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted items'**
+  String get deletedItemsOpen;
+
+  /// UC-34 AF-01: there is nothing deleted, which is a state and not a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been deleted.'**
+  String get deletedItemsNone;
+
+  /// UC-34 main flow step 4: brings the record back into the default listings.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restoreRecord;
+
+  /// UC-34 AF-03: the core has no such record, which is also how it answers one past its retention window.
+  ///
+  /// In en, this message translates to:
+  /// **'That record cannot be restored — it is gone, or its window has passed.'**
+  String get restoreNotFound;
+
+  /// UC-34 AF-02: the retention window has run out, so purging is what is left.
+  ///
+  /// In en, this message translates to:
+  /// **'No longer restorable — it can only be purged.'**
+  String get retentionElapsed;
+
+  /// UC-34: the core answered without a deletion timestamp, so there is no countdown to show.
+  ///
+  /// In en, this message translates to:
+  /// **'Restorable'**
+  String get retentionUnknown;
+
+  /// UC-34 main flow step 3 and FR-LC-03: how long this record remains restorable.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{Restorable for 1 more day} other{Restorable for {days} more days}}'**
+  String retentionRemaining(num days);
 }
 
 class _AppLocalizationsDelegate

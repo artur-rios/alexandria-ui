@@ -27,6 +27,13 @@ abstract class Bookmark with _$Bookmark {
 
     /// Whether the core reports it as deleted.
     @Default(false) bool isDeleted,
+
+    /// When the record was soft-deleted.
+    ///
+    /// What the deleted view counts the retention window from (UC-34), and
+    /// `null` when the core answered without one — which reads as
+    /// "restorable, for an unknown while".
+    DateTime? deletedAt,
   }) = _Bookmark;
 }
 
