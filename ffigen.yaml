@@ -57,6 +57,11 @@ macros:
     # The playback family covers the source, thumbnail, and comic-page calls
     # (UC-19, UC-20, UC-23, UC-24). Its own set of codes, as the run family is.
     - "PLAYBACK_.*"
+    # The settings read has its own family too (UC-34's retention window,
+    # core UC-47). It carries only OK, unauthorized, not-initialized, and
+    # other — reading it through another family's table would be a misread of
+    # numbers that happen to line up.
+    - "SETTINGS_.*"
 
 comments:
   style: any

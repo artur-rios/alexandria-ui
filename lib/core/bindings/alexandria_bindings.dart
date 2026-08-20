@@ -1367,6 +1367,27 @@ class AlexandriaBindings {
         )
       >();
 
+  /// Report the client-relevant configuration (UC-47 / FR-FC-30).
+  ///
+  /// On success `json` carries the same body HTTP returns from
+  /// `GET /v1/settings` — today `{"deletion":{"retentionDays":30}}`, the
+  /// soft-delete retention window this server enforces on every restore and
+  /// purge. `token` is the bearer auth token.
+  ///
+  /// The boundary the number describes is the core's own: elapsed time up to and
+  /// including `retentionDays` leaves a record restorable and not yet purgeable;
+  /// strictly past it, the record is purgeable and no longer restorable.
+  SettingsJsonResult alexandria_settings_json(ffi.Pointer<ffi.Char> token) {
+    return _alexandria_settings_json(token);
+  }
+
+  late final _alexandria_settings_jsonPtr =
+      _lookup<
+        ffi.NativeFunction<SettingsJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_settings_json');
+  late final _alexandria_settings_json = _alexandria_settings_jsonPtr
+      .asFunction<SettingsJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
   ffi.Pointer<ffi.Char> alexandria_version() {
     return _alexandria_version();
   }
@@ -1892,6 +1913,35 @@ final class RunJsonResult extends ffi.Struct {
     required int status,
     required ffi.Pointer<ffi.Char> json,
   }) => $allocator<RunJsonResult>()
+    ..ref.status = status
+    ..ref.json = json;
+}
+
+const int SETTINGS_ERR_NOT_INITIALIZED = 3;
+
+const int SETTINGS_ERR_OTHER = 9;
+
+const int SETTINGS_ERR_UNAUTHORIZED = 2;
+
+const int SETTINGS_OK = 0;
+
+/// Result of `alexandria_settings_json` (UC-47). On success `status` is
+/// `SETTINGS_OK` and `json` is a NUL-terminated JSON string of the settings
+/// body — byte-for-byte the same shape HTTP returns from `GET /v1/settings`
+/// (FR-FC-24 / NFR-09). On failure `json` is NULL and `status` carries the
+/// mapped error code. The caller must free `json` with
+/// `alexandria_free_string`.
+final class SettingsJsonResult extends ffi.Struct {
+  @ffi.Int()
+  external int status;
+
+  external ffi.Pointer<ffi.Char> json;
+
+  static ffi.Pointer<SettingsJsonResult> $allocate(
+    ffi.Allocator $allocator, {
+    required int status,
+    required ffi.Pointer<ffi.Char> json,
+  }) => $allocator<SettingsJsonResult>()
     ..ref.status = status
     ..ref.json = json;
 }

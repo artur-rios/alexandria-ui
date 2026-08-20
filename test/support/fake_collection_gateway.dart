@@ -36,8 +36,17 @@ class FakeCollectionGateway implements CollectionGateway {
   /// What [this.members] answers instead, when a test says so.
   CollectionMembers? membersOutcome;
 
-  /// Every item added, in order.
-  final List<({String uuid, String itemUuid})> added = [];
+  /// Every add call, in order, with the batch it carried.
+  ///
+  /// One entry per call rather than per item: proving the batch is sent as one
+  /// call is the point of the change that introduced this.
+  final List<({String uuid, List<String> itemUuids})> added = [];
+
+  /// What [addItems] answers instead, when a test says so.
+  CollectionAdditions? additionsOutcome;
+
+  /// Reasons to answer for particular items, by uuid.
+  final Map<String, ItemRejection> rejections = {};
 
   /// Every item removed, in order.
   final List<({String uuid, String itemUuid})> removed = [];
@@ -108,18 +117,31 @@ class FakeCollectionGateway implements CollectionGateway {
   }
 
   @override
-  Future<CollectionWrite> addItem({
+  Future<CollectionAdditions> addItems({
     required String uuid,
-    required String itemUuid,
+    required List<String> itemUuids,
     required String credential,
   }) async {
-    added.add((uuid: uuid, itemUuid: itemUuid));
-    if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
+    added.add((uuid: uuid, itemUuids: itemUuids));
+    if (additionsOutcome case final outcome?) return outcome;
 
-    (membership[uuid] ??= []).add(
-      CollectionMember(uuid: itemUuid, name: itemUuid),
-    );
-    return const CollectionWrite.done();
+    final items = <ItemAddition>[];
+    for (final itemUuid in itemUuids) {
+      final reason = rejections[itemUuid];
+      if (reason != null) {
+        items.add(
+          ItemAddition(itemUuid: itemUuid, added: false, reason: reason),
+        );
+        continue;
+      }
+
+      (membership[uuid] ??= []).add(
+        CollectionMember(uuid: itemUuid, name: itemUuid),
+      );
+      items.add(ItemAddition(itemUuid: itemUuid, added: true));
+    }
+
+    return CollectionAdditions.reported(items: items);
   }
 
   @override

@@ -60,6 +60,58 @@ sealed class CollectionMembers with _$CollectionMembers {
       CollectionMembersFailed;
 }
 
+/// Why one item was not added (UC-27 AF-01, AF-02).
+enum ItemRejection {
+  /// It exists, but belongs to the other kind.
+  wrongKind('wrong_kind'),
+
+  /// No item of either kind carries that uuid.
+  notFound('not_found');
+
+  const ItemRejection(this.wireName);
+
+  /// The string the core uses.
+  final String wireName;
+
+  /// The rejection [wireName] names, or `null` when the core answers one this
+  /// application does not know.
+  static ItemRejection? fromWireName(String? wireName) {
+    for (final rejection in ItemRejection.values) {
+      if (rejection.wireName == wireName) return rejection;
+    }
+    return null;
+  }
+}
+
+/// What became of one submitted item (UC-27 AF-04).
+@freezed
+abstract class ItemAddition with _$ItemAddition {
+  /// Creates an outcome.
+  const factory ItemAddition({
+    required String itemUuid,
+    required bool added,
+
+    /// Why it was not, when it was not. `null` when the core named a reason
+    /// this version does not know — the item still reads as not added.
+    ItemRejection? reason,
+  }) = _ItemAddition;
+}
+
+/// What adding a batch produced (UC-27 main flow step 4).
+@freezed
+sealed class CollectionAdditions with _$CollectionAdditions {
+  /// The core answered, with an outcome per submitted item.
+  const factory CollectionAdditions.reported({
+    required List<ItemAddition> items,
+  }) = CollectionAdditionsReported;
+
+  /// The core refused the request itself — no such collection, or no session
+  /// (AF-03, AF-05). Nothing was linked and there is nothing to report per
+  /// item.
+  const factory CollectionAdditions.failed({required Failure failure}) =
+      CollectionAdditionsFailed;
+}
+
 /// The core's collection operations (FR-OG-01 … FR-OG-03, FR-OG-06).
 abstract interface class CollectionGateway {
   /// Every collection, or those of [kind] (FR-OG-06).
@@ -100,16 +152,16 @@ abstract interface class CollectionGateway {
     required String credential,
   });
 
-  /// Adds [itemUuid] to the collection [uuid] identifies (FR-OG-04).
+  /// Adds [itemUuids] to the collection [uuid] identifies (FR-OG-04).
   ///
-  /// One item per call, deliberately. The core's own call takes a list and
-  /// validates every uuid before linking any, so a batch containing one bad
-  /// item links nothing and answers a single reason — which cannot satisfy
-  /// UC-27 AF-04's "report exactly which succeeded and which did not". One
-  /// call per item is what makes that answerable.
-  Future<CollectionWrite> addItem({
+  /// One call for the batch. The core links what it can and answers what
+  /// became of every item, which is what AF-04's "report exactly which
+  /// succeeded and which did not" needs — this used to be a call per item,
+  /// because the core's own call rejected a whole batch over one bad member
+  /// and there was no per-item answer to read.
+  Future<CollectionAdditions> addItems({
     required String uuid,
-    required String itemUuid,
+    required List<String> itemUuids,
     required String credential,
   });
 

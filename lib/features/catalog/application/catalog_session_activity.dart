@@ -73,6 +73,7 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(deletionControllerProvider);
     _ref.invalidate(openFileHoldsProvider);
     _ref.invalidate(deletedItemsControllerProvider);
+    _ref.invalidate(retentionWindowProvider);
     _ref.invalidate(restoreControllerProvider);
     _ref.invalidate(purgeControllerProvider);
     _ref.invalidate(missingFilesControllerProvider);

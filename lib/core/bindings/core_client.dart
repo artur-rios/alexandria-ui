@@ -217,6 +217,13 @@ abstract interface class CoreClient {
   /// and leaves both the file and the record alone.
   Future<CoreJsonResponse> filePurgeOnDisk(String uuid, String token);
 
+  /// Reads the client-relevant configuration through
+  /// `alexandria_settings_json` (FR-LC-03, UC-34).
+  ///
+  /// Answers the retention window this core enforces. [token] is the active
+  /// session's credential.
+  Future<CoreJsonResponse> settings(String token);
+
   /// Lists the owner's collections through `alexandria_collections_list`
   /// (FR-OG-06, UC-26).
   ///
@@ -551,6 +558,10 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> bookmarkPurge(String uuid, String token) async =>
       await _isolate.call('bookmarkPurge', [uuid, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> settings(String token) async =>
+      await _isolate.call('settings', [token]) as CoreJsonResponse;
 
   @override
   Future<CoreJsonResponse> collectionsList(

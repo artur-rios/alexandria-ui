@@ -31,7 +31,7 @@ env:
   # recovery codes on 2026-08-18: UC-40, UC-41, and UC-42 are specified against
   # recovery codes now, so following the core is no longer a divergence.
   CORE_REPOSITORY: artur-rios/alexandria-api
-  CORE_REF: df35370ce10d5779aa7467e0d1788f409a14a8fd
+  CORE_REF: 90e84bdd2d054e659ba82eeab39b7b2e7ba157c6
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned

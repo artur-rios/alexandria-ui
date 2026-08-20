@@ -127,21 +127,53 @@ class CoreCollectionGateway implements CollectionGateway {
   }
 
   @override
-  Future<CollectionWrite> addItem({
+  Future<CollectionAdditions> addItems({
     required String uuid,
-    required String itemUuid,
+    required List<String> itemUuids,
     required String credential,
-  }) => _write(
-    () => _core.collectionAddItems(
-      uuid,
-      // A list of one: the core's call takes a batch, and one item per call is
-      // what lets UC-27 AF-04 say which of several succeeded.
-      jsonEncode({
-        'itemUuids': [itemUuid],
-      }),
-      credential,
-    ),
-  );
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.collectionAddItems(
+        uuid,
+        jsonEncode({'itemUuids': itemUuids}),
+        credential,
+      );
+    } on CoreCallException {
+      return _unaddable();
+    }
+
+    if (!CoreStatusFamily.collection.isOk(response.status)) {
+      // AF-03 and AF-05: the request itself was refused, so there is nothing
+      // to report per item.
+      return CollectionAdditions.failed(
+        failure: mapCoreStatus(CoreStatusFamily.collection, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unaddable();
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+      final items = body['items'];
+      if (items is! List) return _unaddable();
+
+      return CollectionAdditions.reported(
+        items: [
+          for (final item in items)
+            if (item is Map<String, dynamic>)
+              ItemAddition(
+                itemUuid: item['itemUuid'] as String,
+                added: item['added'] as bool? ?? false,
+                reason: ItemRejection.fromWireName(item['reason'] as String?),
+              ),
+        ],
+      );
+    } on Object {
+      return _unaddable();
+    }
+  }
 
   @override
   Future<CollectionWrite> removeItem({
@@ -208,6 +240,13 @@ class CoreCollectionGateway implements CollectionGateway {
   }
 
   CollectionMembers _unreadableMembers() => const CollectionMembers.failed(
+    failure: Failure.unexpected(
+      family: CoreStatusFamily.collection,
+      code: COLLECTION_ERR_OTHER,
+    ),
+  );
+
+  CollectionAdditions _unaddable() => const CollectionAdditions.failed(
     failure: Failure.unexpected(
       family: CoreStatusFamily.collection,
       code: COLLECTION_ERR_OTHER,

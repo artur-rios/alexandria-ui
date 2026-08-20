@@ -1536,4 +1536,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bookmarkFilterAll => 'All bookmarks';
+
+  @override
+  String get collectionItemWrongKind => 'it is not this collection\'s kind';
+
+  @override
+  String get collectionItemGone => 'it no longer exists';
 }

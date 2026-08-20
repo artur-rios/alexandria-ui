@@ -184,6 +184,20 @@
 #define AUTH_ERR_SERVICE_UNAVAILABLE 12
 
 /**
+ * FFI status codes returned by the settings read (UC-47 / FR-FC-30).
+ * Deliberately separate from every other family — per the convention above —
+ * so this surface can grow independently; `SETTINGS_OK == INDEX_OK == 0` by
+ * convention.
+ */
+#define SETTINGS_OK 0
+
+#define SETTINGS_ERR_UNAUTHORIZED 2
+
+#define SETTINGS_ERR_NOT_INITIALIZED 3
+
+#define SETTINGS_ERR_OTHER 9
+
+/**
  * FFI status codes returned by run-status operations (UC-42 / FR-FC-28).
  * Deliberately separate from `INDEX_*`, `FILE_*`, `COLLECTION_*`, `PLAYBACK_*`,
  * and `AUTH_*` — per the convention established above — so this surface can
@@ -322,6 +336,19 @@ typedef struct AuthJsonResult {
   int status;
   char *json;
 } AuthJsonResult;
+
+/**
+ * Result of `alexandria_settings_json` (UC-47). On success `status` is
+ * `SETTINGS_OK` and `json` is a NUL-terminated JSON string of the settings
+ * body — byte-for-byte the same shape HTTP returns from `GET /v1/settings`
+ * (FR-FC-24 / NFR-09). On failure `json` is NULL and `status` carries the
+ * mapped error code. The caller must free `json` with
+ * `alexandria_free_string`.
+ */
+typedef struct SettingsJsonResult {
+  int status;
+  char *json;
+} SettingsJsonResult;
 
 /**
  * Result of `alexandria_index_run_status_json` (UC-42). On success `status`
@@ -939,6 +966,20 @@ struct AuthJsonResult alexandria_auth_local_redeem_recovery_code(const char *jso
  * takes it.
  */
 struct AuthJsonResult alexandria_auth_local_regenerate_recovery_codes(const char *token);
+
+/**
+ * Report the client-relevant configuration (UC-47 / FR-FC-30).
+ *
+ * On success `json` carries the same body HTTP returns from
+ * `GET /v1/settings` — today `{"deletion":{"retentionDays":30}}`, the
+ * soft-delete retention window this server enforces on every restore and
+ * purge. `token` is the bearer auth token.
+ *
+ * The boundary the number describes is the core's own: elapsed time up to and
+ * including `retentionDays` leaves a record restorable and not yet purgeable;
+ * strictly past it, the record is purgeable and no longer restorable.
+ */
+struct SettingsJsonResult alexandria_settings_json(const char *token);
 
 /**
  * Report an index or re-index run's status and outcome (UC-42 / FR-FC-28).

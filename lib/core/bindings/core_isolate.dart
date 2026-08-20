@@ -588,6 +588,14 @@ class CoreIsolate {
         ),
       ),
 
+      'settings' => withNativeString(arguments.first! as String, (token) {
+        final result = bindings.alexandria_settings_json(token);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
       'collectionsList' => withNativeString(
         arguments.first! as String,
         (first) => withNativeString(arguments[1]! as String, (token) {

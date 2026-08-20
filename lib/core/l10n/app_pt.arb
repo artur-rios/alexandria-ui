@@ -436,5 +436,7 @@
   "bookmarkCollectionLabel": "Coleção",
   "bookmarkCollectionNone": "Fora de uma coleção",
   "bookmarkFilterLabel": "Mostrar",
-  "bookmarkFilterAll": "Todos os favoritos"
+  "bookmarkFilterAll": "Todos os favoritos",
+  "collectionItemWrongKind": "não é do tipo desta coleção",
+  "collectionItemGone": "ele não existe mais"
 }
