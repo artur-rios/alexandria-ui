@@ -87,6 +87,7 @@ dependencies:
   xml: ^7.0.1
   flutter_widget_from_html: ^0.17.2
   pdfrx: ^2.4.7
+  markdown: ^7.3.1
 
 dev_dependencies:
   flutter_test:

@@ -81,6 +81,9 @@ import '../../features/shell/domain/session_activity.dart';
 import '../../features/viewers/application/comic_viewer_controller.dart';
 import '../../features/viewers/application/document_viewer_controller.dart';
 import '../../features/viewers/application/image_viewer_controller.dart';
+import '../../features/viewers/application/page_viewer_controller.dart';
+import '../../features/viewers/data/disk_page_gateway.dart';
+import '../../features/viewers/domain/page_content.dart';
 import '../../features/viewers/data/core_comic_gateway.dart';
 import '../../features/viewers/data/epub_document_gateway.dart';
 import '../../features/viewers/data/settings_reading_position_store.dart';
@@ -458,8 +461,23 @@ final viewerRegistryProvider = Provider<ViewerRegistry>(
     LibraryType.document: ViewerKind.document,
     LibraryType.comic: ViewerKind.comic,
     LibraryType.image: ViewerKind.image,
+    LibraryType.html: ViewerKind.page,
+    // A text file has two ways to open: rendered here (UC-25) and edited in
+    // UC-18's editor, which the detail view offers beside this one.
+    LibraryType.text: ViewerKind.page,
   }),
 );
+
+/// Reads a saved page at the moment it is opened (UC-25, FR-VW-05, FR-VW-06).
+final pageGatewayProvider = Provider<PageGateway>(
+  (ref) => const DiskPageGateway(),
+);
+
+/// The open page (UC-25).
+final pageViewerControllerProvider =
+    NotifierProvider<PageViewerController, PageViewerState>(
+      PageViewerController.new,
+    );
 
 /// Whether a file exists on disk (UC-24 AF-01).
 ///

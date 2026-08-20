@@ -1486,5 +1486,25 @@
               "type": "int"
           }
       }
+  },
+
+  "pageScriptsNotRun": "This page is shown as content. Any script it contains is not run.",
+  "@pageScriptsNotRun": {
+      "description": "UC-25 AF-03: the renderer draws widgets and has no engine to run script in, and the owner is told rather than left wondering why the page's controls do nothing."
+  },
+
+  "pageMalformed": "This page's markup is incomplete, so some of it may be missing.",
+  "@pageMalformed": {
+      "description": "UC-25 AF-04: what could be parsed is drawn, and the rest is admitted to."
+  },
+
+  "pageMissingAssets": "These files the page refers to are not on disk: {assets}",
+  "@pageMissingAssets": {
+      "description": "UC-25 AF-02: the page renders without them and names what could not be loaded.",
+      "placeholders": {
+          "assets": {
+              "type": "String"
+          }
+      }
   }
 }
