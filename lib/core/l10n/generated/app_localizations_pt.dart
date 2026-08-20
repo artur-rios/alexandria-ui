@@ -757,4 +757,57 @@ class AppLocalizationsPt extends AppLocalizations {
   String renameErrorTooLong(int max) {
     return 'Use menos de $max caracteres no nome.';
   }
+
+  @override
+  String get editorOpen => 'Editar';
+
+  @override
+  String get editorClose => 'Fechar o editor';
+
+  @override
+  String get editorSave => 'Salvar';
+
+  @override
+  String get editorUnsaved => 'Alterações não salvas';
+
+  @override
+  String get editorDismiss => 'Dispensar';
+
+  @override
+  String get editorDiscard => 'Descartar';
+
+  @override
+  String get editorReload => 'Recarregar do disco';
+
+  @override
+  String get editorOverwrite => 'Salvar mesmo assim';
+
+  @override
+  String get editorSignInAgain => 'Entrar novamente';
+
+  @override
+  String get editorNothingToSave =>
+      'O conteúdo não mudou, então nada foi gravado.';
+
+  @override
+  String get editorLeaveUnsaved =>
+      'Você tem alterações não salvas. Salve, descarte ou continue no editor.';
+
+  @override
+  String get editorChangedOnDisk =>
+      'Este arquivo mudou no disco desde que você o abriu. Recarregue para ver a nova versão ou salve mesmo assim para substituí-la.';
+
+  @override
+  String get editorRecordGone =>
+      'Este arquivo não está mais no catálogo. O que você escreveu continua aqui e não foi salvo.';
+
+  @override
+  String get editorSessionRejected =>
+      'Sua sessão terminou, então isto não pôde ser salvo. Entrar novamente fará você perder o que está na tela.';
+
+  @override
+  String get editorCouldNotRead => 'Não foi possível ler este arquivo.';
+
+  @override
+  String get editorSaveAndClose => 'Salvar e fechar';
 }

@@ -58,6 +58,10 @@ import '../../features/shell/application/preferences_controller.dart';
 import '../../features/shell/application/preferences_state.dart';
 import '../../features/shell/application/shell_controller.dart';
 import '../../features/shell/data/desktop_window_placement.dart';
+import '../../features/editing/application/editing_session_activity.dart';
+import '../../features/editing/application/text_editor_controller.dart';
+import '../../features/editing/data/core_text_content_gateway.dart';
+import '../../features/editing/domain/text_content_gateway.dart';
 import '../../features/shell/domain/session_activity.dart';
 import '../../features/tracking/data/core_watch_progress_gateway.dart';
 import '../../features/tracking/domain/watch_progress_gateway.dart';
@@ -300,6 +304,24 @@ final musicMetadataEditorProvider =
       MusicMetadataEditor.new,
     );
 
+/// The core's text content operations (UC-18, FR-ME-06, FR-ME-08).
+final textContentGatewayProvider = Provider<TextContentGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the text content gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreTextContentGateway(core);
+});
+
+/// The open text editor (UC-18).
+final textEditorControllerProvider =
+    NotifierProvider<TextEditorController, TextEditorState>(
+      TextEditorController.new,
+    );
+
 /// The filesystem the application is running on (UC-17 main flow step 2).
 ///
 /// Bound here rather than read from `Platform` where it is needed, so a test
@@ -343,7 +365,13 @@ final videoMetadataEditorProvider =
 /// something belonging to the session — a player, an editor — adds its
 /// activity here and changes nothing in the authentication layer.
 final sessionActivitiesProvider = Provider<List<SessionActivity>>(
-  (ref) => [CatalogSessionActivity(ref), IndexSessionActivity(ref)],
+  (ref) => [
+    CatalogSessionActivity(ref),
+    IndexSessionActivity(ref),
+    // UC-18's editor, which is the first thing in the application that can
+    // hold something the owner has not saved (UC-03 AF-01).
+    EditingSessionActivity(ref),
+  ],
 );
 
 /// Ends the session on request (UC-03).

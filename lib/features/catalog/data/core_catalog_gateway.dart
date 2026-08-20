@@ -313,6 +313,7 @@ class CoreCatalogGateway implements CatalogGateway {
       name: row['name'] as String,
       path: row['path'] as String? ?? '',
       type: type,
+      contentHash: row['contentHash'] as String? ?? '',
       indexedAt: indexedAt == null ? null : DateTime.tryParse(indexedAt),
       missingAt: missingAt == null ? null : DateTime.tryParse(missingAt),
     );

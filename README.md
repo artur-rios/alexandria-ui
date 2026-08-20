@@ -268,7 +268,7 @@ untested.
 | [#16](https://github.com/artur-rios/alexandria-desktop-front/issues/16) | UC-15 — Edit music metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#17](https://github.com/artur-rios/alexandria-desktop-front/issues/17) | UC-16 — Edit video metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#18](https://github.com/artur-rios/alexandria-desktop-front/issues/18) | UC-17 — Rename a file — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#19](https://github.com/artur-rios/alexandria-desktop-front/issues/19) | UC-18 — Edit a Markdown or text file | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#19](https://github.com/artur-rios/alexandria-desktop-front/issues/19) | UC-18 — Edit a Markdown or text file — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-06 — Media playback
 

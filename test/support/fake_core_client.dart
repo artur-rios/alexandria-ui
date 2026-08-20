@@ -368,6 +368,32 @@ class FakeCoreClient implements CoreClient {
   @override
   Future<void> dispose() async => disposeCount++;
 
+  /// What [fileReadContent] answers (UC-18).
+  CoreJsonResponse readContentResponse = (
+    status: FILE_OK,
+    json: '{"uuid":"a-uuid","content":""}',
+  );
+
+  /// What [fileEditContent] answers (UC-18).
+  CoreJsonResponse editContentResponse = (status: FILE_OK, json: null);
+
+  /// Every content write asked for, in order.
+  final List<({String uuid, String body})> contentWrites = [];
+
+  @override
+  Future<CoreJsonResponse> fileReadContent(String uuid, String token) async =>
+      readContentResponse;
+
+  @override
+  Future<CoreJsonResponse> fileEditContent(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async {
+    contentWrites.add((uuid: uuid, body: jsonBody));
+    return editContentResponse;
+  }
+
   /// What [fileRename] answers (UC-17).
   CoreJsonResponse renameResponse = (status: FILE_OK, json: null);
 

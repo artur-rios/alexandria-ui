@@ -217,5 +217,21 @@
   "renameErrorForbidden": "Este nome usa um caractere que o sistema de arquivos não permite.",
   "renameErrorReserved": "Este nome é reservado pelo sistema operacional.",
   "renameErrorTrailingDot": "Um nome de arquivo não pode terminar com ponto.",
-  "renameErrorTooLong": "Use menos de {max} caracteres no nome."
+  "renameErrorTooLong": "Use menos de {max} caracteres no nome.",
+  "editorOpen": "Editar",
+  "editorClose": "Fechar o editor",
+  "editorSave": "Salvar",
+  "editorUnsaved": "Alterações não salvas",
+  "editorDismiss": "Dispensar",
+  "editorDiscard": "Descartar",
+  "editorReload": "Recarregar do disco",
+  "editorOverwrite": "Salvar mesmo assim",
+  "editorSignInAgain": "Entrar novamente",
+  "editorNothingToSave": "O conteúdo não mudou, então nada foi gravado.",
+  "editorLeaveUnsaved": "Você tem alterações não salvas. Salve, descarte ou continue no editor.",
+  "editorChangedOnDisk": "Este arquivo mudou no disco desde que você o abriu. Recarregue para ver a nova versão ou salve mesmo assim para substituí-la.",
+  "editorRecordGone": "Este arquivo não está mais no catálogo. O que você escreveu continua aqui e não foi salvo.",
+  "editorSessionRejected": "Sua sessão terminou, então isto não pôde ser salvo. Entrar novamente fará você perder o que está na tela.",
+  "editorCouldNotRead": "Não foi possível ler este arquivo.",
+  "editorSaveAndClose": "Salvar e fechar"
 }

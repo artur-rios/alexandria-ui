@@ -118,6 +118,23 @@ abstract interface class CoreClient {
     String token,
   );
 
+  /// Reads a text file's content from disk through
+  /// `alexandria_file_read_content` (FR-ME-06, UC-18).
+  ///
+  /// Answers the `FileContent` body: the uuid and the content as a string.
+  Future<CoreJsonResponse> fileReadContent(String uuid, String token);
+
+  /// Writes edited content back to a text file through
+  /// `alexandria_file_edit_content` (FR-ME-08, UC-18).
+  ///
+  /// [jsonBody] carries the content. Answers the `File` record the core
+  /// refreshed, whose content hash is what the next save compares against.
+  Future<CoreJsonResponse> fileEditContent(
+    String uuid,
+    String jsonBody,
+    String token,
+  );
+
   /// Renames the file [uuid] identifies, on disk and in the catalog, through
   /// `alexandria_file_rename` (FR-ME-04, UC-17).
   ///
@@ -222,6 +239,19 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async =>
       await _isolate.call('fileEditMetadata', [uuid, jsonPatch, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> fileReadContent(String uuid, String token) async =>
+      await _isolate.call('fileReadContent', [uuid, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> fileEditContent(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('fileEditContent', [uuid, jsonBody, token])
           as CoreJsonResponse;
 
   @override

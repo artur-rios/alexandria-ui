@@ -1409,6 +1409,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep the name under {max} characters.'**
   String renameErrorTooLong(int max);
+
+  /// UC-18 main flow step 1: opens the text or Markdown editor from a file's detail view.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editorOpen;
+
+  /// UC-18: leaves the editor, asking first when there are unsaved changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the editor'**
+  String get editorClose;
+
+  /// UC-18 main flow step 5: writes the edited content back through the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get editorSave;
+
+  /// UC-18 / FR-ME-09: the content on screen is not what is on disk.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved changes'**
+  String get editorUnsaved;
+
+  /// UC-18: acknowledges a message and leaves the content alone.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get editorDismiss;
+
+  /// UC-18 AF-02: leaves the editor without saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get editorDiscard;
+
+  /// UC-18 AF-05: replaces what is on screen with what the file now holds.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload from disk'**
+  String get editorReload;
+
+  /// UC-18 AF-05: writes over the version that changed on disk.
+  ///
+  /// In en, this message translates to:
+  /// **'Save anyway'**
+  String get editorOverwrite;
+
+  /// UC-18 AF-06: acknowledges that the session ended and the content could not be saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again'**
+  String get editorSignInAgain;
+
+  /// UC-18 AF-01: the editor holds exactly what was read, so the core was not called.
+  ///
+  /// In en, this message translates to:
+  /// **'The content has not changed, so nothing was written.'**
+  String get editorNothingToSave;
+
+  /// UC-18 AF-02 / FR-ME-09: the warning before unsaved changes are discarded.
+  ///
+  /// In en, this message translates to:
+  /// **'You have changes that are not saved. Save them, discard them, or stay in the editor.'**
+  String get editorLeaveUnsaved;
+
+  /// UC-18 AF-05: something else wrote the file between the read and the save.
+  ///
+  /// In en, this message translates to:
+  /// **'This file changed on disk since you opened it. Reload to see the new version, or save anyway to replace it.'**
+  String get editorChangedOnDisk;
+
+  /// UC-18 AF-04: the record went while the editor was open, and nothing typed is discarded silently.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is no longer in the catalog. What you have written is still here, and is not saved.'**
+  String get editorRecordGone;
+
+  /// UC-18 AF-06: the core rejected the write, and the owner is warned before the session goes.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session ended, so this could not be saved. Signing in again will lose what is on screen.'**
+  String get editorSessionRejected;
+
+  /// UC-18: the content never loaded, so there is nothing to edit.
+  ///
+  /// In en, this message translates to:
+  /// **'This file could not be read.'**
+  String get editorCouldNotRead;
+
+  /// UC-18 AF-02: writes the unsaved changes and then leaves the editor. Named apart from the editor's own save, which stays where it is.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and close'**
+  String get editorSaveAndClose;
 }
 
 class _AppLocalizationsDelegate

@@ -10,6 +10,7 @@ import '../../shell/presentation/async_state_view.dart';
 import '../domain/file_details.dart';
 import '../domain/library_type.dart';
 import 'music_metadata_form.dart';
+import '../../editing/presentation/text_editor_screen.dart';
 import 'rename_file_dialog.dart';
 import 'video_metadata_form.dart';
 
@@ -131,6 +132,19 @@ class _Details extends ConsumerWidget {
               onPressed: () => openForm(context, ref, details),
               icon: const Icon(Icons.edit_outlined),
               label: Text(l10n.detailsEditMetadata),
+            ),
+          ],
+
+          // UC-18 main flow step 1. Text and Markdown files are the ones the
+          // core will read and write content for; every other type's content
+          // is bytes this application does not edit (BR-06, BR-09).
+          if (details.file.type == LibraryType.text && !details.isDeleted) ...[
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              onPressed: () =>
+                  TextEditorScreen.show(context, ref, details.file),
+              icon: const Icon(Icons.edit_note_outlined),
+              label: Text(l10n.editorOpen),
             ),
           ],
 

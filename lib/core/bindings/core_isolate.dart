@@ -360,6 +360,35 @@ class CoreIsolate {
         ),
       ),
 
+      'fileReadContent' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_file_read_content(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'fileEditContent' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (body) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_file_edit_content(
+              uuid,
+              body,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
       'fileRename' => withNativeString(
         arguments.first! as String,
         (uuid) => withNativeString(
