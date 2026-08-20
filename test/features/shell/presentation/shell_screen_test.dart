@@ -265,9 +265,10 @@ void main() {
             expect(label, isNot(contains('destination')));
           }
           expect(find.text(l10n.playbackNothingPlaying), findsOneWidget);
-          // The shell opens on the dashboard now (UC-14), so the pending
-          // placeholder belongs to the one destination still waiting for its
-          // use case rather than to home.
+          // Every destination now has content of its own — home the dashboard
+          // (UC-14), bookmarks the bookmark manager (UC-28), and the rest a
+          // listing — so what this checks is that the one the shell is *not*
+          // opened on renders in the owner's language too.
           await tester.tap(
             find.descendant(
               of: find.byType(ShellNavigationPanel),
@@ -275,7 +276,7 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
-          expect(find.text(l10n.shellAreaPending), findsOneWidget);
+          expect(find.text(l10n.bookmarkAdd), findsOneWidget);
         },
       );
     }

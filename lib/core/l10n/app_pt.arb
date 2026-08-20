@@ -53,7 +53,6 @@
   "failureUnexpected": "Algo deu errado no Alexandria.",
   "cancel": "Cancelar",
   "loading": "Carregando",
-  "shellAreaPending": "Nada para mostrar aqui ainda.",
   "playbackBarLabel": "Reprodução",
   "playbackNothingPlaying": "Nada em reprodução",
   "destinationHome": "Início",
@@ -288,5 +287,17 @@
   "imageOf": "{position} de {total}",
   "pageScriptsNotRun": "Esta página é exibida como conteúdo. Nenhum script contido nela é executado.",
   "pageMalformed": "A marcação desta página está incompleta, então parte dela pode estar faltando.",
-  "pageMissingAssets": "Estes arquivos referenciados pela página não estão no disco: {assets}"
+  "pageMissingAssets": "Estes arquivos referenciados pela página não estão no disco: {assets}",
+  "bookmarkAdd": "Adicionar favorito",
+  "bookmarkEdit": "Editar este favorito",
+  "bookmarkCreate": "Criar",
+  "bookmarkSave": "Salvar",
+  "bookmarkTitleLabel": "Título",
+  "bookmarkUrlLabel": "Endereço",
+  "bookmarksNone": "Você ainda não salvou nenhum favorito.",
+  "bookmarkFieldEmpty": "Isto não pode ficar vazio.",
+  "bookmarkUrlMalformed": "Isto não é um endereço.",
+  "bookmarkUrlUnopenable": "Digite um endereço começando com http:// ou https://.",
+  "bookmarkNoBrowser": "Não foi possível abrir um navegador para este favorito.",
+  "bookmarkCopyUrl": "Copiar o endereço"
 }

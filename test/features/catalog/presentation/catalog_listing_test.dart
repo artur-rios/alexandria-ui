@@ -4,7 +4,12 @@ import 'package:alexandria_desktop/core/failures/failure.dart';
 import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
+// Prefixed: the widget and the domain's listing union share a name, and this
+// test speaks about both.
+import 'package:alexandria_desktop/features/catalog/presentation/catalog_listing.dart'
+    as widgets;
 import 'package:alexandria_desktop/features/library_sources/presentation/library_sources_screen.dart';
+import 'package:alexandria_desktop/features/organization/presentation/bookmarks_view.dart';
 import 'package:alexandria_desktop/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_desktop/features/shell/presentation/async_state_view.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
@@ -216,17 +221,16 @@ void main() {
     });
   });
 
-  group('the seams that are not listings', () {
-    testWidgets('GivenBookmarks_WhenSelected_ThenTheAreaIsStillPending', (
+  group('the areas that are not listings', () {
+    testWidgets('GivenBookmarks_WhenSelected_ThenNoFileListingIsShown', (
       tester,
     ) async {
-      // Bookmarks are not files; UC-28 fills this.
+      // Bookmarks are not files, so the listing this use case built is not
+      // what that destination shows — UC-28's bookmark manager is.
       await openListing(tester, destination: ShellDestination.bookmarks);
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
-      );
-      expect(find.text(l10n.shellAreaPending), findsOneWidget);
+      expect(find.byType(widgets.CatalogListing), findsNothing);
+      expect(find.byType(BookmarksView), findsOneWidget);
     });
   });
 

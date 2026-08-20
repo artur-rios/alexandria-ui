@@ -202,9 +202,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loading => 'Loading';
 
   @override
-  String get shellAreaPending => 'Nothing to show here yet.';
-
-  @override
   String get playbackBarLabel => 'Playback';
 
   @override
@@ -1002,4 +999,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String pageMissingAssets(String assets) {
     return 'These files the page refers to are not on disk: $assets';
   }
+
+  @override
+  String get bookmarkAdd => 'Add a bookmark';
+
+  @override
+  String get bookmarkEdit => 'Edit this bookmark';
+
+  @override
+  String get bookmarkCreate => 'Create';
+
+  @override
+  String get bookmarkSave => 'Save';
+
+  @override
+  String get bookmarkTitleLabel => 'Title';
+
+  @override
+  String get bookmarkUrlLabel => 'Address';
+
+  @override
+  String get bookmarksNone => 'You have not saved any bookmarks yet.';
+
+  @override
+  String get bookmarkFieldEmpty => 'This cannot be empty.';
+
+  @override
+  String get bookmarkUrlMalformed => 'This is not an address.';
+
+  @override
+  String get bookmarkUrlUnopenable =>
+      'Enter a web address starting with http:// or https://.';
+
+  @override
+  String get bookmarkNoBrowser =>
+      'No browser could be opened for this bookmark.';
+
+  @override
+  String get bookmarkCopyUrl => 'Copy the address';
 }

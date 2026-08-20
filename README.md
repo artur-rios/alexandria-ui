@@ -213,6 +213,26 @@ compiling and then failing against a real core.
 The capabilities and what the front-end needs from each are in
 [System Requirements §5.4](docs/requirements/System%20Requirements%20Document.md).
 
+**Blocked on the core: collections cannot be listed.** `UC-26` and `UC-27` need
+a way to enumerate the owner's collections — the collections screen opens on
+one, and organizing items starts by opening a collection. The core publishes
+every write (`alexandria_collection_create`, `_rename`, `_delete`,
+`_add_items`, `_remove_item`) and the members of *one* collection addressed by
+its uuid (`alexandria_collection_list_items`), and no query that answers which
+collections exist: `crates/alexandria-core/src/collections/queries/` holds
+`list_items.rs` and nothing else. A collections screen could therefore create a
+collection and never show it again. `BR-02` makes that back-end work rather
+than something to route around, and keeping the list in the settings store
+instead would be the second source of truth that store's own contract forbids.
+
+Two smaller disagreements sit in the same area. `UC-27` step 2 asks for
+breadcrumbs "reflecting the owner's position in the collection hierarchy", but
+the core's `Collection` is `{uuid, name, kind}` — collections are flat, with no
+parent. And `UC-28`'s optional filing of a bookmark into a bookmark collection
+needs the same missing enumeration to offer one, so bookmarks ship without it;
+everything else in that use case is reachable through
+`alexandria_bookmarks_list`.
+
 `UC-01` is no longer among them: account creation landed as
 `alexandria_auth_local_register`. Its `AF-06` did not — reporting that a
 confirmation message could not be sent needs the same e-mail confirmation the
@@ -293,7 +313,7 @@ untested.
 |---|---|---|
 | [#27](https://github.com/artur-rios/alexandria-desktop-front/issues/27) | UC-26 — Manage collections | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#28](https://github.com/artur-rios/alexandria-desktop-front/issues/28) | UC-27 — Organize items into collections | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#29](https://github.com/artur-rios/alexandria-desktop-front/issues/29) | UC-28 — Manage bookmarks | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#29](https://github.com/artur-rios/alexandria-desktop-front/issues/29) | UC-28 — Manage bookmarks — done, except filing into a collection | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-09 — Watchlists and reading lists
 

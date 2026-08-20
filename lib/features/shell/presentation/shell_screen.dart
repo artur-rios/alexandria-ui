@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../catalog/domain/library_type.dart';
 import '../../catalog/domain/catalog_search.dart';
 import '../../catalog/presentation/catalog_listing.dart';
 import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
+import '../../organization/presentation/bookmarks_view.dart';
 import '../domain/shell_destination.dart';
 import 'playback_bar.dart';
 import 'shell_navigation_panel.dart';
@@ -53,10 +53,10 @@ class ShellScreen extends ConsumerWidget {
 
 /// The content area (FR-UX-01).
 ///
-/// A file type shows its listing (UC-09). Home is still the dashboard's seam
-/// (UC-14) and bookmarks are still the bookmark manager's (UC-28) — neither is
-/// a file listing, and building either now would be building it without its
-/// specification.
+/// A file type shows its listing (UC-09); home is the dashboard (UC-14) and
+/// bookmarks are the bookmark manager (UC-28). Neither of the last two is a
+/// file listing, which is why the switch below is on the type rather than on
+/// the destination alone.
 class ShellContentArea extends ConsumerWidget {
   /// Creates the content area for [destination].
   const ShellContentArea({required this.destination, super.key});
@@ -84,24 +84,17 @@ class ShellContentArea extends ConsumerWidget {
           const CatalogSearchField(),
           const SizedBox(height: AppSpacing.md),
           Expanded(
-            child: switch ((searching, libraryTypeFor(destination))) {
+            child: switch (destination) {
               // AF-02 needs nothing of its own: an empty term is not a search,
               // and the listing is already what an absent search shows.
-              (true, _) => const CatalogSearchResults(),
-              // Home is the dashboard UC-14 builds; bookmarks are still
-              // UC-28's seam.
-              (false, null) when destination == ShellDestination.home =>
-                const HomeDashboard(),
-              (false, null) => Center(
-                child: Text(
-                  l10n.shellAreaPending,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              (false, _) => const CatalogListing(),
+              _ when searching => const CatalogSearchResults(),
+              // The two areas that are not file listings: home is the
+              // dashboard (UC-14) and bookmarks are the bookmark manager
+              // (UC-28). Every other destination is a type, and its listing
+              // reads which one from the shell.
+              ShellDestination.home => const HomeDashboard(),
+              ShellDestination.bookmarks => const BookmarksView(),
+              _ => const CatalogListing(),
             },
           ),
         ],
