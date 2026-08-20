@@ -10,6 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/watchlists_controller.dart';
+import '../domain/episode_progress.dart';
 import '../domain/watchlist.dart';
 
 /// The watchlists screen (UC-29, FR-TR-01 … FR-TR-04).
@@ -222,7 +223,7 @@ class _WatchlistTile extends ConsumerWidget {
   }
 }
 
-/// One tracked video inside a watchlist.
+/// One tracked video inside a watchlist (UC-30 main flow step 2).
 class _ItemTile extends ConsumerWidget {
   const _ItemTile({required this.watchlist, required this.progress});
 
@@ -232,33 +233,211 @@ class _ItemTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final editor = ref.watch(watchProgressEditorProvider);
+    final videos = ref.watch(trackedVideosProvider).value ?? const {};
+    final video = videos[progress.videoUuid];
 
-    return ListTile(
-      dense: true,
-      leading: const Icon(Icons.movie_outlined),
-      // The video's name is the catalog's, and a watchlist carries only the
-      // uuid the core tracks it by. UC-30 is what puts the progress on screen
-      // beside it; this shows what the list holds.
-      title: Text(progress.videoUuid),
-      subtitle: Text(_stateLabel(l10n)),
-      trailing: IconButton(
-        tooltip: l10n.watchlistRemoveVideo,
-        icon: const Icon(Icons.remove_circle_outline),
-        onPressed: () => unawaited(
-          ref
-              .read(watchlistsFormProvider.notifier)
-              .removeVideo(
-                watchlistUuid: watchlist.uuid,
-                videoUuid: progress.videoUuid,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ListTile(
+          dense: true,
+          leading: const Icon(Icons.movie_outlined),
+          // The name comes from the catalog; a watchlist carries only the uuid
+          // the core tracks the video by.
+          title: Text(video?.name ?? progress.videoUuid),
+          subtitle: Text(_progressLabel(l10n, video?.isSeries ?? false)),
+          onTap: () =>
+              ref.read(watchProgressEditorProvider.notifier).open(progress),
+          trailing: IconButton(
+            tooltip: l10n.watchlistRemoveVideo,
+            icon: const Icon(Icons.remove_circle_outline),
+            onPressed: () => unawaited(
+              ref
+                  .read(watchlistsFormProvider.notifier)
+                  .removeVideo(
+                    watchlistUuid: watchlist.uuid,
+                    videoUuid: progress.videoUuid,
+                  ),
+            ),
+          ),
         ),
+
+        // Steps 3 and 4, opened on the item they are about rather than in a
+        // dialog: the owner is looking down a list and setting several.
+        if (editor.isEditing(progress))
+          _ProgressEditor(countsEpisodes: video?.isSeries ?? false),
+      ],
+    );
+  }
+
+  /// The state, and where in a series the owner is (FR-TR-05, FR-TR-07).
+  String _progressLabel(AppLocalizations l10n, bool isSeries) {
+    final state = switch (progress.state) {
+      WatchState.pending => l10n.watchStatePending,
+      WatchState.watching => l10n.watchStateWatching,
+      WatchState.watched => l10n.watchStateWatched,
+    };
+
+    // AF-01: a movie has no episode to report, so its label is the state and
+    // nothing else.
+    final current = progress.currentEpisode;
+    if (!isSeries || current == null) return state;
+
+    final total = progress.totalEpisodes;
+    return total == null
+        ? '$state · ${l10n.watchEpisode(current)}'
+        : '$state · ${l10n.watchEpisodeOf(current, total)}';
+  }
+}
+
+/// Where the state and the episode are set (main flow steps 3 to 5).
+class _ProgressEditor extends ConsumerStatefulWidget {
+  const _ProgressEditor({required this.countsEpisodes});
+
+  /// Whether this item is a series (FR-TR-07). AF-01 is this being false.
+  final bool countsEpisodes;
+
+  @override
+  ConsumerState<_ProgressEditor> createState() => _ProgressEditorState();
+}
+
+class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
+  late final TextEditingController _current;
+  late final TextEditingController _total;
+
+  // Filled here rather than lazily at the field: a lazy initialiser that is
+  // first touched from `dispose` reads `ref` on an unmounted widget, which
+  // Riverpod refuses — and an editor closed in the same frame it opened does
+  // exactly that.
+  @override
+  void initState() {
+    super.initState();
+
+    final episodes = ref.read(watchProgressEditorProvider).episodes;
+    _current = TextEditingController(text: episodes.current);
+    _total = TextEditingController(text: episodes.total);
+  }
+
+  @override
+  void dispose() {
+    _current.dispose();
+    _total.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final state = ref.watch(watchProgressEditorProvider);
+    final editor = ref.read(watchProgressEditorProvider.notifier);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.md,
+        AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // FR-TR-06: the states are the core's, and all of them are offered.
+          SegmentedButton<WatchState>(
+            segments: [
+              ButtonSegment(
+                value: WatchState.pending,
+                label: Text(l10n.watchStatePending),
+              ),
+              ButtonSegment(
+                value: WatchState.watching,
+                label: Text(l10n.watchStateWatching),
+              ),
+              ButtonSegment(
+                value: WatchState.watched,
+                label: Text(l10n.watchStateWatched),
+              ),
+            ],
+            selected: {state.state},
+            onSelectionChanged: (chosen) => editor.chooseState(chosen.first),
+          ),
+
+          // AF-01: episode fields belong to a series and are not shown for a
+          // movie.
+          if (widget.countsEpisodes) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _current,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: l10n.watchCurrentEpisodeLabel,
+                      errorText: _messageFor(state.currentError, l10n),
+                    ),
+                    onChanged: editor.editCurrentEpisode,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: TextField(
+                    controller: _total,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: l10n.watchTotalEpisodesLabel,
+                      errorText: _messageFor(state.totalError, l10n),
+                    ),
+                    onChanged: editor.editTotalEpisodes,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // AF-03 and AF-04: the core's reason, over progress it did not
+          // change.
+          if (state.rejection case final rejection?) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              rejection.localizedMessage(l10n),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ],
+
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: state.isSaving ? null : editor.close,
+                child: Text(l10n.cancel),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              FilledButton(
+                onPressed: state.isSaving
+                    ? null
+                    : () => unawaited(
+                        editor.submit(countsEpisodes: widget.countsEpisodes),
+                      ),
+                child: Text(l10n.watchProgressSave),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  String _stateLabel(AppLocalizations l10n) => switch (progress.state) {
-    WatchState.pending => l10n.watchStatePending,
-    WatchState.watching => l10n.watchStateWatching,
-    WatchState.watched => l10n.watchStateWatched,
-  };
+  String? _messageFor(EpisodeError? error, AppLocalizations l10n) =>
+      switch (error) {
+        null => null,
+        EpisodeError.notANumber => l10n.watchEpisodeNotANumber,
+        EpisodeError.notPositive => l10n.watchEpisodeNotPositive,
+        EpisodeError.beyondTotal => l10n.watchEpisodeBeyondTotal,
+      };
 }

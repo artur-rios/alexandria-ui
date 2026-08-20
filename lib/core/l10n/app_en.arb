@@ -1483,5 +1483,58 @@
               "type": "int"
           }
       }
+  },
+
+  "watchProgressSave": "Save progress",
+  "@watchProgressSave": {
+      "description": "UC-30 main flow step 5: sends the watch state and episode to the core."
+  },
+
+  "watchCurrentEpisodeLabel": "Episode",
+  "@watchCurrentEpisodeLabel": {
+      "description": "UC-30 main flow step 4: which episode the owner is on."
+  },
+
+  "watchTotalEpisodesLabel": "of how many",
+  "@watchTotalEpisodesLabel": {
+      "description": "UC-30 main flow step 4: how many episodes there are, when the owner knows."
+  },
+
+  "watchEpisodeNotANumber": "Enter a whole number.",
+  "@watchEpisodeNotANumber": {
+      "description": "UC-30 AF-02: the episode field holds something that is not a number."
+  },
+
+  "watchEpisodeNotPositive": "Episodes are counted from 1.",
+  "@watchEpisodeNotPositive": {
+      "description": "UC-30 AF-02: the episode number is zero or negative."
+  },
+
+  "watchEpisodeBeyondTotal": "That is past the total you gave.",
+  "@watchEpisodeBeyondTotal": {
+      "description": "UC-30 AF-02: the current episode exceeds the stated total."
+  },
+
+  "watchEpisode": "episode {episode}",
+  "@watchEpisode": {
+      "description": "UC-30 / FR-TR-07: where in a series the owner is, when they have not said how many there are.",
+      "placeholders": {
+          "episode": {
+              "type": "int"
+          }
+      }
+  },
+
+  "watchEpisodeOf": "episode {episode} of {total}",
+  "@watchEpisodeOf": {
+      "description": "UC-30 / FR-TR-07: where in a series the owner is.",
+      "placeholders": {
+          "episode": {
+              "type": "int"
+          },
+          "total": {
+              "type": "int"
+          }
+      }
   }
 }

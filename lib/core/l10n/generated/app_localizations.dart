@@ -2009,6 +2009,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} tracked'**
   String watchlistItemCount(int count);
+
+  /// UC-30 main flow step 5: sends the watch state and episode to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Save progress'**
+  String get watchProgressSave;
+
+  /// UC-30 main flow step 4: which episode the owner is on.
+  ///
+  /// In en, this message translates to:
+  /// **'Episode'**
+  String get watchCurrentEpisodeLabel;
+
+  /// UC-30 main flow step 4: how many episodes there are, when the owner knows.
+  ///
+  /// In en, this message translates to:
+  /// **'of how many'**
+  String get watchTotalEpisodesLabel;
+
+  /// UC-30 AF-02: the episode field holds something that is not a number.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number.'**
+  String get watchEpisodeNotANumber;
+
+  /// UC-30 AF-02: the episode number is zero or negative.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes are counted from 1.'**
+  String get watchEpisodeNotPositive;
+
+  /// UC-30 AF-02: the current episode exceeds the stated total.
+  ///
+  /// In en, this message translates to:
+  /// **'That is past the total you gave.'**
+  String get watchEpisodeBeyondTotal;
+
+  /// UC-30 / FR-TR-07: where in a series the owner is, when they have not said how many there are.
+  ///
+  /// In en, this message translates to:
+  /// **'episode {episode}'**
+  String watchEpisode(int episode);
+
+  /// UC-30 / FR-TR-07: where in a series the owner is.
+  ///
+  /// In en, this message translates to:
+  /// **'episode {episode} of {total}'**
+  String watchEpisodeOf(int episode, int total);
 }
 
 class _AppLocalizationsDelegate
