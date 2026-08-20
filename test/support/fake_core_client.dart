@@ -277,6 +277,27 @@ class FakeCoreClient implements CoreClient {
     return authLocalLoginResult;
   }
 
+  /// What reading the account answers (UC-42).
+  CoreJsonResponse authLocalAccountResult = (
+    status: AUTH_OK,
+    json: '{"email":"owner@example.com","recoveryCodesRemaining":7}',
+  );
+
+  /// What regenerating the recovery codes answers (UC-42).
+  CoreJsonResponse authLocalRegenerateRecoveryCodesResult = (
+    status: AUTH_OK,
+    json: '{"recoveryCodes":["new-aaaa","new-bbbb"]}',
+  );
+
+  @override
+  Future<CoreJsonResponse> authLocalAccount(String token) async =>
+      authLocalAccountResult;
+
+  @override
+  Future<CoreJsonResponse> authLocalRegenerateRecoveryCodes(
+    String token,
+  ) async => authLocalRegenerateRecoveryCodesResult;
+
   /// What a recovery redemption answers (UC-41). A success by default.
   CoreJsonResponse authLocalRedeemRecoveryCodeResult = (
     status: AUTH_OK,

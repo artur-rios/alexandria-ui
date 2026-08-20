@@ -43,6 +43,21 @@ abstract interface class CoreClient {
   /// `AUTH_ERR_CONFLICT`.
   Future<CoreJsonResponse> authLocalRegister(String jsonBody);
 
+  /// Reads the owner's account through `alexandria_auth_local_account`
+  /// (FR-AU-14, UC-42).
+  ///
+  /// Answers the address and how many recovery codes remain unconsumed.
+  /// [token] is the active session's credential, never logged or retained
+  /// (FR-AU-11).
+  Future<CoreJsonResponse> authLocalAccount(String token);
+
+  /// Replaces the whole recovery-code set through
+  /// `alexandria_auth_local_regenerate_recovery_codes` (FR-AU-17, UC-42).
+  ///
+  /// Answers the ten new codes, once. Every code from the previous set stops
+  /// working. [token] is the active session's credential.
+  Future<CoreJsonResponse> authLocalRegenerateRecoveryCodes(String token);
+
   /// Replaces a forgotten password with a recovery code through
   /// `alexandria_auth_local_redeem_recovery_code` (FR-AU-15, UC-41).
   ///
@@ -350,6 +365,17 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> authLocalRegister(String jsonBody) async =>
       await _isolate.call('authLocalRegister', [jsonBody]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> authLocalAccount(String token) async =>
+      await _isolate.call('authLocalAccount', [token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> authLocalRegenerateRecoveryCodes(
+    String token,
+  ) async =>
+      await _isolate.call('authLocalRegenerateRecoveryCodes', [token])
+          as CoreJsonResponse;
 
   @override
   Future<CoreJsonResponse> authLocalRedeemRecoveryCode(String jsonBody) async =>

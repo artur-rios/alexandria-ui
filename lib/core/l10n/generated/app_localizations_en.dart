@@ -1415,4 +1415,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recoveryBackToLogin => 'Back to sign in';
+
+  @override
+  String get recoveryCodesRegenerate => 'Generate new recovery codes';
+
+  @override
+  String get recoveryCodesRegenerateMessage =>
+      'Every code you have now stops working, and ten new ones take their place. They are shown once.';
+
+  @override
+  String get recoveryCodesNoneLeft =>
+      'No recovery codes are left. Generate a set while you still know your password.';
+
+  @override
+  String recoveryCodesRemaining(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recovery codes left',
+      one: '1 recovery code left',
+    );
+    return '$_temp0';
+  }
 }

@@ -1418,4 +1418,26 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get recoveryBackToLogin => 'Voltar para entrar';
+
+  @override
+  String get recoveryCodesRegenerate => 'Gerar novos códigos de recuperação';
+
+  @override
+  String get recoveryCodesRegenerateMessage =>
+      'Todos os códigos que você tem agora deixam de funcionar, e dez novos tomam o lugar deles. Eles são exibidos uma única vez.';
+
+  @override
+  String get recoveryCodesNoneLeft =>
+      'Não resta nenhum código de recuperação. Gere um conjunto enquanto você ainda sabe sua senha.';
+
+  @override
+  String recoveryCodesRemaining(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count códigos de recuperação restantes',
+      one: '1 código de recuperação restante',
+    );
+    return '$_temp0';
+  }
 }

@@ -405,5 +405,9 @@
   "recoveryRefused": "Não foi possível substituir a senha. Verifique o código e tente novamente.",
   "recoveryDone": "Sua senha foi substituída",
   "recoveryDoneExplanation": "O código usado foi consumido e todas as sessões abertas foram encerradas. Entre com a nova senha.",
-  "recoveryBackToLogin": "Voltar para entrar"
+  "recoveryBackToLogin": "Voltar para entrar",
+  "recoveryCodesRegenerate": "Gerar novos códigos de recuperação",
+  "recoveryCodesRegenerateMessage": "Todos os códigos que você tem agora deixam de funcionar, e dez novos tomam o lugar deles. Eles são exibidos uma única vez.",
+  "recoveryCodesNoneLeft": "Não resta nenhum código de recuperação. Gere um conjunto enquanto você ainda sabe sua senha.",
+  "recoveryCodesRemaining": "{count, plural, =1{1 código de recuperação restante} other{{count} códigos de recuperação restantes}}"
 }

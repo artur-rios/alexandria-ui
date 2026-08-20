@@ -30,6 +30,25 @@ class FakeAuthGateway implements AuthGateway {
   /// What [logIn] and [register] return.
   AuthOutcome outcome;
 
+  /// What [account] returns (UC-42).
+  AccountOutcome accountOutcome = const AccountOutcome.read(
+    account: AccountSummary(
+      email: 'owner@example.com',
+      recoveryCodesRemaining: 7,
+    ),
+  );
+
+  /// What [regenerateRecoveryCodes] returns (UC-42).
+  RegenerateOutcome regenerateOutcome = const RegenerateOutcome.regenerated(
+    recoveryCodes: ['new-aaaa', 'new-bbbb'],
+  );
+
+  /// How many regenerations were asked for.
+  ///
+  /// Zero is the assertion AF-01 needs: declining the confirmation must not
+  /// reach the core, because reaching it would replace the set.
+  int regenerations = 0;
+
   /// What [redeemRecoveryCode] returns. A successful redemption by default
   /// (UC-41).
   RecoveryOutcome recoveryOutcome = const RecoveryOutcome.recovered();
@@ -127,6 +146,21 @@ class FakeAuthGateway implements AuthGateway {
     ));
     await _gate?.future;
     return changeOutcome;
+  }
+
+  @override
+  Future<AccountOutcome> account({required String credential}) async {
+    await _gate?.future;
+    return accountOutcome;
+  }
+
+  @override
+  Future<RegenerateOutcome> regenerateRecoveryCodes({
+    required String credential,
+  }) async {
+    regenerations++;
+    await _gate?.future;
+    return regenerateOutcome;
   }
 
   @override

@@ -2537,6 +2537,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to sign in'**
   String get recoveryBackToLogin;
+
+  /// UC-42 main flow step 2: replaces the whole set with ten new codes.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate new recovery codes'**
+  String get recoveryCodesRegenerate;
+
+  /// UC-42 main flow step 3: the confirmation states what the owner is giving up.
+  ///
+  /// In en, this message translates to:
+  /// **'Every code you have now stops working, and ten new ones take their place. They are shown once.'**
+  String get recoveryCodesRegenerateMessage;
+
+  /// UC-42 main flow step 1: the core reports none unspent, which means the account cannot currently be recovered.
+  ///
+  /// In en, this message translates to:
+  /// **'No recovery codes are left. Generate a set while you still know your password.'**
+  String get recoveryCodesNoneLeft;
+
+  /// UC-42 main flow step 1 and FR-AU-14: how many codes the core reports as unspent.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 recovery code left} other{{count} recovery codes left}}'**
+  String recoveryCodesRemaining(num count);
 }
 
 class _AppLocalizationsDelegate

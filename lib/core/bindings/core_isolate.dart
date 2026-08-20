@@ -260,6 +260,28 @@ class CoreIsolate {
       // Carries both plaintext entries in, so the same discipline as login
       // applies: freed by withNativeString on the way in, and the result's
       // JSON freed by consume on the way out (IR-09, NFR-13, FR-AU-11).
+      'authLocalAccount' => withNativeString(arguments.first! as String, (
+        token,
+      ) {
+        final result = bindings.alexandria_auth_local_account(token);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'authLocalRegenerateRecoveryCodes' => withNativeString(
+        arguments.first! as String,
+        (token) {
+          final result = bindings
+              .alexandria_auth_local_regenerate_recovery_codes(token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        },
+      ),
+
       'authLocalRedeemRecoveryCode' => withNativeString(
         arguments.first! as String,
         (body) {
