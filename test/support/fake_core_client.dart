@@ -1,3 +1,4 @@
+import 'package:alexandria_desktop/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_desktop/core/bindings/core_client.dart';
 import 'package:alexandria_desktop/core/bindings/core_isolate.dart';
 import 'package:alexandria_desktop/core/failures/core_status.dart';
@@ -366,4 +367,16 @@ class FakeCoreClient implements CoreClient {
 
   @override
   Future<void> dispose() async => disposeCount++;
+
+  /// What [watchlistsList] answers (UC-16 AF-03).
+  ///
+  /// An empty array by default: a library nobody has built a watchlist in
+  /// records no episodes, so nothing warns.
+  CoreJsonResponse watchlists = (status: WATCHLIST_OK, json: '[]');
+
+  @override
+  Future<CoreJsonResponse> watchlistsList(
+    String jsonFilters,
+    String token,
+  ) async => watchlists;
 }

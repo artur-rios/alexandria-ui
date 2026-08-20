@@ -39,37 +39,33 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenAChosenTheme_WhenTheSystemChanges_ThenTheChoiceIsKept',
-      (tester) async {
-        // The other half of AF-01: following the system is what "system"
-        // means, and it must not leak into a theme the owner picked outright.
-        tester.platformDispatcher.platformBrightnessTestValue =
-            Brightness.light;
-        addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    testWidgets('GivenAChosenTheme_WhenTheSystemChanges_ThenTheChoiceIsKept', (
+      tester,
+    ) async {
+      // The other half of AF-01: following the system is what "system"
+      // means, and it must not leak into a theme the owner picked outright.
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
+      addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
 
-        // The owner chose light outright, and the system then turns dark.
-        await tester.pumpShell(themeMode: ThemeMode.light);
+      // The owner chose light outright, and the system then turns dark.
+      await tester.pumpShell(themeMode: ThemeMode.light);
 
-        tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
-        await tester.pumpAndSettle();
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+      await tester.pumpAndSettle();
 
-        expect(
-          Theme.of(tester.element(find.byType(ShellScreen))).brightness,
-          Brightness.light,
-          reason: 'a chosen theme is a choice, not a starting point',
-        );
-      },
-    );
+      expect(
+        Theme.of(tester.element(find.byType(ShellScreen))).brightness,
+        Brightness.light,
+        reason: 'a chosen theme is a choice, not a starting point',
+      );
+    });
   });
 
   group('resolving the language with no preference (AF-03)', () {
     testWidgets(
       'GivenNoChosenLanguage_WhenTheSystemIsPortuguese_ThenPortugueseIsUsed',
       (tester) async {
-        tester.platformDispatcher.localesTestValue = const [
-          Locale('pt', 'BR'),
-        ];
+        tester.platformDispatcher.localesTestValue = const [Locale('pt', 'BR')];
         addTearDown(tester.platformDispatcher.clearLocalesTestValue);
 
         await tester.pumpShell();

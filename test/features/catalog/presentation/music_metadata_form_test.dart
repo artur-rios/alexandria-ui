@@ -83,7 +83,9 @@ void main() {
       tester,
     ) async {
       await openForm(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       expect(find.text(l10n.musicMetadataTitle), findsOneWidget);
     });
@@ -114,7 +116,9 @@ void main() {
       // that changed, because the core's patch is a full replace and anything
       // left out would be cleared.
       final (_, gateway) = await openForm(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await enter(tester, l10n.musicMetadataFieldArtist, 'Miles Davis Quintet');
       await tester.tap(find.text(l10n.musicMetadataSave));
@@ -138,7 +142,9 @@ void main() {
       tester,
     ) async {
       await openForm(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await enter(tester, l10n.musicMetadataFieldGenre, 'Modal jazz');
       await tester.tap(find.text(l10n.musicMetadataSave));
@@ -153,7 +159,9 @@ void main() {
       // FR-ME-05, step 7: no manual refresh. The detail view is asked for the
       // record again rather than patched in place.
       final (_, gateway) = await openForm(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
       final before = gateway.detailsRequested.length;
 
       await enter(tester, l10n.musicMetadataFieldGenre, 'Modal jazz');
@@ -169,7 +177,9 @@ void main() {
       // Clearing a field is emptying it: the patch leaves it out, and the core
       // writes NULL for what a full replace does not carry.
       final (_, gateway) = await openForm(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await enter(tester, l10n.musicMetadataFieldGenre, '');
       await tester.tap(find.text(l10n.musicMetadataSave));
@@ -188,7 +198,9 @@ void main() {
       tester,
     ) async {
       final (_, gateway) = await openForm(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await enter(tester, l10n.musicMetadataFieldYear, 'nineteen');
       await tester.tap(find.text(l10n.musicMetadataSave));
@@ -204,7 +216,9 @@ void main() {
       tester,
     ) async {
       await openForm(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await enter(tester, l10n.musicMetadataFieldYear, 'nineteen');
       await tester.tap(find.text(l10n.musicMetadataSave));
@@ -233,7 +247,9 @@ void main() {
           ),
         ],
       );
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await enter(tester, l10n.musicMetadataFieldTitle, 'So What?');
       await tester.tap(find.text(l10n.musicMetadataSave));
@@ -267,7 +283,9 @@ void main() {
           ),
         ],
       );
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await enter(tester, l10n.musicMetadataFieldTitle, 'So What?');
       await tester.tap(find.text(l10n.musicMetadataSave));
@@ -299,7 +317,9 @@ void main() {
           ),
         ],
       );
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await enter(tester, l10n.musicMetadataFieldTitle, 'So What?');
       await tester.tap(find.text(l10n.musicMetadataSave));
@@ -313,7 +333,9 @@ void main() {
   group('nothing changed (AF-04)', () {
     testWidgets('GivenNoEdit_WhenSaved_ThenTheCoreIsNotCalled', (tester) async {
       final (_, gateway) = await openForm(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await tester.tap(find.text(l10n.musicMetadataSave));
       await tester.pumpAndSettle();
@@ -329,7 +351,9 @@ void main() {
       // comparison is against what the file held, not against whether a key
       // was touched.
       final (_, gateway) = await openForm(tester);
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
       await enter(tester, l10n.musicMetadataFieldTitle, 'So What?');
       await enter(tester, l10n.musicMetadataFieldTitle, 'So What');
@@ -341,28 +365,31 @@ void main() {
   });
 
   group('the session is rejected (AF-05)', () {
-    testWidgets('GivenAnUnauthorizedCall_WhenSaved_ThenTheOwnerReturnsToLogin', (
-      tester,
-    ) async {
-      final (container, _) = await openForm(
-        tester,
-        outcomes: const [
-          MetadataEditOutcome.failed(
-            failure: Failure.unauthorized(
-              family: CoreStatusFamily.file,
-              code: FILE_ERR_UNAUTHORIZED,
+    testWidgets(
+      'GivenAnUnauthorizedCall_WhenSaved_ThenTheOwnerReturnsToLogin',
+      (tester) async {
+        final (container, _) = await openForm(
+          tester,
+          outcomes: const [
+            MetadataEditOutcome.failed(
+              failure: Failure.unauthorized(
+                family: CoreStatusFamily.file,
+                code: FILE_ERR_UNAUTHORIZED,
+              ),
             ),
-          ),
-        ],
-      );
-      final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+          ],
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
 
-      await enter(tester, l10n.musicMetadataFieldTitle, 'So What?');
-      await tester.tap(find.text(l10n.musicMetadataSave));
-      await tester.pumpAndSettle();
+        await enter(tester, l10n.musicMetadataFieldTitle, 'So What?');
+        await tester.tap(find.text(l10n.musicMetadataSave));
+        await tester.pumpAndSettle();
 
-      expect(container.read(sessionControllerProvider), isA<SessionAbsent>());
-    });
+        expect(container.read(sessionControllerProvider), isA<SessionAbsent>());
+      },
+    );
   });
 
   group('the form is offered only where it applies', () {

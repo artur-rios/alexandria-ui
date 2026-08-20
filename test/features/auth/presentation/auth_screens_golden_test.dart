@@ -43,16 +43,17 @@ void main() {
     ('Light', ThemeMode.light),
     ('Dark', ThemeMode.dark),
   ]) {
-    testWidgets('GivenThe${name}Theme_WhenLoginIsShown_ThenItMatchesItsGolden', (
-      tester,
-    ) async {
-      await tester.pumpLoginScreen(themeMode: mode, surfaceSize: surface);
+    testWidgets(
+      'GivenThe${name}Theme_WhenLoginIsShown_ThenItMatchesItsGolden',
+      (tester) async {
+        await tester.pumpLoginScreen(themeMode: mode, surfaceSize: surface);
 
-      await expectLater(
-        find.byType(LoginScreen),
-        matchesGoldenFile('goldens/login_${mode.name}.png'),
-      );
-    });
+        await expectLater(
+          find.byType(LoginScreen),
+          matchesGoldenFile('goldens/login_${mode.name}.png'),
+        );
+      },
+    );
 
     testWidgets(
       'GivenThe${name}Theme_WhenSignUpIsShown_ThenItMatchesItsGolden',
@@ -99,7 +100,9 @@ void main() {
 
         await expectLater(
           find.byType(CatalogLockedScreen),
-          matchesGoldenFile('goldens/catalog_locked_undelivered_${mode.name}.png'),
+          matchesGoldenFile(
+            'goldens/catalog_locked_undelivered_${mode.name}.png',
+          ),
         );
       },
     );

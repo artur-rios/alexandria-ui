@@ -42,7 +42,10 @@ void main() {
     });
 
     test('GivenNoOccurrence_WhenMatched_ThenItDoesNotMatch', () {
-      expect(matchesSearch(aFile(name: 'Kind of Blue.flac'), 'reggae'), isFalse);
+      expect(
+        matchesSearch(aFile(name: 'Kind of Blue.flac'), 'reggae'),
+        isFalse,
+      );
     });
 
     test('GivenABlankTerm_WhenMatched_ThenNothingMatches', () {
@@ -80,10 +83,7 @@ void main() {
 
   group('highlighting (main flow step 3)', () {
     test('GivenTheTermInTheName_WhenItIsHighlighted_ThenTheSpanIsFound', () {
-      expect(
-        highlightRange('Kind of Blue.flac', 'blue'),
-        (start: 8, end: 12),
-      );
+      expect(highlightRange('Kind of Blue.flac', 'blue'), (start: 8, end: 12));
     });
 
     test('GivenTheTermIsNotInTheText_WhenHighlighted_ThenThereIsNoSpan', () {

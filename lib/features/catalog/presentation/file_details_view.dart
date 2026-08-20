@@ -10,6 +10,7 @@ import '../../shell/presentation/async_state_view.dart';
 import '../domain/file_details.dart';
 import '../domain/library_type.dart';
 import 'music_metadata_form.dart';
+import 'video_metadata_form.dart';
 
 /// One file's details (UC-13, FR-CT-05, FR-CT-12).
 ///
@@ -117,14 +118,16 @@ class _Details extends ConsumerWidget {
           _Section(l10n.detailsMetadata),
           _Metadata(details: details),
 
-          // UC-15 main flow step 1. Offered for audio only, because music
-          // metadata is the only shape there is a form for yet — video is
-          // UC-16's — and not for a deleted record, which the core refuses to
-          // edit until it is restored.
-          if (details.file.type == LibraryType.audio && !details.isDeleted) ...[
+          // UC-15 and UC-16 main flow step 1. Offered for the two types there
+          // is a form for, and not for a deleted record, which the core
+          // refuses to edit until it is restored. The remaining editable
+          // subtypes — document, comic, image — have no use case in the
+          // backlog, so they are deliberately absent rather than pending.
+          if (details.isDeleted ? null : _metadataFormFor(details.file.type)
+              case final openForm?) ...[
             const SizedBox(height: AppSpacing.sm),
             OutlinedButton.icon(
-              onPressed: () => MusicMetadataForm.show(context, ref, details),
+              onPressed: () => openForm(context, ref, details),
               icon: const Icon(Icons.edit_outlined),
               label: Text(l10n.detailsEditMetadata),
             ),
@@ -224,6 +227,29 @@ class _Section extends StatelessWidget {
     child: Text(text, style: Theme.of(context).textTheme.labelLarge),
   );
 }
+
+/// How a metadata form is opened, whichever type's it is.
+typedef OpenMetadataForm =
+    Future<void> Function(
+      BuildContext context,
+      WidgetRef ref,
+      FileDetails details,
+    );
+
+/// The form that edits [type]'s metadata, or `null` when there is none.
+///
+/// Resolved by lookup rather than by a chain of type conditionals in the
+/// layout: a type either has a form or it does not, and the answer belongs in
+/// one place (IR-02's registration rule).
+OpenMetadataForm? _metadataFormFor(LibraryType type) => switch (type) {
+  LibraryType.audio => MusicMetadataForm.show,
+  LibraryType.video => VideoMetadataForm.show,
+  LibraryType.document ||
+  LibraryType.comic ||
+  LibraryType.text ||
+  LibraryType.html ||
+  LibraryType.image => null,
+};
 
 /// What AF-01 shows: the record is gone, so the listing is refreshed and the
 /// owner goes back to it.

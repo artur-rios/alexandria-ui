@@ -12,7 +12,10 @@ import '../../../support/shell_harness.dart';
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-11, FR-UX-12).
 void main() {
   /// Opens preferences from the shell.
-  Future<void> openFromShell(WidgetTester tester, {ThemeMode? themeMode}) async {
+  Future<void> openFromShell(
+    WidgetTester tester, {
+    ThemeMode? themeMode,
+  }) async {
     await tester.pumpShell(themeMode: themeMode ?? ThemeMode.light);
     await tester.tap(find.byType(PreferencesButton));
     await tester.pumpAndSettle();
@@ -155,20 +158,19 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenAWorkingStore_WhenAThemeIsChosen_ThenNoNoticeIsShown',
-      (tester) async {
-        await openFromShell(tester);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
+    testWidgets('GivenAWorkingStore_WhenAThemeIsChosen_ThenNoNoticeIsShown', (
+      tester,
+    ) async {
+      await openFromShell(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(PreferencesDialog)),
+      );
 
-        await tester.tap(find.text(l10n.preferencesThemeDark));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.preferencesThemeDark));
+      await tester.pumpAndSettle();
 
-        expect(find.text(l10n.preferencesUnsaved), findsNothing);
-      },
-    );
+      expect(find.text(l10n.preferencesUnsaved), findsNothing);
+    });
   });
 
   group('the rest of the application is undisturbed (AF-04)', () {

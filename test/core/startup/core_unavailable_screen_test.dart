@@ -78,31 +78,34 @@ void main() {
     },
   );
 
-  testWidgets('GivenTheUnavailableState_WhenTheRetryIsPressed_ThenStartupReruns',
-      (tester) async {
-    var attempts = 0;
-    final container = await tester.pumpAlexandria(
-      overrides: fakeCoreOverrides(
-        loadCore: (_) async {
-          attempts++;
-          throw const CoreCallException('still unavailable');
-        },
-      ),
-    );
+  testWidgets(
+    'GivenTheUnavailableState_WhenTheRetryIsPressed_ThenStartupReruns',
+    (tester) async {
+      var attempts = 0;
+      final container = await tester.pumpAlexandria(
+        overrides: fakeCoreOverrides(
+          loadCore: (_) async {
+            attempts++;
+            throw const CoreCallException('still unavailable');
+          },
+        ),
+      );
 
-    await container.read(startupControllerProvider.notifier).start();
-    await tester.pumpAndSettle();
-    expect(attempts, 1);
+      await container.read(startupControllerProvider.notifier).start();
+      await tester.pumpAndSettle();
+      expect(attempts, 1);
 
-    await tester.tap(find.byType(FilledButton));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
 
-    expect(attempts, 2, reason: 'the retry re-runs the sequence from step 1');
-    expect(find.byType(CoreUnavailableScreen), findsOneWidget);
-  });
+      expect(attempts, 2, reason: 'the retry re-runs the sequence from step 1');
+      expect(find.byType(CoreUnavailableScreen), findsOneWidget);
+    },
+  );
 
-  testWidgets('GivenTheUnavailableState_WhenItIsBuilt_ThenTheRetryHasFocus',
-      (tester) async {
+  testWidgets('GivenTheUnavailableState_WhenItIsBuilt_ThenTheRetryHasFocus', (
+    tester,
+  ) async {
     await pumpFailedStartup(tester);
 
     final button = tester.widget<FilledButton>(find.byType(FilledButton));

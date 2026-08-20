@@ -45,32 +45,29 @@ void main() {
       },
     );
 
-    test(
-      'GivenANonFinitePart_WhenItIsDecoded_ThenThereIsNothingToRestore',
-      () {
-        expect(WindowGeometry.decode('100,50,Infinity,900'), isNull);
-      },
-    );
+    test('GivenANonFinitePart_WhenItIsDecoded_ThenThereIsNothingToRestore', () {
+      expect(WindowGeometry.decode('100,50,Infinity,900'), isNull);
+    });
 
     test('GivenAZeroWidth_WhenItIsDecoded_ThenThereIsNothingToRestore', () {
       expect(WindowGeometry.decode('100,50,0,900'), isNull);
     });
 
-    test('GivenANegativeHeight_WhenItIsDecoded_ThenThereIsNothingToRestore', () {
-      expect(WindowGeometry.decode('100,50,1440,-900'), isNull);
-    });
-
     test(
-      'GivenANegativePosition_WhenItIsDecoded_ThenItIsRestored',
+      'GivenANegativeHeight_WhenItIsDecoded_ThenThereIsNothingToRestore',
       () {
-        // A window on a display arranged to the left of the primary one has a
-        // negative x, which is an ordinary position rather than a bad value.
-        expect(
-          WindowGeometry.decode('-1820,50,1440,900'),
-          const WindowGeometry(left: -1820, top: 50, width: 1440, height: 900),
-        );
+        expect(WindowGeometry.decode('100,50,1440,-900'), isNull);
       },
     );
+
+    test('GivenANegativePosition_WhenItIsDecoded_ThenItIsRestored', () {
+      // A window on a display arranged to the left of the primary one has a
+      // negative x, which is an ordinary position rather than a bad value.
+      expect(
+        WindowGeometry.decode('-1820,50,1440,900'),
+        const WindowGeometry(left: -1820, top: 50, width: 1440, height: 900),
+      );
+    });
   });
 
   group('visibility', () {
@@ -109,12 +106,9 @@ void main() {
       },
     );
 
-    test(
-      'GivenNoDisplaysCanBeRead_WhenItIsChecked_ThenItIsNotRestorable',
-      () {
-        expect(geometry.isVisibleOn(const []), isFalse);
-      },
-    );
+    test('GivenNoDisplaysCanBeRead_WhenItIsChecked_ThenItIsNotRestorable', () {
+      expect(geometry.isVisibleOn(const []), isFalse);
+    });
 
     test(
       'GivenAnOriginPastTheBottomEdge_WhenItIsChecked_ThenItIsNotRestorable',
@@ -147,7 +141,10 @@ void main() {
     );
   });
 
-  test('GivenAGeometry_WhenItsBoundsAreRead_ThenTheyDescribeTheSameRectangle', () {
-    expect(geometry.bounds, const Rect.fromLTWH(100, 50, 1440, 900));
-  });
+  test(
+    'GivenAGeometry_WhenItsBoundsAreRead_ThenTheyDescribeTheSameRectangle',
+    () {
+      expect(geometry.bounds, const Rect.fromLTWH(100, 50, 1440, 900));
+    },
+  );
 }

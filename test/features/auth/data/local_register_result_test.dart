@@ -27,12 +27,9 @@ void main() {
 
   // Registration echoes the address back, normalized. That is what the session
   // should carry, not the raw text typed.
-  test(
-    'GivenTheCoresRegisterPayload_WhenItIsDecoded_ThenTheAddressIsRead',
-    () {
-      expect(decode(corePayload).email, 'owner@example.com');
-    },
-  );
+  test('GivenTheCoresRegisterPayload_WhenItIsDecoded_ThenTheAddressIsRead', () {
+    expect(decode(corePayload).email, 'owner@example.com');
+  });
 
   test('GivenTheCoresRegisterPayload_WhenItIsDecoded_ThenSuccessIsRead', () {
     expect(decode(corePayload).success, isTrue);
@@ -63,12 +60,9 @@ void main() {
   );
 
   // UC-01 AF-06.
-  test(
-    'GivenTheConfirmationCouldNotBeSent_WhenItIsDecoded_ThenThatIsRead',
-    () {
-      expect(decode(corePayload).confirmationSent, isFalse);
-    },
-  );
+  test('GivenTheConfirmationCouldNotBeSent_WhenItIsDecoded_ThenThatIsRead', () {
+    expect(decode(corePayload).confirmationSent, isFalse);
+  });
 
   test(
     'GivenTheConfirmationCouldNotBeSent_WhenItIsDecoded_ThenTheReasonIsRead',
@@ -77,17 +71,14 @@ void main() {
     },
   );
 
-  test(
-    'GivenTheConfirmationWasSent_WhenItIsDecoded_ThenThereIsNoReason',
-    () {
-      const payload =
-          '{"success":true,"email":"owner@example.com",'
-          '"sessionId":"6f1c9d02","emailConfirmed":false,'
-          '"confirmationSent":true}';
+  test('GivenTheConfirmationWasSent_WhenItIsDecoded_ThenThereIsNoReason', () {
+    const payload =
+        '{"success":true,"email":"owner@example.com",'
+        '"sessionId":"6f1c9d02","emailConfirmed":false,'
+        '"confirmationSent":true}';
 
-      expect(decode(payload).confirmationError, isNull);
-    },
-  );
+    expect(decode(payload).confirmationError, isNull);
+  });
 
   test('GivenAPayloadMissingTheSessionId_WhenItIsDecoded_ThenItThrows', () {
     expect(

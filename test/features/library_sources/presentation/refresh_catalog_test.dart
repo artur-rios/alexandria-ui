@@ -78,8 +78,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
   }
 
-  testWidgets('GivenTheScreen_WhenItOpens_ThenARefreshIsOffered',
-      (tester) async {
+  testWidgets('GivenTheScreen_WhenItOpens_ThenARefreshIsOffered', (
+    tester,
+  ) async {
     await openScreen(
       tester,
       gateway: FakeIndexGateway()..readOutcomes = [refreshed()],
@@ -91,8 +92,9 @@ void main() {
     expect(find.text(l10n.librarySourcesRefresh), findsOneWidget);
   });
 
-  testWidgets('GivenARefresh_WhenItFinishes_ThenItsCountsAreShown',
-      (tester) async {
+  testWidgets('GivenARefresh_WhenItFinishes_ThenItsCountsAreShown', (
+    tester,
+  ) async {
     await openScreen(
       tester,
       gateway: FakeIndexGateway()..readOutcomes = [refreshed()],
@@ -109,8 +111,9 @@ void main() {
     );
   });
 
-  testWidgets('GivenAnEmptyCatalog_WhenARefreshIsPressed_ThenItSaysWhatToDo',
-      (tester) async {
+  testWidgets('GivenAnEmptyCatalog_WhenARefreshIsPressed_ThenItSaysWhatToDo', (
+    tester,
+  ) async {
     // AF-02: registering and indexing a folder is what the owner needs, and
     // both actions are already on this screen.
     await openScreen(
@@ -128,46 +131,51 @@ void main() {
     expect(find.text(l10n.librarySourcesRefreshEmpty), findsOneWidget);
   });
 
-  testWidgets('GivenARefreshRunning_WhenTheScreenRebuilds_ThenTheActionIsBusy',
-      (tester) async {
-    final container = await openScreen(
-      tester,
-      gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
-    );
+  testWidgets(
+    'GivenARefreshRunning_WhenTheScreenRebuilds_ThenTheActionIsBusy',
+    (tester) async {
+      final container = await openScreen(
+        tester,
+        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+      );
 
-    await pressRefresh(tester);
+      await pressRefresh(tester);
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(LibrarySourcesScreen)),
-    );
-    expect(find.text(l10n.librarySourcesRefreshing), findsOneWidget);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+      expect(find.text(l10n.librarySourcesRefreshing), findsOneWidget);
 
-    // The refresh is deliberately still going, so the poller is stopped here.
-    container.dispose();
-  });
+      // The refresh is deliberately still going, so the poller is stopped here.
+      container.dispose();
+    },
+  );
 
-  testWidgets('GivenFilesGoMissing_WhenTheRefreshFinishes_ThenTheReviewIsNamed',
-      (tester) async {
-    // AF-03: the count is reported now; the link to the review is UC-37's, so
-    // the outcome says where it will be rather than going nowhere.
-    await openScreen(
-      tester,
-      gateway: FakeIndexGateway()..readOutcomes = [refreshed(missing: 4)],
-    );
+  testWidgets(
+    'GivenFilesGoMissing_WhenTheRefreshFinishes_ThenTheReviewIsNamed',
+    (tester) async {
+      // AF-03: the count is reported now; the link to the review is UC-37's, so
+      // the outcome says where it will be rather than going nowhere.
+      await openScreen(
+        tester,
+        gateway: FakeIndexGateway()..readOutcomes = [refreshed(missing: 4)],
+      );
 
-    await pressRefresh(tester);
+      await pressRefresh(tester);
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(LibrarySourcesScreen)),
-    );
-    expect(
-      find.textContaining(l10n.librarySourcesMissingReviewPending),
-      findsOneWidget,
-    );
-  });
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+      expect(
+        find.textContaining(l10n.librarySourcesMissingReviewPending),
+        findsOneWidget,
+      );
+    },
+  );
 
-  testWidgets('GivenNoFilesGoMissing_WhenItFinishes_ThenNoReviewIsNamed',
-      (tester) async {
+  testWidgets('GivenNoFilesGoMissing_WhenItFinishes_ThenNoReviewIsNamed', (
+    tester,
+  ) async {
     await openScreen(
       tester,
       gateway: FakeIndexGateway()..readOutcomes = [refreshed()],
@@ -188,8 +196,9 @@ void main() {
     ('English', const Locale('en')),
     ('Portuguese', const Locale('pt', 'BR')),
   ]) {
-    testWidgets('Given${name}_WhenARefreshFinishes_ThenItIsLocalized',
-        (tester) async {
+    testWidgets('Given${name}_WhenARefreshFinishes_ThenItIsLocalized', (
+      tester,
+    ) async {
       await openScreen(
         tester,
         gateway: FakeIndexGateway()..readOutcomes = [refreshed()],

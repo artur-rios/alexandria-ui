@@ -7,41 +7,32 @@ import 'package:flutter_test/flutter_test.dart';
 /// the caller then falls back to the status code, so a core that answers
 /// without a code degrades to the previous behaviour instead of failing.
 void main() {
-  test(
-    'GivenAnEnvelopeWithACode_WhenItIsRead_ThenTheCodeIsReturned',
-    () {
-      final rejection = readCoreRejection(
-        '{"error":"password must be at least 12 characters",'
-        '"code":"password_too_short","params":{"min":"12"}}',
-      );
+  test('GivenAnEnvelopeWithACode_WhenItIsRead_ThenTheCodeIsReturned', () {
+    final rejection = readCoreRejection(
+      '{"error":"password must be at least 12 characters",'
+      '"code":"password_too_short","params":{"min":"12"}}',
+    );
 
-      expect(rejection?.code, 'password_too_short');
-    },
-  );
+    expect(rejection?.code, 'password_too_short');
+  });
 
   // The bound comes from the core because the core owns the policy. A message
   // that hardcoded 12 would be wrong the day the rule changes.
-  test(
-    'GivenAnEnvelopeWithParams_WhenItIsRead_ThenTheParamsAreReturned',
-    () {
-      final rejection = readCoreRejection(
-        '{"error":"…","code":"password_too_short","params":{"min":"12"}}',
-      );
+  test('GivenAnEnvelopeWithParams_WhenItIsRead_ThenTheParamsAreReturned', () {
+    final rejection = readCoreRejection(
+      '{"error":"…","code":"password_too_short","params":{"min":"12"}}',
+    );
 
-      expect(rejection?.params, {'min': '12'});
-    },
-  );
+    expect(rejection?.params, {'min': '12'});
+  });
 
-  test(
-    'GivenAnEnvelopeWithNoParams_WhenItIsRead_ThenTheParamsAreEmpty',
-    () {
-      final rejection = readCoreRejection(
-        '{"error":"…","code":"password_too_common"}',
-      );
+  test('GivenAnEnvelopeWithNoParams_WhenItIsRead_ThenTheParamsAreEmpty', () {
+    final rejection = readCoreRejection(
+      '{"error":"…","code":"password_too_common"}',
+    );
 
-      expect(rejection?.params, isEmpty);
-    },
-  );
+    expect(rejection?.params, isEmpty);
+  });
 
   test(
     'GivenAnEnvelope_WhenItIsRead_ThenTheCoresOwnMessageIsKeptForTheLog',

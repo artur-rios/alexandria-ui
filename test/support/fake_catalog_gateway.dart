@@ -4,6 +4,7 @@ import 'package:alexandria_desktop/features/catalog/domain/file_details.dart';
 import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
 import 'package:alexandria_desktop/features/catalog/domain/listing_view.dart';
 import 'package:alexandria_desktop/features/catalog/domain/music_metadata.dart';
+import 'package:alexandria_desktop/features/catalog/domain/video_metadata.dart';
 
 /// A [CatalogGateway] that never reaches the core (Testing Specification §2.3).
 ///
@@ -47,6 +48,18 @@ class FakeCatalogGateway implements CatalogGateway {
   ///
   /// Empty is the assertion AF-01 and AF-04 need: neither one calls the core.
   final List<({String uuid, MusicMetadata metadata})> edits = [];
+
+  /// What [editVideoMetadata] answers, in order (UC-16).
+  ///
+  /// A list rather than one outcome, so a test can have the core refuse once
+  /// and accept the retry — which is the whole of AF-02.
+  final List<VideoMetadataEditOutcome> videoEditOutcomes = [];
+
+  /// Every video edit asked for, in order.
+  ///
+  /// Empty is the assertion AF-01 and AF-03's refusal need: neither calls the
+  /// core.
+  final List<({String uuid, VideoMetadata metadata})> videoEdits = [];
 
   /// Every type asked for, in order.
   ///
@@ -97,6 +110,7 @@ class FakeCatalogGateway implements CatalogGateway {
           details: FileDetails(file: aFile(uuid: uuid)),
         );
   }
+
   @override
   Future<MetadataEditOutcome> editMusicMetadata({
     required String uuid,
@@ -115,6 +129,21 @@ class FakeCatalogGateway implements CatalogGateway {
     return editOutcomes.removeAt(0);
   }
 
+  @override
+  Future<VideoMetadataEditOutcome> editVideoMetadata({
+    required String uuid,
+    required VideoMetadata metadata,
+    required String credential,
+  }) async {
+    videoEdits.add((uuid: uuid, metadata: metadata));
+    credentials.add(credential);
+
+    if (videoEditOutcomes.isEmpty) {
+      return VideoMetadataEditOutcome.saved(metadata: metadata);
+    }
+
+    return videoEditOutcomes.removeAt(0);
+  }
 }
 
 /// A file of [type], for a test that needs one in a listing.

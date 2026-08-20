@@ -76,10 +76,9 @@ void main() {
       () async {
         final core = FakeCoreClient();
 
-        await buildGateway(core).logIn(
-          email: '  owner@example.com  ',
-          password: 'correct horse',
-        );
+        await buildGateway(
+          core,
+        ).logIn(email: '  owner@example.com  ', password: 'correct horse');
 
         expect(
           jsonDecode(core.authLocalLoginBodies.single),
@@ -112,10 +111,7 @@ void main() {
       () async {
         final outcome = await logInWith(
           FakeCoreClient(
-            authLocalLoginResult: (
-              status: AUTH_ERR_UNAUTHORIZED,
-              json: null,
-            ),
+            authLocalLoginResult: (status: AUTH_ERR_UNAUTHORIZED, json: null),
           ),
         );
 

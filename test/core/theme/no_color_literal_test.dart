@@ -65,10 +65,9 @@ void main() {
     // The complement of the rule above: if nothing in lib/core/theme/ names a
     // color, the exemption has quietly stopped covering anything and the first
     // test above would pass for the wrong reason.
-    final themeSources = Directory('lib/core/theme')
-        .listSync()
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.dart'));
+    final themeSources = Directory(
+      'lib/core/theme',
+    ).listSync().whereType<File>().where((file) => file.path.endsWith('.dart'));
 
     expect(
       themeSources.any(

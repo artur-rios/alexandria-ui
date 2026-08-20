@@ -40,14 +40,13 @@ void main() {
 
     // The password cannot be recovered, so the owner is told before choosing
     // one rather than after.
-    testWidgets(
-      'GivenTheSignUpScreen_WhenItOpens_ThenTheStakesAreStated',
-      (tester) async {
-        await tester.pumpSignUpScreen();
+    testWidgets('GivenTheSignUpScreen_WhenItOpens_ThenTheStakesAreStated', (
+      tester,
+    ) async {
+      await tester.pumpSignUpScreen();
 
-        expect(find.text(en.signUpIntro), findsOneWidget);
-      },
-    );
+      expect(find.text(en.signUpIntro), findsOneWidget);
+    });
   });
 
   group('the main flow', () {
@@ -62,17 +61,16 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenAValidForm_WhenTheOwnerSignsUp_ThenTheCoreIsCalledOnce',
-      (tester) async {
-        final gateway = FakeAuthGateway();
-        await tester.pumpSignUpScreen(gateway: gateway);
+    testWidgets('GivenAValidForm_WhenTheOwnerSignsUp_ThenTheCoreIsCalledOnce', (
+      tester,
+    ) async {
+      final gateway = FakeAuthGateway();
+      await tester.pumpSignUpScreen(gateway: gateway);
 
-        await tester.signUp();
+      await tester.signUp();
 
-        expect(gateway.registrations, hasLength(1));
-      },
-    );
+      expect(gateway.registrations, hasLength(1));
+    });
 
     testWidgets(
       'GivenAnAttemptInFlight_WhenTheFormIsRead_ThenAProgressIndicatorReplacesTheAction',
@@ -424,7 +422,9 @@ void main() {
         await pumpConflict(tester);
 
         await tester.signUp();
-        await tester.tap(find.widgetWithText(OutlinedButton, en.signUpGoToLogin));
+        await tester.tap(
+          find.widgetWithText(OutlinedButton, en.signUpGoToLogin),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(LoginScreen), findsOneWidget);
@@ -570,20 +570,19 @@ void main() {
 
     // NFR-07: the form is a field taller than login, so the minimum window is
     // where a control would first become unreachable.
-    testWidgets(
-      'GivenTheMinimumWindow_WhenTheActionIsTapped_ThenItResponds',
-      (tester) async {
-        final gateway = FakeAuthGateway();
-        await tester.pumpSignUpScreen(
-          gateway: gateway,
-          surfaceSize: Breakpoint.minimumWindowSize,
-        );
+    testWidgets('GivenTheMinimumWindow_WhenTheActionIsTapped_ThenItResponds', (
+      tester,
+    ) async {
+      final gateway = FakeAuthGateway();
+      await tester.pumpSignUpScreen(
+        gateway: gateway,
+        surfaceSize: Breakpoint.minimumWindowSize,
+      );
 
-        await tester.signUp();
+      await tester.signUp();
 
-        expect(gateway.registrations, hasLength(1));
-      },
-    );
+      expect(gateway.registrations, hasLength(1));
+    });
 
     // FR-UX-11.
     testWidgets(

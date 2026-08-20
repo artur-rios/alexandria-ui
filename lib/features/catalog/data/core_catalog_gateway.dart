@@ -12,6 +12,7 @@ import '../domain/file_details.dart';
 import '../domain/library_type.dart';
 import '../domain/listing_view.dart';
 import '../domain/music_metadata.dart';
+import '../domain/video_metadata.dart';
 
 /// [CatalogGateway] over the generated bindings (IR-03, UC-09).
 class CoreCatalogGateway implements CatalogGateway {
@@ -160,14 +161,65 @@ class CoreCatalogGateway implements CatalogGateway {
       final body = jsonDecode(json) as Map<String, dynamic>;
 
       return MetadataEditOutcome.saved(
-        metadata: MusicMetadata.fromDetails(
-          _metadataFrom(body['metadata']),
-        ),
+        metadata: MusicMetadata.fromDetails(_metadataFrom(body['metadata'])),
       );
     } on Object {
       return _unreadableEdit();
     }
   }
+
+  @override
+  Future<VideoMetadataEditOutcome> editVideoMetadata({
+    required String uuid,
+    required VideoMetadata metadata,
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.fileEditMetadata(
+        uuid,
+        jsonEncode(metadata.toPatch()),
+        credential,
+      );
+    } on CoreCallException {
+      return const VideoMetadataEditOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.file,
+          code: FILE_ERR_OTHER,
+        ),
+      );
+    }
+
+    // AF-02, AF-04 and AF-05 all arrive here and are told apart by the status
+    // the mapper reads: a value the core refused, a record it does not have,
+    // and a rejected session.
+    if (!CoreStatusFamily.file.isOk(response.status)) {
+      return VideoMetadataEditOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.file, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unreadableVideoEdit();
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+
+      return VideoMetadataEditOutcome.saved(
+        metadata: VideoMetadata.fromDetails(_metadataFrom(body['metadata'])),
+      );
+    } on Object {
+      return _unreadableVideoEdit();
+    }
+  }
+
+  VideoMetadataEditOutcome _unreadableVideoEdit() =>
+      const VideoMetadataEditOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.file,
+          code: FILE_ERR_OTHER,
+        ),
+      );
 
   MetadataEditOutcome _unreadableEdit() => const MetadataEditOutcome.failed(
     failure: Failure.unexpected(

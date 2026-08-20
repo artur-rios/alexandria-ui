@@ -21,28 +21,33 @@ void main() {
   );
 
   group('the shared library (IR-04)', () {
-    test('GivenNoOverride_WhenThePathsAreListed_ThenTheyStartAtTheExecutable',
-        () {
-      final candidates = pathsWith(const {}).librarySearchPaths;
+    test(
+      'GivenNoOverride_WhenThePathsAreListed_ThenTheyStartAtTheExecutable',
+      () {
+        final candidates = pathsWith(const {}).librarySearchPaths;
 
-      expect(candidates, isNotEmpty);
-      expect(
-        candidates.first,
-        startsWith(p.dirname(Platform.resolvedExecutable)),
-        reason:
-            'a packaged build resolves the library relative to its own '
-            'executable — that is what makes it self-contained',
-      );
-    });
+        expect(candidates, isNotEmpty);
+        expect(
+          candidates.first,
+          startsWith(p.dirname(Platform.resolvedExecutable)),
+          reason:
+              'a packaged build resolves the library relative to its own '
+              'executable — that is what makes it self-contained',
+        );
+      },
+    );
 
-    test('GivenNoOverride_WhenThePathsAreListed_ThenTheDevCheckoutIsIncluded',
-        () {
-      expect(
-        pathsWith(const {}).librarySearchPaths,
-        contains(anyOf(contains('native'), contains('build'))),
-        reason: 'a development checkout runs against native/ without a variable',
-      );
-    });
+    test(
+      'GivenNoOverride_WhenThePathsAreListed_ThenTheDevCheckoutIsIncluded',
+      () {
+        expect(
+          pathsWith(const {}).librarySearchPaths,
+          contains(anyOf(contains('native'), contains('build'))),
+          reason:
+              'a development checkout runs against native/ without a variable',
+        );
+      },
+    );
 
     test('GivenTheOverride_WhenThePathsAreListed_ThenItIsTheOnlyCandidate', () {
       final candidates = pathsWith({
@@ -83,13 +88,15 @@ void main() {
       );
     });
 
-    test('GivenTheRunningPlatform_WhenTheFileNameIsRead_ThenItMatchesTheTarget',
-        () {
-      expect(
-        CorePaths.libraryFileName,
-        Platform.isWindows ? 'alexandria_ffi.dll' : 'libalexandria_ffi.so',
-      );
-    });
+    test(
+      'GivenTheRunningPlatform_WhenTheFileNameIsRead_ThenItMatchesTheTarget',
+      () {
+        expect(
+          CorePaths.libraryFileName,
+          Platform.isWindows ? 'alexandria_ffi.dll' : 'libalexandria_ffi.so',
+        );
+      },
+    );
   });
 
   group('the catalog database (IR-05)', () {
@@ -117,29 +124,33 @@ void main() {
       },
     );
 
-    test('GivenTheRuntimeOverride_WhenTheDatabaseIsResolved_ThenItWins',
-        () async {
-      final path = await pathsWith({
-        CorePaths.databasePathVariable: '/scratch/test.db',
-      }).resolveDatabasePath();
+    test(
+      'GivenTheRuntimeOverride_WhenTheDatabaseIsResolved_ThenItWins',
+      () async {
+        final path = await pathsWith({
+          CorePaths.databasePathVariable: '/scratch/test.db',
+        }).resolveDatabasePath();
 
-      expect(
-        path,
-        '/scratch/test.db',
-        reason:
-            'this override is what points development and the integration '
-            'suite at a scratch database so no run touches a real catalog',
-      );
-    });
+        expect(
+          path,
+          '/scratch/test.db',
+          reason:
+              'this override is what points development and the integration '
+              'suite at a scratch database so no run touches a real catalog',
+        );
+      },
+    );
 
-    test('GivenAnEmptyOverride_WhenTheDatabaseIsResolved_ThenItIsIgnored',
-        () async {
-      final path = await pathsWith({
-        CorePaths.databasePathVariable: '',
-      }).resolveDatabasePath();
+    test(
+      'GivenAnEmptyOverride_WhenTheDatabaseIsResolved_ThenItIsIgnored',
+      () async {
+        final path = await pathsWith({
+          CorePaths.databasePathVariable: '',
+        }).resolveDatabasePath();
 
-      expect(path, endsWith('catalog.db'));
-    });
+        expect(path, endsWith('catalog.db'));
+      },
+    );
 
     test(
       'GivenAnExistingApplicationFolder_WhenItIsResolvedAgain_ThenItIsReused',

@@ -13,7 +13,9 @@ void main() {
   /// A container whose startup has settled over [settings].
   Future<ProviderContainer> started({SettingsStore? settings}) async {
     final container = buildTestContainer(
-      overrides: fakeCoreOverrides(settings: settings ?? InMemorySettingsStore()),
+      overrides: fakeCoreOverrides(
+        settings: settings ?? InMemorySettingsStore(),
+      ),
     );
     await container.read(startupControllerProvider.notifier).start();
     return container;
@@ -31,27 +33,21 @@ void main() {
       },
     );
 
-    test(
-      'GivenAStoredTheme_WhenStartupSettles_ThenItIsApplied',
-      () async {
-        final container = await started(
-          settings: InMemorySettingsStore(themeMode: ThemeMode.dark),
-        );
+    test('GivenAStoredTheme_WhenStartupSettles_ThenItIsApplied', () async {
+      final container = await started(
+        settings: InMemorySettingsStore(themeMode: ThemeMode.dark),
+      );
 
-        expect(container.read(themeModeProvider), ThemeMode.dark);
-      },
-    );
+      expect(container.read(themeModeProvider), ThemeMode.dark);
+    });
 
-    test(
-      'GivenAStoredLanguage_WhenStartupSettles_ThenItIsApplied',
-      () async {
-        final container = await started(
-          settings: InMemorySettingsStore(locale: const Locale('pt', 'BR')),
-        );
+    test('GivenAStoredLanguage_WhenStartupSettles_ThenItIsApplied', () async {
+      final container = await started(
+        settings: InMemorySettingsStore(locale: const Locale('pt', 'BR')),
+      );
 
-        expect(container.read(localeProvider), const Locale('pt', 'BR'));
-      },
-    );
+      expect(container.read(localeProvider), const Locale('pt', 'BR'));
+    });
 
     test(
       'GivenStartupHasNotSettled_WhenTheThemeIsRead_ThenItFollowsTheSystem',
@@ -66,34 +62,36 @@ void main() {
   });
 
   group('choosing a theme', () {
-    test('GivenTheSystemTheme_WhenDarkIsChosen_ThenItAppliesImmediately',
-        () async {
-      final container = await started();
+    test(
+      'GivenTheSystemTheme_WhenDarkIsChosen_ThenItAppliesImmediately',
+      () async {
+        final container = await started();
 
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setThemeMode(ThemeMode.dark);
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setThemeMode(ThemeMode.dark);
 
-      expect(container.read(themeModeProvider), ThemeMode.dark);
-    });
+        expect(container.read(themeModeProvider), ThemeMode.dark);
+      },
+    );
 
-    test('GivenAChosenTheme_WhenItIsChosen_ThenItIsWrittenForTheNextLaunch',
-        () async {
-      final settings = InMemorySettingsStore();
-      final container = await started(settings: settings);
+    test(
+      'GivenAChosenTheme_WhenItIsChosen_ThenItIsWrittenForTheNextLaunch',
+      () async {
+        final settings = InMemorySettingsStore();
+        final container = await started(settings: settings);
 
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setThemeMode(ThemeMode.light);
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setThemeMode(ThemeMode.light);
 
-      expect(settings.themeMode, ThemeMode.light);
-    });
+        expect(settings.themeMode, ThemeMode.light);
+      },
+    );
 
     test('GivenEveryThemeOption_WhenEachIsChosen_ThenEachApplies', () async {
       final container = await started();
-      final controller = container.read(
-        preferencesControllerProvider.notifier,
-      );
+      final controller = container.read(preferencesControllerProvider.notifier);
 
       for (final mode in ThemeMode.values) {
         await controller.setThemeMode(mode);
@@ -103,28 +101,32 @@ void main() {
   });
 
   group('choosing a language', () {
-    test('GivenEnglish_WhenPortugueseIsChosen_ThenItAppliesImmediately',
-        () async {
-      final container = await started();
+    test(
+      'GivenEnglish_WhenPortugueseIsChosen_ThenItAppliesImmediately',
+      () async {
+        final container = await started();
 
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setLocale(const Locale('pt', 'BR'));
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setLocale(const Locale('pt', 'BR'));
 
-      expect(container.read(localeProvider), const Locale('pt', 'BR'));
-    });
+        expect(container.read(localeProvider), const Locale('pt', 'BR'));
+      },
+    );
 
-    test('GivenAChosenLanguage_WhenItIsChosen_ThenItIsWrittenForTheNextLaunch',
-        () async {
-      final settings = InMemorySettingsStore();
-      final container = await started(settings: settings);
+    test(
+      'GivenAChosenLanguage_WhenItIsChosen_ThenItIsWrittenForTheNextLaunch',
+      () async {
+        final settings = InMemorySettingsStore();
+        final container = await started(settings: settings);
 
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setLocale(const Locale('en'));
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setLocale(const Locale('en'));
 
-      expect(settings.locale, const Locale('en'));
-    });
+        expect(settings.locale, const Locale('en'));
+      },
+    );
 
     test(
       'GivenAChosenLanguage_WhenTheSystemIsChosenAgain_ThenItFollowsTheSystem',
@@ -143,84 +145,94 @@ void main() {
   });
 
   group('a store that cannot be written (AF-02)', () {
-    test('GivenTheStoreRefusesAWrite_WhenAThemeIsChosen_ThenItStillApplies',
-        () async {
-      final container = await started(settings: FailingSettingsStore());
+    test(
+      'GivenTheStoreRefusesAWrite_WhenAThemeIsChosen_ThenItStillApplies',
+      () async {
+        final container = await started(settings: FailingSettingsStore());
 
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setThemeMode(ThemeMode.dark);
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setThemeMode(ThemeMode.dark);
 
-      expect(
-        container.read(themeModeProvider),
-        ThemeMode.dark,
-        reason:
-            'the owner asked for a dark theme; a read-only disk is no reason '
-            'to refuse them one for this session',
-      );
-    });
+        expect(
+          container.read(themeModeProvider),
+          ThemeMode.dark,
+          reason:
+              'the owner asked for a dark theme; a read-only disk is no reason '
+              'to refuse them one for this session',
+        );
+      },
+    );
 
-    test('GivenTheStoreRefusesAWrite_WhenAThemeIsChosen_ThenItIsReported',
-        () async {
-      final container = await started(settings: FailingSettingsStore());
+    test(
+      'GivenTheStoreRefusesAWrite_WhenAThemeIsChosen_ThenItIsReported',
+      () async {
+        final container = await started(settings: FailingSettingsStore());
 
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setThemeMode(ThemeMode.dark);
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setThemeMode(ThemeMode.dark);
 
-      expect(
-        container.read(preferencesControllerProvider).lastChangeUnsaved,
-        isTrue,
-      );
-    });
+        expect(
+          container.read(preferencesControllerProvider).lastChangeUnsaved,
+          isTrue,
+        );
+      },
+    );
 
-    test('GivenTheStoreRefusesAWrite_WhenALanguageIsChosen_ThenItIsReported',
-        () async {
-      final store = FailingSettingsStore();
-      final container = await started(settings: store);
+    test(
+      'GivenTheStoreRefusesAWrite_WhenALanguageIsChosen_ThenItIsReported',
+      () async {
+        final store = FailingSettingsStore();
+        final container = await started(settings: store);
 
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setLocale(const Locale('pt', 'BR'));
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setLocale(const Locale('pt', 'BR'));
 
-      expect(container.read(localeProvider), const Locale('pt', 'BR'));
-      expect(
-        container.read(preferencesControllerProvider).lastChangeUnsaved,
-        isTrue,
-      );
-      expect(store.attempted, ['locale']);
-    });
+        expect(container.read(localeProvider), const Locale('pt', 'BR'));
+        expect(
+          container.read(preferencesControllerProvider).lastChangeUnsaved,
+          isTrue,
+        );
+        expect(store.attempted, ['locale']);
+      },
+    );
 
-    test('GivenAWorkingStore_WhenAThemeIsChosen_ThenNothingIsReported',
-        () async {
-      final container = await started();
+    test(
+      'GivenAWorkingStore_WhenAThemeIsChosen_ThenNothingIsReported',
+      () async {
+        final container = await started();
 
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setThemeMode(ThemeMode.dark);
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setThemeMode(ThemeMode.dark);
 
-      expect(
-        container.read(preferencesControllerProvider).lastChangeUnsaved,
-        isFalse,
-        reason: 'a write that worked must not warn about not having worked',
-      );
-    });
+        expect(
+          container.read(preferencesControllerProvider).lastChangeUnsaved,
+          isFalse,
+          reason: 'a write that worked must not warn about not having worked',
+        );
+      },
+    );
 
-    test('GivenAReportedFailure_WhenTheOwnerHasSeenIt_ThenItIsCleared',
-        () async {
-      final container = await started(settings: FailingSettingsStore());
-      final controller = container.read(
-        preferencesControllerProvider.notifier,
-      );
-      await controller.setThemeMode(ThemeMode.dark);
+    test(
+      'GivenAReportedFailure_WhenTheOwnerHasSeenIt_ThenItIsCleared',
+      () async {
+        final container = await started(settings: FailingSettingsStore());
+        final controller = container.read(
+          preferencesControllerProvider.notifier,
+        );
+        await controller.setThemeMode(ThemeMode.dark);
 
-      controller.acknowledgeUnsaved();
+        controller.acknowledgeUnsaved();
 
-      expect(
-        container.read(preferencesControllerProvider).lastChangeUnsaved,
-        isFalse,
-      );
-    });
+        expect(
+          container.read(preferencesControllerProvider).lastChangeUnsaved,
+          isFalse,
+        );
+      },
+    );
 
     test(
       'GivenStartupHasNotSettled_WhenAThemeIsChosen_ThenItAppliesAndIsReported',

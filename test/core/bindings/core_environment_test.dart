@@ -63,12 +63,9 @@ void main() {
 
   // A blank value is not a choice. The core would fail to parse it and fall
   // back to its own default, which is the state this exists to avoid.
-  test(
-    'GivenTheModeIsBlank_WhenItIsChecked_ThenTheApplicationSetsIt',
-    () {
-      expect(shouldSetAuthMode(const {coreAuthModeVariable: ''}), isTrue);
-    },
-  );
+  test('GivenTheModeIsBlank_WhenItIsChecked_ThenTheApplicationSetsIt', () {
+    expect(shouldSetAuthMode(const {coreAuthModeVariable: ''}), isTrue);
+  });
 
   test(
     'GivenTheModeIsOnlyWhitespace_WhenItIsChecked_ThenTheApplicationSetsIt',

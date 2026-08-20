@@ -32,8 +32,7 @@ void main() {
 
     test(
       'GivenExactlyTheMediumWidth_WhenTheTierIsResolved_ThenItIsMedium',
-      () =>
-          expect(Breakpoint.of(Breakpoint.mediumMinWidth), Breakpoint.medium),
+      () => expect(Breakpoint.of(Breakpoint.mediumMinWidth), Breakpoint.medium),
     );
 
     test(
@@ -67,8 +66,10 @@ void main() {
     test(
       'GivenTheWiderTiers_WhenThePanelIsBuilt_ThenItShowsLabels',
       () => expect(
-        [Breakpoint.medium, Breakpoint.expanded]
-            .map((tier) => tier.showsNavigationLabels),
+        [
+          Breakpoint.medium,
+          Breakpoint.expanded,
+        ].map((tier) => tier.showsNavigationLabels),
         everyElement(isTrue),
       ),
     );

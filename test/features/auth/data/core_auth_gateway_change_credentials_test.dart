@@ -27,10 +27,12 @@ void main() {
   }
 
   group('the happy path', () {
-    test('GivenTheCoreAccepts_WhenTheCredentialsChange_ThenItReportsChanged',
-        () async {
-      expect(await changeWith(FakeCoreClient()), isA<ChangedOutcome>());
-    });
+    test(
+      'GivenTheCoreAccepts_WhenTheCredentialsChange_ThenItReportsChanged',
+      () async {
+        expect(await changeWith(FakeCoreClient()), isA<ChangedOutcome>());
+      },
+    );
 
     test('GivenAChange_WhenItIsSent_ThenTheBodyCarriesBothEntries', () async {
       final core = FakeCoreClient();
@@ -45,18 +47,20 @@ void main() {
       expect(body['passwordConfirmation'], 'a decent long passphrase');
     });
 
-    test('GivenAChange_WhenItIsSent_ThenItIsAuthorizedWithTheSession',
-        () async {
-      final core = FakeCoreClient();
+    test(
+      'GivenAChange_WhenItIsSent_ThenItIsAuthorizedWithTheSession',
+      () async {
+        final core = FakeCoreClient();
 
-      await changeWith(core);
+        await changeWith(core);
 
-      expect(
-        core.authLocalSetCredentialsCalls.single.token,
-        'a-real-looking-session-id',
-        reason: 'the core requires a session to change existing credentials',
-      );
-    });
+        expect(
+          core.authLocalSetCredentialsCalls.single.token,
+          'a-real-looking-session-id',
+          reason: 'the core requires a session to change existing credentials',
+        );
+      },
+    );
 
     test('GivenAnUntrimmedAddress_WhenItIsSent_ThenItIsTrimmed', () async {
       final core = FakeCoreClient();
@@ -93,43 +97,51 @@ void main() {
   });
 
   group('the core refuses', () {
-    test('GivenTheCoreRejectsTheSession_WhenTheChangeIsSent_ThenItIsUnauthorized',
-        () async {
-      // AF-02, as the gateway sees it.
-      final core = FakeCoreClient(
-        authLocalSetCredentialsResult: (status: 2, json: null),
-      );
+    test(
+      'GivenTheCoreRejectsTheSession_WhenTheChangeIsSent_ThenItIsUnauthorized',
+      () async {
+        // AF-02, as the gateway sees it.
+        final core = FakeCoreClient(
+          authLocalSetCredentialsResult: (status: 2, json: null),
+        );
 
-      expect(failureOf(await changeWith(core)), isA<UnauthorizedFailure>());
-    });
+        expect(failureOf(await changeWith(core)), isA<UnauthorizedFailure>());
+      },
+    );
 
-    test('GivenTheCoreRejectsTheInput_WhenTheChangeIsSent_ThenItIsInvalidInput',
-        () async {
-      // AF-03.
-      final core = FakeCoreClient(
-        authLocalSetCredentialsResult: (status: 1, json: null),
-      );
+    test(
+      'GivenTheCoreRejectsTheInput_WhenTheChangeIsSent_ThenItIsInvalidInput',
+      () async {
+        // AF-03.
+        final core = FakeCoreClient(
+          authLocalSetCredentialsResult: (status: 1, json: null),
+        );
 
-      expect(failureOf(await changeWith(core)), isA<InvalidInputFailure>());
-    });
+        expect(failureOf(await changeWith(core)), isA<InvalidInputFailure>());
+      },
+    );
 
-    test('GivenTheCoreNamesTheRule_WhenItRefuses_ThenTheRejectionIsCarried',
-        () async {
-      final core = FakeCoreClient(
-        authLocalSetCredentialsResult: (
-          status: 1,
-          json: '{"code":"password_too_short","params":{"minimum":12}}',
-        ),
-      );
+    test(
+      'GivenTheCoreNamesTheRule_WhenItRefuses_ThenTheRejectionIsCarried',
+      () async {
+        final core = FakeCoreClient(
+          authLocalSetCredentialsResult: (
+            status: 1,
+            json: '{"code":"password_too_short","params":{"minimum":12}}',
+          ),
+        );
 
-      expect(failureOf(await changeWith(core)), isA<RejectedFailure>());
-    });
+        expect(failureOf(await changeWith(core)), isA<RejectedFailure>());
+      },
+    );
 
-    test('GivenTheCallItselfFails_WhenTheChangeIsSent_ThenItIsUnexpected',
-        () async {
-      final core = FakeCoreClient(failOnAuthLocalSetCredentials: true);
+    test(
+      'GivenTheCallItselfFails_WhenTheChangeIsSent_ThenItIsUnexpected',
+      () async {
+        final core = FakeCoreClient(failOnAuthLocalSetCredentials: true);
 
-      expect(failureOf(await changeWith(core)), isA<UnexpectedFailure>());
-    });
+        expect(failureOf(await changeWith(core)), isA<UnexpectedFailure>());
+      },
+    );
   });
 }

@@ -24,21 +24,15 @@ void main() {
   SessionController controller() =>
       buildTestContainer().read(sessionControllerProvider.notifier);
 
-  test(
-    'GivenAFreshApplication_WhenTheSessionIsRead_ThenThereIsNone',
-    () {
-      expect(controller().state, const SessionState.absent());
-    },
-  );
+  test('GivenAFreshApplication_WhenTheSessionIsRead_ThenThereIsNone', () {
+    expect(controller().state, const SessionState.absent());
+  });
 
-  test(
-    'GivenNoSession_WhenOneIsEstablished_ThenItIsActive',
-    () {
-      final sut = controller()..establish(session);
+  test('GivenNoSession_WhenOneIsEstablished_ThenItIsActive', () {
+    final sut = controller()..establish(session);
 
-      expect(sut.state, SessionState.active(session: session));
-    },
-  );
+    expect(sut.state, SessionState.active(session: session));
+  });
 
   test(
     'GivenAnActiveSession_WhenTheCredentialIsRead_ThenItIsTheCoresSessionId',
@@ -49,12 +43,9 @@ void main() {
     },
   );
 
-  test(
-    'GivenNoSession_WhenTheCredentialIsRead_ThenThereIsNone',
-    () {
-      expect(controller().credential, isNull);
-    },
-  );
+  test('GivenNoSession_WhenTheCredentialIsRead_ThenThereIsNone', () {
+    expect(controller().credential, isNull);
+  });
 
   // UC-02 AF-04 / FR-AU-08.
   group('a call rejected as unauthorized', () {
@@ -82,14 +73,11 @@ void main() {
 
     // Two rejected calls arriving together must not produce two explanations,
     // and the second must not overwrite the one the owner has not read.
-    test(
-      'GivenNoSession_WhenACallIsRejected_ThenNothingChanges',
-      () {
-        final sut = controller()..invalidate(rejection);
+    test('GivenNoSession_WhenACallIsRejected_ThenNothingChanges', () {
+      final sut = controller()..invalidate(rejection);
 
-        expect(sut.state, const SessionState.absent());
-      },
-    );
+      expect(sut.state, const SessionState.absent());
+    });
 
     test(
       'GivenAnAlreadyDiscardedSession_WhenASecondCallIsRejected_ThenTheFirstReasonStands',

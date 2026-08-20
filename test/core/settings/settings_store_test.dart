@@ -25,23 +25,27 @@ void main() {
       expect(InMemorySettingsStore().locale, isNull);
     });
 
-    test('GivenAStoredLocale_WhenItIsRead_ThenTheCountryCodeSurvives',
-        () async {
-      final store = InMemorySettingsStore();
+    test(
+      'GivenAStoredLocale_WhenItIsRead_ThenTheCountryCodeSurvives',
+      () async {
+        final store = InMemorySettingsStore();
 
-      await store.setLocale(const Locale('pt', 'BR'));
+        await store.setLocale(const Locale('pt', 'BR'));
 
-      expect(store.locale, const Locale('pt', 'BR'));
-    });
+        expect(store.locale, const Locale('pt', 'BR'));
+      },
+    );
 
-    test('GivenAStoredLocale_WhenItIsCleared_ThenItFollowsTheSystemAgain',
-        () async {
-      final store = InMemorySettingsStore(locale: const Locale('en'));
+    test(
+      'GivenAStoredLocale_WhenItIsCleared_ThenItFollowsTheSystemAgain',
+      () async {
+        final store = InMemorySettingsStore(locale: const Locale('en'));
 
-      await store.setLocale(null);
+        await store.setLocale(null);
 
-      expect(store.locale, isNull);
-    });
+        expect(store.locale, isNull);
+      },
+    );
   });
 
   group('arbitrary preferences', () {
@@ -75,28 +79,30 @@ void main() {
       expect(InMemorySettingsStore().entries, isEmpty);
     });
 
-    test('GivenOwnerPreferences_WhenTheyAreStored_ThenNoCredentialIsAmongThem',
-        () async {
-      final store = InMemorySettingsStore();
+    test(
+      'GivenOwnerPreferences_WhenTheyAreStored_ThenNoCredentialIsAmongThem',
+      () async {
+        final store = InMemorySettingsStore();
 
-      await store.setThemeMode(ThemeMode.light);
-      await store.setLocale(const Locale('en'));
-      await store.setString('catalog.layout', 'grid');
+        await store.setThemeMode(ThemeMode.light);
+        await store.setLocale(const Locale('en'));
+        await store.setString('catalog.layout', 'grid');
 
-      // The salted hash lives in the core and the session credential lives in
-      // process memory for the run only; neither has a home here.
-      expect(
-        store.entries.keys,
-        everyElement(
-          isNot(
-            anyOf(
-              contains('password'),
-              contains('token'),
-              contains('session'),
+        // The salted hash lives in the core and the session credential lives in
+        // process memory for the run only; neither has a home here.
+        expect(
+          store.entries.keys,
+          everyElement(
+            isNot(
+              anyOf(
+                contains('password'),
+                contains('token'),
+                contains('session'),
+              ),
             ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   });
 }

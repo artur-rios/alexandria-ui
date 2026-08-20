@@ -64,9 +64,7 @@ class _TolerantGoldenComparator extends LocalFileComparator {
       return true;
     }
 
-    throw FlutterError(
-      await generateFailureOutput(result, golden, basedir),
-    );
+    throw FlutterError(await generateFailureOutput(result, golden, basedir));
   }
 }
 

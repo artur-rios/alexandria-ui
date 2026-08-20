@@ -13,22 +13,16 @@ void main() {
       '{"success":true,"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50",'
       '"emailConfirmed":true}';
 
-  test(
-    'GivenTheCoresLoginPayload_WhenItIsDecoded_ThenTheSessionIdIsRead',
-    () {
-      expect(
-        decode(corePayload).sessionId,
-        '6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50',
-      );
-    },
-  );
+  test('GivenTheCoresLoginPayload_WhenItIsDecoded_ThenTheSessionIdIsRead', () {
+    expect(
+      decode(corePayload).sessionId,
+      '6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50',
+    );
+  });
 
-  test(
-    'GivenTheCoresLoginPayload_WhenItIsDecoded_ThenSuccessIsRead',
-    () {
-      expect(decode(corePayload).success, isTrue);
-    },
-  );
+  test('GivenTheCoresLoginPayload_WhenItIsDecoded_ThenSuccessIsRead', () {
+    expect(decode(corePayload).success, isTrue);
+  });
 
   // FR-AU-12's confirmation state is one of the pending core operations in
   // System Requirements §5.4. Until it lands the field is absent, and an absent
@@ -51,12 +45,9 @@ void main() {
     },
   );
 
-  test(
-    'GivenAPayloadMissingTheSessionId_WhenItIsDecoded_ThenItThrows',
-    () {
-      expect(() => decode('{"success":true}'), throwsA(anything));
-    },
-  );
+  test('GivenAPayloadMissingTheSessionId_WhenItIsDecoded_ThenItThrows', () {
+    expect(() => decode('{"success":true}'), throwsA(anything));
+  });
 
   test(
     'GivenAPayloadWhoseSessionIdIsNotAString_WhenItIsDecoded_ThenItThrows',

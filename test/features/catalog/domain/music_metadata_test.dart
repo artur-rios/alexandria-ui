@@ -69,31 +69,27 @@ void main() {
     });
 
     test('GivenAYearThatIsNotANumber_WhenValidated_ThenItIsMarked', () {
-      expect(
-        validateDraft(draftWith(MusicField.year, 'nineteen')),
-        {MusicField.year: MusicFieldError.notANumber},
-      );
+      expect(validateDraft(draftWith(MusicField.year, 'nineteen')), {
+        MusicField.year: MusicFieldError.notANumber,
+      });
     });
 
     test('GivenAYearBeforeRecordedSound_WhenValidated_ThenItIsMarked', () {
-      expect(
-        validateDraft(draftWith(MusicField.year, '195')),
-        {MusicField.year: MusicFieldError.yearOutOfRange},
-      );
+      expect(validateDraft(draftWith(MusicField.year, '195')), {
+        MusicField.year: MusicFieldError.yearOutOfRange,
+      });
     });
 
     test('GivenATrackOfZero_WhenValidated_ThenItIsMarked', () {
-      expect(
-        validateDraft(draftWith(MusicField.track, '0')),
-        {MusicField.track: MusicFieldError.trackNotPositive},
-      );
+      expect(validateDraft(draftWith(MusicField.track, '0')), {
+        MusicField.track: MusicFieldError.trackNotPositive,
+      });
     });
 
     test('GivenAnOverlongTitle_WhenValidated_ThenItIsMarked', () {
-      expect(
-        validateDraft(draftWith(MusicField.title, 'a' * 300)),
-        {MusicField.title: MusicFieldError.tooLong},
-      );
+      expect(validateDraft(draftWith(MusicField.title, 'a' * 300)), {
+        MusicField.title: MusicFieldError.tooLong,
+      });
     });
 
     test('GivenTwoBadFields_WhenValidated_ThenBothAreMarked', () {

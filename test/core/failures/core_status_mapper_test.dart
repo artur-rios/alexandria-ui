@@ -42,12 +42,15 @@ void main() {
     // The index family predates the others and uses 4 for "other" where every
     // later family uses 4 for "not found". This is the test that would fail if
     // the mapper ever collapsed the families into one table.
-    test('GivenTheCodeFour_WhenItIsMappedAsIndex_ThenTheFailureIsUnexpected', () {
-      expect(
-        mapCoreStatus(CoreStatusFamily.indexing, 4),
-        isA<UnexpectedFailure>(),
-      );
-    });
+    test(
+      'GivenTheCodeFour_WhenItIsMappedAsIndex_ThenTheFailureIsUnexpected',
+      () {
+        expect(
+          mapCoreStatus(CoreStatusFamily.indexing, 4),
+          isA<UnexpectedFailure>(),
+        );
+      },
+    );
 
     test('GivenTheCodeFour_WhenItIsMappedAsFile_ThenTheFailureIsNotFound', () {
       expect(mapCoreStatus(CoreStatusFamily.file, 4), isA<NotFoundFailure>());

@@ -1259,6 +1259,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.'**
   String get signOutIndexRunContinues;
+
+  /// UC-16 main flow step 2: the heading of the video metadata form.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit video metadata'**
+  String get videoMetadataTitle;
+
+  /// UC-16: the video's title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get videoMetadataFieldTitle;
+
+  /// UC-16: the year the video was released.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get videoMetadataFieldYear;
+
+  /// UC-16: the video's resolution, as the core recorded or the owner corrects it.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution'**
+  String get videoMetadataFieldResolution;
+
+  /// UC-16 / FR-ME-02: whether the video is a movie or a series.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind'**
+  String get videoMetadataFieldMediaKind;
+
+  /// UC-16: the video is a standalone film, tracked as a single item.
+  ///
+  /// In en, this message translates to:
+  /// **'Movie'**
+  String get videoMetadataMovie;
+
+  /// UC-16: the video belongs to a series, tracked per episode.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get videoMetadataSeries;
+
+  /// UC-16 main flow step 4: sends the edited metadata to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get videoMetadataSave;
+
+  /// Closes the video metadata form without saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get videoMetadataCancel;
+
+  /// UC-16 AF-03: what changing the marking from series to movie costs, asked before the core is called.
+  ///
+  /// In en, this message translates to:
+  /// **'This video is tracked per episode. Marking it as a movie replaces that with progress for the item as a whole.'**
+  String get videoMetadataMarkingWarning;
+
+  /// UC-16 AF-03: confirms the marking change and sends it.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as a movie'**
+  String get videoMetadataMarkingConfirm;
+
+  /// UC-16 AF-01: the year holds something that is not a number, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number.'**
+  String get videoMetadataErrorNotANumber;
+
+  /// UC-16 AF-01: the year is earlier than any film could carry, which is a typo rather than a year.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a four-digit year.'**
+  String get videoMetadataErrorYear;
+
+  /// UC-16 AF-01: a text field is longer than the core stores.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this under {max} characters.'**
+  String videoMetadataErrorTooLong(int max);
+
+  /// UC-16 AF-03: declines the marking change, which is what keeps the per-episode progress. Named rather than "Cancel", because the form's own cancel sits beside it and means something else.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it as a series'**
+  String get videoMetadataMarkingCancel;
 }
 
 class _AppLocalizationsDelegate
