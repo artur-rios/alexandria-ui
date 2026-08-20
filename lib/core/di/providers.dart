@@ -663,6 +663,36 @@ final collectionsControllerProvider =
       CollectionsController.new,
     );
 
+/// The bookmark collections, for filing and filtering (UC-28).
+///
+/// A collection of the other kind is never offered: the core would refuse a
+/// bookmark filed into a file collection, and not offering one is what keeps
+/// the owner from meeting that refusal (UC-28 AF-03).
+final bookmarkCollectionsProvider = FutureProvider<List<Collection>>((
+  ref,
+) async {
+  final credential = ref.read(sessionControllerProvider.notifier).credential;
+  if (credential == null) return const [];
+
+  final browse = await ref
+      .read(collectionGatewayProvider)
+      .browse(credential: credential, kind: CollectionKind.bookmark);
+
+  return switch (browse) {
+    CollectionBrowseLoaded(:final collections) => collections,
+    // A listing that will not load leaves the selector empty rather than
+    // failing the screen it sits on: filing is optional, and a bookmark is
+    // still creatable without it.
+    CollectionBrowseFailed() => const <Collection>[],
+  };
+});
+
+/// Which collection the bookmarks listing is filtered to (UC-28).
+final bookmarkCollectionFilterProvider =
+    NotifierProvider<BookmarkCollectionFilter, String?>(
+      BookmarkCollectionFilter.new,
+    );
+
 /// The collection whose members are open, or `null` when none is (UC-27).
 final openCollectionProvider = NotifierProvider<OpenCollection, Collection?>(
   OpenCollection.new,

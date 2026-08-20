@@ -1524,4 +1524,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String collectionItemNotAdded(String name, String reason) {
     return '$name was not added — $reason';
   }
+
+  @override
+  String get bookmarkCollectionLabel => 'Collection';
+
+  @override
+  String get bookmarkCollectionNone => 'Not in a collection';
+
+  @override
+  String get bookmarkFilterLabel => 'Show';
+
+  @override
+  String get bookmarkFilterAll => 'All bookmarks';
 }

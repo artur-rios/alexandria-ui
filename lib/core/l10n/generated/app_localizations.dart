@@ -2699,6 +2699,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} was not added — {reason}'**
   String collectionItemNotAdded(String name, String reason);
+
+  /// UC-28 main flow steps 3 and 5: which bookmark collection the bookmark is filed in.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get bookmarkCollectionLabel;
+
+  /// UC-28: filing is optional, so not filing is a choice rather than the absence of one.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in a collection'**
+  String get bookmarkCollectionNone;
+
+  /// UC-28 main flow step 1: narrows the listing to one bookmark collection.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get bookmarkFilterLabel;
+
+  /// UC-28 main flow step 1: the unfiltered listing, which is what the screen opens on.
+  ///
+  /// In en, this message translates to:
+  /// **'All bookmarks'**
+  String get bookmarkFilterAll;
 }
 
 class _AppLocalizationsDelegate

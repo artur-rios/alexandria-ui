@@ -2159,5 +2159,25 @@
               "type": "String"
           }
       }
+  },
+
+  "bookmarkCollectionLabel": "Collection",
+  "@bookmarkCollectionLabel": {
+      "description": "UC-28 main flow steps 3 and 5: which bookmark collection the bookmark is filed in."
+  },
+
+  "bookmarkCollectionNone": "Not in a collection",
+  "@bookmarkCollectionNone": {
+      "description": "UC-28: filing is optional, so not filing is a choice rather than the absence of one."
+  },
+
+  "bookmarkFilterLabel": "Show",
+  "@bookmarkFilterLabel": {
+      "description": "UC-28 main flow step 1: narrows the listing to one bookmark collection."
+  },
+
+  "bookmarkFilterAll": "All bookmarks",
+  "@bookmarkFilterAll": {
+      "description": "UC-28 main flow step 1: the unfiltered listing, which is what the screen opens on."
   }
 }
