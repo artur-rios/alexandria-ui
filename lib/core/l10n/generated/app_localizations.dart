@@ -2057,6 +2057,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'episode {episode} of {total}'**
   String watchEpisodeOf(int episode, int total);
+
+  /// UC-31 main flow step 1: the reading-lists screen heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading lists'**
+  String get readingListsTitle;
+
+  /// UC-31 main flow step 1: opens the reading-lists screen from the books and comics areas.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading lists'**
+  String get readingListsOpen;
+
+  /// UC-31: there are no reading lists, which is a state and not a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not made a reading list yet.'**
+  String get readingListsNone;
+
+  /// UC-31 main flow step 1: what the new reading list is called.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading list name'**
+  String get readingListNameLabel;
+
+  /// UC-31 main flow step 2: sends the new reading list to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get readingListCreate;
+
+  /// UC-31 AF-01: the name is blank after trimming, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the reading list a name.'**
+  String get readingListNameEmpty;
+
+  /// UC-31 main flow step 6: removes the tracking and keeps the books and comics.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this reading list'**
+  String get readingListDelete;
+
+  /// UC-31: the reading list holds no items.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is tracked in this reading list yet.'**
+  String get readingListEmpty;
+
+  /// UC-31 main flow step 3: tracks this book or comic in a reading list.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to a reading list'**
+  String get readingListAddTo;
+
+  /// UC-31 main flow step 5: removes the item from this list and leaves it in the catalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop tracking this item'**
+  String get readingListRemoveItem;
+
+  /// UC-31 AF-03: nothing is added, and the owner is told why.
+  ///
+  /// In en, this message translates to:
+  /// **'That item is already in that reading list.'**
+  String get readingListAlreadyTracked;
+
+  /// UC-31 AF-04 and UC-32 AF-04: the core has no such record, so the screen is read again.
+  ///
+  /// In en, this message translates to:
+  /// **'That reading list or item is no longer there.'**
+  String get readingListNotFound;
+
+  /// UC-32: the read state the core calls pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get readStatePending;
+
+  /// UC-32: part way through.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get readStateReading;
+
+  /// UC-32: finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get readStateRead;
+
+  /// UC-31 main flow step 6 and BR-07: the confirmation names what goes and what does not.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}? The books and comics in it are kept — only the tracking is removed.'**
+  String readingListDeleteMessage(String name);
+
+  /// UC-31 AF-03: a reading list already tracking this item says so rather than disappearing from the menu.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — already there'**
+  String readingListAlreadyIn(String name);
+
+  /// UC-31: how many items a reading list tracks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tracked'**
+  String readingListItemCount(int count);
 }
 
 class _AppLocalizationsDelegate

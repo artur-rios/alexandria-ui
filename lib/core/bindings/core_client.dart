@@ -205,6 +205,40 @@ abstract interface class CoreClient {
     String token,
   );
 
+  /// Creates a reading list through `alexandria_reading_list_create`
+  /// (FR-TR-08).
+  Future<CoreJsonResponse> readingListCreate(String jsonBody, String token);
+
+  /// Deletes one through `alexandria_reading_list_delete` (FR-TR-09).
+  Future<CoreJsonResponse> readingListDelete(String uuid, String token);
+
+  /// Adds an item through `alexandria_reading_list_add_item` (FR-TR-10).
+  Future<CoreJsonResponse> readingListAddItem(
+    String uuid,
+    String jsonBody,
+    String token,
+  );
+
+  /// Removes one through `alexandria_reading_list_remove_item` (FR-TR-11).
+  Future<CoreJsonResponse> readingListRemoveItem(
+    String uuid,
+    String itemUuid,
+    String token,
+  );
+
+  /// Records progress through `alexandria_reading_list_update_progress`
+  /// (FR-TR-12 … FR-TR-14).
+  Future<CoreJsonResponse> readingListUpdateProgress(
+    String uuid,
+    String itemUuid,
+    String jsonBody,
+    String token,
+  );
+
+  /// Browses reading lists through `alexandria_reading_lists_list`
+  /// (FR-TR-11).
+  Future<CoreJsonResponse> readingListsList(String jsonFilters, String token);
+
   /// Browses watchlists and the watch progress of everything they track
   /// through `alexandria_watchlists_list` (FR-WL-08).
   ///
@@ -365,6 +399,60 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async =>
       await _isolate.call('bookmarksList', [jsonFilters, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListCreate(
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('readingListCreate', [jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListDelete(String uuid, String token) async =>
+      await _isolate.call('readingListDelete', [uuid, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListAddItem(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('readingListAddItem', [uuid, jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListRemoveItem(
+    String uuid,
+    String itemUuid,
+    String token,
+  ) async =>
+      await _isolate.call('readingListRemoveItem', [uuid, itemUuid, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListUpdateProgress(
+    String uuid,
+    String itemUuid,
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('readingListUpdateProgress', [
+            uuid,
+            itemUuid,
+            jsonBody,
+            token,
+          ])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListsList(
+    String jsonFilters,
+    String token,
+  ) async =>
+      await _isolate.call('readingListsList', [jsonFilters, token])
           as CoreJsonResponse;
 
   @override

@@ -97,11 +97,15 @@ import '../../features/viewers/domain/comic_gateway.dart';
 import '../../features/viewers/domain/document_gateway.dart';
 import '../../features/viewers/domain/reading_position_store.dart';
 import '../../features/viewers/domain/viewer_registry.dart';
+import '../../features/tracking/application/reading_lists_controller.dart';
 import '../../features/tracking/application/tracked_videos_controller.dart';
 import '../../features/tracking/application/watch_progress_editor.dart';
 import '../../features/tracking/application/watchlists_controller.dart';
 import '../../features/tracking/data/core_watch_progress_gateway.dart';
+import '../../features/tracking/data/core_reading_list_gateway.dart';
 import '../../features/tracking/data/core_watchlist_gateway.dart';
+import '../../features/tracking/domain/reading_list.dart';
+import '../../features/tracking/domain/reading_list_gateway.dart';
 import '../../features/tracking/domain/watchlist.dart';
 import '../../features/tracking/domain/watchlist_gateway.dart';
 import '../../features/tracking/domain/watch_progress_gateway.dart';
@@ -603,6 +607,28 @@ final watchProgressEditorProvider =
     NotifierProvider<WatchProgressEditor, WatchProgressEditorState>(
       WatchProgressEditor.new,
     );
+
+/// The core's reading-list operations (UC-31, UC-32, FR-TR-08 ... FR-TR-14).
+final readingListGatewayProvider = Provider<ReadingListGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the reading list gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreReadingListGateway(core);
+});
+
+/// The owner's reading lists (UC-31).
+final readingListsControllerProvider =
+    AsyncNotifierProvider<ReadingListsController, List<ReadingList>>(
+      ReadingListsController.new,
+    );
+
+/// The reading-lists screen's own state (UC-31).
+final readingListsFormProvider =
+    NotifierProvider<ReadingListsForm, ReadingListsState>(ReadingListsForm.new);
 
 /// The core's watch-progress read (UC-16 AF-03).
 ///

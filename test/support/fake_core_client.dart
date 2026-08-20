@@ -469,6 +469,47 @@ class FakeCoreClient implements CoreClient {
     return renameResponse;
   }
 
+  /// What every reading-list call answers (UC-31, UC-32).
+  CoreJsonResponse readingListResponse = (status: READING_LIST_OK, json: '[]');
+
+  @override
+  Future<CoreJsonResponse> readingListsList(
+    String jsonFilters,
+    String token,
+  ) async => readingListResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListCreate(
+    String jsonBody,
+    String token,
+  ) async => readingListResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListDelete(String uuid, String token) async =>
+      readingListResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListAddItem(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async => readingListResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListRemoveItem(
+    String uuid,
+    String itemUuid,
+    String token,
+  ) async => readingListResponse;
+
+  @override
+  Future<CoreJsonResponse> readingListUpdateProgress(
+    String uuid,
+    String itemUuid,
+    String jsonBody,
+    String token,
+  ) async => readingListResponse;
+
   /// What every watchlist write answers (UC-29, UC-30).
   CoreJsonResponse watchlistWriteResponse = (status: WATCHLIST_OK, json: '{}');
 
