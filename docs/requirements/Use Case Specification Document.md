@@ -1488,7 +1488,7 @@ graph LR
 | **Description** | The owner is shown the ten single-use codes the core minted at sign-up, once, and confirms having stored them before the library opens. |
 | **Preconditions** | An account has just been created and a session is active. |
 | **Postconditions** | The owner has seen the codes and acknowledged them. Nothing about them is retained by the application. |
-| **Requirements** | FR-AU-12, FR-AU-13, FR-AU-14, FR-AU-19 |
+| **Requirements** | FR-AU-12, FR-AU-13, FR-AU-19 |
 
 **Main Flow**
 
@@ -1629,7 +1629,7 @@ graph LR
 | UC-37: Review missing files | FR-LC-08 |
 | UC-38: Navigate the application shell | FR-UX-01, FR-UX-02, FR-UX-03, FR-UX-08, FR-UX-09, FR-UX-10, FR-UX-11 |
 | UC-39: Manage application preferences | FR-UX-04, FR-UX-05, FR-UX-06, FR-UX-07, FR-UX-12 |
-| UC-40: Save the recovery codes | FR-AU-12, FR-AU-13, FR-AU-14, FR-AU-19 |
+| UC-40: Save the recovery codes | FR-AU-12, FR-AU-13, FR-AU-19 |
 | UC-41: Recover access with a recovery code | FR-AU-15, FR-AU-16, FR-AU-18, FR-AU-19 |
 | UC-42: Regenerate the recovery codes | FR-AU-14, FR-AU-17, FR-AU-19 |
 

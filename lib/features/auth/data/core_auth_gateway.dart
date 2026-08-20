@@ -162,6 +162,9 @@ class CoreAuthGateway implements AuthGateway {
         // what the account actually holds.
         email: result.email,
       ),
+      // FR-AU-12: this response is the only place the codes ever exist, so
+      // the outcome carries them out of it or they are gone.
+      recoveryCodes: result.recoveryCodes,
     );
   }
 

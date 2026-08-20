@@ -119,10 +119,10 @@ return failed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Session session)?  authenticated,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Session session,  List<String>? recoveryCodes)?  authenticated,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case AuthenticatedOutcome() when authenticated != null:
-return authenticated(_that.session);case FailedOutcome() when failed != null:
+return authenticated(_that.session,_that.recoveryCodes);case FailedOutcome() when failed != null:
 return failed(_that.failure);case _:
   return orElse();
 
@@ -141,10 +141,10 @@ return failed(_that.failure);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Session session)  authenticated,required TResult Function( Failure failure)  failed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Session session,  List<String>? recoveryCodes)  authenticated,required TResult Function( Failure failure)  failed,}) {final _that = this;
 switch (_that) {
 case AuthenticatedOutcome():
-return authenticated(_that.session);case FailedOutcome():
+return authenticated(_that.session,_that.recoveryCodes);case FailedOutcome():
 return failed(_that.failure);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -159,10 +159,10 @@ return failed(_that.failure);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Session session)?  authenticated,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Session session,  List<String>? recoveryCodes)?  authenticated,TResult? Function( Failure failure)?  failed,}) {final _that = this;
 switch (_that) {
 case AuthenticatedOutcome() when authenticated != null:
-return authenticated(_that.session);case FailedOutcome() when failed != null:
+return authenticated(_that.session,_that.recoveryCodes);case FailedOutcome() when failed != null:
 return failed(_that.failure);case _:
   return null;
 
@@ -175,10 +175,19 @@ return failed(_that.failure);case _:
 
 
 class AuthenticatedOutcome implements AuthOutcome {
-  const AuthenticatedOutcome({required this.session});
+  const AuthenticatedOutcome({required this.session, final  List<String>? recoveryCodes}): _recoveryCodes = recoveryCodes;
   
 
  final  Session session;
+ final  List<String>? _recoveryCodes;
+ List<String>? get recoveryCodes {
+  final value = _recoveryCodes;
+  if (value == null) return null;
+  if (_recoveryCodes is EqualUnmodifiableListView) return _recoveryCodes;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 
 /// Create a copy of AuthOutcome
 /// with the given fields replaced by the non-null parameter values.
@@ -190,16 +199,16 @@ $AuthenticatedOutcomeCopyWith<AuthenticatedOutcome> get copyWith => _$Authentica
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthenticatedOutcome&&(identical(other.session, session) || other.session == session));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthenticatedOutcome&&(identical(other.session, session) || other.session == session)&&const DeepCollectionEquality().equals(other._recoveryCodes, _recoveryCodes));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,session);
+int get hashCode => Object.hash(runtimeType,session,const DeepCollectionEquality().hash(_recoveryCodes));
 
 @override
 String toString() {
-  return 'AuthOutcome.authenticated(session: $session)';
+  return 'AuthOutcome.authenticated(session: $session, recoveryCodes: $recoveryCodes)';
 }
 
 
@@ -210,7 +219,7 @@ abstract mixin class $AuthenticatedOutcomeCopyWith<$Res> implements $AuthOutcome
   factory $AuthenticatedOutcomeCopyWith(AuthenticatedOutcome value, $Res Function(AuthenticatedOutcome) _then) = _$AuthenticatedOutcomeCopyWithImpl;
 @useResult
 $Res call({
- Session session
+ Session session, List<String>? recoveryCodes
 });
 
 
@@ -227,10 +236,11 @@ class _$AuthenticatedOutcomeCopyWithImpl<$Res>
 
 /// Create a copy of AuthOutcome
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? session = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? session = null,Object? recoveryCodes = freezed,}) {
   return _then(AuthenticatedOutcome(
 session: null == session ? _self.session : session // ignore: cast_nullable_to_non_nullable
-as Session,
+as Session,recoveryCodes: freezed == recoveryCodes ? _self._recoveryCodes : recoveryCodes // ignore: cast_nullable_to_non_nullable
+as List<String>?,
   ));
 }
 

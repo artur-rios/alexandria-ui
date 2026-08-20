@@ -1886,5 +1886,35 @@
   "missingFilesUnregisteredFolder": "From a folder that is no longer registered.",
   "@missingFilesUnregisteredFolder": {
       "description": "UC-37 AF-03: the record came from a folder the owner has since unregistered."
+  },
+
+  "recoveryCodesTitle": "Save your recovery codes",
+  "@recoveryCodesTitle": {
+      "description": "UC-40 main flow step 2: the heading of the screen shown once after sign-up."
+  },
+
+  "recoveryCodesExplanation": "This is the only time these are shown. Each one replaces a forgotten password exactly once \u2014 without them, a forgotten password means a lost library.",
+  "@recoveryCodesExplanation": {
+      "description": "UC-40 main flow step 2 and FR-AU-12: says plainly that the codes are not retrievable and what they are for."
+  },
+
+  "recoveryCodesCopy": "Copy the codes",
+  "@recoveryCodesCopy": {
+      "description": "UC-40 AF-02: places the codes on the clipboard. Nothing is written to disk (FR-AU-13)."
+  },
+
+  "recoveryCodesCopied": "Copied to the clipboard.",
+  "@recoveryCodesCopied": {
+      "description": "UC-40 AF-02: confirms the copy happened."
+  },
+
+  "recoveryCodesAcknowledge": "I have stored them",
+  "@recoveryCodesAcknowledge": {
+      "description": "UC-40 main flow step 4: the only way past this screen (AF-01). Confirming opens the library."
+  },
+
+  "recoveryCodesNone": "Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.",
+  "@recoveryCodesNone": {
+      "description": "UC-40 AF-03: the core issued no codes, which is said plainly rather than shown as an empty list."
   }
 }

@@ -1348,4 +1348,24 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get missingFilesUnregisteredFolder =>
       'De uma pasta que não está mais registrada.';
+
+  @override
+  String get recoveryCodesTitle => 'Guarde seus códigos de recuperação';
+
+  @override
+  String get recoveryCodesExplanation =>
+      'Esta é a única vez que eles são exibidos. Cada um substitui uma senha esquecida uma única vez — sem eles, uma senha esquecida significa uma biblioteca perdida.';
+
+  @override
+  String get recoveryCodesCopy => 'Copiar os códigos';
+
+  @override
+  String get recoveryCodesCopied => 'Copiados para a área de transferência.';
+
+  @override
+  String get recoveryCodesAcknowledge => 'Eu os guardei';
+
+  @override
+  String get recoveryCodesNone =>
+      'Sua conta foi criada, mas nenhum código de recuperação veio com ela. Gere um conjunto nas preferências antes de precisar de um.';
 }

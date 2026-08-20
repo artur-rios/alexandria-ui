@@ -4,6 +4,7 @@ import 'package:alexandria_desktop/core/failures/failure.dart';
 import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_desktop/core/theme/breakpoints.dart';
 import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart';
+import 'package:alexandria_desktop/features/auth/presentation/recovery_codes_screen.dart';
 import 'package:alexandria_desktop/features/auth/presentation/sign_up_screen.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
@@ -344,16 +345,18 @@ void main() {
   // UC-01 step 7. What used to be AF-06 — the account created but the
   // confirmation message undeliverable — cannot happen: the core sends no
   // message, and dropped confirmation entirely on 2026-08-18. Signing up
-  // opens a session and lands the owner in the shell.
+  // opens a session and hands the owner their recovery codes (UC-40), which
+  // is the one thing between here and the library.
   group('a successful sign-up', () {
     testWidgets(
-      'GivenValidCredentials_WhenTheOwnerSignsUp_ThenTheCatalogIsReached',
+      'GivenValidCredentials_WhenTheOwnerSignsUp_ThenTheRecoveryCodesAreShown',
       (tester) async {
         await tester.pumpSignUpScreen();
 
         await tester.signUp();
 
-        expect(find.byType(ShellScreen), findsOneWidget);
+        expect(find.byType(RecoveryCodesScreen), findsOneWidget);
+        expect(find.byType(ShellScreen), findsNothing);
       },
     );
   });

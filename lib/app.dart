@@ -9,6 +9,7 @@ import 'core/startup/startup_state.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/application/auth_entry_controller.dart';
 import 'features/auth/application/session_state.dart';
+import 'features/auth/presentation/recovery_codes_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/sign_up_screen.dart';
 import 'features/shell/presentation/shell_screen.dart';
@@ -70,6 +71,14 @@ class AlexandriaApp extends ConsumerWidget {
             AuthEntry.signUp => const SignUpScreen(),
             AuthEntry.login => const LoginScreen(),
           },
+
+          // UC-40 / FR-AU-12: a new account's recovery codes stand between
+          // sign-up and the library, once. `null` is every other session —
+          // an empty list is an account the core issued none for, which is
+          // AF-03 and still worth stopping for.
+          SessionActive(:final recoveryCodes?) => RecoveryCodesScreen(
+            codes: recoveryCodes,
+          ),
 
           // The shell (UC-38). Everything the owner actually does is inside
           // it, which is why this switch stops here.

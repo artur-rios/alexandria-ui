@@ -91,6 +91,8 @@ class LoginController extends Notifier<LoginState> {
 /// behind. An owner who cannot sign in recovers with a recovery code (UC-41)
 /// rather than through their inbox.
 bool catalogIsReachable(SessionState state) => switch (state) {
-  SessionActive() => true,
+  // UC-40: a freshly minted set of recovery codes holds the catalog back
+  // until the owner acknowledges it (FR-AU-12, BR-25).
+  SessionActive(:final recoveryCodes) => recoveryCodes == null,
   SessionAbsent() => false,
 };

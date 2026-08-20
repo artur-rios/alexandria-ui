@@ -119,11 +119,11 @@ return active(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult Function( Session session)?  active,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult Function( Session session,  List<String>? recoveryCodes)?  active,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case SessionAbsent() when absent != null:
 return absent(_that.endedBecause,_that.indexRunContinues);case SessionActive() when active != null:
-return active(_that.session);case _:
+return active(_that.session,_that.recoveryCodes);case _:
   return orElse();
 
 }
@@ -141,11 +141,11 @@ return active(_that.session);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Failure? endedBecause,  bool indexRunContinues)  absent,required TResult Function( Session session)  active,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Failure? endedBecause,  bool indexRunContinues)  absent,required TResult Function( Session session,  List<String>? recoveryCodes)  active,}) {final _that = this;
 switch (_that) {
 case SessionAbsent():
 return absent(_that.endedBecause,_that.indexRunContinues);case SessionActive():
-return active(_that.session);}
+return active(_that.session,_that.recoveryCodes);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -159,11 +159,11 @@ return active(_that.session);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult? Function( Session session)?  active,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Failure? endedBecause,  bool indexRunContinues)?  absent,TResult? Function( Session session,  List<String>? recoveryCodes)?  active,}) {final _that = this;
 switch (_that) {
 case SessionAbsent() when absent != null:
 return absent(_that.endedBecause,_that.indexRunContinues);case SessionActive() when active != null:
-return active(_that.session);case _:
+return active(_that.session,_that.recoveryCodes);case _:
   return null;
 
 }
@@ -255,10 +255,19 @@ $FailureCopyWith<$Res>? get endedBecause {
 
 
 class SessionActive implements SessionState {
-  const SessionActive({required this.session});
+  const SessionActive({required this.session, final  List<String>? recoveryCodes}): _recoveryCodes = recoveryCodes;
   
 
  final  Session session;
+ final  List<String>? _recoveryCodes;
+ List<String>? get recoveryCodes {
+  final value = _recoveryCodes;
+  if (value == null) return null;
+  if (_recoveryCodes is EqualUnmodifiableListView) return _recoveryCodes;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 
 /// Create a copy of SessionState
 /// with the given fields replaced by the non-null parameter values.
@@ -270,16 +279,16 @@ $SessionActiveCopyWith<SessionActive> get copyWith => _$SessionActiveCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionActive&&(identical(other.session, session) || other.session == session));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionActive&&(identical(other.session, session) || other.session == session)&&const DeepCollectionEquality().equals(other._recoveryCodes, _recoveryCodes));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,session);
+int get hashCode => Object.hash(runtimeType,session,const DeepCollectionEquality().hash(_recoveryCodes));
 
 @override
 String toString() {
-  return 'SessionState.active(session: $session)';
+  return 'SessionState.active(session: $session, recoveryCodes: $recoveryCodes)';
 }
 
 
@@ -290,7 +299,7 @@ abstract mixin class $SessionActiveCopyWith<$Res> implements $SessionStateCopyWi
   factory $SessionActiveCopyWith(SessionActive value, $Res Function(SessionActive) _then) = _$SessionActiveCopyWithImpl;
 @useResult
 $Res call({
- Session session
+ Session session, List<String>? recoveryCodes
 });
 
 
@@ -307,10 +316,11 @@ class _$SessionActiveCopyWithImpl<$Res>
 
 /// Create a copy of SessionState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? session = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? session = null,Object? recoveryCodes = freezed,}) {
   return _then(SessionActive(
 session: null == session ? _self.session : session // ignore: cast_nullable_to_non_nullable
-as Session,
+as Session,recoveryCodes: freezed == recoveryCodes ? _self._recoveryCodes : recoveryCodes // ignore: cast_nullable_to_non_nullable
+as List<String>?,
   ));
 }
 

@@ -2411,6 +2411,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'From a folder that is no longer registered.'**
   String get missingFilesUnregisteredFolder;
+
+  /// UC-40 main flow step 2: the heading of the screen shown once after sign-up.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your recovery codes'**
+  String get recoveryCodesTitle;
+
+  /// UC-40 main flow step 2 and FR-AU-12: says plainly that the codes are not retrievable and what they are for.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the only time these are shown. Each one replaces a forgotten password exactly once — without them, a forgotten password means a lost library.'**
+  String get recoveryCodesExplanation;
+
+  /// UC-40 AF-02: places the codes on the clipboard. Nothing is written to disk (FR-AU-13).
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the codes'**
+  String get recoveryCodesCopy;
+
+  /// UC-40 AF-02: confirms the copy happened.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to the clipboard.'**
+  String get recoveryCodesCopied;
+
+  /// UC-40 main flow step 4: the only way past this screen (AF-01). Confirming opens the library.
+  ///
+  /// In en, this message translates to:
+  /// **'I have stored them'**
+  String get recoveryCodesAcknowledge;
+
+  /// UC-40 AF-03: the core issued no codes, which is said plainly rather than shown as an empty list.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.'**
+  String get recoveryCodesNone;
 }
 
 class _AppLocalizationsDelegate

@@ -77,9 +77,19 @@ class SignUpController extends Notifier<SignUpState> {
       // an e-mail confirmation prompt; the core has no confirmation to give,
       // so there is nothing to hold them here. UC-40 puts the recovery codes
       // in front of them at this point instead.
-      case AuthenticatedOutcome(:final session):
+      case AuthenticatedOutcome(:final session, :final recoveryCodes):
         state = const SignUpState.editing();
-        _session.establish(session);
+
+        // An account exists from here on, so the screen for any later
+        // signed-out state is login rather than sign-up. The entry is resolved
+        // once per run (FR-AU-01), and this is the one moment in a run that
+        // changes the answer — without it, signing out from the recovery-code
+        // prompt (UC-40 AF-04) would offer to create the account again.
+        ref.read(authEntryProvider.notifier).goToLogin();
+
+        // UC-40: the codes go into the session state, which is what puts them
+        // on screen in place of the catalog until they are acknowledged.
+        _session.establish(session, recoveryCodes: recoveryCodes ?? const []);
 
       case FailedOutcome(:final failure):
         state = SignUpState.editing(problem: _problemFor(failure));

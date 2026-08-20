@@ -384,5 +384,11 @@
   "missingFilesExplanation": "Estes registros continuam no catálogo — nada é removido porque um arquivo está ausente. Reexamine para ver se eles voltaram, ou abra um registro para decidir o que fazer.",
   "missingFilesRescan": "Reexaminar a biblioteca",
   "missingFilesOpenDetails": "Abrir",
-  "missingFilesUnregisteredFolder": "De uma pasta que não está mais registrada."
+  "missingFilesUnregisteredFolder": "De uma pasta que não está mais registrada.",
+  "recoveryCodesTitle": "Guarde seus códigos de recuperação",
+  "recoveryCodesExplanation": "Esta é a única vez que eles são exibidos. Cada um substitui uma senha esquecida uma única vez — sem eles, uma senha esquecida significa uma biblioteca perdida.",
+  "recoveryCodesCopy": "Copiar os códigos",
+  "recoveryCodesCopied": "Copiados para a área de transferência.",
+  "recoveryCodesAcknowledge": "Eu os guardei",
+  "recoveryCodesNone": "Sua conta foi criada, mas nenhum código de recuperação veio com ela. Gere um conjunto nas preferências antes de precisar de um."
 }
