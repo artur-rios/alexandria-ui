@@ -9,6 +9,8 @@
 /// A use case adds its gateway here and changes nothing else.
 library;
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,6 +30,7 @@ import '../../features/library_sources/application/library_sources_controller.da
 import '../../features/library_sources/application/library_sources_state.dart';
 import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
+import '../../features/catalog/application/file_rename_controller.dart';
 import '../../features/catalog/application/music_metadata_editor.dart';
 import '../../features/catalog/application/video_metadata_editor.dart';
 import '../../features/catalog/application/layout_controller.dart';
@@ -40,6 +43,7 @@ import '../../features/catalog/domain/catalog_file.dart';
 import '../../features/catalog/domain/library_type.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
+import '../../features/catalog/domain/file_name.dart';
 import '../../features/library_sources/application/index_runs_controller.dart';
 import '../../features/library_sources/application/index_runs_state.dart';
 import '../../features/library_sources/application/index_session_activity.dart';
@@ -294,6 +298,22 @@ final recentFilesProvider =
 final musicMetadataEditorProvider =
     NotifierProvider<MusicMetadataEditor, MusicEditorState>(
       MusicMetadataEditor.new,
+    );
+
+/// The filesystem the application is running on (UC-17 main flow step 2).
+///
+/// Bound here rather than read from `Platform` where it is needed, so a test
+/// can hold a name up against both hosts' rules — the Windows ones are not
+/// reachable from a Linux CI runner otherwise, and they are half of what
+/// FR-ME-04 asks for.
+final hostFileSystemProvider = Provider<HostFileSystem>(
+  (ref) => Platform.isWindows ? HostFileSystem.windows : HostFileSystem.posix,
+);
+
+/// The open rename dialog (UC-17).
+final fileRenameControllerProvider =
+    NotifierProvider<FileRenameController, RenameState>(
+      FileRenameController.new,
     );
 
 /// The core's watch-progress read (UC-16 AF-03).

@@ -1349,6 +1349,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep it as a series'**
   String get videoMetadataMarkingCancel;
+
+  /// UC-17 main flow step 1: opens the rename dialog from a file's detail view.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameOpen;
+
+  /// UC-17: the heading of the rename dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename file'**
+  String get renameTitle;
+
+  /// UC-17: the field holding the new name, on disk and in the catalog.
+  ///
+  /// In en, this message translates to:
+  /// **'File name'**
+  String get renameFieldLabel;
+
+  /// UC-17 main flow step 3: sends the new name to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameSubmit;
+
+  /// UC-17 AF-02: what the core guarantees when the rename failed on disk.
+  ///
+  /// In en, this message translates to:
+  /// **'Neither the catalog nor the file on disk was changed.'**
+  String get renameNothingChanged;
+
+  /// UC-17 AF-01: the name is empty, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a file name.'**
+  String get renameErrorEmpty;
+
+  /// UC-17 AF-01: the name holds a character the host operating system forbids.
+  ///
+  /// In en, this message translates to:
+  /// **'This name uses a character the file system does not allow.'**
+  String get renameErrorForbidden;
+
+  /// UC-17 AF-01: Windows reserves a handful of device names, whatever extension follows them.
+  ///
+  /// In en, this message translates to:
+  /// **'This name is reserved by the operating system.'**
+  String get renameErrorReserved;
+
+  /// UC-17 AF-01: Windows strips a trailing dot silently, which would leave the catalog and the disk disagreeing.
+  ///
+  /// In en, this message translates to:
+  /// **'A file name cannot end in a dot.'**
+  String get renameErrorTrailingDot;
+
+  /// UC-17 AF-01: the name is longer than a single path component may be.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the name under {max} characters.'**
+  String renameErrorTooLong(int max);
 }
 
 class _AppLocalizationsDelegate

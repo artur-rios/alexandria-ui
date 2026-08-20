@@ -1248,4 +1248,314 @@ $FailureCopyWith<$Res> get failure {
 }
 }
 
+/// @nodoc
+mixin _$FileRenameOutcome {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FileRenameOutcome);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'FileRenameOutcome()';
+}
+
+
+}
+
+/// @nodoc
+class $FileRenameOutcomeCopyWith<$Res>  {
+$FileRenameOutcomeCopyWith(FileRenameOutcome _, $Res Function(FileRenameOutcome) __);
+}
+
+
+/// Adds pattern-matching-related methods to [FileRenameOutcome].
+extension FileRenameOutcomePatterns on FileRenameOutcome {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( FileRenamed value)?  renamed,TResult Function( FileRenameFailed value)?  failed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case FileRenamed() when renamed != null:
+return renamed(_that);case FileRenameFailed() when failed != null:
+return failed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( FileRenamed value)  renamed,required TResult Function( FileRenameFailed value)  failed,}){
+final _that = this;
+switch (_that) {
+case FileRenamed():
+return renamed(_that);case FileRenameFailed():
+return failed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( FileRenamed value)?  renamed,TResult? Function( FileRenameFailed value)?  failed,}){
+final _that = this;
+switch (_that) {
+case FileRenamed() when renamed != null:
+return renamed(_that);case FileRenameFailed() when failed != null:
+return failed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( CatalogFile file)?  renamed,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case FileRenamed() when renamed != null:
+return renamed(_that.file);case FileRenameFailed() when failed != null:
+return failed(_that.failure);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( CatalogFile file)  renamed,required TResult Function( Failure failure)  failed,}) {final _that = this;
+switch (_that) {
+case FileRenamed():
+return renamed(_that.file);case FileRenameFailed():
+return failed(_that.failure);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( CatalogFile file)?  renamed,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+switch (_that) {
+case FileRenamed() when renamed != null:
+return renamed(_that.file);case FileRenameFailed() when failed != null:
+return failed(_that.failure);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class FileRenamed implements FileRenameOutcome {
+  const FileRenamed({required this.file});
+  
+
+ final  CatalogFile file;
+
+/// Create a copy of FileRenameOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$FileRenamedCopyWith<FileRenamed> get copyWith => _$FileRenamedCopyWithImpl<FileRenamed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FileRenamed&&(identical(other.file, file) || other.file == file));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,file);
+
+@override
+String toString() {
+  return 'FileRenameOutcome.renamed(file: $file)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $FileRenamedCopyWith<$Res> implements $FileRenameOutcomeCopyWith<$Res> {
+  factory $FileRenamedCopyWith(FileRenamed value, $Res Function(FileRenamed) _then) = _$FileRenamedCopyWithImpl;
+@useResult
+$Res call({
+ CatalogFile file
+});
+
+
+$CatalogFileCopyWith<$Res> get file;
+
+}
+/// @nodoc
+class _$FileRenamedCopyWithImpl<$Res>
+    implements $FileRenamedCopyWith<$Res> {
+  _$FileRenamedCopyWithImpl(this._self, this._then);
+
+  final FileRenamed _self;
+  final $Res Function(FileRenamed) _then;
+
+/// Create a copy of FileRenameOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? file = null,}) {
+  return _then(FileRenamed(
+file: null == file ? _self.file : file // ignore: cast_nullable_to_non_nullable
+as CatalogFile,
+  ));
+}
+
+/// Create a copy of FileRenameOutcome
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$CatalogFileCopyWith<$Res> get file {
+  
+  return $CatalogFileCopyWith<$Res>(_self.file, (value) {
+    return _then(_self.copyWith(file: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class FileRenameFailed implements FileRenameOutcome {
+  const FileRenameFailed({required this.failure});
+  
+
+ final  Failure failure;
+
+/// Create a copy of FileRenameOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$FileRenameFailedCopyWith<FileRenameFailed> get copyWith => _$FileRenameFailedCopyWithImpl<FileRenameFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FileRenameFailed&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,failure);
+
+@override
+String toString() {
+  return 'FileRenameOutcome.failed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $FileRenameFailedCopyWith<$Res> implements $FileRenameOutcomeCopyWith<$Res> {
+  factory $FileRenameFailedCopyWith(FileRenameFailed value, $Res Function(FileRenameFailed) _then) = _$FileRenameFailedCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+$FailureCopyWith<$Res> get failure;
+
+}
+/// @nodoc
+class _$FileRenameFailedCopyWithImpl<$Res>
+    implements $FileRenameFailedCopyWith<$Res> {
+  _$FileRenameFailedCopyWithImpl(this._self, this._then);
+
+  final FileRenameFailed _self;
+  final $Res Function(FileRenameFailed) _then;
+
+/// Create a copy of FileRenameOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(FileRenameFailed(
+failure: null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+/// Create a copy of FileRenameOutcome
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$FailureCopyWith<$Res> get failure {
+  
+  return $FailureCopyWith<$Res>(_self.failure, (value) {
+    return _then(_self.copyWith(failure: value));
+  });
+}
+}
+
 // dart format on

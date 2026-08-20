@@ -360,6 +360,20 @@ class CoreIsolate {
         ),
       ),
 
+      'fileRename' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (name) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_file_rename(uuid, name, token);
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
       // UC-16 AF-03 reads this to find out whether a video's progress is
       // counted per episode; UC-29 and UC-30 are what browse it.
       'watchlistsList' => withNativeString(

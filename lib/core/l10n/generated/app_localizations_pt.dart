@@ -721,4 +721,40 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get videoMetadataMarkingCancel => 'Manter como série';
+
+  @override
+  String get renameOpen => 'Renomear';
+
+  @override
+  String get renameTitle => 'Renomear arquivo';
+
+  @override
+  String get renameFieldLabel => 'Nome do arquivo';
+
+  @override
+  String get renameSubmit => 'Renomear';
+
+  @override
+  String get renameNothingChanged =>
+      'Nem o catálogo nem o arquivo em disco foram alterados.';
+
+  @override
+  String get renameErrorEmpty => 'Informe um nome de arquivo.';
+
+  @override
+  String get renameErrorForbidden =>
+      'Este nome usa um caractere que o sistema de arquivos não permite.';
+
+  @override
+  String get renameErrorReserved =>
+      'Este nome é reservado pelo sistema operacional.';
+
+  @override
+  String get renameErrorTrailingDot =>
+      'Um nome de arquivo não pode terminar com ponto.';
+
+  @override
+  String renameErrorTooLong(int max) {
+    return 'Use menos de $max caracteres no nome.';
+  }
 }

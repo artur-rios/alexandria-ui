@@ -207,5 +207,15 @@
   "videoMetadataErrorNotANumber": "Digite um número inteiro.",
   "videoMetadataErrorYear": "Digite um ano com quatro dígitos.",
   "videoMetadataErrorTooLong": "Use menos de {max} caracteres.",
-  "videoMetadataMarkingCancel": "Manter como série"
+  "videoMetadataMarkingCancel": "Manter como série",
+  "renameOpen": "Renomear",
+  "renameTitle": "Renomear arquivo",
+  "renameFieldLabel": "Nome do arquivo",
+  "renameSubmit": "Renomear",
+  "renameNothingChanged": "Nem o catálogo nem o arquivo em disco foram alterados.",
+  "renameErrorEmpty": "Informe um nome de arquivo.",
+  "renameErrorForbidden": "Este nome usa um caractere que o sistema de arquivos não permite.",
+  "renameErrorReserved": "Este nome é reservado pelo sistema operacional.",
+  "renameErrorTrailingDot": "Um nome de arquivo não pode terminar com ponto.",
+  "renameErrorTooLong": "Use menos de {max} caracteres no nome."
 }

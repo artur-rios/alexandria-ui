@@ -10,6 +10,7 @@ import '../../shell/presentation/async_state_view.dart';
 import '../domain/file_details.dart';
 import '../domain/library_type.dart';
 import 'music_metadata_form.dart';
+import 'rename_file_dialog.dart';
 import 'video_metadata_form.dart';
 
 /// One file's details (UC-13, FR-CT-05, FR-CT-12).
@@ -130,6 +131,19 @@ class _Details extends ConsumerWidget {
               onPressed: () => openForm(context, ref, details),
               icon: const Icon(Icons.edit_outlined),
               label: Text(l10n.detailsEditMetadata),
+            ),
+          ],
+
+          // UC-17 main flow step 1. Every type can be renamed, because the
+          // name is the file's and not its subtype's — but not a deleted
+          // record, which the core refuses to touch until it is restored.
+          if (!details.isDeleted) ...[
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              onPressed: () =>
+                  RenameFileDialog.show(context, ref, details.file),
+              icon: const Icon(Icons.drive_file_rename_outline),
+              label: Text(l10n.renameOpen),
             ),
           ],
 

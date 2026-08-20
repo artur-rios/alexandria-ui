@@ -61,6 +61,14 @@ class FakeCatalogGateway implements CatalogGateway {
   /// core.
   final List<({String uuid, VideoMetadata metadata})> videoEdits = [];
 
+  /// What [renameFile] answers, in order (UC-17).
+  final List<FileRenameOutcome> renameOutcomes = [];
+
+  /// Every rename asked for, in order.
+  ///
+  /// Empty is the assertion AF-01 and AF-04 need: neither calls the core.
+  final List<({String uuid, String name})> renames = [];
+
   /// Every type asked for, in order.
   ///
   /// Empty is the assertion that matters when there is no session: no catalog
@@ -143,6 +151,26 @@ class FakeCatalogGateway implements CatalogGateway {
     }
 
     return videoEditOutcomes.removeAt(0);
+  }
+
+  @override
+  Future<FileRenameOutcome> renameFile({
+    required String uuid,
+    required String name,
+    required String credential,
+  }) async {
+    renames.add((uuid: uuid, name: name));
+    credentials.add(credential);
+
+    // Accepting by echoing the record with the new name is what the core does
+    // on success.
+    if (renameOutcomes.isEmpty) {
+      return FileRenameOutcome.renamed(
+        file: aFile(uuid: uuid, name: name),
+      );
+    }
+
+    return renameOutcomes.removeAt(0);
   }
 }
 
