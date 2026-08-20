@@ -1839,5 +1839,35 @@
               "type": "num"
           }
       }
+  },
+
+  "purgeOnDiskTitle": "Remove from disk",
+  "@purgeOnDiskTitle": {
+      "description": "UC-36 main flow step 1: the folded-away section that deletes the file itself."
+  },
+
+  "purgeOnDiskAction": "Delete the file from disk",
+  "@purgeOnDiskAction": {
+      "description": "UC-36 main flow step 1: the action itself, which is never a default."
+  },
+
+  "purgeOnDiskExplanation": "This is the only action here that removes your data from disk. Everything else keeps the file and changes only the catalog.",
+  "@purgeOnDiskExplanation": {
+      "description": "UC-36 and FR-LC-06: why this action is presented apart from every other deletion."
+  },
+
+  "purgeOnDiskIrreversible": "This cannot be undone.",
+  "@purgeOnDiskIrreversible": {
+      "description": "UC-36 main flow step 2: the confirmation says the deletion is irreversible."
+  },
+
+  "purgeOnDiskMessage": "Delete {path} from disk and remove its record?",
+  "@purgeOnDiskMessage": {
+      "description": "UC-36 main flow step 2 and FR-LC-06: the confirmation names the exact file path.",
+      "placeholders": {
+          "path": {
+              "type": "String"
+          }
+      }
   }
 }

@@ -1316,4 +1316,22 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get purgeOnDiskTitle => 'Remove from disk';
+
+  @override
+  String get purgeOnDiskAction => 'Delete the file from disk';
+
+  @override
+  String get purgeOnDiskExplanation =>
+      'This is the only action here that removes your data from disk. Everything else keeps the file and changes only the catalog.';
+
+  @override
+  String get purgeOnDiskIrreversible => 'This cannot be undone.';
+
+  @override
+  String purgeOnDiskMessage(String path) {
+    return 'Delete $path from disk and remove its record?';
+  }
 }

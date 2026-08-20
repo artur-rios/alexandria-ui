@@ -21,6 +21,7 @@ import '../domain/catalog_file.dart';
 import '../../playback/presentation/video_player_screen.dart';
 import '../../lifecycle/application/open_file_holds.dart';
 import '../../lifecycle/presentation/delete_record_button.dart';
+import '../../lifecycle/presentation/purge_on_disk_section.dart';
 import '../../tracking/presentation/add_to_reading_list_button.dart';
 import '../../tracking/presentation/add_to_watchlist_button.dart';
 import 'rename_file_dialog.dart';
@@ -284,6 +285,12 @@ class _Details extends ConsumerWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+
+          // UC-36: last, folded away, and below everything else — FR-LC-06
+          // asks for an action that is never the default and never one
+          // interaction from a listing row.
+          const SizedBox(height: AppSpacing.lg),
+          PurgeOnDiskSection(file: details.file),
         ],
       ),
     );

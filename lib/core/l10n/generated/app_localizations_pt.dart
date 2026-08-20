@@ -1318,4 +1318,22 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get purgeOnDiskTitle => 'Remover do disco';
+
+  @override
+  String get purgeOnDiskAction => 'Excluir o arquivo do disco';
+
+  @override
+  String get purgeOnDiskExplanation =>
+      'Esta é a única ação aqui que remove seus dados do disco. Todas as outras mantêm o arquivo e alteram apenas o catálogo.';
+
+  @override
+  String get purgeOnDiskIrreversible => 'Isso não pode ser desfeito.';
+
+  @override
+  String purgeOnDiskMessage(String path) {
+    return 'Excluir $path do disco e remover seu registro?';
+  }
 }

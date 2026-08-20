@@ -2357,6 +2357,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days, plural, =1{That record can be purged in 1 day.} other{That record can be purged in {days} days.}}'**
   String purgeTooSoon(num days);
+
+  /// UC-36 main flow step 1: the folded-away section that deletes the file itself.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from disk'**
+  String get purgeOnDiskTitle;
+
+  /// UC-36 main flow step 1: the action itself, which is never a default.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the file from disk'**
+  String get purgeOnDiskAction;
+
+  /// UC-36 and FR-LC-06: why this action is presented apart from every other deletion.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the only action here that removes your data from disk. Everything else keeps the file and changes only the catalog.'**
+  String get purgeOnDiskExplanation;
+
+  /// UC-36 main flow step 2: the confirmation says the deletion is irreversible.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone.'**
+  String get purgeOnDiskIrreversible;
+
+  /// UC-36 main flow step 2 and FR-LC-06: the confirmation names the exact file path.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {path} from disk and remove its record?'**
+  String purgeOnDiskMessage(String path);
 }
 
 class _AppLocalizationsDelegate
