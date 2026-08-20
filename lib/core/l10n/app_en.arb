@@ -1415,5 +1415,48 @@
               "type": "int"
           }
       }
+  },
+
+  "comicFitPage": "Fit the page",
+  "@comicFitPage": {
+      "description": "UC-23 main flow step 3 / FR-VW-03: the whole page, as large as it goes."
+  },
+
+  "comicFitWidth": "Fit the width",
+  "@comicFitWidth": {
+      "description": "UC-23 main flow step 3 / FR-VW-03: the page's width, so the lettering is legible and the owner scrolls."
+  },
+
+  "comicNextPage": "Next page",
+  "@comicNextPage": {
+      "description": "UC-23 main flow step 3: turns the page."
+  },
+
+  "comicPreviousPage": "Previous page",
+  "@comicPreviousPage": {
+      "description": "UC-23 main flow step 3: turns back."
+  },
+
+  "comicPageOf": "Page {page} of {total}",
+  "@comicPageOf": {
+      "description": "UC-23: where the owner is in the archive.",
+      "placeholders": {
+          "page": {
+              "type": "int"
+          },
+          "total": {
+              "type": "int"
+          }
+      }
+  },
+
+  "comicPagesSkipped": "These pages could not be read: {pages}",
+  "@comicPagesSkipped": {
+      "description": "UC-23 AF-04: the gaps are marked rather than silently jumped, and named so the owner knows what is wrong with their file.",
+      "placeholders": {
+          "pages": {
+              "type": "String"
+          }
+      }
   }
 }

@@ -371,6 +371,21 @@ class CoreIsolate {
         }),
       ),
 
+      'comicPage' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[2]! as String, (token) {
+          final result = bindings.alexandria_comic_page(
+            uuid,
+            arguments[1]! as int,
+            token,
+          );
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       'fileReadContent' => withNativeString(
         arguments.first! as String,
         (uuid) => withNativeString(arguments[1]! as String, (token) {

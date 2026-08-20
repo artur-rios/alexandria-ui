@@ -275,5 +275,11 @@
   "viewerEncrypted": "Este documento está protegido por senha, que este aplicativo não pede nem armazena.",
   "viewerNone": "Ainda não há um visualizador para este tipo de arquivo. As outras ações continuam disponíveis.",
   "viewerUnsupportedFormat": "{name} está em um formato que nenhum decodificador incluído consegue abrir.",
-  "viewerChapterOf": "Capítulo {position} de {total}"
+  "viewerChapterOf": "Capítulo {position} de {total}",
+  "comicFitPage": "Ajustar à página",
+  "comicFitWidth": "Ajustar à largura",
+  "comicNextPage": "Próxima página",
+  "comicPreviousPage": "Página anterior",
+  "comicPageOf": "Página {page} de {total}",
+  "comicPagesSkipped": "Não foi possível ler estas páginas: {pages}"
 }
