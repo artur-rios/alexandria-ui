@@ -375,5 +375,10 @@
   "purgeNothingOnDisk": "O registro foi removido e nenhum arquivo foi encontrado no disco.",
   "purgeDiskFailed": "Nada foi removido — nem o arquivo nem o registro.",
   "purgeRecordMessage": "Remover {name} do catálogo permanentemente? Isso não pode ser desfeito.",
-  "purgeTooSoon": "{days, plural, =1{Esse registro pode ser expurgado em 1 dia.} other{Esse registro pode ser expurgado em {days} dias.}}"
+  "purgeTooSoon": "{days, plural, =1{Esse registro pode ser expurgado em 1 dia.} other{Esse registro pode ser expurgado em {days} dias.}}",
+  "purgeOnDiskTitle": "Remover do disco",
+  "purgeOnDiskAction": "Excluir o arquivo do disco",
+  "purgeOnDiskExplanation": "Esta é a única ação aqui que remove seus dados do disco. Todas as outras mantêm o arquivo e alteram apenas o catálogo.",
+  "purgeOnDiskIrreversible": "Isso não pode ser desfeito.",
+  "purgeOnDiskMessage": "Excluir {path} do disco e remover seu registro?"
 }
