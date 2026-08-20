@@ -233,5 +233,22 @@
   "editorRecordGone": "Este arquivo não está mais no catálogo. O que você escreveu continua aqui e não foi salvo.",
   "editorSessionRejected": "Sua sessão terminou, então isto não pôde ser salvo. Entrar novamente fará você perder o que está na tela.",
   "editorCouldNotRead": "Não foi possível ler este arquivo.",
-  "editorSaveAndClose": "Salvar e fechar"
+  "editorSaveAndClose": "Salvar e fechar",
+  "videoPlay": "Reproduzir",
+  "videoPause": "Pausar",
+  "videoClose": "Fechar o player",
+  "videoSeekBackward": "Voltar dez segundos",
+  "videoSeekForward": "Avançar dez segundos",
+  "videoFullScreen": "Tela cheia",
+  "videoSubtitles": "Legendas",
+  "videoSubtitlesOff": "Desligadas",
+  "videoNoSubtitles": "Este arquivo não tem legendas",
+  "videoAudioTracks": "Faixas de áudio",
+  "videoNoAudioTracks": "Este arquivo tem uma única faixa de áudio",
+  "videoResume": "Continuar",
+  "videoStartOver": "Começar do início",
+  "videoFileMissing": "Este arquivo não está onde o catálogo diz que está.",
+  "videoCannotDecode": "Não é possível reproduzir este arquivo.",
+  "videoResumePrompt": "Você parou de assistir em {position}.",
+  "videoTrackUnnamed": "Faixa {id}"
 }

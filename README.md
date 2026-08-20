@@ -274,7 +274,7 @@ untested.
 
 | Issue | Work | Spec |
 |---|---|---|
-| [#20](https://github.com/artur-rios/alexandria-desktop-front/issues/20) | UC-19 — Play a video | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#20](https://github.com/artur-rios/alexandria-desktop-front/issues/20) | UC-19 — Play a video — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#21](https://github.com/artur-rios/alexandria-desktop-front/issues/21) | UC-20 — Play audio | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#22](https://github.com/artur-rios/alexandria-desktop-front/issues/22) | UC-21 — Show the album playback animation | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 

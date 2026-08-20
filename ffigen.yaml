@@ -54,6 +54,9 @@ macros:
     # they overlap numerically and disagree on what 4 means, so reading one
     # through the other is a misread rather than a shortcut (UC-06).
     - "RUN_.*"
+    # The playback family covers the source, thumbnail, and comic-page calls
+    # (UC-19, UC-20, UC-23, UC-24). Its own set of codes, as the run family is.
+    - "PLAYBACK_.*"
 
 comments:
   style: any

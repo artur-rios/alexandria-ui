@@ -368,6 +368,18 @@ class FakeCoreClient implements CoreClient {
   @override
   Future<void> dispose() async => disposeCount++;
 
+  /// What [filePlaybackSource] answers (UC-19).
+  CoreJsonResponse playbackSourceResponse = (
+    status: PLAYBACK_OK,
+    json: '{"uuid":"a-uuid","path":"/home/owner/videos/a.mkv"}',
+  );
+
+  @override
+  Future<CoreJsonResponse> filePlaybackSource(
+    String uuid,
+    String token,
+  ) async => playbackSourceResponse;
+
   /// What [fileReadContent] answers (UC-18).
   CoreJsonResponse readContentResponse = (
     status: FILE_OK,

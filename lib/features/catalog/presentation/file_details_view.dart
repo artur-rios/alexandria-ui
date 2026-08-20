@@ -11,6 +11,7 @@ import '../domain/file_details.dart';
 import '../domain/library_type.dart';
 import 'music_metadata_form.dart';
 import '../../editing/presentation/text_editor_screen.dart';
+import '../../playback/presentation/video_player_screen.dart';
 import 'rename_file_dialog.dart';
 import 'video_metadata_form.dart';
 
@@ -158,6 +159,20 @@ class _Details extends ConsumerWidget {
                   RenameFileDialog.show(context, ref, details.file),
               icon: const Icon(Icons.drive_file_rename_outline),
               label: Text(l10n.renameOpen),
+            ),
+          ],
+
+          // UC-19 main flow step 1. Offered for a video whose file the last
+          // refresh could still find: AF-01 covers one that has gone since,
+          // and offering nothing for a record already known to be missing
+          // would be an action that cannot work.
+          if (details.file.type == LibraryType.video && !details.isDeleted) ...[
+            const SizedBox(height: AppSpacing.sm),
+            FilledButton.icon(
+              onPressed: () =>
+                  VideoPlayerScreen.show(context, ref, details.file),
+              icon: const Icon(Icons.play_arrow),
+              label: Text(l10n.videoPlay),
             ),
           ],
 

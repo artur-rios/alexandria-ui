@@ -118,6 +118,14 @@ abstract interface class CoreClient {
     String token,
   );
 
+  /// Resolves the file [uuid] identifies to something a local player can open,
+  /// through `alexandria_file_playback_source` (FR-PL-01, FR-PL-05).
+  ///
+  /// Answers `{uuid, path, mimeType, sizeBytes}`. No bytes cross the boundary:
+  /// the player opens the path directly, which is what playing without
+  /// transcoding needs.
+  Future<CoreJsonResponse> filePlaybackSource(String uuid, String token);
+
   /// Reads a text file's content from disk through
   /// `alexandria_file_read_content` (FR-ME-06, UC-18).
   ///
@@ -239,6 +247,14 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async =>
       await _isolate.call('fileEditMetadata', [uuid, jsonPatch, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> filePlaybackSource(
+    String uuid,
+    String token,
+  ) async =>
+      await _isolate.call('filePlaybackSource', [uuid, token])
           as CoreJsonResponse;
 
   @override

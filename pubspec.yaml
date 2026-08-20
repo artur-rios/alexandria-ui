@@ -65,11 +65,24 @@ dependencies:
   # FR-LB-01 asks for the native one specifically: a folder chosen through a
   # dialog the owner recognizes, not a path typed into a text field.
   file_selector: ^1.1.0
+
   # Renders the editor's live preview (Technology Stack Document §5, UC-18
   # FR-ME-07). The package is discontinued upstream; it is what the stack
   # document names, it resolves and builds against this SDK, and replacing it
   # is a change to that document rather than to this use case.
   flutter_markdown: ^0.7.7+1
+
+  # The playback engine and its render surface (Technology Stack Document §5).
+  # libmpv-backed, chosen because subtitle-track and audio-track selection on
+  # both Windows and Linux are hard requirements (FR-PL-03, FR-PL-04) and it
+  # plays the container and codec range a real library holds without
+  # transcoding (FR-PL-01). The `libs` packages carry the native libmpv build
+  # for each target, which is what keeps the application from depending on
+  # whatever mpv the owner happens to have installed.
+  media_kit: ^1.2.6
+  media_kit_video: ^2.0.1
+  media_kit_libs_video: ^1.0.7
+  media_kit_libs_audio: ^1.0.7
 
 dev_dependencies:
   flutter_test:

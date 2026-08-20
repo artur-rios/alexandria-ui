@@ -29,6 +29,14 @@ enum CoreStatusFamily {
   /// `alexandria_auth_local_*` — see `AUTH_*`.
   auth,
 
+  /// `alexandria_file_playback_source`, `alexandria_file_thumbnail`, and
+  /// `alexandria_comic_page` — see `PLAYBACK_*`.
+  ///
+  /// Its own family rather than the file one, on the header's own convention:
+  /// the codes agree today, and a family is what makes a future divergence a
+  /// compile-time question rather than a silent misread (IR-08).
+  playback,
+
   /// `alexandria_index_run_status_json` — see `RUN_*`.
   ///
   /// Its own family rather than [CoreStatusFamily.indexing]'s, on the header's
@@ -50,6 +58,7 @@ enum CoreStatusFamily {
     CoreStatusFamily.watchlist => WATCHLIST_OK,
     CoreStatusFamily.readingList => READING_LIST_OK,
     CoreStatusFamily.auth => AUTH_OK,
+    CoreStatusFamily.playback => PLAYBACK_OK,
     CoreStatusFamily.run => RUN_OK,
   };
 
