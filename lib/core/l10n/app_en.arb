@@ -1378,5 +1378,110 @@
   "bookmarkCopyUrl": "Copy the address",
   "@bookmarkCopyUrl": {
     "description": "UC-28 AF-04: the only useful thing left when no browser opens — the owner takes the address elsewhere."
-}
+},
+
+  "watchlistsTitle": "Watchlists",
+  "@watchlistsTitle": {
+      "description": "UC-29 main flow step 1: the watchlists screen's heading."
+  },
+
+  "watchlistsOpen": "Watchlists",
+  "@watchlistsOpen": {
+      "description": "UC-29 main flow step 1: opens the watchlists screen from the videos area."
+  },
+
+  "watchlistsNone": "You have not made a watchlist yet.",
+  "@watchlistsNone": {
+      "description": "UC-29: there are no watchlists, which is a state and not a failure."
+  },
+
+  "watchlistNameLabel": "Watchlist name",
+  "@watchlistNameLabel": {
+      "description": "UC-29 main flow step 1: what the new watchlist is called."
+  },
+
+  "watchlistCreate": "Create",
+  "@watchlistCreate": {
+      "description": "UC-29 main flow step 2: sends the new watchlist to the core."
+  },
+
+  "watchlistNameEmpty": "Give the watchlist a name.",
+  "@watchlistNameEmpty": {
+      "description": "UC-29 AF-01: the name is blank after trimming, so the core is not called."
+  },
+
+  "watchlistDelete": "Delete this watchlist",
+  "@watchlistDelete": {
+      "description": "UC-29 main flow step 6: removes the tracking and keeps the videos."
+  },
+
+  "watchlistEmpty": "Nothing is tracked in this watchlist yet.",
+  "@watchlistEmpty": {
+      "description": "UC-29: the watchlist holds no videos."
+  },
+
+  "watchlistAddTo": "Add to a watchlist",
+  "@watchlistAddTo": {
+      "description": "UC-29 main flow step 3: tracks this video in a watchlist."
+  },
+
+  "watchlistRemoveVideo": "Stop tracking this video",
+  "@watchlistRemoveVideo": {
+      "description": "UC-29 main flow step 5: removes the video from this watchlist and leaves it in the catalog."
+  },
+
+  "watchlistAlreadyTracked": "That video is already in that watchlist.",
+  "@watchlistAlreadyTracked": {
+      "description": "UC-29 AF-03: nothing is added, and the owner is told why."
+  },
+
+  "watchlistNotFound": "That watchlist or video is no longer there.",
+  "@watchlistNotFound": {
+      "description": "UC-29 AF-04 / UC-30 AF-04: the core has no such record, so the screen is read again."
+  },
+
+  "watchStatePending": "Not started",
+  "@watchStatePending": {
+      "description": "UC-30: the watch state the core calls pending."
+  },
+
+  "watchStateWatching": "Watching",
+  "@watchStateWatching": {
+      "description": "UC-30: part way through."
+  },
+
+  "watchStateWatched": "Watched",
+  "@watchStateWatched": {
+      "description": "UC-30: finished."
+  },
+
+  "watchlistDeleteMessage": "Delete {name}? The videos in it are kept \u2014 only the tracking is removed.",
+  "@watchlistDeleteMessage": {
+      "description": "UC-29 main flow step 6 / BR-07: the confirmation names what goes and what does not.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "watchlistAlreadyIn": "{name} \u2014 already there",
+  "@watchlistAlreadyIn": {
+      "description": "UC-29 AF-03: a watchlist already tracking this video says so rather than disappearing from the menu.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "watchlistItemCount": "{count} tracked",
+  "@watchlistItemCount": {
+      "description": "UC-29: how many videos a watchlist tracks.",
+      "placeholders": {
+          "count": {
+              "type": "int"
+          }
+      }
+  }
 }

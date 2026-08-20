@@ -6,6 +6,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../shell/presentation/async_state_view.dart';
+import '../../tracking/presentation/watchlists_screen.dart';
 import '../domain/catalog_file.dart';
 import '../domain/library_type.dart';
 import '../domain/listing_view.dart';
@@ -29,6 +30,18 @@ class CatalogListing extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // UC-29 main flow step 1: watchlists are about videos, so the videos
+        // area is where they are reached from. They are not a file type, so
+        // they are not a destination of their own (FR-CT-01).
+        if (type == LibraryType.video)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => WatchlistsScreen.show(context),
+              icon: const Icon(Icons.playlist_play),
+              label: Text(AppLocalizations.of(context).watchlistsOpen),
+            ),
+          ),
         if (type != null) _LayoutBar(type: type),
         Expanded(
           child: AsyncStateView<List<CatalogFile>>(

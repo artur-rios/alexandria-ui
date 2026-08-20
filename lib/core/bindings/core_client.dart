@@ -176,6 +176,35 @@ abstract interface class CoreClient {
   /// string is every bookmark.
   Future<CoreJsonResponse> bookmarksList(String jsonFilters, String token);
 
+  /// Creates a watchlist through `alexandria_watchlist_create` (FR-TR-01).
+  Future<CoreJsonResponse> watchlistCreate(String jsonBody, String token);
+
+  /// Deletes one through `alexandria_watchlist_delete` (FR-TR-02).
+  Future<CoreJsonResponse> watchlistDelete(String uuid, String token);
+
+  /// Adds a video through `alexandria_watchlist_add_video` (FR-TR-03).
+  Future<CoreJsonResponse> watchlistAddVideo(
+    String uuid,
+    String jsonBody,
+    String token,
+  );
+
+  /// Removes one through `alexandria_watchlist_remove_video` (FR-TR-04).
+  Future<CoreJsonResponse> watchlistRemoveVideo(
+    String uuid,
+    String videoUuid,
+    String token,
+  );
+
+  /// Records progress through `alexandria_watchlist_update_progress`
+  /// (FR-TR-05 … FR-TR-07).
+  Future<CoreJsonResponse> watchlistUpdateProgress(
+    String uuid,
+    String videoUuid,
+    String jsonBody,
+    String token,
+  );
+
   /// Browses watchlists and the watch progress of everything they track
   /// through `alexandria_watchlists_list` (FR-WL-08).
   ///
@@ -336,6 +365,51 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async =>
       await _isolate.call('bookmarksList', [jsonFilters, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistCreate(
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('watchlistCreate', [jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistDelete(String uuid, String token) async =>
+      await _isolate.call('watchlistDelete', [uuid, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistAddVideo(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('watchlistAddVideo', [uuid, jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistRemoveVideo(
+    String uuid,
+    String videoUuid,
+    String token,
+  ) async =>
+      await _isolate.call('watchlistRemoveVideo', [uuid, videoUuid, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistUpdateProgress(
+    String uuid,
+    String videoUuid,
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('watchlistUpdateProgress', [
+            uuid,
+            videoUuid,
+            jsonBody,
+            token,
+          ])
           as CoreJsonResponse;
 
   @override

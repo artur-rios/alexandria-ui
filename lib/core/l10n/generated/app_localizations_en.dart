@@ -1037,4 +1037,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bookmarkCopyUrl => 'Copy the address';
+
+  @override
+  String get watchlistsTitle => 'Watchlists';
+
+  @override
+  String get watchlistsOpen => 'Watchlists';
+
+  @override
+  String get watchlistsNone => 'You have not made a watchlist yet.';
+
+  @override
+  String get watchlistNameLabel => 'Watchlist name';
+
+  @override
+  String get watchlistCreate => 'Create';
+
+  @override
+  String get watchlistNameEmpty => 'Give the watchlist a name.';
+
+  @override
+  String get watchlistDelete => 'Delete this watchlist';
+
+  @override
+  String get watchlistEmpty => 'Nothing is tracked in this watchlist yet.';
+
+  @override
+  String get watchlistAddTo => 'Add to a watchlist';
+
+  @override
+  String get watchlistRemoveVideo => 'Stop tracking this video';
+
+  @override
+  String get watchlistAlreadyTracked =>
+      'That video is already in that watchlist.';
+
+  @override
+  String get watchlistNotFound => 'That watchlist or video is no longer there.';
+
+  @override
+  String get watchStatePending => 'Not started';
+
+  @override
+  String get watchStateWatching => 'Watching';
+
+  @override
+  String get watchStateWatched => 'Watched';
+
+  @override
+  String watchlistDeleteMessage(String name) {
+    return 'Delete $name? The videos in it are kept — only the tracking is removed.';
+  }
+
+  @override
+  String watchlistAlreadyIn(String name) {
+    return '$name — already there';
+  }
+
+  @override
+  String watchlistItemCount(int count) {
+    return '$count tracked';
+  }
 }

@@ -469,6 +469,41 @@ class FakeCoreClient implements CoreClient {
     return renameResponse;
   }
 
+  /// What every watchlist write answers (UC-29, UC-30).
+  CoreJsonResponse watchlistWriteResponse = (status: WATCHLIST_OK, json: '{}');
+
+  @override
+  Future<CoreJsonResponse> watchlistCreate(
+    String jsonBody,
+    String token,
+  ) async => watchlistWriteResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistDelete(String uuid, String token) async =>
+      watchlistWriteResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistAddVideo(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async => watchlistWriteResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistRemoveVideo(
+    String uuid,
+    String videoUuid,
+    String token,
+  ) async => watchlistWriteResponse;
+
+  @override
+  Future<CoreJsonResponse> watchlistUpdateProgress(
+    String uuid,
+    String videoUuid,
+    String jsonBody,
+    String token,
+  ) async => watchlistWriteResponse;
+
   /// What [watchlistsList] answers (UC-16 AF-03).
   ///
   /// An empty array by default: a library nobody has built a watchlist in

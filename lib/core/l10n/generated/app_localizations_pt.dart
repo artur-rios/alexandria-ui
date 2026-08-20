@@ -1038,4 +1038,64 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get bookmarkCopyUrl => 'Copiar o endereço';
+
+  @override
+  String get watchlistsTitle => 'Listas de exibição';
+
+  @override
+  String get watchlistsOpen => 'Listas de exibição';
+
+  @override
+  String get watchlistsNone => 'Você ainda não criou uma lista de exibição.';
+
+  @override
+  String get watchlistNameLabel => 'Nome da lista';
+
+  @override
+  String get watchlistCreate => 'Criar';
+
+  @override
+  String get watchlistNameEmpty => 'Dê um nome à lista.';
+
+  @override
+  String get watchlistDelete => 'Excluir esta lista';
+
+  @override
+  String get watchlistEmpty => 'Nada está sendo acompanhado nesta lista ainda.';
+
+  @override
+  String get watchlistAddTo => 'Adicionar a uma lista';
+
+  @override
+  String get watchlistRemoveVideo => 'Parar de acompanhar este vídeo';
+
+  @override
+  String get watchlistAlreadyTracked => 'Esse vídeo já está nessa lista.';
+
+  @override
+  String get watchlistNotFound => 'Essa lista ou esse vídeo não está mais lá.';
+
+  @override
+  String get watchStatePending => 'Não iniciado';
+
+  @override
+  String get watchStateWatching => 'Assistindo';
+
+  @override
+  String get watchStateWatched => 'Assistido';
+
+  @override
+  String watchlistDeleteMessage(String name) {
+    return 'Excluir $name? Os vídeos são mantidos — apenas o acompanhamento é removido.';
+  }
+
+  @override
+  String watchlistAlreadyIn(String name) {
+    return '$name — já está lá';
+  }
+
+  @override
+  String watchlistItemCount(int count) {
+    return '$count acompanhados';
+  }
 }
