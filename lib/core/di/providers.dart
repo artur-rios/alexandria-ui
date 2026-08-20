@@ -78,9 +78,12 @@ import '../../features/playback/domain/music_grouping.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/shell/domain/session_activity.dart';
+import '../../features/viewers/application/comic_viewer_controller.dart';
 import '../../features/viewers/application/document_viewer_controller.dart';
+import '../../features/viewers/data/core_comic_gateway.dart';
 import '../../features/viewers/data/epub_document_gateway.dart';
 import '../../features/viewers/data/settings_reading_position_store.dart';
+import '../../features/viewers/domain/comic_gateway.dart';
 import '../../features/viewers/domain/document_gateway.dart';
 import '../../features/viewers/domain/reading_position_store.dart';
 import '../../features/viewers/domain/viewer_registry.dart';
@@ -450,7 +453,10 @@ final fileRenameControllerProvider =
 /// for it. The types absent from this map are the ones whose use case has not
 /// been built, and FR-VW-08 is what the detail view shows for them.
 final viewerRegistryProvider = Provider<ViewerRegistry>(
-  (ref) => const ViewerRegistry({LibraryType.document: ViewerKind.document}),
+  (ref) => const ViewerRegistry({
+    LibraryType.document: ViewerKind.document,
+    LibraryType.comic: ViewerKind.comic,
+  }),
 );
 
 /// Reads a document at the moment it is opened (UC-22, FR-VW-07).
@@ -469,6 +475,22 @@ final readingPositionsProvider = Provider<ReadingPositionStore>((ref) {
 
   return SettingsReadingPositionStore(settings);
 });
+
+/// Reads a comic-book archive a page at a time (UC-23, FR-VW-03).
+final comicGatewayProvider = Provider<ComicGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError('the comic gateway was read before the core was loaded');
+  }
+
+  return CoreComicGateway(core);
+});
+
+/// The open comic (UC-23).
+final comicViewerControllerProvider =
+    NotifierProvider<ComicViewerController, ComicViewerState>(
+      ComicViewerController.new,
+    );
 
 /// The open document (UC-22).
 final documentViewerControllerProvider =

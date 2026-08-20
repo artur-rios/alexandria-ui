@@ -380,6 +380,22 @@ class FakeCoreClient implements CoreClient {
     String token,
   ) async => playbackSourceResponse;
 
+  /// What [comicPage] answers (UC-23).
+  CoreJsonResponse comicPageResponse = (status: PLAYBACK_OK, json: null);
+
+  /// Every page asked for, in order.
+  final List<({String uuid, int page})> comicPages = [];
+
+  @override
+  Future<CoreJsonResponse> comicPage(
+    String uuid,
+    int page,
+    String token,
+  ) async {
+    comicPages.add((uuid: uuid, page: page));
+    return comicPageResponse;
+  }
+
   /// What [fileReadContent] answers (UC-18).
   CoreJsonResponse readContentResponse = (
     status: FILE_OK,

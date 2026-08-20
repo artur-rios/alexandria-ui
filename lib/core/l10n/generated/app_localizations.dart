@@ -1757,6 +1757,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Chapter {position} of {total}'**
   String viewerChapterOf(int position, int total);
+
+  /// UC-23 main flow step 3 / FR-VW-03: the whole page, as large as it goes.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit the page'**
+  String get comicFitPage;
+
+  /// UC-23 main flow step 3 / FR-VW-03: the page's width, so the lettering is legible and the owner scrolls.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit the width'**
+  String get comicFitWidth;
+
+  /// UC-23 main flow step 3: turns the page.
+  ///
+  /// In en, this message translates to:
+  /// **'Next page'**
+  String get comicNextPage;
+
+  /// UC-23 main flow step 3: turns back.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous page'**
+  String get comicPreviousPage;
+
+  /// UC-23: where the owner is in the archive.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {total}'**
+  String comicPageOf(int page, int total);
+
+  /// UC-23 AF-04: the gaps are marked rather than silently jumped, and named so the owner knows what is wrong with their file.
+  ///
+  /// In en, this message translates to:
+  /// **'These pages could not be read: {pages}'**
+  String comicPagesSkipped(String pages);
 }
 
 class _AppLocalizationsDelegate

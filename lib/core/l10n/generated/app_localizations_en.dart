@@ -953,4 +953,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String viewerChapterOf(int position, int total) {
     return 'Chapter $position of $total';
   }
+
+  @override
+  String get comicFitPage => 'Fit the page';
+
+  @override
+  String get comicFitWidth => 'Fit the width';
+
+  @override
+  String get comicNextPage => 'Next page';
+
+  @override
+  String get comicPreviousPage => 'Previous page';
+
+  @override
+  String comicPageOf(int page, int total) {
+    return 'Page $page of $total';
+  }
+
+  @override
+  String comicPagesSkipped(String pages) {
+    return 'These pages could not be read: $pages';
+  }
 }

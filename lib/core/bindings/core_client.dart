@@ -126,6 +126,15 @@ abstract interface class CoreClient {
   /// transcoding needs.
   Future<CoreJsonResponse> filePlaybackSource(String uuid, String token);
 
+  /// Reads one page of a comic-book archive through `alexandria_comic_page`
+  /// (FR-VW-03, UC-23).
+  ///
+  /// Answers `{uuid, page, pageCount, mimeType, bytesBase64}`. The bytes do
+  /// cross the boundary here, unlike playback's: a page has no path of its own
+  /// because it lives inside the archive, and it is bounded — which is what
+  /// lets the archive be read without being extracted to disk.
+  Future<CoreJsonResponse> comicPage(String uuid, int page, String token);
+
   /// Reads a text file's content from disk through
   /// `alexandria_file_read_content` (FR-ME-06, UC-18).
   ///
@@ -256,6 +265,14 @@ class FfiCoreClient implements CoreClient {
   ) async =>
       await _isolate.call('filePlaybackSource', [uuid, token])
           as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> comicPage(
+    String uuid,
+    int page,
+    String token,
+  ) async =>
+      await _isolate.call('comicPage', [uuid, page, token]) as CoreJsonResponse;
 
   @override
   Future<CoreJsonResponse> fileReadContent(String uuid, String token) async =>

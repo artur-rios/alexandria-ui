@@ -13,6 +13,7 @@ import 'music_metadata_form.dart';
 import '../../editing/presentation/text_editor_screen.dart';
 import '../../playback/application/audio_playback_controller.dart';
 import '../../viewers/domain/viewer_registry.dart';
+import '../../viewers/presentation/comic_viewer_screen.dart';
 import '../../viewers/presentation/document_viewer_screen.dart';
 import '../domain/catalog_file.dart';
 import '../../playback/presentation/video_player_screen.dart';
@@ -338,11 +339,10 @@ Future<void> openViewer(
   CatalogFile file,
 ) => switch (viewer) {
   ViewerKind.document => DocumentViewerScreen.show(context, ref, file),
-  // UC-23, UC-24, and UC-25 register theirs. Until they do, no type resolves
-  // to them, so these are unreachable rather than pending.
-  ViewerKind.comic ||
-  ViewerKind.image ||
-  ViewerKind.page => Future<void>.value(),
+  ViewerKind.comic => ComicViewerScreen.show(context, ref, file),
+  // UC-24 and UC-25 register theirs. Until they do, no type resolves to them,
+  // so these are unreachable rather than pending.
+  ViewerKind.image || ViewerKind.page => Future<void>.value(),
 };
 
 /// Starts audio playback and leaves the detail view (UC-20 main flow step 4).
