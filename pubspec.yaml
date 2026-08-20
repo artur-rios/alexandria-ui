@@ -67,9 +67,8 @@ dependencies:
   file_selector: ^1.1.0
 
   # Renders the editor's live preview (Technology Stack Document §5, UC-18
-  # FR-ME-07). The package is discontinued upstream; it is what the stack
-  # document names, it resolves and builds against this SDK, and replacing it
-  # is a change to that document rather than to this use case.
+  # FR-ME-07). Discontinued upstream, and kept deliberately: the stack document
+  # records why, and what replaces it when the time comes.
   flutter_markdown: ^0.7.7+1
 
   # The playback engine and its render surface (Technology Stack Document §5).

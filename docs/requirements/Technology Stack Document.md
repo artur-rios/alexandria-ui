@@ -99,13 +99,33 @@ them writes, re-encodes, or converts a file.
 | Package | Version | Used by | Role |
 | --- | --- | --- | --- |
 | **pdfrx** | latest stable at implementation time | Viewers | PDF rendering, with desktop-native performance on both targets. |
-| **epub_view** | latest stable at implementation time | Viewers | EPUB pagination and rendering. |
-| **archive** | latest stable at implementation time | Viewers | Reads CBZ comic archives (zip) page by page without extracting them to disk. |
+| **xml** | latest stable at implementation time | Viewers | Reads an EPUB's container and package documents. See *EPUB is read directly* below. |
+| **archive** | latest stable at implementation time | Viewers | Reads CBZ comic archives and EPUB containers — both are zip — entry by entry, without extracting them to disk. |
 | **flutter_widget_from_html** | latest stable at implementation time | Viewers | Renders saved HTML pages as widgets. Deliberately not a browser engine: no script execution, which is both a lighter dependency and a smaller trust surface for arbitrary saved pages. |
-| **flutter_markdown** | latest stable at implementation time | Viewers, Editor | Renders Markdown for reading and for the editor's live preview pane. |
+| **flutter_markdown** | latest stable at implementation time | Viewers, Editor | Renders Markdown for reading and for the editor's live preview pane. Discontinued upstream — see *flutter_markdown is discontinued* below. |
+| **markdown** | latest stable at implementation time | Viewers | Parses Markdown to HTML where the page renderer draws it. |
 
 Flutter's built-in `Image` decoders cover the image viewer; no additional package
 is required for it.
+
+**EPUB is read directly, not through an EPUB package.** The stack originally
+named `epub_view`. It is unusable: it pins a pre-null-safety SDK, and every
+maintained alternative pins `image` 3 against the 4 that `media_kit` requires —
+so adopting one would mean giving up video playback. An EPUB is a zip carrying a
+container document, a package document, a spine, and XHTML; `archive` opens the
+zip and `xml` reads the two documents, which is the whole of what a reader needs.
+The chapters come out as markup and are drawn by the same renderer a saved HTML
+page uses, so the two viewers share one rendering path rather than each carrying
+its own.
+
+**flutter_markdown is discontinued.** It was marked discontinued upstream after
+this stack was chosen. It is kept because it works, it is pure Dart, and nothing
+about a discontinued package stops rendering Markdown correctly — but it will
+not receive fixes, so it is a replacement waiting to be scheduled rather than a
+choice to defend. `flutter_widget_from_html` already renders the saved-page
+viewer and the EPUB chapters; routing Markdown through `markdown` to HTML and
+then through it would collapse three renderers into one, and is the obvious
+candidate when the time comes.
 
 **Deferred decision — CBR.** CBZ archives are zip and are supported at launch by
 `archive`. CBR archives are RAR, which has no maintained pure-Dart decoder; that
@@ -221,10 +241,11 @@ section is the canonical list of the tools and versions.
 | Playback | media_kit_video | latest stable at implementation time |
 | Playback | media_kit_libs_video / media_kit_libs_audio | latest stable at implementation time |
 | Viewers | pdfrx | latest stable at implementation time |
-| Viewers | epub_view | latest stable at implementation time |
+| Viewers | xml | latest stable at implementation time |
 | Viewers | archive | latest stable at implementation time |
 | Viewers | flutter_widget_from_html | latest stable at implementation time |
 | Viewers | flutter_markdown | latest stable at implementation time |
+| Viewers | markdown | latest stable at implementation time |
 | Shell | window_manager | latest stable at implementation time |
 | Shell | file_selector | latest stable at implementation time |
 | Storage | shared_preferences | latest stable at implementation time |
