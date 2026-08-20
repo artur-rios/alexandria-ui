@@ -285,7 +285,7 @@ and nesting stays a change of data rather than of interface.
 | Issue | Work | Spec |
 |---|---|---|
 | [#27](https://github.com/artur-rios/alexandria-desktop-front/issues/27) | UC-26 — Manage collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#28](https://github.com/artur-rios/alexandria-desktop-front/issues/28) | UC-27 — Organize items into collections | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#28](https://github.com/artur-rios/alexandria-desktop-front/issues/28) | UC-27 — Organize items into collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#29](https://github.com/artur-rios/alexandria-desktop-front/issues/29) | UC-28 — Manage bookmarks — done, except filing into a collection | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-09 — Watchlists and reading lists

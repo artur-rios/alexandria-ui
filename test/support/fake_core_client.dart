@@ -514,6 +514,38 @@ class FakeCoreClient implements CoreClient {
   /// Every collection write asked for, in order.
   final List<({String? uuid, String? body})> collectionWrites = [];
 
+  /// What listing a collection's members answers (UC-27).
+  CoreJsonResponse collectionMembersResult = (
+    status: COLLECTION_OK,
+    json: '{"collectionUuid":"c-1","kind":"file","items":[]}',
+  );
+
+  @override
+  Future<CoreJsonResponse> collectionListItems(
+    String uuid,
+    String token,
+  ) async => collectionMembersResult;
+
+  @override
+  Future<CoreJsonResponse> collectionAddItems(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async {
+    collectionWrites.add((uuid: uuid, body: jsonBody));
+    return collectionWriteResult;
+  }
+
+  @override
+  Future<CoreJsonResponse> collectionRemoveItem(
+    String uuid,
+    String itemUuid,
+    String token,
+  ) async {
+    collectionWrites.add((uuid: uuid, body: itemUuid));
+    return collectionWriteResult;
+  }
+
   @override
   Future<CoreJsonResponse> collectionsList(
     String jsonFilters,

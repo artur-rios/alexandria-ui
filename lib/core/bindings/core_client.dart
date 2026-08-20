@@ -247,6 +247,34 @@ abstract interface class CoreClient {
   /// confirmation promises before this is called.
   Future<CoreJsonResponse> collectionDelete(String uuid, String token);
 
+  /// Lists a collection's members through
+  /// `alexandria_collection_list_items` (FR-OG-06, UC-27).
+  ///
+  /// Answers the collection's `kind` and its current members — files or
+  /// bookmarks, depending on that kind.
+  Future<CoreJsonResponse> collectionListItems(String uuid, String token);
+
+  /// Adds items to a collection through `alexandria_collection_add_items`
+  /// (FR-OG-04, UC-27).
+  ///
+  /// [jsonBody] carries the item uuids. The core validates every one before
+  /// linking any, so a batch either all lands or none of it does.
+  Future<CoreJsonResponse> collectionAddItems(
+    String uuid,
+    String jsonBody,
+    String token,
+  );
+
+  /// Removes one item from a collection through
+  /// `alexandria_collection_remove_item` (FR-OG-05, UC-27).
+  ///
+  /// The item stays in the catalog; only the link goes.
+  Future<CoreJsonResponse> collectionRemoveItem(
+    String uuid,
+    String itemUuid,
+    String token,
+  );
+
   /// Creates a browser bookmark through `alexandria_bookmark_create`
   /// (FR-OG-08, UC-28).
   Future<CoreJsonResponse> bookmarkCreate(String jsonBody, String token);
@@ -552,6 +580,32 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> collectionDelete(String uuid, String token) async =>
       await _isolate.call('collectionDelete', [uuid, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> collectionListItems(
+    String uuid,
+    String token,
+  ) async =>
+      await _isolate.call('collectionListItems', [uuid, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> collectionAddItems(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async =>
+      await _isolate.call('collectionAddItems', [uuid, jsonBody, token])
+          as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> collectionRemoveItem(
+    String uuid,
+    String itemUuid,
+    String token,
+  ) async =>
+      await _isolate.call('collectionRemoveItem', [uuid, itemUuid, token])
           as CoreJsonResponse;
 
   @override

@@ -54,6 +54,10 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(bookmarkFormProvider);
     _ref.invalidate(collectionsControllerProvider);
     _ref.invalidate(collectionsFormProvider);
+    _ref.invalidate(openCollectionProvider);
+    _ref.invalidate(collectionMembersControllerProvider);
+    _ref.invalidate(collectionCandidatesControllerProvider);
+    _ref.invalidate(collectionMembershipFormProvider);
     // The watchlists are the core's, and just as much a trace of the session
     // (UC-29).
     _ref.invalidate(watchlistsControllerProvider);

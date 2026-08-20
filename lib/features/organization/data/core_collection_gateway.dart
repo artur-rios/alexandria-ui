@@ -85,6 +85,71 @@ class CoreCollectionGateway implements CollectionGateway {
     required String credential,
   }) => _write(() => _core.collectionDelete(uuid, credential));
 
+  @override
+  Future<CollectionMembers> members({
+    required String uuid,
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.collectionListItems(uuid, credential);
+    } on CoreCallException {
+      return _unreadableMembers();
+    }
+
+    if (!CoreStatusFamily.collection.isOk(response.status)) {
+      return CollectionMembers.failed(
+        failure: mapCoreStatus(CoreStatusFamily.collection, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unreadableMembers();
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+      final kind = CollectionKind.fromWireName(body['kind'] as String?);
+      if (kind == null) return _unreadableMembers();
+
+      final items = body['items'];
+
+      return CollectionMembers.loaded(
+        kind: kind,
+        members: [
+          if (items is List<dynamic>)
+            for (final item in items)
+              if (item is Map<String, dynamic>) ?_memberFrom(item),
+        ],
+      );
+    } on Object {
+      return _unreadableMembers();
+    }
+  }
+
+  @override
+  Future<CollectionWrite> addItem({
+    required String uuid,
+    required String itemUuid,
+    required String credential,
+  }) => _write(
+    () => _core.collectionAddItems(
+      uuid,
+      // A list of one: the core's call takes a batch, and one item per call is
+      // what lets UC-27 AF-04 say which of several succeeded.
+      jsonEncode({
+        'itemUuids': [itemUuid],
+      }),
+      credential,
+    ),
+  );
+
+  @override
+  Future<CollectionWrite> removeItem({
+    required String uuid,
+    required String itemUuid,
+    required String credential,
+  }) => _write(() => _core.collectionRemoveItem(uuid, itemUuid, credential));
+
   /// Runs [call] and turns the core's status into an outcome.
   Future<CollectionWrite> _write(
     Future<CoreJsonResponse> Function() call,
@@ -127,6 +192,27 @@ class CoreCollectionGateway implements CollectionGateway {
       itemCount: (row['itemCount'] as num?)?.toInt() ?? 0,
     );
   }
+
+  /// The member [row] describes, or `null` when it carries no uuid.
+  ///
+  /// A file row names itself `name`; a bookmark row names itself `title`. Both
+  /// are "what this is called" to the screen, which is all it shows.
+  static CollectionMember? _memberFrom(Map<String, dynamic> row) {
+    final uuid = row['uuid'] as String?;
+    if (uuid == null) return null;
+
+    return CollectionMember(
+      uuid: uuid,
+      name: (row['name'] ?? row['title']) as String? ?? uuid,
+    );
+  }
+
+  CollectionMembers _unreadableMembers() => const CollectionMembers.failed(
+    failure: Failure.unexpected(
+      family: CoreStatusFamily.collection,
+      code: COLLECTION_ERR_OTHER,
+    ),
+  );
 
   CollectionBrowse _unreadable() => const CollectionBrowse.failed(
     failure: Failure.unexpected(

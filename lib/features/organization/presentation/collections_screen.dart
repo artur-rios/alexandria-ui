@@ -11,6 +11,7 @@ import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/collections_controller.dart';
 import '../domain/collection.dart';
+import 'collection_members_view.dart';
 
 /// The collections screen (UC-26, FR-OG-01 … FR-OG-03, FR-OG-06).
 ///
@@ -30,6 +31,10 @@ class CollectionsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final collections = ref.watch(collectionsControllerProvider);
+    // UC-27 main flow step 1: a collection that is open replaces the list with
+    // its members, rather than opening a second screen over it — the
+    // breadcrumbs are what say where the owner is (FR-OG-07).
+    final open = ref.watch(openCollectionProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -42,30 +47,32 @@ class CollectionsScreen extends ConsumerWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const _NameField(),
-            const _Notice(),
-            const SizedBox(height: AppSpacing.md),
-            Expanded(
-              child: AsyncStateView(
-                value: collections,
-                onRetry: ref
-                    .read(collectionsControllerProvider.notifier)
-                    .reload,
-                isEmpty: (collections) => collections.isEmpty,
-                emptyBuilder: (context) =>
-                    Center(child: Text(l10n.collectionsNone)),
-                builder: (context, collections) => ListView.builder(
-                  itemCount: collections.length,
-                  itemBuilder: (context, index) =>
-                      _CollectionTile(collection: collections[index]),
-                ),
+        child: open != null
+            ? CollectionMembersView(collection: open)
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const _NameField(),
+                  const _Notice(),
+                  const SizedBox(height: AppSpacing.md),
+                  Expanded(
+                    child: AsyncStateView(
+                      value: collections,
+                      onRetry: ref
+                          .read(collectionsControllerProvider.notifier)
+                          .reload,
+                      isEmpty: (collections) => collections.isEmpty,
+                      emptyBuilder: (context) =>
+                          Center(child: Text(l10n.collectionsNone)),
+                      builder: (context, collections) => ListView.builder(
+                        itemCount: collections.length,
+                        itemBuilder: (context, index) =>
+                            _CollectionTile(collection: collections[index]),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -247,6 +254,9 @@ class _CollectionTile extends ConsumerWidget {
         ),
         title: Text(collection.name),
         subtitle: Text(l10n.collectionItemCount(collection.itemCount)),
+        // UC-27 main flow step 1: opening it is the ordinary thing to do with
+        // a collection, so it is the tile's own tap.
+        onTap: () => ref.read(openCollectionProvider.notifier).open(collection),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

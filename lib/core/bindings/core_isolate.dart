@@ -541,6 +541,53 @@ class CoreIsolate {
         }),
       ),
 
+      'collectionListItems' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_collection_list_items(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'collectionAddItems' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (second) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_collection_add_items(
+              uuid,
+              second,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      'collectionRemoveItem' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (second) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_collection_remove_item(
+              uuid,
+              second,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
       'collectionsList' => withNativeString(
         arguments.first! as String,
         (first) => withNativeString(arguments[1]! as String, (token) {

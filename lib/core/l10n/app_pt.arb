@@ -424,5 +424,13 @@
   "collectionKindFile": "Arquivos",
   "collectionKindBookmark": "Favoritos",
   "collectionDeleteMessage": "Excluir {name}? Os itens dentro dela são mantidos — apenas o agrupamento é removido.",
-  "collectionItemCount": "{count, plural, =0{Vazia} =1{1 item} other{{count} itens}}"
+  "collectionItemCount": "{count, plural, =0{Vazia} =1{1 item} other{{count} itens}}",
+  "collectionAddItems": "Adicionar itens",
+  "collectionAddChosen": "Adicionar",
+  "collectionRemoveItem": "Remover desta coleção",
+  "collectionEmpty": "Esta coleção está vazia.",
+  "collectionNoCandidates": "Não há nada do tipo desta coleção para adicionar.",
+  "collectionItemsAdded": "Adicionados: {names}",
+  "collectionItemsAlreadyPresent": "Já nesta coleção: {names}",
+  "collectionItemNotAdded": "{name} não foi adicionado — {reason}"
 }

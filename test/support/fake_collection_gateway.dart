@@ -30,6 +30,18 @@ class FakeCollectionGateway implements CollectionGateway {
   /// Every collection deleted, in order.
   final List<String> deleted = [];
 
+  /// What each collection holds, by collection uuid (UC-27).
+  final Map<String, List<CollectionMember>> membership = {};
+
+  /// What [this.members] answers instead, when a test says so.
+  CollectionMembers? membersOutcome;
+
+  /// Every item added, in order.
+  final List<({String uuid, String itemUuid})> added = [];
+
+  /// Every item removed, in order.
+  final List<({String uuid, String itemUuid})> removed = [];
+
   /// The kind each browse was filtered by, in order.
   final List<CollectionKind?> filters = [];
 
@@ -77,6 +89,49 @@ class FakeCollectionGateway implements CollectionGateway {
     if (index >= 0) {
       collections[index] = collections[index].copyWith(name: name);
     }
+    return const CollectionWrite.done();
+  }
+
+  @override
+  Future<CollectionMembers> members({
+    required String uuid,
+    required String credential,
+  }) async {
+    if (membersOutcome case final outcome?) return outcome;
+
+    final collection = collections.where((c) => c.uuid == uuid).firstOrNull;
+
+    return CollectionMembers.loaded(
+      kind: collection?.kind ?? CollectionKind.file,
+      members: membership[uuid] ?? const [],
+    );
+  }
+
+  @override
+  Future<CollectionWrite> addItem({
+    required String uuid,
+    required String itemUuid,
+    required String credential,
+  }) async {
+    added.add((uuid: uuid, itemUuid: itemUuid));
+    if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
+
+    (membership[uuid] ??= []).add(
+      CollectionMember(uuid: itemUuid, name: itemUuid),
+    );
+    return const CollectionWrite.done();
+  }
+
+  @override
+  Future<CollectionWrite> removeItem({
+    required String uuid,
+    required String itemUuid,
+    required String credential,
+  }) async {
+    removed.add((uuid: uuid, itemUuid: itemUuid));
+    if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
+
+    membership[uuid]?.removeWhere((m) => m.uuid == itemUuid);
     return const CollectionWrite.done();
   }
 

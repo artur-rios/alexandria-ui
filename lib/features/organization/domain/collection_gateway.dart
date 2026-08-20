@@ -34,6 +34,32 @@ sealed class CollectionWrite with _$CollectionWrite {
       CollectionWriteFailed;
 }
 
+/// One member of a collection, as the members screen lists it (UC-27).
+///
+/// A projection over the two things a collection can hold: the screen shows a
+/// name and removes by uuid, and which table the row came from is the
+/// collection's `kind`, not something each row has to restate.
+@freezed
+abstract class CollectionMember with _$CollectionMember {
+  /// Creates a member.
+  const factory CollectionMember({required String uuid, required String name}) =
+      _CollectionMember;
+}
+
+/// What listing a collection's members produced (UC-27 main flow step 2).
+@freezed
+sealed class CollectionMembers with _$CollectionMembers {
+  /// The core answered, possibly with nothing.
+  const factory CollectionMembers.loaded({
+    required CollectionKind kind,
+    required List<CollectionMember> members,
+  }) = CollectionMembersLoaded;
+
+  /// The core could not answer (AF-03, AF-05).
+  const factory CollectionMembers.failed({required Failure failure}) =
+      CollectionMembersFailed;
+}
+
 /// The core's collection operations (FR-OG-01 … FR-OG-03, FR-OG-06).
 abstract interface class CollectionGateway {
   /// Every collection, or those of [kind] (FR-OG-06).
@@ -65,6 +91,34 @@ abstract interface class CollectionGateway {
   /// confirmation has to say before this is reached.
   Future<CollectionWrite> delete({
     required String uuid,
+    required String credential,
+  });
+
+  /// The current members of the collection [uuid] identifies (FR-OG-06).
+  Future<CollectionMembers> members({
+    required String uuid,
+    required String credential,
+  });
+
+  /// Adds [itemUuid] to the collection [uuid] identifies (FR-OG-04).
+  ///
+  /// One item per call, deliberately. The core's own call takes a list and
+  /// validates every uuid before linking any, so a batch containing one bad
+  /// item links nothing and answers a single reason — which cannot satisfy
+  /// UC-27 AF-04's "report exactly which succeeded and which did not". One
+  /// call per item is what makes that answerable.
+  Future<CollectionWrite> addItem({
+    required String uuid,
+    required String itemUuid,
+    required String credential,
+  });
+
+  /// Removes [itemUuid] from the collection [uuid] identifies (FR-OG-05).
+  ///
+  /// The item stays in the catalog; only the link goes.
+  Future<CollectionWrite> removeItem({
+    required String uuid,
+    required String itemUuid,
     required String credential,
   });
 }

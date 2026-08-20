@@ -2651,6 +2651,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0{Empty} =1{1 item} other{{count} items}}'**
   String collectionItemCount(num count);
+
+  /// UC-27 main flow step 3: opens the picker of items the collection can accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Add items'**
+  String get collectionAddItems;
+
+  /// UC-27 main flow step 3: sends the chosen items to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get collectionAddChosen;
+
+  /// UC-27 main flow step 5: unlinks the item, which stays in the catalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from this collection'**
+  String get collectionRemoveItem;
+
+  /// UC-27: the collection holds nothing yet, which is a state and not a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'This collection is empty.'**
+  String get collectionEmpty;
+
+  /// UC-27 AF-01 from the other side: a collection accepts one kind, and nothing of that kind exists to offer.
+  ///
+  /// In en, this message translates to:
+  /// **'There is nothing of this collection\'s kind to add.'**
+  String get collectionNoCandidates;
+
+  /// UC-27 AF-04: exactly which items the core linked, named.
+  ///
+  /// In en, this message translates to:
+  /// **'Added: {names}'**
+  String collectionItemsAdded(String names);
+
+  /// UC-27 AF-02: the items that were already members, which the core was not asked about.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in this collection: {names}'**
+  String collectionItemsAlreadyPresent(String names);
+
+  /// UC-27 AF-04: exactly which items did not land, and the core's reason for each.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} was not added — {reason}'**
+  String collectionItemNotAdded(String name, String reason);
 }
 
 class _AppLocalizationsDelegate

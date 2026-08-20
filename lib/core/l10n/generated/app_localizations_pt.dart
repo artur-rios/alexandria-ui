@@ -1496,4 +1496,35 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get collectionAddItems => 'Adicionar itens';
+
+  @override
+  String get collectionAddChosen => 'Adicionar';
+
+  @override
+  String get collectionRemoveItem => 'Remover desta coleção';
+
+  @override
+  String get collectionEmpty => 'Esta coleção está vazia.';
+
+  @override
+  String get collectionNoCandidates =>
+      'Não há nada do tipo desta coleção para adicionar.';
+
+  @override
+  String collectionItemsAdded(String names) {
+    return 'Adicionados: $names';
+  }
+
+  @override
+  String collectionItemsAlreadyPresent(String names) {
+    return 'Já nesta coleção: $names';
+  }
+
+  @override
+  String collectionItemNotAdded(String name, String reason) {
+    return '$name não foi adicionado — $reason';
+  }
 }
