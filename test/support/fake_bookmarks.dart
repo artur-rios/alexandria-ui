@@ -32,12 +32,21 @@ class FakeBookmarkGateway implements BookmarkGateway {
   /// The collection each listing was filtered by, in order.
   final List<String?> filters = [];
 
+  /// Whether each listing asked for deleted records, in order (UC-34).
+  final List<bool> deletedFilters = [];
+
+  /// What a deleted listing answers (UC-34).
+  final List<Bookmark> deletedBookmarks = [];
+
   @override
   Future<BookmarkListing> list({
     required String credential,
     String? collectionUuid,
+    bool deleted = false,
   }) async {
     filters.add(collectionUuid);
+    deletedFilters.add(deleted);
+    if (deleted) return BookmarkListing.loaded(bookmarks: deletedBookmarks);
 
     return listing ?? BookmarkListing.loaded(bookmarks: bookmarks);
   }

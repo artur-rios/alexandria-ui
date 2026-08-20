@@ -407,6 +407,27 @@ class FakeCoreClient implements CoreClient {
     json: null,
   );
 
+  /// Every record restored, in order (UC-34).
+  final List<String> restored = [];
+
+  /// What a file restore answers.
+  CoreJsonResponse fileRestoreResponse = (status: FILE_OK, json: null);
+
+  /// What a bookmark restore answers.
+  CoreJsonResponse bookmarkRestoreResponse = (status: BOOKMARK_OK, json: null);
+
+  @override
+  Future<CoreJsonResponse> fileRestore(String uuid, String token) async {
+    restored.add(uuid);
+    return fileRestoreResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> bookmarkRestore(String uuid, String token) async {
+    restored.add(uuid);
+    return bookmarkRestoreResponse;
+  }
+
   @override
   Future<CoreJsonResponse> fileSoftDelete(String uuid, String token) async {
     softDeleted.add(uuid);

@@ -1744,5 +1744,50 @@
               "type": "String"
           }
       }
+  },
+
+  "deletedItemsTitle": "Deleted items",
+  "@deletedItemsTitle": {
+      "description": "UC-34 main flow step 1: the deleted-items screen heading."
+  },
+
+  "deletedItemsOpen": "Deleted items",
+  "@deletedItemsOpen": {
+      "description": "UC-34 main flow step 1: opens the deleted-items view from the dashboard."
+  },
+
+  "deletedItemsNone": "Nothing has been deleted.",
+  "@deletedItemsNone": {
+      "description": "UC-34 AF-01: there is nothing deleted, which is a state and not a failure."
+  },
+
+  "restoreRecord": "Restore",
+  "@restoreRecord": {
+      "description": "UC-34 main flow step 4: brings the record back into the default listings."
+  },
+
+  "restoreNotFound": "That record cannot be restored \u2014 it is gone, or its window has passed.",
+  "@restoreNotFound": {
+      "description": "UC-34 AF-03: the core has no such record, which is also how it answers one past its retention window."
+  },
+
+  "retentionElapsed": "No longer restorable \u2014 it can only be purged.",
+  "@retentionElapsed": {
+      "description": "UC-34 AF-02: the retention window has run out, so purging is what is left."
+  },
+
+  "retentionUnknown": "Restorable",
+  "@retentionUnknown": {
+      "description": "UC-34: the core answered without a deletion timestamp, so there is no countdown to show."
+  },
+
+  "retentionRemaining": "{days, plural, =1{Restorable for 1 more day} other{Restorable for {days} more days}}",
+  "@retentionRemaining": {
+      "description": "UC-34 main flow step 3 and FR-LC-03: how long this record remains restorable.",
+      "placeholders": {
+          "days": {
+              "type": "num"
+          }
+      }
   }
 }

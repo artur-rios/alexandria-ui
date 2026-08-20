@@ -35,4 +35,19 @@ abstract interface class LifecycleGateway {
     required String uuid,
     required String credential,
   });
+
+  /// Restores the file [uuid] identifies (FR-LC-04, UC-34).
+  ///
+  /// The core enforces the retention window; a record past it comes back as
+  /// not found, which is what AF-02 and AF-03 both read.
+  Future<LifecycleWrite> restoreFile({
+    required String uuid,
+    required String credential,
+  });
+
+  /// Restores the bookmark [uuid] identifies (FR-LC-04, UC-34).
+  Future<LifecycleWrite> restoreBookmark({
+    required String uuid,
+    required String credential,
+  });
 }

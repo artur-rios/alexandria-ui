@@ -20,15 +20,15 @@ class CoreBookmarkGateway implements BookmarkGateway {
   Future<BookmarkListing> list({
     required String credential,
     String? collectionUuid,
+    bool deleted = false,
   }) async {
     final CoreJsonResponse response;
     try {
       response = await _core.bookmarksList(
-        // An empty filter is every bookmark, which is what the screen opens
-        // on (main flow step 1).
-        collectionUuid == null
-            ? ''
-            : jsonEncode({'collectionUuid': collectionUuid}),
+        jsonEncode({
+          'state': deleted ? 'deleted' : 'active',
+          'collectionUuid': ?collectionUuid,
+        }),
         credential,
       );
     } on CoreCallException {
@@ -126,13 +126,18 @@ class CoreBookmarkGateway implements BookmarkGateway {
     }
   }
 
-  static Bookmark _bookmarkFrom(Map<String, dynamic> row) => Bookmark(
-    uuid: row['uuid'] as String,
-    url: row['url'] as String,
-    title: row['title'] as String,
-    collectionUuid: row['collectionUuid'] as String?,
-    isDeleted: row['state'] == 'deleted',
-  );
+  static Bookmark _bookmarkFrom(Map<String, dynamic> row) {
+    final deletedAt = row['deletedAt'] as String?;
+
+    return Bookmark(
+      uuid: row['uuid'] as String,
+      url: row['url'] as String,
+      title: row['title'] as String,
+      collectionUuid: row['collectionUuid'] as String?,
+      isDeleted: row['state'] == 'deleted',
+      deletedAt: deletedAt == null ? null : DateTime.tryParse(deletedAt),
+    );
+  }
 
   BookmarkListing _unreadableListing() => const BookmarkListing.failed(
     failure: Failure.unexpected(

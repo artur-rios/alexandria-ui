@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../failures/failure.dart';
 import '../../features/auth/application/auth_entry_controller.dart';
 import '../../features/auth/application/change_credentials_controller.dart';
 import '../../features/auth/application/change_credentials_state.dart';
@@ -97,9 +98,11 @@ import '../../features/viewers/domain/comic_gateway.dart';
 import '../../features/viewers/domain/document_gateway.dart';
 import '../../features/viewers/domain/reading_position_store.dart';
 import '../../features/viewers/domain/viewer_registry.dart';
+import '../../features/lifecycle/application/deleted_items_controller.dart';
 import '../../features/lifecycle/application/deletion_controller.dart';
 import '../../features/lifecycle/application/open_file_holds.dart';
 import '../../features/lifecycle/data/core_lifecycle_gateway.dart';
+import '../../features/lifecycle/domain/deleted_record.dart';
 import '../../features/lifecycle/domain/file_hold.dart';
 import '../../features/lifecycle/domain/lifecycle_gateway.dart';
 import '../../features/playback/application/playback_file_holds.dart';
@@ -648,6 +651,19 @@ final fileHoldsProvider = Provider<List<FileHold>>(
 /// What a deletion is reporting (UC-33).
 final deletionControllerProvider =
     NotifierProvider<DeletionController, DeletionState>(DeletionController.new);
+
+/// Everything the core holds as deleted (UC-34).
+final deletedItemsControllerProvider =
+    AsyncNotifierProvider<DeletedItemsController, List<DeletedRecord>>(
+      DeletedItemsController.new,
+    );
+
+/// What a restore is reporting (UC-34).
+final restoreControllerProvider =
+    NotifierProvider<
+      RestoreController,
+      ({RestoreNotice notice, Failure? refusal})
+    >(RestoreController.new);
 
 /// The core's reading-list operations (UC-31, UC-32, FR-TR-08 ... FR-TR-14).
 final readingListGatewayProvider = Provider<ReadingListGateway>((ref) {

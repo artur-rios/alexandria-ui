@@ -33,6 +33,26 @@ class CoreLifecycleGateway implements LifecycleGateway {
     () => _core.bookmarkSoftDelete(uuid, credential),
   );
 
+  @override
+  Future<LifecycleWrite> restoreFile({
+    required String uuid,
+    required String credential,
+  }) => _write(
+    CoreStatusFamily.file,
+    FILE_ERR_OTHER,
+    () => _core.fileRestore(uuid, credential),
+  );
+
+  @override
+  Future<LifecycleWrite> restoreBookmark({
+    required String uuid,
+    required String credential,
+  }) => _write(
+    CoreStatusFamily.bookmark,
+    BOOKMARK_ERR_OTHER,
+    () => _core.bookmarkRestore(uuid, credential),
+  );
+
   /// Runs [call] and turns the core's status into an outcome.
   ///
   /// The family is a parameter because a file and a bookmark are different

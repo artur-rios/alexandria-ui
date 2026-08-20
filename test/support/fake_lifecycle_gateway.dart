@@ -30,7 +30,27 @@ class FakeLifecycleGateway implements LifecycleGateway {
     return _next();
   }
 
-  LifecycleWrite _next() => outcomes.isEmpty
-      ? const LifecycleWrite.done()
-      : outcomes.removeAt(0);
+  /// Every record restored, in order.
+  final List<String> restored = [];
+
+  @override
+  Future<LifecycleWrite> restoreFile({
+    required String uuid,
+    required String credential,
+  }) async {
+    restored.add(uuid);
+    return _next();
+  }
+
+  @override
+  Future<LifecycleWrite> restoreBookmark({
+    required String uuid,
+    required String credential,
+  }) async {
+    restored.add(uuid);
+    return _next();
+  }
+
+  LifecycleWrite _next() =>
+      outcomes.isEmpty ? const LifecycleWrite.done() : outcomes.removeAt(0);
 }

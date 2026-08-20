@@ -24,7 +24,12 @@ mixin _$Bookmark {
 /// A bookmark that already carries one keeps it through an update rather
 /// than being quietly unfiled by an interface that cannot show it.
  String? get collectionUuid;/// Whether the core reports it as deleted.
- bool get isDeleted;
+ bool get isDeleted;/// When the record was soft-deleted.
+///
+/// What the deleted view counts the retention window from (UC-34), and
+/// `null` when the core answered without one — which reads as
+/// "restorable, for an unknown while".
+ DateTime? get deletedAt;
 /// Create a copy of Bookmark
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -35,16 +40,16 @@ $BookmarkCopyWith<Bookmark> get copyWith => _$BookmarkCopyWithImpl<Bookmark>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Bookmark&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.url, url) || other.url == url)&&(identical(other.title, title) || other.title == title)&&(identical(other.collectionUuid, collectionUuid) || other.collectionUuid == collectionUuid)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Bookmark&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.url, url) || other.url == url)&&(identical(other.title, title) || other.title == title)&&(identical(other.collectionUuid, collectionUuid) || other.collectionUuid == collectionUuid)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,url,title,collectionUuid,isDeleted);
+int get hashCode => Object.hash(runtimeType,uuid,url,title,collectionUuid,isDeleted,deletedAt);
 
 @override
 String toString() {
-  return 'Bookmark(uuid: $uuid, url: $url, title: $title, collectionUuid: $collectionUuid, isDeleted: $isDeleted)';
+  return 'Bookmark(uuid: $uuid, url: $url, title: $title, collectionUuid: $collectionUuid, isDeleted: $isDeleted, deletedAt: $deletedAt)';
 }
 
 
@@ -55,7 +60,7 @@ abstract mixin class $BookmarkCopyWith<$Res>  {
   factory $BookmarkCopyWith(Bookmark value, $Res Function(Bookmark) _then) = _$BookmarkCopyWithImpl;
 @useResult
 $Res call({
- String uuid, String url, String title, String? collectionUuid, bool isDeleted
+ String uuid, String url, String title, String? collectionUuid, bool isDeleted, DateTime? deletedAt
 });
 
 
@@ -72,14 +77,15 @@ class _$BookmarkCopyWithImpl<$Res>
 
 /// Create a copy of Bookmark
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? url = null,Object? title = null,Object? collectionUuid = freezed,Object? isDeleted = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? url = null,Object? title = null,Object? collectionUuid = freezed,Object? isDeleted = null,Object? deletedAt = freezed,}) {
   return _then(_self.copyWith(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,collectionUuid: freezed == collectionUuid ? _self.collectionUuid : collectionUuid // ignore: cast_nullable_to_non_nullable
 as String?,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,deletedAt: freezed == deletedAt ? _self.deletedAt : deletedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 
@@ -164,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String url,  String title,  String? collectionUuid,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String url,  String title,  String? collectionUuid,  bool isDeleted,  DateTime? deletedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Bookmark() when $default != null:
-return $default(_that.uuid,_that.url,_that.title,_that.collectionUuid,_that.isDeleted);case _:
+return $default(_that.uuid,_that.url,_that.title,_that.collectionUuid,_that.isDeleted,_that.deletedAt);case _:
   return orElse();
 
 }
@@ -185,10 +191,10 @@ return $default(_that.uuid,_that.url,_that.title,_that.collectionUuid,_that.isDe
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String url,  String title,  String? collectionUuid,  bool isDeleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String url,  String title,  String? collectionUuid,  bool isDeleted,  DateTime? deletedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Bookmark():
-return $default(_that.uuid,_that.url,_that.title,_that.collectionUuid,_that.isDeleted);case _:
+return $default(_that.uuid,_that.url,_that.title,_that.collectionUuid,_that.isDeleted,_that.deletedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +211,10 @@ return $default(_that.uuid,_that.url,_that.title,_that.collectionUuid,_that.isDe
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String url,  String title,  String? collectionUuid,  bool isDeleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String url,  String title,  String? collectionUuid,  bool isDeleted,  DateTime? deletedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Bookmark() when $default != null:
-return $default(_that.uuid,_that.url,_that.title,_that.collectionUuid,_that.isDeleted);case _:
+return $default(_that.uuid,_that.url,_that.title,_that.collectionUuid,_that.isDeleted,_that.deletedAt);case _:
   return null;
 
 }
@@ -220,7 +226,7 @@ return $default(_that.uuid,_that.url,_that.title,_that.collectionUuid,_that.isDe
 
 
 class _Bookmark implements Bookmark {
-  const _Bookmark({required this.uuid, required this.url, required this.title, this.collectionUuid, this.isDeleted = false});
+  const _Bookmark({required this.uuid, required this.url, required this.title, this.collectionUuid, this.isDeleted = false, this.deletedAt});
   
 
 /// The public identifier passed on every call about it.
@@ -238,6 +244,12 @@ class _Bookmark implements Bookmark {
 @override final  String? collectionUuid;
 /// Whether the core reports it as deleted.
 @override@JsonKey() final  bool isDeleted;
+/// When the record was soft-deleted.
+///
+/// What the deleted view counts the retention window from (UC-34), and
+/// `null` when the core answered without one — which reads as
+/// "restorable, for an unknown while".
+@override final  DateTime? deletedAt;
 
 /// Create a copy of Bookmark
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +261,16 @@ _$BookmarkCopyWith<_Bookmark> get copyWith => __$BookmarkCopyWithImpl<_Bookmark>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Bookmark&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.url, url) || other.url == url)&&(identical(other.title, title) || other.title == title)&&(identical(other.collectionUuid, collectionUuid) || other.collectionUuid == collectionUuid)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Bookmark&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.url, url) || other.url == url)&&(identical(other.title, title) || other.title == title)&&(identical(other.collectionUuid, collectionUuid) || other.collectionUuid == collectionUuid)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,url,title,collectionUuid,isDeleted);
+int get hashCode => Object.hash(runtimeType,uuid,url,title,collectionUuid,isDeleted,deletedAt);
 
 @override
 String toString() {
-  return 'Bookmark(uuid: $uuid, url: $url, title: $title, collectionUuid: $collectionUuid, isDeleted: $isDeleted)';
+  return 'Bookmark(uuid: $uuid, url: $url, title: $title, collectionUuid: $collectionUuid, isDeleted: $isDeleted, deletedAt: $deletedAt)';
 }
 
 
@@ -269,7 +281,7 @@ abstract mixin class _$BookmarkCopyWith<$Res> implements $BookmarkCopyWith<$Res>
   factory _$BookmarkCopyWith(_Bookmark value, $Res Function(_Bookmark) _then) = __$BookmarkCopyWithImpl;
 @override @useResult
 $Res call({
- String uuid, String url, String title, String? collectionUuid, bool isDeleted
+ String uuid, String url, String title, String? collectionUuid, bool isDeleted, DateTime? deletedAt
 });
 
 
@@ -286,14 +298,15 @@ class __$BookmarkCopyWithImpl<$Res>
 
 /// Create a copy of Bookmark
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? url = null,Object? title = null,Object? collectionUuid = freezed,Object? isDeleted = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? url = null,Object? title = null,Object? collectionUuid = freezed,Object? isDeleted = null,Object? deletedAt = freezed,}) {
   return _then(_Bookmark(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,collectionUuid: freezed == collectionUuid ? _self.collectionUuid : collectionUuid // ignore: cast_nullable_to_non_nullable
 as String?,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,deletedAt: freezed == deletedAt ? _self.deletedAt : deletedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
   ));
 }
 

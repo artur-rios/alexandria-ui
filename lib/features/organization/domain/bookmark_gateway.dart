@@ -32,9 +32,14 @@ sealed class BookmarkWrite with _$BookmarkWrite {
 /// The core's bookmark operations (FR-OG-08 … FR-OG-10).
 abstract interface class BookmarkGateway {
   /// Every bookmark, or those in [collectionUuid] (FR-OG-10).
+  ///
+  /// [deleted] asks for the soft-deleted ones instead, which is what UC-34's
+  /// view lists. The state is always stated rather than left to the core's
+  /// default: a default that changed would change what this listing means.
   Future<BookmarkListing> list({
     required String credential,
     String? collectionUuid,
+    bool deleted = false,
   });
 
   /// Creates a bookmark (FR-OG-08).
