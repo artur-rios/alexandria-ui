@@ -80,6 +80,7 @@ import '../../features/playback/domain/playback_source.dart';
 import '../../features/shell/domain/session_activity.dart';
 import '../../features/viewers/application/comic_viewer_controller.dart';
 import '../../features/viewers/application/document_viewer_controller.dart';
+import '../../features/viewers/application/image_viewer_controller.dart';
 import '../../features/viewers/data/core_comic_gateway.dart';
 import '../../features/viewers/data/epub_document_gateway.dart';
 import '../../features/viewers/data/settings_reading_position_store.dart';
@@ -456,8 +457,21 @@ final viewerRegistryProvider = Provider<ViewerRegistry>(
   (ref) => const ViewerRegistry({
     LibraryType.document: ViewerKind.document,
     LibraryType.comic: ViewerKind.comic,
+    LibraryType.image: ViewerKind.image,
   }),
 );
+
+/// Whether a file exists on disk (UC-24 AF-01).
+///
+/// Bound here so a widget test can say a file is absent without one being
+/// absent, and so the check is the same one wherever a viewer needs it.
+final fileProbeProvider = Provider<bool Function(String)>((ref) => fileExists);
+
+/// The open image, and the listing it was opened from (UC-24).
+final imageViewerControllerProvider =
+    NotifierProvider<ImageViewerController, ImageViewerState>(
+      ImageViewerController.new,
+    );
 
 /// Reads a document at the moment it is opened (UC-22, FR-VW-07).
 final documentGatewayProvider = Provider<DocumentGateway>(

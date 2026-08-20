@@ -281,5 +281,9 @@
   "comicNextPage": "Próxima página",
   "comicPreviousPage": "Página anterior",
   "comicPageOf": "Página {page} de {total}",
-  "comicPagesSkipped": "Não foi possível ler estas páginas: {pages}"
+  "comicPagesSkipped": "Não foi possível ler estas páginas: {pages}",
+  "imageFit": "Ajustar à janela",
+  "imageNext": "Próxima imagem",
+  "imagePrevious": "Imagem anterior",
+  "imageOf": "{position} de {total}"
 }
