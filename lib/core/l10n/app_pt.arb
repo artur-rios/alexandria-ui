@@ -285,5 +285,8 @@
   "imageFit": "Ajustar à janela",
   "imageNext": "Próxima imagem",
   "imagePrevious": "Imagem anterior",
-  "imageOf": "{position} de {total}"
+  "imageOf": "{position} de {total}",
+  "pageScriptsNotRun": "Esta página é exibida como conteúdo. Nenhum script contido nela é executado.",
+  "pageMalformed": "A marcação desta página está incompleta, então parte dela pode estar faltando.",
+  "pageMissingAssets": "Estes arquivos referenciados pela página não estão no disco: {assets}"
 }

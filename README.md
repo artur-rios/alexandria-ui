@@ -285,7 +285,7 @@ untested.
 | [#23](https://github.com/artur-rios/alexandria-desktop-front/issues/23) | UC-22 — View a document — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#24](https://github.com/artur-rios/alexandria-desktop-front/issues/24) | UC-23 — Read a comic book — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#25](https://github.com/artur-rios/alexandria-desktop-front/issues/25) | UC-24 — View an image — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#26](https://github.com/artur-rios/alexandria-desktop-front/issues/26) | UC-25 — View a saved page | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#26](https://github.com/artur-rios/alexandria-desktop-front/issues/26) | UC-25 — View a saved page — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-08 — Collections and bookmarks
 

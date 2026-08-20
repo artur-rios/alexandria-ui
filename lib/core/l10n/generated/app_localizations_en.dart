@@ -989,4 +989,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String imageOf(int position, int total) {
     return '$position of $total';
   }
+
+  @override
+  String get pageScriptsNotRun =>
+      'This page is shown as content. Any script it contains is not run.';
+
+  @override
+  String get pageMalformed =>
+      'This page\'s markup is incomplete, so some of it may be missing.';
+
+  @override
+  String pageMissingAssets(String assets) {
+    return 'These files the page refers to are not on disk: $assets';
+  }
 }

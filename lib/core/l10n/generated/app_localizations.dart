@@ -1817,6 +1817,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{position} of {total}'**
   String imageOf(int position, int total);
+
+  /// UC-25 AF-03: the renderer draws widgets and has no engine to run script in, and the owner is told rather than left wondering why the page's controls do nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'This page is shown as content. Any script it contains is not run.'**
+  String get pageScriptsNotRun;
+
+  /// UC-25 AF-04: what could be parsed is drawn, and the rest is admitted to.
+  ///
+  /// In en, this message translates to:
+  /// **'This page\'s markup is incomplete, so some of it may be missing.'**
+  String get pageMalformed;
+
+  /// UC-25 AF-02: the page renders without them and names what could not be loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'These files the page refers to are not on disk: {assets}'**
+  String pageMissingAssets(String assets);
 }
 
 class _AppLocalizationsDelegate

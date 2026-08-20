@@ -16,6 +16,7 @@ import '../../viewers/domain/viewer_registry.dart';
 import '../../viewers/presentation/comic_viewer_screen.dart';
 import '../../viewers/presentation/document_viewer_screen.dart';
 import '../../viewers/presentation/image_viewer_screen.dart';
+import '../../viewers/presentation/page_viewer_screen.dart';
 import '../domain/catalog_file.dart';
 import '../../playback/presentation/video_player_screen.dart';
 import 'rename_file_dialog.dart';
@@ -349,9 +350,7 @@ Future<void> openViewer(
     file,
     ref.read(listingControllerProvider).value ?? [file],
   ),
-  // UC-25 registers its own. Until it does, no type resolves to it, so this
-  // is unreachable rather than pending.
-  ViewerKind.page => Future<void>.value(),
+  ViewerKind.page => PageViewerScreen.show(context, ref, file),
 };
 
 /// Starts audio playback and leaves the detail view (UC-20 main flow step 4).
