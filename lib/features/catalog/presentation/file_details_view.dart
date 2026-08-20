@@ -11,6 +11,7 @@ import '../domain/file_details.dart';
 import '../domain/library_type.dart';
 import 'music_metadata_form.dart';
 import '../../editing/presentation/text_editor_screen.dart';
+import '../../playback/application/audio_playback_controller.dart';
 import '../../playback/presentation/video_player_screen.dart';
 import 'rename_file_dialog.dart';
 import 'video_metadata_form.dart';
@@ -162,6 +163,47 @@ class _Details extends ConsumerWidget {
             ),
           ],
 
+          // UC-20 main flow step 1: a track, its album, or its artist. The
+          // three are offered together because they are one decision — what
+          // to put in the queue — and the owner is looking at the track that
+          // answers it.
+          if (details.file.type == LibraryType.audio && !details.isDeleted) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: [
+                FilledButton.icon(
+                  onPressed: () => _startAudio(
+                    context,
+                    ref,
+                    (player) => player.playTrack(details.file),
+                  ),
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(l10n.audioPlay),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _startAudio(
+                    context,
+                    ref,
+                    (player) => player.playAlbum(details.file),
+                  ),
+                  icon: const Icon(Icons.album_outlined),
+                  label: Text(l10n.audioPlayAlbum),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _startAudio(
+                    context,
+                    ref,
+                    (player) => player.playArtist(details.file),
+                  ),
+                  icon: const Icon(Icons.person_outline),
+                  label: Text(l10n.audioPlayArtist),
+                ),
+              ],
+            ),
+          ],
+
           // UC-19 main flow step 1. Offered for a video whose file the last
           // refresh could still find: AF-01 covers one that has gone since,
           // and offering nothing for a record already known to be missing
@@ -269,6 +311,20 @@ class _Section extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: AppSpacing.xs),
     child: Text(text, style: Theme.of(context).textTheme.labelLarge),
   );
+}
+
+/// Starts audio playback and leaves the detail view (UC-20 main flow step 4).
+///
+/// The dialog closes because the player lives in the bar at the bottom of the
+/// shell, and a modal over it would hide the transport — and, for AF-04, the
+/// question the owner has to answer before anything plays.
+void _startAudio(
+  BuildContext context,
+  WidgetRef ref,
+  Future<void> Function(AudioPlaybackController player) play,
+) {
+  Navigator.of(context).pop();
+  unawaited(play(ref.read(audioPlaybackControllerProvider.notifier)));
 }
 
 /// How a metadata form is opened, whichever type's it is.

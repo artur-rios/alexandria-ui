@@ -866,4 +866,39 @@ class AppLocalizationsPt extends AppLocalizations {
   String videoTrackUnnamed(String id) {
     return 'Faixa $id';
   }
+
+  @override
+  String get audioPlay => 'Reproduzir';
+
+  @override
+  String get audioPlayAlbum => 'Reproduzir álbum';
+
+  @override
+  String get audioPlayArtist => 'Reproduzir artista';
+
+  @override
+  String get audioPause => 'Pausar';
+
+  @override
+  String get audioNext => 'Próxima faixa';
+
+  @override
+  String get audioPrevious => 'Faixa anterior';
+
+  @override
+  String get audioStop => 'Parar';
+
+  @override
+  String get audioNothingPlayable =>
+      'Não foi possível reproduzir nada desta seleção.';
+
+  @override
+  String audioSkipped(String name) {
+    return '$name foi pulado — não foi possível reproduzi-lo.';
+  }
+
+  @override
+  String audioResumePrompt(String position) {
+    return 'Você parou esta faixa em $position.';
+  }
 }

@@ -1,0 +1,85 @@
+import '../../catalog/domain/catalog_file.dart';
+
+/// What the owner asked to play (UC-20 main flow step 1).
+enum QueueKind {
+  /// One track.
+  track,
+
+  /// Every track on an album, in order.
+  album,
+
+  /// Every track by an artist.
+  artist,
+}
+
+/// The tracks queued for playback, and where in them playback is
+/// (FR-PL-06).
+class PlaybackQueue {
+  /// Creates a queue over [tracks], starting at [index].
+  const PlaybackQueue({
+    required this.tracks,
+    required this.kind,
+    this.label = '',
+    this.index = 0,
+    this.skipped = const [],
+  });
+
+  /// An empty queue, which is what stopping leaves behind.
+  static const PlaybackQueue empty = PlaybackQueue(
+    tracks: [],
+    kind: QueueKind.track,
+  );
+
+  /// The tracks, in the order they will play.
+  final List<CatalogFile> tracks;
+
+  /// What the owner asked for, which is what UC-21 turns on: an album or an
+  /// artist gets the animation, a single track does not (UC-21 AF-02).
+  final QueueKind kind;
+
+  /// The album or artist name, for the player to show.
+  final String label;
+
+  /// Which track is playing.
+  final int index;
+
+  /// The tracks that could not be played, in the order they were skipped
+  /// (AF-01, AF-02).
+  final List<CatalogFile> skipped;
+
+  /// Whether there is anything queued at all.
+  bool get isEmpty => tracks.isEmpty;
+
+  /// The track playing now, or `null` when the queue is empty or finished.
+  CatalogFile? get current =>
+      index >= 0 && index < tracks.length ? tracks[index] : null;
+
+  /// Whether there is a track after this one.
+  bool get hasNext => index + 1 < tracks.length;
+
+  /// Whether there is a track before this one.
+  bool get hasPrevious => index > 0;
+
+  /// Whether every queued track was skipped (AF-03).
+  bool get everythingFailed =>
+      tracks.isNotEmpty && skipped.length == tracks.length;
+
+  /// A copy with the given changes.
+  PlaybackQueue copyWith({
+    List<CatalogFile>? tracks,
+    QueueKind? kind,
+    String? label,
+    int? index,
+    List<CatalogFile>? skipped,
+  }) => PlaybackQueue(
+    tracks: tracks ?? this.tracks,
+    kind: kind ?? this.kind,
+    label: label ?? this.label,
+    index: index ?? this.index,
+    skipped: skipped ?? this.skipped,
+  );
+
+  /// The queue with [file] recorded as unplayable (AF-01, AF-02).
+  PlaybackQueue skipping(CatalogFile file) =>
+      copyWith(skipped: [...skipped, file]);
+}
