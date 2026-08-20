@@ -2213,6 +2213,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'issue {current} of {total}'**
   String readIssueOf(int current, int total);
+
+  /// UC-33 main flow step 1: hides the file's record from the library.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this file'**
+  String get deleteFile;
+
+  /// UC-33 main flow step 2 and FR-LC-01: the confirmation says so explicitly.
+  ///
+  /// In en, this message translates to:
+  /// **'The file on disk is not affected.'**
+  String get deleteFileOnDisk;
+
+  /// UC-33 AF-04: a player, viewer, or editor has the file, and confirming lets it go.
+  ///
+  /// In en, this message translates to:
+  /// **'It is playing or open right now — confirming stops it.'**
+  String get deleteFileInUse;
+
+  /// UC-33 main flow step 1: hides the bookmark's record.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this bookmark'**
+  String get deleteBookmark;
+
+  /// UC-33 AF-02: the core holds it as deleted already, so the listing is read again.
+  ///
+  /// In en, this message translates to:
+  /// **'That record was already deleted.'**
+  String get deleteAlreadyDeleted;
+
+  /// UC-33 AF-03: the core has no such record, so the listing is read again.
+  ///
+  /// In en, this message translates to:
+  /// **'That record is no longer there.'**
+  String get deleteNotFound;
+
+  /// UC-33 main flow step 2: the confirmation names the file and says the record is restorable.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide {name} from the library? It stays restorable.'**
+  String deleteFileMessage(String name);
+
+  /// UC-33 main flow step 2: the same, for a bookmark, which has no file on disk.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide {title} from your bookmarks? It stays restorable.'**
+  String deleteBookmarkMessage(String title);
 }
 
 class _AppLocalizationsDelegate

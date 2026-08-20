@@ -19,6 +19,8 @@ import '../../viewers/presentation/image_viewer_screen.dart';
 import '../../viewers/presentation/page_viewer_screen.dart';
 import '../domain/catalog_file.dart';
 import '../../playback/presentation/video_player_screen.dart';
+import '../../lifecycle/application/open_file_holds.dart';
+import '../../lifecycle/presentation/delete_record_button.dart';
 import '../../tracking/presentation/add_to_reading_list_button.dart';
 import '../../tracking/presentation/add_to_watchlist_button.dart';
 import 'rename_file_dialog.dart';
@@ -250,6 +252,17 @@ class _Details extends ConsumerWidget {
             ),
           ],
 
+          // UC-33 main flow step 1: a record already deleted has nothing to
+          // delete, which is why this is offered for an active one only.
+          if (!details.isDeleted) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: DeleteFileButton(file: details.file),
+            ),
+          ],
+          const DeletionNoticeBar(),
+
           const SizedBox(height: AppSpacing.lg),
           // UC-22 main flow steps 1 and 2: the viewer is resolved from the
           // registry keyed by type (FR-VW-01), so a type gains an Open action
@@ -361,6 +374,34 @@ class _Section extends StatelessWidget {
 /// terms of the registry, which is what FR-VW-01 asks for: a new viewer is a
 /// registration and one line here.
 Future<void> openViewer(
+  BuildContext context,
+  WidgetRef ref,
+  ViewerKind viewer,
+  CatalogFile file,
+) async {
+  // UC-33 AF-04: while a viewer has the file open, a deletion knows about it
+  // and can close it. Registered here rather than in each viewer, because this
+  // is the one place a viewer is opened from.
+  final navigator = Navigator.of(context);
+  final forget = ref
+      .read(openFileHoldsProvider.notifier)
+      .register(
+        OpenFileHold(
+          uuid: file.uuid,
+          close: () async {
+            if (navigator.canPop()) navigator.pop();
+          },
+        ),
+      );
+
+  try {
+    await _showViewer(context, ref, viewer, file);
+  } finally {
+    forget();
+  }
+}
+
+Future<void> _showViewer(
   BuildContext context,
   WidgetRef ref,
   ViewerKind viewer,

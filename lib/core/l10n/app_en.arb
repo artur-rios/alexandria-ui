@@ -1694,5 +1694,55 @@
               "type": "int"
           }
       }
+  },
+
+  "deleteFile": "Delete this file",
+  "@deleteFile": {
+      "description": "UC-33 main flow step 1: hides the file's record from the library."
+  },
+
+  "deleteFileOnDisk": "The file on disk is not affected.",
+  "@deleteFileOnDisk": {
+      "description": "UC-33 main flow step 2 and FR-LC-01: the confirmation says so explicitly."
+  },
+
+  "deleteFileInUse": "It is playing or open right now \u2014 confirming stops it.",
+  "@deleteFileInUse": {
+      "description": "UC-33 AF-04: a player, viewer, or editor has the file, and confirming lets it go."
+  },
+
+  "deleteBookmark": "Delete this bookmark",
+  "@deleteBookmark": {
+      "description": "UC-33 main flow step 1: hides the bookmark's record."
+  },
+
+  "deleteAlreadyDeleted": "That record was already deleted.",
+  "@deleteAlreadyDeleted": {
+      "description": "UC-33 AF-02: the core holds it as deleted already, so the listing is read again."
+  },
+
+  "deleteNotFound": "That record is no longer there.",
+  "@deleteNotFound": {
+      "description": "UC-33 AF-03: the core has no such record, so the listing is read again."
+  },
+
+  "deleteFileMessage": "Hide {name} from the library? It stays restorable.",
+  "@deleteFileMessage": {
+      "description": "UC-33 main flow step 2: the confirmation names the file and says the record is restorable.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "deleteBookmarkMessage": "Hide {title} from your bookmarks? It stays restorable.",
+  "@deleteBookmarkMessage": {
+      "description": "UC-33 main flow step 2: the same, for a bookmark, which has no file on disk.",
+      "placeholders": {
+          "title": {
+              "type": "String"
+          }
+      }
   }
 }

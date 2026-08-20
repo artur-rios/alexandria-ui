@@ -351,5 +351,13 @@
   "readIssueBeyondTotal": "Isso passa do total que você informou.",
   "readProgressSave": "Salvar progresso",
   "readIssue": "edição {current}",
-  "readIssueOf": "edição {current} de {total}"
+  "readIssueOf": "edição {current} de {total}",
+  "deleteFile": "Excluir este arquivo",
+  "deleteFileOnDisk": "O arquivo no disco não é afetado.",
+  "deleteFileInUse": "Ele está tocando ou aberto agora — confirmar interrompe isso.",
+  "deleteBookmark": "Excluir este favorito",
+  "deleteAlreadyDeleted": "Esse registro já havia sido excluído.",
+  "deleteNotFound": "Esse registro não está mais lá.",
+  "deleteFileMessage": "Ocultar {name} da biblioteca? Ele continua restaurável.",
+  "deleteBookmarkMessage": "Ocultar {title} dos seus favoritos? Ele continua restaurável."
 }

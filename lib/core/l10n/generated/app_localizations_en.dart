@@ -1216,4 +1216,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String readIssueOf(int current, int total) {
     return 'issue $current of $total';
   }
+
+  @override
+  String get deleteFile => 'Delete this file';
+
+  @override
+  String get deleteFileOnDisk => 'The file on disk is not affected.';
+
+  @override
+  String get deleteFileInUse =>
+      'It is playing or open right now — confirming stops it.';
+
+  @override
+  String get deleteBookmark => 'Delete this bookmark';
+
+  @override
+  String get deleteAlreadyDeleted => 'That record was already deleted.';
+
+  @override
+  String get deleteNotFound => 'That record is no longer there.';
+
+  @override
+  String deleteFileMessage(String name) {
+    return 'Hide $name from the library? It stays restorable.';
+  }
+
+  @override
+  String deleteBookmarkMessage(String title) {
+    return 'Hide $title from your bookmarks? It stays restorable.';
+  }
 }

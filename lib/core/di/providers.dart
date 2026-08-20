@@ -97,6 +97,12 @@ import '../../features/viewers/domain/comic_gateway.dart';
 import '../../features/viewers/domain/document_gateway.dart';
 import '../../features/viewers/domain/reading_position_store.dart';
 import '../../features/viewers/domain/viewer_registry.dart';
+import '../../features/lifecycle/application/deletion_controller.dart';
+import '../../features/lifecycle/application/open_file_holds.dart';
+import '../../features/lifecycle/data/core_lifecycle_gateway.dart';
+import '../../features/lifecycle/domain/file_hold.dart';
+import '../../features/lifecycle/domain/lifecycle_gateway.dart';
+import '../../features/playback/application/playback_file_holds.dart';
 import '../../features/tracking/application/reading_lists_controller.dart';
 import '../../features/tracking/application/reading_progress_editor.dart';
 import '../../features/tracking/application/tracked_reading_items_controller.dart';
@@ -609,6 +615,39 @@ final watchProgressEditorProvider =
     NotifierProvider<WatchProgressEditor, WatchProgressEditorState>(
       WatchProgressEditor.new,
     );
+
+/// The core's deletion-lifecycle operations (UC-33, FR-LC-01).
+final lifecycleGatewayProvider = Provider<LifecycleGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the lifecycle gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreLifecycleGateway(core);
+});
+
+/// Which viewers and editors currently have a file open (UC-33 AF-04).
+final openFileHoldsProvider =
+    NotifierProvider<OpenFileHolds, List<OpenFileHold>>(OpenFileHolds.new);
+
+/// Everything that can be holding a file open (UC-33 AF-04).
+///
+/// The players are always registered; a viewer or an editor joins while it is
+/// on screen. The deletion asks this list and nothing else, so neither player
+/// nor viewer has to know the deletion exists.
+final fileHoldsProvider = Provider<List<FileHold>>(
+  (ref) => [
+    VideoFileHold(ref),
+    AudioFileHold(ref),
+    ...ref.watch(openFileHoldsProvider),
+  ],
+);
+
+/// What a deletion is reporting (UC-33).
+final deletionControllerProvider =
+    NotifierProvider<DeletionController, DeletionState>(DeletionController.new);
 
 /// The core's reading-list operations (UC-31, UC-32, FR-TR-08 ... FR-TR-14).
 final readingListGatewayProvider = Provider<ReadingListGateway>((ref) {
