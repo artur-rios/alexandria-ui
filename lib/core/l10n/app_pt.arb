@@ -250,5 +250,15 @@
   "videoFileMissing": "Este arquivo não está onde o catálogo diz que está.",
   "videoCannotDecode": "Não é possível reproduzir este arquivo.",
   "videoResumePrompt": "Você parou de assistir em {position}.",
-  "videoTrackUnnamed": "Faixa {id}"
+  "videoTrackUnnamed": "Faixa {id}",
+  "audioPlay": "Reproduzir",
+  "audioPlayAlbum": "Reproduzir álbum",
+  "audioPlayArtist": "Reproduzir artista",
+  "audioPause": "Pausar",
+  "audioNext": "Próxima faixa",
+  "audioPrevious": "Faixa anterior",
+  "audioStop": "Parar",
+  "audioNothingPlayable": "Não foi possível reproduzir nada desta seleção.",
+  "audioSkipped": "{name} foi pulado — não foi possível reproduzi-lo.",
+  "audioResumePrompt": "Você parou esta faixa em {position}."
 }

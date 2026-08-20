@@ -12,6 +12,7 @@ import '../../../core/theme/playback_colors.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../application/video_playback_controller.dart';
 import '../domain/media_player.dart';
+import '../../shell/presentation/playback_bar.dart';
 import 'video_surface.dart';
 
 /// The video player (UC-19, FR-PL-01 … FR-PL-04).
@@ -221,13 +222,11 @@ class _Controls extends ConsumerWidget {
     return (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
   }
 
-  static String _formatted(Duration duration) {
-    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-    final hours = duration.inHours;
-
-    return hours == 0 ? '$minutes:$seconds' : '$hours:$minutes:$seconds';
-  }
+  /// Shared with the player bar: a position written by one player is offered
+  /// by the other, and reading differently would be two answers to the same
+  /// question.
+  static String _formatted(Duration duration) =>
+      formatPlaybackPosition(duration);
 }
 
 /// Which list of tracks a menu offers.

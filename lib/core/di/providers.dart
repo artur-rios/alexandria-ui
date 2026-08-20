@@ -64,6 +64,9 @@ import '../../features/editing/application/editing_session_activity.dart';
 import '../../features/editing/application/text_editor_controller.dart';
 import '../../features/editing/data/core_text_content_gateway.dart';
 import '../../features/editing/domain/text_content_gateway.dart';
+import '../../features/playback/application/audio_playback_controller.dart';
+import '../../features/playback/application/audio_playback_session.dart';
+import '../../features/playback/application/music_library_controller.dart';
 import '../../features/playback/application/video_playback_controller.dart';
 import '../../features/playback/application/video_playback_session.dart';
 import '../../features/playback/data/core_playback_source_gateway.dart';
@@ -71,6 +74,7 @@ import '../../features/playback/data/media_kit_player.dart';
 import '../../features/playback/data/settings_playback_position_store.dart';
 import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
+import '../../features/playback/domain/music_grouping.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/shell/domain/session_activity.dart';
@@ -361,6 +365,29 @@ final playbackPositionsProvider = Provider<PlaybackPositionStore>((ref) {
   return SettingsPlaybackPositionStore(settings);
 });
 
+/// The audio playback engine (UC-20).
+///
+/// Its own engine rather than the video player's: FR-PL-08 stops one when the
+/// other starts, and sharing an engine would make that rule a matter of who
+/// called `open` last rather than something the application decides.
+final audioPlayerProvider = Provider<MediaPlayer>((ref) {
+  final player = MediaKitPlayer();
+  ref.onDispose(() => unawaited(player.dispose()));
+  return player;
+});
+
+/// Every audio file with the metadata a queue is grouped by (UC-20, FR-PL-06).
+final musicLibraryProvider =
+    AsyncNotifierProvider<MusicLibraryController, List<MusicEntry>>(
+      MusicLibraryController.new,
+    );
+
+/// The persistent audio player (UC-20).
+final audioPlaybackControllerProvider =
+    NotifierProvider<AudioPlaybackController, AudioPlaybackState>(
+      AudioPlaybackController.new,
+    );
+
 /// The video player (UC-19).
 final videoPlaybackControllerProvider =
     NotifierProvider<VideoPlaybackController, VideoPlaybackState>(
@@ -373,7 +400,7 @@ final videoPlaybackControllerProvider =
 /// here is stopped by every other one starting, and neither controller has to
 /// know the other exists.
 final playbackSessionsProvider = Provider<List<PlaybackSession>>(
-  (ref) => [VideoPlaybackSession(ref)],
+  (ref) => [VideoPlaybackSession(ref), AudioPlaybackSession(ref)],
 );
 
 /// The core's text content operations (UC-18, FR-ME-06, FR-ME-08).

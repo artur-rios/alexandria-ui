@@ -1267,5 +1267,65 @@
               "type": "String"
           }
       }
+  },
+
+  "audioPlay": "Play",
+  "@audioPlay": {
+      "description": "UC-20 main flow step 1: plays this track on its own."
+  },
+
+  "audioPlayAlbum": "Play album",
+  "@audioPlayAlbum": {
+      "description": "UC-20 main flow steps 1 and 3: queues the album this track belongs to."
+  },
+
+  "audioPlayArtist": "Play artist",
+  "@audioPlayArtist": {
+      "description": "UC-20 main flow steps 1 and 3: queues everything by this track's artist."
+  },
+
+  "audioPause": "Pause",
+  "@audioPause": {
+      "description": "UC-20 main flow step 6: pauses playback where it is."
+  },
+
+  "audioNext": "Next track",
+  "@audioNext": {
+      "description": "UC-20 main flow step 6 / FR-PL-06: skips forward within the queue."
+  },
+
+  "audioPrevious": "Previous track",
+  "@audioPrevious": {
+      "description": "UC-20 main flow step 6 / FR-PL-06: skips back within the queue."
+  },
+
+  "audioStop": "Stop",
+  "@audioStop": {
+      "description": "UC-20 main flow step 7: stops playback and clears the queue."
+  },
+
+  "audioNothingPlayable": "Nothing in this selection could be played.",
+  "@audioNothingPlayable": {
+      "description": "UC-20 AF-03: every queued file failed, so the queue was cleared."
+  },
+
+  "audioSkipped": "Skipped {name} \u2014 it could not be played.",
+  "@audioSkipped": {
+      "description": "UC-20 AF-01 and AF-02: which file was skipped, named rather than counted, while the queue carries on.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "audioResumePrompt": "You stopped this track at {position}.",
+  "@audioResumePrompt": {
+      "description": "UC-20 AF-04: the resume point for a single track, offered before it starts.",
+      "placeholders": {
+          "position": {
+              "type": "String"
+          }
+      }
   }
 }

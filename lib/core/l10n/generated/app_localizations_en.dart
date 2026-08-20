@@ -865,4 +865,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String videoTrackUnnamed(String id) {
     return 'Track $id';
   }
+
+  @override
+  String get audioPlay => 'Play';
+
+  @override
+  String get audioPlayAlbum => 'Play album';
+
+  @override
+  String get audioPlayArtist => 'Play artist';
+
+  @override
+  String get audioPause => 'Pause';
+
+  @override
+  String get audioNext => 'Next track';
+
+  @override
+  String get audioPrevious => 'Previous track';
+
+  @override
+  String get audioStop => 'Stop';
+
+  @override
+  String get audioNothingPlayable =>
+      'Nothing in this selection could be played.';
+
+  @override
+  String audioSkipped(String name) {
+    return 'Skipped $name — it could not be played.';
+  }
+
+  @override
+  String audioResumePrompt(String position) {
+    return 'You stopped this track at $position.';
+  }
 }

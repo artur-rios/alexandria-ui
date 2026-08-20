@@ -1607,6 +1607,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Track {id}'**
   String videoTrackUnnamed(String id);
+
+  /// UC-20 main flow step 1: plays this track on its own.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get audioPlay;
+
+  /// UC-20 main flow steps 1 and 3: queues the album this track belongs to.
+  ///
+  /// In en, this message translates to:
+  /// **'Play album'**
+  String get audioPlayAlbum;
+
+  /// UC-20 main flow steps 1 and 3: queues everything by this track's artist.
+  ///
+  /// In en, this message translates to:
+  /// **'Play artist'**
+  String get audioPlayArtist;
+
+  /// UC-20 main flow step 6: pauses playback where it is.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get audioPause;
+
+  /// UC-20 main flow step 6 / FR-PL-06: skips forward within the queue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next track'**
+  String get audioNext;
+
+  /// UC-20 main flow step 6 / FR-PL-06: skips back within the queue.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous track'**
+  String get audioPrevious;
+
+  /// UC-20 main flow step 7: stops playback and clears the queue.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get audioStop;
+
+  /// UC-20 AF-03: every queued file failed, so the queue was cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in this selection could be played.'**
+  String get audioNothingPlayable;
+
+  /// UC-20 AF-01 and AF-02: which file was skipped, named rather than counted, while the queue carries on.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped {name} — it could not be played.'**
+  String audioSkipped(String name);
+
+  /// UC-20 AF-04: the resume point for a single track, offered before it starts.
+  ///
+  /// In en, this message translates to:
+  /// **'You stopped this track at {position}.'**
+  String audioResumePrompt(String position);
 }
 
 class _AppLocalizationsDelegate
