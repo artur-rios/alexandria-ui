@@ -810,4 +810,60 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get editorSaveAndClose => 'Salvar e fechar';
+
+  @override
+  String get videoPlay => 'Reproduzir';
+
+  @override
+  String get videoPause => 'Pausar';
+
+  @override
+  String get videoClose => 'Fechar o player';
+
+  @override
+  String get videoSeekBackward => 'Voltar dez segundos';
+
+  @override
+  String get videoSeekForward => 'Avançar dez segundos';
+
+  @override
+  String get videoFullScreen => 'Tela cheia';
+
+  @override
+  String get videoSubtitles => 'Legendas';
+
+  @override
+  String get videoSubtitlesOff => 'Desligadas';
+
+  @override
+  String get videoNoSubtitles => 'Este arquivo não tem legendas';
+
+  @override
+  String get videoAudioTracks => 'Faixas de áudio';
+
+  @override
+  String get videoNoAudioTracks => 'Este arquivo tem uma única faixa de áudio';
+
+  @override
+  String get videoResume => 'Continuar';
+
+  @override
+  String get videoStartOver => 'Começar do início';
+
+  @override
+  String get videoFileMissing =>
+      'Este arquivo não está onde o catálogo diz que está.';
+
+  @override
+  String get videoCannotDecode => 'Não é possível reproduzir este arquivo.';
+
+  @override
+  String videoResumePrompt(String position) {
+    return 'Você parou de assistir em $position.';
+  }
+
+  @override
+  String videoTrackUnnamed(String id) {
+    return 'Faixa $id';
+  }
 }

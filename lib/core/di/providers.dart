@@ -9,9 +9,11 @@
 /// A use case adds its gateway here and changes nothing else.
 library;
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/application/auth_entry_controller.dart';
@@ -62,6 +64,15 @@ import '../../features/editing/application/editing_session_activity.dart';
 import '../../features/editing/application/text_editor_controller.dart';
 import '../../features/editing/data/core_text_content_gateway.dart';
 import '../../features/editing/domain/text_content_gateway.dart';
+import '../../features/playback/application/video_playback_controller.dart';
+import '../../features/playback/application/video_playback_session.dart';
+import '../../features/playback/data/core_playback_source_gateway.dart';
+import '../../features/playback/data/media_kit_player.dart';
+import '../../features/playback/data/settings_playback_position_store.dart';
+import '../../features/playback/domain/media_player.dart';
+import '../../features/playback/domain/playback_position_store.dart';
+import '../../features/playback/domain/playback_session.dart';
+import '../../features/playback/domain/playback_source.dart';
 import '../../features/shell/domain/session_activity.dart';
 import '../../features/tracking/data/core_watch_progress_gateway.dart';
 import '../../features/tracking/domain/watch_progress_gateway.dart';
@@ -303,6 +314,67 @@ final musicMetadataEditorProvider =
     NotifierProvider<MusicMetadataEditor, MusicEditorState>(
       MusicMetadataEditor.new,
     );
+
+/// Where the core says a file is, for a player to open (UC-19, FR-PL-01).
+final playbackSourceGatewayProvider = Provider<PlaybackSourceGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the playback source gateway was read before the core was loaded',
+    );
+  }
+
+  return CorePlaybackSourceGateway(core);
+});
+
+/// The video playback engine (UC-19).
+///
+/// Bound here because it is a native library: a widget test substitutes a fake
+/// and exercises every flow around it without libmpv (Testing Specification
+/// §2.3).
+final videoPlayerProvider = Provider<MediaPlayer>((ref) {
+  final player = MediaKitPlayer();
+  ref.onDispose(() => unawaited(player.dispose()));
+  return player;
+});
+
+/// The widget that draws the decoded frames (UC-19, FR-PL-01).
+///
+/// The engine owns the surface, so this follows the engine's binding: the
+/// application draws media_kit's, and a test draws a placeholder.
+final videoSurfaceProvider = Provider<WidgetBuilder>((ref) {
+  final player = ref.read(videoPlayerProvider);
+  if (player is! MediaKitPlayer) return (context) => const SizedBox.expand();
+
+  return (context) => mkv.Video(controller: player.videoController);
+});
+
+/// The resume positions (UC-19, FR-PL-09, System Requirements §4.10).
+final playbackPositionsProvider = Provider<PlaybackPositionStore>((ref) {
+  final settings = ref.read(startupControllerProvider.notifier).settings;
+  if (settings == null) {
+    throw StateError(
+      'the playback positions were read before settings were loaded',
+    );
+  }
+
+  return SettingsPlaybackPositionStore(settings);
+});
+
+/// The video player (UC-19).
+final videoPlaybackControllerProvider =
+    NotifierProvider<VideoPlaybackController, VideoPlaybackState>(
+      VideoPlaybackController.new,
+    );
+
+/// The players, of which at most one runs at a time (FR-PL-08).
+///
+/// The registry UC-19 AF-05 and UC-20 AF-05 are both read from: a player added
+/// here is stopped by every other one starting, and neither controller has to
+/// know the other exists.
+final playbackSessionsProvider = Provider<List<PlaybackSession>>(
+  (ref) => [VideoPlaybackSession(ref)],
+);
 
 /// The core's text content operations (UC-18, FR-ME-06, FR-ME-08).
 final textContentGatewayProvider = Provider<TextContentGateway>((ref) {

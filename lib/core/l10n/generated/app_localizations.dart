@@ -1505,6 +1505,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save and close'**
   String get editorSaveAndClose;
+
+  /// UC-19 main flow step 1: opens the video player, and resumes it while playing.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get videoPlay;
+
+  /// UC-19 main flow step 4 / FR-PL-02: pauses playback where it is.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get videoPause;
+
+  /// UC-19 main flow step 7: stops playback and records where it stopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the player'**
+  String get videoClose;
+
+  /// UC-19 / FR-PL-02: seeks backward.
+  ///
+  /// In en, this message translates to:
+  /// **'Back ten seconds'**
+  String get videoSeekBackward;
+
+  /// UC-19 / FR-PL-02: seeks forward.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward ten seconds'**
+  String get videoSeekForward;
+
+  /// UC-19 / FR-PL-02: fills the window with the video, or stops doing so.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen'**
+  String get videoFullScreen;
+
+  /// UC-19 main flow step 5 / FR-PL-03: the subtitle tracks the file provides.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitles'**
+  String get videoSubtitles;
+
+  /// UC-19 / FR-PL-03: turns subtitles off, which the requirement names as one of the choices.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get videoSubtitlesOff;
+
+  /// UC-19 AF-03: the control says none is available rather than being silently absent.
+  ///
+  /// In en, this message translates to:
+  /// **'This file carries no subtitles'**
+  String get videoNoSubtitles;
+
+  /// UC-19 main flow step 6 / FR-PL-04: the audio tracks the file provides.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio tracks'**
+  String get videoAudioTracks;
+
+  /// UC-19 AF-03: there is no alternative to choose, and the control says so.
+  ///
+  /// In en, this message translates to:
+  /// **'This file carries one audio track'**
+  String get videoNoAudioTracks;
+
+  /// UC-19 AF-04: plays from where it stopped last time.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get videoResume;
+
+  /// UC-19 AF-04: plays from the beginning, forgetting the resume point.
+  ///
+  /// In en, this message translates to:
+  /// **'Start over'**
+  String get videoStartOver;
+
+  /// UC-19 AF-01: the record is there and the file on disk is not.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is not where the catalog says it is.'**
+  String get videoFileMissing;
+
+  /// UC-19 AF-02 / FR-PL-10: the engine could not decode the format, and the application carries on.
+  ///
+  /// In en, this message translates to:
+  /// **'This file cannot be played.'**
+  String get videoCannotDecode;
+
+  /// UC-19 AF-04: the resume point, offered before anything is opened.
+  ///
+  /// In en, this message translates to:
+  /// **'You stopped watching at {position}.'**
+  String videoResumePrompt(String position);
+
+  /// UC-19 / FR-PL-03, FR-PL-04: a track the file names neither by title nor by language.
+  ///
+  /// In en, this message translates to:
+  /// **'Track {id}'**
+  String videoTrackUnnamed(String id);
 }
 
 class _AppLocalizationsDelegate

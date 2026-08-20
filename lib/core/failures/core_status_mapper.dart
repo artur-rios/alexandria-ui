@@ -36,6 +36,7 @@ Failure mapCoreStatus(
     CoreStatusFamily.watchlist => _mapWatchlist(code),
     CoreStatusFamily.readingList => _mapReadingList(code),
     CoreStatusFamily.auth => _mapAuth(code),
+    CoreStatusFamily.playback => _mapPlayback(code),
     CoreStatusFamily.run => _mapRun(code),
   };
 }
@@ -83,6 +84,35 @@ Failure _mapIndex(int code) => switch (code) {
     code: code,
   ),
   _ => Failure.unexpected(family: CoreStatusFamily.indexing, code: code),
+};
+
+Failure _mapPlayback(int code) => switch (code) {
+  PLAYBACK_ERR_INVALID_INPUT => Failure.invalidInput(
+    family: CoreStatusFamily.playback,
+    code: code,
+  ),
+  PLAYBACK_ERR_UNAUTHORIZED => Failure.unauthorized(
+    family: CoreStatusFamily.playback,
+    code: code,
+  ),
+  PLAYBACK_ERR_NOT_INITIALIZED => Failure.notInitialized(
+    family: CoreStatusFamily.playback,
+    code: code,
+  ),
+  PLAYBACK_ERR_NOT_FOUND => Failure.notFound(
+    family: CoreStatusFamily.playback,
+    code: code,
+  ),
+  PLAYBACK_ERR_INVALID_STATE => Failure.invalidState(
+    family: CoreStatusFamily.playback,
+    code: code,
+  ),
+  // UC-19 AF-01 and UC-20 AF-01: the record is there and the file is not.
+  PLAYBACK_ERR_DISK => Failure.disk(
+    family: CoreStatusFamily.playback,
+    code: code,
+  ),
+  _ => Failure.unexpected(family: CoreStatusFamily.playback, code: code),
 };
 
 Failure _mapFile(int code) => switch (code) {

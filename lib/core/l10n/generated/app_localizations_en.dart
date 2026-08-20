@@ -809,4 +809,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editorSaveAndClose => 'Save and close';
+
+  @override
+  String get videoPlay => 'Play';
+
+  @override
+  String get videoPause => 'Pause';
+
+  @override
+  String get videoClose => 'Close the player';
+
+  @override
+  String get videoSeekBackward => 'Back ten seconds';
+
+  @override
+  String get videoSeekForward => 'Forward ten seconds';
+
+  @override
+  String get videoFullScreen => 'Full screen';
+
+  @override
+  String get videoSubtitles => 'Subtitles';
+
+  @override
+  String get videoSubtitlesOff => 'Off';
+
+  @override
+  String get videoNoSubtitles => 'This file carries no subtitles';
+
+  @override
+  String get videoAudioTracks => 'Audio tracks';
+
+  @override
+  String get videoNoAudioTracks => 'This file carries one audio track';
+
+  @override
+  String get videoResume => 'Resume';
+
+  @override
+  String get videoStartOver => 'Start over';
+
+  @override
+  String get videoFileMissing =>
+      'This file is not where the catalog says it is.';
+
+  @override
+  String get videoCannotDecode => 'This file cannot be played.';
+
+  @override
+  String videoResumePrompt(String position) {
+    return 'You stopped watching at $position.';
+  }
+
+  @override
+  String videoTrackUnnamed(String id) {
+    return 'Track $id';
+  }
 }
