@@ -10,6 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/reading_lists_controller.dart';
+import '../domain/issue_progress.dart';
 import '../domain/reading_list.dart';
 
 /// The reading-lists screen (UC-31, FR-TR-08 … FR-TR-11).
@@ -224,7 +225,7 @@ class _ReadingListTile extends ConsumerWidget {
   }
 }
 
-/// One tracked book or comic inside a reading list.
+/// One tracked book or comic inside a reading list (UC-32 main flow step 2).
 class _ItemTile extends ConsumerWidget {
   const _ItemTile({required this.readingList, required this.progress});
 
@@ -234,37 +235,218 @@ class _ItemTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final editor = ref.watch(readingProgressEditorProvider);
+    final names = ref.watch(trackedReadingItemsProvider).value ?? const {};
 
-    return ListTile(
-      dense: true,
-      leading: Icon(
-        progress.targetKind == ReadingTargetKind.comic
-            ? Icons.auto_stories_outlined
-            : Icons.menu_book_outlined,
-      ),
-      // The name is the catalog's; a reading list carries only the uuid the
-      // core tracks the item by. UC-32 is what puts a title and the progress
-      // on screen beside it.
-      title: Text(progress.itemUuid),
-      subtitle: Text(_stateLabel(l10n)),
-      trailing: IconButton(
-        tooltip: l10n.readingListRemoveItem,
-        icon: const Icon(Icons.remove_circle_outline),
-        onPressed: () => unawaited(
-          ref
-              .read(readingListsFormProvider.notifier)
-              .removeItem(
-                readingListUuid: readingList.uuid,
-                itemUuid: progress.itemUuid,
-              ),
+    // AF-01: only a comic counts issues; a standalone book has a state and
+    // nothing more.
+    final countsIssues = progress.targetKind == ReadingTargetKind.comic;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ListTile(
+          dense: true,
+          leading: Icon(
+            countsIssues
+                ? Icons.auto_stories_outlined
+                : Icons.menu_book_outlined,
+          ),
+          // The name comes from the catalog; a reading list carries only the
+          // uuid the core tracks the item by.
+          title: Text(names[progress.itemUuid] ?? progress.itemUuid),
+          subtitle: Text(_progressLabel(l10n, countsIssues)),
+          onTap: () =>
+              ref.read(readingProgressEditorProvider.notifier).open(progress),
+          trailing: IconButton(
+            tooltip: l10n.readingListRemoveItem,
+            icon: const Icon(Icons.remove_circle_outline),
+            onPressed: () => unawaited(
+              ref
+                  .read(readingListsFormProvider.notifier)
+                  .removeItem(
+                    readingListUuid: readingList.uuid,
+                    itemUuid: progress.itemUuid,
+                  ),
+            ),
+          ),
         ),
+
+        // Steps 3 and 4, opened on the item they are about rather than in a
+        // dialog: the owner is looking down a list and setting several.
+        if (editor.isEditing(progress))
+          _ProgressEditor(countsIssues: countsIssues),
+      ],
+    );
+  }
+
+  /// The state, and where in a series the owner is (FR-TR-12, FR-TR-14).
+  String _progressLabel(AppLocalizations l10n, bool countsIssues) {
+    final state = switch (progress.state) {
+      ReadingState.pending => l10n.readStatePending,
+      ReadingState.reading => l10n.readStateReading,
+      ReadingState.read => l10n.readStateRead,
+    };
+
+    // AF-01: a standalone book has no issue to report, so its label is the
+    // state and nothing else.
+    final current = progress.currentIssue;
+    if (!countsIssues || current == null) return state;
+
+    final total = progress.totalIssues;
+    return total == null
+        ? '$state · ${l10n.readIssue(current)}'
+        : '$state · ${l10n.readIssueOf(current, total)}';
+  }
+}
+
+/// Where the read state and the issue are set (main flow steps 3 to 5).
+class _ProgressEditor extends ConsumerStatefulWidget {
+  const _ProgressEditor({required this.countsIssues});
+
+  /// Whether this item is a comic in a series (FR-TR-14). AF-01 is this being
+  /// false.
+  final bool countsIssues;
+
+  @override
+  ConsumerState<_ProgressEditor> createState() => _ProgressEditorState();
+}
+
+class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
+  late final TextEditingController _current;
+  late final TextEditingController _total;
+
+  // Filled here rather than lazily at the field: a lazy initialiser that is
+  // first touched from `dispose` reads `ref` on an unmounted widget, which
+  // Riverpod refuses.
+  @override
+  void initState() {
+    super.initState();
+
+    final issues = ref.read(readingProgressEditorProvider).issues;
+    _current = TextEditingController(text: issues.current);
+    _total = TextEditingController(text: issues.total);
+  }
+
+  @override
+  void dispose() {
+    _current.dispose();
+    _total.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final state = ref.watch(readingProgressEditorProvider);
+    final editor = ref.read(readingProgressEditorProvider.notifier);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.md,
+        AppSpacing.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // FR-TR-13: the states are the core's, and all of them are offered.
+          SegmentedButton<ReadingState>(
+            segments: [
+              ButtonSegment(
+                value: ReadingState.pending,
+                label: Text(l10n.readStatePending),
+              ),
+              ButtonSegment(
+                value: ReadingState.reading,
+                label: Text(l10n.readStateReading),
+              ),
+              ButtonSegment(
+                value: ReadingState.read,
+                label: Text(l10n.readStateRead),
+              ),
+            ],
+            selected: {state.state},
+            onSelectionChanged: (chosen) => editor.chooseState(chosen.first),
+          ),
+
+          // AF-01: issue fields belong to a comic series and are not shown for
+          // a standalone book.
+          if (widget.countsIssues) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _current,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: l10n.readCurrentIssueLabel,
+                      errorText: _messageFor(state.currentError, l10n),
+                    ),
+                    onChanged: editor.editCurrentIssue,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: TextField(
+                    controller: _total,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: l10n.readTotalIssuesLabel,
+                      errorText: _messageFor(state.totalError, l10n),
+                    ),
+                    onChanged: editor.editTotalIssues,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // AF-03 and AF-04: the core's reason, over progress it did not
+          // change.
+          if (state.rejection case final rejection?) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              rejection.localizedMessage(l10n),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
+          ],
+
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: state.isSaving ? null : editor.close,
+                child: Text(l10n.cancel),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              FilledButton(
+                onPressed: state.isSaving
+                    ? null
+                    : () => unawaited(
+                        editor.submit(countsIssues: widget.countsIssues),
+                      ),
+                child: Text(l10n.readProgressSave),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  String _stateLabel(AppLocalizations l10n) => switch (progress.state) {
-    ReadingState.pending => l10n.readStatePending,
-    ReadingState.reading => l10n.readStateReading,
-    ReadingState.read => l10n.readStateRead,
-  };
+  String? _messageFor(IssueError? error, AppLocalizations l10n) =>
+      switch (error) {
+        null => null,
+        IssueError.notANumber => l10n.readIssueNotANumber,
+        IssueError.notPositive => l10n.readIssueNotPositive,
+        IssueError.beyondTotal => l10n.readIssueBeyondTotal,
+      };
 }

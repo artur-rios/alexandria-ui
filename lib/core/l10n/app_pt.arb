@@ -343,5 +343,13 @@
   "readStateRead": "Lido",
   "readingListDeleteMessage": "Excluir {name}? Os livros e quadrinhos são mantidos — apenas o acompanhamento é removido.",
   "readingListAlreadyIn": "{name} — já está lá",
-  "readingListItemCount": "{count} acompanhados"
+  "readingListItemCount": "{count} acompanhados",
+  "readCurrentIssueLabel": "Edição atual",
+  "readTotalIssuesLabel": "Total de edições",
+  "readIssueNotANumber": "Use um número inteiro.",
+  "readIssueNotPositive": "As edições são contadas a partir de um.",
+  "readIssueBeyondTotal": "Isso passa do total que você informou.",
+  "readProgressSave": "Salvar progresso",
+  "readIssue": "edição {current}",
+  "readIssueOf": "edição {current} de {total}"
 }

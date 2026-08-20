@@ -322,7 +322,7 @@ untested.
 | [#30](https://github.com/artur-rios/alexandria-desktop-front/issues/30) | UC-29 — Manage watchlists — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#31](https://github.com/artur-rios/alexandria-desktop-front/issues/31) | UC-30 — Track watch progress — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#32](https://github.com/artur-rios/alexandria-desktop-front/issues/32) | UC-31 — Manage reading lists — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#33](https://github.com/artur-rios/alexandria-desktop-front/issues/33) | UC-32 — Track reading progress | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#33](https://github.com/artur-rios/alexandria-desktop-front/issues/33) | UC-32 — Track reading progress — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-10 — Deletion lifecycle
 

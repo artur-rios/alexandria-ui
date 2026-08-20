@@ -1641,5 +1641,58 @@
               "type": "int"
           }
       }
+  },
+
+  "readCurrentIssueLabel": "Current issue",
+  "@readCurrentIssueLabel": {
+      "description": "UC-32 main flow step 4: which issue of the series the owner is on."
+  },
+
+  "readTotalIssuesLabel": "Total issues",
+  "@readTotalIssuesLabel": {
+      "description": "UC-32 main flow step 4: how many issues there are, when the owner knows."
+  },
+
+  "readIssueNotANumber": "Use a whole number.",
+  "@readIssueNotANumber": {
+      "description": "UC-32 AF-02: the issue field holds something that is not a number, so the core is not called."
+  },
+
+  "readIssueNotPositive": "Issues are counted from one.",
+  "@readIssueNotPositive": {
+      "description": "UC-32 AF-02: the issue number is zero or negative."
+  },
+
+  "readIssueBeyondTotal": "That is past the total you gave.",
+  "@readIssueBeyondTotal": {
+      "description": "UC-32 AF-02: the current issue exceeds the stated total."
+  },
+
+  "readProgressSave": "Save progress",
+  "@readProgressSave": {
+      "description": "UC-32 main flow step 5: sends the read state and the issue to the core."
+  },
+
+  "readIssue": "issue {current}",
+  "@readIssue": {
+      "description": "UC-32: where in a series the owner is, with no total stated.",
+      "placeholders": {
+          "current": {
+              "type": "int"
+          }
+      }
+  },
+
+  "readIssueOf": "issue {current} of {total}",
+  "@readIssueOf": {
+      "description": "UC-32: where in a series the owner is, out of the total they gave.",
+      "placeholders": {
+          "current": {
+              "type": "int"
+          },
+          "total": {
+              "type": "int"
+          }
+      }
   }
 }
