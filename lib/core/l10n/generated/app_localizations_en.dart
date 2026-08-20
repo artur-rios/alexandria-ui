@@ -756,4 +756,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String renameErrorTooLong(int max) {
     return 'Keep the name under $max characters.';
   }
+
+  @override
+  String get editorOpen => 'Edit';
+
+  @override
+  String get editorClose => 'Close the editor';
+
+  @override
+  String get editorSave => 'Save';
+
+  @override
+  String get editorUnsaved => 'Unsaved changes';
+
+  @override
+  String get editorDismiss => 'Dismiss';
+
+  @override
+  String get editorDiscard => 'Discard';
+
+  @override
+  String get editorReload => 'Reload from disk';
+
+  @override
+  String get editorOverwrite => 'Save anyway';
+
+  @override
+  String get editorSignInAgain => 'Sign in again';
+
+  @override
+  String get editorNothingToSave =>
+      'The content has not changed, so nothing was written.';
+
+  @override
+  String get editorLeaveUnsaved =>
+      'You have changes that are not saved. Save them, discard them, or stay in the editor.';
+
+  @override
+  String get editorChangedOnDisk =>
+      'This file changed on disk since you opened it. Reload to see the new version, or save anyway to replace it.';
+
+  @override
+  String get editorRecordGone =>
+      'This file is no longer in the catalog. What you have written is still here, and is not saved.';
+
+  @override
+  String get editorSessionRejected =>
+      'Your session ended, so this could not be saved. Signing in again will lose what is on screen.';
+
+  @override
+  String get editorCouldNotRead => 'This file could not be read.';
+
+  @override
+  String get editorSaveAndClose => 'Save and close';
 }

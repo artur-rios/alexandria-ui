@@ -26,6 +26,14 @@ abstract class CatalogFile with _$CatalogFile {
     /// What the core classified it as.
     required LibraryType type,
 
+    /// The core's hash of the file's contents.
+    ///
+    /// Read-only, and the only way to tell that a file changed on disk since
+    /// it was read: the editor compares it before it overwrites (UC-18
+    /// AF-05). Empty when the core answered without one, which reads as
+    /// "cannot tell" rather than as "unchanged".
+    @Default('') String contentHash,
+
     /// When the core last indexed this file.
     ///
     /// What a date sort orders on (UC-12, FR-CT-08). Nullable because a core

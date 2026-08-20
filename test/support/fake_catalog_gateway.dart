@@ -180,6 +180,7 @@ CatalogFile aFile({
   String name = 'Kind of Blue.flac',
   String? path,
   LibraryType type = LibraryType.audio,
+  String contentHash = 'a-content-hash',
   DateTime? indexedAt,
   DateTime? missingAt,
 }) => CatalogFile(
@@ -190,6 +191,7 @@ CatalogFile aFile({
   // that is only in its neighbour name, which reads as a bug in the search.
   path: path ?? '/home/owner/music/$name',
   type: type,
+  contentHash: contentHash,
   indexedAt: indexedAt,
   missingAt: missingAt,
 );

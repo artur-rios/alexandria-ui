@@ -65,6 +65,11 @@ dependencies:
   # FR-LB-01 asks for the native one specifically: a folder chosen through a
   # dialog the owner recognizes, not a path typed into a text field.
   file_selector: ^1.1.0
+  # Renders the editor's live preview (Technology Stack Document §5, UC-18
+  # FR-ME-07). The package is discontinued upstream; it is what the stack
+  # document names, it resolves and builds against this SDK, and replacing it
+  # is a change to that document rather than to this use case.
+  flutter_markdown: ^0.7.7+1
 
 dev_dependencies:
   flutter_test:

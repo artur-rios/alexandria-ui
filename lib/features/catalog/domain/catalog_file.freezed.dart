@@ -18,7 +18,13 @@ mixin _$CatalogFile {
  String get uuid;/// The file name on disk.
  String get name;/// The absolute on-disk path.
  String get path;/// What the core classified it as.
- LibraryType get type;/// When the core last indexed this file.
+ LibraryType get type;/// The core's hash of the file's contents.
+///
+/// Read-only, and the only way to tell that a file changed on disk since
+/// it was read: the editor compares it before it overwrites (UC-18
+/// AF-05). Empty when the core answered without one, which reads as
+/// "cannot tell" rather than as "unchanged".
+ String get contentHash;/// When the core last indexed this file.
 ///
 /// What a date sort orders on (UC-12, FR-CT-08). Nullable because a core
 /// that answers without it must not make the listing unreadable.
@@ -37,16 +43,16 @@ $CatalogFileCopyWith<CatalogFile> get copyWith => _$CatalogFileCopyWithImpl<Cata
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatalogFile&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.path, path) || other.path == path)&&(identical(other.type, type) || other.type == type)&&(identical(other.indexedAt, indexedAt) || other.indexedAt == indexedAt)&&(identical(other.missingAt, missingAt) || other.missingAt == missingAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatalogFile&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.path, path) || other.path == path)&&(identical(other.type, type) || other.type == type)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.indexedAt, indexedAt) || other.indexedAt == indexedAt)&&(identical(other.missingAt, missingAt) || other.missingAt == missingAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,name,path,type,indexedAt,missingAt);
+int get hashCode => Object.hash(runtimeType,uuid,name,path,type,contentHash,indexedAt,missingAt);
 
 @override
 String toString() {
-  return 'CatalogFile(uuid: $uuid, name: $name, path: $path, type: $type, indexedAt: $indexedAt, missingAt: $missingAt)';
+  return 'CatalogFile(uuid: $uuid, name: $name, path: $path, type: $type, contentHash: $contentHash, indexedAt: $indexedAt, missingAt: $missingAt)';
 }
 
 
@@ -57,7 +63,7 @@ abstract mixin class $CatalogFileCopyWith<$Res>  {
   factory $CatalogFileCopyWith(CatalogFile value, $Res Function(CatalogFile) _then) = _$CatalogFileCopyWithImpl;
 @useResult
 $Res call({
- String uuid, String name, String path, LibraryType type, DateTime? indexedAt, DateTime? missingAt
+ String uuid, String name, String path, LibraryType type, String contentHash, DateTime? indexedAt, DateTime? missingAt
 });
 
 
@@ -74,13 +80,14 @@ class _$CatalogFileCopyWithImpl<$Res>
 
 /// Create a copy of CatalogFile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? name = null,Object? path = null,Object? type = null,Object? indexedAt = freezed,Object? missingAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? name = null,Object? path = null,Object? type = null,Object? contentHash = null,Object? indexedAt = freezed,Object? missingAt = freezed,}) {
   return _then(_self.copyWith(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as LibraryType,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
+as LibraryType,contentHash: null == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
+as String,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,missingAt: freezed == missingAt ? _self.missingAt : missingAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -167,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  DateTime? indexedAt,  DateTime? missingAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  DateTime? indexedAt,  DateTime? missingAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CatalogFile() when $default != null:
-return $default(_that.uuid,_that.name,_that.path,_that.type,_that.indexedAt,_that.missingAt);case _:
+return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.indexedAt,_that.missingAt);case _:
   return orElse();
 
 }
@@ -188,10 +195,10 @@ return $default(_that.uuid,_that.name,_that.path,_that.type,_that.indexedAt,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  DateTime? indexedAt,  DateTime? missingAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  DateTime? indexedAt,  DateTime? missingAt)  $default,) {final _that = this;
 switch (_that) {
 case _CatalogFile():
-return $default(_that.uuid,_that.name,_that.path,_that.type,_that.indexedAt,_that.missingAt);case _:
+return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.indexedAt,_that.missingAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -208,10 +215,10 @@ return $default(_that.uuid,_that.name,_that.path,_that.type,_that.indexedAt,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String name,  String path,  LibraryType type,  DateTime? indexedAt,  DateTime? missingAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  DateTime? indexedAt,  DateTime? missingAt)?  $default,) {final _that = this;
 switch (_that) {
 case _CatalogFile() when $default != null:
-return $default(_that.uuid,_that.name,_that.path,_that.type,_that.indexedAt,_that.missingAt);case _:
+return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.indexedAt,_that.missingAt);case _:
   return null;
 
 }
@@ -223,7 +230,7 @@ return $default(_that.uuid,_that.name,_that.path,_that.type,_that.indexedAt,_tha
 
 
 class _CatalogFile extends CatalogFile {
-  const _CatalogFile({required this.uuid, required this.name, required this.path, required this.type, this.indexedAt, this.missingAt}): super._();
+  const _CatalogFile({required this.uuid, required this.name, required this.path, required this.type, this.contentHash = '', this.indexedAt, this.missingAt}): super._();
   
 
 /// The public identifier passed on every call about this file.
@@ -234,6 +241,13 @@ class _CatalogFile extends CatalogFile {
 @override final  String path;
 /// What the core classified it as.
 @override final  LibraryType type;
+/// The core's hash of the file's contents.
+///
+/// Read-only, and the only way to tell that a file changed on disk since
+/// it was read: the editor compares it before it overwrites (UC-18
+/// AF-05). Empty when the core answered without one, which reads as
+/// "cannot tell" rather than as "unchanged".
+@override@JsonKey() final  String contentHash;
 /// When the core last indexed this file.
 ///
 /// What a date sort orders on (UC-12, FR-CT-08). Nullable because a core
@@ -255,16 +269,16 @@ _$CatalogFileCopyWith<_CatalogFile> get copyWith => __$CatalogFileCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CatalogFile&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.path, path) || other.path == path)&&(identical(other.type, type) || other.type == type)&&(identical(other.indexedAt, indexedAt) || other.indexedAt == indexedAt)&&(identical(other.missingAt, missingAt) || other.missingAt == missingAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CatalogFile&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.path, path) || other.path == path)&&(identical(other.type, type) || other.type == type)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.indexedAt, indexedAt) || other.indexedAt == indexedAt)&&(identical(other.missingAt, missingAt) || other.missingAt == missingAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,name,path,type,indexedAt,missingAt);
+int get hashCode => Object.hash(runtimeType,uuid,name,path,type,contentHash,indexedAt,missingAt);
 
 @override
 String toString() {
-  return 'CatalogFile(uuid: $uuid, name: $name, path: $path, type: $type, indexedAt: $indexedAt, missingAt: $missingAt)';
+  return 'CatalogFile(uuid: $uuid, name: $name, path: $path, type: $type, contentHash: $contentHash, indexedAt: $indexedAt, missingAt: $missingAt)';
 }
 
 
@@ -275,7 +289,7 @@ abstract mixin class _$CatalogFileCopyWith<$Res> implements $CatalogFileCopyWith
   factory _$CatalogFileCopyWith(_CatalogFile value, $Res Function(_CatalogFile) _then) = __$CatalogFileCopyWithImpl;
 @override @useResult
 $Res call({
- String uuid, String name, String path, LibraryType type, DateTime? indexedAt, DateTime? missingAt
+ String uuid, String name, String path, LibraryType type, String contentHash, DateTime? indexedAt, DateTime? missingAt
 });
 
 
@@ -292,13 +306,14 @@ class __$CatalogFileCopyWithImpl<$Res>
 
 /// Create a copy of CatalogFile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? name = null,Object? path = null,Object? type = null,Object? indexedAt = freezed,Object? missingAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? name = null,Object? path = null,Object? type = null,Object? contentHash = null,Object? indexedAt = freezed,Object? missingAt = freezed,}) {
   return _then(_CatalogFile(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as LibraryType,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
+as LibraryType,contentHash: null == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
+as String,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,missingAt: freezed == missingAt ? _self.missingAt : missingAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
