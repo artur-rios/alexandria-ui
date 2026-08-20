@@ -1901,6 +1901,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy the address'**
   String get bookmarkCopyUrl;
+
+  /// UC-29 main flow step 1: the watchlists screen's heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Watchlists'**
+  String get watchlistsTitle;
+
+  /// UC-29 main flow step 1: opens the watchlists screen from the videos area.
+  ///
+  /// In en, this message translates to:
+  /// **'Watchlists'**
+  String get watchlistsOpen;
+
+  /// UC-29: there are no watchlists, which is a state and not a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not made a watchlist yet.'**
+  String get watchlistsNone;
+
+  /// UC-29 main flow step 1: what the new watchlist is called.
+  ///
+  /// In en, this message translates to:
+  /// **'Watchlist name'**
+  String get watchlistNameLabel;
+
+  /// UC-29 main flow step 2: sends the new watchlist to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get watchlistCreate;
+
+  /// UC-29 AF-01: the name is blank after trimming, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the watchlist a name.'**
+  String get watchlistNameEmpty;
+
+  /// UC-29 main flow step 6: removes the tracking and keeps the videos.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this watchlist'**
+  String get watchlistDelete;
+
+  /// UC-29: the watchlist holds no videos.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is tracked in this watchlist yet.'**
+  String get watchlistEmpty;
+
+  /// UC-29 main flow step 3: tracks this video in a watchlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to a watchlist'**
+  String get watchlistAddTo;
+
+  /// UC-29 main flow step 5: removes the video from this watchlist and leaves it in the catalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop tracking this video'**
+  String get watchlistRemoveVideo;
+
+  /// UC-29 AF-03: nothing is added, and the owner is told why.
+  ///
+  /// In en, this message translates to:
+  /// **'That video is already in that watchlist.'**
+  String get watchlistAlreadyTracked;
+
+  /// UC-29 AF-04 / UC-30 AF-04: the core has no such record, so the screen is read again.
+  ///
+  /// In en, this message translates to:
+  /// **'That watchlist or video is no longer there.'**
+  String get watchlistNotFound;
+
+  /// UC-30: the watch state the core calls pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get watchStatePending;
+
+  /// UC-30: part way through.
+  ///
+  /// In en, this message translates to:
+  /// **'Watching'**
+  String get watchStateWatching;
+
+  /// UC-30: finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Watched'**
+  String get watchStateWatched;
+
+  /// UC-29 main flow step 6 / BR-07: the confirmation names what goes and what does not.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}? The videos in it are kept — only the tracking is removed.'**
+  String watchlistDeleteMessage(String name);
+
+  /// UC-29 AF-03: a watchlist already tracking this video says so rather than disappearing from the menu.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — already there'**
+  String watchlistAlreadyIn(String name);
+
+  /// UC-29: how many videos a watchlist tracks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tracked'**
+  String watchlistItemCount(int count);
 }
 
 class _AppLocalizationsDelegate

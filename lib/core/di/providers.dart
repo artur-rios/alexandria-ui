@@ -97,7 +97,11 @@ import '../../features/viewers/domain/comic_gateway.dart';
 import '../../features/viewers/domain/document_gateway.dart';
 import '../../features/viewers/domain/reading_position_store.dart';
 import '../../features/viewers/domain/viewer_registry.dart';
+import '../../features/tracking/application/watchlists_controller.dart';
 import '../../features/tracking/data/core_watch_progress_gateway.dart';
+import '../../features/tracking/data/core_watchlist_gateway.dart';
+import '../../features/tracking/domain/watchlist.dart';
+import '../../features/tracking/domain/watchlist_gateway.dart';
 import '../../features/tracking/domain/watch_progress_gateway.dart';
 import '../../features/shell/domain/shell_destination.dart';
 import '../../features/shell/domain/window_placement.dart';
@@ -563,6 +567,28 @@ final bookmarksControllerProvider =
 final bookmarkFormProvider = NotifierProvider<BookmarkForm, BookmarkFormState>(
   BookmarkForm.new,
 );
+
+/// The core's watchlist operations (UC-29, UC-30, FR-TR-01 … FR-TR-07).
+final watchlistGatewayProvider = Provider<WatchlistGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the watchlist gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreWatchlistGateway(core);
+});
+
+/// The owner's watchlists (UC-29).
+final watchlistsControllerProvider =
+    AsyncNotifierProvider<WatchlistsController, List<Watchlist>>(
+      WatchlistsController.new,
+    );
+
+/// The watchlists screen's own state (UC-29).
+final watchlistsFormProvider =
+    NotifierProvider<WatchlistsForm, WatchlistsState>(WatchlistsForm.new);
 
 /// The core's watch-progress read (UC-16 AF-03).
 ///

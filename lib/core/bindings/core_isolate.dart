@@ -469,6 +469,88 @@ class CoreIsolate {
         }),
       ),
 
+      'watchlistCreate' => withNativeString(
+        arguments.first! as String,
+        (body) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_watchlist_create(body, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'watchlistDelete' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_watchlist_delete(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'watchlistAddVideo' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (body) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_watchlist_add_video(
+              uuid,
+              body,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      'watchlistRemoveVideo' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (video) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_watchlist_remove_video(
+              uuid,
+              video,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      // Four strings, so four nestings: each pointer stays alive for the whole
+      // call and is freed on the way out, in the order it was taken.
+      'watchlistUpdateProgress' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (video) => withNativeString(
+            arguments[2]! as String,
+            (body) => withNativeString(arguments[3]! as String, (token) {
+              final result = bindings.alexandria_watchlist_update_progress(
+                uuid,
+                video,
+                body,
+                token,
+              );
+              return (
+                status: result.status,
+                json: strings.consume(result.json, (json) => json),
+              );
+            }),
+          ),
+        ),
+      ),
+
       // UC-16 AF-03 reads this to find out whether a video's progress is
       // counted per episode; UC-29 and UC-30 are what browse it.
       'watchlistsList' => withNativeString(
