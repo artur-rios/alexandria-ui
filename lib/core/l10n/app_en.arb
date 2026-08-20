@@ -1991,5 +1991,30 @@
   "recoveryBackToLogin": "Back to sign in",
   "@recoveryBackToLogin": {
       "description": "UC-41 main flow step 6: returns to the login screen."
+  },
+
+  "recoveryCodesRegenerate": "Generate new recovery codes",
+  "@recoveryCodesRegenerate": {
+      "description": "UC-42 main flow step 2: replaces the whole set with ten new codes."
+  },
+
+  "recoveryCodesRegenerateMessage": "Every code you have now stops working, and ten new ones take their place. They are shown once.",
+  "@recoveryCodesRegenerateMessage": {
+      "description": "UC-42 main flow step 3: the confirmation states what the owner is giving up."
+  },
+
+  "recoveryCodesNoneLeft": "No recovery codes are left. Generate a set while you still know your password.",
+  "@recoveryCodesNoneLeft": {
+      "description": "UC-42 main flow step 1: the core reports none unspent, which means the account cannot currently be recovered."
+  },
+
+  "recoveryCodesRemaining": "{count, plural, =1{1 recovery code left} other{{count} recovery codes left}}",
+  "@recoveryCodesRemaining": {
+      "description": "UC-42 main flow step 1 and FR-AU-14: how many codes the core reports as unspent.",
+      "placeholders": {
+          "count": {
+              "type": "num"
+          }
+      }
   }
 }

@@ -219,6 +219,95 @@ class CoreAuthGateway implements AuthGateway {
   }
 
   @override
+  Future<AccountOutcome> account({required String credential}) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.authLocalAccount(credential);
+    } on CoreCallException {
+      return const AccountOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.auth,
+          code: AuthLoginStatus.callFailedCode,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.auth.isOk(response.status)) {
+      return AccountOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.auth, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unreadableAccount();
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+
+      return AccountOutcome.read(
+        account: AccountSummary(
+          email: body['email'] as String? ?? '',
+          // AF-03: a core that answered without the number leaves it absent
+          // rather than reported as zero. Zero means "cannot be recovered",
+          // which is not the same as "did not say".
+          recoveryCodesRemaining: (body['recoveryCodesRemaining'] as num?)
+              ?.toInt(),
+        ),
+      );
+    } on Object {
+      return _unreadableAccount();
+    }
+  }
+
+  @override
+  Future<RegenerateOutcome> regenerateRecoveryCodes({
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.authLocalRegenerateRecoveryCodes(credential);
+    } on CoreCallException {
+      return const RegenerateOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.auth,
+          code: AuthLoginStatus.callFailedCode,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.auth.isOk(response.status)) {
+      // AF-02 and AF-04: the core refused, and it replaced nothing — every
+      // existing code still works.
+      return RegenerateOutcome.failed(
+        failure: mapCoreStatus(
+          CoreStatusFamily.auth,
+          response.status,
+          rejection: readCoreRejection(response.json),
+        ),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unreadableRegeneration();
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+      final codes = body['recoveryCodes'];
+
+      // A success that carried no codes is unreadable rather than an empty
+      // set: the core replaced the old ones, so answering "none" would leave
+      // the owner believing they have a set when they have nothing.
+      if (codes is! List || codes.isEmpty) return _unreadableRegeneration();
+
+      return RegenerateOutcome.regenerated(
+        recoveryCodes: [for (final code in codes) code as String],
+      );
+    } on Object {
+      return _unreadableRegeneration();
+    }
+  }
+
+  @override
   Future<RecoveryOutcome> redeemRecoveryCode({
     required String code,
     required String newPassword,
@@ -304,6 +393,20 @@ class CoreAuthGateway implements AuthGateway {
   /// real address, which keeps the probe from colliding with an account
   /// somebody actually holds.
   static const String _probeAddress = 'account-probe@alexandria.invalid';
+
+  AccountOutcome _unreadableAccount() => const AccountOutcome.failed(
+    failure: Failure.unexpected(
+      family: CoreStatusFamily.auth,
+      code: AuthLoginStatus.unreadablePayloadCode,
+    ),
+  );
+
+  RegenerateOutcome _unreadableRegeneration() => const RegenerateOutcome.failed(
+    failure: Failure.unexpected(
+      family: CoreStatusFamily.auth,
+      code: AuthLoginStatus.unreadablePayloadCode,
+    ),
+  );
 
   AuthOutcome _unreadable() => const AuthOutcome.failed(
     failure: Failure.unexpected(

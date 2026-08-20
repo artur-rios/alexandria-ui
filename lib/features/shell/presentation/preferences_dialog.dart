@@ -5,6 +5,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/application/session_state.dart';
+import '../../auth/presentation/recovery_codes_section.dart';
 import '../../auth/presentation/change_credentials_dialog.dart';
 import '../../auth/presentation/sign_out_button.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
@@ -109,6 +110,10 @@ class PreferencesDialog extends ConsumerWidget {
                     label: Text(l10n.librarySourcesOpen),
                   ),
                 ),
+                // UC-42 main flow step 1: beside changing the password,
+                // because both are things an owner does to an account they
+                // still have access to.
+                const RecoveryCodesSection(),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(

@@ -50,6 +50,17 @@ class SessionController extends Notifier<SessionState> {
     state = SessionState.active(session: session, recoveryCodes: recoveryCodes);
   }
 
+  /// Puts a freshly regenerated set on screen (UC-42 main flow step 4).
+  ///
+  /// The same state UC-40 uses, and deliberately: a set is a set, and the
+  /// rules for showing one — once, acknowledged, then gone — do not change
+  /// with where it came from (FR-AU-12, FR-AU-17).
+  void presentRecoveryCodes(List<String> codes) {
+    if (state case SessionActive(:final session)) {
+      state = SessionState.active(session: session, recoveryCodes: codes);
+    }
+  }
+
   /// Records that the owner has stored the recovery codes (UC-40 step 4).
   ///
   /// Dropping them from the state is what opens the catalog, and it is also

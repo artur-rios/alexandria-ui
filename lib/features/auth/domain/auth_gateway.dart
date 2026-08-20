@@ -47,6 +47,49 @@ sealed class RecoveryOutcome with _$RecoveryOutcome {
       FailedRecoveryOutcome;
 }
 
+/// What the core knows about the owner's account (UC-42 main flow step 1).
+@freezed
+abstract class AccountSummary with _$AccountSummary {
+  /// Creates a summary.
+  const factory AccountSummary({
+    /// The account's address, as the core holds it.
+    required String email,
+
+    /// How many recovery codes are still unspent, or `null` when the core did
+    /// not report it.
+    ///
+    /// Nullable rather than defaulted to zero: zero means the account cannot
+    /// currently be recovered, which is a thing worth saying, and a core that
+    /// answered without the number must not be made to say it (`FR-AU-19`).
+    int? recoveryCodesRemaining,
+  }) = _AccountSummary;
+}
+
+/// What reading the account produced (UC-42 main flow step 1).
+@freezed
+sealed class AccountOutcome with _$AccountOutcome {
+  /// The core answered.
+  const factory AccountOutcome.read({required AccountSummary account}) =
+      AccountRead;
+
+  /// The core could not answer (AF-03, AF-04).
+  const factory AccountOutcome.failed({required Failure failure}) =
+      AccountFailed;
+}
+
+/// What regenerating the recovery codes produced (UC-42 main flow step 4).
+@freezed
+sealed class RegenerateOutcome with _$RegenerateOutcome {
+  /// The core replaced the whole set and returned the new one, once.
+  const factory RegenerateOutcome.regenerated({
+    required List<String> recoveryCodes,
+  }) = Regenerated;
+
+  /// The core refused, and every existing code still works (AF-02, AF-04).
+  const factory RegenerateOutcome.failed({required Failure failure}) =
+      FailedRegenerateOutcome;
+}
+
 /// The application's view of the core's authentication operations (IR-02,
 /// NFR-17).
 ///
@@ -91,6 +134,18 @@ abstract interface class AuthGateway {
     required String email,
     required String password,
     required String passwordConfirmation,
+    required String credential,
+  });
+
+  /// Reads the owner's address and how many recovery codes remain
+  /// (FR-AU-14, UC-42).
+  Future<AccountOutcome> account({required String credential});
+
+  /// Replaces the whole recovery-code set (FR-AU-17, UC-42).
+  ///
+  /// Answers the new codes, which exist in that answer and nowhere else. Every
+  /// code from the previous set stops working.
+  Future<RegenerateOutcome> regenerateRecoveryCodes({
     required String credential,
   });
 
