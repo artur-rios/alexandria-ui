@@ -22,6 +22,7 @@ import '../../features/auth/application/change_credentials_controller.dart';
 import '../../features/auth/application/change_credentials_state.dart';
 import '../../features/auth/application/login_controller.dart';
 import '../../features/auth/application/login_state.dart';
+import '../../features/auth/application/recovery_controller.dart';
 import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/application/session_state.dart';
 import '../../features/auth/application/sign_out_controller.dart';
@@ -208,6 +209,10 @@ final changeCredentialsControllerProvider =
 /// The sign-up form's state (UC-01).
 final signUpControllerProvider =
     NotifierProvider<SignUpController, SignUpState>(SignUpController.new);
+
+/// Spending a recovery code on a new password (UC-41).
+final recoveryControllerProvider =
+    NotifierProvider<RecoveryController, RecoveryState>(RecoveryController.new);
 
 /// Which screen a session-less owner is shown (FR-AU-01).
 final authEntryProvider = NotifierProvider<AuthEntryController, AuthEntry>(

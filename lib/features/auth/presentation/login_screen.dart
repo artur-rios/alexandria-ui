@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +13,7 @@ import '../application/login_state.dart';
 import '../application/session_state.dart';
 import '../../shell/presentation/preferences_dialog.dart';
 import 'auth_field_messages.dart';
+import 'recovery_screen.dart';
 import 'auth_notice.dart';
 
 /// The login screen (UC-02).
@@ -153,6 +156,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : Text(l10n.loginSubmit),
+                ),
+
+                // UC-41 main flow step 1 / UC-02 AF-06: the way back in for
+                // an owner who cannot remember their password. Here because
+                // this is where they find out, and unauthenticated because
+                // that is the whole situation it addresses (UC-41 AF-05).
+                const SizedBox(height: AppSpacing.sm),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => unawaited(RecoveryScreen.show(context)),
+                    child: Text(l10n.recoveryOpen),
+                  ),
                 ),
 
                 // UC-39 main flow step 1: preferences are reachable with or

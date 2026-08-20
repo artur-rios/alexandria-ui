@@ -30,6 +30,17 @@ class FakeAuthGateway implements AuthGateway {
   /// What [logIn] and [register] return.
   AuthOutcome outcome;
 
+  /// What [redeemRecoveryCode] returns. A successful redemption by default
+  /// (UC-41).
+  RecoveryOutcome recoveryOutcome = const RecoveryOutcome.recovered();
+
+  /// Every redemption asked for, in order.
+  ///
+  /// Empty is the assertion AF-01 needs: local validation must not reach the
+  /// core, because reaching it could spend a code.
+  final List<({String code, String newPassword, String passwordConfirmation})>
+  redemptions = [];
+
   /// What [changeCredentials] returns. A successful change by default.
   CredentialChangeOutcome changeOutcome =
       const CredentialChangeOutcome.changed();
@@ -116,6 +127,21 @@ class FakeAuthGateway implements AuthGateway {
     ));
     await _gate?.future;
     return changeOutcome;
+  }
+
+  @override
+  Future<RecoveryOutcome> redeemRecoveryCode({
+    required String code,
+    required String newPassword,
+    required String passwordConfirmation,
+  }) async {
+    redemptions.add((
+      code: code,
+      newPassword: newPassword,
+      passwordConfirmation: passwordConfirmation,
+    ));
+    await _gate?.future;
+    return recoveryOutcome;
   }
 
   @override

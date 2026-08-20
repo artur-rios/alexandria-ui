@@ -2447,6 +2447,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.'**
   String get recoveryCodesNone;
+
+  /// UC-41 main flow step 1: the screen for an owner who cannot remember their password.
+  ///
+  /// In en, this message translates to:
+  /// **'Recover access'**
+  String get recoveryTitle;
+
+  /// UC-41 main flow step 1: reaches account recovery from the login screen.
+  ///
+  /// In en, this message translates to:
+  /// **'I cannot sign in'**
+  String get recoveryOpen;
+
+  /// UC-41 main flow step 2: what the owner needs and what it costs them.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.'**
+  String get recoveryExplanation;
+
+  /// UC-41 main flow step 2: the code the owner saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery code'**
+  String get recoveryCodeLabel;
+
+  /// UC-41 main flow step 2: the password that replaces the forgotten one.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get recoveryNewPassword;
+
+  /// UC-41 main flow step 2: entered twice, and the two must match before the core is called.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat the new password'**
+  String get recoveryConfirmPassword;
+
+  /// UC-41 AF-01: the code is blank, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a recovery code.'**
+  String get recoveryCodeMissing;
+
+  /// UC-41 AF-01: the password is empty, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a new password.'**
+  String get recoveryPasswordMissing;
+
+  /// UC-41 main flow step 4: sends the code and the new password to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace the password'**
+  String get recoverySubmit;
+
+  /// UC-41 AF-02: the core does not recognise the code. Distinct from AF-03, because a mistyped code and a spent one call for different things.
+  ///
+  /// In en, this message translates to:
+  /// **'That is not one of this account\'s recovery codes. Check it and try again.'**
+  String get recoveryCodeUnknown;
+
+  /// UC-41 AF-03: the core reports the code as already consumed.
+  ///
+  /// In en, this message translates to:
+  /// **'That recovery code has already been used. Each one works once — try another from your list.'**
+  String get recoveryCodeUsed;
+
+  /// UC-41: the core refused without naming a reason this version knows, so the message says what to do rather than a code.
+  ///
+  /// In en, this message translates to:
+  /// **'The password could not be replaced. Check the code and try again.'**
+  String get recoveryRefused;
+
+  /// UC-41 main flow step 6: the redemption succeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password was replaced'**
+  String get recoveryDone;
+
+  /// UC-41 main flow step 6: what happened, and what to do next.
+  ///
+  /// In en, this message translates to:
+  /// **'The code you used is spent, and every open session was signed out. Sign in with the new password.'**
+  String get recoveryDoneExplanation;
+
+  /// UC-41 main flow step 6: returns to the login screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to sign in'**
+  String get recoveryBackToLogin;
 }
 
 class _AppLocalizationsDelegate

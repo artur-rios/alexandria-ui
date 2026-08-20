@@ -1916,5 +1916,80 @@
   "recoveryCodesNone": "Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.",
   "@recoveryCodesNone": {
       "description": "UC-40 AF-03: the core issued no codes, which is said plainly rather than shown as an empty list."
+  },
+
+  "recoveryTitle": "Recover access",
+  "@recoveryTitle": {
+      "description": "UC-41 main flow step 1: the screen for an owner who cannot remember their password."
+  },
+
+  "recoveryOpen": "I cannot sign in",
+  "@recoveryOpen": {
+      "description": "UC-41 main flow step 1: reaches account recovery from the login screen."
+  },
+
+  "recoveryExplanation": "Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.",
+  "@recoveryExplanation": {
+      "description": "UC-41 main flow step 2: what the owner needs and what it costs them."
+  },
+
+  "recoveryCodeLabel": "Recovery code",
+  "@recoveryCodeLabel": {
+      "description": "UC-41 main flow step 2: the code the owner saved."
+  },
+
+  "recoveryNewPassword": "New password",
+  "@recoveryNewPassword": {
+      "description": "UC-41 main flow step 2: the password that replaces the forgotten one."
+  },
+
+  "recoveryConfirmPassword": "Repeat the new password",
+  "@recoveryConfirmPassword": {
+      "description": "UC-41 main flow step 2: entered twice, and the two must match before the core is called."
+  },
+
+  "recoveryCodeMissing": "Enter a recovery code.",
+  "@recoveryCodeMissing": {
+      "description": "UC-41 AF-01: the code is blank, so the core is not called."
+  },
+
+  "recoveryPasswordMissing": "Enter a new password.",
+  "@recoveryPasswordMissing": {
+      "description": "UC-41 AF-01: the password is empty, so the core is not called."
+  },
+
+  "recoverySubmit": "Replace the password",
+  "@recoverySubmit": {
+      "description": "UC-41 main flow step 4: sends the code and the new password to the core."
+  },
+
+  "recoveryCodeUnknown": "That is not one of this account's recovery codes. Check it and try again.",
+  "@recoveryCodeUnknown": {
+      "description": "UC-41 AF-02: the core does not recognise the code. Distinct from AF-03, because a mistyped code and a spent one call for different things."
+  },
+
+  "recoveryCodeUsed": "That recovery code has already been used. Each one works once \u2014 try another from your list.",
+  "@recoveryCodeUsed": {
+      "description": "UC-41 AF-03: the core reports the code as already consumed."
+  },
+
+  "recoveryRefused": "The password could not be replaced. Check the code and try again.",
+  "@recoveryRefused": {
+      "description": "UC-41: the core refused without naming a reason this version knows, so the message says what to do rather than a code."
+  },
+
+  "recoveryDone": "Your password was replaced",
+  "@recoveryDone": {
+      "description": "UC-41 main flow step 6: the redemption succeeded."
+  },
+
+  "recoveryDoneExplanation": "The code you used is spent, and every open session was signed out. Sign in with the new password.",
+  "@recoveryDoneExplanation": {
+      "description": "UC-41 main flow step 6: what happened, and what to do next."
+  },
+
+  "recoveryBackToLogin": "Back to sign in",
+  "@recoveryBackToLogin": {
+      "description": "UC-41 main flow step 6: returns to the login screen."
   }
 }

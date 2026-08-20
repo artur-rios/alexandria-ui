@@ -43,6 +43,19 @@ abstract interface class CoreClient {
   /// `AUTH_ERR_CONFLICT`.
   Future<CoreJsonResponse> authLocalRegister(String jsonBody);
 
+  /// Replaces a forgotten password with a recovery code through
+  /// `alexandria_auth_local_redeem_recovery_code` (FR-AU-15, UC-41).
+  ///
+  /// [jsonBody] is the body the core's matching HTTP route takes —
+  /// `{"code":…,"newPassword":…,"passwordConfirmation":…}` — built for this
+  /// call and never logged or retained: it carries both a plaintext password
+  /// and a code that is itself a credential (FR-AU-11).
+  ///
+  /// Takes no session credential, and that is the point of it: this is the
+  /// call for an owner who cannot sign in. Consuming the code invalidates
+  /// every existing session.
+  Future<CoreJsonResponse> authLocalRedeemRecoveryCode(String jsonBody);
+
   /// Replaces the stored credentials through
   /// `alexandria_auth_local_set_credentials` (FR-AU-10, UC-04).
   ///
@@ -337,6 +350,11 @@ class FfiCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> authLocalRegister(String jsonBody) async =>
       await _isolate.call('authLocalRegister', [jsonBody]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> authLocalRedeemRecoveryCode(String jsonBody) async =>
+      await _isolate.call('authLocalRedeemRecoveryCode', [jsonBody])
+          as CoreJsonResponse;
 
   @override
   Future<CoreJsonResponse> authLocalSetCredentials(

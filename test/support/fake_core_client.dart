@@ -277,6 +277,23 @@ class FakeCoreClient implements CoreClient {
     return authLocalLoginResult;
   }
 
+  /// What a recovery redemption answers (UC-41). A success by default.
+  CoreJsonResponse authLocalRedeemRecoveryCodeResult = (
+    status: AUTH_OK,
+    json:
+        '{"success":true,"email":"owner@example.com",'
+        '"recoveryCodesRemaining":9}',
+  );
+
+  /// Every redemption body sent, in order.
+  final List<String> recoveryRedemptions = [];
+
+  @override
+  Future<CoreJsonResponse> authLocalRedeemRecoveryCode(String jsonBody) async {
+    recoveryRedemptions.add(jsonBody);
+    return authLocalRedeemRecoveryCodeResult;
+  }
+
   @override
   Future<CoreJsonResponse> authLocalRegister(String jsonBody) async {
     if (failOnAuthLocalRegister) {
