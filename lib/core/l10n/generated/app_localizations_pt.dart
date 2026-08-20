@@ -1128,4 +1128,66 @@ class AppLocalizationsPt extends AppLocalizations {
   String watchEpisodeOf(int episode, int total) {
     return 'episódio $episode de $total';
   }
+
+  @override
+  String get readingListsTitle => 'Listas de leitura';
+
+  @override
+  String get readingListsOpen => 'Listas de leitura';
+
+  @override
+  String get readingListsNone => 'Você ainda não criou uma lista de leitura.';
+
+  @override
+  String get readingListNameLabel => 'Nome da lista de leitura';
+
+  @override
+  String get readingListCreate => 'Criar';
+
+  @override
+  String get readingListNameEmpty => 'Dê um nome à lista de leitura.';
+
+  @override
+  String get readingListDelete => 'Excluir esta lista de leitura';
+
+  @override
+  String get readingListEmpty =>
+      'Nada está sendo acompanhado nesta lista ainda.';
+
+  @override
+  String get readingListAddTo => 'Adicionar a uma lista de leitura';
+
+  @override
+  String get readingListRemoveItem => 'Parar de acompanhar este item';
+
+  @override
+  String get readingListAlreadyTracked =>
+      'Esse item já está nessa lista de leitura.';
+
+  @override
+  String get readingListNotFound => 'Essa lista ou esse item não está mais lá.';
+
+  @override
+  String get readStatePending => 'Não iniciado';
+
+  @override
+  String get readStateReading => 'Lendo';
+
+  @override
+  String get readStateRead => 'Lido';
+
+  @override
+  String readingListDeleteMessage(String name) {
+    return 'Excluir $name? Os livros e quadrinhos são mantidos — apenas o acompanhamento é removido.';
+  }
+
+  @override
+  String readingListAlreadyIn(String name) {
+    return '$name — já está lá';
+  }
+
+  @override
+  String readingListItemCount(int count) {
+    return '$count acompanhados';
+  }
 }

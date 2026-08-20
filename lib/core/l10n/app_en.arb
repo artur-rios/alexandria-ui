@@ -1536,5 +1536,110 @@
               "type": "int"
           }
       }
+  },
+
+  "readingListsTitle": "Reading lists",
+  "@readingListsTitle": {
+      "description": "UC-31 main flow step 1: the reading-lists screen heading."
+  },
+
+  "readingListsOpen": "Reading lists",
+  "@readingListsOpen": {
+      "description": "UC-31 main flow step 1: opens the reading-lists screen from the books and comics areas."
+  },
+
+  "readingListsNone": "You have not made a reading list yet.",
+  "@readingListsNone": {
+      "description": "UC-31: there are no reading lists, which is a state and not a failure."
+  },
+
+  "readingListNameLabel": "Reading list name",
+  "@readingListNameLabel": {
+      "description": "UC-31 main flow step 1: what the new reading list is called."
+  },
+
+  "readingListCreate": "Create",
+  "@readingListCreate": {
+      "description": "UC-31 main flow step 2: sends the new reading list to the core."
+  },
+
+  "readingListNameEmpty": "Give the reading list a name.",
+  "@readingListNameEmpty": {
+      "description": "UC-31 AF-01: the name is blank after trimming, so the core is not called."
+  },
+
+  "readingListDelete": "Delete this reading list",
+  "@readingListDelete": {
+      "description": "UC-31 main flow step 6: removes the tracking and keeps the books and comics."
+  },
+
+  "readingListEmpty": "Nothing is tracked in this reading list yet.",
+  "@readingListEmpty": {
+      "description": "UC-31: the reading list holds no items."
+  },
+
+  "readingListAddTo": "Add to a reading list",
+  "@readingListAddTo": {
+      "description": "UC-31 main flow step 3: tracks this book or comic in a reading list."
+  },
+
+  "readingListRemoveItem": "Stop tracking this item",
+  "@readingListRemoveItem": {
+      "description": "UC-31 main flow step 5: removes the item from this list and leaves it in the catalog."
+  },
+
+  "readingListAlreadyTracked": "That item is already in that reading list.",
+  "@readingListAlreadyTracked": {
+      "description": "UC-31 AF-03: nothing is added, and the owner is told why."
+  },
+
+  "readingListNotFound": "That reading list or item is no longer there.",
+  "@readingListNotFound": {
+      "description": "UC-31 AF-04 and UC-32 AF-04: the core has no such record, so the screen is read again."
+  },
+
+  "readStatePending": "Not started",
+  "@readStatePending": {
+      "description": "UC-32: the read state the core calls pending."
+  },
+
+  "readStateReading": "Reading",
+  "@readStateReading": {
+      "description": "UC-32: part way through."
+  },
+
+  "readStateRead": "Read",
+  "@readStateRead": {
+      "description": "UC-32: finished."
+  },
+
+  "readingListDeleteMessage": "Delete {name}? The books and comics in it are kept \u2014 only the tracking is removed.",
+  "@readingListDeleteMessage": {
+      "description": "UC-31 main flow step 6 and BR-07: the confirmation names what goes and what does not.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "readingListAlreadyIn": "{name} \u2014 already there",
+  "@readingListAlreadyIn": {
+      "description": "UC-31 AF-03: a reading list already tracking this item says so rather than disappearing from the menu.",
+      "placeholders": {
+          "name": {
+              "type": "String"
+          }
+      }
+  },
+
+  "readingListItemCount": "{count} tracked",
+  "@readingListItemCount": {
+      "description": "UC-31: how many items a reading list tracks.",
+      "placeholders": {
+          "count": {
+              "type": "int"
+          }
+      }
   }
 }

@@ -469,6 +469,97 @@ class CoreIsolate {
         }),
       ),
 
+      'readingListCreate' => withNativeString(
+        arguments.first! as String,
+        (body) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_reading_list_create(body, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'readingListDelete' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_reading_list_delete(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'readingListAddItem' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (body) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_reading_list_add_item(
+              uuid,
+              body,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      'readingListRemoveItem' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (item) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_reading_list_remove_item(
+              uuid,
+              item,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      'readingListUpdateProgress' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (item) => withNativeString(
+            arguments[2]! as String,
+            (body) => withNativeString(arguments[3]! as String, (token) {
+              final result = bindings.alexandria_reading_list_update_progress(
+                uuid,
+                item,
+                body,
+                token,
+              );
+              return (
+                status: result.status,
+                json: strings.consume(result.json, (json) => json),
+              );
+            }),
+          ),
+        ),
+      ),
+
+      'readingListsList' => withNativeString(
+        arguments.first! as String,
+        (filters) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_reading_lists_list(filters, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       'watchlistCreate' => withNativeString(
         arguments.first! as String,
         (body) => withNativeString(arguments[1]! as String, (token) {

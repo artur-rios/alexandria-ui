@@ -1126,4 +1126,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String watchEpisodeOf(int episode, int total) {
     return 'episode $episode of $total';
   }
+
+  @override
+  String get readingListsTitle => 'Reading lists';
+
+  @override
+  String get readingListsOpen => 'Reading lists';
+
+  @override
+  String get readingListsNone => 'You have not made a reading list yet.';
+
+  @override
+  String get readingListNameLabel => 'Reading list name';
+
+  @override
+  String get readingListCreate => 'Create';
+
+  @override
+  String get readingListNameEmpty => 'Give the reading list a name.';
+
+  @override
+  String get readingListDelete => 'Delete this reading list';
+
+  @override
+  String get readingListEmpty => 'Nothing is tracked in this reading list yet.';
+
+  @override
+  String get readingListAddTo => 'Add to a reading list';
+
+  @override
+  String get readingListRemoveItem => 'Stop tracking this item';
+
+  @override
+  String get readingListAlreadyTracked =>
+      'That item is already in that reading list.';
+
+  @override
+  String get readingListNotFound =>
+      'That reading list or item is no longer there.';
+
+  @override
+  String get readStatePending => 'Not started';
+
+  @override
+  String get readStateReading => 'Reading';
+
+  @override
+  String get readStateRead => 'Read';
+
+  @override
+  String readingListDeleteMessage(String name) {
+    return 'Delete $name? The books and comics in it are kept — only the tracking is removed.';
+  }
+
+  @override
+  String readingListAlreadyIn(String name) {
+    return '$name — already there';
+  }
+
+  @override
+  String readingListItemCount(int count) {
+    return '$count tracked';
+  }
 }

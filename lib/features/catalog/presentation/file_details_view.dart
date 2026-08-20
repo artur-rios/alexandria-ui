@@ -19,6 +19,7 @@ import '../../viewers/presentation/image_viewer_screen.dart';
 import '../../viewers/presentation/page_viewer_screen.dart';
 import '../domain/catalog_file.dart';
 import '../../playback/presentation/video_player_screen.dart';
+import '../../tracking/presentation/add_to_reading_list_button.dart';
 import '../../tracking/presentation/add_to_watchlist_button.dart';
 import 'rename_file_dialog.dart';
 import 'video_metadata_form.dart';
@@ -208,6 +209,19 @@ class _Details extends ConsumerWidget {
                   label: Text(l10n.audioPlayArtist),
                 ),
               ],
+            ),
+          ],
+
+          // UC-31 main flow step 3: a book or a comic can be tracked from
+          // its own detail view. AF-02 needs nothing here -- this is offered
+          // for those two types and for nothing else.
+          if ((details.file.type == LibraryType.document ||
+                  details.file.type == LibraryType.comic) &&
+              !details.isDeleted) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AddToReadingListButton(file: details.file),
             ),
           ],
 

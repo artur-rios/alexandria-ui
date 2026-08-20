@@ -6,6 +6,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../shell/presentation/async_state_view.dart';
+import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
 import '../domain/catalog_file.dart';
 import '../domain/library_type.dart';
@@ -40,6 +41,17 @@ class CatalogListing extends ConsumerWidget {
               onPressed: () => WatchlistsScreen.show(context),
               icon: const Icon(Icons.playlist_play),
               label: Text(AppLocalizations.of(context).watchlistsOpen),
+            ),
+          ),
+        // UC-31 main flow step 1: reading lists hold books and comics, so
+        // both areas reach them.
+        if (type == LibraryType.document || type == LibraryType.comic)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => ReadingListsScreen.show(context),
+              icon: const Icon(Icons.library_books_outlined),
+              label: Text(AppLocalizations.of(context).readingListsOpen),
             ),
           ),
         if (type != null) _LayoutBar(type: type),
