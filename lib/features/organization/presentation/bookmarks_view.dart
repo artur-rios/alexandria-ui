@@ -45,6 +45,21 @@ class BookmarksView extends ConsumerWidget {
           const _BookmarkForm(),
           const SizedBox(height: AppSpacing.md),
         ],
+
+        // Main flow step 1: the listing opens on everything, and narrows to
+        // one collection when the owner asks.
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 320),
+          child: _CollectionSelector(
+            value: ref.watch(bookmarkCollectionFilterProvider),
+            onChanged: ref
+                .read(bookmarkCollectionFilterProvider.notifier)
+                .choose,
+            label: l10n.bookmarkFilterLabel,
+            noneLabel: l10n.bookmarkFilterAll,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
         const DeletionNoticeBar(),
 
         Expanded(
@@ -66,6 +81,57 @@ class BookmarksView extends ConsumerWidget {
 }
 
 /// One bookmark, with what can be done to it.
+/// Which bookmark collection something belongs to, or none (UC-28).
+///
+/// Used for filing one and for filtering the listing: the same question, asked
+/// of a bookmark and of the screen.
+class _CollectionSelector extends ConsumerWidget {
+  const _CollectionSelector({
+    required this.value,
+    required this.onChanged,
+    required this.label,
+    required this.noneLabel,
+    this.enabled = true,
+  });
+
+  final String? value;
+  final ValueChanged<String?> onChanged;
+  final String label;
+  final String noneLabel;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final collections =
+        ref.watch(bookmarkCollectionsProvider).value ?? const [];
+
+    // A value naming a collection that is no longer listed would make the
+    // field read as empty and silently unfile the bookmark on the next save.
+    // Falling back to null only when it is genuinely unknown is what stops a
+    // stale uuid from being presented as "not in a collection".
+    final known = collections.any((c) => c.uuid == value);
+
+    return DropdownButtonFormField<String?>(
+      initialValue: known ? value : null,
+      // Expanded so a long name ellipsizes inside the field instead of
+      // overflowing it — which "Fora de uma coleção" does at the filter's
+      // width, and which a collection the owner named at length would do in
+      // any language.
+      isExpanded: true,
+      decoration: InputDecoration(labelText: label),
+      onChanged: enabled ? onChanged : null,
+      items: [
+        DropdownMenuItem<String?>(child: Text(noneLabel)),
+        for (final collection in collections)
+          DropdownMenuItem<String?>(
+            value: collection.uuid,
+            child: Text(collection.name),
+          ),
+      ],
+    );
+  }
+}
+
 class _BookmarkTile extends ConsumerWidget {
   const _BookmarkTile({required this.bookmark});
 
@@ -193,6 +259,18 @@ class _BookmarkFormState extends ConsumerState<_BookmarkForm> {
               ),
               onChanged: form.editUrl,
               onSubmitted: (_) => unawaited(form.submit()),
+            ),
+
+            // Main flow steps 3 and 5: filing is optional, so "none" is a
+            // choice rather than the absence of one. Only bookmark
+            // collections are listed (AF-03).
+            const SizedBox(height: AppSpacing.sm),
+            _CollectionSelector(
+              value: state.collectionUuid,
+              enabled: !state.isSaving,
+              onChanged: form.chooseCollection,
+              label: l10n.bookmarkCollectionLabel,
+              noneLabel: l10n.bookmarkCollectionNone,
             ),
 
             // AF-02 and AF-05: the core's reason, with what the owner wrote

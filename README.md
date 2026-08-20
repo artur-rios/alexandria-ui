@@ -204,9 +204,9 @@ and the divergence that opened on 2026-08-18 is closed on both sides:
   *Regenerate the recovery codes* — and `FR-AU-12` … `FR-AU-19` with them. The
   catalog is no longer gated on a confirmation the core does not perform.
 - **Collections can be listed.** `alexandria_collections_list` answers which
-  collections exist, with the number of items in each. That was the one thing
-  `UC-26` and `UC-27` were missing, and it unblocks `UC-28`'s optional filing of
-  a bookmark into a bookmark collection at the same time.
+  collections exist, with the number of items in each. `UC-26` and `UC-27` are
+  built on it, and `UC-28`'s optional filing of a bookmark into a bookmark
+  collection — deferred when bookmarks shipped — is built with them.
 
 `UC-27` step 2's breadcrumbs are not a problem: `FR-OG-07` fixes the present
 depth of the hierarchy at one, so a flat `Collection` is the model it asks for,

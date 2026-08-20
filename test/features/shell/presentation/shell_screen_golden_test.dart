@@ -29,12 +29,17 @@ import '../../../support/shell_harness.dart';
 /// across platforms, so the more text a golden holds the less of its budget is
 /// left for the regressions it exists to catch.
 ///
-/// UC-28 then filled bookmarks, as that note predicted, and there is no
-/// single-line destination left to move to: every other one is a file type
-/// with a listing. Bookmarks stays, because with none saved it is the
-/// emptiest area there is — one button and one sentence — and the images were
-/// regenerated for it. If it grows, the next place to look is a file type
-/// with an empty library.
+/// UC-28 then filled bookmarks, as that note predicted, and the goldens moved
+/// to it as the emptiest area there was. UC-28's collection filing has since
+/// added a filter beside the add button, so the images were regenerated
+/// again.
+///
+/// That note's advice — move to a file type with an empty library — was tried
+/// and rejected on the evidence: an empty `music` renders a heading, a search
+/// field, an add-folder link, a layout bar, and the empty sentence, which is
+/// more text than bookmarks carries, not less. Bookmarks remains the emptiest
+/// area there is. If it grows again, the honest next step is a golden that
+/// masks the content area rather than another destination to move to.
 ///
 /// Regenerate with `flutter test --update-goldens`, and look at the images.
 void main() {

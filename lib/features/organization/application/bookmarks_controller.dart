@@ -17,9 +17,13 @@ class BookmarksController extends AsyncNotifier<List<Bookmark>> {
     // No session, no call (FR-AU-07).
     if (credential == null) return const [];
 
+    // Watched, so choosing a collection reloads the listing without anything
+    // having to remember to ask (main flow step 1).
+    final collectionUuid = ref.watch(bookmarkCollectionFilterProvider);
+
     final listing = await ref
         .read(bookmarkGatewayProvider)
-        .list(credential: credential);
+        .list(credential: credential, collectionUuid: collectionUuid);
 
     switch (listing) {
       case BookmarkListingLoaded(:final bookmarks):
@@ -126,6 +130,16 @@ class BookmarkFormState {
   );
 }
 
+/// Which collection the bookmarks listing is filtered to, or `null` for all
+/// of them (UC-28 main flow step 1).
+class BookmarkCollectionFilter extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  /// Filters to [collectionUuid], or to everything when it is `null`.
+  void choose(String? collectionUuid) => state = collectionUuid;
+}
+
 /// The form that creates and updates a bookmark (UC-28).
 class BookmarkForm extends Notifier<BookmarkFormState> {
   @override
@@ -140,11 +154,23 @@ class BookmarkForm extends Notifier<BookmarkFormState> {
     uuid: bookmark.uuid,
     url: bookmark.url,
     title: bookmark.title,
-    // Carried rather than shown: filing needs a list of collections the core
-    // publishes no query for, and dropping it here would unfile a bookmark
-    // somebody filed elsewhere.
+    // Seeded so the selector opens on where the bookmark actually is, and so
+    // an update that does not touch it leaves it alone.
     collectionUuid: bookmark.collectionUuid,
     stage: BookmarkFormStage.editing,
+  );
+
+  /// Files the bookmark in [collectionUuid], or nowhere when it is `null`.
+  ///
+  /// Only a bookmark collection is offered (AF-03): a file collection would be
+  /// refused by the core, and the selector is what keeps the owner from
+  /// choosing one.
+  void chooseCollection(String? collectionUuid) => state = BookmarkFormState(
+    uuid: state.uuid,
+    url: state.url,
+    title: state.title,
+    collectionUuid: collectionUuid,
+    stage: state.stage,
   );
 
   /// Records the address, dropping the mark that was on it.

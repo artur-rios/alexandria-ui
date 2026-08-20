@@ -432,5 +432,9 @@
   "collectionNoCandidates": "Não há nada do tipo desta coleção para adicionar.",
   "collectionItemsAdded": "Adicionados: {names}",
   "collectionItemsAlreadyPresent": "Já nesta coleção: {names}",
-  "collectionItemNotAdded": "{name} não foi adicionado — {reason}"
+  "collectionItemNotAdded": "{name} não foi adicionado — {reason}",
+  "bookmarkCollectionLabel": "Coleção",
+  "bookmarkCollectionNone": "Fora de uma coleção",
+  "bookmarkFilterLabel": "Mostrar",
+  "bookmarkFilterAll": "Todos os favoritos"
 }
