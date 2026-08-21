@@ -516,7 +516,8 @@ jobs:
       # dependency closure is computed and what is deliberately left to the
       # host.
       - name: Bundle ffmpeg for the portable packages
-        run: sh packaging/linux/bundle-libraries.sh native/linux
+        run: |
+          sh packaging/linux/bundle-libraries.sh \n            build/linux/x64/release/bundle native/linux
 
       # The step above wrote into the build's input, not its output, so the
       # bundle does not have ffmpeg in it until a build puts it there. This
@@ -536,22 +537,43 @@ jobs:
       # is not the machine that built it. This runner installed ffmpeg to
       # compile the core, so resolving here proves nothing — a bare container
       # has no ffmpeg, which is the entire point of using one.
-      - name: Verify the bundle resolves ffmpeg without the host
+      # The claim being made is "plug and play": unpack it on a machine that has
+      # a desktop and nothing else, and it runs. So that is what is tested — a
+      # container with only GTK installed, which is what host-libraries.txt
+      # assumes is present, and nothing else the application needs.
+      #
+      # The executable as well as the core, because Flutter links its plugins
+      # into the executable: a missing libmpv there is not a program that
+      # cannot play video, it is a program that cannot start. Checking only the
+      # core is how that went unnoticed.
+      #
+      # The runner itself proves nothing — it installed ffmpeg, libmpv, and GTK
+      # in order to build this.
+      - name: Verify the bundle runs on a machine with only a desktop
         run: |
           set -e
           bundle="$PWD/build/linux/x64/release/bundle"
 
-          echo "::group::Resolution inside a bare ubuntu:24.04"
-          docker run --rm -v "$bundle:/bundle:ro" ubuntu:24.04 \
-            sh -c 'ldd /bundle/lib/libalexandria_ffi.so 2>&1' | tee /tmp/ldd.txt
+          echo "::group::Resolution inside ubuntu:24.04 with only GTK added"
+          docker run --rm -v "$bundle:/bundle:ro" ubuntu:24.04 sh -c '
+            set -e
+            apt-get update -qq > /dev/null
+            apt-get install -y -qq libgtk-3-0t64 > /dev/null
+            echo "--- executable ---"
+            ldd /bundle/alexandria_desktop 2>&1
+            echo "--- core ---"
+            ldd /bundle/lib/libalexandria_ffi.so 2>&1
+          ' | tee /tmp/ldd.txt
           echo "::endgroup::"
 
-          if grep -E 'lib(av|sw)[a-z]+[.]so[^ ]* => not found' /tmp/ldd.txt; then
-            echo "::error::ffmpeg does not resolve from inside the bundle"
+          if grep -q "not found" /tmp/ldd.txt; then
+            echo "::error::the bundle does not resolve on a machine with only a desktop"
+            echo "Unresolved:"
+            grep "not found" /tmp/ldd.txt | sort -u
             exit 1
           fi
 
-          echo "Every ffmpeg library the core needs resolves from the bundle itself."
+          echo "The executable and the core resolve every library they need."
 
       # Staged rather than assembled in place, so the desktop entry and the
       # icon the installer needs do not also end up as stray files inside the

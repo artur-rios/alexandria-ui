@@ -14,7 +14,7 @@
 # would be dead weight that shadows the system's. The release workflow builds
 # those two from a pristine bundle and only then calls this.
 #
-# Usage: bundle-libraries.sh <native-directory>
+# Usage: bundle-libraries.sh <bundle-to-scan> <output-directory>
 #
 # The directory is native/linux, not the built bundle. The bundle is wiped and
 # reassembled by every `flutter build linux` — see the install rules in
@@ -32,14 +32,20 @@
 
 set -eu
 
-LIB_DIR=${1:-}
-[ -n "$LIB_DIR" ] || { echo "usage: $0 <native-directory>" >&2; exit 2; }
+SCAN=${1:-}
+LIB_DIR=${2:-}
+[ -n "$SCAN" ] && [ -n "$LIB_DIR" ] || {
+  echo "usage: $0 <bundle-to-scan> <output-directory>" >&2
+  exit 2
+}
+[ -d "$SCAN" ] || { echo "error: no such directory: $SCAN" >&2; exit 1; }
 [ -d "$LIB_DIR" ] || { echo "error: no such directory: $LIB_DIR" >&2; exit 1; }
 
 LICENSE_DIR="$LIB_DIR/licenses"
 CORE="$LIB_DIR/libalexandria_ffi.so"
 
 [ -f "$CORE" ] || { echo "error: the core is not in $LIB_DIR — put it there first" >&2; exit 1; }
+[ -x "$SCAN/alexandria_desktop" ] || { echo "error: no executable in $SCAN" >&2; exit 1; }
 
 for tool in ldd patchelf; do
   command -v "$tool" > /dev/null 2>&1 || { echo "error: $tool is required" >&2; exit 1; }
@@ -105,18 +111,29 @@ direct_dependencies() {
   '
 }
 
-# Seed the walk with ffmpeg itself: whatever the core links by name.
-direct_dependencies "$CORE" \
-  | grep -E '^(libav|libsw)' \
-  > "$QUEUE" || true
+# Seed the walk with everything the bundle links: the executable and every
+# shared object beside it, the core included.
+#
+# Seeding from the core alone was not enough, and the gap was invisible on a
+# build machine, which has everything installed already.
+# libmedia_kit_video_plugin.so links libmpv, and nothing bundled it — and
+# because Flutter links its plugins into the executable, the result was not a
+# program that failed to play video but one that failed to start at all.
+#
+# Anything the bundle needs is in scope here. What gets left to the host is
+# decided by DENY and host-libraries.txt, which is where that judgement
+# belongs, rather than by which binary the walk happened to start from.
+for _binary in "$SCAN/alexandria_desktop" "$SCAN"/lib/*.so*; do
+  [ -e "$_binary" ] || continue
+  direct_dependencies "$_binary" >> "$QUEUE"
+done
 
 if [ ! -s "$QUEUE" ]; then
-  echo "error: the core links no ffmpeg libraries — nothing to bundle, which means something is wrong" >&2
+  echo "error: the bundle appears to link nothing at all, which cannot be right" >&2
   exit 1
 fi
 
-echo "Seeded from the core's own linkage:"
-cut -f1 "$QUEUE" | sed 's/^/  /'
+echo "Seeded from the executable and $(ls "$SCAN"/lib/*.so* 2> /dev/null | wc -l) libraries beside it."
 echo
 
 mkdir -p "$LIB_DIR" "$LICENSE_DIR"
@@ -139,8 +156,9 @@ while :; do
     continue
   fi
 
-  # Already in the bundle — the core itself, or something Flutter shipped.
-  if [ -e "$LIB_DIR/$soname" ]; then
+  # Already present: something Flutter shipped in the bundle, the core, or a
+  # library an earlier iteration already placed.
+  if [ -e "$SCAN/lib/$soname" ] || [ -e "$LIB_DIR/$soname" ]; then
     echo "  have   $soname"
   else
     cp -L "$path" "$LIB_DIR/$soname"
@@ -174,6 +192,7 @@ echo
 # shipped.
 echo "Collecting licences:"
 : > "$WORK/packages"
+: > "$WORK/copyleft"
 while IFS= read -r soname; do
   package=$(dpkg-query -S "$(readlink -f "$LIB_DIR/$soname")" 2> /dev/null | cut -d: -f1) || continue
   [ -n "$package" ] || continue
@@ -184,10 +203,36 @@ while IFS= read -r soname; do
   if [ -f "$copyright" ]; then
     cp "$copyright" "$LICENSE_DIR/${package}.txt"
     echo "  $package"
+
+    # Which licence, roughly. Debian copyright files are usually machine
+    # readable, so the License: fields can be read directly; a package with a
+    # GPL field and no LGPL field beside it is the case worth surfacing.
+    #
+    # This is a report, not a gate. Whether shipping a copyleft library
+    # alongside this application is acceptable is a licensing decision, and
+    # nothing here is in a position to make it — but shipping one without
+    # anybody noticing is the outcome worth preventing.
+    if grep -qiE '^License:[[:space:]]*GPL-[0-9]' "$copyright" \
+       && ! grep -qiE '^License:[[:space:]]*LGPL' "$copyright"; then
+      printf '%s\t%s\n' "$soname" "$package" >> "$WORK/copyleft"
+    fi
   else
     echo "  $package (no copyright file found)" >&2
   fi
 done < "$BUNDLED"
+
+echo
+if [ -s "$WORK/copyleft" ]; then
+  cp "$WORK/copyleft" "$LICENSE_DIR/COPYLEFT.tsv"
+  echo "::warning::$(wc -l < "$WORK/copyleft") bundled libraries look GPL-licensed rather than LGPL"
+  echo "Bundled libraries whose Debian copyright declares GPL and not LGPL:"
+  sed 's/^/  /' "$WORK/copyleft"
+  echo
+  echo "Distributing these alongside the application carries GPL obligations."
+  echo "Recorded in licenses/COPYLEFT.tsv."
+else
+  echo "No bundled library declares GPL without LGPL."
+fi
 
 cat > "$LICENSE_DIR/README.txt" <<NOTICE
 The libraries in the directory above, alongside the application, are unmodified
