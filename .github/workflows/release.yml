@@ -594,8 +594,11 @@ jobs:
             set -e
             apt-get update -qq > /dev/null
             apt-get install -y -qq \
-              libgtk-3-0t64 libgl1 libdrm2 \
-              libva2 libva-drm2 libva-x11-2 libvdpau1 > /dev/null
+              libgtk-3-0t64 \
+              libgl1 libegl1 libdrm2 libva2 libva-drm2 libva-x11-2 \
+              libva-wayland2 libvdpau1 libxcb-shape0 \
+              libasound2t64 libpulse0 libpipewire-0.3-0 \
+              libusb-1.0-0 > /dev/null
             echo "--- executable ---"
             ldd /payload/alexandria_desktop 2>&1
             echo "--- core ---"

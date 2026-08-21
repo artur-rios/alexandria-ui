@@ -76,8 +76,29 @@ libselinux libudev libsystemd libcap
 HOST_LIST="$(dirname "$0")/host-libraries.txt"
 [ -f "$HOST_LIST" ] || { echo "error: $HOST_LIST is missing" >&2; exit 1; }
 
+# Bundled even though the vendored list says otherwise.
+#
+# The excludelist assumes JACK is part of the base system. It is not: a desktop
+# that has never installed a JACK server has no libjack.so.0, mpv links it
+# whether or not anyone uses it, and the program then fails to start rather
+# than falling back to another audio output. The client library is LGPL, so
+# carrying it raises nothing the rest of the bundle does not already raise.
+FORCE_BUNDLE="libjack."
+
+# Libraries whose copyleft licensing is not in question. Named deliberately and
+# kept short: this is a list of things somebody checked, not the output of a
+# guess. Anything else in the bundle still needs a person to look at it, which
+# is what licenses/PACKAGES.txt is for.
+KNOWN_COPYLEFT="libx264. libx265. libmpv. libpostproc. libxvidcore."
+
 is_denied() {
   _soname=$1
+
+  for _prefix in $FORCE_BUNDLE; do
+    case $_soname in
+      "$_prefix"*) return 1 ;;
+    esac
+  done
 
   for _prefix in $DENY; do
     case $_soname in
@@ -216,18 +237,24 @@ while IFS= read -r entry; do
     cp "$copyright" "$LICENSE_DIR/${package}.txt"
     echo "  $package"
 
-    # Which licence, roughly. Debian copyright files are usually machine
-    # readable, so the License: fields can be read directly; a package with a
-    # GPL field and no LGPL field beside it is the case worth surfacing.
+    # Known-copyleft libraries are named, not inferred.
     #
-    # This is a report, not a gate. Whether shipping a copyleft library
-    # alongside this application is acceptable is a licensing decision, and
-    # nothing here is in a position to make it — but shipping one without
-    # anybody noticing is the outcome worth preventing.
-    if grep -qiE '^License:[[:space:]]*GPL-[0-9]' "$copyright" \
-       && ! grep -qiE '^License:[[:space:]]*LGPL' "$copyright"; then
-      printf '%s\t%s\n' "$soname" "$package" >> "$WORK/copyleft"
-    fi
+    # An earlier version of this tried to classify by reading the License:
+    # fields of each Debian copyright file. It was wrong in both directions:
+    # it flagged libpng, libffi, zstd, lz4 and bz2, none of which are GPL,
+    # because their copyright files carry a GPL stanza for packaging or a dual
+    # licence — and it cleared libx264, libx265 and libmpv, which are, because
+    # theirs mention LGPL somewhere. Reading a Debian copyright file properly
+    # is not something this script can do, so it no longer pretends to.
+    #
+    # What it can do is name the ones whose copyleft status is not in doubt,
+    # and hand over the full list for a person to review.
+    for _known in $KNOWN_COPYLEFT; do
+      case $soname in
+        "$_known"*) printf '%s	%s
+' "$soname" "$package" >> "$WORK/copyleft" ;;
+      esac
+    done
   else
     echo "  $package (no copyright file found)" >&2
   fi
@@ -248,16 +275,19 @@ fi
 echo "Collected $collected licence files for $bundled bundled libraries."
 
 echo
+sort -u "$WORK/packages" > "$LICENSE_DIR/PACKAGES.txt"
+echo "Every bundled library's package is listed in licenses/PACKAGES.txt."
+
 if [ -s "$WORK/copyleft" ]; then
-  cp "$WORK/copyleft" "$LICENSE_DIR/COPYLEFT.tsv"
-  echo "::warning::$(wc -l < "$WORK/copyleft") bundled libraries look GPL-licensed rather than LGPL"
-  echo "Bundled libraries whose Debian copyright declares GPL and not LGPL:"
-  sed 's/^/  /' "$WORK/copyleft"
+  sort -u "$WORK/copyleft" > "$LICENSE_DIR/COPYLEFT.tsv"
+  echo "::warning::the bundle carries $(sort -u "$WORK/copyleft" | wc -l) libraries known to be copyleft"
   echo
-  echo "Distributing these alongside the application carries GPL obligations."
-  echo "Recorded in licenses/COPYLEFT.tsv."
-else
-  echo "No bundled library declares GPL without LGPL."
+  echo "Known-copyleft libraries in this bundle:"
+  sort -u "$WORK/copyleft" | sed 's/^/  /'
+  echo
+  echo "Distributing these alongside the application carries their obligations."
+  echo "This list is what is known, not what was proven: the other packages in"
+  echo "PACKAGES.txt have not been classified by anything here."
 fi
 
 cat > "$LICENSE_DIR/README.txt" <<NOTICE
