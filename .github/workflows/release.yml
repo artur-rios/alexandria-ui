@@ -163,6 +163,18 @@ jobs:
         run: |
           version="${{ inputs.version }}"
           [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+
+          # The MSIX packager accepts only a numeric dotted version and rejects
+          # anything else outright. Checked here rather than twenty minutes
+          # later, three quarters of the way through the job, which is where a
+          # dispatch run with a version like "0.0.2-test" first found out.
+          case $version in
+            *[!0-9.]* | "" | .* | *.)
+              echo "::error::version must be numeric and dotted, such as 1.2.3 — got: $version"
+              exit 1
+              ;;
+          esac
+
           echo "value=$version" >> "$GITHUB_OUTPUT"
 
       # Every package downstream takes its version from the pubspec rather
@@ -365,6 +377,18 @@ jobs:
         run: |
           version="${{ inputs.version }}"
           [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
+
+          # The MSIX packager accepts only a numeric dotted version and rejects
+          # anything else outright. Checked here rather than twenty minutes
+          # later, three quarters of the way through the job, which is where a
+          # dispatch run with a version like "0.0.2-test" first found out.
+          case $version in
+            *[!0-9.]* | "" | .* | *.)
+              echo "::error::version must be numeric and dotted, such as 1.2.3 — got: $version"
+              exit 1
+              ;;
+          esac
+
           echo "value=$version" >> "$GITHUB_OUTPUT"
 
       # Every package downstream takes its version from the pubspec rather
@@ -383,12 +407,28 @@ jobs:
           sed -i "s/^version: .*/version: ${{ steps.version.outputs.value }}+${{ github.run_number }}/"             pubspec.yaml
           grep '^version:' pubspec.yaml
 
+      # Into native/linux, before the build, rather than into the bundle after
+      # it. linux/CMakeLists.txt installs this directory into the bundle, and
+      # every `flutter build linux` wipes and reassembles that bundle — so a
+      # copy made afterwards lasts only until the next build. flutter_distributor
+      # runs a build per package, which is how the v0.0.1 .deb, AppImage, and
+      # Flatpak all shipped without the core in them.
+      - name: Stage the core for the build
+        run: |
+          set -e
+          mkdir -p native/linux
+          cp core/target/release/libalexandria_ffi.so native/linux/
+
       - run: flutter build linux --release
 
-      - name: Bundle the core
+      - name: Verify the build produced a complete bundle
         run: |
-          cp core/target/release/libalexandria_ffi.so \
-             build/linux/x64/release/bundle/lib/
+          set -e
+          test -f build/linux/x64/release/bundle/lib/libalexandria_ffi.so || {
+            echo "::error::the build did not install the core into the bundle"
+            exit 1
+          }
+          echo "The core is in the bundle, installed by the build itself."
 
       # Records what the core needs at runtime, so a package that cannot load
       # it is diagnosable from the build log rather than only from a user's
@@ -476,7 +516,21 @@ jobs:
       # dependency closure is computed and what is deliberately left to the
       # host.
       - name: Bundle ffmpeg for the portable packages
-        run: sh packaging/linux/bundle-libraries.sh build/linux/x64/release/bundle
+        run: sh packaging/linux/bundle-libraries.sh native/linux
+
+      # The step above wrote into the build's input, not its output, so the
+      # bundle does not have ffmpeg in it until a build puts it there. This
+      # rebuild is what every package produced from here on picks up — and,
+      # because flutter_distributor rebuilds again for the AppImage, what that
+      # picks up too.
+      - name: Rebuild with ffmpeg in the bundle
+        run: |
+          set -e
+          flutter build linux --release
+          ls build/linux/x64/release/bundle/lib/libavcodec.so.* > /dev/null || {
+            echo "::error::the rebuild did not install ffmpeg into the bundle"
+            exit 1
+          }
 
       # A bundle is only self-contained if it is self-contained somewhere that
       # is not the machine that built it. This runner installed ffmpeg to
@@ -553,7 +607,7 @@ jobs:
           # What the installer places must be as self-contained as what it came
           # from, licences included.
           ls "$prefix"/lib/libavcodec.so.* > /dev/null
-          test -f "$prefix/licenses/README.txt"
+          test -f "$prefix/lib/licenses/README.txt"
 
           # A file the installer did not write must survive the replacement
           # below, which is the whole point of removing recorded paths rather

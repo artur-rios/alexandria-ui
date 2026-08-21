@@ -14,7 +14,14 @@
 # would be dead weight that shadows the system's. The release workflow builds
 # those two from a pristine bundle and only then calls this.
 #
-# Usage: bundle-libraries.sh <bundle-directory>
+# Usage: bundle-libraries.sh <native-directory>
+#
+# The directory is native/linux, not the built bundle. The bundle is wiped and
+# reassembled by every `flutter build linux` — see the install rules in
+# linux/CMakeLists.txt — so anything written into it directly survives only
+# until the next build, which is exactly how the v0.0.1 .deb, AppImage, and
+# Flatpak came to ship without the core. native/linux is an input to the build
+# instead, so what this script puts there is reproduced into every bundle.
 #
 # What "everything ffmpeg needs" means is the interesting part. libavcodec
 # alone pulls in dozens of codec libraries, and each of those pulls in more, so
@@ -25,15 +32,14 @@
 
 set -eu
 
-BUNDLE=${1:-}
-[ -n "$BUNDLE" ] || { echo "usage: $0 <bundle-directory>" >&2; exit 2; }
-[ -d "$BUNDLE" ] || { echo "error: no such directory: $BUNDLE" >&2; exit 1; }
+LIB_DIR=${1:-}
+[ -n "$LIB_DIR" ] || { echo "usage: $0 <native-directory>" >&2; exit 2; }
+[ -d "$LIB_DIR" ] || { echo "error: no such directory: $LIB_DIR" >&2; exit 1; }
 
-LIB_DIR="$BUNDLE/lib"
-LICENSE_DIR="$BUNDLE/licenses"
+LICENSE_DIR="$LIB_DIR/licenses"
 CORE="$LIB_DIR/libalexandria_ffi.so"
 
-[ -f "$CORE" ] || { echo "error: the core is not in $LIB_DIR — bundle it first" >&2; exit 1; }
+[ -f "$CORE" ] || { echo "error: the core is not in $LIB_DIR — put it there first" >&2; exit 1; }
 
 for tool in ldd patchelf; do
   command -v "$tool" > /dev/null 2>&1 || { echo "error: $tool is required" >&2; exit 1; }
@@ -170,15 +176,16 @@ while IFS= read -r soname; do
 done < "$BUNDLED"
 
 cat > "$LICENSE_DIR/README.txt" <<NOTICE
-The libraries in ../lib alongside the application are unmodified copies taken
-from Ubuntu 24.04, and are covered by the licences in this directory.
+The libraries in the directory above, alongside the application, are unmodified
+copies taken from Ubuntu 24.04 and are covered by the licences in this
+directory.
 
 FFmpeg is used here under the LGPL: the LGPL build, not the GPL one, linked
 dynamically and unmodified. Nothing in this application re-encodes media, so
 the encoders the GPL variant adds are not needed.
 
-Replacing any of these libraries is a matter of replacing the file in ../lib
-with a compatible build of the same soname.
+Replacing any of these libraries is a matter of replacing the file in the
+directory above with a compatible build of the same soname.
 NOTICE
 
 echo

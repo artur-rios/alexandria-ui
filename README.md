@@ -120,7 +120,7 @@ tar xzf alexandria-<version>-linux-x64.tar.gz
 
 Both archives are self-contained. The core links ffmpeg, and rather than
 expecting it to be installed, the Linux archive carries it — along with
-everything ffmpeg itself needs — in `lib/`, with the licences in `licenses/`.
+everything ffmpeg itself needs — in `lib/`, with the licences in `lib/licenses/`.
 Only the graphics, sound, and C libraries any desktop application needs come
 from your system. The Windows archive bundles the ffmpeg DLLs the same way.
 
