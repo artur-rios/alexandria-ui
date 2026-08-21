@@ -517,7 +517,8 @@ jobs:
       # host.
       - name: Bundle ffmpeg for the portable packages
         run: |
-          sh packaging/linux/bundle-libraries.sh \n            build/linux/x64/release/bundle native/linux
+          sh packaging/linux/bundle-libraries.sh \
+            build/linux/x64/release/bundle native/linux
 
       # The step above wrote into the build's input, not its output, so the
       # bundle does not have ffmpeg in it until a build puts it there. This
