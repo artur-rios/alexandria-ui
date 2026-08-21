@@ -17,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
+import '../../../support/fake_lifecycle_gateway.dart';
 import '../../../support/shell_harness.dart';
 
 /// One file's details (UC-13, FR-CT-05).
@@ -29,6 +30,8 @@ void main() {
     FileDetailsOutcome? outcome,
     Locale? locale,
     bool tapRow = true,
+    FakeLifecycleGateway? lifecycle,
+    ThemeMode themeMode = ThemeMode.light,
   }) async {
     final gateway = FakeCatalogGateway(
       listings: {
@@ -38,9 +41,12 @@ void main() {
     if (outcome != null) gateway.details[uuid] = outcome;
 
     final container = await tester.pumpShell(
+      themeMode: themeMode,
       locale: locale,
       extraOverrides: <Override>[
         catalogGatewayProvider.overrideWithValue(gateway),
+        if (lifecycle != null)
+          lifecycleGatewayProvider.overrideWithValue(lifecycle),
       ],
     );
 
@@ -163,6 +169,191 @@ void main() {
       expect(find.text(l10n.detailsStateDeleted), findsOneWidget);
       expect(find.text(l10n.detailsDeletedHint), findsOneWidget);
     });
+
+    testWidgets('GivenADeletedRecord_WhenTheDetailsOpen_ThenRestoreIsOffered', (
+      tester,
+    ) async {
+      // AF-02: "offers restore (UC-34) instead of editing" — the offer is the
+      // action, not a sentence about one.
+      await openDetails(
+        tester,
+        outcome: FileDetailsOutcome.read(
+          details: FileDetails(file: aFile(uuid: uuid), isDeleted: true),
+        ),
+      );
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+      expect(find.text(l10n.restoreRecord), findsOneWidget);
+    });
+
+    testWidgets(
+      'GivenADeletedRecord_WhenRestoreIsTaken_ThenTheCoreRestoresIt',
+      (tester) async {
+        final lifecycle = FakeLifecycleGateway();
+        await openDetails(
+          tester,
+          outcome: FileDetailsOutcome.read(
+            details: FileDetails(file: aFile(uuid: uuid), isDeleted: true),
+          ),
+          lifecycle: lifecycle,
+        );
+
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+        await tester.tap(find.text(l10n.restoreRecord));
+        await tester.pumpAndSettle();
+
+        expect(lifecycle.restored, [uuid]);
+      },
+    );
+
+    testWidgets(
+      'GivenADeletedRecord_WhenTheDetailsOpen_ThenEditingIsNotOffered',
+      (tester) async {
+        // AF-02 again: restore is offered *instead of* editing.
+        await openDetails(
+          tester,
+          outcome: FileDetailsOutcome.read(
+            details: FileDetails(file: aFile(uuid: uuid), isDeleted: true),
+          ),
+        );
+
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+        expect(find.text(l10n.renameOpen), findsNothing);
+        expect(find.text(l10n.detailsEditMetadata), findsNothing);
+      },
+    );
+  });
+
+  group('how the actions are laid out', () {
+    testWidgets('GivenSeveralActions_WhenTheDetailsOpen_ThenTheyShareRows', (
+      tester,
+    ) async {
+      // They were one full-width button per row inside a 520-wide dialog, so
+      // a video's actions ran well past the bottom of it and the owner
+      // scrolled a column of buttons to reach Play.
+      await openDetails(
+        tester,
+        outcome: FileDetailsOutcome.read(
+          details: FileDetails(
+            file: aFile(uuid: uuid, type: LibraryType.video),
+          ),
+        ),
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+
+      final play = tester.getCenter(find.text(l10n.videoPlay));
+      final metadata = tester.getCenter(find.text(l10n.detailsEditMetadata));
+
+      // Side by side on the first row of the group rather than one per row.
+      expect(play.dy, equals(metadata.dy));
+      expect(metadata.dx, greaterThan(play.dx));
+    });
+
+    testWidgets('GivenAnyFile_WhenTheDetailsOpen_ThenPurgeStaysBelowTheRest', (
+      tester,
+    ) async {
+      // FR-LC-06: never a default action, never one interaction from a row.
+      // Grouping the ordinary actions must not pull it up among them.
+      await openDetails(
+        tester,
+        outcome: FileDetailsOutcome.read(
+          details: FileDetails(
+            file: aFile(uuid: uuid, type: LibraryType.video),
+          ),
+        ),
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+
+      final rename = tester.getCenter(find.text(l10n.renameOpen));
+      final purge = tester.getCenter(find.text(l10n.purgeOnDiskTitle));
+
+      expect(purge.dy, greaterThan(rename.dy));
+    });
+  });
+
+  group('the actions a missing file cannot support (AF-03)', () {
+    /// The details of a missing video, which is the type with the most
+    /// file-reading actions on it.
+    Future<void> openMissingVideo(WidgetTester tester) => openDetails(
+      tester,
+      outcome: FileDetailsOutcome.read(
+        details: FileDetails(
+          file: aFile(
+            uuid: uuid,
+            type: LibraryType.video,
+            missingAt: DateTime.utc(2026, 8, 19),
+          ),
+        ),
+      ),
+    );
+
+    /// Whether the button labelled [label] is enabled.
+    ///
+    /// A predicate rather than `find.byType`, because the `.icon` constructors
+    /// build private subclasses and `byType` matches the exact runtime type.
+    bool isEnabled(WidgetTester tester, String label) {
+      final button =
+          tester
+                  .widgetList<Widget>(
+                    find.ancestor(
+                      of: find.text(label),
+                      matching: find.byWidgetPredicate(
+                        (w) => w is ButtonStyleButton,
+                      ),
+                    ),
+                  )
+                  .first
+              as ButtonStyleButton;
+
+      return button.onPressed != null;
+    }
+
+    testWidgets('GivenAMissingVideo_WhenTheDetailsOpen_ThenPlayIsDisabled', (
+      tester,
+    ) async {
+      // AF-03: "disables the actions that need the file". Playing needs it.
+      await openMissingVideo(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+
+      expect(isEnabled(tester, l10n.videoPlay), isFalse);
+    });
+
+    testWidgets('GivenAMissingFile_WhenTheDetailsOpen_ThenRenameIsDisabled', (
+      tester,
+    ) async {
+      // UC-17 renames the file on disk, so it needs the file.
+      await openMissingVideo(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+
+      expect(isEnabled(tester, l10n.renameOpen), isFalse);
+    });
+
+    testWidgets('GivenAPresentFile_WhenTheDetailsOpen_ThenRenameIsEnabled', (
+      tester,
+    ) async {
+      // The other half of the rule: nothing is disabled for a file that is
+      // where the catalog says it is.
+      await openDetails(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+
+      expect(isEnabled(tester, l10n.renameOpen), isTrue);
+    });
   });
 
   group('the file is missing on disk (AF-03)', () {
@@ -262,4 +453,23 @@ void main() {
       }
     });
   }
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        (tester) async {
+          await openDetails(tester, themeMode: mode);
+
+          expect(
+            Theme.of(
+              tester.element(find.byType(FileDetailsView).first),
+            ).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
+          );
+        },
+      );
+    }
+  });
 }

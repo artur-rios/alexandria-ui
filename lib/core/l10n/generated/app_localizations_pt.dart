@@ -401,10 +401,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível reverificar o catálogo.';
 
   @override
-  String get librarySourcesMissingReviewPending =>
-      'A revisão de arquivos ausentes chega com o caso de uso dela.';
-
-  @override
   String get destinationVideos => 'Vídeos';
 
   @override
@@ -542,7 +538,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get detailsDeletedHint =>
-      'Este registro está excluído. A restauração chega com o caso de uso dela.';
+      'Este registro está excluído. Restaure-o para editá-lo ou abri-lo novamente.';
 
   @override
   String get detailsNotFound => 'Esse arquivo não está mais no catálogo.';
@@ -573,8 +569,17 @@ class AppLocalizationsPt extends AppLocalizations {
   String get dashboardInProgress => 'Em andamento';
 
   @override
-  String get dashboardInProgressNone =>
-      'Nada em andamento. As listas de reprodução e de leitura chegam com os casos de uso delas.';
+  String get dashboardInProgressNone => 'Nada em andamento.';
+
+  @override
+  String dashboardInProgressIn(String list) {
+    return 'Em $list';
+  }
+
+  @override
+  String dashboardInProgressInAt(String list, String progress) {
+    return 'Em $list — $progress';
+  }
 
   @override
   String get dashboardCounts => 'O que há na biblioteca';
@@ -1545,4 +1550,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get collectionItemGone => 'ele não existe mais';
+
+  @override
+  String get libraryToolsOpen => 'Ferramentas da biblioteca';
 }

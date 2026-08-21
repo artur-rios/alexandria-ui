@@ -401,10 +401,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The catalog could not be re-checked.';
 
   @override
-  String get librarySourcesMissingReviewPending =>
-      'Reviewing missing files arrives with its own use case.';
-
-  @override
   String get destinationVideos => 'Videos';
 
   @override
@@ -541,7 +537,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailsDeletedHint =>
-      'This record is deleted. Restoring it arrives with its own use case.';
+      'This record is deleted. Restore it to edit or open it again.';
 
   @override
   String get detailsNotFound => 'That file is no longer in the catalog.';
@@ -572,8 +568,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardInProgress => 'In progress';
 
   @override
-  String get dashboardInProgressNone =>
-      'Nothing is in progress. Watchlists and reading lists arrive with their own use cases.';
+  String get dashboardInProgressNone => 'Nothing is in progress.';
+
+  @override
+  String dashboardInProgressIn(String list) {
+    return 'In $list';
+  }
+
+  @override
+  String dashboardInProgressInAt(String list, String progress) {
+    return 'In $list — $progress';
+  }
 
   @override
   String get dashboardCounts => 'What is in the library';
@@ -1542,4 +1547,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get collectionItemGone => 'it no longer exists';
+
+  @override
+  String get libraryToolsOpen => 'Library tools';
 }

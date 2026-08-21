@@ -35,6 +35,7 @@ import '../../features/library_sources/application/library_sources_controller.da
 import '../../features/library_sources/application/library_sources_state.dart';
 import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
+import '../../features/catalog/application/in_progress.dart';
 import '../../features/catalog/application/file_rename_controller.dart';
 import '../../features/catalog/application/music_metadata_editor.dart';
 import '../../features/catalog/application/video_metadata_editor.dart';
@@ -379,6 +380,12 @@ final fileDetailsControllerProvider =
 final recentFilesProvider =
     AsyncNotifierProvider<RecentFilesController, List<CatalogFile>>(
       RecentFilesController.new,
+    );
+
+/// What the owner is part-way through, for the dashboard (UC-14, FR-CT-11).
+final inProgressProvider =
+    AsyncNotifierProvider<InProgressController, List<InProgressItem>>(
+      InProgressController.new,
     );
 
 /// The open metadata form (UC-15).

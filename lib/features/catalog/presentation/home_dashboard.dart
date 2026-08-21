@@ -4,13 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../organization/presentation/collections_screen.dart';
-import '../../lifecycle/presentation/deleted_items_screen.dart';
-import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/catalog_file.dart';
 import '../application/dashboard_controller.dart';
+import '../application/in_progress.dart';
 import '../domain/library_type.dart';
 import 'catalog_search_view.dart';
 import 'file_details_view.dart';
@@ -21,6 +19,11 @@ import 'file_details_view.dart';
 /// they are separate widgets rather than one query: a section whose query
 /// failed shows its own failure and its own retry, and the rest of the
 /// dashboard still renders.
+///
+/// The library-wide screens it used to link to at the bottom — collections,
+/// deleted items, the missing-files review — are in the navigation panel's
+/// tools menu now, reachable from every area rather than from this one below
+/// four sections of content.
 class HomeDashboard extends ConsumerWidget {
   /// Creates the dashboard.
   const HomeDashboard({super.key});
@@ -47,54 +50,7 @@ class HomeDashboard extends ConsumerWidget {
         _CountsSection(),
         SizedBox(height: AppSpacing.lg),
         _LastRunSection(),
-        SizedBox(height: AppSpacing.lg),
-        _DeletedItemsSection(),
       ],
-    );
-  }
-}
-
-/// Where the deleted-items and missing-files views are reached from
-/// (UC-34 and UC-37, main flow step 1 of each).
-///
-/// On the dashboard rather than in the navigation panel: what is deleted spans
-/// every type and the bookmarks alike, so it is not an area of the library
-/// (FR-CT-01) — and the dashboard is the one screen that is already about the
-/// library as a whole.
-class _DeletedItemsSection extends StatelessWidget {
-  const _DeletedItemsSection();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Wrap(
-        spacing: AppSpacing.md,
-        children: [
-          // UC-26 main flow step 1: a collection holds files or bookmarks, so
-          // it belongs to no single area of the library (FR-CT-01) — and the
-          // dashboard is the screen that is already about all of it.
-          TextButton.icon(
-            onPressed: () => CollectionsScreen.show(context),
-            icon: const Icon(Icons.folder_outlined),
-            label: Text(l10n.collectionsOpen),
-          ),
-          TextButton.icon(
-            onPressed: () => DeletedItemsScreen.show(context),
-            icon: const Icon(Icons.delete_outline),
-            label: Text(l10n.deletedItemsOpen),
-          ),
-          // UC-37 main flow step 1: beside the last index run's outcome, which
-          // is what an owner is looking at when files turn out to be missing.
-          TextButton.icon(
-            onPressed: () => MissingFilesScreen.show(context),
-            icon: const Icon(Icons.help_outline),
-            label: Text(l10n.missingFilesOpen),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -138,22 +94,76 @@ class _RecentSection extends ConsumerWidget {
   }
 }
 
-/// What the owner is part-way through (main flow step 2).
+/// What the owner is part-way through (main flow step 2, FR-CT-11).
 ///
-/// Watchlists and reading lists are M-09's, so nothing is ever in progress
-/// yet — which is precisely the state AF-02 describes, and it is stated
-/// rather than rendered as an empty box.
-class _InProgressSection extends StatelessWidget {
+/// Watchlists and reading lists both answer it, merged into one section,
+/// because the owner is in the middle of *things* rather than in the middle of
+/// two features. AF-02 is the empty case: it is stated rather than rendered as
+/// an empty box.
+class _InProgressSection extends ConsumerWidget {
   const _InProgressSection();
 
+  /// How many entries the dashboard shows.
+  ///
+  /// A glance rather than a listing, like the recent section above it: the
+  /// lists themselves are one click away.
+  static const int limit = 6;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
 
     return _Section(
       title: l10n.dashboardInProgress,
-      child: _Quiet(l10n.dashboardInProgressNone),
+      child: AsyncStateView<List<InProgressItem>>(
+        value: ref.watch(inProgressProvider),
+        onRetry: () => ref.read(inProgressProvider.notifier).reload(),
+        isEmpty: (items) => items.isEmpty,
+        emptyBuilder: (context) => _Quiet(l10n.dashboardInProgressNone),
+        builder: (context, items) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final item in items.take(limit))
+              ListTile(
+                dense: true,
+                leading: Icon(
+                  item.unit == ProgressUnit.episodes
+                      ? Icons.movie_outlined
+                      : Icons.menu_book_outlined,
+                ),
+                title: Text(item.title),
+                subtitle: Text(_where(item, l10n)),
+                // Main flow step 4: opening an item here behaves exactly as
+                // opening it from its listing, because it is the same view.
+                onTap: () => FileDetailsView.show(context, ref, item.uuid),
+              ),
+          ],
+        ),
+      ),
     );
+  }
+
+  /// Which list the item is in, and how far through it the owner is.
+  ///
+  /// The position is folded into the same line rather than given a column of
+  /// its own: a movie and a book have none, and a column that is empty for
+  /// half the rows reads as missing data.
+  String _where(InProgressItem item, AppLocalizations l10n) {
+    final position = item.position;
+    if (position == null) return l10n.dashboardInProgressIn(item.listName);
+
+    final total = item.total;
+    final progress = switch ((item.unit, total)) {
+      (ProgressUnit.episodes, null) => l10n.watchEpisode(position),
+      (ProgressUnit.episodes, final total?) => l10n.watchEpisodeOf(
+        position,
+        total,
+      ),
+      (ProgressUnit.issues, null) => l10n.readIssue(position),
+      (ProgressUnit.issues, final total?) => l10n.readIssueOf(position, total),
+    };
+
+    return l10n.dashboardInProgressInAt(item.listName, progress);
   }
 }
 

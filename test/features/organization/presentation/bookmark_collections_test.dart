@@ -43,6 +43,7 @@ void main() {
   Future<({FakeBookmarkGateway bookmarks, FakeCollectionGateway collections})>
   openBookmarks(
     WidgetTester tester, {
+    ThemeMode themeMode = ThemeMode.light,
     List<Bookmark> bookmarks = const [filed],
     List<Collection> collections = const [reading, films],
     Locale? locale,
@@ -51,6 +52,7 @@ void main() {
     final collectionGateway = FakeCollectionGateway(collections: collections);
 
     await tester.pumpShell(
+      themeMode: themeMode,
       locale: locale,
       surfaceSize: const Size(1440, 1000),
       extraOverrides: <Override>[
@@ -231,6 +233,23 @@ void main() {
               findRichText: true,
             ),
             findsNothing,
+          );
+        },
+      );
+    }
+  });
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        (tester) async {
+          await openBookmarks(tester, themeMode: mode);
+
+          expect(
+            Theme.of(tester.element(find.byType(ShellScreen).first)).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
           );
         },
       );

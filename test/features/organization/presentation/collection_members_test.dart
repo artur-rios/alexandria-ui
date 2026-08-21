@@ -81,7 +81,7 @@ void main() {
     );
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.tap(find.text(l10n.collectionsOpen));
+    await tester.openLibraryTool(l10n.collectionsOpen);
     await tester.pumpAndSettle();
     await tester.tap(find.text(collection.name));
     await tester.pumpAndSettle();

@@ -185,8 +185,8 @@ graph LR
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner authenticates so that the catalog becomes reachable. |
 | **Preconditions** | The core is initialized. An account exists. No active session. |
-| **Postconditions** | A session credential is held in memory and presented on every subsequent call. The catalog is reachable when the account's e-mail is confirmed, and locked when it is not. |
-| **Requirements** | FR-AU-04, FR-AU-05, FR-AU-06, FR-AU-07, FR-AU-08, FR-AU-11, FR-AU-12 |
+| **Postconditions** | A session credential is held in memory and presented on every subsequent call. The catalog is reachable. |
+| **Requirements** | FR-AU-04, FR-AU-05, FR-AU-06, FR-AU-07, FR-AU-08, FR-AU-11 |
 
 **Main Flow**
 
@@ -501,6 +501,13 @@ graph LR
 | AF-02 | The term is blank or whitespace | The application clears the search and restores the previous listing. |
 | AF-03 | The catalog is still loading | The application searches what has loaded and indicates that results may grow as loading completes. |
 | AF-04 | The catalog is empty | The application offers to register and index a folder instead. |
+
+> **Bookmarks are not searched.** `FR-CT-06` matches file names and the
+> type-specific metadata the core exposes for files; a bookmark is neither a
+> file nor carries that metadata. The search field is therefore not offered on
+> the bookmarks area (UC-28), where it could only have replaced the bookmarks
+> with matching files. Bookmarks are narrowed by their own collection filter
+> instead. Searching them is a change to `FR-CT-06`, not to this flow.
 
 ---
 
@@ -1591,7 +1598,7 @@ graph LR
 | Use Case | Requirements |
 | --- | --- |
 | UC-01: Sign up | FR-AU-01, FR-AU-02, FR-AU-03, FR-AU-11 |
-| UC-02: Log in | FR-AU-04, FR-AU-05, FR-AU-06, FR-AU-07, FR-AU-08, FR-AU-11, FR-AU-12 |
+| UC-02: Log in | FR-AU-04, FR-AU-05, FR-AU-06, FR-AU-07, FR-AU-08, FR-AU-11 |
 | UC-03: Sign out | FR-AU-09 |
 | UC-04: Change credentials | FR-AU-10, FR-AU-11 |
 | UC-05: Register a library folder | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11 |
@@ -1663,10 +1670,16 @@ stateDiagram-v2
     Authenticated --> [*] : application closed
 ```
 
-`Locked` is an authenticated state, not a failed one: the session is real and the
-core accepted it. What it lacks is a confirmed e-mail, so the application refuses
-to reach the catalog from it (`BR-25`) — a product decision, held independently of
-whether the core would also refuse.
+`ShowingCodes` is an authenticated state, not a failed one: the session is real
+and the core accepted it. What the owner has not yet done is store the ten
+recovery codes, so the application refuses to reach the catalog from it
+(`BR-25`) — a product decision, held independently of whether the core would
+also refuse. It is the only state between signing up and the library, and a
+regeneration (UC-42) is the only way back into it.
+
+This note previously described a `Locked` state gated on a confirmed e-mail.
+The core dropped e-mail confirmation on 2026-08-18; there is no such state, and
+the diagram above has never had one.
 
 ### 4.2 Library source lifecycle
 

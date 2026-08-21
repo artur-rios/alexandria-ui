@@ -32,7 +32,10 @@ import '../../../support/shell_harness.dart';
 /// UC-28 then filled bookmarks, as that note predicted, and the goldens moved
 /// to it as the emptiest area there was. UC-28's collection filing has since
 /// added a filter beside the add button, so the images were regenerated
-/// again.
+/// again. The panel has since grown a library-tools button beside preferences
+/// and an extended arrangement at the widest tier, and the bookmarks area has
+/// lost the catalog search field it could not answer — all three visible in
+/// these images.
 ///
 /// That note's advice — move to a file type with an empty library — was tried
 /// and rejected on the evidence: an empty `music` renders a heading, a search
@@ -44,6 +47,10 @@ import '../../../support/shell_harness.dart';
 /// Regenerate with `flutter test --update-goldens`, and look at the images.
 void main() {
   const surfaces = <String, Size>{
+    // The three arrangements FR-UX-02 promises: labels beside the icons,
+    // labels beneath them, and icons with tooltips. The expanded tier had no
+    // image because it had no behaviour of its own; it has both now.
+    'expanded': Size(1700, 1000),
     'medium': Size(1280, 800),
     'minimum': Breakpoint.minimumWindowSize,
   };

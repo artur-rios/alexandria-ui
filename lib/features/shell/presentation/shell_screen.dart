@@ -74,6 +74,12 @@ class ShellContentArea extends ConsumerWidget {
     // results are what the content area shows.
     final searching = isSearchable(ref.watch(searchTermProvider));
 
+    // FR-CT-06 matches file names and file metadata, and bookmarks are not
+    // files. Offering the field there would be offering an answer to a
+    // question it cannot ask: the bookmarks would simply vanish, replaced by
+    // matching files. The bookmarks area has its own collection filter.
+    final searchable = destination != ShellDestination.bookmarks;
+
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -81,13 +87,15 @@ class ShellContentArea extends ConsumerWidget {
         children: [
           Text(destination.label(l10n), style: theme.textTheme.headlineSmall),
           const SizedBox(height: AppSpacing.md),
-          const CatalogSearchField(),
-          const SizedBox(height: AppSpacing.md),
+          if (searchable) ...[
+            const CatalogSearchField(),
+            const SizedBox(height: AppSpacing.md),
+          ],
           Expanded(
             child: switch (destination) {
               // AF-02 needs nothing of its own: an empty term is not a search,
               // and the listing is already what an absent search shows.
-              _ when searching => const CatalogSearchResults(),
+              _ when searchable && searching => const CatalogSearchResults(),
               // The two areas that are not file listings: home is the
               // dashboard (UC-14) and bookmarks are the bookmark manager
               // (UC-28). Every other destination is a type, and its listing

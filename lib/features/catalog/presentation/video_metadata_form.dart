@@ -102,6 +102,9 @@ class _VideoMetadataFormState extends ConsumerState<VideoMetadataForm> {
                   TextField(
                     controller: _controllers[field],
                     enabled: !state.isSaving,
+                    // FR-UX-11: the form opens ready to be typed into, the
+                    // same way the rename dialog and the bookmark form do.
+                    autofocus: field == VideoField.values.first,
                     keyboardType: field.isNumeric
                         ? TextInputType.number
                         : TextInputType.text,

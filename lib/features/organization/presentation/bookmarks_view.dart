@@ -14,8 +14,10 @@ import '../domain/bookmark.dart';
 
 /// The bookmarks area of the shell (UC-28, FR-OG-08 … FR-OG-12).
 ///
-/// The navigation panel has always had an entry for it; this is what the entry
-/// now shows.
+/// The bookmarks destination in the navigation panel. It carries no catalog
+/// search field: `FR-CT-06` matches file names, and a bookmark is not a file,
+/// so the field could only have replaced this listing with matching files. The
+/// collection filter below is what narrows it.
 class BookmarksView extends ConsumerWidget {
   /// Creates the view.
   const BookmarksView({super.key});

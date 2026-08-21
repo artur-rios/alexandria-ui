@@ -4,7 +4,7 @@ import 'package:alexandria_desktop/features/library_sources/domain/folder_regist
 import 'package:alexandria_desktop/features/library_sources/domain/library_source.dart';
 import 'package:alexandria_desktop/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_desktop/features/shell/presentation/confirmation_dialog.dart';
-import 'package:alexandria_desktop/features/shell/presentation/preferences_dialog.dart';
+import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
@@ -49,13 +49,10 @@ void main() {
       ],
     );
 
-    await tester.tap(find.byType(PreferencesButton));
-    await tester.pumpAndSettle();
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(PreferencesDialog)),
-    );
-    await tester.tap(find.text(l10n.librarySourcesOpen));
-    await tester.pumpAndSettle();
+    // Reached from the navigation panel's tools menu (UC-05 main flow step 1),
+    // which is where every library-wide screen is reached from.
+    final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+    await tester.openLibraryTool(l10n.librarySourcesOpen);
 
     return (picker: picker, store: store);
   }

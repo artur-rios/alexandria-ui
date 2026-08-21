@@ -13,6 +13,7 @@ import 'package:alexandria_desktop/features/shell/domain/shell_destination.dart'
 import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -119,6 +120,40 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  group('saving from the keyboard (FR-UX-11)', () {
+    testWidgets('GivenEditedContent_WhenControlSIsPressed_ThenItIsWritten', (
+      tester,
+    ) async {
+      // Save is the editor's primary action, and the owner's hands are on the
+      // keyboard: reaching it meant tabbing out of the field they were typing
+      // in.
+      final (_, content, _) = await openEditor(tester);
+      await type(tester, 'edited');
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyS);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+      await tester.pumpAndSettle();
+
+      expect(content.writes.map((write) => write.content), ['edited']);
+    });
+
+    testWidgets(
+      'GivenUnchangedContent_WhenControlSIsPressed_ThenNothingIsWritten',
+      (tester) async {
+        // AF-01 holds for the shortcut exactly as it holds for the button.
+        final (_, content, _) = await openEditor(tester);
+
+        await tester.sendKeyDownEvent(LogicalKeyboardKey.control);
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyS);
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.control);
+        await tester.pumpAndSettle();
+
+        expect(content.writes, isEmpty);
+      },
+    );
+  });
 
   group('the main flow', () {
     testWidgets('GivenATextFile_WhenItsDetailsOpen_ThenEditingIsOffered', (

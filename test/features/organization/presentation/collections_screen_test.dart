@@ -11,6 +11,8 @@ import 'package:alexandria_desktop/features/organization/domain/collection_gatew
 import 'package:alexandria_desktop/features/organization/presentation/collections_screen.dart';
 import 'package:alexandria_desktop/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_desktop/features/shell/presentation/library_tools_button.dart';
+import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -72,7 +74,7 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      await tester.tap(find.text(l10n.collectionsOpen));
+      await tester.openLibraryTool(l10n.collectionsOpen);
       await tester.pumpAndSettle();
     }
 
@@ -104,14 +106,24 @@ void main() {
   }
 
   group('the main flow', () {
-    // Step 1.
-    testWidgets('GivenTheDashboard_WhenItIsShown_ThenCollectionsAreReachable', (
-      tester,
-    ) async {
-      await openCollections(tester, openScreen: false);
+    // Step 1. Reached from the navigation panel's tools menu, so it is
+    // available from every area rather than from the dashboard alone.
+    testWidgets(
+      'GivenTheShell_WhenTheToolsAreOpened_ThenCollectionsAreReachable',
+      (tester) async {
+        await openCollections(tester, openScreen: false);
 
-      expect(find.text(messages(tester).collectionsOpen), findsOneWidget);
-    });
+        await tester.tap(
+          find.descendant(
+            of: find.byType(ShellNavigationPanel),
+            matching: find.byType(LibraryToolsButton),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text(messages(tester).collectionsOpen), findsOneWidget);
+      },
+    );
 
     testWidgets('GivenCollections_WhenTheScreenOpens_ThenTheyAreListed', (
       tester,

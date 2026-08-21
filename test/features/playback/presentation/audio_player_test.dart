@@ -142,6 +142,63 @@ void main() {
   Finder inBar(Finder matching) =>
       find.descendant(of: find.byType(PlaybackBar), matching: matching);
 
+  group('where the track has got to (FR-PL-09)', () {
+    testWidgets('GivenATrackIsPlaying_WhenTheBarIsRead_ThenThePositionShows', (
+      tester,
+    ) async {
+      // The bar reported what was playing and offered a transport, but never
+      // where in the track playback was — the one thing a listener glances
+      // down for.
+      final opened = await openTrack(tester);
+      await press(tester, messages(tester).audioPlay);
+
+      opened.player.report(
+        const PlaybackStatus(
+          isPlaying: true,
+          position: Duration(minutes: 1, seconds: 5),
+          duration: Duration(minutes: 4, seconds: 30),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(inBar(find.textContaining('01:05')), findsOneWidget);
+      expect(inBar(find.textContaining('04:30')), findsOneWidget);
+    });
+
+    testWidgets('GivenNothingIsPlaying_WhenTheBarIsRead_ThenNoPositionShows', (
+      tester,
+    ) async {
+      await openTrack(tester);
+
+      expect(inBar(find.textContaining('00:00')), findsNothing);
+    });
+  });
+
+  group('nothing in the selection could be played (AF-03)', () {
+    testWidgets(
+      'GivenEverythingFailed_WhenTheReportIsRead_ThenItCanBeDismissed',
+      (tester) async {
+        // The skip notice beside it has always been dismissable; this one sat
+        // in the bar with no way to clear it.
+        final opened = await openTrack(tester);
+        await press(tester, messages(tester).audioPlay);
+
+        opened.player.report(const PlaybackStatus(failedToDecode: true));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(messages(tester).audioNothingPlayable),
+          findsOneWidget,
+        );
+
+        await tester.tap(inBar(find.text(messages(tester).editorDismiss)).last);
+        await tester.pumpAndSettle();
+
+        expect(find.text(messages(tester).audioNothingPlayable), findsNothing);
+      },
+    );
+  });
+
   group('the main flow', () {
     testWidgets(
       'GivenAnAudioFile_WhenItsDetailsOpen_ThenThreeWaysToPlayAreOffered',

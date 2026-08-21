@@ -26,8 +26,10 @@ void main() {
     SettingsStore? settings,
     Size surfaceSize = const Size(1440, 900),
     Locale? locale,
+    ThemeMode themeMode = ThemeMode.light,
   }) async {
     final container = await tester.pumpShell(
+      themeMode: themeMode,
       settings: settings,
       surfaceSize: surfaceSize,
       locale: locale,
@@ -162,10 +164,14 @@ void main() {
     });
   });
 
-  group('the window is too narrow (AF-01)', () {
+  group('the listing is too narrow (AF-01)', () {
     testWidgets('GivenDetailsAtTheMinimumWindow_WhenDrawn_ThenTheListIsUsed', (
       tester,
     ) async {
+      // Also what proves the decision is made on the listing rather than the
+      // window: 1024 clears the layout's floor, and the listing inside it —
+      // about 820 wide once the panel, the divider, and the padding are taken
+      // off — does not.
       await openListing(tester, surfaceSize: Breakpoint.minimumWindowSize);
 
       await chooseLayout(tester, ViewLayout.detailedList);
@@ -190,6 +196,27 @@ void main() {
         tester.element(find.byType(ShellScreen)),
       );
       expect(find.text(l10n.layoutSubstituted), findsNothing);
+    });
+  });
+
+  group('what the detailed list adds', () {
+    testWidgets('GivenTheDetailedList_WhenItFits_ThenThePathIsBesideTheName', (
+      tester,
+    ) async {
+      // FR-CT-03 calls it "list with details": the detail is a second column
+      // beside the name, which is what the medium floor exists for.
+      await openListing(tester, surfaceSize: const Size(1600, 900));
+
+      await chooseLayout(tester, ViewLayout.detailedList);
+
+      final name = tester.getCenter(find.text('Blue Train.flac'));
+      final path = tester.getCenter(
+        find.text('/home/owner/music/Blue Train.flac'),
+      );
+
+      // Beside, not beneath: further right, on the same line.
+      expect(path.dx, greaterThan(name.dx));
+      expect(path.dy, equals(name.dy));
     });
   });
 
@@ -231,4 +258,21 @@ void main() {
       }
     });
   }
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        (tester) async {
+          await openListing(tester, themeMode: mode);
+
+          expect(
+            Theme.of(tester.element(find.byType(ShellScreen).first)).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
+          );
+        },
+      );
+    }
+  });
 }

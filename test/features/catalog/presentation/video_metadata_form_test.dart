@@ -109,6 +109,25 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  group('reaching the form from the keyboard (FR-UX-11)', () {
+    testWidgets('GivenTheForm_WhenItOpens_ThenTheFirstFieldHasFocus', (
+      tester,
+    ) async {
+      await openForm(tester);
+
+      // Scoped to the form: the shell's search field sits behind the dialog.
+      final field = tester.widget<TextField>(
+        find
+            .descendant(
+              of: find.byType(VideoMetadataForm),
+              matching: find.byType(TextField),
+            )
+            .first,
+      );
+      expect(field.autofocus, isTrue);
+    });
+  });
+
   group('the main flow', () {
     testWidgets('GivenAVideoFile_WhenItsDetailsOpen_ThenEditingIsOffered', (
       tester,

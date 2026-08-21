@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../../../core/failures/failure.dart';
 import '../../../core/failures/failure_messages.dart';
@@ -294,8 +295,7 @@ class _RunReport extends ConsumerWidget {
       // AF-01.
       (_, _, true) => l10n.librarySourcesRunRefused,
       // AF-02 and AF-03: the core refused the start. AF-03's offer to
-      // unregister the folder arrives with UC-08, which is the use case that
-      // owns unregistering.
+      // unregister the folder is `offersUnregister` below.
       (_, final Failure problem, _) =>
         '${l10n.librarySourcesStartFailed} ${problem.localizedMessage(l10n)}',
       (final IndexRun finished, _, _) when !finished.isInFlight => _outcomeOf(
@@ -370,10 +370,20 @@ class _RunReport extends ConsumerWidget {
 
 /// A message the owner can dismiss, in the screen's warning colours.
 class _NoticeBar extends StatelessWidget {
-  const _NoticeBar({required this.message, required this.onDismiss});
+  const _NoticeBar({
+    required this.message,
+    required this.onDismiss,
+    this.action,
+  });
 
   final String message;
   final VoidCallback onDismiss;
+
+  /// What the message leads to, when it leads somewhere.
+  ///
+  /// UC-07 AF-03 asks that an outcome reporting missing files *link* to the
+  /// review rather than only naming the count.
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -398,6 +408,10 @@ class _NoticeBar extends StatelessWidget {
               ),
             ),
           ),
+          if (action case final action?) ...[
+            const SizedBox(width: AppSpacing.sm),
+            action,
+          ],
           IconButton(
             icon: const Icon(Icons.close),
             tooltip: l10n.dismiss,
@@ -592,10 +606,22 @@ class _RefreshReport extends ConsumerWidget {
 
     if (message == null) return const SizedBox.shrink();
 
+    // AF-03: the outcome links to the missing-files review (UC-37). Offered
+    // only when this run actually marked something missing — a link to an
+    // empty review is a dead end.
+    final markedMissing = (run?.counts?.markedMissing ?? 0) > 0;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: _NoticeBar(
         message: message,
+        action: markedMissing
+            ? TextButton.icon(
+                onPressed: () => MissingFilesScreen.show(context),
+                icon: const Icon(Icons.help_outline),
+                label: Text(l10n.missingFilesOpen),
+              )
+            : null,
         onDismiss: () =>
             ref.read(indexRunsControllerProvider.notifier).dismissRefresh(),
       ),
@@ -604,9 +630,8 @@ class _RefreshReport extends ConsumerWidget {
 
   /// A finished refresh's tally, in the core's counts for a refresh run.
   ///
-  /// AF-03 asks that the outcome link to the missing-files review. The count
-  /// is reported here — FR-LB-08 requires it — and the link is UC-37's, which
-  /// is why a missing count says so rather than going nowhere.
+  /// The count of files now missing is part of the summary FR-LB-08 asks for;
+  /// the link to the review beside it is AF-03's.
   String _outcomeOf(IndexRunCounts counts, AppLocalizations l10n) {
     final summary = l10n.librarySourcesRefreshComplete(
       counts.refreshed,
@@ -614,8 +639,6 @@ class _RefreshReport extends ConsumerWidget {
       counts.markedMissing,
     );
 
-    if (counts.markedMissing == 0) return summary;
-
-    return '$summary ${l10n.librarySourcesMissingReviewPending}';
+    return summary;
   }
 }

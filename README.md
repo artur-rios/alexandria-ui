@@ -10,7 +10,8 @@ collections, watchlists, and reading lists. It links the Alexandria Rust core in
 process over FFI rather than talking to a server, so the whole product runs as a
 single local application with no network hop between the interface and its data.
 
-> **Status:** the foundation is in place; the use cases have not started.
+> **Status:** all forty-three issues are delivered — the foundation and
+> every use case in the backlog below.
 
 > Windows and Ubuntu. Single-user. Metadata and content editing only — never
 > re-encoding, never relocating, and never deleting a file from disk without an
@@ -36,8 +37,9 @@ single local application with no network hop between the interface and its data.
 - Searches, filters, and sorts across the whole catalog.
 - Carries out the core's two-phase deletion lifecycle — soft delete, restore,
   purge, and the separate explicit purge-on-disk.
-- Signs the owner up, confirms their e-mail, logs them in, and recovers their
-  password, keeping the library locked until the account is confirmed.
+- Signs the owner up, logs them in, and gets them back in with one of the ten
+  single-use recovery codes the core mints at registration — shown once, and
+  regenerated on request.
 - Adapts to window and screen size, in light and dark themes, in Brazilian
   Portuguese and English.
 
@@ -50,8 +52,8 @@ single local application with no network hop between the interface and its data.
 - No file management — it never moves, copies, or duplicates a file, and removes
   one from disk only through the core's explicit purge-on-disk operation.
 - No second account, sharing, profiles, or roles — one owner, one account.
-- No mail transport of its own: the core sends the confirmation and recovery
-  messages and owns their tokens.
+- No mail of any kind: the account's address is a login identifier and nothing
+  else. Recovery is the core's single-use codes, not a message.
 - No server, no cloud, no synchronization.
 - No mobile, web, or macOS build.
 
@@ -180,18 +182,18 @@ one, and every milestone after `M-01` depends on it.
 | Milestone | Delivers | Depends on | Issues | Status |
 |---|---|---|---|---|
 | [M-01 — Foundation](https://github.com/artur-rios/alexandria-desktop-front/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 1 / 1 closed |
-| [M-02 — Shell and access](https://github.com/artur-rios/alexandria-desktop-front/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, confirm, and sign in to | M-01 | 9 | 2 / 9 closed |
-| [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-desktop-front/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 0 / 4 closed |
-| [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-desktop-front/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 0 / 6 closed |
-| [M-05 — Metadata and content editing](https://github.com/artur-rios/alexandria-desktop-front/milestone/5) | Music and video metadata, file names, and text content can be edited | M-04 | 4 | 0 / 4 closed |
-| [M-06 — Media playback](https://github.com/artur-rios/alexandria-desktop-front/milestone/6) | Video plays with subtitles and audio tracks; audio plays with a queue and the album animation | M-04 | 3 | 0 / 3 closed |
-| [M-07 — Document and image viewing](https://github.com/artur-rios/alexandria-desktop-front/milestone/7) | PDFs, e-books, comics, images, and saved pages can be read | M-04 | 4 | 0 / 4 closed |
-| [M-08 — Collections and bookmarks](https://github.com/artur-rios/alexandria-desktop-front/milestone/8) | Files and bookmarks can be grouped, and bookmarks managed and opened | M-04 | 3 | 0 / 3 closed |
-| [M-09 — Watchlists and reading lists](https://github.com/artur-rios/alexandria-desktop-front/milestone/9) | Movies, series, books, and comics can be tracked with per-episode and per-issue progress | M-08 | 4 | 0 / 4 closed |
-| [M-10 — Deletion lifecycle](https://github.com/artur-rios/alexandria-desktop-front/milestone/10) | Items can be deleted, restored, purged, purged on disk, and reviewed when missing | M-04 | 5 | 0 / 5 closed |
+| [M-02 — Shell and access](https://github.com/artur-rios/alexandria-desktop-front/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, sign in to, and recover access to | M-01 | 9 | 9 / 9 closed |
+| [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-desktop-front/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 4 / 4 closed |
+| [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-desktop-front/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 6 / 6 closed |
+| [M-05 — Metadata and content editing](https://github.com/artur-rios/alexandria-desktop-front/milestone/5) | Music and video metadata, file names, and text content can be edited | M-04 | 4 | 4 / 4 closed |
+| [M-06 — Media playback](https://github.com/artur-rios/alexandria-desktop-front/milestone/6) | Video plays with subtitles and audio tracks; audio plays with a queue and the album animation | M-04 | 3 | 3 / 3 closed |
+| [M-07 — Document and image viewing](https://github.com/artur-rios/alexandria-desktop-front/milestone/7) | PDFs, e-books, comics, images, and saved pages can be read | M-04 | 4 | 4 / 4 closed |
+| [M-08 — Collections and bookmarks](https://github.com/artur-rios/alexandria-desktop-front/milestone/8) | Files and bookmarks can be grouped, and bookmarks managed and opened | M-04 | 3 | 3 / 3 closed |
+| [M-09 — Watchlists and reading lists](https://github.com/artur-rios/alexandria-desktop-front/milestone/9) | Movies, series, books, and comics can be tracked with per-episode and per-issue progress | M-08 | 4 | 4 / 4 closed |
+| [M-10 — Deletion lifecycle](https://github.com/artur-rios/alexandria-desktop-front/milestone/10) | Items can be deleted, restored, purged, purged on disk, and reviewed when missing | M-04 | 5 | 5 / 5 closed |
 
-Once the issues exist, GitHub's milestone pages are the live view of progress;
-the counts here are as of creation time.
+GitHub's milestone pages are the live view of progress; the counts here are as
+of the last update to this file.
 
 **The two repositories agree again.** `CORE_REF` tracks
 [`alexandria-api` UC-46](https://github.com/artur-rios/alexandria-api/pull/107),
@@ -286,7 +288,7 @@ and nesting stays a change of data rather than of interface.
 |---|---|---|
 | [#27](https://github.com/artur-rios/alexandria-desktop-front/issues/27) | UC-26 — Manage collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#28](https://github.com/artur-rios/alexandria-desktop-front/issues/28) | UC-27 — Organize items into collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#29](https://github.com/artur-rios/alexandria-desktop-front/issues/29) | UC-28 — Manage bookmarks — done, except filing into a collection | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#29](https://github.com/artur-rios/alexandria-desktop-front/issues/29) | UC-28 — Manage bookmarks — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-09 — Watchlists and reading lists
 

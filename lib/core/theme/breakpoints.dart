@@ -15,8 +15,8 @@ enum Breakpoint {
   /// 1280 up to 1599: the navigation panel is labelled.
   medium,
 
-  /// 1600 and wider: the panel is labelled and the content area may show a
-  /// secondary pane.
+  /// 1600 and wider: the panel is extended, carrying its labels beside the
+  /// icons rather than beneath them.
   expanded;
 
   /// The narrowest window the application supports, in logical pixels (NFR-07).
@@ -45,4 +45,12 @@ enum Breakpoint {
 
   /// Whether the navigation panel shows labels alongside its icons.
   bool get showsNavigationLabels => this != Breakpoint.compact;
+
+  /// Whether the navigation panel is extended — labels *beside* the icons
+  /// rather than beneath them.
+  ///
+  /// The widest tier's own behaviour. Without it the three tiers were two:
+  /// 1600 pixels laid out exactly as 1280 did, and the enum's third value
+  /// changed nothing on screen.
+  bool get usesExtendedNavigation => this == Breakpoint.expanded;
 }

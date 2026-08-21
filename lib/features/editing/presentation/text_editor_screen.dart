@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -104,6 +105,39 @@ class _TextEditorScreenState extends ConsumerState<TextEditorScreen> {
       }
     });
 
+    // FR-UX-11: save is this screen's primary action, and the owner is typing
+    // when they want it. Without the shortcut the only way to it was tabbing
+    // out of the field.
+    return Shortcuts(
+      shortcuts: const {
+        SingleActivator(LogicalKeyboardKey.keyS, control: true): _SaveIntent(),
+        SingleActivator(LogicalKeyboardKey.keyS, meta: true): _SaveIntent(),
+      },
+      child: Actions(
+        actions: {
+          _SaveIntent: CallbackAction<_SaveIntent>(
+            onInvoke: (_) {
+              // The same guard the button carries: a save that is still
+              // running, or content that never loaded, has nothing to write.
+              if (state.isSaving || state.stage == EditorStage.loadFailed) {
+                return null;
+              }
+              unawaited(editor.save());
+              return null;
+            },
+          ),
+        },
+        child: _editor(context, l10n, state, editor),
+      ),
+    );
+  }
+
+  Widget _editor(
+    BuildContext context,
+    AppLocalizations l10n,
+    TextEditorState state,
+    TextEditorController editor,
+  ) {
     return Scaffold(
       appBar: AppBar(
         title: Text(state.name),
@@ -161,6 +195,11 @@ class _TextEditorScreenState extends ConsumerState<TextEditorScreen> {
       },
     );
   }
+}
+
+/// Saving the editor's content (UC-18 main flow step 5).
+class _SaveIntent extends Intent {
+  const _SaveIntent();
 }
 
 /// The source beside its rendered preview (FR-ME-07).

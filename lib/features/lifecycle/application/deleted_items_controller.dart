@@ -180,6 +180,9 @@ class RestoreController
 
   Future<void> _refresh() async {
     ref.invalidate(listingControllerProvider);
+    // The details view offers the restore too (UC-13 AF-02), and a record that
+    // came back has to stop reading as deleted in the dialog that restored it.
+    ref.invalidate(fileDetailsControllerProvider);
     ref.invalidate(typeCountsControllerProvider);
     ref.invalidate(recentFilesProvider);
     ref.invalidate(catalogSearchProvider);

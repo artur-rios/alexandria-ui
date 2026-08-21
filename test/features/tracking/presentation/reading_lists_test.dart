@@ -45,6 +45,7 @@ void main() {
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
     bool openScreen = true,
+    bool reachArea = true,
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
@@ -69,13 +70,17 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.books.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    // A rejected session has already returned the owner to login by now, so
+    // there is no panel to navigate — the sign-out is the outcome under test.
+    if (reachArea) {
+      await tester.tap(
+        find.descendant(
+          of: find.byType(ShellNavigationPanel),
+          matching: find.byIcon(ShellDestination.books.icon),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
 
     if (openScreen) {
       final l10n = AppLocalizations.of(
@@ -379,6 +384,7 @@ void main() {
             ),
           ),
           openScreen: false,
+          reachArea: false,
         );
 
         // Read rather than opened: the lists load lazily, so this is the browse

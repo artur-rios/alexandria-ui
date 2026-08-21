@@ -89,7 +89,7 @@ void main() {
     );
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.tap(find.text(l10n.missingFilesOpen));
+    await tester.openLibraryTool(l10n.missingFilesOpen);
     await tester.pumpAndSettle();
 
     return (container: container, catalog: catalog);

@@ -762,12 +762,6 @@ abstract class AppLocalizations {
   /// **'The catalog could not be re-checked.'**
   String get librarySourcesRefreshFailed;
 
-  /// UC-07 AF-03: the outcome reports how many files are now missing; the link to the missing-files review is UC-37, which is not built yet.
-  ///
-  /// In en, this message translates to:
-  /// **'Reviewing missing files arrives with its own use case.'**
-  String get librarySourcesMissingReviewPending;
-
   /// Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog.
   ///
   /// In en, this message translates to:
@@ -1014,10 +1008,10 @@ abstract class AppLocalizations {
   /// **'Re-check the catalog'**
   String get detailsRescan;
 
-  /// UC-13 AF-02: the record is shown as deleted; restoring it is UC-34, which is not built yet.
+  /// UC-13 AF-02: a deleted record is shown as deleted and restore is offered instead of editing.
   ///
   /// In en, this message translates to:
-  /// **'This record is deleted. Restoring it arrives with its own use case.'**
+  /// **'This record is deleted. Restore it to edit or open it again.'**
   String get detailsDeletedHint;
 
   /// UC-13 AF-01: the core reports the file as not found, so the listing is refreshed and the owner returns to it.
@@ -1074,11 +1068,23 @@ abstract class AppLocalizations {
   /// **'In progress'**
   String get dashboardInProgress;
 
-  /// UC-14 AF-02: the section states that nothing is in progress rather than rendering empty. Watchlists and reading lists are M-09, so this is always the state today.
+  /// UC-14 AF-02: the section states that nothing is in progress rather than rendering empty.
   ///
   /// In en, this message translates to:
-  /// **'Nothing is in progress. Watchlists and reading lists arrive with their own use cases.'**
+  /// **'Nothing is in progress.'**
   String get dashboardInProgressNone;
+
+  /// UC-14 main flow step 2: which watchlist or reading list an in-progress item belongs to.
+  ///
+  /// In en, this message translates to:
+  /// **'In {list}'**
+  String dashboardInProgressIn(String list);
+
+  /// UC-14 main flow step 2: the list an in-progress item belongs to, and how far through it the owner is.
+  ///
+  /// In en, this message translates to:
+  /// **'In {list} — {progress}'**
+  String dashboardInProgressInAt(String list, String progress);
 
   /// Heading of the dashboard's per-type counts (UC-14, FR-CT-11).
   ///
@@ -2735,6 +2741,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'it no longer exists'**
   String get collectionItemGone;
+
+  /// UC-37 main flow step 1: the navigation panel entry that reaches the library-wide areas — sources, collections, watchlists, reading lists, deleted items, and the missing-files review.
+  ///
+  /// In en, this message translates to:
+  /// **'Library tools'**
+  String get libraryToolsOpen;
 }
 
 class _AppLocalizationsDelegate

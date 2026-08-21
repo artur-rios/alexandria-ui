@@ -91,7 +91,7 @@ void main() {
     );
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.tap(find.text(l10n.deletedItemsOpen));
+    await tester.openLibraryTool(l10n.deletedItemsOpen);
     await tester.pumpAndSettle();
 
     return (container: container, lifecycle: lifecycle);
@@ -240,7 +240,7 @@ void main() {
         ],
       );
 
-      await tester.tap(find.text(messages(tester).deletedItemsOpen));
+      await tester.openLibraryTool(messages(tester).deletedItemsOpen);
       await tester.pumpAndSettle();
       await tester.tap(find.text(messages(tester).restoreRecord));
       await tester.pumpAndSettle();

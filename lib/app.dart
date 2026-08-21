@@ -59,9 +59,9 @@ class AlexandriaApp extends ConsumerWidget {
         StartupFailed(:final failure) => CoreUnavailableScreen(
           failure: failure,
         ),
-        // Startup ends where authentication begins: steps 6 and 7 of the
-        // sequence — is there an account, and is its e-mail confirmed — are
-        // answered by logging in (UC-02), not by the foundation.
+        // Startup ends where authentication begins: whether an account
+        // exists, and whether its owner has stored the recovery codes, are
+        // answered by signing in (UC-02) and by UC-40, not by the foundation.
         StartupReady() => switch (ref.watch(sessionControllerProvider)) {
           // FR-AU-07: no session, so no catalog call. Which of the two
           // authentication screens depends on whether the core already holds

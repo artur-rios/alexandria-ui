@@ -5,6 +5,8 @@ import 'package:alexandria_desktop/core/theme/breakpoints.dart';
 import 'package:alexandria_desktop/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_desktop/features/shell/presentation/playback_bar.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_desktop/features/lifecycle/presentation/missing_files_screen.dart';
+import 'package:alexandria_desktop/features/shell/presentation/library_tools_button.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +28,128 @@ void main() {
     // clips instead of adapting.
     'AWideButShortWindow': Size(1360, 640),
   };
+
+  group('the library tools the panel reaches (UC-37 main flow step 1)', () {
+    /// Opens the panel's tools menu.
+    Future<AppLocalizations> openTools(WidgetTester tester) async {
+      await tester.tap(
+        find.descendant(
+          of: find.byType(ShellNavigationPanel),
+          matching: find.byType(LibraryToolsButton),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      return AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+    }
+
+    testWidgets(
+      'GivenTheShell_WhenTheToolsAreOpened_ThenTheMissingFilesReviewIsOffered',
+      (tester) async {
+        // UC-37 main flow step 1: "from the navigation panel or from an index
+        // run's outcome". This is the first of the two.
+        await tester.pumpShell();
+
+        final l10n = await openTools(tester);
+
+        expect(find.text(l10n.missingFilesOpen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheShell_WhenTheToolsAreOpened_ThenEveryLibraryWideAreaIsOffered',
+      (tester) async {
+        // The areas that belong to no single file type, and so have no
+        // destination of their own (FR-CT-01) — but must still be reachable
+        // from anywhere rather than only from the dashboard.
+        await tester.pumpShell();
+
+        final l10n = await openTools(tester);
+
+        expect(find.text(l10n.librarySourcesOpen), findsOneWidget);
+        expect(find.text(l10n.collectionsOpen), findsOneWidget);
+        expect(find.text(l10n.watchlistsOpen), findsOneWidget);
+        expect(find.text(l10n.readingListsOpen), findsOneWidget);
+        expect(find.text(l10n.deletedItemsOpen), findsOneWidget);
+      },
+    );
+
+    testWidgets('GivenTheToolsAreOpen_WhenTheReviewIsChosen_ThenItOpens', (
+      tester,
+    ) async {
+      await tester.pumpShell();
+
+      final l10n = await openTools(tester);
+      await tester.tap(find.text(l10n.missingFilesOpen));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MissingFilesScreen), findsOneWidget);
+    });
+
+    testWidgets(
+      'GivenTheMinimumWindow_WhenThePanelIsRead_ThenTheToolsAreStillReachable',
+      (tester) async {
+        // FR-UX-02: the panel collapses rather than dropping an entry.
+        await tester.pumpShell(surfaceSize: const Size(1024, 640));
+
+        expect(
+          find.descendant(
+            of: find.byType(ShellNavigationPanel),
+            matching: find.byType(LibraryToolsButton),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+  });
+
+  group('the widest tier (FR-UX-02)', () {
+    /// The rail the panel is built around.
+    NavigationRail railIn(WidgetTester tester) =>
+        tester.widget<NavigationRail>(find.byType(NavigationRail));
+
+    testWidgets(
+      'GivenAnExpandedWindow_WhenThePanelIsDrawn_ThenTheRailIsExtended',
+      (tester) async {
+        // The third tier had no behaviour of its own: 1600 looked exactly like
+        // 1280. At this width the labels sit beside the icons rather than
+        // under them, which is what the extra room buys.
+        await tester.pumpShell(surfaceSize: const Size(1700, 1000));
+
+        expect(railIn(tester).extended, isTrue);
+      },
+    );
+
+    testWidgets(
+      'GivenAMediumWindow_WhenThePanelIsDrawn_ThenTheRailIsNotExtended',
+      (tester) async {
+        await tester.pumpShell(surfaceSize: const Size(1280, 800));
+
+        expect(railIn(tester).extended, isFalse);
+      },
+    );
+
+    testWidgets(
+      'GivenAnExpandedWindow_WhenThePanelIsDrawn_ThenEveryLabelIsStillRead',
+      (tester) async {
+        await tester.pumpShell(surfaceSize: const Size(1700, 1000));
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+
+        for (final destination in ShellDestination.values) {
+          expect(
+            find.descendant(
+              of: find.byType(ShellNavigationPanel),
+              matching: find.text(destination.label(l10n)),
+            ),
+            findsOneWidget,
+            reason: 'no entry is dropped at any tier (FR-UX-02)',
+          );
+        }
+      },
+    );
+  });
 
   group('structure', () {
     testWidgets(

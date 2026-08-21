@@ -92,6 +92,9 @@ class _MusicMetadataFormState extends ConsumerState<MusicMetadataForm> {
                 TextField(
                   controller: _controllers[field],
                   enabled: !state.isSaving,
+                  // FR-UX-11: the form opens ready to be typed into, the same
+                  // way the rename dialog and the bookmark form do.
+                  autofocus: field == MusicField.values.first,
                   keyboardType: field.isNumeric
                       ? TextInputType.number
                       : TextInputType.text,
