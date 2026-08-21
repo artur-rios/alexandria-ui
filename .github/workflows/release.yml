@@ -222,7 +222,17 @@ jobs:
           # from inside the directory is what keeps the archive's entries at
           # its root rather than nested under build/windows/x64/runner.
           zip="$(cygpath -w "$PWD/dist/alexandria-${{ steps.version.outputs.value }}-windows-x64.zip")"
-          (cd build/windows/x64/runner/Release && 7z a -tzip "$zip" '*' > /dev/null)
+          (cd build/windows/x64/runner/Release && 7z a -tzip "$zip" '*' -x'!*.msix' > /dev/null)
+
+          # The archive is the application, not a container for other
+          # packages. Belt and braces alongside the -x above and the Excludes
+          # in installer.iss: this directory is where msix:create writes, and
+          # an archive carrying a second copy of the whole application is the
+          # kind of thing nobody notices except as a suspicious download size.
+          if 7z l "$zip" | grep -q '\.msix$'; then
+            echo "::error::the portable archive picked up an MSIX"
+            exit 1
+          fi
           7z l "$zip" | tail -20
 
       - name: Build the MSIX package

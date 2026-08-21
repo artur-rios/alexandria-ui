@@ -79,8 +79,18 @@ brazilianportuguese.UninstallFailed=O desinstalador da instalação anterior nã
 ; The whole release bundle, which already carries alexandria_ffi.dll beside the
 ; executable — that is what IR-04's "resolved relative to the installed
 ; application" resolves to.
+;
+; Excluding the MSIX is not tidiness. `dart run msix:create` writes
+; alexandria.msix into this same directory, and the release workflow builds it
+; before this installer, so without the exclusion the setup executable carries
+; a complete second copy of the application inside itself — roughly doubling
+; its size — and then installs that copy beside the program as a stray file.
+; Excluded here rather than fixed by reordering the workflow, because the order
+; of two independent packaging steps is not something this script should have
+; to depend on.
 Source: "..\..\build\windows\x64\runner\Release\*"; \
-  DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+  DestDir: "{app}"; Excludes: "*.msix"; \
+  Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"
