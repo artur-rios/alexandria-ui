@@ -77,7 +77,51 @@ for context, then the `requirements/` documents for the normative detail.
 | [Technology Stack Document](docs/requirements/Technology%20Stack%20Document.md) | The single source of truth for every technology and version. |
 | [Operations & Infrastructure Document](docs/requirements/Operations%20%26%20Infrastructure%20Document.md) | Layout, configuration, logging, startup checks, and the `IR-xx` platform requirements. |
 
-## Installation
+## Installing
+
+Every tag publishes a [release](https://github.com/artur-rios/alexandria-ui/releases)
+carrying the application for both platforms. Each package bundles the
+Alexandria core, so there is nothing else to install.
+
+**Windows** — download `alexandria-setup-<version>.exe` and run it. It asks
+where to install, and if it finds Alexandria already there — or in the place a
+previous install recorded — it offers to remove that first. Only the program's
+own files are removed: your library, catalog, and settings are never touched.
+
+**Linux** — download `alexandria-installer-<version>-linux-x64.sh` and run it:
+
+```bash
+chmod +x alexandria-installer-<version>-linux-x64.sh
+./alexandria-installer-<version>-linux-x64.sh
+```
+
+It asks where to install, defaulting to `~/.local/share/alexandria` — or
+`/opt/alexandria` when run as root — and replaces an existing installation the
+same way the Windows installer does. `--prefix DIR` and `--yes` skip the
+questions, and `--uninstall` removes what it installed and nothing else.
+
+The Linux release also carries a `.deb`, an AppImage, and a Flatpak bundle for
+anyone who would rather install through one of those.
+
+### Without installing
+
+`alexandria-<version>-windows-x64.zip` and
+`alexandria-<version>-linux-x64.tar.gz` are the application itself, unpacked
+and run wherever you put them. Nothing is registered, no menu entry is created,
+and removing the directory removes the program.
+
+```bash
+tar xzf alexandria-<version>-linux-x64.tar.gz
+./alexandria_desktop
+```
+
+> **Linux and ffmpeg.** The core links ffmpeg and the Linux packages do not
+> carry it yet, so a machine without your distribution's ffmpeg runtime
+> libraries will fail to load the core. The installer reports this when it
+> happens rather than leaving it to first launch. The Windows packages bundle
+> the libraries and need nothing.
+
+## Building from source
 
 Prerequisites, per the
 [Technology Stack Document](docs/requirements/Technology%20Stack%20Document.md):
@@ -91,8 +135,8 @@ Prerequisites, per the
   packages bundle it; a development checkout needs it built.
 
 ```bash
-git clone https://github.com/artur-rios/alexandria-desktop-front.git
-cd alexandria-desktop-front
+git clone https://github.com/artur-rios/alexandria-ui.git
+cd alexandria-ui
 flutter pub get
 dart run build_runner build
 dart run ffigen --config ffigen.yaml
