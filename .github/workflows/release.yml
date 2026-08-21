@@ -87,13 +87,19 @@ env:
   # a release built against dependencies nobody chose is worse here than in CI.
   FLUTTER_VERSION: 3.44.9
 
-  # The LGPL build, not the GPL one CI uses. CI's ffmpeg is a build-time
-  # dependency of a binary nobody receives; these packages are distributed, and
-  # the GPL variant would carry its terms into what ships. The core is
-  # proprietary, so the LGPL shared build is the one whose terms a closed
-  # application can meet — by dynamic linking, unmodified, with its licence
-  # texts included. Nothing here re-encodes, so the GPL-only encoders that
-  # variant adds are not needed anyway.
+  # The LGPL build, not the GPL one CI uses.
+  #
+  # This once said the choice was forced, because the core was proprietary and
+  # only LGPL terms could be met. That is no longer true: the project is
+  # GPL-3.0-or-later, so either variant would be lawful to ship. The LGPL build
+  # stays because it is still the better one to carry — the GPL variant adds
+  # x264 and x265, which are encoders, and nothing here re-encodes. Carrying
+  # obligations for capabilities the application does not have would be a
+  # strange thing to do deliberately.
+  #
+  # Linux cannot make the same choice. It carries libmpv, which is copyleft
+  # from any distribution and is what plays the video, so the GPL applies there
+  # regardless of which ffmpeg is bundled. See the Legal section of the README.
   #
   # Pinned to the same dated autobuild release CI pins, and for the same
   # reason. This used to point at the `latest` tag, whose assets rotate as new

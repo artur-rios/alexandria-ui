@@ -362,3 +362,35 @@ One use case = one branch = one issue = one pull request. The full process —
 branch naming, issue status lifecycle, the approval gates, the testing gate, and
 the Definition of Done — is in the
 [Development Workflow Document](docs/requirements/Development%20Workflow%20Document.md).
+
+## Legal
+
+Copyright © 2026 Artur Rios.
+
+Alexandria Desktop is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version. The full text is in [LICENSE](LICENSE).
+
+It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+The same terms cover the [Alexandria core](https://github.com/artur-rios/alexandria-api),
+which this application links in process. The two are one program in the sense
+the licence means, so they are licensed alike.
+
+### Why copyleft
+
+The Linux packages are meant to be plug and play: unpack one on a machine with
+a desktop and it runs, with no libraries to install first. Doing that means
+carrying the libraries the program needs, and the ones a media library cannot
+do without are copyleft — `libmpv`, which plays the video, and `libx264` and
+`libx265`, which ffmpeg links whether or not anything ever encodes with them.
+Distributing those alongside the application is what puts the whole of it under
+the GPL. Every bundled library's licence travels in `lib/licenses`, and the
+ones known to be copyleft are listed in `lib/licenses/COPYLEFT.tsv`.
+
+The Windows packages carry an LGPL build of ffmpeg and no mpv, so they raise
+none of this. They are covered by the same licence regardless, because the
+program is the same program.
