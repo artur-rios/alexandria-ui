@@ -732,9 +732,59 @@ jobs:
           echo "Publishing $count assets:"
           ls -lh release
 
+      # `body` is prepended to the notes GitHub generates from the commits.
+      # Written here rather than left to whoever cuts the release: v0.0.1
+      # published eight files, explained none of them, and its notes were the
+      # entire project's pull request history and nothing else. What a release
+      # page most needs to say is which file to download and what it needs.
       - uses: softprops/action-gh-release@v2
         with:
           name: Alexandria ${{ steps.version.outputs.value }}
+          body: |
+            Every package below carries the Alexandria core, and every one that
+            cannot ask a package manager for ffmpeg carries that too. There is
+            nothing else to install.
+
+            ## Windows
+
+            - **`alexandria-setup-${{ steps.version.outputs.value }}.exe`** —
+              the installer. Asks where to install, and replaces an existing
+              installation found there or in the place a previous install
+              recorded. Only the program's own files are removed; your library,
+              catalog, and settings are left alone.
+            - **`alexandria-${{ steps.version.outputs.value }}-windows-x64.zip`**
+              — the application itself. Unpack it and run
+              `alexandria_desktop.exe`; nothing is registered, and deleting the
+              folder removes it.
+            - **`alexandria.msix`** — published unsigned. Windows will not
+              install an unsigned MSIX without a trusted certificate, so use
+              the installer unless you have your own signing set up.
+
+            ## Linux
+
+            - **`alexandria-installer-${{ steps.version.outputs.value }}-linux-x64.sh`**
+              — the installer. `chmod +x` it and run it. Defaults to
+              `~/.local/share/alexandria`, or `/opt/alexandria` as root, and
+              replaces an existing installation the same way the Windows one
+              does. `--prefix DIR` and `--yes` skip the questions;
+              `--uninstall` removes what it installed and nothing else.
+            - **`alexandria-${{ steps.version.outputs.value }}-linux-x64.tar.gz`**
+              — the application itself. Unpack it and run
+              `./alexandria_desktop`.
+            - **`.deb`** — for Ubuntu 24.04, which is the release it is built
+              on. Pulls ffmpeg, libmpv, and GTK in through apt.
+            - **`.AppImage`** — carries everything it needs.
+            - **`.flatpak`** — its codecs come from the
+              `org.freedesktop.Platform.ffmpeg-full` runtime extension.
+
+            The installer, the tarball, and the AppImage bundle ffmpeg and the
+            libraries it depends on; their licences are in `lib/licenses`. Only
+            the graphics, sound, and C libraries any desktop application needs
+            come from your system.
+
+            Packages are unsigned — code signing needs a certificate the
+            project does not hold yet.
+
           files: release/*
           generate_release_notes: true
           prerelease: ${{ steps.version.outputs.prerelease }}
