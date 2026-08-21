@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
+import 'package:alexandria_desktop/features/shell/presentation/library_tools_button.dart';
+import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
+
 import 'failing_settings_store.dart';
 import 'fake_auth_gateway.dart';
 import 'login_harness.dart';
@@ -50,6 +53,25 @@ extension PumpShell on WidgetTester {
     await signIn();
 
     return container;
+  }
+
+  /// Opens one of the panel's library-wide screens (UC-37 main flow step 1).
+  ///
+  /// The tools menu is the one entry point every one of them has, so a test
+  /// that needs collections, deleted items, or the missing-files review opens
+  /// it the way the owner does rather than through whichever screen happens to
+  /// link to it.
+  Future<void> openLibraryTool(String label) async {
+    await tap(
+      find.descendant(
+        of: find.byType(ShellNavigationPanel),
+        matching: find.byType(LibraryToolsButton),
+      ),
+    );
+    await pumpAndSettle();
+
+    await tap(find.text(label).last);
+    await pumpAndSettle();
   }
 
   /// Signs in and lands on the shell over a settings store that refuses every

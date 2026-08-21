@@ -8,7 +8,7 @@ import 'package:alexandria_desktop/features/library_sources/domain/index_gateway
 import 'package:alexandria_desktop/features/library_sources/domain/index_run.dart';
 import 'package:alexandria_desktop/features/library_sources/domain/library_source.dart';
 import 'package:alexandria_desktop/features/library_sources/presentation/library_sources_screen.dart';
-import 'package:alexandria_desktop/features/shell/presentation/preferences_dialog.dart';
+import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,6 +36,7 @@ void main() {
   Future<({InMemoryLibrarySourceStore store, ProviderContainer ref})>
   openScreen(
     WidgetTester tester, {
+    ThemeMode themeMode = ThemeMode.light,
     FakeIndexGateway? gateway,
     List<LibrarySource>? registered,
     Locale? locale,
@@ -43,6 +44,7 @@ void main() {
     final store = InMemoryLibrarySourceStore(registered ?? [source()]);
 
     final container = await tester.pumpShell(
+      themeMode: themeMode,
       locale: locale,
       extraOverrides: <Override>[
         librarySourceStoreProvider.overrideWithValue(store),
@@ -52,13 +54,10 @@ void main() {
       ],
     );
 
-    await tester.tap(find.byType(PreferencesButton));
-    await tester.pumpAndSettle();
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(PreferencesDialog)),
-    );
-    await tester.tap(find.text(l10n.librarySourcesOpen));
-    await tester.pumpAndSettle();
+    // Reached from the navigation panel's tools menu (UC-05 main flow step 1),
+    // which is where every library-wide screen is reached from.
+    final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+    await tester.openLibraryTool(l10n.librarySourcesOpen);
 
     return (store: store, ref: container);
   }
@@ -284,4 +283,23 @@ void main() {
       expect(find.text(outcome), findsOneWidget);
     });
   }
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        (tester) async {
+          await openScreen(tester, themeMode: mode);
+
+          expect(
+            Theme.of(
+              tester.element(find.byType(LibrarySourcesScreen).first),
+            ).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
+          );
+        },
+      );
+    }
+  });
 }

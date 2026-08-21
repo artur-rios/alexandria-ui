@@ -2,6 +2,7 @@ import 'package:alexandria_desktop/core/failures/core_status.dart';
 import 'package:alexandria_desktop/core/failures/failure.dart';
 import 'package:alexandria_desktop/core/failures/failure_messages.dart';
 import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_desktop/core/theme/app_theme.dart';
 import 'package:alexandria_desktop/features/shell/presentation/async_state_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,12 +21,16 @@ void main() {
     VoidCallback? onRetry,
     bool withEmptyState = false,
     Locale? locale,
+    ThemeMode themeMode = ThemeMode.light,
   }) async {
     var retries = 0;
 
     await tester.pumpWidget(
       MaterialApp(
         locale: locale,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: themeMode,
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -199,4 +204,26 @@ void main() {
       },
     );
   }
+  // Testing Specification 7.1: both themes. This component draws the failure
+  // state's icon and text from the scheme, so it is the one place a colour
+  // that only works in light would show up on every screen at once.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenAFailureIsShown_ThenItRendersInThatBrightness',
+        (tester) async {
+          await pump(
+            tester,
+            const AsyncValue<List<String>>.error(failure, StackTrace.empty),
+            themeMode: mode,
+          );
+
+          expect(
+            Theme.of(tester.element(find.byType(ShellFailureView))).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
+          );
+        },
+      );
+    }
+  });
 }

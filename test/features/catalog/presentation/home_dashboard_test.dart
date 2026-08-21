@@ -8,6 +8,8 @@ import 'package:alexandria_desktop/features/catalog/presentation/file_details_vi
 import 'package:alexandria_desktop/features/catalog/presentation/home_dashboard.dart';
 import 'package:alexandria_desktop/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_desktop/features/tracking/domain/reading_list.dart';
+import 'package:alexandria_desktop/features/tracking/domain/watchlist.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +17,8 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
+import '../../../support/fake_reading_list_gateway.dart';
+import '../../../support/fake_watchlist_gateway.dart';
 import '../../../support/shell_harness.dart';
 
 /// The home dashboard (UC-14, FR-CT-11).
@@ -25,8 +29,12 @@ void main() {
     Map<LibraryType, CatalogListing>? listings,
     FakeIndexGateway? indexGateway,
     Locale? locale,
+    List<Watchlist> watchlists = const [],
+    List<ReadingList> readingLists = const [],
+    ThemeMode themeMode = ThemeMode.light,
   }) async {
     final container = await tester.pumpShell(
+      themeMode: themeMode,
       locale: locale,
       surfaceSize: const Size(1440, 1000),
       extraOverrides: <Override>[
@@ -35,6 +43,12 @@ void main() {
         ),
         if (indexGateway != null)
           indexGatewayProvider.overrideWithValue(indexGateway),
+        watchlistGatewayProvider.overrideWithValue(
+          FakeWatchlistGateway(watchlists: watchlists),
+        ),
+        readingListGatewayProvider.overrideWithValue(
+          FakeReadingListGateway(readingLists: readingLists),
+        ),
         runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
       ],
     );
@@ -137,13 +151,125 @@ void main() {
     });
   });
 
+  group('what the owner is part-way through (main flow step 2)', () {
+    testWidgets(
+      'GivenAVideoBeingWatched_WhenTheDashboardOpens_ThenItIsListed',
+      (tester) async {
+        await openDashboard(
+          tester,
+          listings: aLibrary(),
+          watchlists: [
+            const Watchlist(
+              uuid: 'wl-1',
+              name: 'Evenings',
+              items: [
+                WatchProgress(
+                  watchlistUuid: 'wl-1',
+                  videoUuid: '2',
+                  state: WatchState.watching,
+                ),
+              ],
+            ),
+          ],
+        );
+
+        // The watchlist's name, which only this section renders — the file
+        // itself also appears under "recently added".
+        expect(find.textContaining('Evenings'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenAnItemBeingRead_WhenTheDashboardOpens_ThenItsListIsNamed',
+      (tester) async {
+        await openDashboard(
+          tester,
+          listings: aLibrary(),
+          readingLists: [
+            const ReadingList(
+              uuid: 'rl-1',
+              name: 'Winter',
+              items: [
+                ReadingProgress(
+                  readingListUuid: 'rl-1',
+                  itemUuid: '3',
+                  targetKind: ReadingTargetKind.document,
+                  state: ReadingState.reading,
+                ),
+              ],
+            ),
+          ],
+        );
+
+        expect(find.textContaining('Winter'), findsOneWidget);
+      },
+    );
+
+    testWidgets('GivenAnItemInProgress_WhenItIsOpened_ThenTheDetailsAppear', (
+      tester,
+    ) async {
+      // Main flow step 4: opening from here behaves as opening from a
+      // listing, because it is the same view.
+      await openDashboard(
+        tester,
+        listings: aLibrary(),
+        watchlists: [
+          const Watchlist(
+            uuid: 'wl-1',
+            name: 'Evenings',
+            items: [
+              WatchProgress(
+                watchlistUuid: 'wl-1',
+                videoUuid: '1',
+                state: WatchState.watching,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await tester.tap(find.textContaining('Evenings'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(FileDetailsView), findsOneWidget);
+    });
+  });
+
   group('nothing is in progress (AF-02)', () {
     testWidgets(
       'GivenNoWatchlists_WhenTheDashboardOpens_ThenTheSectionSaysSo',
       (tester) async {
-        // Always the state today: watchlists and reading lists are M-09's. The
-        // section states it rather than rendering an empty box.
         await openDashboard(tester, listings: aLibrary());
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+
+        expect(find.text(l10n.dashboardInProgressNone), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenEverythingFinished_WhenTheDashboardOpens_ThenNothingIsListed',
+      (tester) async {
+        // Watched and read are not in progress: the section is what is still
+        // open, not what the lists hold.
+        await openDashboard(
+          tester,
+          listings: aLibrary(),
+          watchlists: [
+            const Watchlist(
+              uuid: 'wl-1',
+              name: 'Evenings',
+              items: [
+                WatchProgress(
+                  watchlistUuid: 'wl-1',
+                  videoUuid: '2',
+                  state: WatchState.watched,
+                ),
+              ],
+            ),
+          ],
+        );
         final l10n = AppLocalizations.of(
           tester.element(find.byType(ShellScreen)),
         );
@@ -275,5 +401,24 @@ void main() {
 
     expect(find.byType(HomeDashboard), findsOneWidget);
     expect(find.text('a.png'), findsOneWidget);
+  });
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        (tester) async {
+          await openDashboard(tester, listings: aLibrary(), themeMode: mode);
+
+          expect(
+            Theme.of(
+              tester.element(find.byType(HomeDashboard).first),
+            ).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
+          );
+        },
+      );
+    }
   });
 }

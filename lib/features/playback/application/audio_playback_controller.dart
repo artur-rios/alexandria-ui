@@ -209,6 +209,13 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   /// Clears the report of a skipped track once the owner has seen it.
   void acknowledgeSkip() => state = state.copyWith();
 
+  /// Clears the report that nothing in the selection could be played (AF-03).
+  ///
+  /// The queue was already cleared when the report was raised; this is the
+  /// owner saying they have read it. Without it the bar carried the message
+  /// for the rest of the session.
+  void acknowledgeAllFailed() => state = const AudioPlaybackState();
+
   /// Builds and plays an album or artist queue.
   Future<void> _playGrouped(CatalogFile file, QueueKind kind) async {
     await _stopOtherMedia();

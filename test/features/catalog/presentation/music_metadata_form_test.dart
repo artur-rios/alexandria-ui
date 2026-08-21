@@ -40,6 +40,8 @@ void main() {
     WidgetTester tester, {
     FileDetails? details,
     List<MetadataEditOutcome> outcomes = const [],
+    ThemeMode themeMode = ThemeMode.light,
+    Locale? locale,
   }) async {
     final loaded = details ?? aTrack();
     final gateway = FakeCatalogGateway(
@@ -53,6 +55,8 @@ void main() {
     gateway.editOutcomes.addAll(outcomes);
 
     final container = await tester.pumpShell(
+      themeMode: themeMode,
+      locale: locale,
       surfaceSize: const Size(1440, 1000),
       extraOverrides: <Override>[
         catalogGatewayProvider.overrideWithValue(gateway),
@@ -77,6 +81,28 @@ void main() {
     );
     await tester.pump();
   }
+
+  group('reaching the form from the keyboard (FR-UX-11)', () {
+    testWidgets('GivenTheForm_WhenItOpens_ThenTheFirstFieldHasFocus', (
+      tester,
+    ) async {
+      // The rename dialog and the bookmark form both open with their field
+      // focused; this one opened with focus nowhere, so correcting a title
+      // began with a click or a tab.
+      await openForm(tester);
+
+      // Scoped to the form: the shell's search field sits behind the dialog.
+      final field = tester.widget<TextField>(
+        find
+            .descendant(
+              of: find.byType(MusicMetadataForm),
+              matching: find.byType(TextField),
+            )
+            .first,
+      );
+      expect(field.autofocus, isTrue);
+    });
+  });
 
   group('the main flow', () {
     testWidgets('GivenAnAudioFile_WhenItsDetailsOpen_ThenEditingIsOffered', (
@@ -421,5 +447,46 @@ void main() {
         expect(find.byIcon(Icons.edit_outlined), findsNothing);
       },
     );
+  });
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        (tester) async {
+          await openForm(tester, themeMode: mode);
+
+          expect(
+            Theme.of(
+              tester.element(find.byType(MusicMetadataForm).first),
+            ).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
+          );
+        },
+      );
+    }
+  });
+  // Testing Specification 7.1: both languages, asserting that no key renders
+  // as its identifier. Matched on the catalog's key prefixes, the way the
+  // other suites do it — a bare lowercase word is a legitimate metadata value
+  // ("title" is one of this form's own).
+  group('both languages', () {
+    for (final locale in [const Locale('en'), const Locale('pt', 'BR')]) {
+      testWidgets(
+        'Given${locale.languageCode == 'en' ? 'English' : 'Portuguese'}_WhenTheFormOpens_ThenNoStringRendersAsItsKey',
+        (tester) async {
+          await openForm(tester, locale: locale);
+
+          expect(
+            find.textContaining(
+              RegExp('(musicMetadata|metadata|details)[A-Z]'),
+              findRichText: true,
+            ),
+            findsNothing,
+          );
+        },
+      );
+    }
   });
 }

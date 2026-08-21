@@ -28,55 +28,68 @@ class CatalogListing extends ConsumerWidget {
     final listing = ref.watch(listingControllerProvider);
     final type = libraryTypeFor(ref.watch(shellControllerProvider));
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // UC-29 main flow step 1: watchlists are about videos, so the videos
-        // area is where they are reached from. They are not a file type, so
-        // they are not a destination of their own (FR-CT-01).
-        if (type == LibraryType.video)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => WatchlistsScreen.show(context),
-              icon: const Icon(Icons.playlist_play),
-              label: Text(AppLocalizations.of(context).watchlistsOpen),
+    // UC-10 AF-01 is about whether the layout fits *where it is drawn*. The
+    // window is wider than the listing by the navigation panel, the divider,
+    // and the screen padding, so measuring the window would refuse a layout
+    // that fits and accept one that does not.
+    return LayoutBuilder(
+      builder: (context, constraints) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // UC-29 main flow step 1: watchlists are about videos, so the videos
+          // area is where they are reached from. They are not a file type, so
+          // they are not a destination of their own (FR-CT-01).
+          if (type == LibraryType.video)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => WatchlistsScreen.show(context),
+                icon: const Icon(Icons.playlist_play),
+                label: Text(AppLocalizations.of(context).watchlistsOpen),
+              ),
+            ),
+          // UC-31 main flow step 1: reading lists hold books and comics, so
+          // both areas reach them.
+          if (type == LibraryType.document || type == LibraryType.comic)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => ReadingListsScreen.show(context),
+                icon: const Icon(Icons.library_books_outlined),
+                label: Text(AppLocalizations.of(context).readingListsOpen),
+              ),
+            ),
+          if (type != null) _LayoutBar(type: type, width: constraints.maxWidth),
+          Expanded(
+            child: AsyncStateView<List<CatalogFile>>(
+              value: listing,
+              onRetry: () =>
+                  ref.read(listingControllerProvider.notifier).reload(),
+              isEmpty: (files) => files.isEmpty,
+              emptyBuilder: (context) => const _EmptyListing(),
+              builder: (context, files) => type == null
+                  ? _FileList(files: files)
+                  : _LaidOutFiles(
+                      files: files,
+                      type: type,
+                      width: constraints.maxWidth,
+                    ),
             ),
           ),
-        // UC-31 main flow step 1: reading lists hold books and comics, so
-        // both areas reach them.
-        if (type == LibraryType.document || type == LibraryType.comic)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => ReadingListsScreen.show(context),
-              icon: const Icon(Icons.library_books_outlined),
-              label: Text(AppLocalizations.of(context).readingListsOpen),
-            ),
-          ),
-        if (type != null) _LayoutBar(type: type),
-        Expanded(
-          child: AsyncStateView<List<CatalogFile>>(
-            value: listing,
-            onRetry: () =>
-                ref.read(listingControllerProvider.notifier).reload(),
-            isEmpty: (files) => files.isEmpty,
-            emptyBuilder: (context) => const _EmptyListing(),
-            builder: (context, files) => type == null
-                ? _FileList(files: files)
-                : _LaidOutFiles(files: files, type: type),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
 /// The layout switcher, and what it has to say about the window (UC-10).
 class _LayoutBar extends ConsumerWidget {
-  const _LayoutBar({required this.type});
+  const _LayoutBar({required this.type, required this.width});
 
   final LibraryType type;
+
+  /// The listing's own width, which is what a layout has to fit into.
+  final double width;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -84,7 +97,6 @@ class _LayoutBar extends ConsumerWidget {
     final theme = Theme.of(context);
     final layouts = ref.watch(layoutControllerProvider);
     final chosen = layouts.chosenFor(type);
-    final width = MediaQuery.sizeOf(context).width;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -162,15 +174,21 @@ class _LayoutBar extends ConsumerWidget {
 
 /// The files, drawn the way the owner asked for (FR-CT-03).
 class _LaidOutFiles extends ConsumerWidget {
-  const _LaidOutFiles({required this.files, required this.type});
+  const _LaidOutFiles({
+    required this.files,
+    required this.type,
+    required this.width,
+  });
 
   final List<CatalogFile> files;
   final LibraryType type;
 
+  /// The listing's own width, measured by the enclosing layout builder.
+  final double width;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chosen = ref.watch(layoutControllerProvider).chosenFor(type);
-    final width = MediaQuery.sizeOf(context).width;
 
     return switch (chosen.resolvedFor(width)) {
       ViewLayout.list => _FileList(files: files),
@@ -297,17 +315,30 @@ class _FileRow extends ConsumerWidget {
             : Icons.insert_drive_file_outlined,
         color: file.isMissing ? theme.colorScheme.error : null,
       ),
-      title: Text(file.name),
       // The plain list is the name and nothing else; the detailed one adds
-      // where the file actually is, which is the detail that distinguishes two
-      // files with the same name.
-      subtitle: detailed
-          ? Text(
-              file.path,
-              style: theme.textTheme.bodySmall,
-              overflow: TextOverflow.ellipsis,
+      // where the file actually is beside it, which is the detail that
+      // distinguishes two files with the same name. Beside rather than
+      // beneath: a second column is what "list with details" means in
+      // FR-CT-03, and it is the column that needs the medium tier's width —
+      // below the medium floor the layout is substituted rather than squeezed
+      // (UC-10 AF-01).
+      title: detailed
+          ? Row(
+              children: [
+                Expanded(child: Text(file.name)),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    file.path,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             )
-          : null,
+          : Text(file.name),
       // A file the last refresh could not find is still an active record; it
       // is marked rather than hidden, and reviewing them is UC-37.
       trailing: file.isMissing

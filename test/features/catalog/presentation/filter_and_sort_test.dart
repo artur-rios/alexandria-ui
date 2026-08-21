@@ -23,8 +23,10 @@ void main() {
     WidgetTester tester, {
     Map<LibraryType, CatalogListing>? listings,
     Locale? locale,
+    ThemeMode themeMode = ThemeMode.light,
   }) async {
     final container = await tester.pumpShell(
+      themeMode: themeMode,
       locale: locale,
       surfaceSize: const Size(1440, 900),
       extraOverrides: <Override>[
@@ -248,4 +250,21 @@ void main() {
       }
     });
   }
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        (tester) async {
+          await openListing(tester, themeMode: mode);
+
+          expect(
+            Theme.of(tester.element(find.byType(ShellScreen).first)).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
+          );
+        },
+      );
+    }
+  });
 }

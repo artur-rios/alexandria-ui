@@ -3,2191 +3,2070 @@
   "appTitle": "Alexandria",
   "@appTitle": {
     "description": "The application name, shown in the window title bar."
-},
+  },
   "retry": "Try again",
   "@retry": {
     "description": "The action on every failure state that can be retried."
-},
+  },
   "coreUnavailableTitle": "Alexandria's core is not available",
   "@coreUnavailableTitle": {
     "description": "Heading of the core-unavailable state (UC-38 AF-04). The catalog is not reachable and no catalog call is attempted from here."
-},
+  },
   "loginTitle": "Sign in to Alexandria",
   "@loginTitle": {
     "description": "Heading of the login screen (UC-02). Presented whenever there is no active session."
-},
+  },
   "loginEmailLabel": "E-mail",
   "@loginEmailLabel": {
     "description": "Label of the login form's e-mail field."
-},
+  },
   "loginPasswordLabel": "Password",
   "@loginPasswordLabel": {
     "description": "Label of the login form's password field."
-},
+  },
   "loginSubmit": "Sign in",
   "@loginSubmit": {
     "description": "The login form's primary action."
-},
+  },
   "loginEmailMissing": "Enter your e-mail address.",
   "@loginEmailMissing": {
     "description": "UC-02 AF-01: the e-mail field was left empty. The core is not called."
-},
+  },
   "loginEmailMalformed": "That does not look like an e-mail address.",
   "@loginEmailMalformed": {
     "description": "UC-02 AF-01: the e-mail field does not hold an address. The core is not called."
-},
+  },
   "loginPasswordMissing": "Enter your password.",
   "@loginPasswordMissing": {
     "description": "UC-02 AF-01: the password field was left empty. The core is not called."
-},
+  },
   "loginRejected": "That e-mail and password do not match an account.",
   "@loginRejected": {
     "description": "UC-02 AF-02: the core rejected the credentials. Deliberately does not say which of the two was wrong, and does not reveal whether the address is registered."
-},
+  },
   "loginNoAccount": "No account has been set up on this computer yet.",
   "@loginNoAccount": {
     "description": "UC-02 AF-03: the core holds no credentials, so the owner is sent to sign-up (UC-01) by the action beside this message."
-},
+  },
   "signUpTitle": "Create your Alexandria account",
   "@signUpTitle": {
     "description": "Heading of the sign-up screen (UC-01). Presented on first launch, when the core holds no account."
-},
+  },
   "signUpIntro": "This is the only account. Its password cannot be recovered, so choose one you will not lose.",
   "@signUpIntro": {
     "description": "UC-01: explains the stakes before the owner chooses. The core owns no mail transport, so there is no reset to fall back on."
-},
+  },
   "signUpPasswordConfirmationLabel": "Repeat password",
   "@signUpPasswordConfirmationLabel": {
     "description": "Label of the sign-up form's second password field."
-},
+  },
   "signUpSubmit": "Create account",
   "@signUpSubmit": {
     "description": "The sign-up form's primary action."
-},
+  },
   "signUpPasswordConfirmationMissing": "Repeat your password.",
   "@signUpPasswordConfirmationMissing": {
     "description": "UC-01 AF-02: the second password field was left empty. The core is not called."
-},
+  },
   "signUpPasswordMismatch": "The two passwords do not match.",
   "@signUpPasswordMismatch": {
     "description": "UC-01 AF-02: the two entries differ. The core is not called."
-},
+  },
   "signUpRejected": "Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.",
   "@signUpRejected": {
     "description": "UC-01 AF-03: the core rejected the credentials. The core owns the password policy and does not send its reason across the boundary, so this names the rules it enforces without restating them as front-end validation."
-},
+  },
   "signUpAccountExists": "An account already exists on this computer. Sign in instead.",
   "@signUpAccountExists": {
     "description": "UC-01 AF-04: the core already holds an account, so registration is refused and the owner is sent to the login screen."
-},
+  },
   "signUpGoToLogin": "Go to sign in",
   "@signUpGoToLogin": {
     "description": "UC-01 AF-04: the action that leaves sign-up for the login screen."
-},
+  },
   "loginGoToSignUp": "Create an account",
   "@loginGoToSignUp": {
     "description": "UC-02 AF-03: the action that leaves login for the sign-up screen, offered when the core holds no account."
-},
+  },
   "loginSessionEndedTitle": "You were signed out",
   "@loginSessionEndedTitle": {
     "description": "UC-02 AF-04: heading shown on the login screen when a session was discarded because the core rejected a call, rather than because the owner signed out."
-},
+  },
   "failureCoreLibraryNotLoaded": "The Alexandria core could not be loaded from {path}.",
   "@failureCoreLibraryNotLoaded": {
     "description": "Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.",
     "placeholders": {
-        "path": {
-            "type": "String",
-            "example": "C:\\Program Files\\Alexandria\\alexandria_ffi.dll"
-        }
+      "path": {
+        "type": "String",
+        "example": "C:\\Program Files\\Alexandria\\alexandria_ffi.dll"
+      }
     }
-},
+  },
   "failureApplicationDirectoryUnavailable": "The application folder {path} could not be created.",
   "@failureApplicationDirectoryUnavailable": {
     "description": "Startup step 2 failed: the application-support directory could not be resolved or created.",
     "placeholders": {
-        "path": {
-            "type": "String",
-            "example": "C:\\Users\\me\\AppData\\Roaming\\Alexandria"
-        }
+      "path": {
+        "type": "String",
+        "example": "C:\\Users\\me\\AppData\\Roaming\\Alexandria"
+      }
     }
-},
+  },
   "failureCoreInitializationFailed": "The Alexandria core could not open the catalog.",
   "@failureCoreInitializationFailed": {
     "description": "Startup step 3 failed: alexandria_index_init returned a non-success code."
-},
+  },
   "failureCoreUnhealthy": "The Alexandria core reported that it is not healthy.",
   "@failureCoreUnhealthy": {
     "description": "Startup step 4 failed: the core's health status is not the success code."
-},
+  },
   "failureCoreVersionUnsupported": "This version of Alexandria needs a core matching {required}, but found {found}.",
   "@failureCoreVersionUnsupported": {
     "description": "Startup step 4 failed: the core's version is outside the supported range. Both versions are stated.",
     "placeholders": {
-        "found": {
-            "type": "String",
-            "example": "0.4.0"
-        },
-        "required": {
-            "type": "String",
-            "example": ">=0.1.0 <0.2.0"
-        }
+      "found": {
+        "type": "String",
+        "example": "0.4.0"
+      },
+      "required": {
+        "type": "String",
+        "example": ">=0.1.0 <0.2.0"
+      }
     }
-},
+  },
   "failurePreferencesUnreadable": "Your preferences could not be read, so the system theme and language are being used.",
   "@failurePreferencesUnreadable": {
     "description": "Startup step 5 fell back. Reported, not fatal."
-},
+  },
   "failureInvalidInput": "Alexandria rejected that as invalid.",
   "@failureInvalidInput": {
     "description": "The core rejected the input. Its verdict is final even when local validation passed."
-},
+  },
   "failureUnauthorized": "Your session has ended. Please sign in again.",
   "@failureUnauthorized": {
     "description": "The session is absent, expired, or rejected."
-},
+  },
   "failureNotInitialized": "Alexandria is not ready yet. Please restart the application.",
   "@failureNotInitialized": {
     "description": "A call was made before the core was initialized — a fault in the startup sequence rather than something the owner did."
-},
+  },
   "failureNotFound": "That item no longer exists.",
   "@failureNotFound": {
     "description": "The record does not exist, or has passed the retention window that made it reachable."
-},
+  },
   "failureInvalidState": "That cannot be done to this item right now.",
   "@failureInvalidState": {
     "description": "The record exists but is in the wrong state for the operation."
-},
+  },
   "failureDisk": "The file could not be read or written on disk. Nothing was changed.",
   "@failureDisk": {
     "description": "A filesystem operation failed. The core leaves the catalog untouched when this happens."
-},
+  },
   "failureIntegrity": "The file on disk no longer matches what Alexandria recorded.",
   "@failureIntegrity": {
     "description": "The on-disk file and the catalog record have diverged."
-},
+  },
   "failureConfiguration": "Alexandria's configuration could not be read.",
   "@failureConfiguration": {
     "description": "The core's own configuration is missing or unusable."
-},
+  },
   "failureConflict": "That already exists in Alexandria.",
   "@failureConflict": {
     "description": "The operation would create something that already exists. Nothing the owner typed was wrong."
-},
+  },
   "failureRateLimited": "Too many attempts. Wait a moment and try again.",
   "@failureRateLimited": {
     "description": "The core refused because the caller is asking too often. Nothing the owner typed was wrong; the remedy is to wait."
-},
+  },
   "failureServiceUnavailable": "Alexandria could not reach a service it needs, so that step did not happen.",
   "@failureServiceUnavailable": {
     "description": "The core could not reach a dependency — outbound mail being the one that exists today. The catalog is unaffected."
-},
+  },
   "rejectionPasswordTooShort": "Use at least {min} characters.",
   "@rejectionPasswordTooShort": {
     "description": "Core rejection password_too_short. The bound comes from the core, which owns the policy.",
     "placeholders": {
-        "min": {
-            "type": "String",
-            "example": "12"
-        }
+      "min": {
+        "type": "String",
+        "example": "12"
+      }
     }
-},
+  },
   "rejectionPasswordTooLong": "Use at most {max} characters.",
   "@rejectionPasswordTooLong": {
     "description": "Core rejection password_too_long.",
     "placeholders": {
-        "max": {
-            "type": "String",
-            "example": "128"
-        }
+      "max": {
+        "type": "String",
+        "example": "128"
+      }
     }
-},
+  },
   "rejectionPasswordWhitespace": "A password cannot be only spaces.",
   "@rejectionPasswordWhitespace": {
     "description": "Core rejection password_whitespace."
-},
+  },
   "rejectionPasswordRepeatedCharacter": "A password cannot be one character repeated.",
   "@rejectionPasswordRepeatedCharacter": {
     "description": "Core rejection password_repeated_character."
-},
+  },
   "rejectionPasswordTooCommon": "That password is too common. Choose something less predictable.",
   "@rejectionPasswordTooCommon": {
     "description": "Core rejection password_too_common."
-},
+  },
   "rejectionPasswordContainsEmail": "A password cannot contain your e-mail address.",
   "@rejectionPasswordContainsEmail": {
     "description": "Core rejection password_contains_email, which covers both being the address and containing it."
-},
+  },
   "rejectionEmailUntrimmed": "Remove the spaces around your e-mail address.",
   "@rejectionEmailUntrimmed": {
     "description": "Core rejection email_untrimmed."
-},
+  },
   "failureUnexpected": "Something went wrong in Alexandria.",
   "@failureUnexpected": {
     "description": "A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number."
-},
+  },
   "cancel": "Cancel",
   "@cancel": {
     "description": "The declining action on every confirmation modal (UC-38 AF-05). Cancelling changes nothing."
-},
+  },
   "loading": "Loading",
   "@loading": {
     "description": "Accessible label of the loading state every perceptible operation shows (FR-UX-08)."
-},
+  },
   "playbackBarLabel": "Playback",
   "@playbackBarLabel": {
     "description": "Accessible label of the persistent playback bar (FR-UX-01)."
-},
+  },
   "playbackNothingPlaying": "Nothing is playing",
   "@playbackNothingPlaying": {
     "description": "The playback bar's idle state (FR-UX-01). The bar is present from the first frame, so it says what it is showing rather than sitting blank."
-},
+  },
   "destinationHome": "Home",
   "@destinationHome": {
     "description": "Navigation panel entry for the dashboard the application opens on (UC-14)."
-},
+  },
   "destinationMusic": "Music",
   "@destinationMusic": {
     "description": "Navigation panel entry for audio files (FR-CT-01)."
-},
+  },
   "destinationBooks": "Books",
   "@destinationBooks": {
     "description": "Navigation panel entry for books and e-books (FR-CT-01)."
-},
+  },
   "destinationComicBooks": "Comic books",
   "@destinationComicBooks": {
     "description": "Navigation panel entry for comic book archives (FR-CT-01)."
-},
+  },
   "destinationNotes": "Notes",
   "@destinationNotes": {
     "description": "Navigation panel entry for notes, Markdown, and plain text files (FR-CT-01)."
-},
+  },
   "destinationPages": "Pages",
   "@destinationPages": {
     "description": "Navigation panel entry for saved HTML pages (FR-CT-01)."
-},
+  },
   "destinationImages": "Images",
   "@destinationImages": {
     "description": "Navigation panel entry for still images (FR-CT-01)."
-},
+  },
   "destinationBookmarks": "Bookmarks",
   "@destinationBookmarks": {
     "description": "Navigation panel entry for saved links, the one type holding no file on disk (FR-CT-01)."
-},
+  },
   "preferencesTitle": "Preferences",
   "@preferencesTitle": {
     "description": "Title of the preferences dialog (UC-39). Reachable with or without a session."
-},
+  },
   "preferencesOpen": "Open preferences",
   "@preferencesOpen": {
     "description": "Accessible label and tooltip of the control that opens the preferences dialog."
-},
+  },
   "preferencesThemeLabel": "Theme",
   "@preferencesThemeLabel": {
     "description": "Heading of the theme group in preferences (FR-UX-04)."
-},
+  },
   "preferencesThemeSystem": "Match the system",
   "@preferencesThemeSystem": {
     "description": "Theme option: follow the operating system's light or dark setting, and follow it when it changes (UC-39 AF-01)."
-},
+  },
   "preferencesThemeLight": "Light",
   "@preferencesThemeLight": {
     "description": "Theme option: always the light theme."
-},
+  },
   "preferencesThemeDark": "Dark",
   "@preferencesThemeDark": {
     "description": "Theme option: always the dark theme."
-},
+  },
   "preferencesLanguageLabel": "Language",
   "@preferencesLanguageLabel": {
     "description": "Heading of the language group in preferences (FR-UX-05)."
-},
+  },
   "preferencesLanguageSystem": "Match the system",
   "@preferencesLanguageSystem": {
     "description": "Language option: follow the operating system's language when it is one of the two supported, and English otherwise (UC-39 AF-03)."
-},
+  },
   "preferencesUnsaved": "Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.",
   "@preferencesUnsaved": {
     "description": "UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered."
-},
+  },
   "preferencesClose": "Done",
   "@preferencesClose": {
     "description": "The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made."
-},
+  },
   "changeCredentialsOpen": "Change your e-mail and password",
   "@changeCredentialsOpen": {
     "description": "The action in preferences that opens the credential-change form (UC-04 main flow step 1). Offered only while a session is active."
-},
+  },
   "changeCredentialsTitle": "Change credentials",
   "@changeCredentialsTitle": {
     "description": "Title of the credential-change dialog (UC-04)."
-},
+  },
   "changeCredentialsIntro": "Both are replaced together. You stay signed in.",
   "@changeCredentialsIntro": {
     "description": "Explains that the e-mail and password change as one, and that the session survives the change (UC-04 postconditions)."
-},
+  },
   "changeCredentialsEmailLabel": "New e-mail",
   "@changeCredentialsEmailLabel": {
     "description": "Label of the new e-mail field."
-},
+  },
   "changeCredentialsPasswordLabel": "New password",
   "@changeCredentialsPasswordLabel": {
     "description": "Label of the new password field."
-},
+  },
   "changeCredentialsConfirmationLabel": "Repeat the new password",
   "@changeCredentialsConfirmationLabel": {
     "description": "Label of the repeated-password field (FR-AU-10 requires it entered twice)."
-},
+  },
   "changeCredentialsSubmit": "Change",
   "@changeCredentialsSubmit": {
     "description": "The form's primary action."
-},
+  },
   "changeCredentialsDone": "Your e-mail and password have been changed.",
   "@changeCredentialsDone": {
     "description": "UC-04 main flow step 6: the core stored the new hash and the change is confirmed."
-},
+  },
   "changeCredentialsRejected": "The change was refused, and your e-mail and password are unchanged.",
   "@changeCredentialsRejected": {
     "description": "UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched."
-},
+  },
   "librarySourcesOpen": "Library folders",
   "@librarySourcesOpen": {
     "description": "The action in preferences that opens the library-folders screen (UC-05)."
-},
+  },
   "librarySourcesTitle": "Library folders",
   "@librarySourcesTitle": {
     "description": "Title of the library-folders screen (UC-05)."
-},
+  },
   "librarySourcesEmptyTitle": "No library folders yet",
   "@librarySourcesEmptyTitle": {
     "description": "Heading of the first-run guidance shown whenever no folder is registered (FR-LB-11, UC-05 main flow step 1)."
-},
+  },
   "librarySourcesEmptyBody": "Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.",
   "@librarySourcesEmptyBody": {
     "description": "Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06)."
-},
+  },
   "librarySourcesAdd": "Add a folder",
   "@librarySourcesAdd": {
     "description": "The action that opens the platform's native folder picker (FR-LB-01)."
-},
+  },
   "librarySourcesMissing": "There is no folder at {path}. Nothing was added.",
   "@librarySourcesMissing": {
     "description": "UC-05 AF-02: the chosen path does not exist.",
     "placeholders": {
-        "path": {
-            "type": "String"
-        }
+      "path": {
+        "type": "String"
+      }
     }
-},
+  },
   "librarySourcesUnreadable": "The folder at {path} cannot be read. Nothing was added.",
   "@librarySourcesUnreadable": {
     "description": "UC-05 AF-02: the folder exists but its contents cannot be listed.",
     "placeholders": {
-        "path": {
-            "type": "String"
-        }
+      "path": {
+        "type": "String"
+      }
     }
-},
+  },
   "librarySourcesAlreadyRegistered": "That folder is already in your library.",
   "@librarySourcesAlreadyRegistered": {
     "description": "UC-05 AF-03: the chosen folder is already registered. The existing entry is highlighted in the list."
-},
+  },
   "librarySourcesOverlapTitle": "These folders overlap",
   "@librarySourcesOverlapTitle": {
     "description": "Title of the confirmation shown when the chosen folder contains, or sits inside, one already registered (UC-05 AF-04)."
-},
+  },
   "librarySourcesOverlapBody": "{path} overlaps {existing}, which is already in your library. Files inside both will be cataloged once for each folder.",
   "@librarySourcesOverlapBody": {
     "description": "Body of the overlap confirmation. Names both folders and states the consequence the owner is agreeing to (UC-05 AF-04).",
     "placeholders": {
-        "path": {
-            "type": "String"
-        },
-        "existing": {
-            "type": "String"
-        }
+      "path": {
+        "type": "String"
+      },
+      "existing": {
+        "type": "String"
+      }
     }
-},
+  },
   "librarySourcesOverlapConfirm": "Add it anyway",
   "@librarySourcesOverlapConfirm": {
     "description": "The confirming action on the overlap warning (UC-05 AF-04)."
-},
+  },
   "dismiss": "Dismiss",
   "@dismiss": {
     "description": "Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action."
-},
+  },
   "librarySourcesIndex": "Index",
   "@librarySourcesIndex": {
     "description": "The action that starts a scan of a registered folder (UC-06 main flow step 1)."
-},
+  },
   "librarySourcesIndexing": "Scanning…",
   "@librarySourcesIndexing": {
     "description": "Shown while a run is in flight. The scan belongs to the core, so the rest of the application stays usable (FR-LB-07)."
-},
+  },
   "librarySourcesRunComplete": "Scanned {scanned} files, cataloged {indexed}, skipped {skipped}.",
   "@librarySourcesRunComplete": {
     "description": "UC-06 main flow step 5: a finished run's tally. These are the core's own counts for an index run.",
     "placeholders": {
-        "scanned": {
-            "type": "int"
-        },
-        "indexed": {
-            "type": "int"
-        },
-        "skipped": {
-            "type": "int"
-        }
+      "scanned": {
+        "type": "int"
+      },
+      "indexed": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
     }
-},
+  },
   "librarySourcesRunFailedCount": "{failed} files could not be read.",
   "@librarySourcesRunFailedCount": {
     "description": "Appended to a run's outcome when the core reports files it failed on.",
     "placeholders": {
-        "failed": {
-            "type": "int"
-        }
+      "failed": {
+        "type": "int"
+      }
     }
-},
+  },
   "librarySourcesRunFailed": "The scan did not finish.",
   "@librarySourcesRunFailed": {
     "description": "UC-06: the core reports the run as failed."
-},
+  },
   "librarySourcesRunInterrupted": "The scan did not finish, because Alexandria was closed while it was running.",
   "@librarySourcesRunInterrupted": {
     "description": "UC-06 AF-05: the run was interrupted. Its outcome is read at the next launch rather than lost."
-},
+  },
   "librarySourcesRunRefused": "A scan of this folder is already running.",
   "@librarySourcesRunRefused": {
     "description": "UC-06 AF-01: a second run is refused while one is in flight (FR-LB-09)."
-},
+  },
   "librarySourcesStartFailed": "This folder could not be scanned.",
   "@librarySourcesStartFailed": {
     "description": "UC-06 AF-02 and AF-03: the core refused to start the run. The reason from the core follows."
-},
+  },
   "librarySourcesUnregister": "Remove",
   "@librarySourcesUnregister": {
     "description": "The action that unregisters a library folder (UC-08 main flow step 1)."
-},
+  },
   "librarySourcesUnregisterTitle": "Remove {label} from your library folders?",
   "@librarySourcesUnregisterTitle": {
     "description": "Title of the unregister confirmation (UC-08 main flow step 2).",
     "placeholders": {
-        "label": {
-            "type": "String"
-        }
+      "label": {
+        "type": "String"
+      }
     }
-},
+  },
   "librarySourcesUnregisterBody": "Alexandria will stop scanning this folder. Everything already cataloged from it stays in your library, and nothing on disk is touched.",
   "@librarySourcesUnregisterBody": {
     "description": "Body of the unregister confirmation. FR-LB-10 requires it state that catalog records and on-disk files are left untouched (BR-12)."
-},
+  },
   "librarySourcesUnregisterConfirm": "Remove the folder",
   "@librarySourcesUnregisterConfirm": {
     "description": "The confirming action on the unregister confirmation."
-},
+  },
   "librarySourcesUnregisterRefused": "This folder is being scanned. It can be removed once the scan finishes.",
   "@librarySourcesUnregisterRefused": {
     "description": "UC-08 AF-02: a folder with a run in flight is refused until the run settles."
-},
+  },
   "librarySourcesRefresh": "Refresh the catalog",
   "@librarySourcesRefresh": {
     "description": "The action that re-checks everything already cataloged, across every folder at once (UC-07 main flow step 1, FR-LB-06)."
-},
+  },
   "librarySourcesRefreshing": "Re-checking the catalog…",
   "@librarySourcesRefreshing": {
     "description": "Shown while a refresh is in flight (UC-07 main flow step 3)."
-},
+  },
   "librarySourcesRefreshComplete": "{refreshed} files updated, {unchanged} unchanged, {missing} now missing.",
   "@librarySourcesRefreshComplete": {
     "description": "UC-07 main flow step 4: a finished refresh's tally, in the core's own counts for a refresh run.",
     "placeholders": {
-        "refreshed": {
-            "type": "int"
-        },
-        "unchanged": {
-            "type": "int"
-        },
-        "missing": {
-            "type": "int"
-        }
+      "refreshed": {
+        "type": "int"
+      },
+      "unchanged": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "int"
+      }
     }
-},
+  },
   "librarySourcesRefreshRunning": "The catalog is already being re-checked.",
   "@librarySourcesRefreshRunning": {
     "description": "UC-07 AF-01: a second refresh is refused while one is in flight."
-},
+  },
   "librarySourcesRefreshEmpty": "There is nothing cataloged yet. Add a folder and index it first.",
   "@librarySourcesRefreshEmpty": {
     "description": "UC-07 AF-02: the catalog is empty, so registering and indexing a folder is offered instead of a refresh (UC-05, UC-06)."
-},
+  },
   "librarySourcesRefreshFailed": "The catalog could not be re-checked.",
   "@librarySourcesRefreshFailed": {
     "description": "UC-07: the core refused to start the refresh."
-},
-  "librarySourcesMissingReviewPending": "Reviewing missing files arrives with its own use case.",
-  "@librarySourcesMissingReviewPending": {
-    "description": "UC-07 AF-03: the outcome reports how many files are now missing; the link to the missing-files review is UC-37, which is not built yet."
-},
+  },
   "destinationVideos": "Videos",
   "@destinationVideos": {
     "description": "Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog."
-},
+  },
   "catalogEmptyTitle": "Nothing of this type yet",
   "@catalogEmptyTitle": {
     "description": "UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states."
-},
+  },
   "catalogEmptyFirstRun": "Your library is empty. Add a folder and index it, and what is inside will appear here.",
   "@catalogEmptyFirstRun": {
     "description": "UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06)."
-},
+  },
   "catalogEmptyAddFolder": "Library folders",
   "@catalogEmptyAddFolder": {
     "description": "The action on the empty state that opens the library-folders screen (UC-05)."
-},
+  },
   "catalogFileMissing": "Missing from disk",
   "@catalogFileMissing": {
     "description": "Marks a file the last refresh could not find on disk. The record is still active; reviewing them is UC-37."
-},
+  },
   "catalogCount": "{count}",
   "@catalogCount": {
     "description": "The item count beside a type in the navigation panel (FR-CT-01).",
     "placeholders": {
-        "count": {
-            "type": "int"
-        }
+      "count": {
+        "type": "int"
+      }
     }
-},
+  },
   "layoutList": "List",
   "@layoutList": {
     "description": "The plain list layout (FR-CT-03)."
-},
+  },
   "layoutDetailedList": "List with details",
   "@layoutDetailedList": {
     "description": "The list layout with each file's details alongside (FR-CT-03)."
-},
+  },
   "layoutGrid": "Grid",
   "@layoutGrid": {
     "description": "The grid-of-tiles layout (FR-CT-03)."
-},
+  },
   "layoutLabel": "Layout",
   "@layoutLabel": {
     "description": "Accessible label of the control that switches between the three layouts."
-},
+  },
   "layoutSubstituted": "The window is too narrow for that layout, so the list is shown instead.",
   "@layoutSubstituted": {
     "description": "UC-10 AF-01: the chosen layout does not fit, so the closest one that does is drawn and the substitution is stated rather than columns being clipped."
-},
+  },
   "layoutUnsaved": "The layout changed, but the choice could not be saved — it will not be remembered next time.",
   "@layoutUnsaved": {
     "description": "UC-10 AF-02: the settings store could not be written. The layout still applies for this session."
-},
+  },
   "searchLabel": "Search the library",
   "@searchLabel": {
     "description": "Label of the catalog-wide search field (UC-11 main flow step 1)."
-},
+  },
   "searchClear": "Clear the search",
   "@searchClear": {
     "description": "Accessible label of the control that clears the search and restores the previous listing (UC-11 AF-02)."
-},
+  },
   "searchNoResults": "Nothing matches “{term}”.",
   "@searchNoResults": {
     "description": "UC-11 AF-01: no file matched. Names the term so the owner can see what was searched for. Distinct from loading and from error (FR-CT-09).",
     "placeholders": {
-        "term": {
-            "type": "String"
-        }
+      "term": {
+        "type": "String"
+      }
     }
-},
+  },
   "searchPartial": "Some of the library could not be read, so more results may exist.",
   "@searchPartial": {
     "description": "UC-11 AF-03: at least one type could not be listed, so the results are a partial answer rather than the whole one."
-},
+  },
   "searchResultsFor": "Results for “{term}”",
   "@searchResultsFor": {
     "description": "Heading above the grouped search results.",
     "placeholders": {
-        "term": {
-            "type": "String"
-        }
+      "term": {
+        "type": "String"
+      }
     }
-},
+  },
   "filtersLabel": "Filters and order",
   "@filtersLabel": {
     "description": "Accessible label of the control that opens the filter and sort choices (UC-12)."
-},
+  },
   "filterLifecycle": "Show",
   "@filterLifecycle": {
     "description": "Heading of the lifecycle filter (FR-CT-07)."
-},
+  },
   "filterLifecycleActive": "In the library",
   "@filterLifecycleActive": {
     "description": "Lifecycle filter: only records the core calls active. What a listing opens on."
-},
+  },
   "filterLifecycleDeleted": "Deleted",
   "@filterLifecycleDeleted": {
     "description": "Lifecycle filter: only soft-deleted records."
-},
+  },
   "filterLifecycleAll": "Everything",
   "@filterLifecycleAll": {
     "description": "Lifecycle filter: active and deleted records together."
-},
+  },
   "sortLabel": "Order by",
   "@sortLabel": {
     "description": "Heading of the sort choices (FR-CT-08)."
-},
+  },
   "sortByName": "Name",
   "@sortByName": {
     "description": "Sort the listing by file name."
-},
+  },
   "sortByIndexed": "Date added",
   "@sortByIndexed": {
     "description": "Sort the listing by when the core last indexed the file."
-},
+  },
   "sortAscending": "Ascending",
   "@sortAscending": {
     "description": "Sort direction: A to Z, oldest first."
-},
+  },
   "sortDescending": "Descending",
   "@sortDescending": {
     "description": "Sort direction: Z to A, newest first."
-},
+  },
   "filtersClear": "Clear the filters",
   "@filtersClear": {
     "description": "The action that restores the unfiltered listing (UC-12 AF-02). The sort is left alone, because ordering hides nothing."
-},
+  },
   "filtersEmpty": "Nothing matches the filters you have set.",
   "@filtersEmpty": {
     "description": "UC-12 AF-01: the filter combination matched nothing. Offers to clear them."
-},
+  },
   "filtersRejected": "That filter was refused, so the previous one is back.",
   "@filtersRejected": {
     "description": "UC-12 AF-04: the core rejected the filter as invalid input, and the previous filters were restored."
-},
+  },
   "detailsTitle": "Details",
   "@detailsTitle": {
     "description": "Title of the file detail view (UC-13, FR-CT-05)."
-},
+  },
   "detailsPath": "Where it is",
   "@detailsPath": {
     "description": "Heading above the file's on-disk path."
-},
+  },
   "detailsMetadata": "About it",
   "@detailsMetadata": {
     "description": "Heading above the file's type-specific metadata."
-},
+  },
   "detailsState": "State",
   "@detailsState": {
     "description": "Heading above the file's lifecycle state."
-},
+  },
   "detailsStateActive": "In the library",
   "@detailsStateActive": {
     "description": "The file's record is active."
-},
+  },
   "detailsStateDeleted": "Deleted",
   "@detailsStateDeleted": {
     "description": "UC-13 AF-02: the record is soft-deleted."
-},
+  },
   "detailsStateMissing": "Missing from disk",
   "@detailsStateMissing": {
     "description": "UC-13 AF-03: the record is active but the file was not where the catalog says it is."
-},
+  },
   "detailsOpen": "Open",
   "@detailsOpen": {
     "description": "The action that hands the file to its viewer or player (FR-CT-12)."
-},
+  },
   "detailsNoViewer": "Nothing can open this kind of file yet.",
   "@detailsNoViewer": {
     "description": "UC-13 AF-04: no viewer is registered for the type. The other actions stay available."
-},
+  },
   "detailsMissingHint": "Alexandria could not find this file where the catalog says it is. Re-check the catalog to find out whether it has come back.",
   "@detailsMissingHint": {
     "description": "UC-13 AF-03: what a missing file means, and the re-scan offered for it (UC-07)."
-},
+  },
   "detailsRescan": "Re-check the catalog",
   "@detailsRescan": {
     "description": "The action AF-03 offers, which is UC-07's refresh."
-},
-  "detailsDeletedHint": "This record is deleted. Restoring it arrives with its own use case.",
+  },
+  "detailsDeletedHint": "This record is deleted. Restore it to edit or open it again.",
   "@detailsDeletedHint": {
-    "description": "UC-13 AF-02: the record is shown as deleted; restoring it is UC-34, which is not built yet."
-},
+    "description": "UC-13 AF-02: a deleted record is shown as deleted and restore is offered instead of editing."
+  },
   "detailsNotFound": "That file is no longer in the catalog.",
   "@detailsNotFound": {
     "description": "UC-13 AF-01: the core reports the file as not found, so the listing is refreshed and the owner returns to it."
-},
+  },
   "detailsMetadataNone": "The core reports nothing else about this file.",
   "@detailsMetadataNone": {
     "description": "Shown when the core answers no type-specific metadata — text and HTML files have none, and a file whose metadata has not been written yet has none either."
-},
+  },
   "detailsWidth": "Width",
   "@detailsWidth": {
     "description": "Label of an image's extracted pixel width."
-},
+  },
   "detailsHeight": "Height",
   "@detailsHeight": {
     "description": "Label of an image's extracted pixel height."
-},
+  },
   "detailsPages": "Pages",
   "@detailsPages": {
     "description": "Label of a document's or comic's extracted page count."
-},
+  },
   "detailsDuration": "Duration",
   "@detailsDuration": {
     "description": "Label of a video's extracted duration."
-},
+  },
   "dashboardRecent": "Recently added",
   "@dashboardRecent": {
     "description": "Heading of the dashboard's recently added section (UC-14, FR-CT-11)."
-},
+  },
   "dashboardRecentNone": "Nothing has been added yet.",
   "@dashboardRecentNone": {
     "description": "The recently added section has nothing to show."
-},
+  },
   "dashboardInProgress": "In progress",
   "@dashboardInProgress": {
     "description": "Heading of the dashboard's in-progress section (UC-14, FR-CT-11)."
-},
-  "dashboardInProgressNone": "Nothing is in progress. Watchlists and reading lists arrive with their own use cases.",
+  },
+  "dashboardInProgressNone": "Nothing is in progress.",
   "@dashboardInProgressNone": {
-    "description": "UC-14 AF-02: the section states that nothing is in progress rather than rendering empty. Watchlists and reading lists are M-09, so this is always the state today."
-},
+    "description": "UC-14 AF-02: the section states that nothing is in progress rather than rendering empty."
+  },
+  "dashboardInProgressIn": "In {list}",
+  "@dashboardInProgressIn": {
+    "description": "UC-14 main flow step 2: which watchlist or reading list an in-progress item belongs to.",
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardInProgressInAt": "In {list} — {progress}",
+  "@dashboardInProgressInAt": {
+    "description": "UC-14 main flow step 2: the list an in-progress item belongs to, and how far through it the owner is.",
+    "placeholders": {
+      "list": {
+        "type": "String"
+      },
+      "progress": {
+        "type": "String"
+      }
+    }
+  },
   "dashboardCounts": "What is in the library",
   "@dashboardCounts": {
     "description": "Heading of the dashboard's per-type counts (UC-14, FR-CT-11)."
-},
+  },
   "dashboardLastRun": "The last scan",
   "@dashboardLastRun": {
     "description": "Heading of the dashboard's most-recent-run section (UC-14, FR-CT-11)."
-},
+  },
   "dashboardLastRunNone": "Nothing has been scanned in this session.",
   "@dashboardLastRunNone": {
     "description": "No index or refresh run has been observed since the application started."
-},
+  },
   "dashboardLastRunRunning": "A scan is running now.",
   "@dashboardLastRunRunning": {
     "description": "UC-14 AF-04: a run is in flight, and the dashboard updates when it settles."
-},
+  },
   "dashboardLastRunComplete": "The last scan finished.",
   "@dashboardLastRunComplete": {
     "description": "The most recent run completed."
-},
+  },
   "dashboardLastRunFailed": "The last scan did not finish.",
   "@dashboardLastRunFailed": {
     "description": "The most recent run failed."
-},
+  },
   "dashboardLastRunInterrupted": "The last scan was interrupted when Alexandria closed.",
   "@dashboardLastRunInterrupted": {
     "description": "The most recent run was interrupted rather than failing."
-},
+  },
   "detailsEditMetadata": "Edit metadata",
   "@detailsEditMetadata": {
     "description": "Opens the music metadata form from an audio file's detail view (UC-15 main flow step 1)."
-},
+  },
   "musicMetadataTitle": "Music metadata",
   "@musicMetadataTitle": {
     "description": "Title of the music metadata form (UC-15, FR-ME-01)."
-},
+  },
   "musicMetadataFieldTitle": "Title",
   "@musicMetadataFieldTitle": {
     "description": "Label of the track title field."
-},
+  },
   "musicMetadataFieldArtist": "Artist",
   "@musicMetadataFieldArtist": {
     "description": "Label of the artist field."
-},
+  },
   "musicMetadataFieldAlbum": "Album",
   "@musicMetadataFieldAlbum": {
     "description": "Label of the album field."
-},
+  },
   "musicMetadataFieldYear": "Year",
   "@musicMetadataFieldYear": {
     "description": "Label of the release year field."
-},
+  },
   "musicMetadataFieldGenre": "Genre",
   "@musicMetadataFieldGenre": {
     "description": "Label of the genre field."
-},
+  },
   "musicMetadataFieldTrack": "Track number",
   "@musicMetadataFieldTrack": {
     "description": "Label of the track number field."
-},
+  },
   "musicMetadataSave": "Save",
   "@musicMetadataSave": {
     "description": "Sends the edited metadata to the core (UC-15 main flow step 5)."
-},
+  },
   "musicMetadataCancel": "Cancel",
   "@musicMetadataCancel": {
     "description": "Closes the metadata form without saving."
-},
+  },
   "musicMetadataErrorNotANumber": "Enter a whole number.",
   "@musicMetadataErrorNotANumber": {
     "description": "UC-15 AF-01: a numeric field holds something that is not a number, so the core is not called."
-},
+  },
   "musicMetadataErrorYear": "Enter a four-digit year.",
   "@musicMetadataErrorYear": {
     "description": "UC-15 AF-01: the year is earlier than any recording could carry, which is a typo rather than a year."
-},
+  },
   "musicMetadataErrorTrack": "A track number starts at 1.",
   "@musicMetadataErrorTrack": {
     "description": "UC-15 AF-01: the track number is zero or negative."
-},
+  },
   "musicMetadataErrorTooLong": "Keep this under {max} characters.",
   "@musicMetadataErrorTooLong": {
     "description": "UC-15 AF-01: a text field is longer than the core stores.",
     "placeholders": {
-        "max": {
-            "type": "int"
-        }
+      "max": {
+        "type": "int"
+      }
     }
-},
+  },
   "signOut": "Sign out",
   "@signOut": {
     "description": "UC-03 main flow step 1: ends the session without closing the application."
-},
+  },
   "signOutUnsavedTitle": "Unsaved changes",
   "@signOutUnsavedTitle": {
     "description": "UC-03 AF-01: the heading of the warning shown when an editor is holding changes that were never saved."
-},
+  },
   "signOutUnsavedMessage": "Signing out now discards the changes you have not saved. Cancel to go back and save them first.",
   "@signOutUnsavedMessage": {
     "description": "UC-03 AF-01: names what signing out would lose, and says that cancelling is how to save it."
-},
+  },
   "signOutUnsavedConfirm": "Sign out and discard",
   "@signOutUnsavedConfirm": {
     "description": "UC-03 AF-01: confirms the sign-out, unsaved changes and all."
-},
+  },
   "signOutIndexRunContinues": "You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.",
   "@signOutIndexRunContinues": {
     "description": "UC-03 AF-02: the scan belongs to the core, so signing out neither stopped it nor lost its outcome."
-},
+  },
   "videoMetadataTitle": "Edit video metadata",
   "@videoMetadataTitle": {
     "description": "UC-16 main flow step 2: the heading of the video metadata form."
-},
+  },
   "videoMetadataFieldTitle": "Title",
   "@videoMetadataFieldTitle": {
     "description": "UC-16: the video's title."
-},
+  },
   "videoMetadataFieldYear": "Year",
   "@videoMetadataFieldYear": {
     "description": "UC-16: the year the video was released."
-},
+  },
   "videoMetadataFieldResolution": "Resolution",
   "@videoMetadataFieldResolution": {
     "description": "UC-16: the video's resolution, as the core recorded or the owner corrects it."
-},
+  },
   "videoMetadataFieldMediaKind": "Kind",
   "@videoMetadataFieldMediaKind": {
     "description": "UC-16 / FR-ME-02: whether the video is a movie or a series."
-},
+  },
   "videoMetadataMovie": "Movie",
   "@videoMetadataMovie": {
     "description": "UC-16: the video is a standalone film, tracked as a single item."
-},
+  },
   "videoMetadataSeries": "Series",
   "@videoMetadataSeries": {
     "description": "UC-16: the video belongs to a series, tracked per episode."
-},
+  },
   "videoMetadataSave": "Save",
   "@videoMetadataSave": {
     "description": "UC-16 main flow step 4: sends the edited metadata to the core."
-},
+  },
   "videoMetadataCancel": "Cancel",
   "@videoMetadataCancel": {
     "description": "Closes the video metadata form without saving."
-},
+  },
   "videoMetadataMarkingWarning": "This video is tracked per episode. Marking it as a movie replaces that with progress for the item as a whole.",
   "@videoMetadataMarkingWarning": {
     "description": "UC-16 AF-03: what changing the marking from series to movie costs, asked before the core is called."
-},
+  },
   "videoMetadataMarkingConfirm": "Mark as a movie",
   "@videoMetadataMarkingConfirm": {
     "description": "UC-16 AF-03: confirms the marking change and sends it."
-},
+  },
   "videoMetadataErrorNotANumber": "Enter a whole number.",
   "@videoMetadataErrorNotANumber": {
     "description": "UC-16 AF-01: the year holds something that is not a number, so the core is not called."
-},
+  },
   "videoMetadataErrorYear": "Enter a four-digit year.",
   "@videoMetadataErrorYear": {
     "description": "UC-16 AF-01: the year is earlier than any film could carry, which is a typo rather than a year."
-},
+  },
   "videoMetadataErrorTooLong": "Keep this under {max} characters.",
   "@videoMetadataErrorTooLong": {
     "description": "UC-16 AF-01: a text field is longer than the core stores.",
     "placeholders": {
-        "max": {
-            "type": "int"
-        }
+      "max": {
+        "type": "int"
+      }
     }
-},
+  },
   "videoMetadataMarkingCancel": "Keep it as a series",
   "@videoMetadataMarkingCancel": {
     "description": "UC-16 AF-03: declines the marking change, which is what keeps the per-episode progress. Named rather than \"Cancel\", because the form's own cancel sits beside it and means something else."
-},
+  },
   "renameOpen": "Rename",
   "@renameOpen": {
     "description": "UC-17 main flow step 1: opens the rename dialog from a file's detail view."
-},
+  },
   "renameTitle": "Rename file",
   "@renameTitle": {
     "description": "UC-17: the heading of the rename dialog."
-},
+  },
   "renameFieldLabel": "File name",
   "@renameFieldLabel": {
     "description": "UC-17: the field holding the new name, on disk and in the catalog."
-},
+  },
   "renameSubmit": "Rename",
   "@renameSubmit": {
     "description": "UC-17 main flow step 3: sends the new name to the core."
-},
+  },
   "renameNothingChanged": "Neither the catalog nor the file on disk was changed.",
   "@renameNothingChanged": {
     "description": "UC-17 AF-02: what the core guarantees when the rename failed on disk."
-},
+  },
   "renameErrorEmpty": "Enter a file name.",
   "@renameErrorEmpty": {
     "description": "UC-17 AF-01: the name is empty, so the core is not called."
-},
+  },
   "renameErrorForbidden": "This name uses a character the file system does not allow.",
   "@renameErrorForbidden": {
     "description": "UC-17 AF-01: the name holds a character the host operating system forbids."
-},
+  },
   "renameErrorReserved": "This name is reserved by the operating system.",
   "@renameErrorReserved": {
     "description": "UC-17 AF-01: Windows reserves a handful of device names, whatever extension follows them."
-},
+  },
   "renameErrorTrailingDot": "A file name cannot end in a dot.",
   "@renameErrorTrailingDot": {
     "description": "UC-17 AF-01: Windows strips a trailing dot silently, which would leave the catalog and the disk disagreeing."
-},
+  },
   "renameErrorTooLong": "Keep the name under {max} characters.",
   "@renameErrorTooLong": {
     "description": "UC-17 AF-01: the name is longer than a single path component may be.",
     "placeholders": {
-        "max": {
-            "type": "int"
-        }
+      "max": {
+        "type": "int"
+      }
     }
-},
+  },
   "editorOpen": "Edit",
   "@editorOpen": {
     "description": "UC-18 main flow step 1: opens the text or Markdown editor from a file's detail view."
-},
+  },
   "editorClose": "Close the editor",
   "@editorClose": {
     "description": "UC-18: leaves the editor, asking first when there are unsaved changes."
-},
+  },
   "editorSave": "Save",
   "@editorSave": {
     "description": "UC-18 main flow step 5: writes the edited content back through the core."
-},
+  },
   "editorUnsaved": "Unsaved changes",
   "@editorUnsaved": {
     "description": "UC-18 / FR-ME-09: the content on screen is not what is on disk."
-},
+  },
   "editorDismiss": "Dismiss",
   "@editorDismiss": {
     "description": "UC-18: acknowledges a message and leaves the content alone."
-},
+  },
   "editorDiscard": "Discard",
   "@editorDiscard": {
     "description": "UC-18 AF-02: leaves the editor without saving."
-},
+  },
   "editorReload": "Reload from disk",
   "@editorReload": {
     "description": "UC-18 AF-05: replaces what is on screen with what the file now holds."
-},
+  },
   "editorOverwrite": "Save anyway",
   "@editorOverwrite": {
     "description": "UC-18 AF-05: writes over the version that changed on disk."
-},
+  },
   "editorSignInAgain": "Sign in again",
   "@editorSignInAgain": {
     "description": "UC-18 AF-06: acknowledges that the session ended and the content could not be saved."
-},
+  },
   "editorNothingToSave": "The content has not changed, so nothing was written.",
   "@editorNothingToSave": {
     "description": "UC-18 AF-01: the editor holds exactly what was read, so the core was not called."
-},
+  },
   "editorLeaveUnsaved": "You have changes that are not saved. Save them, discard them, or stay in the editor.",
   "@editorLeaveUnsaved": {
     "description": "UC-18 AF-02 / FR-ME-09: the warning before unsaved changes are discarded."
-},
+  },
   "editorChangedOnDisk": "This file changed on disk since you opened it. Reload to see the new version, or save anyway to replace it.",
   "@editorChangedOnDisk": {
     "description": "UC-18 AF-05: something else wrote the file between the read and the save."
-},
+  },
   "editorRecordGone": "This file is no longer in the catalog. What you have written is still here, and is not saved.",
   "@editorRecordGone": {
     "description": "UC-18 AF-04: the record went while the editor was open, and nothing typed is discarded silently."
-},
+  },
   "editorSessionRejected": "Your session ended, so this could not be saved. Signing in again will lose what is on screen.",
   "@editorSessionRejected": {
     "description": "UC-18 AF-06: the core rejected the write, and the owner is warned before the session goes."
-},
+  },
   "editorCouldNotRead": "This file could not be read.",
   "@editorCouldNotRead": {
     "description": "UC-18: the content never loaded, so there is nothing to edit."
-},
+  },
   "editorSaveAndClose": "Save and close",
   "@editorSaveAndClose": {
     "description": "UC-18 AF-02: writes the unsaved changes and then leaves the editor. Named apart from the editor's own save, which stays where it is."
-},
+  },
   "videoPlay": "Play",
   "@videoPlay": {
     "description": "UC-19 main flow step 1: opens the video player, and resumes it while playing."
-},
+  },
   "videoPause": "Pause",
   "@videoPause": {
     "description": "UC-19 main flow step 4 / FR-PL-02: pauses playback where it is."
-},
+  },
   "videoClose": "Close the player",
   "@videoClose": {
     "description": "UC-19 main flow step 7: stops playback and records where it stopped."
-},
+  },
   "videoSeekBackward": "Back ten seconds",
   "@videoSeekBackward": {
     "description": "UC-19 / FR-PL-02: seeks backward."
-},
+  },
   "videoSeekForward": "Forward ten seconds",
   "@videoSeekForward": {
     "description": "UC-19 / FR-PL-02: seeks forward."
-},
+  },
   "videoFullScreen": "Full screen",
   "@videoFullScreen": {
     "description": "UC-19 / FR-PL-02: fills the window with the video, or stops doing so."
-},
+  },
   "videoSubtitles": "Subtitles",
   "@videoSubtitles": {
     "description": "UC-19 main flow step 5 / FR-PL-03: the subtitle tracks the file provides."
-},
+  },
   "videoSubtitlesOff": "Off",
   "@videoSubtitlesOff": {
     "description": "UC-19 / FR-PL-03: turns subtitles off, which the requirement names as one of the choices."
-},
+  },
   "videoNoSubtitles": "This file carries no subtitles",
   "@videoNoSubtitles": {
     "description": "UC-19 AF-03: the control says none is available rather than being silently absent."
-},
+  },
   "videoAudioTracks": "Audio tracks",
   "@videoAudioTracks": {
     "description": "UC-19 main flow step 6 / FR-PL-04: the audio tracks the file provides."
-},
+  },
   "videoNoAudioTracks": "This file carries one audio track",
   "@videoNoAudioTracks": {
     "description": "UC-19 AF-03: there is no alternative to choose, and the control says so."
-},
+  },
   "videoResume": "Resume",
   "@videoResume": {
     "description": "UC-19 AF-04: plays from where it stopped last time."
-},
+  },
   "videoStartOver": "Start over",
   "@videoStartOver": {
     "description": "UC-19 AF-04: plays from the beginning, forgetting the resume point."
-},
+  },
   "videoFileMissing": "This file is not where the catalog says it is.",
   "@videoFileMissing": {
     "description": "UC-19 AF-01: the record is there and the file on disk is not."
-},
+  },
   "videoCannotDecode": "This file cannot be played.",
   "@videoCannotDecode": {
     "description": "UC-19 AF-02 / FR-PL-10: the engine could not decode the format, and the application carries on."
-},
+  },
   "videoResumePrompt": "You stopped watching at {position}.",
   "@videoResumePrompt": {
     "description": "UC-19 AF-04: the resume point, offered before anything is opened.",
     "placeholders": {
-        "position": {
-            "type": "String"
-        }
+      "position": {
+        "type": "String"
+      }
     }
-},
+  },
   "videoTrackUnnamed": "Track {id}",
   "@videoTrackUnnamed": {
     "description": "UC-19 / FR-PL-03, FR-PL-04: a track the file names neither by title nor by language.",
     "placeholders": {
-        "id": {
-            "type": "String"
-        }
+      "id": {
+        "type": "String"
+      }
     }
-},
+  },
   "audioPlay": "Play",
   "@audioPlay": {
     "description": "UC-20 main flow step 1: plays this track on its own."
-},
+  },
   "audioPlayAlbum": "Play album",
   "@audioPlayAlbum": {
     "description": "UC-20 main flow steps 1 and 3: queues the album this track belongs to."
-},
+  },
   "audioPlayArtist": "Play artist",
   "@audioPlayArtist": {
     "description": "UC-20 main flow steps 1 and 3: queues everything by this track's artist."
-},
+  },
   "audioPause": "Pause",
   "@audioPause": {
     "description": "UC-20 main flow step 6: pauses playback where it is."
-},
+  },
   "audioNext": "Next track",
   "@audioNext": {
     "description": "UC-20 main flow step 6 / FR-PL-06: skips forward within the queue."
-},
+  },
   "audioPrevious": "Previous track",
   "@audioPrevious": {
     "description": "UC-20 main flow step 6 / FR-PL-06: skips back within the queue."
-},
+  },
   "audioStop": "Stop",
   "@audioStop": {
     "description": "UC-20 main flow step 7: stops playback and clears the queue."
-},
+  },
   "audioNothingPlayable": "Nothing in this selection could be played.",
   "@audioNothingPlayable": {
     "description": "UC-20 AF-03: every queued file failed, so the queue was cleared."
-},
+  },
   "audioSkipped": "Skipped {name} — it could not be played.",
   "@audioSkipped": {
     "description": "UC-20 AF-01 and AF-02: which file was skipped, named rather than counted, while the queue carries on.",
     "placeholders": {
-        "name": {
-            "type": "String"
-        }
+      "name": {
+        "type": "String"
+      }
     }
-},
+  },
   "audioResumePrompt": "You stopped this track at {position}.",
   "@audioResumePrompt": {
     "description": "UC-20 AF-04: the resume point for a single track, offered before it starts.",
     "placeholders": {
-        "position": {
-            "type": "String"
-        }
+      "position": {
+        "type": "String"
+      }
     }
-},
+  },
   "audioPlayer": "Player",
   "@audioPlayer": {
     "description": "UC-21: the full player's heading when nothing names an album or an artist."
-},
+  },
   "audioOpenPlayer": "Open the player",
   "@audioOpenPlayer": {
     "description": "UC-21 main flow step 2: opens the full player, where the album's medium is shown."
-},
+  },
   "albumMediumVinyl": "A record turning on a turntable",
   "@albumMediumVinyl": {
     "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
-},
+  },
   "albumMediumTape": "A cassette turning in a tape deck",
   "@albumMediumTape": {
     "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
-},
+  },
   "albumMediumDisc": "A disc turning in a player",
   "@albumMediumDisc": {
     "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
-},
+  },
   "viewerOpen": "Open",
   "@viewerOpen": {
     "description": "UC-22 main flow step 1: opens the viewer registered for this file's type."
-},
+  },
   "viewerClose": "Close the viewer",
   "@viewerClose": {
     "description": "UC-22 main flow step 6: leaves the viewer, retaining nothing."
-},
+  },
   "viewerNext": "Next chapter",
   "@viewerNext": {
     "description": "UC-22 main flow step 5: moves on through an e-book."
-},
+  },
   "viewerPrevious": "Previous chapter",
   "@viewerPrevious": {
     "description": "UC-22 main flow step 5: moves back through an e-book."
-},
+  },
   "viewerFileMissing": "This file is not where the catalog says it is.",
   "@viewerFileMissing": {
     "description": "UC-22 AF-01: the record is there and the file on disk is not."
-},
+  },
   "viewerUnreadable": "This file could not be read. It may be damaged, or not the format its name claims.",
   "@viewerUnreadable": {
     "description": "UC-22 AF-02: the bytes are not what the extension says they are."
-},
+  },
   "viewerEncrypted": "This document is protected by a password, which this application does not ask for or store.",
   "@viewerEncrypted": {
     "description": "UC-22 AF-03: an encrypted document, reported rather than prompted for."
-},
+  },
   "viewerNone": "There is no viewer for this kind of file yet. Its other actions are still available.",
   "@viewerNone": {
     "description": "UC-22 AF-04 / FR-VW-08: no viewer is registered for the type."
-},
+  },
   "viewerUnsupportedFormat": "{name} is in a format no bundled decoder can open.",
   "@viewerUnsupportedFormat": {
     "description": "UC-23 AF-03: the archive format has no bundled decoder; the file is named so the owner knows which one.",
     "placeholders": {
-        "name": {
-            "type": "String"
-        }
+      "name": {
+        "type": "String"
+      }
     }
-},
+  },
   "viewerChapterOf": "Chapter {position} of {total}",
   "@viewerChapterOf": {
     "description": "UC-22: where the owner is in an e-book.",
     "placeholders": {
-        "position": {
-            "type": "int"
-        },
-        "total": {
-            "type": "int"
-        }
+      "position": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
-},
+  },
   "comicFitPage": "Fit the page",
   "@comicFitPage": {
     "description": "UC-23 main flow step 3 / FR-VW-03: the whole page, as large as it goes."
-},
+  },
   "comicFitWidth": "Fit the width",
   "@comicFitWidth": {
     "description": "UC-23 main flow step 3 / FR-VW-03: the page's width, so the lettering is legible and the owner scrolls."
-},
+  },
   "comicNextPage": "Next page",
   "@comicNextPage": {
     "description": "UC-23 main flow step 3: turns the page."
-},
+  },
   "comicPreviousPage": "Previous page",
   "@comicPreviousPage": {
     "description": "UC-23 main flow step 3: turns back."
-},
+  },
   "comicPageOf": "Page {page} of {total}",
   "@comicPageOf": {
     "description": "UC-23: where the owner is in the archive.",
     "placeholders": {
-        "page": {
-            "type": "int"
-        },
-        "total": {
-            "type": "int"
-        }
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
-},
+  },
   "comicPagesSkipped": "These pages could not be read: {pages}",
   "@comicPagesSkipped": {
     "description": "UC-23 AF-04: the gaps are marked rather than silently jumped, and named so the owner knows what is wrong with their file.",
     "placeholders": {
-        "pages": {
-            "type": "String"
-        }
+      "pages": {
+        "type": "String"
+      }
     }
-},
+  },
   "imageFit": "Fit to the window",
   "@imageFit": {
     "description": "UC-24 main flow step 4 / FR-VW-04: returns a zoomed image to fitting the window."
-},
+  },
   "imageNext": "Next image",
   "@imageNext": {
     "description": "UC-24 main flow step 5: moves to the next image in the current listing."
-},
+  },
   "imagePrevious": "Previous image",
   "@imagePrevious": {
     "description": "UC-24 main flow step 5: moves to the previous one."
-},
+  },
   "imageOf": "{position} of {total}",
   "@imageOf": {
     "description": "UC-24: where the owner is in the listing they opened the image from.",
     "placeholders": {
-        "position": {
-            "type": "int"
-        },
-        "total": {
-            "type": "int"
-        }
+      "position": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
-},
+  },
   "pageScriptsNotRun": "This page is shown as content. Any script it contains is not run.",
   "@pageScriptsNotRun": {
     "description": "UC-25 AF-03: the renderer draws widgets and has no engine to run script in, and the owner is told rather than left wondering why the page's controls do nothing."
-},
+  },
   "pageMalformed": "This page's markup is incomplete, so some of it may be missing.",
   "@pageMalformed": {
     "description": "UC-25 AF-04: what could be parsed is drawn, and the rest is admitted to."
-},
+  },
   "pageMissingAssets": "These files the page refers to are not on disk: {assets}",
   "@pageMissingAssets": {
     "description": "UC-25 AF-02: the page renders without them and names what could not be loaded.",
     "placeholders": {
-        "assets": {
-            "type": "String"
-        }
+      "assets": {
+        "type": "String"
+      }
     }
-},
+  },
   "bookmarkAdd": "Add a bookmark",
   "@bookmarkAdd": {
     "description": "UC-28 main flow step 3: opens the form that creates one."
-},
+  },
   "bookmarkEdit": "Edit this bookmark",
   "@bookmarkEdit": {
     "description": "UC-28 main flow step 5: opens the form on an existing bookmark."
-},
+  },
   "bookmarkCreate": "Create",
   "@bookmarkCreate": {
     "description": "UC-28 main flow step 4: sends the new bookmark to the core."
-},
+  },
   "bookmarkSave": "Save",
   "@bookmarkSave": {
     "description": "UC-28 main flow step 5: sends the changed bookmark to the core."
-},
+  },
   "bookmarkTitleLabel": "Title",
   "@bookmarkTitleLabel": {
     "description": "UC-28: what the bookmark is called in the listing."
-},
+  },
   "bookmarkUrlLabel": "Address",
   "@bookmarkUrlLabel": {
     "description": "UC-28: the address the bookmark opens."
-},
+  },
   "bookmarksNone": "You have not saved any bookmarks yet.",
   "@bookmarksNone": {
     "description": "UC-28 main flow step 2: the listing is empty, which is a state and not a failure."
-},
+  },
   "bookmarkFieldEmpty": "This cannot be empty.",
   "@bookmarkFieldEmpty": {
     "description": "UC-28 AF-01 / FR-OG-12: a blank title or address, refused before the core is called."
-},
+  },
   "bookmarkUrlMalformed": "This is not an address.",
   "@bookmarkUrlMalformed": {
     "description": "UC-28 AF-01 / FR-OG-12: the address does not parse."
-},
+  },
   "bookmarkUrlUnopenable": "Enter a web address starting with http:// or https://.",
   "@bookmarkUrlUnopenable": {
     "description": "UC-28 AF-01: it parses, but not as something a browser could open."
-},
+  },
   "bookmarkNoBrowser": "No browser could be opened for this bookmark.",
   "@bookmarkNoBrowser": {
     "description": "UC-28 AF-04: the platform would not launch one."
-},
+  },
   "bookmarkCopyUrl": "Copy the address",
   "@bookmarkCopyUrl": {
     "description": "UC-28 AF-04: the only useful thing left when no browser opens — the owner takes the address elsewhere."
-},
-
+  },
   "watchlistsTitle": "Watchlists",
   "@watchlistsTitle": {
-      "description": "UC-29 main flow step 1: the watchlists screen's heading."
+    "description": "UC-29 main flow step 1: the watchlists screen's heading."
   },
-
   "watchlistsOpen": "Watchlists",
   "@watchlistsOpen": {
-      "description": "UC-29 main flow step 1: opens the watchlists screen from the videos area."
+    "description": "UC-29 main flow step 1: opens the watchlists screen from the videos area."
   },
-
   "watchlistsNone": "You have not made a watchlist yet.",
   "@watchlistsNone": {
-      "description": "UC-29: there are no watchlists, which is a state and not a failure."
+    "description": "UC-29: there are no watchlists, which is a state and not a failure."
   },
-
   "watchlistNameLabel": "Watchlist name",
   "@watchlistNameLabel": {
-      "description": "UC-29 main flow step 1: what the new watchlist is called."
+    "description": "UC-29 main flow step 1: what the new watchlist is called."
   },
-
   "watchlistCreate": "Create",
   "@watchlistCreate": {
-      "description": "UC-29 main flow step 2: sends the new watchlist to the core."
+    "description": "UC-29 main flow step 2: sends the new watchlist to the core."
   },
-
   "watchlistNameEmpty": "Give the watchlist a name.",
   "@watchlistNameEmpty": {
-      "description": "UC-29 AF-01: the name is blank after trimming, so the core is not called."
+    "description": "UC-29 AF-01: the name is blank after trimming, so the core is not called."
   },
-
   "watchlistDelete": "Delete this watchlist",
   "@watchlistDelete": {
-      "description": "UC-29 main flow step 6: removes the tracking and keeps the videos."
+    "description": "UC-29 main flow step 6: removes the tracking and keeps the videos."
   },
-
   "watchlistEmpty": "Nothing is tracked in this watchlist yet.",
   "@watchlistEmpty": {
-      "description": "UC-29: the watchlist holds no videos."
+    "description": "UC-29: the watchlist holds no videos."
   },
-
   "watchlistAddTo": "Add to a watchlist",
   "@watchlistAddTo": {
-      "description": "UC-29 main flow step 3: tracks this video in a watchlist."
+    "description": "UC-29 main flow step 3: tracks this video in a watchlist."
   },
-
   "watchlistRemoveVideo": "Stop tracking this video",
   "@watchlistRemoveVideo": {
-      "description": "UC-29 main flow step 5: removes the video from this watchlist and leaves it in the catalog."
+    "description": "UC-29 main flow step 5: removes the video from this watchlist and leaves it in the catalog."
   },
-
   "watchlistAlreadyTracked": "That video is already in that watchlist.",
   "@watchlistAlreadyTracked": {
-      "description": "UC-29 AF-03: nothing is added, and the owner is told why."
+    "description": "UC-29 AF-03: nothing is added, and the owner is told why."
   },
-
   "watchlistNotFound": "That watchlist or video is no longer there.",
   "@watchlistNotFound": {
-      "description": "UC-29 AF-04 / UC-30 AF-04: the core has no such record, so the screen is read again."
+    "description": "UC-29 AF-04 / UC-30 AF-04: the core has no such record, so the screen is read again."
   },
-
   "watchStatePending": "Not started",
   "@watchStatePending": {
-      "description": "UC-30: the watch state the core calls pending."
+    "description": "UC-30: the watch state the core calls pending."
   },
-
   "watchStateWatching": "Watching",
   "@watchStateWatching": {
-      "description": "UC-30: part way through."
+    "description": "UC-30: part way through."
   },
-
   "watchStateWatched": "Watched",
   "@watchStateWatched": {
-      "description": "UC-30: finished."
+    "description": "UC-30: finished."
   },
-
-  "watchlistDeleteMessage": "Delete {name}? The videos in it are kept \u2014 only the tracking is removed.",
+  "watchlistDeleteMessage": "Delete {name}? The videos in it are kept — only the tracking is removed.",
   "@watchlistDeleteMessage": {
-      "description": "UC-29 main flow step 6 / BR-07: the confirmation names what goes and what does not.",
-      "placeholders": {
-          "name": {
-              "type": "String"
-          }
+    "description": "UC-29 main flow step 6 / BR-07: the confirmation names what goes and what does not.",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
+    }
   },
-
-  "watchlistAlreadyIn": "{name} \u2014 already there",
+  "watchlistAlreadyIn": "{name} — already there",
   "@watchlistAlreadyIn": {
-      "description": "UC-29 AF-03: a watchlist already tracking this video says so rather than disappearing from the menu.",
-      "placeholders": {
-          "name": {
-              "type": "String"
-          }
+    "description": "UC-29 AF-03: a watchlist already tracking this video says so rather than disappearing from the menu.",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
+    }
   },
-
   "watchlistItemCount": "{count} tracked",
   "@watchlistItemCount": {
-      "description": "UC-29: how many videos a watchlist tracks.",
-      "placeholders": {
-          "count": {
-              "type": "int"
-          }
+    "description": "UC-29: how many videos a watchlist tracks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
+    }
   },
-
   "watchProgressSave": "Save progress",
   "@watchProgressSave": {
-      "description": "UC-30 main flow step 5: sends the watch state and episode to the core."
+    "description": "UC-30 main flow step 5: sends the watch state and episode to the core."
   },
-
   "watchCurrentEpisodeLabel": "Episode",
   "@watchCurrentEpisodeLabel": {
-      "description": "UC-30 main flow step 4: which episode the owner is on."
+    "description": "UC-30 main flow step 4: which episode the owner is on."
   },
-
   "watchTotalEpisodesLabel": "of how many",
   "@watchTotalEpisodesLabel": {
-      "description": "UC-30 main flow step 4: how many episodes there are, when the owner knows."
+    "description": "UC-30 main flow step 4: how many episodes there are, when the owner knows."
   },
-
   "watchEpisodeNotANumber": "Enter a whole number.",
   "@watchEpisodeNotANumber": {
-      "description": "UC-30 AF-02: the episode field holds something that is not a number."
+    "description": "UC-30 AF-02: the episode field holds something that is not a number."
   },
-
   "watchEpisodeNotPositive": "Episodes are counted from 1.",
   "@watchEpisodeNotPositive": {
-      "description": "UC-30 AF-02: the episode number is zero or negative."
+    "description": "UC-30 AF-02: the episode number is zero or negative."
   },
-
   "watchEpisodeBeyondTotal": "That is past the total you gave.",
   "@watchEpisodeBeyondTotal": {
-      "description": "UC-30 AF-02: the current episode exceeds the stated total."
+    "description": "UC-30 AF-02: the current episode exceeds the stated total."
   },
-
   "watchEpisode": "episode {episode}",
   "@watchEpisode": {
-      "description": "UC-30 / FR-TR-07: where in a series the owner is, when they have not said how many there are.",
-      "placeholders": {
-          "episode": {
-              "type": "int"
-          }
+    "description": "UC-30 / FR-TR-07: where in a series the owner is, when they have not said how many there are.",
+    "placeholders": {
+      "episode": {
+        "type": "int"
       }
+    }
   },
-
   "watchEpisodeOf": "episode {episode} of {total}",
   "@watchEpisodeOf": {
-      "description": "UC-30 / FR-TR-07: where in a series the owner is.",
-      "placeholders": {
-          "episode": {
-              "type": "int"
-          },
-          "total": {
-              "type": "int"
-          }
+    "description": "UC-30 / FR-TR-07: where in a series the owner is.",
+    "placeholders": {
+      "episode": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
       }
+    }
   },
-
   "readingListsTitle": "Reading lists",
   "@readingListsTitle": {
-      "description": "UC-31 main flow step 1: the reading-lists screen heading."
+    "description": "UC-31 main flow step 1: the reading-lists screen heading."
   },
-
   "readingListsOpen": "Reading lists",
   "@readingListsOpen": {
-      "description": "UC-31 main flow step 1: opens the reading-lists screen from the books and comics areas."
+    "description": "UC-31 main flow step 1: opens the reading-lists screen from the books and comics areas."
   },
-
   "readingListsNone": "You have not made a reading list yet.",
   "@readingListsNone": {
-      "description": "UC-31: there are no reading lists, which is a state and not a failure."
+    "description": "UC-31: there are no reading lists, which is a state and not a failure."
   },
-
   "readingListNameLabel": "Reading list name",
   "@readingListNameLabel": {
-      "description": "UC-31 main flow step 1: what the new reading list is called."
+    "description": "UC-31 main flow step 1: what the new reading list is called."
   },
-
   "readingListCreate": "Create",
   "@readingListCreate": {
-      "description": "UC-31 main flow step 2: sends the new reading list to the core."
+    "description": "UC-31 main flow step 2: sends the new reading list to the core."
   },
-
   "readingListNameEmpty": "Give the reading list a name.",
   "@readingListNameEmpty": {
-      "description": "UC-31 AF-01: the name is blank after trimming, so the core is not called."
+    "description": "UC-31 AF-01: the name is blank after trimming, so the core is not called."
   },
-
   "readingListDelete": "Delete this reading list",
   "@readingListDelete": {
-      "description": "UC-31 main flow step 6: removes the tracking and keeps the books and comics."
+    "description": "UC-31 main flow step 6: removes the tracking and keeps the books and comics."
   },
-
   "readingListEmpty": "Nothing is tracked in this reading list yet.",
   "@readingListEmpty": {
-      "description": "UC-31: the reading list holds no items."
+    "description": "UC-31: the reading list holds no items."
   },
-
   "readingListAddTo": "Add to a reading list",
   "@readingListAddTo": {
-      "description": "UC-31 main flow step 3: tracks this book or comic in a reading list."
+    "description": "UC-31 main flow step 3: tracks this book or comic in a reading list."
   },
-
   "readingListRemoveItem": "Stop tracking this item",
   "@readingListRemoveItem": {
-      "description": "UC-31 main flow step 5: removes the item from this list and leaves it in the catalog."
+    "description": "UC-31 main flow step 5: removes the item from this list and leaves it in the catalog."
   },
-
   "readingListAlreadyTracked": "That item is already in that reading list.",
   "@readingListAlreadyTracked": {
-      "description": "UC-31 AF-03: nothing is added, and the owner is told why."
+    "description": "UC-31 AF-03: nothing is added, and the owner is told why."
   },
-
   "readingListNotFound": "That reading list or item is no longer there.",
   "@readingListNotFound": {
-      "description": "UC-31 AF-04 and UC-32 AF-04: the core has no such record, so the screen is read again."
+    "description": "UC-31 AF-04 and UC-32 AF-04: the core has no such record, so the screen is read again."
   },
-
   "readStatePending": "Not started",
   "@readStatePending": {
-      "description": "UC-32: the read state the core calls pending."
+    "description": "UC-32: the read state the core calls pending."
   },
-
   "readStateReading": "Reading",
   "@readStateReading": {
-      "description": "UC-32: part way through."
+    "description": "UC-32: part way through."
   },
-
   "readStateRead": "Read",
   "@readStateRead": {
-      "description": "UC-32: finished."
+    "description": "UC-32: finished."
   },
-
-  "readingListDeleteMessage": "Delete {name}? The books and comics in it are kept \u2014 only the tracking is removed.",
+  "readingListDeleteMessage": "Delete {name}? The books and comics in it are kept — only the tracking is removed.",
   "@readingListDeleteMessage": {
-      "description": "UC-31 main flow step 6 and BR-07: the confirmation names what goes and what does not.",
-      "placeholders": {
-          "name": {
-              "type": "String"
-          }
+    "description": "UC-31 main flow step 6 and BR-07: the confirmation names what goes and what does not.",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
+    }
   },
-
-  "readingListAlreadyIn": "{name} \u2014 already there",
+  "readingListAlreadyIn": "{name} — already there",
   "@readingListAlreadyIn": {
-      "description": "UC-31 AF-03: a reading list already tracking this item says so rather than disappearing from the menu.",
-      "placeholders": {
-          "name": {
-              "type": "String"
-          }
+    "description": "UC-31 AF-03: a reading list already tracking this item says so rather than disappearing from the menu.",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
+    }
   },
-
   "readingListItemCount": "{count} tracked",
   "@readingListItemCount": {
-      "description": "UC-31: how many items a reading list tracks.",
-      "placeholders": {
-          "count": {
-              "type": "int"
-          }
+    "description": "UC-31: how many items a reading list tracks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
+    }
   },
-
   "readCurrentIssueLabel": "Current issue",
   "@readCurrentIssueLabel": {
-      "description": "UC-32 main flow step 4: which issue of the series the owner is on."
+    "description": "UC-32 main flow step 4: which issue of the series the owner is on."
   },
-
   "readTotalIssuesLabel": "Total issues",
   "@readTotalIssuesLabel": {
-      "description": "UC-32 main flow step 4: how many issues there are, when the owner knows."
+    "description": "UC-32 main flow step 4: how many issues there are, when the owner knows."
   },
-
   "readIssueNotANumber": "Use a whole number.",
   "@readIssueNotANumber": {
-      "description": "UC-32 AF-02: the issue field holds something that is not a number, so the core is not called."
+    "description": "UC-32 AF-02: the issue field holds something that is not a number, so the core is not called."
   },
-
   "readIssueNotPositive": "Issues are counted from one.",
   "@readIssueNotPositive": {
-      "description": "UC-32 AF-02: the issue number is zero or negative."
+    "description": "UC-32 AF-02: the issue number is zero or negative."
   },
-
   "readIssueBeyondTotal": "That is past the total you gave.",
   "@readIssueBeyondTotal": {
-      "description": "UC-32 AF-02: the current issue exceeds the stated total."
+    "description": "UC-32 AF-02: the current issue exceeds the stated total."
   },
-
   "readProgressSave": "Save progress",
   "@readProgressSave": {
-      "description": "UC-32 main flow step 5: sends the read state and the issue to the core."
+    "description": "UC-32 main flow step 5: sends the read state and the issue to the core."
   },
-
   "readIssue": "issue {current}",
   "@readIssue": {
-      "description": "UC-32: where in a series the owner is, with no total stated.",
-      "placeholders": {
-          "current": {
-              "type": "int"
-          }
+    "description": "UC-32: where in a series the owner is, with no total stated.",
+    "placeholders": {
+      "current": {
+        "type": "int"
       }
+    }
   },
-
   "readIssueOf": "issue {current} of {total}",
   "@readIssueOf": {
-      "description": "UC-32: where in a series the owner is, out of the total they gave.",
-      "placeholders": {
-          "current": {
-              "type": "int"
-          },
-          "total": {
-              "type": "int"
-          }
+    "description": "UC-32: where in a series the owner is, out of the total they gave.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
       }
+    }
   },
-
   "deleteFile": "Delete this file",
   "@deleteFile": {
-      "description": "UC-33 main flow step 1: hides the file's record from the library."
+    "description": "UC-33 main flow step 1: hides the file's record from the library."
   },
-
   "deleteFileOnDisk": "The file on disk is not affected.",
   "@deleteFileOnDisk": {
-      "description": "UC-33 main flow step 2 and FR-LC-01: the confirmation says so explicitly."
+    "description": "UC-33 main flow step 2 and FR-LC-01: the confirmation says so explicitly."
   },
-
-  "deleteFileInUse": "It is playing or open right now \u2014 confirming stops it.",
+  "deleteFileInUse": "It is playing or open right now — confirming stops it.",
   "@deleteFileInUse": {
-      "description": "UC-33 AF-04: a player, viewer, or editor has the file, and confirming lets it go."
+    "description": "UC-33 AF-04: a player, viewer, or editor has the file, and confirming lets it go."
   },
-
   "deleteBookmark": "Delete this bookmark",
   "@deleteBookmark": {
-      "description": "UC-33 main flow step 1: hides the bookmark's record."
+    "description": "UC-33 main flow step 1: hides the bookmark's record."
   },
-
   "deleteAlreadyDeleted": "That record was already deleted.",
   "@deleteAlreadyDeleted": {
-      "description": "UC-33 AF-02: the core holds it as deleted already, so the listing is read again."
+    "description": "UC-33 AF-02: the core holds it as deleted already, so the listing is read again."
   },
-
   "deleteNotFound": "That record is no longer there.",
   "@deleteNotFound": {
-      "description": "UC-33 AF-03: the core has no such record, so the listing is read again."
+    "description": "UC-33 AF-03: the core has no such record, so the listing is read again."
   },
-
   "deleteFileMessage": "Hide {name} from the library? It stays restorable.",
   "@deleteFileMessage": {
-      "description": "UC-33 main flow step 2: the confirmation names the file and says the record is restorable.",
-      "placeholders": {
-          "name": {
-              "type": "String"
-          }
+    "description": "UC-33 main flow step 2: the confirmation names the file and says the record is restorable.",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
+    }
   },
-
   "deleteBookmarkMessage": "Hide {title} from your bookmarks? It stays restorable.",
   "@deleteBookmarkMessage": {
-      "description": "UC-33 main flow step 2: the same, for a bookmark, which has no file on disk.",
-      "placeholders": {
-          "title": {
-              "type": "String"
-          }
+    "description": "UC-33 main flow step 2: the same, for a bookmark, which has no file on disk.",
+    "placeholders": {
+      "title": {
+        "type": "String"
       }
+    }
   },
-
   "deletedItemsTitle": "Deleted items",
   "@deletedItemsTitle": {
-      "description": "UC-34 main flow step 1: the deleted-items screen heading."
+    "description": "UC-34 main flow step 1: the deleted-items screen heading."
   },
-
   "deletedItemsOpen": "Deleted items",
   "@deletedItemsOpen": {
-      "description": "UC-34 main flow step 1: opens the deleted-items view from the dashboard."
+    "description": "UC-34 main flow step 1: opens the deleted-items view from the dashboard."
   },
-
   "deletedItemsNone": "Nothing has been deleted.",
   "@deletedItemsNone": {
-      "description": "UC-34 AF-01: there is nothing deleted, which is a state and not a failure."
+    "description": "UC-34 AF-01: there is nothing deleted, which is a state and not a failure."
   },
-
   "restoreRecord": "Restore",
   "@restoreRecord": {
-      "description": "UC-34 main flow step 4: brings the record back into the default listings."
+    "description": "UC-34 main flow step 4: brings the record back into the default listings."
   },
-
-  "restoreNotFound": "That record cannot be restored \u2014 it is gone, or its window has passed.",
+  "restoreNotFound": "That record cannot be restored — it is gone, or its window has passed.",
   "@restoreNotFound": {
-      "description": "UC-34 AF-03: the core has no such record, which is also how it answers one past its retention window."
+    "description": "UC-34 AF-03: the core has no such record, which is also how it answers one past its retention window."
   },
-
-  "retentionElapsed": "No longer restorable \u2014 it can only be purged.",
+  "retentionElapsed": "No longer restorable — it can only be purged.",
   "@retentionElapsed": {
-      "description": "UC-34 AF-02: the retention window has run out, so purging is what is left."
+    "description": "UC-34 AF-02: the retention window has run out, so purging is what is left."
   },
-
   "retentionUnknown": "Restorable",
   "@retentionUnknown": {
-      "description": "UC-34: the core answered without a deletion timestamp, so there is no countdown to show."
+    "description": "UC-34: the core answered without a deletion timestamp, so there is no countdown to show."
   },
-
   "retentionRemaining": "{days, plural, =1{Restorable for 1 more day} other{Restorable for {days} more days}}",
   "@retentionRemaining": {
-      "description": "UC-34 main flow step 3 and FR-LC-03: how long this record remains restorable.",
-      "placeholders": {
-          "days": {
-              "type": "num"
-          }
+    "description": "UC-34 main flow step 3 and FR-LC-03: how long this record remains restorable.",
+    "placeholders": {
+      "days": {
+        "type": "num"
       }
+    }
   },
-
   "purgeRecord": "Purge",
   "@purgeRecord": {
-      "description": "UC-35 main flow step 1: removes the record from the catalog for good."
+    "description": "UC-35 main flow step 1: removes the record from the catalog for good."
   },
-
   "purgeRecordOnDisk": "The file on disk is not removed.",
   "@purgeRecordOnDisk": {
-      "description": "UC-35 main flow step 2 and FR-LC-05: the confirmation says so explicitly."
+    "description": "UC-35 main flow step 2 and FR-LC-05: the confirmation says so explicitly."
   },
-
-  "purgeNotDeleted": "Delete that record first \u2014 only a deleted record can be purged.",
+  "purgeNotDeleted": "Delete that record first — only a deleted record can be purged.",
   "@purgeNotDeleted": {
-      "description": "UC-35 AF-03: the record is not soft-deleted, so the core is not called."
+    "description": "UC-35 AF-03: the record is not soft-deleted, so the core is not called."
   },
-
   "purgeNotFound": "That record is no longer there.",
   "@purgeNotFound": {
-      "description": "UC-35 AF-04 and UC-36 AF-04: the core has no such record, so the view is read again."
+    "description": "UC-35 AF-04 and UC-36 AF-04: the core has no such record, so the view is read again."
   },
-
   "purgeNothingOnDisk": "The record was removed, and no file was found on disk.",
   "@purgeNothingOnDisk": {
-      "description": "UC-36 AF-02: the core succeeded and there was nothing on disk to remove."
+    "description": "UC-36 AF-02: the core succeeded and there was nothing on disk to remove."
   },
-
-  "purgeDiskFailed": "Nothing was removed \u2014 neither the file nor the record.",
+  "purgeDiskFailed": "Nothing was removed — neither the file nor the record.",
   "@purgeDiskFailed": {
-      "description": "UC-36 AF-03: the disk refused, and the core left both alone."
+    "description": "UC-36 AF-03: the disk refused, and the core left both alone."
   },
-
   "purgeRecordMessage": "Remove {name} from the catalog permanently? This cannot be undone.",
   "@purgeRecordMessage": {
-      "description": "UC-35 main flow step 2: the confirmation names the record and says the removal is permanent.",
-      "placeholders": {
-          "name": {
-              "type": "String"
-          }
+    "description": "UC-35 main flow step 2: the confirmation names the record and says the removal is permanent.",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
+    }
   },
-
   "purgeTooSoon": "{days, plural, =1{That record can be purged in 1 day.} other{That record can be purged in {days} days.}}",
   "@purgeTooSoon": {
-      "description": "UC-35 AF-02 and FR-LC-07: the core refused because the retention window has not elapsed, and this says when it will have.",
-      "placeholders": {
-          "days": {
-              "type": "num"
-          }
+    "description": "UC-35 AF-02 and FR-LC-07: the core refused because the retention window has not elapsed, and this says when it will have.",
+    "placeholders": {
+      "days": {
+        "type": "num"
       }
+    }
   },
-
   "purgeOnDiskTitle": "Remove from disk",
   "@purgeOnDiskTitle": {
-      "description": "UC-36 main flow step 1: the folded-away section that deletes the file itself."
+    "description": "UC-36 main flow step 1: the folded-away section that deletes the file itself."
   },
-
   "purgeOnDiskAction": "Delete the file from disk",
   "@purgeOnDiskAction": {
-      "description": "UC-36 main flow step 1: the action itself, which is never a default."
+    "description": "UC-36 main flow step 1: the action itself, which is never a default."
   },
-
   "purgeOnDiskExplanation": "This is the only action here that removes your data from disk. Everything else keeps the file and changes only the catalog.",
   "@purgeOnDiskExplanation": {
-      "description": "UC-36 and FR-LC-06: why this action is presented apart from every other deletion."
+    "description": "UC-36 and FR-LC-06: why this action is presented apart from every other deletion."
   },
-
   "purgeOnDiskIrreversible": "This cannot be undone.",
   "@purgeOnDiskIrreversible": {
-      "description": "UC-36 main flow step 2: the confirmation says the deletion is irreversible."
+    "description": "UC-36 main flow step 2: the confirmation says the deletion is irreversible."
   },
-
   "purgeOnDiskMessage": "Delete {path} from disk and remove its record?",
   "@purgeOnDiskMessage": {
-      "description": "UC-36 main flow step 2 and FR-LC-06: the confirmation names the exact file path.",
-      "placeholders": {
-          "path": {
-              "type": "String"
-          }
+    "description": "UC-36 main flow step 2 and FR-LC-06: the confirmation names the exact file path.",
+    "placeholders": {
+      "path": {
+        "type": "String"
       }
+    }
   },
-
   "missingFilesTitle": "Missing files",
   "@missingFilesTitle": {
-      "description": "UC-37 main flow step 1: the missing-files review heading."
+    "description": "UC-37 main flow step 1: the missing-files review heading."
   },
-
   "missingFilesOpen": "Missing files",
   "@missingFilesOpen": {
-      "description": "UC-37 main flow step 1: opens the review from the dashboard, beside the last index run."
+    "description": "UC-37 main flow step 1: opens the review from the dashboard, beside the last index run."
   },
-
   "missingFilesNone": "Every cataloged file was found on disk.",
   "@missingFilesNone": {
-      "description": "UC-37 AF-01: nothing is missing, which is a state and the good outcome besides."
+    "description": "UC-37 AF-01: nothing is missing, which is a state and the good outcome besides."
   },
-
-  "missingFilesExplanation": "These records are still in the catalog \u2014 nothing is removed because a file is absent. Re-scan to check whether they came back, or open a record to decide what to do about it.",
+  "missingFilesExplanation": "These records are still in the catalog — nothing is removed because a file is absent. Re-scan to check whether they came back, or open a record to decide what to do about it.",
   "@missingFilesExplanation": {
-      "description": "UC-37 and BR-16: missing is never a reason to delete, and the review says so."
+    "description": "UC-37 and BR-16: missing is never a reason to delete, and the review says so."
   },
-
   "missingFilesRescan": "Re-scan the library",
   "@missingFilesRescan": {
-      "description": "UC-37 main flow step 4: starts a refresh over everything cataloged (UC-07)."
+    "description": "UC-37 main flow step 4: starts a refresh over everything cataloged (UC-07)."
   },
-
   "missingFilesOpenDetails": "Open",
   "@missingFilesOpenDetails": {
-      "description": "UC-37 AF-02: opens the record's own detail view, where deleting it lives."
+    "description": "UC-37 AF-02: opens the record's own detail view, where deleting it lives."
   },
-
   "missingFilesUnregisteredFolder": "From a folder that is no longer registered.",
   "@missingFilesUnregisteredFolder": {
-      "description": "UC-37 AF-03: the record came from a folder the owner has since unregistered."
+    "description": "UC-37 AF-03: the record came from a folder the owner has since unregistered."
   },
-
   "recoveryCodesTitle": "Save your recovery codes",
   "@recoveryCodesTitle": {
-      "description": "UC-40 main flow step 2: the heading of the screen shown once after sign-up."
+    "description": "UC-40 main flow step 2: the heading of the screen shown once after sign-up."
   },
-
-  "recoveryCodesExplanation": "This is the only time these are shown. Each one replaces a forgotten password exactly once \u2014 without them, a forgotten password means a lost library.",
+  "recoveryCodesExplanation": "This is the only time these are shown. Each one replaces a forgotten password exactly once — without them, a forgotten password means a lost library.",
   "@recoveryCodesExplanation": {
-      "description": "UC-40 main flow step 2 and FR-AU-12: says plainly that the codes are not retrievable and what they are for."
+    "description": "UC-40 main flow step 2 and FR-AU-12: says plainly that the codes are not retrievable and what they are for."
   },
-
   "recoveryCodesCopy": "Copy the codes",
   "@recoveryCodesCopy": {
-      "description": "UC-40 AF-02: places the codes on the clipboard. Nothing is written to disk (FR-AU-13)."
+    "description": "UC-40 AF-02: places the codes on the clipboard. Nothing is written to disk (FR-AU-13)."
   },
-
   "recoveryCodesCopied": "Copied to the clipboard.",
   "@recoveryCodesCopied": {
-      "description": "UC-40 AF-02: confirms the copy happened."
+    "description": "UC-40 AF-02: confirms the copy happened."
   },
-
   "recoveryCodesAcknowledge": "I have stored them",
   "@recoveryCodesAcknowledge": {
-      "description": "UC-40 main flow step 4: the only way past this screen (AF-01). Confirming opens the library."
+    "description": "UC-40 main flow step 4: the only way past this screen (AF-01). Confirming opens the library."
   },
-
   "recoveryCodesNone": "Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.",
   "@recoveryCodesNone": {
-      "description": "UC-40 AF-03: the core issued no codes, which is said plainly rather than shown as an empty list."
+    "description": "UC-40 AF-03: the core issued no codes, which is said plainly rather than shown as an empty list."
   },
-
   "recoveryTitle": "Recover access",
   "@recoveryTitle": {
-      "description": "UC-41 main flow step 1: the screen for an owner who cannot remember their password."
+    "description": "UC-41 main flow step 1: the screen for an owner who cannot remember their password."
   },
-
   "recoveryOpen": "I cannot sign in",
   "@recoveryOpen": {
-      "description": "UC-41 main flow step 1: reaches account recovery from the login screen."
+    "description": "UC-41 main flow step 1: reaches account recovery from the login screen."
   },
-
   "recoveryExplanation": "Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.",
   "@recoveryExplanation": {
-      "description": "UC-41 main flow step 2: what the owner needs and what it costs them."
+    "description": "UC-41 main flow step 2: what the owner needs and what it costs them."
   },
-
   "recoveryCodeLabel": "Recovery code",
   "@recoveryCodeLabel": {
-      "description": "UC-41 main flow step 2: the code the owner saved."
+    "description": "UC-41 main flow step 2: the code the owner saved."
   },
-
   "recoveryNewPassword": "New password",
   "@recoveryNewPassword": {
-      "description": "UC-41 main flow step 2: the password that replaces the forgotten one."
+    "description": "UC-41 main flow step 2: the password that replaces the forgotten one."
   },
-
   "recoveryConfirmPassword": "Repeat the new password",
   "@recoveryConfirmPassword": {
-      "description": "UC-41 main flow step 2: entered twice, and the two must match before the core is called."
+    "description": "UC-41 main flow step 2: entered twice, and the two must match before the core is called."
   },
-
   "recoveryCodeMissing": "Enter a recovery code.",
   "@recoveryCodeMissing": {
-      "description": "UC-41 AF-01: the code is blank, so the core is not called."
+    "description": "UC-41 AF-01: the code is blank, so the core is not called."
   },
-
   "recoveryPasswordMissing": "Enter a new password.",
   "@recoveryPasswordMissing": {
-      "description": "UC-41 AF-01: the password is empty, so the core is not called."
+    "description": "UC-41 AF-01: the password is empty, so the core is not called."
   },
-
   "recoverySubmit": "Replace the password",
   "@recoverySubmit": {
-      "description": "UC-41 main flow step 4: sends the code and the new password to the core."
+    "description": "UC-41 main flow step 4: sends the code and the new password to the core."
   },
-
   "recoveryCodeUnknown": "That is not one of this account's recovery codes. Check it and try again.",
   "@recoveryCodeUnknown": {
-      "description": "UC-41 AF-02: the core does not recognise the code. Distinct from AF-03, because a mistyped code and a spent one call for different things."
+    "description": "UC-41 AF-02: the core does not recognise the code. Distinct from AF-03, because a mistyped code and a spent one call for different things."
   },
-
-  "recoveryCodeUsed": "That recovery code has already been used. Each one works once \u2014 try another from your list.",
+  "recoveryCodeUsed": "That recovery code has already been used. Each one works once — try another from your list.",
   "@recoveryCodeUsed": {
-      "description": "UC-41 AF-03: the core reports the code as already consumed."
+    "description": "UC-41 AF-03: the core reports the code as already consumed."
   },
-
   "recoveryRefused": "The password could not be replaced. Check the code and try again.",
   "@recoveryRefused": {
-      "description": "UC-41: the core refused without naming a reason this version knows, so the message says what to do rather than a code."
+    "description": "UC-41: the core refused without naming a reason this version knows, so the message says what to do rather than a code."
   },
-
   "recoveryDone": "Your password was replaced",
   "@recoveryDone": {
-      "description": "UC-41 main flow step 6: the redemption succeeded."
+    "description": "UC-41 main flow step 6: the redemption succeeded."
   },
-
   "recoveryDoneExplanation": "The code you used is spent, and every open session was signed out. Sign in with the new password.",
   "@recoveryDoneExplanation": {
-      "description": "UC-41 main flow step 6: what happened, and what to do next."
+    "description": "UC-41 main flow step 6: what happened, and what to do next."
   },
-
   "recoveryBackToLogin": "Back to sign in",
   "@recoveryBackToLogin": {
-      "description": "UC-41 main flow step 6: returns to the login screen."
+    "description": "UC-41 main flow step 6: returns to the login screen."
   },
-
   "recoveryCodesRegenerate": "Generate new recovery codes",
   "@recoveryCodesRegenerate": {
-      "description": "UC-42 main flow step 2: replaces the whole set with ten new codes."
+    "description": "UC-42 main flow step 2: replaces the whole set with ten new codes."
   },
-
   "recoveryCodesRegenerateMessage": "Every code you have now stops working, and ten new ones take their place. They are shown once.",
   "@recoveryCodesRegenerateMessage": {
-      "description": "UC-42 main flow step 3: the confirmation states what the owner is giving up."
+    "description": "UC-42 main flow step 3: the confirmation states what the owner is giving up."
   },
-
   "recoveryCodesNoneLeft": "No recovery codes are left. Generate a set while you still know your password.",
   "@recoveryCodesNoneLeft": {
-      "description": "UC-42 main flow step 1: the core reports none unspent, which means the account cannot currently be recovered."
+    "description": "UC-42 main flow step 1: the core reports none unspent, which means the account cannot currently be recovered."
   },
-
   "recoveryCodesRemaining": "{count, plural, =1{1 recovery code left} other{{count} recovery codes left}}",
   "@recoveryCodesRemaining": {
-      "description": "UC-42 main flow step 1 and FR-AU-14: how many codes the core reports as unspent.",
-      "placeholders": {
-          "count": {
-              "type": "num"
-          }
+    "description": "UC-42 main flow step 1 and FR-AU-14: how many codes the core reports as unspent.",
+    "placeholders": {
+      "count": {
+        "type": "num"
       }
+    }
   },
-
   "collectionsTitle": "Collections",
   "@collectionsTitle": {
-      "description": "UC-26 main flow step 1: the collections screen heading."
+    "description": "UC-26 main flow step 1: the collections screen heading."
   },
-
   "collectionsOpen": "Collections",
   "@collectionsOpen": {
-      "description": "UC-26 main flow step 1: opens the collections screen from the dashboard."
+    "description": "UC-26 main flow step 1: opens the collections screen from the dashboard."
   },
-
   "collectionsNone": "You have not made a collection yet.",
   "@collectionsNone": {
-      "description": "UC-26: there are no collections, which is a state and not a failure."
+    "description": "UC-26: there are no collections, which is a state and not a failure."
   },
-
   "collectionNameLabel": "Collection name",
   "@collectionNameLabel": {
-      "description": "UC-26 main flow step 2: what the new collection is called."
+    "description": "UC-26 main flow step 2: what the new collection is called."
   },
-
   "collectionRenameLabel": "New name",
   "@collectionRenameLabel": {
-      "description": "UC-26 main flow step 5: what the collection is being renamed to."
+    "description": "UC-26 main flow step 5: what the collection is being renamed to."
   },
-
   "collectionCreate": "Create",
   "@collectionCreate": {
-      "description": "UC-26 main flow step 3: sends the new collection to the core."
+    "description": "UC-26 main flow step 3: sends the new collection to the core."
   },
-
   "collectionRenameSave": "Rename",
   "@collectionRenameSave": {
-      "description": "UC-26 main flow step 5: sends the new name to the core."
+    "description": "UC-26 main flow step 5: sends the new name to the core."
   },
-
   "collectionRename": "Rename this collection",
   "@collectionRename": {
-      "description": "UC-26 main flow step 5: opens the collection for renaming."
+    "description": "UC-26 main flow step 5: opens the collection for renaming."
   },
-
   "collectionDelete": "Delete this collection",
   "@collectionDelete": {
-      "description": "UC-26 main flow step 6: removes the grouping and keeps its items."
+    "description": "UC-26 main flow step 6: removes the grouping and keeps its items."
   },
-
   "collectionNameEmpty": "Give the collection a name.",
   "@collectionNameEmpty": {
-      "description": "UC-26 AF-01: the name is blank after trimming, so the core is not called."
+    "description": "UC-26 AF-01: the name is blank after trimming, so the core is not called."
   },
-
   "collectionNotFound": "That collection is no longer there.",
   "@collectionNotFound": {
-      "description": "UC-26 AF-04: the core has no such collection, so the list is read again."
+    "description": "UC-26 AF-04: the core has no such collection, so the list is read again."
   },
-
   "collectionKindFile": "Files",
   "@collectionKindFile": {
-      "description": "UC-26 main flow step 2: a collection that holds catalog files."
+    "description": "UC-26 main flow step 2: a collection that holds catalog files."
   },
-
   "collectionKindBookmark": "Bookmarks",
   "@collectionKindBookmark": {
-      "description": "UC-26 main flow step 2: a collection that holds bookmarks."
+    "description": "UC-26 main flow step 2: a collection that holds bookmarks."
   },
-
-  "collectionDeleteMessage": "Delete {name}? The items in it are kept \u2014 only the grouping is removed.",
+  "collectionDeleteMessage": "Delete {name}? The items in it are kept — only the grouping is removed.",
   "@collectionDeleteMessage": {
-      "description": "UC-26 main flow step 6, FR-OG-03 and BR-07: the confirmation names what goes and what does not.",
-      "placeholders": {
-          "name": {
-              "type": "String"
-          }
+    "description": "UC-26 main flow step 6, FR-OG-03 and BR-07: the confirmation names what goes and what does not.",
+    "placeholders": {
+      "name": {
+        "type": "String"
       }
+    }
   },
-
   "collectionItemCount": "{count, plural, =0{Empty} =1{1 item} other{{count} items}}",
   "@collectionItemCount": {
-      "description": "UC-26: how many items a collection holds, as the core counts them.",
-      "placeholders": {
-          "count": {
-              "type": "num"
-          }
+    "description": "UC-26: how many items a collection holds, as the core counts them.",
+    "placeholders": {
+      "count": {
+        "type": "num"
       }
+    }
   },
-
   "collectionAddItems": "Add items",
   "@collectionAddItems": {
-      "description": "UC-27 main flow step 3: opens the picker of items the collection can accept."
+    "description": "UC-27 main flow step 3: opens the picker of items the collection can accept."
   },
-
   "collectionAddChosen": "Add",
   "@collectionAddChosen": {
-      "description": "UC-27 main flow step 3: sends the chosen items to the core."
+    "description": "UC-27 main flow step 3: sends the chosen items to the core."
   },
-
   "collectionRemoveItem": "Remove from this collection",
   "@collectionRemoveItem": {
-      "description": "UC-27 main flow step 5: unlinks the item, which stays in the catalog."
+    "description": "UC-27 main flow step 5: unlinks the item, which stays in the catalog."
   },
-
   "collectionEmpty": "This collection is empty.",
   "@collectionEmpty": {
-      "description": "UC-27: the collection holds nothing yet, which is a state and not a failure."
+    "description": "UC-27: the collection holds nothing yet, which is a state and not a failure."
   },
-
   "collectionNoCandidates": "There is nothing of this collection's kind to add.",
   "@collectionNoCandidates": {
-      "description": "UC-27 AF-01 from the other side: a collection accepts one kind, and nothing of that kind exists to offer."
+    "description": "UC-27 AF-01 from the other side: a collection accepts one kind, and nothing of that kind exists to offer."
   },
-
   "collectionItemsAdded": "Added: {names}",
   "@collectionItemsAdded": {
-      "description": "UC-27 AF-04: exactly which items the core linked, named.",
-      "placeholders": {
-          "names": {
-              "type": "String"
-          }
+    "description": "UC-27 AF-04: exactly which items the core linked, named.",
+    "placeholders": {
+      "names": {
+        "type": "String"
       }
+    }
   },
-
   "collectionItemsAlreadyPresent": "Already in this collection: {names}",
   "@collectionItemsAlreadyPresent": {
-      "description": "UC-27 AF-02: the items that were already members, which the core was not asked about.",
-      "placeholders": {
-          "names": {
-              "type": "String"
-          }
+    "description": "UC-27 AF-02: the items that were already members, which the core was not asked about.",
+    "placeholders": {
+      "names": {
+        "type": "String"
       }
+    }
   },
-
-  "collectionItemNotAdded": "{name} was not added \u2014 {reason}",
+  "collectionItemNotAdded": "{name} was not added — {reason}",
   "@collectionItemNotAdded": {
-      "description": "UC-27 AF-04: exactly which items did not land, and the core's reason for each.",
-      "placeholders": {
-          "name": {
-              "type": "String"
-          },
-          "reason": {
-              "type": "String"
-          }
+    "description": "UC-27 AF-04: exactly which items did not land, and the core's reason for each.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
       }
+    }
   },
-
   "bookmarkCollectionLabel": "Collection",
   "@bookmarkCollectionLabel": {
-      "description": "UC-28 main flow steps 3 and 5: which bookmark collection the bookmark is filed in."
+    "description": "UC-28 main flow steps 3 and 5: which bookmark collection the bookmark is filed in."
   },
-
   "bookmarkCollectionNone": "Not in a collection",
   "@bookmarkCollectionNone": {
-      "description": "UC-28: filing is optional, so not filing is a choice rather than the absence of one."
+    "description": "UC-28: filing is optional, so not filing is a choice rather than the absence of one."
   },
-
   "bookmarkFilterLabel": "Show",
   "@bookmarkFilterLabel": {
-      "description": "UC-28 main flow step 1: narrows the listing to one bookmark collection."
+    "description": "UC-28 main flow step 1: narrows the listing to one bookmark collection."
   },
-
   "bookmarkFilterAll": "All bookmarks",
   "@bookmarkFilterAll": {
-      "description": "UC-28 main flow step 1: the unfiltered listing, which is what the screen opens on."
+    "description": "UC-28 main flow step 1: the unfiltered listing, which is what the screen opens on."
   },
-
   "collectionItemWrongKind": "it is not this collection's kind",
   "@collectionItemWrongKind": {
-      "description": "UC-27 AF-04: the core rejected the item because it belongs to the other kind."
+    "description": "UC-27 AF-04: the core rejected the item because it belongs to the other kind."
   },
-
   "collectionItemGone": "it no longer exists",
   "@collectionItemGone": {
-      "description": "UC-27 AF-04: the core rejected the item because no such item exists."
+    "description": "UC-27 AF-04: the core rejected the item because no such item exists."
+  },
+  "libraryToolsOpen": "Library tools",
+  "@libraryToolsOpen": {
+    "description": "UC-37 main flow step 1: the navigation panel entry that reaches the library-wide areas — sources, collections, watchlists, reading lists, deleted items, and the missing-files review."
   }
 }

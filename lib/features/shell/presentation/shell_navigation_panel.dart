@@ -7,6 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import '../../catalog/domain/library_type.dart';
 import '../domain/shell_destination.dart';
+import 'library_tools_button.dart';
 import 'preferences_dialog.dart';
 
 /// The navigation panel (FR-UX-01, FR-UX-02).
@@ -55,17 +56,28 @@ class ShellNavigationPanel extends ConsumerWidget {
               selectedIndex: ShellDestination.values.indexOf(selected),
               onDestinationSelected: (index) =>
                   onSelected(ShellDestination.values[index]),
-              // Labels at every tier but the narrowest, where the icons carry
-              // tooltips instead. `all` rather than `selected`, because a rail
-              // that labels only the current entry makes the other nine
-              // unreadable at a glance for no space saved.
-              labelType: breakpoint.showsNavigationLabels
+              // Three tiers, three arrangements: icons with tooltips at the
+              // narrowest, labels beneath them at the medium one, and labels
+              // beside them once there is room. `all` rather than `selected`,
+              // because a rail that labels only the current entry makes the
+              // other eight unreadable at a glance for no space saved.
+              //
+              // An extended rail carries its labels itself, and Material
+              // requires the label type be `none` when it does.
+              extended: breakpoint.usesExtendedNavigation,
+              labelType:
+                  breakpoint.showsNavigationLabels &&
+                      !breakpoint.usesExtendedNavigation
                   ? NavigationRailLabelType.all
                   : NavigationRailLabelType.none,
               groupAlignment: -1,
-              // Preferences sit below the destinations rather than among them:
-              // they are not an area of the library, and UC-39 reaches them
-              // from here and from the authentication screens alike.
+              // The library tools and preferences sit below the destinations
+              // rather than among them: neither is an area of the library
+              // (FR-CT-01), and UC-39 reaches preferences from here and from
+              // the authentication screens alike. The tools menu is what makes
+              // the library-wide screens — sources, collections, watchlists,
+              // reading lists, deleted items, and the missing-files review
+              // (UC-37 step 1) — reachable from wherever the owner is.
               //
               // Placed in the flow after the destinations rather than pinned
               // to the bottom with an Expanded: the rail already sits inside a
@@ -74,7 +86,10 @@ class ShellNavigationPanel extends ConsumerWidget {
               // UC-38 added the scrolling for.
               trailing: const Padding(
                 padding: EdgeInsets.only(top: AppSpacing.sm),
-                child: PreferencesButton(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [LibraryToolsButton(), PreferencesButton()],
+                ),
               ),
               destinations: [
                 for (final destination in ShellDestination.values)

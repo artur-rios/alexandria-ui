@@ -14,6 +14,7 @@ import 'package:alexandria_desktop/features/shell/domain/shell_destination.dart'
 import 'package:alexandria_desktop/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_desktop/features/catalog/presentation/file_details_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -55,6 +56,7 @@ void main() {
   Future<({ProviderContainer container, FakeLifecycleGateway lifecycle})>
   openDetails(
     WidgetTester tester, {
+    ThemeMode themeMode = ThemeMode.light,
     PurgeOnDiskOutcome? outcome,
     List<FileHold>? holds,
     Locale? locale,
@@ -72,6 +74,7 @@ void main() {
     if (outcome != null) lifecycle.purgeOnDiskOutcome = outcome;
 
     final container = await tester.pumpShell(
+      themeMode: themeMode,
       locale: locale,
       surfaceSize: const Size(1440, 1000),
       extraOverrides: <Override>[
@@ -320,6 +323,25 @@ void main() {
           expect(
             find.textContaining(RegExp('purge[A-Z]'), findRichText: true),
             findsNothing,
+          );
+        },
+      );
+    }
+  });
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        (tester) async {
+          await openDetails(tester, themeMode: mode);
+
+          expect(
+            Theme.of(
+              tester.element(find.byType(FileDetailsView).first),
+            ).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
           );
         },
       );

@@ -11,6 +11,7 @@ import 'package:alexandria_desktop/features/lifecycle/domain/lifecycle_gateway.d
 import 'package:alexandria_desktop/features/organization/domain/bookmark.dart';
 import 'package:alexandria_desktop/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_desktop/features/lifecycle/presentation/deleted_items_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -98,7 +99,7 @@ void main() {
     );
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.tap(find.text(l10n.deletedItemsOpen));
+    await tester.openLibraryTool(l10n.deletedItemsOpen);
     await tester.pumpAndSettle();
 
     return (container: container, lifecycle: lifecycle);
@@ -310,6 +311,25 @@ void main() {
           expect(
             find.textContaining(RegExp('purge[A-Z]'), findRichText: true),
             findsNothing,
+          );
+        },
+      );
+    }
+  });
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
+  group('both themes', () {
+    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+      testWidgets(
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        (tester) async {
+          await openDeleted(tester, themeMode: mode);
+
+          expect(
+            Theme.of(
+              tester.element(find.byType(DeletedItemsScreen).first),
+            ).brightness,
+            mode == ThemeMode.light ? Brightness.light : Brightness.dark,
           );
         },
       );

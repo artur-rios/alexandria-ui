@@ -20,6 +20,7 @@ import '../../viewers/presentation/page_viewer_screen.dart';
 import '../domain/catalog_file.dart';
 import '../../playback/presentation/video_player_screen.dart';
 import '../../lifecycle/application/open_file_holds.dart';
+import '../../lifecycle/domain/deleted_record.dart';
 import '../../lifecycle/presentation/delete_record_button.dart';
 import '../../lifecycle/presentation/purge_on_disk_section.dart';
 import '../../tracking/presentation/add_to_reading_list_button.dart';
@@ -104,11 +105,26 @@ class _Details extends ConsumerWidget {
             ),
           ),
 
-          // AF-02: shown as deleted. Restoring it is UC-34's, so the state is
-          // reported rather than an action offered that does not exist.
+          // AF-02: shown as deleted, with the restore offered here rather than
+          // only in the deleted-items view — the owner is already looking at
+          // the record they want back, and UC-34's controller is what performs
+          // it, so both routes refresh the same listings.
           if (details.isDeleted) ...[
             const SizedBox(height: AppSpacing.xs),
             Text(l10n.detailsDeletedHint, style: theme.textTheme.bodySmall),
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: () => unawaited(
+                  ref
+                      .read(restoreControllerProvider.notifier)
+                      .restore(DeletedRecord.ofFile(details.file)),
+                ),
+                icon: const Icon(Icons.restore_from_trash_outlined),
+                label: Text(l10n.restoreRecord),
+              ),
+            ),
           ],
 
           // AF-03: shown as missing, with the re-scan that might bring it
@@ -133,135 +149,132 @@ class _Details extends ConsumerWidget {
           _Section(l10n.detailsMetadata),
           _Metadata(details: details),
 
-          // UC-15 and UC-16 main flow step 1. Offered for the two types there
-          // is a form for, and not for a deleted record, which the core
-          // refuses to edit until it is restored. The remaining editable
-          // subtypes — document, comic, image — have no use case in the
-          // backlog, so they are deliberately absent rather than pending.
-          if (details.isDeleted ? null : _metadataFormFor(details.file.type)
-              case final openForm?) ...[
-            const SizedBox(height: AppSpacing.sm),
-            OutlinedButton.icon(
-              onPressed: () => openForm(context, ref, details),
-              icon: const Icon(Icons.edit_outlined),
-              label: Text(l10n.detailsEditMetadata),
-            ),
-          ],
-
-          // UC-18 main flow step 1. Text and Markdown files are the ones the
-          // core will read and write content for; every other type's content
-          // is bytes this application does not edit (BR-06, BR-09).
-          if (details.file.type == LibraryType.text && !details.isDeleted) ...[
-            const SizedBox(height: AppSpacing.sm),
-            OutlinedButton.icon(
-              onPressed: () =>
-                  TextEditorScreen.show(context, ref, details.file),
-              icon: const Icon(Icons.edit_note_outlined),
-              label: Text(l10n.editorOpen),
-            ),
-          ],
-
-          // UC-17 main flow step 1. Every type can be renamed, because the
-          // name is the file's and not its subtype's — but not a deleted
-          // record, which the core refuses to touch until it is restored.
-          if (!details.isDeleted) ...[
-            const SizedBox(height: AppSpacing.sm),
-            OutlinedButton.icon(
-              onPressed: () =>
-                  RenameFileDialog.show(context, ref, details.file),
-              icon: const Icon(Icons.drive_file_rename_outline),
-              label: Text(l10n.renameOpen),
-            ),
-          ],
-
-          // UC-20 main flow step 1: a track, its album, or its artist. The
-          // three are offered together because they are one decision — what
-          // to put in the queue — and the owner is looking at the track that
-          // answers it.
-          if (details.file.type == LibraryType.audio && !details.isDeleted) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.xs,
-              children: [
+          // Every action the file's type allows, flowing rather than stacked
+          // (UC-13 main flow step 4). One full-width button per row put a
+          // video's seven actions well past the bottom of a 520-wide dialog,
+          // so reaching Play meant scrolling a column of buttons. The one
+          // action deliberately kept out of this group is purge-on-disk, which
+          // FR-LC-06 requires be set apart and last.
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              // UC-19 main flow step 1, and UC-20's three ways to queue: the
+              // ways of opening the file come first, because opening it is
+              // what the owner most often came here to do.
+              //
+              // AF-03 disables each of them for a record whose file the last
+              // scan could not find — there is nothing to decode.
+              if (details.file.type == LibraryType.video && !details.isDeleted)
                 FilledButton.icon(
-                  onPressed: () => _startAudio(
-                    context,
-                    ref,
-                    (player) => player.playTrack(details.file),
-                  ),
+                  onPressed: details.canReachTheFile
+                      ? () => VideoPlayerScreen.show(context, ref, details.file)
+                      : null,
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(l10n.videoPlay),
+                ),
+
+              // UC-20 main flow step 1: a track, its album, or its artist.
+              // The three are offered together because they are one decision —
+              // what to put in the queue — and the owner is looking at the
+              // track that answers it.
+              if (details.file.type == LibraryType.audio &&
+                  !details.isDeleted) ...[
+                FilledButton.icon(
+                  onPressed: details.canReachTheFile
+                      ? () => _startAudio(
+                          context,
+                          ref,
+                          (player) => player.playTrack(details.file),
+                        )
+                      : null,
                   icon: const Icon(Icons.play_arrow),
                   label: Text(l10n.audioPlay),
                 ),
                 OutlinedButton.icon(
-                  onPressed: () => _startAudio(
-                    context,
-                    ref,
-                    (player) => player.playAlbum(details.file),
-                  ),
+                  onPressed: details.canReachTheFile
+                      ? () => _startAudio(
+                          context,
+                          ref,
+                          (player) => player.playAlbum(details.file),
+                        )
+                      : null,
                   icon: const Icon(Icons.album_outlined),
                   label: Text(l10n.audioPlayAlbum),
                 ),
                 OutlinedButton.icon(
-                  onPressed: () => _startAudio(
-                    context,
-                    ref,
-                    (player) => player.playArtist(details.file),
-                  ),
+                  onPressed: details.canReachTheFile
+                      ? () => _startAudio(
+                          context,
+                          ref,
+                          (player) => player.playArtist(details.file),
+                        )
+                      : null,
                   icon: const Icon(Icons.person_outline),
                   label: Text(l10n.audioPlayArtist),
                 ),
               ],
-            ),
-          ],
 
-          // UC-31 main flow step 3: a book or a comic can be tracked from
-          // its own detail view. AF-02 needs nothing here -- this is offered
-          // for those two types and for nothing else.
-          if ((details.file.type == LibraryType.document ||
-                  details.file.type == LibraryType.comic) &&
-              !details.isDeleted) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: AddToReadingListButton(file: details.file),
-            ),
-          ],
+              // UC-15 and UC-16 main flow step 1. Offered for the two types
+              // there is a form for, and not for a deleted record, which the
+              // core refuses to edit until it is restored. The remaining
+              // editable subtypes — document, comic, image — have no use case
+              // in the backlog, so they are deliberately absent rather than
+              // pending.
+              if (details.isDeleted ? null : _metadataFormFor(details.file.type)
+                  case final openForm?)
+                OutlinedButton.icon(
+                  onPressed: () => openForm(context, ref, details),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: Text(l10n.detailsEditMetadata),
+                ),
 
-          // UC-29 main flow step 3: a video can be tracked from its own
-          // detail view. AF-02 needs nothing here — this is offered for a
-          // video and for nothing else.
-          if (details.file.type == LibraryType.video && !details.isDeleted) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: AddToWatchlistButton(file: details.file),
-            ),
-          ],
+              // UC-17 main flow step 1. Every type can be renamed, because the
+              // name is the file's and not its subtype's — but not a deleted
+              // record, which the core refuses to touch until it is restored.
+              // AF-03: renaming reaches the file on disk.
+              if (!details.isDeleted)
+                OutlinedButton.icon(
+                  onPressed: details.canReachTheFile
+                      ? () => RenameFileDialog.show(context, ref, details.file)
+                      : null,
+                  icon: const Icon(Icons.drive_file_rename_outline),
+                  label: Text(l10n.renameOpen),
+                ),
 
-          // UC-19 main flow step 1. Offered for a video whose file the last
-          // refresh could still find: AF-01 covers one that has gone since,
-          // and offering nothing for a record already known to be missing
-          // would be an action that cannot work.
-          if (details.file.type == LibraryType.video && !details.isDeleted) ...[
-            const SizedBox(height: AppSpacing.sm),
-            FilledButton.icon(
-              onPressed: () =>
-                  VideoPlayerScreen.show(context, ref, details.file),
-              icon: const Icon(Icons.play_arrow),
-              label: Text(l10n.videoPlay),
-            ),
-          ],
+              // UC-18 main flow step 1. Text and Markdown files are the ones
+              // the core will read and write content for; every other type's
+              // content is bytes this application does not edit (BR-06,
+              // BR-09). AF-03: the editor reads the file's content.
+              if (details.file.type == LibraryType.text && !details.isDeleted)
+                OutlinedButton.icon(
+                  onPressed: details.canReachTheFile
+                      ? () => TextEditorScreen.show(context, ref, details.file)
+                      : null,
+                  icon: const Icon(Icons.edit_note_outlined),
+                  label: Text(l10n.editorOpen),
+                ),
 
-          // UC-33 main flow step 1: a record already deleted has nothing to
-          // delete, which is why this is offered for an active one only.
-          if (!details.isDeleted) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: DeleteFileButton(file: details.file),
-            ),
-          ],
+              // UC-29 and UC-31 main flow step 3: a video, a book, or a comic
+              // can be tracked from its own detail view. Each is offered for
+              // its own types and for nothing else, which is what those use
+              // cases' AF-02 asks for.
+              if (details.file.type == LibraryType.video && !details.isDeleted)
+                AddToWatchlistButton(file: details.file),
+              if ((details.file.type == LibraryType.document ||
+                      details.file.type == LibraryType.comic) &&
+                  !details.isDeleted)
+                AddToReadingListButton(file: details.file),
+
+              // UC-33 main flow step 1: a record already deleted has nothing
+              // to delete, which is why this is offered for an active one
+              // only. Last in the group, because it is the one action here
+              // that takes the file out of the library.
+              if (!details.isDeleted) DeleteFileButton(file: details.file),
+            ],
+          ),
+
           const DeletionNoticeBar(),
 
           const SizedBox(height: AppSpacing.lg),
@@ -274,7 +287,10 @@ class _Details extends ConsumerWidget {
           if (ref.watch(viewerRegistryProvider).viewerFor(details.file.type)
               case final viewer?)
             FilledButton.icon(
-              onPressed: () => openViewer(context, ref, viewer, details.file),
+              // AF-03: every viewer reads the file's bytes.
+              onPressed: details.canReachTheFile
+                  ? () => openViewer(context, ref, viewer, details.file)
+                  : null,
               icon: const Icon(Icons.open_in_full),
               label: Text(l10n.viewerOpen),
             )

@@ -7,6 +7,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../playback/application/audio_playback_controller.dart';
+import '../../playback/domain/media_player.dart';
 import '../../playback/presentation/album_player_screen.dart';
 
 /// The persistent playback bar (FR-UX-01, FR-PL-05).
@@ -125,6 +126,10 @@ class _Bar extends ConsumerWidget {
             ],
           ),
         ),
+        // FR-PL-09: where the track has got to. Beside the transport rather
+        // than under the title, so it sits next to the controls that move it.
+        _Position(status: state.status),
+        const SizedBox(width: AppSpacing.sm),
         // FR-PL-06: skipping within the queue. Disabled rather than hidden at
         // its ends, so the controls do not move as a queue plays through.
         IconButton(
@@ -247,11 +252,11 @@ class _SkipNotice extends ConsumerWidget {
 }
 
 /// AF-03: nothing in the selection could be played.
-class _NothingPlayable extends StatelessWidget {
+class _NothingPlayable extends ConsumerWidget {
   const _NothingPlayable();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
@@ -262,11 +267,54 @@ class _NothingPlayable extends StatelessWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xs,
       ),
-      child: Text(
-        l10n.audioNothingPlayable,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onErrorContainer,
-        ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l10n.audioNothingPlayable,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onErrorContainer,
+              ),
+            ),
+          ),
+          // Dismissable, like the skip notice above it: the queue is already
+          // cleared, and a report with no way to clear it stays for the rest
+          // of the session.
+          TextButton(
+            onPressed: ref
+                .read(audioPlaybackControllerProvider.notifier)
+                .acknowledgeAllFailed,
+            child: Text(l10n.editorDismiss),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Where the track has got to, and how long it is (FR-PL-09).
+///
+/// Absent until the engine reports a duration: "00:00 / 00:00" beside a bar
+/// that says nothing is playing is noise, and a track whose length the engine
+/// has not worked out yet has nothing to divide by.
+class _Position extends StatelessWidget {
+  const _Position({required this.status});
+
+  final PlaybackStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final duration = status.duration;
+    if (duration == null || duration == Duration.zero) {
+      return const SizedBox.shrink();
+    }
+
+    return Text(
+      '${formatPlaybackPosition(status.position)} / '
+      '${formatPlaybackPosition(duration)}',
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
       ),
     );
   }

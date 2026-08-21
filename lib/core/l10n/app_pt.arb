@@ -110,7 +110,6 @@
   "librarySourcesRefreshRunning": "O catálogo já está sendo reverificado.",
   "librarySourcesRefreshEmpty": "Ainda não há nada catalogado. Adicione uma pasta e indexe-a primeiro.",
   "librarySourcesRefreshFailed": "Não foi possível reverificar o catálogo.",
-  "librarySourcesMissingReviewPending": "A revisão de arquivos ausentes chega com o caso de uso dela.",
   "destinationVideos": "Vídeos",
   "catalogEmptyTitle": "Nada deste tipo ainda",
   "catalogEmptyFirstRun": "Sua biblioteca está vazia. Adicione uma pasta e indexe-a, e o que estiver dentro aparecerá aqui.",
@@ -152,7 +151,7 @@
   "detailsNoViewer": "Ainda não há nada que abra esse tipo de arquivo.",
   "detailsMissingHint": "O Alexandria não encontrou este arquivo onde o catálogo diz que ele está. Reverifique o catálogo para saber se ele voltou.",
   "detailsRescan": "Reverificar o catálogo",
-  "detailsDeletedHint": "Este registro está excluído. A restauração chega com o caso de uso dela.",
+  "detailsDeletedHint": "Este registro está excluído. Restaure-o para editá-lo ou abri-lo novamente.",
   "detailsNotFound": "Esse arquivo não está mais no catálogo.",
   "detailsMetadataNone": "O núcleo não informa mais nada sobre este arquivo.",
   "detailsWidth": "Largura",
@@ -162,7 +161,9 @@
   "dashboardRecent": "Adicionados recentemente",
   "dashboardRecentNone": "Nada foi adicionado ainda.",
   "dashboardInProgress": "Em andamento",
-  "dashboardInProgressNone": "Nada em andamento. As listas de reprodução e de leitura chegam com os casos de uso delas.",
+  "dashboardInProgressNone": "Nada em andamento.",
+  "dashboardInProgressIn": "Em {list}",
+  "dashboardInProgressInAt": "Em {list} — {progress}",
   "dashboardCounts": "O que há na biblioteca",
   "dashboardLastRun": "A última análise",
   "dashboardLastRunNone": "Nada foi analisado nesta sessão.",
@@ -438,5 +439,6 @@
   "bookmarkFilterLabel": "Mostrar",
   "bookmarkFilterAll": "Todos os favoritos",
   "collectionItemWrongKind": "não é do tipo desta coleção",
-  "collectionItemGone": "ele não existe mais"
+  "collectionItemGone": "ele não existe mais",
+  "libraryToolsOpen": "Ferramentas da biblioteca"
 }

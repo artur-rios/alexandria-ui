@@ -8,7 +8,6 @@ import '../../auth/application/session_state.dart';
 import '../../auth/presentation/recovery_codes_section.dart';
 import '../../auth/presentation/change_credentials_dialog.dart';
 import '../../auth/presentation/sign_out_button.dart';
-import '../../library_sources/presentation/library_sources_screen.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
 ///
@@ -102,14 +101,6 @@ class PreferencesDialog extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.md),
                 const Divider(),
                 const SizedBox(height: AppSpacing.sm),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () => LibrarySourcesScreen.show(context),
-                    icon: const Icon(Icons.folder_outlined),
-                    label: Text(l10n.librarySourcesOpen),
-                  ),
-                ),
                 // UC-42 main flow step 1: beside changing the password,
                 // because both are things an owner does to an account they
                 // still have access to.
