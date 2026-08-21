@@ -64,18 +64,32 @@ libasound libpulse libjack
 libselinux libudev libsystemd libcap
 "
 
+# The exact-match half of the same decision, kept in a file because it is long,
+# largely vendored, and worth reviewing as a list rather than as shell. See
+# host-libraries.txt for where it comes from.
+HOST_LIST="$(dirname "$0")/host-libraries.txt"
+[ -f "$HOST_LIST" ] || { echo "error: $HOST_LIST is missing" >&2; exit 1; }
+
 is_denied() {
   _soname=$1
+
   for _prefix in $DENY; do
     case $_soname in
       "$_prefix"*) return 0 ;;
     esac
   done
+
+  grep -qxF "$_soname" "$HOST_CLEAN" && return 0
   return 1
 }
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT INT TERM
+
+HOST_CLEAN="$WORK/host"
+sed -e 's/#.*//' -e 's/[[:space:]]*$//' "$HOST_LIST" | grep -v '^$' > "$HOST_CLEAN"
+echo "Treating $(wc -l < "$HOST_CLEAN") named libraries as host-provided, plus the categories in DENY."
+echo
 QUEUE="$WORK/queue"
 SEEN="$WORK/seen"
 BUNDLED="$WORK/bundled"
