@@ -624,17 +624,19 @@ jobs:
 
           rm -rf "$prefix"
 
+      # From the same staged payload the tarball is made from, so the two carry
+      # identical contents and whatever is verified for one holds for the
+      # other. See the script for why flutter_distributor's AppImage maker is
+      # not used for this.
       - name: Build the AppImage
         run: |
-          flutter_distributor package \
-            --platform linux --targets appimage \
-            --skip-clean
+          set -e
+          sh packaging/linux/build-appimage.sh stage \
+            "dist/alexandria-${{ steps.version.outputs.value }}-linux-x86_64.AppImage"
 
-      # flutter_distributor re-runs `flutter build` per target, so the AppImage
-      # is built from a bundle that was rebuilt after ffmpeg went into it. If
-      # that rebuild ever starts clearing the directory, it shows up here —
-      # rather than as an AppImage that runs only where ffmpeg happens to be
-      # installed already.
+      # Unpacked and inspected rather than trusted. The AppImage is assembled
+      # from the staged payload, so this also confirms that what was staged is
+      # what came out the other side.
       - name: Verify the AppImage carries ffmpeg
         run: |
           set -e
