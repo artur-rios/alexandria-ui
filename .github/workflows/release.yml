@@ -71,7 +71,18 @@ env:
   # application can meet — by dynamic linking, unmodified, with its licence
   # texts included. Nothing here re-encodes, so the GPL-only encoders that
   # variant adds are not needed anyway.
-  FFMPEG_WINDOWS_BUILD: ffmpeg-n7.1-latest-win64-lgpl-shared-7.1
+  #
+  # Pinned to the same dated autobuild release CI pins, and for the same
+  # reason. This used to point at the `latest` tag, whose assets rotate as new
+  # series are cut: it carried a 7.1 build until it did not, and by the first
+  # tagged run that tag held only 8.1 and 9.0 and the download 404'd. A dated
+  # tag is immutable, so the only way this moves now is somebody moving it.
+  #
+  # The 7.1 series specifically, not a newer one — see the long note on the
+  # equivalent step in ci.yml for why ffmpeg-sys-next cannot build against
+  # master's hwcontext headers.
+  FFMPEG_WINDOWS_RELEASE: autobuild-2026-08-16-13-00
+  FFMPEG_WINDOWS_ARCHIVE: ffmpeg-n7.1.5-16-g9a4bb2c579-win64-lgpl-shared-7.1.zip
 
   # The libraries a shared ffmpeg build links the core against by name. Listed
   # once so the bundling steps below cannot drift from each other.
@@ -103,7 +114,7 @@ jobs:
         run: |
           set -e
           curl -fsSL -o /tmp/ffmpeg.zip \
-            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/${FFMPEG_WINDOWS_BUILD}.zip"
+            "https://github.com/BtbN/FFmpeg-Builds/releases/download/${FFMPEG_WINDOWS_RELEASE}/${FFMPEG_WINDOWS_ARCHIVE}"
           7z x /tmp/ffmpeg.zip -o/tmp/ffmpeg > /dev/null
           root=$(find /tmp/ffmpeg -maxdepth 1 -mindepth 1 -type d | head -1)
           test -f "$root/include/libavutil/hwcontext_cuda.h"
@@ -306,6 +317,7 @@ jobs:
           mkdir -p dist stage
           cp -r build/linux/x64/release/bundle/. stage/
           cp packaging/linux/io.github.artur_rios.Alexandria.desktop stage/
+          cp packaging/linux/io.github.artur_rios.Alexandria.png stage/
           tar czf \
             "dist/alexandria-${{ steps.version.outputs.value }}-linux-x64.tar.gz" \
             -C stage .
@@ -338,6 +350,7 @@ jobs:
           "./$installer" --prefix "$prefix" --yes
           test -x "$prefix/alexandria_desktop"
           test -f "$prefix/lib/libalexandria_ffi.so"
+          test -f "$HOME/.local/share/icons/hicolor/512x512/apps/io.github.artur_rios.Alexandria.png"
 
           # A file the installer did not write must survive the replacement
           # below, which is the whole point of removing recorded paths rather
@@ -354,8 +367,17 @@ jobs:
 
           rm -rf "$prefix"
 
+      # Debian's Installed-Size is in kilobytes and is measured here rather
+      # than maintained by hand in the config, where it would be wrong from
+      # the first build that changed the bundle's size.
       - name: Build the AppImage and the .deb
         run: |
+          set -e
+          size=$(du -sk build/linux/x64/release/bundle | cut -f1)
+          sed -i "s/^installed_size: .*/installed_size: ${size}/" \
+            linux/packaging/deb/make_config.yaml
+          grep '^installed_size:' linux/packaging/deb/make_config.yaml
+
           dart pub global activate flutter_distributor
           flutter_distributor package \
             --platform linux --targets deb,appimage \

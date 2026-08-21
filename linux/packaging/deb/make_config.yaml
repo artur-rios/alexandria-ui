@@ -1,0 +1,53 @@
+# IR-16: the .deb, built by flutter_distributor from distribute_options.yaml.
+#
+# flutter_distributor looks for this file at exactly this path — the maker
+# reads linux/packaging/<target>/make_config.yaml and fails outright if it is
+# absent, which is what it did on the first tagged run.
+#
+# Paths here are relative to the project root, not to this file.
+
+display_name: Alexandria
+
+# Lowercase, and only letters, digits, and -+. per Debian policy.
+package_name: alexandria
+
+maintainer:
+  name: Artur Rios
+  email: arturdev@duck.com
+
+priority: optional
+section: video
+
+# Overwritten by the release workflow with the bundle's actual size in
+# kilobytes before packaging. Debian treats Installed-Size as advisory, so a
+# stale value here is cosmetic rather than a build failure — but a value
+# nobody maintains is worse than one the pipeline measures.
+installed_size: 0
+
+icon: packaging/linux/io.github.artur_rios.Alexandria.png
+
+generic_name: Personal library
+categories:
+  - AudioVideo
+  - Player
+  - Office
+  - Viewer
+
+keywords:
+  - library
+  - catalog
+  - media
+  - documents
+
+startup_notify: true
+essential: false
+
+# No `dependencies:` yet, deliberately.
+#
+# The core links ffmpeg, so a correct .deb would declare the distro's ffmpeg
+# runtime packages here. Their soname is part of the package name and moves
+# between Ubuntu releases, so declaring them means first choosing which
+# releases are supported — the open question recorded at the top of
+# .github/workflows/release.yml. Until that is settled this package installs
+# and then fails to load the core on a machine without ffmpeg, which is a
+# known gap rather than an oversight.

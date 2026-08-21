@@ -120,11 +120,16 @@ the leading `v`, so the version carried by the packages is `0.0.1`.
   `ci.yml` pins a commit. What a tag links against is whatever the core's
   `main` was at build time, so a tag is not reproducible. Changing it is a
   separate decision from this one.
-- **No icon exists.** `io.github.artur_rios.Alexandria.desktop` declares
-  `Icon=io.github.artur_rios.Alexandria` and the repository contains no icon
-  file, so the desktop entry falls back to a generic icon. Pre-existing; the
-  Flatpak has the same hole.
-- **The Linux packaging steps are unproven.** `flutter_distributor` and
-  `flatpak-builder` have never run on a tag. The first tag may fail on them.
+- **The icon is a placeholder.** The repository had no icon at all, and the
+  AppImage maker requires one, so `packaging/linux/io.github.artur_rios.Alexandria.png`
+  was generated: a plain lettermark, deliberately not a logo. It is installed
+  by the Linux installer, the .deb, the AppImage, and the Flatpak, so replacing
+  it later is one file.
+- **The Linux packaging steps were unproven, and were broken.** The first
+  dispatch run showed `flutter_distributor` had never had the
+  `linux/packaging/{deb,appimage}/make_config.yaml` files it requires, and the
+  Windows job could not download ffmpeg at all because it pointed at the
+  rotating `latest` tag, which by then carried only the 8.1 and 9.0 series.
+  Both are fixed here; the Flatpak step is still unproven.
 - **ffmpeg on Linux.** Unchanged by this work, and documented at length in the
   workflow header.

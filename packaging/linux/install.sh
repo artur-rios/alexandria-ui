@@ -141,6 +141,16 @@ applications_dir() {
   fi
 }
 
+# The desktop entry names its icon rather than pointing at a file, so the name
+# only resolves once a file of that name sits in the icon theme.
+icons_dir() {
+  if is_root; then
+    printf '/usr/share/icons/hicolor/512x512/apps'
+  else
+    printf '%s/icons/hicolor/512x512/apps' "${XDG_DATA_HOME:-$HOME/.local/share}"
+  fi
+}
+
 manifest_path() {
   if is_root; then
     printf '/var/lib/%s/install.manifest' "$LAUNCHER_NAME"
@@ -221,6 +231,7 @@ remove_unrecorded_install() {
   _prefix=$1
   rm -f "$_prefix/$EXE_NAME" || true
   rm -f "$_prefix/$DESKTOP_FILE" || true
+  rm -f "$_prefix/${APP_ID}.png" || true
   rm -rf "$_prefix/lib" || true
   rm -rf "$_prefix/data" || true
 }
@@ -370,10 +381,18 @@ chmod 755 "$prefix/$EXE_NAME"
 
 bindir=$(launcher_dir)
 appdir=$(applications_dir)
-mkdir -p "$bindir" "$appdir"
+icondir=$(icons_dir)
+mkdir -p "$bindir" "$appdir" "$icondir"
 
 launcher="$bindir/$LAUNCHER_NAME"
 ln -sf "$prefix/$EXE_NAME" "$launcher"
+
+icon_file=""
+if [ -f "$prefix/${APP_ID}.png" ]; then
+  icon_file="$icondir/${APP_ID}.png"
+  cp "$prefix/${APP_ID}.png" "$icon_file"
+  chmod 644 "$icon_file"
+fi
 
 # The entry travels in the bundle with a bare Exec, which only resolves for a
 # launcher already on PATH. Rewriting it to the absolute path makes the menu
@@ -413,10 +432,21 @@ mkdir -p "$(dirname "$MANIFEST")"
   done < "$listing"
   printf 'file=%s\n' "$launcher"
   printf 'file=%s\n' "$desktop_entry"
+  # An `if` rather than `[ ... ] && printf`: a false test as the last command
+  # in this group would make the group itself fail, and set -e would take the
+  # whole install down over an icon that simply was not there.
+  if [ -n "$icon_file" ]; then
+    printf 'file=%s\n' "$icon_file"
+  fi
 } > "$MANIFEST"
 
 if command -v update-desktop-database > /dev/null 2>&1; then
   update-desktop-database "$appdir" > /dev/null 2>&1 || true
+fi
+
+if command -v gtk-update-icon-cache > /dev/null 2>&1 && [ -n "$icon_file" ]; then
+  gtk-update-icon-cache -q -t -f "$(dirname "$(dirname "$(dirname "$icondir")")")" \
+    > /dev/null 2>&1 || true
 fi
 
 log ""
@@ -424,6 +454,9 @@ log "${APP_NAME} ${VERSION} is installed."
 log "  Program:     ${prefix}/${EXE_NAME}"
 log "  Launcher:    ${launcher}"
 log "  Menu entry:  ${desktop_entry}"
+if [ -n "$icon_file" ]; then
+  log "  Icon:        ${icon_file}"
+fi
 log "  Record:      ${MANIFEST}"
 log ""
 
