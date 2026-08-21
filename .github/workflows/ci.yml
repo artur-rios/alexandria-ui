@@ -25,13 +25,19 @@ env:
   # part of moving this value, and a moving target would make the drift check
   # pass against whatever the core happened to be that morning.
   #
+  # Moved from UC-46 to the core's relicensing commit, which changes LICENSE,
+  # README and the crates' metadata and no code at all. The desktop packages
+  # carry copyleft libraries, so the core they are built from has to be the
+  # tree whose licence says so — pointing at the commit before it would offer
+  # anyone exercising their GPL rights a source tree marked proprietary.
+  #
   # This commit is `alexandria-api` UC-46, which added the collections listing
   # UC-26 and UC-27 need. It is also the first ref this application follows
   # since the core replaced e-mail confirmation and password reset with
   # recovery codes on 2026-08-18: UC-40, UC-41, and UC-42 are specified against
   # recovery codes now, so following the core is no longer a divergence.
   CORE_REPOSITORY: artur-rios/alexandria-api
-  CORE_REF: 90e84bdd2d054e659ba82eeab39b7b2e7ba157c6
+  CORE_REF: 88ffd3b4f4c44ce243704fd12d00db92c3221f80
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned
@@ -82,6 +88,35 @@ jobs:
             echo "::error::Generated output differs from what is committed. Run the generators and commit the result."
             exit 1
           fi
+
+      # The release workflow builds the core too, and a release that linked
+      # against a different commit than the one the integration suite ran
+      # against would ship something nothing had tested. Both files carry the
+      # value because a workflow cannot read another's env, so the two are held
+      # together here rather than by anyone remembering.
+      - name: Core pin agreement
+        run: |
+          set -e
+          pin_of() {
+            grep -E '^  CORE_REF:' "$1" | head -1 | awk '{print $2}'
+          }
+          ci=$(pin_of .github/workflows/ci.yml)
+          release=$(pin_of .github/workflows/release.yml)
+
+          echo "ci.yml:      $ci"
+          echo "release.yml: $release"
+
+          if [ "$ci" != "$release" ]; then
+            echo "::error::CORE_REF disagrees between ci.yml and release.yml. Move both together — a release must link against the commit the integration suite ran against."
+            exit 1
+          fi
+
+          case $release in
+            main | master | "")
+              echo "::error::release.yml pins CORE_REF to a branch. A tag must name a commit, or the same tag can build twice and ship two different cores."
+              exit 1
+              ;;
+          esac
 
       - name: Analyze
         run: flutter analyze --fatal-infos --fatal-warnings

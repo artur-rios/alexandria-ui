@@ -106,6 +106,31 @@ foreach(bundled_library ${PLUGIN_BUNDLED_LIBRARIES})
     COMPONENT Runtime)
 endforeach(bundled_library)
 
+# The Alexandria core, and on a release build the ffmpeg libraries that travel
+# with it, from native/linux — the same directory the README tells a developer
+# to put the core in.
+#
+# This has to be an install rule rather than a copy made afterwards. The rule
+# near the top of this section wipes the bundle directory on every build, so
+# anything placed in the bundle after a build is destroyed by the next one.
+# That is not hypothetical: flutter_distributor runs `flutter build` again for
+# each package it makes, and the v0.0.1 .deb, AppImage, and Flatpak all shipped
+# without the core because of it. Installing from here means every build
+# produces a complete bundle, however the build was invoked.
+#
+# install(DIRECTORY) rather than install(FILES) with a glob, because a glob is
+# expanded when CMake configures and the release pipeline adds ffmpeg to this
+# directory between builds; a DIRECTORY install is walked at install time.
+# OPTIONAL because a checkout that has not built the core yet has no such
+# directory, and that is a normal state rather than an error.
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../native/linux/"
+  DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+  COMPONENT Runtime
+  OPTIONAL
+  FILES_MATCHING
+    PATTERN "*.so*"
+    REGEX "licenses/.*")
+
 # Copy the native assets provided by the build.dart from all packages.
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/linux/")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}"

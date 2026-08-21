@@ -1,9 +1,11 @@
-# IR-16: the Linux AppImage and .deb, built by flutter_distributor.
+# IR-16: the Linux .deb, built by flutter_distributor.
 #
-# The MSIX comes from the `msix` package and the Windows installer from Inno
-# Setup; the Flatpak has no flutter_distributor target and is built from the
-# manifest in packaging/linux/. All five are produced by the same pipeline —
-# .github/workflows/release.yml.
+# The .deb only. The MSIX comes from the `msix` package, the Windows installer
+# from Inno Setup, the Flatpak from the manifest in packaging/linux/, and the
+# AppImage from packaging/linux/build-appimage.sh — flutter_distributor's
+# AppImage maker bundles dependencies of its own on top of the payload it is
+# given, which is not what this project wants from it. All of them are produced
+# by the same pipeline — .github/workflows/release.yml.
 
 output: dist/
 
@@ -14,7 +16,3 @@ releases:
         package:
           platform: linux
           target: deb
-      - name: linux-appimage
-        package:
-          platform: linux
-          target: appimage
