@@ -80,7 +80,7 @@ env:
   # ran the integration suite against. A release is the one place that matters
   # most. Moving this is now the same deliberate act as moving CI's — both
   # values change together, or the build stops.
-  CORE_REF: 90e84bdd2d054e659ba82eeab39b7b2e7ba157c6
+  CORE_REF: 88ffd3b4f4c44ce243704fd12d00db92c3221f80
 
   # Must match the SDK the committed pubspec.lock was resolved with, for the
   # same reason CI pins it: a newer SDK rewrites the lock during `pub get`, and
@@ -839,13 +839,38 @@ jobs:
             - **`.flatpak`** — its codecs come from the
               `org.freedesktop.Platform.ffmpeg-full` runtime extension.
 
-            The installer, the tarball, and the AppImage bundle ffmpeg and the
-            libraries it depends on; their licences are in `lib/licenses`. Only
-            the graphics, sound, and C libraries any desktop application needs
-            come from your system.
+            The installer, the tarball, and the AppImage carry everything the
+            program needs — ffmpeg, libmpv, and the libraries those depend on.
+            Only the graphics, sound, and C libraries any desktop application
+            already has come from your system.
 
             Packages are unsigned — code signing needs a certificate the
             project does not hold yet.
+
+            ## Licence
+
+            Alexandria is free software under the
+            [GNU General Public License v3 or later](https://github.com/artur-rios/alexandria-ui/blob/main/LICENSE).
+            The source is [alexandria-ui](https://github.com/artur-rios/alexandria-ui)
+            and [alexandria-api](https://github.com/artur-rios/alexandria-api);
+            this release was built from the tag of the same name.
+
+            The Linux packages carry copyleft libraries, which is why the whole
+            program is under the GPL rather than something more permissive:
+            libmpv plays the video, and ffmpeg links the x264, x265, xvid and
+            postproc encoders whether or not anything ever encodes with them.
+
+            Every bundled library's licence travels inside the package in
+            `lib/licenses`, the full list of packages is in
+            `lib/licenses/PACKAGES.txt`, and the ones known to be copyleft are
+            named in `lib/licenses/COPYLEFT.tsv`.
+
+            The GPL entitles you to the complete corresponding source for
+            everything here. For Alexandria that is the two repositories above.
+            For the bundled libraries, they are unmodified Ubuntu 24.04
+            packages, and their sources are the matching `apt-get source`
+            packages for the versions named in `PACKAGES.txt`; ask through the
+            repository if you would rather have them directly.
 
           files: release/*
           generate_release_notes: true
