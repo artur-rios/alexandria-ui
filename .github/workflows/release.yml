@@ -1,16 +1,27 @@
 # IR-16: the packages, produced from the same pipeline on a tagged release.
 #
-#   Windows   an MSIX package and an installer executable
-#   Linux     an AppImage, a .deb, and a Flatpak
+#   Windows   an MSIX package, an installer executable, and a portable .zip
+#   Linux     an AppImage, a .deb, a Flatpak, a self-extracting installer,
+#             and a portable .tar.gz
 #
 # Each bundles the Alexandria core's shared library. The core travels inside the
 # application bundle as a library: nothing here installs, updates, or launches a
 # service (Operations & Infrastructure Document §7.3).
 #
-# Packages are produced unsigned and published as build artifacts. Code signing
-# for Windows needs a certificate the project does not hold, and Flatpak
-# distribution through a public remote needs an account that does not exist yet;
-# both are deliberately deferred until before the first public release (§7.2).
+# The two portable archives are the whole release bundle and nothing else, for
+# running the application without an install step. The two installers are the
+# ones that place it: both find an existing installation — in the directory
+# chosen, and in the one a previous install recorded — and replace it, removing
+# what that install wrote rather than the directory it was written into. See
+# packaging/windows/installer.iss and packaging/linux/install.sh.
+#
+# A tag publishes all of it as a GitHub Release. A workflow_dispatch run does
+# not: it has no tag to release against, so it stops at the build artifacts.
+#
+# Packages are produced unsigned. Code signing for Windows needs a certificate
+# the project does not hold, and Flatpak distribution through a public remote
+# needs an account that does not exist yet; both are deliberately deferred
+# until before the first public release (§7.2).
 #
 # KNOWN GAP — the Linux packages do not carry ffmpeg.
 #
@@ -170,6 +181,23 @@ jobs:
           }
           exit $missing
 
+      # For running the application without installing it. Deliberately placed
+      # after the verification above and before the MSIX below: after, so the
+      # archive cannot ship without the core and its ffmpeg libraries; before,
+      # because `msix:create` writes its output into this same directory and
+      # the portable archive has no business carrying a copy of the MSIX.
+      - name: Build the portable archive
+        shell: bash
+        run: |
+          set -e
+          mkdir -p dist
+          # 7z is a native Windows program, so it gets a Windows path. Zipping
+          # from inside the directory is what keeps the archive's entries at
+          # its root rather than nested under build/windows/x64/runner.
+          zip="$(cygpath -w "$PWD/dist/alexandria-${{ steps.version.outputs.value }}-windows-x64.zip")"
+          (cd build/windows/x64/runner/Release && 7z a -tzip "$zip" '*' > /dev/null)
+          7z l "$zip" | tail -20
+
       - name: Build the MSIX package
         run: dart run msix:create --version ${{ steps.version.outputs.value }}.0
 
@@ -186,6 +214,7 @@ jobs:
           path: |
             build/windows/x64/runner/Release/*.msix
             dist/*.exe
+            dist/*.zip
           if-no-files-found: error
 
   linux:
@@ -266,6 +295,65 @@ jobs:
           ldd build/linux/x64/release/bundle/lib/libalexandria_ffi.so \
             | grep -E "libav|libsw" || true
 
+      # Staged rather than assembled in place. The .deb, the AppImage, and the
+      # Flatpak all take build/linux/x64/release/bundle as their input, and
+      # dropping the desktop entry into it would put a stray copy inside all
+      # three. The archive is what the installer below extracts, so the two
+      # carry byte-for-byte the same payload.
+      - name: Build the portable archive
+        run: |
+          set -e
+          mkdir -p dist stage
+          cp -r build/linux/x64/release/bundle/. stage/
+          cp packaging/linux/io.github.artur_rios.Alexandria.desktop stage/
+          tar czf \
+            "dist/alexandria-${{ steps.version.outputs.value }}-linux-x64.tar.gz" \
+            -C stage .
+
+      # The head is a complete shell script that ends in the payload marker;
+      # concatenating the archive onto it is the whole of what makes it
+      # self-extracting. The version is substituted here so the script can
+      # report it without the workflow having to pass it in at run time.
+      - name: Build the self-extracting installer
+        run: |
+          set -e
+          version="${{ steps.version.outputs.value }}"
+          installer="dist/alexandria-installer-${version}-linux-x64.sh"
+
+          sed "s/@VERSION@/${version}/" packaging/linux/install.sh > /tmp/head.sh
+          cat /tmp/head.sh "dist/alexandria-${version}-linux-x64.tar.gz" > "$installer"
+          chmod +x "$installer"
+
+      # An installer that cannot install is the failure this checks for, and it
+      # is cheap enough to check here rather than leave for whoever downloads
+      # it. Runs the three paths that matter: a fresh install, a replacement of
+      # that install, and removal.
+      - name: Smoke-test the installer
+        run: |
+          set -e
+          version="${{ steps.version.outputs.value }}"
+          installer="dist/alexandria-installer-${version}-linux-x64.sh"
+          prefix="$RUNNER_TEMP/alexandria-smoke"
+
+          "./$installer" --prefix "$prefix" --yes
+          test -x "$prefix/alexandria_desktop"
+          test -f "$prefix/lib/libalexandria_ffi.so"
+
+          # A file the installer did not write must survive the replacement
+          # below, which is the whole point of removing recorded paths rather
+          # than the directory.
+          echo "not ours" > "$prefix/unrelated.txt"
+
+          "./$installer" --prefix "$prefix" --yes
+          test -x "$prefix/alexandria_desktop"
+          test -f "$prefix/unrelated.txt"
+
+          "./$installer" --uninstall --yes
+          test ! -e "$prefix/alexandria_desktop"
+          test -f "$prefix/unrelated.txt"
+
+          rm -rf "$prefix"
+
       - name: Build the AppImage and the .deb
         run: |
           dart pub global activate flutter_distributor
@@ -290,4 +378,68 @@ jobs:
             dist/**/*.deb
             dist/**/*.AppImage
             dist/*.flatpak
+            dist/*.tar.gz
+            dist/alexandria-installer-*.sh
           if-no-files-found: error
+
+  # A tag, and only a tag. workflow_dispatch has no tag to release against, so
+  # a manual run stops at the artifacts above — which is what makes it usable
+  # for checking that the packaging still builds without publishing anything.
+  release:
+    name: GitHub Release
+    needs: [windows, linux]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Resolve the version
+        id: version
+        run: |
+          set -e
+          version="${GITHUB_REF_NAME#v}"
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+          # A 0.x release is not a release anyone should mistake for the
+          # product being finished, so it is flagged as a prerelease and does
+          # not become the repository's "latest".
+          case $version in
+            0.*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      # Both jobs' artifacts arrive as directory trees — flutter_distributor
+      # nests its output under a version directory — so the assets are gathered
+      # by extension rather than by path.
+      - name: Collect the assets
+        run: |
+          set -e
+          mkdir -p release
+          find artifacts -type f \( \
+              -name '*.exe' -o -name '*.msix' -o -name '*.zip' \
+              -o -name '*.deb' -o -name '*.AppImage' -o -name '*.flatpak' \
+              -o -name '*.tar.gz' -o -name '*.sh' \
+            \) -exec cp -n {} release/ \;
+
+          # An empty release is a failed release that looks like a successful
+          # one, and a tag can only be published once.
+          count=$(find release -type f | wc -l)
+          test "$count" -gt 0 || {
+            echo "::error::no assets were collected from the build artifacts"
+            exit 1
+          }
+
+          echo "Publishing $count assets:"
+          ls -lh release
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Alexandria ${{ steps.version.outputs.value }}
+          files: release/*
+          generate_release_notes: true
+          prerelease: ${{ steps.version.outputs.prerelease }}
+          fail_on_unmatched_files: true
