@@ -238,9 +238,18 @@ begin
   Result := True;
 end;
 
+{ Note on formatting throughout this section: no line may *begin* with `[`,
+  even inside Pascal code and even indented. The compiler decides what is a
+  section header before it decides what is code, and a wrapped line whose first
+  non-blank character is an open bracket is read as a section tag — which is
+  what "Invalid section tag" on a line in the middle of a function means. Every
+  argument array below is therefore built on a line that starts with
+  something else. }
+
 function NextButtonClick(CurPageID: Integer): Boolean;
 var
   Chosen: String;
+  Prompt: String;
 begin
   Result := True;
 
@@ -254,9 +263,9 @@ begin
        can pick somewhere else. }
   if DirectoryHoldsInstall(Chosen) then
   begin
-    if MsgBox(FmtMessage(CustomMessage('ReplaceHere'),
-                         ['{#AppName}', Chosen, '{#AppVersion}']),
-              mbConfirmation, MB_YESNO) <> IDYES then
+    Prompt := FmtMessage(CustomMessage('ReplaceHere'), ['{#AppName}', Chosen, '{#AppVersion}']);
+
+    if MsgBox(Prompt, mbConfirmation, MB_YESNO) <> IDYES then
     begin
       Result := False;
       Exit;
@@ -272,9 +281,9 @@ begin
      (CompareText(RecordedLocation, Chosen) <> 0) and
      DirectoryHoldsInstall(RecordedLocation) then
   begin
-    if MsgBox(FmtMessage(CustomMessage('RemoveElsewhere'),
-                         ['{#AppName}', RecordedLocation]),
-              mbConfirmation, MB_YESNO) = IDYES then
+    Prompt := FmtMessage(CustomMessage('RemoveElsewhere'), ['{#AppName}', RecordedLocation]);
+
+    if MsgBox(Prompt, mbConfirmation, MB_YESNO) = IDYES then
       RemoveInstallation(RecordedLocation, False);
   end;
 end;

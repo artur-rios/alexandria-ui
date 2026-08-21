@@ -142,6 +142,22 @@ jobs:
           [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
           echo "value=$version" >> "$GITHUB_OUTPUT"
 
+      # Every package downstream takes its version from the pubspec rather
+      # than from the tag: flutter_distributor names the .deb and the AppImage
+      # from it, and the application reports it as its own version. Left alone,
+      # a v0.0.1 release would carry a file called
+      # alexandria_desktop-1.0.0+1-linux.deb and an application that called
+      # itself 1.0.0. Stamped here so the tag is the one source of that number.
+      #
+      # The working copy only — nothing is committed. The pubspec in git keeps
+      # the version the project develops against.
+      - name: Stamp the version into the pubspec
+        shell: bash
+        run: |
+          set -e
+          sed -i "s/^version: .*/version: ${{ steps.version.outputs.value }}+${{ github.run_number }}/"             pubspec.yaml
+          grep '^version:' pubspec.yaml
+
       - run: flutter build windows --release
 
       # Beside the executable, which is where IR-04's resolver looks first.
@@ -279,6 +295,36 @@ jobs:
           sudo flatpak install -y flathub \
             org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 
+      # flutter_distributor's AppImage maker shells out to `appimagetool` and
+      # does not supply it — the first tagged run failed with a bare
+      # "appimagetool: not found" after the .deb had already been built.
+      #
+      # Unpacked rather than run as an AppImage. Mounting one needs FUSE, which
+      # a runner may or may not give a process, and `--appimage-extract` sides
+      # step that entirely: what ends up on PATH is a plain wrapper around the
+      # extracted AppRun.
+      - name: Install appimagetool
+        run: |
+          set -e
+          curl -fsSL -o /tmp/appimagetool.AppImage \
+            "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x /tmp/appimagetool.AppImage
+          (cd /tmp && ./appimagetool.AppImage --appimage-extract > /dev/null)
+          sudo mv /tmp/squashfs-root /opt/appimagetool
+          # ARCH is defaulted in the wrapper rather than exported into the
+          # job: appimagetool refuses to guess the architecture, and
+          # flutter_distributor invokes it through /bin/sh with an environment
+          # this workflow does not control.
+          sudo tee /usr/local/bin/appimagetool > /dev/null <<'WRAPPER'
+          #!/bin/sh
+          exec env ARCH="${ARCH:-x86_64}" /opt/appimagetool/AppRun "$@"
+          WRAPPER
+          sudo chmod +x /usr/local/bin/appimagetool
+
+          # Proves the wrapper actually executes, here rather than four steps
+          # later inside a packaging tool's stack trace.
+          appimagetool --help > /dev/null
+
       - run: flutter pub get
 
       - name: Resolve the version
@@ -287,6 +333,22 @@ jobs:
           version="${{ inputs.version }}"
           [ -n "$version" ] || version="${GITHUB_REF_NAME#v}"
           echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      # Every package downstream takes its version from the pubspec rather
+      # than from the tag: flutter_distributor names the .deb and the AppImage
+      # from it, and the application reports it as its own version. Left alone,
+      # a v0.0.1 release would carry a file called
+      # alexandria_desktop-1.0.0+1-linux.deb and an application that called
+      # itself 1.0.0. Stamped here so the tag is the one source of that number.
+      #
+      # The working copy only — nothing is committed. The pubspec in git keeps
+      # the version the project develops against.
+      - name: Stamp the version into the pubspec
+        shell: bash
+        run: |
+          set -e
+          sed -i "s/^version: .*/version: ${{ steps.version.outputs.value }}+${{ github.run_number }}/"             pubspec.yaml
+          grep '^version:' pubspec.yaml
 
       - run: flutter build linux --release
 
