@@ -101,7 +101,10 @@ same way the Windows installer does. `--prefix DIR` and `--yes` skip the
 questions, and `--uninstall` removes what it installed and nothing else.
 
 The Linux release also carries a `.deb`, an AppImage, and a Flatpak bundle for
-anyone who would rather install through one of those.
+anyone who would rather install through one of those. The `.deb` targets Ubuntu
+24.04 LTS and pulls in ffmpeg, libmpv, and GTK through apt; the AppImage carries
+everything it needs; the Flatpak gets its codecs from the
+`org.freedesktop.Platform.ffmpeg-full` runtime extension.
 
 ### Without installing
 
@@ -115,11 +118,11 @@ tar xzf alexandria-<version>-linux-x64.tar.gz
 ./alexandria_desktop
 ```
 
-> **Linux and ffmpeg.** The core links ffmpeg and the Linux packages do not
-> carry it yet, so a machine without your distribution's ffmpeg runtime
-> libraries will fail to load the core. The installer reports this when it
-> happens rather than leaving it to first launch. The Windows packages bundle
-> the libraries and need nothing.
+Both archives are self-contained. The core links ffmpeg, and rather than
+expecting it to be installed, the Linux archive carries it — along with
+everything ffmpeg itself needs — in `lib/`, with the licences in `licenses/`.
+Only the graphics, sound, and C libraries any desktop application needs come
+from your system. The Windows archive bundles the ffmpeg DLLs the same way.
 
 ## Building from source
 

@@ -114,22 +114,33 @@ offset with `awk` and pipes the remainder through `tar`.
 `v0.0.1`, matching the workflow's existing `v*` trigger. The workflow strips
 the leading `v`, so the version carried by the packages is `0.0.1`.
 
-## Known gaps, carried deliberately
+## Known gaps, closed after v0.0.1
 
-- **The core is not pinned here.** `release.yml` sets `CORE_REF: main` where
-  `ci.yml` pins a commit. What a tag links against is whatever the core's
-  `main` was at build time, so a tag is not reproducible. Changing it is a
-  separate decision from this one.
+- **The core is pinned.** `release.yml` tracked `CORE_REF: main`, so a tag
+  linked against whatever the core was that morning and two builds of the same
+  tag could ship different cores. It now pins the same commit `ci.yml` pins,
+  and a check in `ci.yml`'s analyze job fails the build if the two disagree or
+  if the release ever names a branch again.
+
+- **ffmpeg reaches every Linux package.** Each package gets it the way that
+  suits it: the `.deb` declares Ubuntu 24.04's packages as Depends and is
+  verified by actually installing on the runner; the Flatpak mounts
+  `org.freedesktop.Platform.ffmpeg-full`; the tarball, installer, and AppImage
+  carry their own closure, built by `packaging/linux/bundle-libraries.sh`. The
+  two answers are mutually exclusive per package, so the Linux job builds the
+  `.deb` and sets the Flatpak's source aside before bundling, and everything
+  else after. Self-containment is asserted by running `ldd` inside a bare
+  `ubuntu:24.04` container, because the runner has ffmpeg installed and proves
+  nothing.
+
 - **The icon is a placeholder.** The repository had no icon at all, and the
-  AppImage maker requires one, so `packaging/linux/io.github.artur_rios.Alexandria.png`
-  was generated: a plain lettermark, deliberately not a logo. It is installed
-  by the Linux installer, the .deb, the AppImage, and the Flatpak, so replacing
-  it later is one file.
-- **The Linux packaging steps were unproven, and were broken.** The first
-  dispatch run showed `flutter_distributor` had never had the
-  `linux/packaging/{deb,appimage}/make_config.yaml` files it requires, and the
-  Windows job could not download ffmpeg at all because it pointed at the
-  rotating `latest` tag, which by then carried only the 8.1 and 9.0 series.
-  Both are fixed here; the Flatpak step is still unproven.
-- **ffmpeg on Linux.** Unchanged by this work, and documented at length in the
-  workflow header.
+  AppImage maker requires one, so
+  `packaging/linux/io.github.artur_rios.Alexandria.png` was generated: a plain
+  lettermark, deliberately not a logo. Replacing it later is one file.
+
+## Still open
+
+- **The Windows replace path is unproven at runtime.** The `[Code]` section
+  compiles, but no wizard has run against a real prior installation. Only a
+  Windows machine can settle that: install, then re-run the installer over it.
+- **Code signing.** Deferred, per §7.2, and unchanged by any of this.

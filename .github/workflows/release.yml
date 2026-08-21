@@ -23,26 +23,39 @@
 # needs an account that does not exist yet; both are deliberately deferred
 # until before the first public release (§7.2).
 #
-# KNOWN GAP — the Linux packages do not carry ffmpeg.
+# HOW EACH PACKAGE GETS FFMPEG.
 #
-# The core links ffmpeg, so it needs libavcodec, libavdevice, libavfilter,
-# libavformat, libavutil, libswresample, and libswscale wherever it runs. The
-# Windows packages carry them beside the executable. The three Linux packages
-# each need a different answer, and none is chosen yet:
+# The core links ffmpeg, so libavcodec, libavdevice, libavfilter, libavformat,
+# libavutil, libswresample, and libswscale have to be there wherever it runs.
+# The Windows packages carry them beside the executable. On Linux the five
+# packages do not get one answer, because they are not one kind of thing:
 #
-#   .deb       declare the distro's ffmpeg runtime packages as Depends, which
-#              means choosing which Ubuntu releases are supported, since the
-#              soname is in the package name and moves between them
-#   AppImage   bundle them, and everything they in turn need — libvpx, libopus,
-#              and the rest — which is what a tool like linuxdeploy does
-#   Flatpak    org.freedesktop.Platform 24.08 already provides them; the
-#              question is only whether the ffmpeg-full extension is needed for
-#              the formats the catalog holds
+#   .deb       depends on the distribution's packages, which is the entire
+#              point of a .deb. Targets Ubuntu 24.04, since the soname is part
+#              of each package's name and moves between releases. Verified by
+#              installing the built package on the runner, so the names are
+#              checked against a real apt rather than trusted.
 #
-# Until that is settled, a Linux package installs and then fails to load the
-# core on any machine without ffmpeg already present. The build below succeeds
-# because the runner installed ffmpeg to compile the core — which is exactly
-# why the step after bundling reports the linkage rather than asserting it.
+#   Flatpak    mounts org.freedesktop.Platform.ffmpeg-full. The base runtime
+#              ships ffmpeg without H.264, H.265, or AAC, which for a personal
+#              media library means the common case does not play.
+#
+#   AppImage   carries its own, along with the tarball and the installer.
+#   tarball    None of the three has anything to ask: "portable" that runs
+#   installer  only where ffmpeg is already installed is not portable.
+#              packaging/linux/bundle-libraries.sh walks the dependency graph
+#              and copies the closure, leaving glibc, the graphics stack, and
+#              the sound daemons to the host.
+#
+# The two answers are mutually exclusive per package — a bundled copy inside
+# the .deb would shadow the system's and then go unpatched — which is why the
+# Linux job below builds the .deb and sets the Flatpak's source aside BEFORE
+# the bundling step, and everything else after it.
+#
+# None of this is asserted on the runner alone. The runner installed ffmpeg to
+# compile the core, so anything resolving here proves nothing about anywhere
+# else; the check that matters runs ldd inside a bare ubuntu:24.04 container,
+# which has no ffmpeg at all.
 
 name: Release
 
@@ -57,7 +70,17 @@ on:
 
 env:
   CORE_REPOSITORY: artur-rios/alexandria-api
-  CORE_REF: main
+
+  # The same commit ci.yml pins, and it must stay that way — the drift check in
+  # ci.yml's analyze job fails the build if the two ever disagree.
+  #
+  # This tracked `main` until v0.0.1, which meant a tag linked against whatever
+  # the core happened to be the morning it was built: two builds of the same tag
+  # could ship different cores, and what shipped had never been the thing CI
+  # ran the integration suite against. A release is the one place that matters
+  # most. Moving this is now the same deliberate act as moving CI's — both
+  # values change together, or the build stops.
+  CORE_REF: 90e84bdd2d054e659ba82eeab39b7b2e7ba157c6
 
   # Must match the SDK the committed pubspec.lock was resolved with, for the
   # same reason CI pins it: a newer SDK rewrites the lock during `pub get`, and
@@ -299,7 +322,7 @@ jobs:
             ninja-build libgtk-3-dev \
             libmpv-dev mpv \
             flatpak flatpak-builder \
-            libfuse2 fakeroot
+            libfuse2 fakeroot patchelf
           sudo flatpak remote-add --if-not-exists flathub \
             https://flathub.org/repo/flathub.flatpakrepo
           sudo flatpak install -y flathub \
@@ -378,11 +401,108 @@ jobs:
           ldd build/linux/x64/release/bundle/lib/libalexandria_ffi.so \
             | grep -E "libav|libsw" || true
 
-      # Staged rather than assembled in place. The .deb, the AppImage, and the
-      # Flatpak all take build/linux/x64/release/bundle as their input, and
-      # dropping the desktop entry into it would put a stray copy inside all
-      # three. The archive is what the installer below extracts, so the two
-      # carry byte-for-byte the same payload.
+      # ORDER MATTERS BELOW, and this is why.
+      #
+      # Two of the five Linux packages get ffmpeg from somewhere else: the .deb
+      # declares the distribution's packages as Depends, and the Flatpak mounts
+      # the ffmpeg-full runtime extension. The other three — the tarball, the
+      # installer, and the AppImage — carry their own copies, because they have
+      # nobody to ask.
+      #
+      # All five are built from build/linux/x64/release/bundle. So the two that
+      # must not contain ffmpeg are built first, from the pristine bundle, and
+      # only then is ffmpeg bundled into it for the three that must.
+
+      - name: Build the .deb
+        run: |
+          set -e
+          # Debian's Installed-Size is in kilobytes, measured here rather than
+          # maintained by hand in the config where it would be wrong from the
+          # first build that changed the bundle's size.
+          size=$(du -sk build/linux/x64/release/bundle | cut -f1)
+          sed -i "s/^installed_size: .*/installed_size: ${size}/" \
+            linux/packaging/deb/make_config.yaml
+          grep '^installed_size:' linux/packaging/deb/make_config.yaml
+
+          dart pub global activate flutter_distributor
+          flutter_distributor package \
+            --platform linux --targets deb \
+            --skip-clean
+
+      # Installing it is the only honest test of a dependency list: dpkg-deb
+      # will happily build a package naming libraries that do not exist, and
+      # the failure would surface on somebody's machine at install time. apt
+      # resolves the names here instead. The runner is 24.04, which is the
+      # release the Depends list targets.
+      - name: Verify the .deb installs and carries the core
+        run: |
+          set -e
+          package=$(find dist -name '*.deb' | head -1)
+          test -n "$package"
+          echo "Package: $package"
+          dpkg-deb --info "$package" | sed -n '/Depends/p'
+
+          echo "::group::Contents"
+          dpkg-deb --contents "$package" | grep -E 'alexandria_ffi|libav|libsw' || true
+          echo "::endgroup::"
+
+          # The core must be inside. flutter_distributor re-runs `flutter build`
+          # for every target, so anything copied into the bundle beforehand is
+          # only still there if that rebuild left it alone — which is exactly
+          # the assumption worth checking rather than trusting.
+          dpkg-deb --contents "$package" | grep -q 'libalexandria_ffi[.]so' || {
+            echo "::error::the .deb does not contain the core"
+            exit 1
+          }
+
+          # And ffmpeg must not be, or the bundled copy would shadow the
+          # system's and then go unpatched.
+          if dpkg-deb --contents "$package" | grep -qE 'lib(av|sw)[a-z]+[.]so'; then
+            echo "::error::the .deb carries ffmpeg; it is supposed to depend on it"
+            exit 1
+          fi
+
+          sudo apt-get install -y "./$package"
+          test -x /opt/alexandria_desktop/alexandria_desktop
+          sudo apt-get remove -y alexandria
+
+      # Taken now, while the bundle is still pristine. The Flatpak is built at
+      # the end of the job, by which point the directory it would otherwise
+      # copy has ffmpeg in it.
+      - name: Set the Flatpak's source aside
+        run: cp -r build/linux/x64/release/bundle packaging/linux/bundle
+
+      # From here on the bundle carries ffmpeg. See the script for how the
+      # dependency closure is computed and what is deliberately left to the
+      # host.
+      - name: Bundle ffmpeg for the portable packages
+        run: sh packaging/linux/bundle-libraries.sh build/linux/x64/release/bundle
+
+      # A bundle is only self-contained if it is self-contained somewhere that
+      # is not the machine that built it. This runner installed ffmpeg to
+      # compile the core, so resolving here proves nothing — a bare container
+      # has no ffmpeg, which is the entire point of using one.
+      - name: Verify the bundle resolves ffmpeg without the host
+        run: |
+          set -e
+          bundle="$PWD/build/linux/x64/release/bundle"
+
+          echo "::group::Resolution inside a bare ubuntu:24.04"
+          docker run --rm -v "$bundle:/bundle:ro" ubuntu:24.04 \
+            sh -c 'ldd /bundle/lib/libalexandria_ffi.so 2>&1' | tee /tmp/ldd.txt
+          echo "::endgroup::"
+
+          if grep -E 'lib(av|sw)[a-z]+[.]so[^ ]* => not found' /tmp/ldd.txt; then
+            echo "::error::ffmpeg does not resolve from inside the bundle"
+            exit 1
+          fi
+
+          echo "Every ffmpeg library the core needs resolves from the bundle itself."
+
+      # Staged rather than assembled in place, so the desktop entry and the
+      # icon the installer needs do not also end up as stray files inside the
+      # AppImage. The archive is what the installer extracts, so the two carry
+      # byte-for-byte the same payload.
       - name: Build the portable archive
         run: |
           set -e
@@ -390,6 +510,12 @@ jobs:
           cp -r build/linux/x64/release/bundle/. stage/
           cp packaging/linux/io.github.artur_rios.Alexandria.desktop stage/
           cp packaging/linux/io.github.artur_rios.Alexandria.png stage/
+
+          ls stage/lib/libavcodec.so.* > /dev/null || {
+            echo "::error::the portable archive would ship without ffmpeg"
+            exit 1
+          }
+
           tar czf \
             "dist/alexandria-${{ steps.version.outputs.value }}-linux-x64.tar.gz" \
             -C stage .
@@ -424,6 +550,11 @@ jobs:
           test -f "$prefix/lib/libalexandria_ffi.so"
           test -f "$HOME/.local/share/icons/hicolor/512x512/apps/io.github.artur_rios.Alexandria.png"
 
+          # What the installer places must be as self-contained as what it came
+          # from, licences included.
+          ls "$prefix"/lib/libavcodec.so.* > /dev/null
+          test -f "$prefix/licenses/README.txt"
+
           # A file the installer did not write must survive the replacement
           # below, which is the whole point of removing recorded paths rather
           # than the directory.
@@ -439,25 +570,42 @@ jobs:
 
           rm -rf "$prefix"
 
-      # Debian's Installed-Size is in kilobytes and is measured here rather
-      # than maintained by hand in the config, where it would be wrong from
-      # the first build that changed the bundle's size.
-      - name: Build the AppImage and the .deb
+      - name: Build the AppImage
         run: |
-          set -e
-          size=$(du -sk build/linux/x64/release/bundle | cut -f1)
-          sed -i "s/^installed_size: .*/installed_size: ${size}/" \
-            linux/packaging/deb/make_config.yaml
-          grep '^installed_size:' linux/packaging/deb/make_config.yaml
-
-          dart pub global activate flutter_distributor
           flutter_distributor package \
-            --platform linux --targets deb,appimage \
+            --platform linux --targets appimage \
             --skip-clean
 
+      # flutter_distributor re-runs `flutter build` per target, so the AppImage
+      # is built from a bundle that was rebuilt after ffmpeg went into it. If
+      # that rebuild ever starts clearing the directory, it shows up here —
+      # rather than as an AppImage that runs only where ffmpeg happens to be
+      # installed already.
+      - name: Verify the AppImage carries ffmpeg
+        run: |
+          set -e
+          image=$(find dist -name '*.AppImage' | head -1)
+          test -n "$image"
+          chmod +x "$image"
+
+          (cd "$RUNNER_TEMP" && "$GITHUB_WORKSPACE/$image" --appimage-extract > /dev/null)
+
+          found=$(find "$RUNNER_TEMP/squashfs-root" -name 'libavcodec.so.*' | head -1)
+          test -n "$found" || {
+            echo "::error::the AppImage does not carry ffmpeg"
+            exit 1
+          }
+          echo "AppImage carries $(basename "$found")"
+
+          find "$RUNNER_TEMP/squashfs-root" -name 'libalexandria_ffi.so' | head -1
+          rm -rf "$RUNNER_TEMP/squashfs-root"
+
+      # Built from the copy set aside before the bundling step, so it carries
+      # no ffmpeg of its own — it mounts the ffmpeg-full extension instead,
+      # which is what the manifest's add-extensions block arranges.
       - name: Build the Flatpak
         run: |
-          cp -r build/linux/x64/release/bundle packaging/linux/bundle
+          set -e
           flatpak-builder --repo=packaging/linux/repo --force-clean \
             packaging/linux/build \
             packaging/linux/io.github.artur_rios.Alexandria.yaml

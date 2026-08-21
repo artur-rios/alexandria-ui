@@ -42,12 +42,33 @@ keywords:
 startup_notify: true
 essential: false
 
-# No `dependencies:` yet, deliberately.
+# Ubuntu 24.04 LTS, which is what the release runner builds on.
 #
-# The core links ffmpeg, so a correct .deb would declare the distro's ffmpeg
-# runtime packages here. Their soname is part of the package name and moves
-# between Ubuntu releases, so declaring them means first choosing which
-# releases are supported — the open question recorded at the top of
-# .github/workflows/release.yml. Until that is settled this package installs
-# and then fails to load the core on a machine without ffmpeg, which is a
-# known gap rather than an oversight.
+# The soname is part of each package's name and moves between Ubuntu releases,
+# so this list picks a release rather than trying to span several. That is
+# deliberate: the binary is compiled against 24.04's headers, and a package
+# that installed on 22.04 and then misbehaved would be worse than one that
+# refuses. Somebody on another release has the AppImage, the Flatpak, the
+# tarball, and the installer — all four of which carry their own ffmpeg or get
+# it from a runtime.
+#
+# Unlike those four, this package deliberately does NOT bundle ffmpeg: asking
+# the distribution for it is the entire point of a .deb, and a bundled copy
+# would shadow the system's while going unpatched. The release workflow builds
+# this package from a pristine bundle, before the bundling step runs.
+#
+# Verified by installing the built package on the runner, so these names are
+# checked against a real apt rather than trusted.
+dependencies:
+  - libavcodec60
+  - libavformat60
+  - libavdevice60
+  - libavfilter9
+  - libavutil58
+  - libswscale7
+  - libswresample4
+  # media_kit's video player links libmpv, and GTK is the desktop toolkit the
+  # Flutter Linux embedder itself needs. Both are as much a runtime dependency
+  # as ffmpeg, and were as absent from this list.
+  - libmpv2
+  - libgtk-3-0t64
