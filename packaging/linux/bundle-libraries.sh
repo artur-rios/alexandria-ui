@@ -66,7 +66,7 @@ libXinerama libXdamage libXcomposite libXau libXdmcp libxshmfence
 libwayland libdrm libgbm
 libva libvdpau
 libglib-2.0 libgobject-2.0 libgio-2.0 libgmodule-2.0 libdbus-1
-libasound libpulse libjack
+libasound libpulse
 libselinux libudev libsystemd libcap
 "
 
@@ -163,7 +163,11 @@ while :; do
   else
     cp -L "$path" "$LIB_DIR/$soname"
     chmod 644 "$LIB_DIR/$soname"
-    echo "$soname" >> "$BUNDLED"
+    # The path it came from is recorded alongside the name, because the copy
+    # is the one thing dpkg cannot identify: asking it about a file under this
+    # directory matches no package, which is how licence collection came to
+    # resolve nothing at all while reporting success.
+    printf '%s\t%s\n' "$soname" "$path" >> "$BUNDLED"
     echo "  bundle $soname"
   fi
 
@@ -179,7 +183,8 @@ echo
 echo "Setting RUNPATH to \$ORIGIN:"
 patchelf --set-rpath '$ORIGIN' "$CORE"
 echo "  libalexandria_ffi.so"
-while IFS= read -r soname; do
+while IFS= read -r entry; do
+  soname=$(printf '%s' "$entry" | cut -f1)
   patchelf --set-rpath '$ORIGIN' "$LIB_DIR/$soname"
   echo "  $soname"
 done < "$BUNDLED"
@@ -193,9 +198,16 @@ echo
 echo "Collecting licences:"
 : > "$WORK/packages"
 : > "$WORK/copyleft"
-while IFS= read -r soname; do
-  package=$(dpkg-query -S "$(readlink -f "$LIB_DIR/$soname")" 2> /dev/null | cut -d: -f1) || continue
-  [ -n "$package" ] || continue
+while IFS= read -r entry; do
+  soname=$(printf '%s' "$entry" | cut -f1)
+  origin=$(printf '%s' "$entry" | cut -f2)
+
+  # The system path, not our copy of it.
+  package=$(dpkg-query -S "$(readlink -f "$origin")" 2> /dev/null | cut -d: -f1) || continue
+  [ -n "$package" ] || {
+    echo "  $soname: no owning package (not from a .deb?)" >&2
+    continue
+  }
   grep -qxF "$package" "$WORK/packages" && continue
   echo "$package" >> "$WORK/packages"
 
@@ -220,6 +232,20 @@ while IFS= read -r soname; do
     echo "  $package (no copyright file found)" >&2
   fi
 done < "$BUNDLED"
+
+echo
+
+# A licence step that resolves nothing and says nothing is worse than none at
+# all: it reported "no bundled library declares GPL" while having examined
+# zero of them, and it shipped bundles with no licence texts while LGPL
+# requires them. Silence here is now a failure.
+collected=$(ls -1 "$LICENSE_DIR" 2> /dev/null | grep -c '[.]txt$' || true)
+bundled=$(wc -l < "$BUNDLED")
+if [ "$bundled" -gt 0 ] && [ "$collected" -eq 0 ]; then
+  echo "::error::$bundled libraries were bundled and not one licence was collected" >&2
+  exit 1
+fi
+echo "Collected $collected licence files for $bundled bundled libraries."
 
 echo
 if [ -s "$WORK/copyleft" ]; then

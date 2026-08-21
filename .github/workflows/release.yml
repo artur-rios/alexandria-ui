@@ -538,61 +538,89 @@ jobs:
       # is not the machine that built it. This runner installed ffmpeg to
       # compile the core, so resolving here proves nothing — a bare container
       # has no ffmpeg, which is the entire point of using one.
-      # The claim being made is "plug and play": unpack it on a machine that has
-      # a desktop and nothing else, and it runs. So that is what is tested — a
-      # container with only GTK installed, which is what host-libraries.txt
-      # assumes is present, and nothing else the application needs.
-      #
-      # The executable as well as the core, because Flutter links its plugins
-      # into the executable: a missing libmpv there is not a program that
-      # cannot play video, it is a program that cannot start. Checking only the
-      # core is how that went unnoticed.
-      #
-      # The runner itself proves nothing — it installed ffmpeg, libmpv, and GTK
-      # in order to build this.
-      - name: Verify the bundle runs on a machine with only a desktop
-        run: |
-          set -e
-          bundle="$PWD/build/linux/x64/release/bundle"
-
-          echo "::group::Resolution inside ubuntu:24.04 with only GTK added"
-          docker run --rm -v "$bundle:/bundle:ro" ubuntu:24.04 sh -c '
-            set -e
-            apt-get update -qq > /dev/null
-            apt-get install -y -qq libgtk-3-0t64 > /dev/null
-            echo "--- executable ---"
-            ldd /bundle/alexandria_desktop 2>&1
-            echo "--- core ---"
-            ldd /bundle/lib/libalexandria_ffi.so 2>&1
-          ' | tee /tmp/ldd.txt
-          echo "::endgroup::"
-
-          if grep -q "not found" /tmp/ldd.txt; then
-            echo "::error::the bundle does not resolve on a machine with only a desktop"
-            echo "Unresolved:"
-            grep "not found" /tmp/ldd.txt | sort -u
-            exit 1
-          fi
-
-          echo "The executable and the core resolve every library they need."
-
       # Staged rather than assembled in place, so the desktop entry and the
       # icon the installer needs do not also end up as stray files inside the
-      # AppImage. The archive is what the installer extracts, so the two carry
-      # byte-for-byte the same payload.
-      - name: Build the portable archive
+      # AppImage. This directory is what the tarball, the installer, and the
+      # AppImage are all made from, so verifying it verifies all three.
+      - name: Stage the payload
         run: |
           set -e
-          mkdir -p dist stage
+          rm -rf stage && mkdir -p dist stage
           cp -r build/linux/x64/release/bundle/. stage/
           cp packaging/linux/io.github.artur_rios.Alexandria.desktop stage/
           cp packaging/linux/io.github.artur_rios.Alexandria.png stage/
 
+      # DT_RUNPATH is not inherited: a library's own dependencies are resolved
+      # using that library's runpath, never the executable's. Flutter ships its
+      # plugin libraries without one, so libmedia_kit_video_plugin.so could not
+      # see libmpv sitting in the very same directory — bundling libmpv fixed
+      # nothing until this did.
+      #
+      # Done on the staged copy rather than in the bundle, because the .deb and
+      # the Flatpak were built from that bundle already and neither wants it:
+      # both resolve their libraries from the system, where the default search
+      # path is correct.
+      - name: Make every staged library findable
+        run: |
+          set -e
+          for library in stage/lib/*.so*; do
+            [ -e "$library" ] || continue
+            patchelf --set-rpath '$ORIGIN' "$library"
+          done
+          echo "Set RUNPATH on $(ls stage/lib/*.so* | wc -l) libraries."
+
+      # The claim being made is "plug and play": unpack it on a machine that
+      # has a desktop and nothing else, and it runs. So that is what is tested.
+      #
+      # The container gets GTK and the graphics stack — what host-libraries.txt
+      # assumes is present on any machine with a desktop and drivers — and
+      # nothing else this application needs. Everything beyond that has to come
+      # out of the payload.
+      #
+      # The executable as well as the core, because Flutter links its plugins
+      # into the executable: a missing libmpv there is not a program that
+      # cannot play video, it is a program that cannot start. Checking only the
+      # core is exactly how that went unnoticed.
+      #
+      # The runner itself proves nothing — it installed ffmpeg, libmpv, and GTK
+      # in order to build this.
+      - name: Verify the payload runs on a machine with only a desktop
+        run: |
+          set -e
+          payload="$PWD/stage"
+
+          echo "::group::Resolution inside ubuntu:24.04 with only a desktop added"
+          docker run --rm -v "$payload:/payload:ro" ubuntu:24.04 sh -c '
+            set -e
+            apt-get update -qq > /dev/null
+            apt-get install -y -qq \
+              libgtk-3-0t64 libgl1 libdrm2 \
+              libva2 libva-drm2 libva-x11-2 libvdpau1 > /dev/null
+            echo "--- executable ---"
+            ldd /payload/alexandria_desktop 2>&1
+            echo "--- core ---"
+            ldd /payload/lib/libalexandria_ffi.so 2>&1
+            echo "--- every staged library ---"
+            for lib in /payload/lib/*.so*; do ldd "$lib" 2>&1; done
+          ' | tee /tmp/ldd.txt
+          echo "::endgroup::"
+
+          if grep -q "not found" /tmp/ldd.txt; then
+            echo "::error::the payload does not resolve on a machine with only a desktop"
+            echo "Unresolved:"
+            grep "not found" /tmp/ldd.txt | sort -u | sed 's/^/  /'
+            exit 1
+          fi
+
+          echo "Everything the payload needs resolves, from itself or from a plain desktop."
+
+      - name: Build the portable archive
+        run: |
+          set -e
           ls stage/lib/libavcodec.so.* > /dev/null || {
             echo "::error::the portable archive would ship without ffmpeg"
             exit 1
           }
-
           tar czf \
             "dist/alexandria-${{ steps.version.outputs.value }}-linux-x64.tar.gz" \
             -C stage .

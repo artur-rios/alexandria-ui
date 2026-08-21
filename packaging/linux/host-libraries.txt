@@ -279,3 +279,15 @@ libicui18n.so.74
 # Vulkan has to match the host's drivers, for the same reason the OpenGL
 # libraries in the vendored list above do.
 libvulkan.so.1
+
+# GTK proper, which the entries above only covered the underside of. The first
+# whole-bundle walk bundled libgtk-3, libgdk-3, and libatk while resolving
+# pango, cairo, and glib from the host — a bundled GTK linked against the
+# host's own GLib stack, which is the mismatch this file exists to prevent.
+# This is a GTK application; if GTK is missing, nothing here would have helped.
+libgtk-3.so.0
+libgdk-3.so.0
+libatk-1.0.so.0
+libatk-bridge-2.0.so.0
+libgtk-x11-2.0.so.0
+libgdk-x11-2.0.so.0
