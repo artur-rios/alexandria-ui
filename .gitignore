@@ -52,6 +52,10 @@ native/linux/*.so
 # Local log files and scratch databases.
 *.log
 
+# tools/dev.ps1 and tools/dev.sh put the development catalog here, so that
+# indexing, deleting and purging while testing never touch a real one.
+/.dev/
+
 # gen_l10n's untranslated-messages record; the parity test in test/core/l10n is
 # what fails the build, not this file.
 /build/
