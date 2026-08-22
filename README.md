@@ -1,4 +1,4 @@
-# Alexandria Desktop
+# Alexandria UI
 
 The cross-platform desktop front-end for
 [Alexandria](https://github.com/artur-rios/alexandria-api), a personal library
@@ -63,7 +63,7 @@ The project is specified before it is built. Start with the `initial/` documents
 for context, then the `requirements/` documents for the normative detail.
 
 | Document | What's in it |
-|---|---|
+| --- | --- |
 | [Brainstorm](docs/initial/Brainstorm.md) | The original free-form notes this project grew from. |
 | [Project Overview](docs/initial/Project%20Overview.md) | What the project is, who it's for, and how success is measured. |
 | [Technology Stack](docs/initial/Technology%20Stack.md) | The informal stack decisions. |
@@ -142,6 +142,7 @@ Prerequisites, per the
   `ffmpeg.exe`. The core repository's README walks through installing one.
 - **Linux:** Ubuntu LTS x64, with the GTK, ffmpeg, and libmpv development
   packages:
+
   ```bash
   sudo apt-get install ninja-build libgtk-3-dev libmpv-dev mpv \
     libavformat-dev libavcodec-dev libavutil-dev libavfilter-dev \
@@ -187,7 +188,7 @@ and takes about two seconds:
 ```
 
 | What you want | PowerShell | sh |
-|---|---|---|
+| --- | --- | --- |
 | A core checkout somewhere else | `-Core <path>` | `--core <path>` |
 | Skip the core build | `-SkipCore` | `--skip-core` |
 | Unoptimised core, faster to compile | `-DebugBuild` | `--debug` |
@@ -305,7 +306,7 @@ per use case. Milestones are dependency-ordered — no milestone depends on a la
 one, and every milestone after `M-01` depends on it.
 
 | Milestone | Delivers | Depends on | Issues | Status |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | [M-01 — Foundation](https://github.com/artur-rios/alexandria-desktop-front/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 1 / 1 closed |
 | [M-02 — Shell and access](https://github.com/artur-rios/alexandria-desktop-front/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, sign in to, and recover access to | M-01 | 9 | 9 / 9 closed |
 | [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-desktop-front/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 4 / 4 closed |
@@ -350,7 +351,7 @@ and nesting stays a change of data rather than of interface.
 ### M-02 — Shell and access
 
 | Issue | Work | Spec |
-|---|---|---|
+| --- | --- | --- |
 | [#39](https://github.com/artur-rios/alexandria-desktop-front/issues/39) | UC-38 — Navigate the application shell — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#40](https://github.com/artur-rios/alexandria-desktop-front/issues/40) | UC-39 — Manage application preferences — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#2](https://github.com/artur-rios/alexandria-desktop-front/issues/2) | UC-01 — Sign up — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -364,7 +365,7 @@ and nesting stays a change of data rather than of interface.
 ### M-03 — Library sources and indexing
 
 | Issue | Work | Spec |
-|---|---|---|
+| --- | --- | --- |
 | [#6](https://github.com/artur-rios/alexandria-desktop-front/issues/6) | UC-05 — Register a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#7](https://github.com/artur-rios/alexandria-desktop-front/issues/7) | UC-06 — Index a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#8](https://github.com/artur-rios/alexandria-desktop-front/issues/8) | UC-07 — Refresh the catalog — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -373,7 +374,7 @@ and nesting stays a change of data rather than of interface.
 ### M-04 — Catalog browsing and search
 
 | Issue | Work | Spec |
-|---|---|---|
+| --- | --- | --- |
 | [#10](https://github.com/artur-rios/alexandria-desktop-front/issues/10) | UC-09 — Browse the library by type — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#11](https://github.com/artur-rios/alexandria-desktop-front/issues/11) | UC-10 — Switch the view layout — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#12](https://github.com/artur-rios/alexandria-desktop-front/issues/12) | UC-11 — Search the catalog — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -384,7 +385,7 @@ and nesting stays a change of data rather than of interface.
 ### M-05 — Metadata and content editing
 
 | Issue | Work | Spec |
-|---|---|---|
+| --- | --- | --- |
 | [#16](https://github.com/artur-rios/alexandria-desktop-front/issues/16) | UC-15 — Edit music metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#17](https://github.com/artur-rios/alexandria-desktop-front/issues/17) | UC-16 — Edit video metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#18](https://github.com/artur-rios/alexandria-desktop-front/issues/18) | UC-17 — Rename a file — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -393,7 +394,7 @@ and nesting stays a change of data rather than of interface.
 ### M-06 — Media playback
 
 | Issue | Work | Spec |
-|---|---|---|
+| --- | --- | --- |
 | [#20](https://github.com/artur-rios/alexandria-desktop-front/issues/20) | UC-19 — Play a video — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#21](https://github.com/artur-rios/alexandria-desktop-front/issues/21) | UC-20 — Play audio — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#22](https://github.com/artur-rios/alexandria-desktop-front/issues/22) | UC-21 — Show the album playback animation — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -401,7 +402,7 @@ and nesting stays a change of data rather than of interface.
 ### M-07 — Document and image viewing
 
 | Issue | Work | Spec |
-|---|---|---|
+| --- | --- | --- |
 | [#23](https://github.com/artur-rios/alexandria-desktop-front/issues/23) | UC-22 — View a document — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#24](https://github.com/artur-rios/alexandria-desktop-front/issues/24) | UC-23 — Read a comic book — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#25](https://github.com/artur-rios/alexandria-desktop-front/issues/25) | UC-24 — View an image — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -410,7 +411,7 @@ and nesting stays a change of data rather than of interface.
 ### M-08 — Collections and bookmarks
 
 | Issue | Work | Spec |
-|---|---|---|
+| --- | --- | --- |
 | [#27](https://github.com/artur-rios/alexandria-desktop-front/issues/27) | UC-26 — Manage collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#28](https://github.com/artur-rios/alexandria-desktop-front/issues/28) | UC-27 — Organize items into collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#29](https://github.com/artur-rios/alexandria-desktop-front/issues/29) | UC-28 — Manage bookmarks — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -418,7 +419,7 @@ and nesting stays a change of data rather than of interface.
 ### M-09 — Watchlists and reading lists
 
 | Issue | Work | Spec |
-|---|---|---|
+| --- | --- | --- |
 | [#30](https://github.com/artur-rios/alexandria-desktop-front/issues/30) | UC-29 — Manage watchlists — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#31](https://github.com/artur-rios/alexandria-desktop-front/issues/31) | UC-30 — Track watch progress — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#32](https://github.com/artur-rios/alexandria-desktop-front/issues/32) | UC-31 — Manage reading lists — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -427,7 +428,7 @@ and nesting stays a change of data rather than of interface.
 ### M-10 — Deletion lifecycle
 
 | Issue | Work | Spec |
-|---|---|---|
+| --- | --- | --- |
 | [#34](https://github.com/artur-rios/alexandria-desktop-front/issues/34) | UC-33 — Delete an item — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#35](https://github.com/artur-rios/alexandria-desktop-front/issues/35) | UC-34 — Browse and restore deleted items — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#36](https://github.com/artur-rios/alexandria-desktop-front/issues/36) | UC-35 — Purge a record — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
