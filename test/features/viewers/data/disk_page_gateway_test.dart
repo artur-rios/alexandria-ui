@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:alexandria_desktop/features/viewers/data/disk_page_gateway.dart';
-import 'package:alexandria_desktop/features/viewers/domain/file_viewer.dart';
-import 'package:alexandria_desktop/features/viewers/domain/page_content.dart';
+import 'package:alexandria_ui/features/viewers/data/disk_page_gateway.dart';
+import 'package:alexandria_ui/features/viewers/domain/file_viewer.dart';
+import 'package:alexandria_ui/features/viewers/domain/page_content.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Reading a saved page from disk (UC-25 main flow step 2, AF-01 … AF-04).

@@ -1,7 +1,7 @@
-import 'package:alexandria_desktop/core/bindings/alexandria_bindings.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/core_status_mapper.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
+import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/core_status_mapper.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

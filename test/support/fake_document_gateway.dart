@@ -1,6 +1,6 @@
-import 'package:alexandria_desktop/features/viewers/domain/document_gateway.dart';
-import 'package:alexandria_desktop/features/viewers/domain/file_viewer.dart';
-import 'package:alexandria_desktop/features/viewers/domain/reading_position_store.dart';
+import 'package:alexandria_ui/features/viewers/domain/document_gateway.dart';
+import 'package:alexandria_ui/features/viewers/domain/file_viewer.dart';
+import 'package:alexandria_ui/features/viewers/domain/reading_position_store.dart';
 
 /// A [DocumentGateway] that never touches a disk (Testing Specification §2.3).
 class FakeDocumentGateway implements DocumentGateway {

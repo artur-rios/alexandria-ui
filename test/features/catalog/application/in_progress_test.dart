@@ -1,8 +1,8 @@
-import 'package:alexandria_desktop/features/catalog/application/in_progress.dart';
-import 'package:alexandria_desktop/features/catalog/domain/video_metadata.dart';
-import 'package:alexandria_desktop/features/tracking/application/tracked_videos_controller.dart';
-import 'package:alexandria_desktop/features/tracking/domain/reading_list.dart';
-import 'package:alexandria_desktop/features/tracking/domain/watchlist.dart';
+import 'package:alexandria_ui/features/catalog/application/in_progress.dart';
+import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
+import 'package:alexandria_ui/features/tracking/application/tracked_videos_controller.dart';
+import 'package:alexandria_ui/features/tracking/domain/reading_list.dart';
+import 'package:alexandria_ui/features/tracking/domain/watchlist.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// What the dashboard's in-progress section is built from (UC-14, FR-CT-11).

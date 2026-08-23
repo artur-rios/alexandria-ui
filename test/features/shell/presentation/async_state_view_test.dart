@@ -1,9 +1,9 @@
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/core/failures/failure_messages.dart';
-import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_desktop/core/theme/app_theme.dart';
-import 'package:alexandria_desktop/features/shell/presentation/async_state_view.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/core/failures/failure_messages.dart';
+import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/core/theme/app_theme.dart';
+import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';

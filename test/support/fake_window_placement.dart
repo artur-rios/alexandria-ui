@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:alexandria_desktop/features/shell/domain/window_geometry.dart';
-import 'package:alexandria_desktop/features/shell/domain/window_placement.dart';
+import 'package:alexandria_ui/features/shell/domain/window_geometry.dart';
+import 'package:alexandria_ui/features/shell/domain/window_placement.dart';
 
 /// A [WindowPlacement] that records what it was asked to do
 /// (Testing Specification §6.2).

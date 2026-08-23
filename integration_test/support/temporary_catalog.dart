@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:alexandria_desktop/core/startup/core_paths.dart';
+import 'package:alexandria_ui/core/startup/core_paths.dart';
 import 'package:path/path.dart' as p;
 
 /// The throwaway database and fixture library every integration run gets

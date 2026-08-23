@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:alexandria_desktop/features/playback/domain/media_player.dart';
+import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 
 /// A [MediaPlayer] that never loads libmpv (Testing Specification §2.3).
 ///

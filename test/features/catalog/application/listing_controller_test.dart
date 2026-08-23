@@ -1,10 +1,10 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/features/auth/application/session_state.dart';
-import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
-import 'package:alexandria_desktop/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/features/auth/application/session_state.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

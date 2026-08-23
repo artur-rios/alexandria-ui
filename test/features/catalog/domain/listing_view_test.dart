@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/catalog/domain/listing_view.dart';
+import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_catalog_gateway.dart';

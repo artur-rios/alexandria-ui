@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:alexandria_desktop/core/logging/rolling_file_log_sink.dart';
+import 'package:alexandria_ui/core/logging/rolling_file_log_sink.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/core/bindings/core_environment.dart';
+import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// The decision half of putting the core into local auth mode.

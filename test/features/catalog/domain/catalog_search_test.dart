@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/features/catalog/domain/catalog_search.dart';
-import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_search.dart';
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_catalog_gateway.dart';

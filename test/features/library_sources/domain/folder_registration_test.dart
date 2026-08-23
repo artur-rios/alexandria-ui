@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/features/library_sources/domain/folder_registration.dart';
-import 'package:alexandria_desktop/features/library_sources/domain/library_source.dart';
+import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
+import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// The rules that decide whether a folder can be registered

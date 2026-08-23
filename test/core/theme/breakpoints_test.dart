@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/core/theme/breakpoints.dart';
+import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

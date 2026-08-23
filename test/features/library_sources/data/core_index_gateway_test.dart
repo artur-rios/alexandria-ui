@@ -1,8 +1,8 @@
-import 'package:alexandria_desktop/core/bindings/alexandria_bindings.dart';
-import 'package:alexandria_desktop/features/library_sources/data/core_index_gateway.dart';
-import 'package:alexandria_desktop/features/library_sources/domain/index_gateway.dart';
-import 'package:alexandria_desktop/features/library_sources/domain/index_run.dart';
-import 'package:alexandria_desktop/features/library_sources/domain/run_priority.dart';
+import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
+import 'package:alexandria_ui/features/library_sources/data/core_index_gateway.dart';
+import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
+import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
+import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_core_client.dart';

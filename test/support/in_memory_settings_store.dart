@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/core/settings/settings_store.dart';
+import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:flutter/material.dart';
 
 /// The in-memory [SettingsStore] every unit and widget test binds

@@ -1,6 +1,6 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/features/auth/application/auth_entry_controller.dart';
-import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/features/auth/application/auth_entry_controller.dart';
+import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,10 +1,10 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_desktop/features/organization/domain/bookmark.dart';
-import 'package:alexandria_desktop/features/organization/domain/collection.dart';
-import 'package:alexandria_desktop/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
-import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
+import 'package:alexandria_ui/features/organization/domain/collection.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';

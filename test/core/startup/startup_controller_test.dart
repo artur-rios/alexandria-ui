@@ -1,10 +1,10 @@
-import 'package:alexandria_desktop/core/bindings/core_client.dart';
-import 'package:alexandria_desktop/core/bindings/core_isolate.dart';
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/core/settings/settings_store.dart';
-import 'package:alexandria_desktop/core/startup/startup_state.dart';
+import 'package:alexandria_ui/core/bindings/core_client.dart';
+import 'package:alexandria_ui/core/bindings/core_isolate.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/core/startup/startup_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/fake_core_client.dart';

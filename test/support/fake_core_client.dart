@@ -1,7 +1,7 @@
-import 'package:alexandria_desktop/core/bindings/alexandria_bindings.dart';
-import 'package:alexandria_desktop/core/bindings/core_client.dart';
-import 'package:alexandria_desktop/core/bindings/core_isolate.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
+import 'package:alexandria_ui/core/bindings/core_client.dart';
+import 'package:alexandria_ui/core/bindings/core_isolate.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
 
 /// A [CoreClient] that never loads a native library (Testing Specification §2.3
 /// and §6.2).

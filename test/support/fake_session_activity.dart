@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/shell/domain/session_activity.dart';
+import 'package:alexandria_ui/features/shell/domain/session_activity.dart';
 
 /// A [SessionActivity] a test drives directly (Testing Specification §2.3).
 ///

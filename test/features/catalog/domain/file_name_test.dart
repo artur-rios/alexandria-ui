@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/catalog/domain/file_name.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_name.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Whether a name can be sent to the core (UC-17 AF-01, FR-ME-04).

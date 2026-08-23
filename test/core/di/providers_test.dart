@@ -1,8 +1,8 @@
-import 'package:alexandria_desktop/core/bindings/core_client.dart';
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/settings/settings_store.dart';
-import 'package:alexandria_desktop/core/startup/core_paths.dart';
-import 'package:alexandria_desktop/core/startup/startup_state.dart';
+import 'package:alexandria_ui/core/bindings/core_client.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/core/startup/core_paths.dart';
+import 'package:alexandria_ui/core/startup/startup_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

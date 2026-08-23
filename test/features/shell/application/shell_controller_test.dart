@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

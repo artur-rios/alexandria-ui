@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/core/bindings/alexandria_bindings.dart';
-import 'package:alexandria_desktop/features/tracking/data/core_watch_progress_gateway.dart';
+import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
+import 'package:alexandria_ui/features/tracking/data/core_watch_progress_gateway.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_core_client.dart';

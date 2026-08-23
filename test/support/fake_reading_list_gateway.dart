@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/features/tracking/domain/reading_list.dart';
-import 'package:alexandria_desktop/features/tracking/domain/reading_list_gateway.dart';
+import 'package:alexandria_ui/features/tracking/domain/reading_list.dart';
+import 'package:alexandria_ui/features/tracking/domain/reading_list_gateway.dart';
 
 /// A [ReadingListGateway] that never reaches the core (Testing Specification
 /// §2.3).

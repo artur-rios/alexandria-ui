@@ -1,8 +1,8 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/features/auth/application/session_controller.dart';
-import 'package:alexandria_desktop/features/auth/application/session_state.dart';
-import 'package:alexandria_desktop/features/auth/domain/session.dart';
-import 'package:alexandria_desktop/features/shell/domain/session_activity.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/features/auth/application/session_controller.dart';
+import 'package:alexandria_ui/features/auth/application/session_state.dart';
+import 'package:alexandria_ui/features/auth/domain/session.dart';
+import 'package:alexandria_ui/features/shell/domain/session_activity.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

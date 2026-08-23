@@ -1,6 +1,6 @@
-import 'package:alexandria_desktop/features/library_sources/domain/folder_picker.dart';
-import 'package:alexandria_desktop/features/library_sources/domain/library_source.dart';
-import 'package:alexandria_desktop/features/library_sources/domain/library_source_store.dart';
+import 'package:alexandria_ui/features/library_sources/domain/folder_picker.dart';
+import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
+import 'package:alexandria_ui/features/library_sources/domain/library_source_store.dart';
 
 /// A [FolderPicker] that answers whatever a test told it to
 /// (Testing Specification §6.2).

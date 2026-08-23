@@ -1,19 +1,19 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 // Prefixed: the widget and the domain's listing union share a name, and this
 // test speaks about both.
-import 'package:alexandria_desktop/features/catalog/presentation/catalog_listing.dart'
+import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
     as widgets;
-import 'package:alexandria_desktop/features/library_sources/presentation/library_sources_screen.dart';
-import 'package:alexandria_desktop/features/organization/presentation/bookmarks_view.dart';
-import 'package:alexandria_desktop/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_desktop/features/shell/presentation/async_state_view.dart';
-import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
-import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
+import 'package:alexandria_ui/features/organization/presentation/bookmarks_view.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

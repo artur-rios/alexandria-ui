@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/auth/data/core_error_body.dart';
+import 'package:alexandria_ui/features/auth/data/core_error_body.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Reading the error envelope the core sends on a failed call.

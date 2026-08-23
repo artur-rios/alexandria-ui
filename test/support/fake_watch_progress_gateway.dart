@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/tracking/domain/watch_progress_gateway.dart';
+import 'package:alexandria_ui/features/tracking/domain/watch_progress_gateway.dart';
 
 /// A [WatchProgressGateway] that never reaches the core (Testing Specification
 /// §2.3).

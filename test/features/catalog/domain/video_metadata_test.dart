@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/catalog/domain/video_metadata.dart';
+import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// A video file's editable metadata (UC-16, FR-ME-02, FR-ME-03).

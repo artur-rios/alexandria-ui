@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/features/tracking/domain/watchlist.dart';
-import 'package:alexandria_desktop/features/tracking/domain/watchlist_gateway.dart';
+import 'package:alexandria_ui/features/tracking/domain/watchlist.dart';
+import 'package:alexandria_ui/features/tracking/domain/watchlist_gateway.dart';
 
 /// A [WatchlistGateway] that never reaches the core (Testing Specification
 /// §2.3).

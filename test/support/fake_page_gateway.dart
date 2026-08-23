@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/features/viewers/domain/file_viewer.dart';
-import 'package:alexandria_desktop/features/viewers/domain/page_content.dart';
+import 'package:alexandria_ui/features/viewers/domain/file_viewer.dart';
+import 'package:alexandria_ui/features/viewers/domain/page_content.dart';
 
 /// A [PageGateway] that never touches a disk (Testing Specification §2.3).
 class FakePageGateway implements PageGateway {

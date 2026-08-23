@@ -1,6 +1,6 @@
 import 'dart:ffi';
 
-import 'package:alexandria_desktop/core/bindings/core_strings.dart';
+import 'package:alexandria_ui/core/bindings/core_strings.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter_test/flutter_test.dart';
 

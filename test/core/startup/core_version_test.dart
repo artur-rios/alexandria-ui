@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/core/startup/core_version.dart';
+import 'package:alexandria_ui/core/startup/core_version.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// IR-06: the version must be one the application supports.

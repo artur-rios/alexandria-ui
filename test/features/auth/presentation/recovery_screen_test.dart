@@ -1,10 +1,10 @@
-import 'package:alexandria_desktop/core/failures/core_rejection.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
-import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart';
-import 'package:alexandria_desktop/features/auth/presentation/recovery_screen.dart';
+import 'package:alexandria_ui/core/failures/core_rejection.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
+import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
+import 'package:alexandria_ui/features/auth/presentation/recovery_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:alexandria_desktop/core/logging/app_logger.dart';
-import 'package:alexandria_desktop/core/logging/log_redaction.dart';
-import 'package:alexandria_desktop/core/logging/rolling_file_log_sink.dart';
+import 'package:alexandria_ui/core/logging/app_logger.dart';
+import 'package:alexandria_ui/core/logging/log_redaction.dart';
+import 'package:alexandria_ui/core/logging/rolling_file_log_sink.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 

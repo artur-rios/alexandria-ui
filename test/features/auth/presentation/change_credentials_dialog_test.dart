@@ -1,14 +1,14 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_desktop/core/failures/core_rejection.dart';
-import 'package:alexandria_desktop/features/auth/application/session_state.dart';
-import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
-import 'package:alexandria_desktop/features/auth/presentation/change_credentials_dialog.dart';
-import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart';
-import 'package:alexandria_desktop/features/shell/presentation/preferences_dialog.dart';
-import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/core/failures/core_rejection.dart';
+import 'package:alexandria_ui/features/auth/application/session_state.dart';
+import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
+import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
+import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
+import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:alexandria_desktop/features/shell/domain/window_geometry.dart';
+import 'package:alexandria_ui/features/shell/domain/window_geometry.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// The stored window geometry and the rule that decides whether it can still

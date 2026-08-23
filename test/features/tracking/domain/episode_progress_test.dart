@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/tracking/domain/episode_progress.dart';
+import 'package:alexandria_ui/features/tracking/domain/episode_progress.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Whether an episode number can be sent to the core (UC-30 AF-02).

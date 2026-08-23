@@ -1,8 +1,8 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_desktop/features/shell/presentation/preferences_dialog.dart';
-import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
-import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

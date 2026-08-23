@@ -1,9 +1,9 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/settings/settings_store.dart';
-import 'package:alexandria_desktop/features/catalog/application/layout_controller.dart';
-import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
-import 'package:alexandria_desktop/features/catalog/domain/view_layout.dart';
-import 'package:alexandria_desktop/core/theme/breakpoints.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/features/catalog/application/layout_controller.dart';
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
+import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

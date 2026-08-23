@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:alexandria_desktop/features/auth/data/local_login_result.dart';
+import 'package:alexandria_ui/features/auth/data/local_login_result.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

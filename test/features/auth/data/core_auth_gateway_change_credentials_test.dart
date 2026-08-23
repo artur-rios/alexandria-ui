@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/features/auth/data/core_auth_gateway.dart';
-import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
+import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_core_client.dart';

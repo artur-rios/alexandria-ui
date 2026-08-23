@@ -1,8 +1,8 @@
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/features/playback/domain/playback_position_store.dart';
-import 'package:alexandria_desktop/features/playback/domain/playback_session.dart';
-import 'package:alexandria_desktop/features/playback/domain/playback_source.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/features/playback/domain/playback_position_store.dart';
+import 'package:alexandria_ui/features/playback/domain/playback_session.dart';
+import 'package:alexandria_ui/features/playback/domain/playback_source.dart';
 
 /// A [PlaybackSourceGateway] that never reaches the core (Testing
 /// Specification §2.3).

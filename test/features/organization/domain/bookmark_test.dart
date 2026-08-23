@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/organization/domain/bookmark.dart';
+import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Whether a bookmark can be sent to the core (UC-28 AF-01, FR-OG-12).

@@ -1,11 +1,11 @@
-import 'package:alexandria_desktop/core/settings/settings_store.dart';
+import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
-import 'package:alexandria_desktop/features/shell/presentation/library_tools_button.dart';
-import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/features/shell/presentation/library_tools_button.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 
 import 'failing_settings_store.dart';
 import 'fake_auth_gateway.dart';

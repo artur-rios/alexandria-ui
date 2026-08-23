@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:alexandria_desktop/features/viewers/domain/comic_gateway.dart';
-import 'package:alexandria_desktop/features/viewers/domain/file_viewer.dart';
+import 'package:alexandria_ui/features/viewers/domain/comic_gateway.dart';
+import 'package:alexandria_ui/features/viewers/domain/file_viewer.dart';
 
 /// A [ComicGateway] that never reaches the core (Testing Specification §2.3).
 class FakeComicGateway implements ComicGateway {

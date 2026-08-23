@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:alexandria_desktop/core/bindings/core_client.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/startup/core_version.dart';
+import 'package:alexandria_ui/core/bindings/core_client.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/startup/core_version.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 

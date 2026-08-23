@@ -1,10 +1,10 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/features/auth/application/change_credentials_state.dart';
-import 'package:alexandria_desktop/features/auth/application/session_state.dart';
-import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
-import 'package:alexandria_desktop/features/auth/domain/login_validation.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/features/auth/application/change_credentials_state.dart';
+import 'package:alexandria_ui/features/auth/application/session_state.dart';
+import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
+import 'package:alexandria_ui/features/auth/domain/login_validation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

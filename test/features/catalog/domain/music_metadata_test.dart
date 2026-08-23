@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/catalog/domain/music_metadata.dart';
+import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Local validation and the patch shape (UC-15, FR-ME-01, FR-ME-03).

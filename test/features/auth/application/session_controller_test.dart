@@ -1,9 +1,9 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/features/auth/application/session_controller.dart';
-import 'package:alexandria_desktop/features/auth/application/session_state.dart';
-import 'package:alexandria_desktop/features/auth/domain/session.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/features/auth/application/session_controller.dart';
+import 'package:alexandria_ui/features/auth/application/session_state.dart';
+import 'package:alexandria_ui/features/auth/domain/session.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/test_container.dart';

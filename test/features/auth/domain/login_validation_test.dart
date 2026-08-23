@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/auth/domain/login_validation.dart';
+import 'package:alexandria_ui/features/auth/domain/login_validation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,6 +1,6 @@
-import 'package:alexandria_desktop/features/library_sources/domain/index_gateway.dart';
-import 'package:alexandria_desktop/features/library_sources/domain/index_run.dart';
-import 'package:alexandria_desktop/features/library_sources/domain/run_priority.dart';
+import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
+import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
+import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
 
 /// An [IndexGateway] that never reaches the core (Testing Specification §2.3).
 ///

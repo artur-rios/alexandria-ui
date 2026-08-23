@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/features/library_sources/domain/index_run.dart';
-import 'package:alexandria_desktop/features/library_sources/domain/run_priority.dart';
+import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
+import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// The core's vocabulary for a run's status, phase, and priority

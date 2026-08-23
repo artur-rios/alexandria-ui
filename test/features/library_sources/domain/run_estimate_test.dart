@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/library_sources/domain/run_estimate.dart';
+import 'package:alexandria_ui/features/library_sources/domain/run_estimate.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

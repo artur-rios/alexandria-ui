@@ -1,4 +1,4 @@
-import 'package:alexandria_desktop/features/lifecycle/domain/lifecycle_gateway.dart';
+import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
 
 /// A [LifecycleGateway] that never reaches the core (Testing Specification
 /// §2.3).

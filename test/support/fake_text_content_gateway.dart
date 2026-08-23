@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/features/catalog/domain/file_stamp.dart';
-import 'package:alexandria_desktop/features/editing/domain/text_content_gateway.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_stamp.dart';
+import 'package:alexandria_ui/features/editing/domain/text_content_gateway.dart';
 
 import 'fake_catalog_gateway.dart';
 

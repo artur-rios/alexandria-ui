@@ -1,6 +1,6 @@
-import 'package:alexandria_desktop/features/organization/domain/bookmark.dart';
-import 'package:alexandria_desktop/features/organization/domain/bookmark_gateway.dart';
-import 'package:alexandria_desktop/features/organization/domain/browser_launcher.dart';
+import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
+import 'package:alexandria_ui/features/organization/domain/bookmark_gateway.dart';
+import 'package:alexandria_ui/features/organization/domain/browser_launcher.dart';
 
 /// A [BookmarkGateway] that never reaches the core (Testing Specification
 /// §2.3).

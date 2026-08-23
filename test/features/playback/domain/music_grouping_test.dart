@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/features/catalog/domain/music_metadata.dart';
-import 'package:alexandria_desktop/features/playback/domain/music_grouping.dart';
+import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
+import 'package:alexandria_ui/features/playback/domain/music_grouping.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_catalog_gateway.dart';

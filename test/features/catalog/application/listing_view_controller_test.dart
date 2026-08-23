@@ -1,12 +1,12 @@
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/failures/core_status.dart';
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/core/settings/settings_store.dart';
-import 'package:alexandria_desktop/features/catalog/application/listing_view_controller.dart';
-import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
-import 'package:alexandria_desktop/features/catalog/domain/listing_view.dart';
-import 'package:alexandria_desktop/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/features/catalog/application/listing_view_controller.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

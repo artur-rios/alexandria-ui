@@ -1,4 +1,4 @@
-name: alexandria_desktop
+name: alexandria_ui
 description: "The cross-platform desktop front-end for Alexandria."
 publish_to: "none"
 version: 1.0.0+1

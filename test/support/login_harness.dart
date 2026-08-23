@@ -1,8 +1,8 @@
-import 'package:alexandria_desktop/app.dart';
-import 'package:alexandria_desktop/core/di/providers.dart';
-import 'package:alexandria_desktop/core/settings/settings_store.dart';
-import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
-import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart';
+import 'package:alexandria_ui/app.dart';
+import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
+import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

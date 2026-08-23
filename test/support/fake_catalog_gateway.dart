@@ -1,10 +1,10 @@
-import 'package:alexandria_desktop/features/catalog/domain/catalog_file.dart';
-import 'package:alexandria_desktop/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_desktop/features/catalog/domain/file_details.dart';
-import 'package:alexandria_desktop/features/catalog/domain/library_type.dart';
-import 'package:alexandria_desktop/features/catalog/domain/listing_view.dart';
-import 'package:alexandria_desktop/features/catalog/domain/music_metadata.dart';
-import 'package:alexandria_desktop/features/catalog/domain/video_metadata.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
+import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
+import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 
 /// A [CatalogGateway] that never reaches the core (Testing Specification §2.3).
 ///

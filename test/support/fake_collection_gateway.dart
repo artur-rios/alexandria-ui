@@ -1,5 +1,5 @@
-import 'package:alexandria_desktop/features/organization/domain/collection.dart';
-import 'package:alexandria_desktop/features/organization/domain/collection_gateway.dart';
+import 'package:alexandria_ui/features/organization/domain/collection.dart';
+import 'package:alexandria_ui/features/organization/domain/collection_gateway.dart';
 
 /// A [CollectionGateway] that never reaches the core (Testing Specification
 /// §2.3).

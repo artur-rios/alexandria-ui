@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:alexandria_desktop/core/failures/failure.dart';
-import 'package:alexandria_desktop/features/auth/domain/auth_gateway.dart';
-import 'package:alexandria_desktop/features/auth/domain/session.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
+import 'package:alexandria_ui/features/auth/domain/session.dart';
 
 /// An [AuthGateway] that never reaches the core (Testing Specification §2.3,
 /// §6.2).

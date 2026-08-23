@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:alexandria_desktop/features/viewers/data/epub_document_gateway.dart';
-import 'package:alexandria_desktop/features/viewers/domain/document_gateway.dart';
-import 'package:alexandria_desktop/features/viewers/domain/file_viewer.dart';
+import 'package:alexandria_ui/features/viewers/data/epub_document_gateway.dart';
+import 'package:alexandria_ui/features/viewers/domain/document_gateway.dart';
+import 'package:alexandria_ui/features/viewers/domain/file_viewer.dart';
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 
