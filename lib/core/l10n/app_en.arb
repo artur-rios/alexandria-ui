@@ -460,6 +460,10 @@
   "@librarySourcesRunFailed": {
     "description": "UC-06: the core reports the run as failed."
   },
+  "librarySourcesRunCancelled": "The scan was cancelled.",
+  "@librarySourcesRunCancelled": {
+    "description": "FR-FC-30: a run the owner abandoned. The core keeps a cancelled run's tally, so without this the outcome falls through to the completion line and tells the owner the scan finished."
+  },
   "librarySourcesRunPaused": "The scan is paused. It can be resumed from where it left off.",
   "@librarySourcesRunPaused": {
     "description": "UC-06 AF-05: a run the application was closed on comes back paused, not failed — it is resumable, which is a different fact from an interruption and deserves different words."
@@ -2200,6 +2204,32 @@
   "activityAggregateDiscovering": "Indexing {count} folders",
   "@activityAggregateDiscovering": {
     "description": "FR-FC-29: the aggregate line while any of the runs is still discovering. Summing only the totals the core has given would report a total that is not the work outstanding.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityAggregatePaused": "{count} folders paused — {processed} of {total}",
+  "@activityAggregatePaused": {
+    "description": "FR-FC-29: several outstanding runs with none of them running — the state resume-at-launch leaves behind. Saying \"Indexing\" over them would assert work is under way when nothing is happening.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "processed": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "activityAggregatePausedDiscovering": "{count} folders paused",
+  "@activityAggregatePausedDiscovering": {
+    "description": "FR-FC-29: the paused aggregate line while any of the runs has no total. There is nothing to divide by, so no figure is offered.",
     "placeholders": {
       "count": {
         "type": "int"

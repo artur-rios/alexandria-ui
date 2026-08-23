@@ -264,6 +264,35 @@ void main() {
       );
       expect(find.text(l10n.librarySourcesRunPaused), findsOneWidget);
     });
+
+    // FR-FC-30: the core keeps a cancelled run's tally, so the outcome used
+    // to fall through to the completion line — and the owner who had just
+    // abandoned a scan was told how many files it had finished.
+    testWidgets('GivenACancelledRun_WhenTheScreenOpens_ThenItSaysCancelled', (
+      tester,
+    ) async {
+      await openScreen(
+        tester,
+        gateway: FakeIndexGateway()
+          ..readOutcomes = [
+            finishedRun(
+              status: IndexRunStatus.cancelled,
+              counts: const IndexRunCounts(scanned: 40, indexed: 12),
+            ),
+          ],
+        registered: [source(lastRunId: 'a-recorded-run')],
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+      expect(find.text(l10n.librarySourcesRunCancelled), findsOneWidget);
+      expect(
+        find.text(l10n.librarySourcesRunComplete(40, 12, 0)),
+        findsNothing,
+      );
+    });
   });
 
   for (final (name, locale) in [

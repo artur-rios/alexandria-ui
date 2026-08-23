@@ -82,7 +82,7 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
 
     switch (outcome) {
       case ActiveRunsRead(:final runs):
-        _applyRead(runs);
+        await _applyRead(runs, credential);
 
       // The core rejected the session. Discarding what is known would
       // report "nothing running" on no evidence, but the session is gone
@@ -179,18 +179,27 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
     }
   }
 
-  void _applyRead(List<IndexRun> runs) {
-    final previouslyKnown = {for (final run in state.runs) run.runId: run};
+  Future<void> _applyRead(List<IndexRun> runs, String credential) async {
     final stillActive = {for (final run in runs) run.runId};
 
-    // A run held from last time and absent now is the one the strip should
-    // report as just finished — held until the owner dismisses it, rather
-    // than overwritten silently the moment it drops off the active list.
+    // A run held from last time and absent now is one the strip should report
+    // as just finished. Every one of them is read, not only the first: two
+    // runs can drop off the same reading, and taking whichever came first in
+    // the list would decide by list order which outcome the owner is told
+    // about.
     var justFinished = state.justFinished;
-    for (final entry in previouslyKnown.entries) {
-      if (!stillActive.contains(entry.key)) {
-        justFinished = entry.value;
-        break;
+    for (final run in state.runs) {
+      if (stillActive.contains(run.runId)) continue;
+
+      final ended = await _endOf(run, credential);
+
+      // A held failure is not replaced. The slot is one run wide, and a
+      // failure standing in it is the outcome the owner has not seen yet — a
+      // second run finishing thirty seconds later must not push it off before
+      // it was read. Every other outcome clears itself, so nothing stays
+      // hidden behind one for long.
+      if (ended != null && justFinished?.status != IndexRunStatus.failed) {
+        justFinished = ended;
       }
     }
 
@@ -231,6 +240,54 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
       // when the owner acts, and that action's own response already updates
       // the strip, so polling here would only ever read the same answer.
       _stopPolling();
+    }
+  }
+
+  /// How [disappeared] actually ended, or null when that cannot be known.
+  ///
+  /// `listActiveRuns` answers with what is *outstanding*, so every run it
+  /// reports is running or paused by definition. The snapshot of a run that
+  /// has just left that list therefore never carries the status it ended on,
+  /// and holding it would make a completion, a failure and a cancellation
+  /// indistinguishable — which is to say, unreportable. The run is read
+  /// directly for the one fact the list cannot carry.
+  Future<IndexRun?> _endOf(IndexRun disappeared, String credential) async {
+    final outcome = await _gateway.readRun(
+      runId: disappeared.runId,
+      credential: credential,
+    );
+
+    switch (outcome) {
+      // Kind and root come from the snapshot: the active list carries both,
+      // and they are what names the folder in the report. Everything the
+      // read is for — status, counts, error — is the read's own.
+      case IndexRunRead(:final run) when run.status.isTerminal:
+        return run.copyWith(root: disappeared.root, kind: disappeared.kind);
+
+      // Off the list but not terminal. The core has moved it somewhere this
+      // application has no word for, and announcing an end that has not
+      // happened is worse than saying nothing.
+      case IndexRunRead():
+        return null;
+
+      case IndexRunFailed(failure: final UnauthorizedFailure failure):
+        _stopPolling();
+        _session.invalidate(failure);
+
+        return null;
+
+      // A run the core no longer knows — most often one it has already
+      // forgotten. There is no honest outcome to report, and guessing at one
+      // is worse than a strip that says nothing; what matters is that the run
+      // still leaves the list and whatever else is outstanding is still
+      // followed.
+      case IndexRunFailed(:final failure):
+        _log.warning(
+          'run outcome unreadable for ${disappeared.runId} '
+          '(${failure.coreStatusCode})',
+        );
+
+        return null;
     }
   }
 

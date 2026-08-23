@@ -32,8 +32,15 @@ abstract class ActiveRunsState with _$ActiveRunsState {
     @Default(<String, List<RunSample>>{}) Map<String, List<RunSample>> samples,
 
     /// A run that was outstanding on the previous read and is gone from this
-    /// one — held so the strip can report how it ended, until the owner
-    /// dismisses it.
+    /// one, read back for the status it ended on — the active list only ever
+    /// carries running and paused runs, so the outcome cannot come from
+    /// there.
+    ///
+    /// One slot, and what stands in it is not simply the latest. A *failed*
+    /// run is held until the owner dismisses it and is not replaced by a
+    /// later outcome; anything else is replaced as soon as the next run
+    /// ends, because a completion clears itself anyway and a cancellation is
+    /// the owner's own doing. Null when the run's outcome could not be read.
     IndexRun? justFinished,
 
     /// Why the last read failed, if it did.

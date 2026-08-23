@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
 import '../../../support/fake_library_sources.dart';
 import '../../../support/shell_harness.dart';
@@ -130,6 +131,65 @@ void main() {
     await tester.pump();
 
     return recording;
+  }
+
+  const secondPausedRun = IndexRun(
+    runId: 'r2',
+    root: '/home/owner/video',
+    status: IndexRunStatus.paused,
+    phase: IndexRunPhase.processing,
+    total: 400,
+    processed: 100,
+    activeMillis: 20000,
+  );
+
+  /// Pumps the strip over the *real* [ActiveRunsController], driven by
+  /// [gateway].
+  ///
+  /// Everywhere else here the state is handed to the strip directly, which is
+  /// the right isolation for a rule that is the strip's own. It is the wrong
+  /// tool for the seam between the two: a hand-built state can assert a run
+  /// ended in a way the controller never produces, and both halves stay green
+  /// while the strip is unreachable in the running application. These go
+  /// through the controller for that reason.
+  Future<ProviderContainer> pumpStripOverCore(
+    WidgetTester tester,
+    FakeIndexGateway gateway,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [
+        indexGatewayProvider.overrideWithValue(gateway),
+        // Long enough that no timer fires: the observation is driven by
+        // calling refresh directly.
+        runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
+      ],
+    );
+    addTearDown(container.dispose);
+    container
+        .read(sessionControllerProvider.notifier)
+        .establish(FakeAuthGateway.defaultSession);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Column(
+              children: [
+                Expanded(child: SizedBox.expand()),
+                BackgroundActivityStrip(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    return container;
   }
 
   group('what the strip shows (FR-FC-28)', () {
@@ -316,6 +376,48 @@ void main() {
       expect(find.byTooltip('Normal'), findsNothing);
     });
 
+    // Two runs paused at launch is exactly what resuming is designed for, and
+    // "Indexing 2 folders" over them asserts work is under way that is not.
+    testWidgets('GivenTwoPausedRuns_WhenBuilt_ThenTheyAreNotCalledIndexing', (
+      tester,
+    ) async {
+      await pumpStrip(tester, runs: [pausedRun, secondPausedRun]);
+
+      expect(find.textContaining('2 folders paused'), findsOneWidget);
+      expect(find.textContaining('Indexing 2 folders'), findsNothing);
+    });
+
+    testWidgets('GivenTwoPausedRunsStillCounting_WhenBuilt_ThenTheBarRests', (
+      tester,
+    ) async {
+      // Nothing is running and there is nothing to divide by, so an animating
+      // indeterminate bar would claim work that is not happening.
+      await pumpStrip(
+        tester,
+        runs: [
+          pausedRun.copyWith(total: null, phase: IndexRunPhase.discovering),
+          secondPausedRun,
+        ],
+      );
+
+      final bar = tester.widget<LinearProgressIndicator>(
+        find.byType(LinearProgressIndicator),
+      );
+      expect(bar.value, 0);
+      expect(find.textContaining('2 folders paused'), findsOneWidget);
+    });
+
+    // One paused among runs that are moving is still work under way, so the
+    // paused vocabulary must not take over the moment anything stops.
+    testWidgets(
+      'GivenOnePausedAndOneRunning_WhenBuilt_ThenItStillSaysIndexing',
+      (tester) async {
+        await pumpStrip(tester, runs: [pausedRun, secondRun]);
+
+        expect(find.textContaining('Indexing 2 folders'), findsOneWidget);
+      },
+    );
+
     // One of the two is still counting, so their totals cannot be summed into
     // a figure the core never gave.
     testWidgets('GivenOneOfTwoIsDiscovering_WhenBuilt_ThenNoTotalIsInvented', (
@@ -328,6 +430,61 @@ void main() {
       );
       expect(bar.value, isNull);
       expect(find.textContaining('12,264'), findsNothing);
+    });
+  });
+
+  group('how a run ends, through the controller (FR-FC-29)', () {
+    // The whole point of the strip, driven the way the application drives it:
+    // a scan is running, the core drops it from the active list, and the
+    // outcome has to reach the row. Every other test in the group below hands
+    // the strip a finished run directly, which cannot see whether the
+    // controller can ever produce one.
+    testWidgets('GivenARunningRun_WhenItCompletes_ThenTheStripSaysSo', (
+      tester,
+    ) async {
+      final gateway = FakeIndexGateway()
+        ..activeRunsOutcome = const ActiveRunsOutcome.read(
+          runs: [processingRun],
+        )
+        ..readOutcomes = [finishedRun(runId: 'r1', root: '/home/owner/music')];
+      final container = await pumpStripOverCore(tester, gateway);
+      await tester.pump();
+
+      gateway.activeRunsOutcome = const ActiveRunsOutcome.read(runs: []);
+      await container.read(activeRunsControllerProvider.notifier).refresh();
+      await tester.pump();
+
+      expect(find.text('Finished indexing music'), findsOneWidget);
+
+      // The completion clears itself, and the timer has to be let run out or
+      // the binding fails the test for it.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('GivenARunningRun_WhenItFails_ThenTheFailureIsShown', (
+      tester,
+    ) async {
+      final gateway = FakeIndexGateway()
+        ..activeRunsOutcome = const ActiveRunsOutcome.read(
+          runs: [processingRun],
+        )
+        ..readOutcomes = [
+          finishedRun(
+            runId: 'r1',
+            root: '/home/owner/music',
+            status: IndexRunStatus.failed,
+          ),
+        ];
+      final container = await pumpStripOverCore(tester, gateway);
+      await tester.pump();
+
+      gateway.activeRunsOutcome = const ActiveRunsOutcome.read(runs: []);
+      await container.read(activeRunsControllerProvider.notifier).refresh();
+      await tester.pump(const Duration(seconds: 10));
+
+      expect(find.text('Indexing music failed'), findsOneWidget);
+      expect(find.text('Dismiss'), findsOneWidget);
     });
   });
 

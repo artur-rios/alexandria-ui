@@ -526,6 +526,11 @@ class _RunReport extends ConsumerWidget {
       // half of taking that fact seriously.
       IndexRunStatus.paused => l10n.librarySourcesRunPaused,
       IndexRunStatus.failed => l10n.librarySourcesRunFailed,
+
+      // FR-FC-30: the core keeps a cancelled run's tally, so without this arm
+      // the counts below fire and the owner who just abandoned a scan is told
+      // it finished.
+      IndexRunStatus.cancelled => l10n.librarySourcesRunCancelled,
       _ when counts == null => l10n.librarySourcesRunFailed,
       _ => l10n.librarySourcesRunComplete(
         counts.scanned,

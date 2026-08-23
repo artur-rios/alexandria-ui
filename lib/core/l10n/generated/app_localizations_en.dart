@@ -350,6 +350,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get librarySourcesRunFailed => 'The scan did not finish.';
 
   @override
+  String get librarySourcesRunCancelled => 'The scan was cancelled.';
+
+  @override
   String get librarySourcesRunPaused =>
       'The scan is paused. It can be resumed from where it left off.';
 
@@ -1661,6 +1664,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String activityAggregateDiscovering(int count) {
     return 'Indexing $count folders';
+  }
+
+  @override
+  String activityAggregatePaused(int count, int processed, int total) {
+    final intl.NumberFormat processedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String processedString = processedNumberFormat.format(processed);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$count folders paused — $processedString of $totalString';
+  }
+
+  @override
+  String activityAggregatePausedDiscovering(int count) {
+    return '$count folders paused';
   }
 
   @override

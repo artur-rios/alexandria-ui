@@ -349,6 +349,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get librarySourcesRunFailed => 'A análise não foi concluída.';
 
   @override
+  String get librarySourcesRunCancelled => 'A análise foi cancelada.';
+
+  @override
   String get librarySourcesRunPaused =>
       'A análise está pausada. Ela pode ser retomada de onde parou.';
 
@@ -1664,6 +1667,23 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String activityAggregateDiscovering(int count) {
     return 'Indexando $count pastas';
+  }
+
+  @override
+  String activityAggregatePaused(int count, int processed, int total) {
+    final intl.NumberFormat processedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String processedString = processedNumberFormat.format(processed);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$count pastas pausadas — $processedString de $totalString';
+  }
+
+  @override
+  String activityAggregatePausedDiscovering(int count) {
+    return '$count pastas pausadas';
   }
 
   @override

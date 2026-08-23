@@ -26,6 +26,15 @@ void main() {
     activeMillis: 1000,
   );
 
+  const secondRun = IndexRun(
+    runId: 'r-second',
+    root: '/home/owner/books',
+    status: IndexRunStatus.running,
+    total: 40,
+    processed: 4,
+    activeMillis: 1000,
+  );
+
   ProviderContainer harness({required FakeGateway gateway}) {
     final container = ProviderContainer(
       overrides: [
@@ -112,7 +121,11 @@ void main() {
   test(
     'GivenARunThatDisappeared_WhenRefreshed_ThenItIsHeldAsJustFinished',
     () async {
-      final gateway = FakeGateway(active: [runningRun]);
+      final gateway = FakeGateway(active: [runningRun])
+        ..terminal[runningRun.runId] = finishedRun(
+          runId: runningRun.runId,
+          root: runningRun.root,
+        );
       final container = harness(gateway: gateway);
       final controller = container.read(activeRunsControllerProvider.notifier);
       await controller.refresh();
@@ -123,6 +136,147 @@ void main() {
       expect(
         container.read(activeRunsControllerProvider).justFinished?.runId,
         runningRun.runId,
+      );
+    },
+  );
+
+  // The active list holds only outstanding runs, so the snapshot of a run
+  // that has just left it always says `running` or `paused` — never how it
+  // actually ended. Holding that snapshot would make a completion and a
+  // failure indistinguishable from each other, and unreportable by anything
+  // downstream that reads the status.
+  test(
+    'GivenARunThatCompleted_WhenItLeavesTheActiveList_ThenTheTerminalStatusIsHeld',
+    () async {
+      final gateway = FakeGateway(active: [runningRun])
+        ..terminal[runningRun.runId] = finishedRun(
+          runId: runningRun.runId,
+          root: runningRun.root,
+        );
+      final container = harness(gateway: gateway);
+      final controller = container.read(activeRunsControllerProvider.notifier);
+      await controller.refresh();
+
+      gateway.active = [];
+      await controller.refresh();
+
+      expect(
+        container.read(activeRunsControllerProvider).justFinished?.status,
+        IndexRunStatus.complete,
+      );
+    },
+  );
+
+  // A failure that vanishes unseen is the one outcome the strip exists to
+  // prevent, and it can only be told apart from a completion by the status
+  // read back after the run left the list.
+  test(
+    'GivenARunThatFailed_WhenItLeavesTheActiveList_ThenTheFailureIsHeld',
+    () async {
+      final gateway = FakeGateway(active: [runningRun])
+        ..terminal[runningRun.runId] = finishedRun(
+          runId: runningRun.runId,
+          root: runningRun.root,
+          status: IndexRunStatus.failed,
+        );
+      final container = harness(gateway: gateway);
+      final controller = container.read(activeRunsControllerProvider.notifier);
+      await controller.refresh();
+
+      gateway.active = [];
+      await controller.refresh();
+
+      expect(
+        container.read(activeRunsControllerProvider).justFinished?.status,
+        IndexRunStatus.failed,
+      );
+    },
+  );
+
+  // A run the core no longer knows cannot be reported on honestly, and
+  // guessing at an outcome is worse than saying nothing. What must not happen
+  // is the read wedging the controller: the run still leaves the list, and
+  // whatever is left is still followed.
+  test(
+    'GivenATerminalReadThatFails_WhenARunLeavesTheActiveList_ThenNothingIsHeld',
+    () async {
+      final gateway = FakeGateway(active: [runningRun, pausedRun]);
+      final container = harness(gateway: gateway);
+      final controller = container.read(activeRunsControllerProvider.notifier);
+      await controller.refresh();
+
+      // No terminal answer registered, so the read fails.
+      gateway.active = [pausedRun];
+      await controller.refresh();
+
+      final state = container.read(activeRunsControllerProvider);
+      expect(state.justFinished, isNull);
+      expect(state.runs.single.runId, pausedRun.runId);
+      expect(state.failure, isNull);
+    },
+  );
+
+  // Two runs can drop off the same reading, and only one of them can be
+  // reported. Deciding by list order would lose the failure half the time.
+  test(
+    'GivenTwoRunsThatEndTogether_WhenRefreshed_ThenTheFailureIsTheOneHeld',
+    () async {
+      final gateway = FakeGateway(active: [secondRun, runningRun])
+        ..terminal[secondRun.runId] = finishedRun(
+          runId: secondRun.runId,
+          root: secondRun.root,
+        )
+        ..terminal[runningRun.runId] = finishedRun(
+          runId: runningRun.runId,
+          root: runningRun.root,
+          status: IndexRunStatus.failed,
+        );
+      final container = harness(gateway: gateway);
+      final controller = container.read(activeRunsControllerProvider.notifier);
+      await controller.refresh();
+
+      gateway.active = [];
+      await controller.refresh();
+
+      expect(
+        container.read(activeRunsControllerProvider).justFinished?.status,
+        IndexRunStatus.failed,
+      );
+    },
+  );
+
+  // FR-FC-29: the held outcome is one slot, and a failure standing in it is
+  // the thing the owner has not seen yet. A second run finishing thirty
+  // seconds later must not push it off before it was read.
+  test(
+    'GivenAHeldFailure_WhenAnotherRunCompletes_ThenTheFailureStillStands',
+    () async {
+      final gateway = FakeGateway(active: [runningRun, secondRun])
+        ..terminal[runningRun.runId] = finishedRun(
+          runId: runningRun.runId,
+          root: runningRun.root,
+          status: IndexRunStatus.failed,
+        )
+        ..terminal[secondRun.runId] = finishedRun(
+          runId: secondRun.runId,
+          root: secondRun.root,
+        );
+      final container = harness(gateway: gateway);
+      final controller = container.read(activeRunsControllerProvider.notifier);
+      await controller.refresh();
+
+      gateway.active = [secondRun];
+      await controller.refresh();
+      gateway.active = [];
+      await controller.refresh();
+
+      expect(
+        container.read(activeRunsControllerProvider).justFinished?.runId,
+        runningRun.runId,
+      );
+      expect(
+        container.read(activeRunsControllerProvider).justFinished?.status,
+        IndexRunStatus.failed,
       );
     },
   );
@@ -142,7 +296,11 @@ void main() {
   );
 
   test('GivenAJustFinishedRun_WhenDismissed_ThenItIsCleared', () async {
-    final gateway = FakeGateway(active: [runningRun]);
+    final gateway = FakeGateway(active: [runningRun])
+      ..terminal[runningRun.runId] = finishedRun(
+        runId: runningRun.runId,
+        root: runningRun.root,
+      );
     final container = harness(gateway: gateway);
     final controller = container.read(activeRunsControllerProvider.notifier);
     await controller.refresh();
@@ -195,11 +353,31 @@ class FakeGateway extends FakeIndexGateway {
   /// The runs the core currently reports as outstanding.
   List<IndexRun> active;
 
+  /// How each run answers a direct read, by run id.
+  ///
+  /// A run that has left [active] is read individually for the status it
+  /// ended on, which the active list can never carry. A run with no entry
+  /// here is one the core no longer knows, and its read fails.
+  final Map<String, IndexRunOutcome> terminal = {};
+
   /// Whether the next [listActiveRuns] call fails instead of answering.
   bool failNext = false;
 
   /// How many times [listActiveRuns] was called.
   int listCalls = 0;
+
+  @override
+  Future<IndexRunOutcome> readRun({
+    required String runId,
+    required String credential,
+  }) async {
+    reads.add((runId: runId, credential: credential));
+
+    return terminal[runId] ??
+        const IndexRunOutcome.failed(
+          failure: Failure.notFound(family: CoreStatusFamily.run, code: 4),
+        );
+  }
 
   @override
   Future<ActiveRunsOutcome> listActiveRuns({required String credential}) async {

@@ -431,6 +431,12 @@ class _AggregateRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    // FR-FC-29: two runs paused at launch — the exact state resuming is meant
+    // for — are outstanding but not moving. "Indexing 2 folders" over them
+    // asserts work is under way that is not, and the bar would animate for a
+    // core doing nothing.
+    final running = runs.any((run) => run.isInFlight);
+
     var processed = 0;
     int? total = 0;
     for (final run in runs) {
@@ -452,16 +458,20 @@ class _AggregateRow extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.sm),
         Text(
-          total == null
-              ? l10n.activityAggregateDiscovering(runs.length)
-              : l10n.activityAggregate(runs.length, processed, total),
+          _line(l10n, total: total, processed: processed, running: running),
           style: theme.textTheme.bodySmall,
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: LinearProgressIndicator(
-            value: total == null || total == 0 ? null : processed / total,
+            // Nothing running and nothing to divide by: an animating
+            // indeterminate bar would say work is happening when none is, so
+            // it is held at zero, which claims nothing — the same reading the
+            // single-run row gives a paused scan.
+            value: total == null || total == 0
+                ? (running ? null : 0)
+                : processed / total,
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -475,6 +485,25 @@ class _AggregateRow extends StatelessWidget {
         const SizedBox(width: AppSpacing.sm),
       ],
     );
+  }
+
+  /// The one line the several runs get, in the vocabulary of what they are
+  /// actually doing.
+  String _line(
+    AppLocalizations l10n, {
+    required int? total,
+    required int processed,
+    required bool running,
+  }) {
+    if (total == null) {
+      return running
+          ? l10n.activityAggregateDiscovering(runs.length)
+          : l10n.activityAggregatePausedDiscovering(runs.length);
+    }
+
+    return running
+        ? l10n.activityAggregate(runs.length, processed, total)
+        : l10n.activityAggregatePaused(runs.length, processed, total);
   }
 }
 

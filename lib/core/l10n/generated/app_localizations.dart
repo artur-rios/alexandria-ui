@@ -686,6 +686,12 @@ abstract class AppLocalizations {
   /// **'The scan did not finish.'**
   String get librarySourcesRunFailed;
 
+  /// FR-FC-30: a run the owner abandoned. The core keeps a cancelled run's tally, so without this the outcome falls through to the completion line and tells the owner the scan finished.
+  ///
+  /// In en, this message translates to:
+  /// **'The scan was cancelled.'**
+  String get librarySourcesRunCancelled;
+
   /// UC-06 AF-05: a run the application was closed on comes back paused, not failed — it is resumable, which is a different fact from an interruption and deserves different words.
   ///
   /// In en, this message translates to:
@@ -2873,6 +2879,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Indexing {count} folders'**
   String activityAggregateDiscovering(int count);
+
+  /// FR-FC-29: several outstanding runs with none of them running — the state resume-at-launch leaves behind. Saying "Indexing" over them would assert work is under way when nothing is happening.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} folders paused — {processed} of {total}'**
+  String activityAggregatePaused(int count, int processed, int total);
+
+  /// FR-FC-29: the paused aggregate line while any of the runs has no total. There is nothing to divide by, so no figure is offered.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} folders paused'**
+  String activityAggregatePausedDiscovering(int count);
 
   /// FR-FC-29: a run that dropped off the active list having finished. Dismisses itself after four seconds.
   ///
