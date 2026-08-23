@@ -9,6 +9,7 @@ import '../../auth/application/session_controller.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
 import '../domain/library_source_store.dart';
+import '../domain/run_priority.dart';
 import 'index_runs_state.dart';
 
 /// Drives UC-06: starting an index run and watching it finish.
@@ -87,6 +88,102 @@ class IndexRunsController extends Notifier<IndexRunsState> {
 
       case IndexStartFailed(:final failure):
         _reportStartFailure(root, failure);
+    }
+  }
+
+  /// Pauses [root]'s running scan (FR-FC-28).
+  ///
+  /// Nothing to resolve against without a known run, so a folder with none
+  /// is left alone rather than guessed at.
+  Future<void> pause(String root) async {
+    final run = state.runFor(root);
+    final credential = _session.credential;
+    if (run == null || credential == null) return;
+
+    final outcome = await _gateway.pauseRun(
+      runId: run.runId,
+      credential: credential,
+    );
+    await _afterControl(root, outcome);
+  }
+
+  /// Abandons [root]'s scan for good (FR-FC-30).
+  ///
+  /// Terminal and not resumable, which is what separates this from [pause] —
+  /// the screen confirms before calling this, the same as every other
+  /// destructive action (FR-UX-10).
+  Future<void> cancel(String root) async {
+    final run = state.runFor(root);
+    final credential = _session.credential;
+    if (run == null || credential == null) return;
+
+    final outcome = await _gateway.cancelRun(
+      runId: run.runId,
+      credential: credential,
+    );
+    await _afterControl(root, outcome);
+  }
+
+  /// Picks [root]'s paused scan back up (FR-FC-29).
+  ///
+  /// [priority] carries forward if given; null asks the core to keep the
+  /// pace the run already had — the same convention [startIndex] follows, and
+  /// it must reach the core unchanged rather than default to `normal`, or a
+  /// plain resume would silently re-pace a scan the owner deliberately
+  /// throttled.
+  Future<void> resume(String root, {RunPriority? priority}) async {
+    final run = state.runFor(root);
+    final credential = _session.credential;
+    if (run == null || credential == null) return;
+
+    final outcome = await _gateway.resumeRun(
+      runId: run.runId,
+      priority: priority,
+      credential: credential,
+    );
+
+    switch (outcome) {
+      case IndexStarted():
+        await _poll(root);
+        _schedulePolling();
+
+        // Same choke point [startIndex] refreshes through: nothing else
+        // tells the strip a paused run just started moving again.
+        await ref.read(activeRunsControllerProvider.notifier).refresh();
+
+      case IndexStartFailed(failure: final UnauthorizedFailure failure):
+        _stopPolling();
+        _session.invalidate(failure);
+
+      // Refused for any other reason — most likely the run had already
+      // moved on. Reading it back is the correct response, the same as
+      // every other control call.
+      case IndexStartFailed():
+        await _poll(root);
+    }
+  }
+
+  /// Re-reads [root] after a pause or cancel, and tells the strip.
+  Future<void> _afterControl(String root, RunControlOutcome outcome) async {
+    switch (outcome) {
+      case RunControlOk():
+        await _poll(root);
+
+        // Same choke point [startIndex] refreshes through: nothing else
+        // tells the strip that a control used from this screen changed what
+        // is outstanding.
+        await ref.read(activeRunsControllerProvider.notifier).refresh();
+
+      case RunControlFailed(failure: final UnauthorizedFailure failure):
+        _stopPolling();
+        _session.invalidate(failure);
+
+      // Refused for state — most commonly `RUN_ERR_INVALID_STATE`, because
+      // the run moved on between the row rendering and the owner clicking.
+      // The run is not gone, only stale here, so this is read back rather
+      // than surfaced as an error the row would have to render.
+      case RunControlFailed():
+        await _poll(root);
     }
   }
 

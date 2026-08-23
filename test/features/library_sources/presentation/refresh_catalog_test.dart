@@ -73,7 +73,7 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(LibrarySourcesScreen)),
     );
-    await tester.tap(find.text(l10n.librarySourcesRefresh));
+    await tester.tap(find.text(l10n.librarySourcesRecheck));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
   }
@@ -89,7 +89,7 @@ void main() {
       tester.element(find.byType(LibrarySourcesScreen)),
     );
 
-    expect(find.text(l10n.librarySourcesRefresh), findsOneWidget);
+    expect(find.text(l10n.librarySourcesRecheck), findsOneWidget);
   });
 
   testWidgets('GivenARefresh_WhenItFinishes_ThenItsCountsAreShown', (

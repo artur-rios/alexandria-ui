@@ -294,6 +294,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.';
 
   @override
+  String get librarySourcesClose => 'Close the library folders';
+
+  @override
   String get librarySourcesAdd => 'Add a folder';
 
   @override
@@ -325,7 +328,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dismiss => 'Dismiss';
 
   @override
-  String get librarySourcesIndex => 'Index';
+  String get librarySourcesRescan => 'Rescan';
 
   @override
   String get librarySourcesIndexing => 'Scanning…';
@@ -344,8 +347,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get librarySourcesRunFailed => 'The scan did not finish.';
 
   @override
-  String get librarySourcesRunInterrupted =>
-      'The scan did not finish, because Alexandria was closed while it was running.';
+  String get librarySourcesRunPaused =>
+      'The scan is paused. It can be resumed from where it left off.';
 
   @override
   String get librarySourcesRunRefused =>
@@ -374,7 +377,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'This folder is being scanned. It can be removed once the scan finishes.';
 
   @override
-  String get librarySourcesRefresh => 'Refresh the catalog';
+  String get librarySourcesRecheck => 'Re-check library';
+
+  @override
+  String get librarySourcesPause => 'Pause';
+
+  @override
+  String get librarySourcesResume => 'Resume';
+
+  @override
+  String get librarySourcesCancelRun => 'Cancel';
+
+  @override
+  String get librarySourcesCancelRunTitle => 'Cancel this scan?';
+
+  @override
+  String get librarySourcesCancelRunConfirm =>
+      'This scan cannot be resumed once cancelled. Everything it has already cataloged stays in your library.';
+
+  @override
+  String get librarySourcesCancelRunAction => 'Cancel the scan';
 
   @override
   String get librarySourcesRefreshing => 'Re-checking the catalog…';

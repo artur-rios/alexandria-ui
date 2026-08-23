@@ -596,6 +596,12 @@ abstract class AppLocalizations {
   /// **'Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.'**
   String get librarySourcesEmptyBody;
 
+  /// Closes the full-screen library-folders dialog. Its own word rather than the generic Cancel, which a folder's own row now uses for abandoning a run — the two must never read as the same action.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the library folders'**
+  String get librarySourcesClose;
+
   /// The action that opens the platform's native folder picker (FR-LB-01).
   ///
   /// In en, this message translates to:
@@ -644,11 +650,11 @@ abstract class AppLocalizations {
   /// **'Dismiss'**
   String get dismiss;
 
-  /// The action that starts a scan of a registered folder (UC-06 main flow step 1).
+  /// The per-folder action offered by a row with no run in flight and nothing left over from one — its job now that the first scan after registering happens on its own (UC-06).
   ///
   /// In en, this message translates to:
-  /// **'Index'**
-  String get librarySourcesIndex;
+  /// **'Rescan'**
+  String get librarySourcesRescan;
 
   /// Shown while a run is in flight. The scan belongs to the core, so the rest of the application stays usable (FR-LB-07).
   ///
@@ -674,11 +680,11 @@ abstract class AppLocalizations {
   /// **'The scan did not finish.'**
   String get librarySourcesRunFailed;
 
-  /// UC-06 AF-05: the run was interrupted. Its outcome is read at the next launch rather than lost.
+  /// UC-06 AF-05: a run the application was closed on comes back paused, not failed — it is resumable, which is a different fact from an interruption and deserves different words.
   ///
   /// In en, this message translates to:
-  /// **'The scan did not finish, because Alexandria was closed while it was running.'**
-  String get librarySourcesRunInterrupted;
+  /// **'The scan is paused. It can be resumed from where it left off.'**
+  String get librarySourcesRunPaused;
 
   /// UC-06 AF-01: a second run is refused while one is in flight (FR-LB-09).
   ///
@@ -722,11 +728,47 @@ abstract class AppLocalizations {
   /// **'This folder is being scanned. It can be removed once the scan finishes.'**
   String get librarySourcesUnregisterRefused;
 
-  /// The action that re-checks everything already cataloged, across every folder at once (UC-07 main flow step 1, FR-LB-06).
+  /// The catalog-wide action that re-checks everything already cataloged, across every folder at once — distinct from a per-folder Rescan (UC-07 main flow step 1, FR-LB-06).
   ///
   /// In en, this message translates to:
-  /// **'Refresh the catalog'**
-  String get librarySourcesRefresh;
+  /// **'Re-check library'**
+  String get librarySourcesRecheck;
+
+  /// Pauses a folder's own running scan from its row (FR-FC-28).
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get librarySourcesPause;
+
+  /// Picks a folder's own paused scan back up from its row (FR-FC-29).
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get librarySourcesResume;
+
+  /// Abandons a folder's own scan for good from its row (FR-FC-30). Terminal and not resumable, unlike pause, which is why it confirms first.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get librarySourcesCancelRun;
+
+  /// Title of the cancel-run confirmation (FR-FC-30, FR-UX-10).
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this scan?'**
+  String get librarySourcesCancelRunTitle;
+
+  /// Body of the cancel-run confirmation: states that cancelling is final, and that what the run already cataloged is not undone.
+  ///
+  /// In en, this message translates to:
+  /// **'This scan cannot be resumed once cancelled. Everything it has already cataloged stays in your library.'**
+  String get librarySourcesCancelRunConfirm;
+
+  /// The confirming action on the cancel-run confirmation, distinct from the dialog's own decline button so the two are never mistaken for each other.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel the scan'**
+  String get librarySourcesCancelRunAction;
 
   /// Shown while a refresh is in flight (UC-07 main flow step 3).
   ///

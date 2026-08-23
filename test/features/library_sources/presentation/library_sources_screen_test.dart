@@ -2,11 +2,14 @@ import 'package:alexandria_desktop/core/di/providers.dart';
 import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_desktop/features/library_sources/application/active_runs_controller.dart';
 import 'package:alexandria_desktop/features/library_sources/domain/folder_registration.dart';
+import 'package:alexandria_desktop/features/library_sources/domain/index_gateway.dart';
+import 'package:alexandria_desktop/features/library_sources/domain/index_run.dart';
 import 'package:alexandria_desktop/features/library_sources/domain/library_source.dart';
 import 'package:alexandria_desktop/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_desktop/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
@@ -89,6 +92,130 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
   }
+
+  /// Opens the screen with one registered folder per entry in [runs], each
+  /// carrying the given status.
+  ///
+  /// Seeded through AF-05's own recorded-run pickup rather than a new
+  /// controller seam: a folder whose entry carries a status gets a
+  /// `lastRunId`, and the gateway is told what reading that id answers, so
+  /// `resumeRecordedRuns` (already exercised by the AF-05 tests) is what puts
+  /// the row in the state under test. A folder with no entry at all is still
+  /// registered, with no run — "no run" is a real row state, not an absence
+  /// of one.
+  Future<ProviderContainer> pumpSourcesScreen(
+    WidgetTester tester, {
+    FakeIndexGateway? gateway,
+    Map<String, IndexRunStatus> runs = const {},
+  }) async {
+    const defaultRoot = 'D:/Music';
+    final roots = runs.keys.isEmpty ? [defaultRoot] : runs.keys.toList();
+    final fakeGateway = gateway ?? FakeIndexGateway();
+
+    final sources = [
+      for (final root in roots)
+        LibrarySource(
+          path: root,
+          label: defaultLabelFor(root),
+          registeredAt: registeredAt,
+          lastRunId: runs.containsKey(root) ? '$root-run' : null,
+        ),
+    ];
+
+    if (runs.isNotEmpty) {
+      fakeGateway.readOutcomes = [
+        for (final entry in runs.entries)
+          IndexRunOutcome.read(
+            run: IndexRun(
+              runId: '${entry.key}-run',
+              root: entry.key,
+              status: entry.value,
+            ),
+          ),
+      ];
+    }
+
+    final container = await tester.pumpShell(
+      extraOverrides: <Override>[
+        librarySourceStoreProvider.overrideWithValue(
+          InMemoryLibrarySourceStore(sources),
+        ),
+        indexGatewayProvider.overrideWithValue(fakeGateway),
+        clockProvider.overrideWithValue(() => registeredAt),
+        runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
+      ],
+    );
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+    await tester.openLibraryTool(l10n.librarySourcesOpen);
+    await tester.pumpAndSettle();
+
+    return container;
+  }
+
+  group(
+    'a row offers only what its own state affords (FR-FC-28 … FR-FC-30)',
+    () {
+      testWidgets(
+        'GivenARowWithARunningRun_WhenBuilt_ThenPauseAndCancelAreOffered',
+        (tester) async {
+          final container = await pumpSourcesScreen(
+            tester,
+            runs: {'D:/Music': IndexRunStatus.running},
+          );
+
+          expect(find.byTooltip('Pause'), findsOneWidget);
+          expect(find.byTooltip('Cancel'), findsOneWidget);
+          expect(find.text('Rescan'), findsNothing);
+
+          // The run is deliberately still going, so the poller is stopped here.
+          container.dispose();
+        },
+      );
+
+      testWidgets('GivenARowWithAPausedRun_WhenBuilt_ThenResumeIsOffered', (
+        tester,
+      ) async {
+        await pumpSourcesScreen(
+          tester,
+          runs: {'D:/Music': IndexRunStatus.paused},
+        );
+
+        expect(find.byTooltip('Resume'), findsOneWidget);
+      });
+
+      testWidgets('GivenARowWithNoRun_WhenBuilt_ThenRescanIsOffered', (
+        tester,
+      ) async {
+        await pumpSourcesScreen(tester, runs: {});
+
+        expect(find.text('Rescan'), findsOneWidget);
+      });
+
+      // Cancel is terminal and not resumable, so it asks first — this is what
+      // catches a naive implementation that wires the button straight to the
+      // gateway.
+      testWidgets('GivenARunningRun_WhenCancelIsTapped_ThenItConfirmsFirst', (
+        tester,
+      ) async {
+        final gateway = FakeIndexGateway();
+        final container = await pumpSourcesScreen(
+          tester,
+          gateway: gateway,
+          runs: {'D:/Music': IndexRunStatus.running},
+        );
+
+        await tester.tap(find.byTooltip('Cancel'));
+        await tester.pumpAndSettle();
+
+        expect(gateway.cancels, isEmpty);
+        expect(find.byType(AlertDialog), findsOneWidget);
+
+        // The run is deliberately still going, so the poller is stopped here.
+        container.dispose();
+      });
+    },
+  );
 
   group('reachability', () {
     testWidgets(

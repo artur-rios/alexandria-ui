@@ -13,6 +13,7 @@ import '../domain/library_source.dart';
 import '../application/library_sources_state.dart';
 import '../domain/folder_registration.dart';
 import '../domain/index_run.dart';
+import '../domain/run_priority.dart';
 
 /// The library-sources screen (UC-05, FR-LB-01 … FR-LB-04, FR-LB-11).
 ///
@@ -60,7 +61,7 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
         title: Text(l10n.librarySourcesTitle),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          tooltip: l10n.cancel,
+          tooltip: l10n.librarySourcesClose,
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -234,7 +235,7 @@ class _SourceList extends ConsumerWidget {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _IndexAction(root: source.path, runs: runs),
+                    _RunControls(root: source.path, runs: runs),
                     const SizedBox(width: AppSpacing.sm),
                     _UnregisterAction(source: source),
                   ],
@@ -249,20 +250,42 @@ class _SourceList extends ConsumerWidget {
   }
 }
 
-/// The control that starts a scan, or says one is running (FR-LB-07).
-class _IndexAction extends ConsumerWidget {
-  const _IndexAction({required this.root, required this.runs});
+/// The controls a folder's row offers, chosen from its own run state
+/// (FR-LB-07, FR-FC-28 … FR-FC-30).
+///
+/// Each state offers only what it affords: running, this is pause, cancel
+/// and priority; paused, it is resume and cancel; anything else — no run at
+/// all, or one that is over — is Rescan. A row that offered a control its
+/// state does not support (Rescan beside a running scan, Pause beside
+/// nothing) is exactly the defect this shape exists to avoid, and it is what
+/// makes a specific run addressable here once the activity strip collapses
+/// to an aggregate and stops naming any one of them.
+class _RunControls extends ConsumerStatefulWidget {
+  const _RunControls({required this.root, required this.runs});
 
   final String root;
   final IndexRunsState runs;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final inFlight = runs.runFor(root)?.isInFlight ?? false;
-    final starting = runs.isStarting(root);
+  ConsumerState<_RunControls> createState() => _RunControlsState();
+}
 
-    if (inFlight || starting) {
+class _RunControlsState extends ConsumerState<_RunControls> {
+  /// The pace the owner last asked for this folder, from the priority menu.
+  ///
+  /// Held here rather than read from the run, for the same reason the
+  /// activity strip holds its own: the core does not report a run's
+  /// priority, so a restart reads `normal` again — which is honest, since the
+  /// application genuinely does not know otherwise.
+  RunPriority _priority = RunPriority.normal;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final run = widget.runs.runFor(widget.root);
+    final starting = widget.runs.isStarting(widget.root);
+
+    if (starting) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -276,13 +299,130 @@ class _IndexAction extends ConsumerWidget {
       );
     }
 
+    if (run?.status == IndexRunStatus.running) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _PriorityMenu(priority: _priority, onSelected: _repace),
+          IconButton(
+            tooltip: l10n.librarySourcesPause,
+            icon: const Icon(Icons.pause),
+            onPressed: () => ref
+                .read(indexRunsControllerProvider.notifier)
+                .pause(widget.root),
+          ),
+          IconButton(
+            tooltip: l10n.librarySourcesCancelRun,
+            icon: const Icon(Icons.close),
+            onPressed: () => _confirmCancel(context, ref, widget.root),
+          ),
+        ],
+      );
+    }
+
+    if (run?.status == IndexRunStatus.paused) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: l10n.librarySourcesResume,
+            icon: const Icon(Icons.play_arrow),
+            // No priority on a plain resume: null asks the core to keep the
+            // pace the run already had, and passing the menu's last choice
+            // would silently re-pace a scan the owner never touched here.
+            onPressed: () => ref
+                .read(indexRunsControllerProvider.notifier)
+                .resume(widget.root),
+          ),
+          IconButton(
+            tooltip: l10n.librarySourcesCancelRun,
+            icon: const Icon(Icons.close),
+            onPressed: () => _confirmCancel(context, ref, widget.root),
+          ),
+        ],
+      );
+    }
+
+    // No run at all, or one that is over: a rescan is this folder's own job
+    // now that the first index after registering happens on its own.
     return TextButton.icon(
-      onPressed: () =>
-          ref.read(indexRunsControllerProvider.notifier).startIndex(root),
+      onPressed: () => ref
+          .read(indexRunsControllerProvider.notifier)
+          .startIndex(widget.root),
       icon: const Icon(Icons.sync),
-      label: Text(l10n.librarySourcesIndex),
+      label: Text(l10n.librarySourcesRescan),
     );
   }
+
+  /// Re-paces the running scan to [priority] (FR-FC-31).
+  ///
+  /// The core cannot change a running run's pace, so this is a pause
+  /// followed by a resume, the same as the activity strip's own re-pacing.
+  Future<void> _repace(RunPriority priority) async {
+    final controller = ref.read(indexRunsControllerProvider.notifier);
+    setState(() => _priority = priority);
+
+    await controller.pause(widget.root);
+    await controller.resume(widget.root, priority: priority);
+  }
+}
+
+/// The pace a running scan is being asked to keep (FR-FC-31).
+class _PriorityMenu extends StatelessWidget {
+  const _PriorityMenu({required this.priority, required this.onSelected});
+
+  final RunPriority priority;
+  final ValueChanged<RunPriority> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    String label(RunPriority priority) => switch (priority) {
+      RunPriority.normal => l10n.activityPriorityNormal,
+      RunPriority.low => l10n.activityPriorityLow,
+    };
+
+    return PopupMenuButton<RunPriority>(
+      tooltip: label(priority),
+      padding: EdgeInsets.zero,
+      onSelected: onSelected,
+      itemBuilder: (context) => [
+        for (final option in RunPriority.values)
+          PopupMenuItem(value: option, child: Text(label(option))),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        child: Text(label(priority), style: theme.textTheme.labelSmall),
+      ),
+    );
+  }
+}
+
+/// Confirms and then cancels [root]'s run (FR-FC-30).
+///
+/// Cancel is terminal and not resumable, unlike pause, so — like every other
+/// destructive action (FR-UX-10) — it asks before doing anything the owner
+/// cannot undo. The gateway is not reached until the dialog is answered.
+Future<void> _confirmCancel(
+  BuildContext context,
+  WidgetRef ref,
+  String root,
+) async {
+  final l10n = AppLocalizations.of(context);
+
+  final confirmed = await ConfirmationDialog.show(
+    context,
+    title: l10n.librarySourcesCancelRunTitle,
+    message: l10n.librarySourcesCancelRunConfirm,
+    confirmLabel: l10n.librarySourcesCancelRunAction,
+  );
+
+  // Declining changes nothing at all.
+  if (!confirmed) return;
+
+  await ref.read(indexRunsControllerProvider.notifier).cancel(root);
 }
 
 /// A run's outcome, which stays until dismissed (FR-LB-08).
@@ -361,11 +501,11 @@ class _RunReport extends ConsumerWidget {
     final counts = run.counts;
 
     final summary = switch (run.status) {
-      // The core calls this `paused` now, not `interrupted` — it is
-      // resumable, which "interrupted" never was. Task 8 rewrites this
-      // screen's copy and adds the resume control; this keeps it compiling
-      // and reading no worse than before in the meantime.
-      IndexRunStatus.paused => l10n.librarySourcesRunInterrupted,
+      // The core calls this `paused`, not `interrupted` — a run the
+      // application was closed on is resumable, which "interrupted" never
+      // was. The row's own resume control (in _RunControls) is the other
+      // half of taking that fact seriously.
+      IndexRunStatus.paused => l10n.librarySourcesRunPaused,
       IndexRunStatus.failed => l10n.librarySourcesRunFailed,
       _ when counts == null => l10n.librarySourcesRunFailed,
       _ => l10n.librarySourcesRunComplete(
@@ -586,7 +726,7 @@ class _RefreshAction extends ConsumerWidget {
             )
           : const Icon(Icons.autorenew),
       label: Text(
-        busy ? l10n.librarySourcesRefreshing : l10n.librarySourcesRefresh,
+        busy ? l10n.librarySourcesRefreshing : l10n.librarySourcesRecheck,
       ),
     );
   }

@@ -366,6 +366,10 @@
   "@librarySourcesEmptyBody": {
     "description": "Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06)."
   },
+  "librarySourcesClose": "Close the library folders",
+  "@librarySourcesClose": {
+    "description": "Closes the full-screen library-folders dialog. Its own word rather than the generic Cancel, which a folder's own row now uses for abandoning a run — the two must never read as the same action."
+  },
   "librarySourcesAdd": "Add a folder",
   "@librarySourcesAdd": {
     "description": "The action that opens the platform's native folder picker (FR-LB-01)."
@@ -416,9 +420,9 @@
   "@dismiss": {
     "description": "Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action."
   },
-  "librarySourcesIndex": "Index",
-  "@librarySourcesIndex": {
-    "description": "The action that starts a scan of a registered folder (UC-06 main flow step 1)."
+  "librarySourcesRescan": "Rescan",
+  "@librarySourcesRescan": {
+    "description": "The per-folder action offered by a row with no run in flight and nothing left over from one — its job now that the first scan after registering happens on its own (UC-06)."
   },
   "librarySourcesIndexing": "Scanning…",
   "@librarySourcesIndexing": {
@@ -452,9 +456,9 @@
   "@librarySourcesRunFailed": {
     "description": "UC-06: the core reports the run as failed."
   },
-  "librarySourcesRunInterrupted": "The scan did not finish, because Alexandria was closed while it was running.",
-  "@librarySourcesRunInterrupted": {
-    "description": "UC-06 AF-05: the run was interrupted. Its outcome is read at the next launch rather than lost."
+  "librarySourcesRunPaused": "The scan is paused. It can be resumed from where it left off.",
+  "@librarySourcesRunPaused": {
+    "description": "UC-06 AF-05: a run the application was closed on comes back paused, not failed — it is resumable, which is a different fact from an interruption and deserves different words."
   },
   "librarySourcesRunRefused": "A scan of this folder is already running.",
   "@librarySourcesRunRefused": {
@@ -489,9 +493,33 @@
   "@librarySourcesUnregisterRefused": {
     "description": "UC-08 AF-02: a folder with a run in flight is refused until the run settles."
   },
-  "librarySourcesRefresh": "Refresh the catalog",
-  "@librarySourcesRefresh": {
-    "description": "The action that re-checks everything already cataloged, across every folder at once (UC-07 main flow step 1, FR-LB-06)."
+  "librarySourcesRecheck": "Re-check library",
+  "@librarySourcesRecheck": {
+    "description": "The catalog-wide action that re-checks everything already cataloged, across every folder at once — distinct from a per-folder Rescan (UC-07 main flow step 1, FR-LB-06)."
+  },
+  "librarySourcesPause": "Pause",
+  "@librarySourcesPause": {
+    "description": "Pauses a folder's own running scan from its row (FR-FC-28)."
+  },
+  "librarySourcesResume": "Resume",
+  "@librarySourcesResume": {
+    "description": "Picks a folder's own paused scan back up from its row (FR-FC-29)."
+  },
+  "librarySourcesCancelRun": "Cancel",
+  "@librarySourcesCancelRun": {
+    "description": "Abandons a folder's own scan for good from its row (FR-FC-30). Terminal and not resumable, unlike pause, which is why it confirms first."
+  },
+  "librarySourcesCancelRunTitle": "Cancel this scan?",
+  "@librarySourcesCancelRunTitle": {
+    "description": "Title of the cancel-run confirmation (FR-FC-30, FR-UX-10)."
+  },
+  "librarySourcesCancelRunConfirm": "This scan cannot be resumed once cancelled. Everything it has already cataloged stays in your library.",
+  "@librarySourcesCancelRunConfirm": {
+    "description": "Body of the cancel-run confirmation: states that cancelling is final, and that what the run already cataloged is not undone."
+  },
+  "librarySourcesCancelRunAction": "Cancel the scan",
+  "@librarySourcesCancelRunAction": {
+    "description": "The confirming action on the cancel-run confirmation, distinct from the dialog's own decline button so the two are never mistaken for each other."
   },
   "librarySourcesRefreshing": "Re-checking the catalog…",
   "@librarySourcesRefreshing": {

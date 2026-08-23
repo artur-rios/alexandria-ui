@@ -181,7 +181,7 @@ void main() {
           tester.element(find.byType(LibrarySourcesScreen)),
         );
 
-        await tester.tap(find.text(l10n.librarySourcesIndex));
+        await tester.tap(find.text(l10n.librarySourcesRescan));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
@@ -199,7 +199,7 @@ void main() {
         tester.element(find.byType(LibrarySourcesScreen)),
       );
 
-      await tester.tap(find.text(l10n.librarySourcesIndex));
+      await tester.tap(find.text(l10n.librarySourcesRescan));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
@@ -218,7 +218,7 @@ void main() {
         final l10n = AppLocalizations.of(
           tester.element(find.byType(LibrarySourcesScreen)),
         );
-        await tester.tap(find.text(l10n.librarySourcesIndex));
+        await tester.tap(find.text(l10n.librarySourcesRescan));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 

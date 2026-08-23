@@ -293,6 +293,9 @@ class AppLocalizationsPt extends AppLocalizations {
       'Adicione uma pasta do seu disco e o Alexandria vai catalogar o que houver dentro dela. Nada é movido, copiado ou alterado.';
 
   @override
+  String get librarySourcesClose => 'Fechar as pastas da biblioteca';
+
+  @override
   String get librarySourcesAdd => 'Adicionar uma pasta';
 
   @override
@@ -324,7 +327,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get dismiss => 'Dispensar';
 
   @override
-  String get librarySourcesIndex => 'Indexar';
+  String get librarySourcesRescan => 'Reanalisar';
 
   @override
   String get librarySourcesIndexing => 'Analisando…';
@@ -343,8 +346,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get librarySourcesRunFailed => 'A análise não foi concluída.';
 
   @override
-  String get librarySourcesRunInterrupted =>
-      'A análise não foi concluída, porque o Alexandria foi fechado enquanto ela estava em andamento.';
+  String get librarySourcesRunPaused =>
+      'A análise está pausada. Ela pode ser retomada de onde parou.';
 
   @override
   String get librarySourcesRunRefused =>
@@ -374,7 +377,26 @@ class AppLocalizationsPt extends AppLocalizations {
       'Esta pasta está sendo analisada. Ela pode ser removida quando a análise terminar.';
 
   @override
-  String get librarySourcesRefresh => 'Atualizar o catálogo';
+  String get librarySourcesRecheck => 'Reverificar biblioteca';
+
+  @override
+  String get librarySourcesPause => 'Pausar';
+
+  @override
+  String get librarySourcesResume => 'Retomar';
+
+  @override
+  String get librarySourcesCancelRun => 'Cancelar';
+
+  @override
+  String get librarySourcesCancelRunTitle => 'Cancelar esta análise?';
+
+  @override
+  String get librarySourcesCancelRunConfirm =>
+      'Esta análise não pode ser retomada depois de cancelada. Tudo o que ela já catalogou continua na sua biblioteca.';
+
+  @override
+  String get librarySourcesCancelRunAction => 'Cancelar a análise';
 
   @override
   String get librarySourcesRefreshing => 'Reverificando o catálogo…';

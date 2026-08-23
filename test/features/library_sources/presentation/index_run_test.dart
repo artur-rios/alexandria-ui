@@ -67,7 +67,7 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(LibrarySourcesScreen)),
     );
-    await tester.tap(find.text(l10n.librarySourcesIndex));
+    await tester.tap(find.text(l10n.librarySourcesRescan));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
   }
@@ -81,14 +81,17 @@ void main() {
           tester.element(find.byType(LibrarySourcesScreen)),
         );
 
-        expect(find.text(l10n.librarySourcesIndex), findsOneWidget);
+        expect(find.text(l10n.librarySourcesRescan), findsOneWidget);
       },
     );
 
     testWidgets('GivenAScanIsStarted_WhenItIsRunning_ThenTheScreenSaysSo', (
       tester,
     ) async {
-      // FR-LB-07: the run is visible and the interface stays usable.
+      // FR-LB-07: the run is visible and the interface stays usable. Once
+      // running, the row itself offers Pause (Task 8) rather than only
+      // saying so — a folder's row now says what is happening *and* what
+      // can be done about it.
       final opened = await openScreen(
         tester,
         gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
@@ -99,7 +102,7 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(LibrarySourcesScreen)),
       );
-      expect(find.text(l10n.librarySourcesIndexing), findsOneWidget);
+      expect(find.byTooltip(l10n.librarySourcesPause), findsOneWidget);
 
       // Disposed here rather than at teardown: a run still in flight is still
       // being polled, and the widget tree is torn down before the provider
@@ -238,7 +241,7 @@ void main() {
       },
     );
 
-    testWidgets('GivenAPausedRun_WhenTheScreenOpens_ThenItReadsAsInterrupted', (
+    testWidgets('GivenAPausedRun_WhenTheScreenOpens_ThenItReadsAsResumable', (
       tester,
     ) async {
       // Not a failure: the owner closed the application, and saying it
@@ -259,7 +262,7 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(LibrarySourcesScreen)),
       );
-      expect(find.text(l10n.librarySourcesRunInterrupted), findsOneWidget);
+      expect(find.text(l10n.librarySourcesRunPaused), findsOneWidget);
     });
   });
 
