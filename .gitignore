@@ -71,3 +71,6 @@ native/linux/*.so
 # Dart's convention is that a package does not commit one. Two lock files
 # resolving the same dependencies is one of them going stale.
 tools/alexandria_lints/pubspec.lock
+
+# Subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/
