@@ -2867,6 +2867,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Normal'**
   String get activityPriorityNormal;
+
+  /// FR-FC-29: clears a failed run's report from the strip. The strip's own rather than the text editor's, so that renaming one does not silently change the other.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get activityDismiss;
 }
 
 class _AppLocalizationsDelegate

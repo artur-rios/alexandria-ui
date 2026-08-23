@@ -1663,4 +1663,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activityPriorityNormal => 'Normal';
+
+  @override
+  String get activityDismiss => 'Dismiss';
 }

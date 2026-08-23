@@ -367,6 +367,84 @@ void main() {
       },
     );
 
+    // The strip is one row, so an outcome and a run in flight compete for it.
+    // A failure has to win: the run is still running and comes back the moment
+    // the failure is dismissed, but a failure that loses is overwritten by the
+    // next run to finish and is gone for good.
+    testWidgets(
+      'GivenAFailedRunAndAnotherStillRunning_WhenBuilt_ThenTheFailureIsShown',
+      (tester) async {
+        await pumpStrip(tester, runs: [secondRun], justFinished: failedRun);
+
+        expect(find.textContaining('failed'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenAFailedRunAndTwoStillRunning_WhenBuilt_ThenTheFailureIsShown',
+      (tester) async {
+        // The aggregate row would otherwise have taken the row first.
+        await pumpStrip(
+          tester,
+          runs: [processingRun, secondRun],
+          justFinished: failedRun,
+        );
+
+        expect(find.textContaining('failed'), findsOneWidget);
+        expect(find.textContaining('2 folders'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenAFailureOverARunningRun_WhenDismissed_ThenTheRunIsShownAgain',
+      (tester) async {
+        final controller = RecordingActiveRunsController(
+          const ActiveRunsState(runs: [secondRun], justFinished: failedRun),
+        );
+        await pumpStrip(
+          tester,
+          runs: [secondRun],
+          justFinished: failedRun,
+          controller: controller,
+        );
+
+        await tester.tap(find.text('Dismiss'));
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('failed'), findsNothing);
+        expect(find.byTooltip('Pause'), findsOneWidget);
+      },
+    );
+
+    // A completion is not urgent and clears itself, so it does not get to
+    // hide work that is still going.
+    testWidgets(
+      'GivenACompletedRunAndAnotherStillRunning_WhenBuilt_ThenTheRunIsShown',
+      (tester) async {
+        await pumpStrip(tester, runs: [secondRun], justFinished: completedRun);
+
+        expect(find.textContaining('Finished'), findsNothing);
+        expect(find.byTooltip('Pause'), findsOneWidget);
+      },
+    );
+
+    // Cancelling is the owner's own doing. Reporting it back is not news, and
+    // leaving it in the state would keep the strip open on it.
+    testWidgets('GivenACancelledRun_WhenBuilt_ThenItIsClearedWithoutAWord', (
+      tester,
+    ) async {
+      final controller = await pumpStrip(
+        tester,
+        justFinished: completedRun.copyWith(status: IndexRunStatus.cancelled),
+      );
+
+      expect(tester.getSize(find.byType(BackgroundActivityStrip)).height, 0);
+
+      await tester.pumpAndSettle();
+
+      expect(controller.calls, ['dismiss']);
+    });
+
     // The timer belongs to the widget, so it has to die with it.
     testWidgets(
       'GivenACompletedRun_WhenTheStripIsDisposed_ThenNoTimerLingers',
@@ -522,6 +600,12 @@ class RecordingActiveRunsController extends ActiveRunsController {
   // and cancel.
   @override
   Future<void> refresh() async {}
+
+  @override
+  void dismissFinished() {
+    calls.add('dismiss');
+    super.dismissFinished();
+  }
 
   @override
   Future<void> pause(String runId) async => calls.add('pause:$runId');

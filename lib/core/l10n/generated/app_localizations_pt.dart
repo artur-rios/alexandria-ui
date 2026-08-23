@@ -1667,4 +1667,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get activityPriorityNormal => 'Normal';
+
+  @override
+  String get activityDismiss => 'Dispensar';
 }

@@ -460,5 +460,6 @@
   "activityCancel": "Cancelar",
   "activityViewAll": "Ver",
   "activityPriorityLow": "Baixa",
-  "activityPriorityNormal": "Normal"
+  "activityPriorityNormal": "Normal",
+  "activityDismiss": "Dispensar"
 }

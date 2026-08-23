@@ -45,6 +45,21 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
 
     ref.onDispose(_stopPolling);
 
+    // FR-FC-29: a run the core was still working on when the application last
+    // closed comes back paused, and the offer to pick it back up is the strip
+    // appearing in its paused state. Nothing else asks for that first reading
+    // — polling cannot bootstrap itself, because it only starts once a running
+    // run is known — so the controller takes it itself rather than depending
+    // on a widget's initState, which would make the first read of core state
+    // a question of which screen mounted first.
+    //
+    // Deferred by a microtask so the state this build returns is in place
+    // before the read can replace it.
+    Future.microtask(() {
+      if (!ref.mounted) return;
+      unawaited(refresh());
+    });
+
     return const ActiveRunsState();
   }
 

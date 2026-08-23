@@ -55,6 +55,25 @@ void main() {
     );
   });
 
+  // The first reading is the controller's own job. Nothing else asks for it —
+  // polling cannot bootstrap itself, because it only starts once a running run
+  // is known — and leaving it to whichever widget happens to mount first would
+  // make the application's first read of core state a question of navigation.
+  test(
+    'GivenAPausedRunAtLaunch_WhenTheControllerIsBuilt_ThenItReadsUnasked',
+    () async {
+      final container = harness(gateway: FakeGateway(active: [pausedRun]));
+
+      container.read(activeRunsControllerProvider);
+      await pumpEventQueue();
+
+      expect(
+        container.read(activeRunsControllerProvider).runs.single.status,
+        IndexRunStatus.paused,
+      );
+    },
+  );
+
   // A paused run makes no progress, so polling it changes nothing. Its state
   // moves only when the owner acts, and the action's own response updates
   // the strip.

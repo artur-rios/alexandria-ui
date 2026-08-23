@@ -31,9 +31,18 @@ class BackgroundActivityStrip extends ConsumerStatefulWidget {
   const BackgroundActivityStrip({super.key});
 
   /// The height the strip takes when there is nothing to report.
+  ///
+  /// Zero rather than a reserved sliver: the playback bar below holds the
+  /// bottom of the shell from the first frame because a track can start at any
+  /// moment, but nobody is owed a strip they will never see. Anyone not
+  /// indexing gets the shell exactly as it was.
   static const double collapsedHeight = 0;
 
   /// The height of the row, in logical pixels.
+  ///
+  /// One line of text with its controls, and deliberately less than the
+  /// playback bar's 64: this reports on work the owner set going and left, not
+  /// something they are operating.
   static const double expandedHeight = 40;
 
   @override
@@ -70,14 +79,10 @@ class _BackgroundActivityStripState
   void initState() {
     super.initState();
 
-    // FR-FC-29: a run the core was still working on when the application last
-    // closed comes back paused, and the offer to pick it back up is this strip
-    // appearing in its paused state. Asked for here rather than in the shell,
-    // because the strip is the only thing that shows the answer.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      unawaited(ref.read(activeRunsControllerProvider.notifier).refresh());
-    });
+    // Every later reading arrives through the listener in [build], but the
+    // first one is already in hand: a run can finish before this widget
+    // exists, and a listener only fires on what changes after it is attached.
+    _syncDismissal(ref.read(activeRunsControllerProvider).justFinished);
   }
 
   @override
@@ -92,15 +97,13 @@ class _BackgroundActivityStripState
     final theme = Theme.of(context);
     final state = ref.watch(activeRunsControllerProvider);
 
-    // Watched rather than read out of [state] here, because the re-pacing
-    // notice clears on a *transition* — the restarted segment being seen to
-    // move — and a build alone is not one.
-    ref.listen(
-      activeRunsControllerProvider,
-      (_, next) => _followRepacing(next),
-    );
-
-    _syncDismissal(state.justFinished);
+    // Both of these act on a *change* rather than on a frame, and neither
+    // belongs in a build: one starts and cancels a timer, the other calls
+    // setState. A listener is where a side effect of a new reading goes.
+    ref.listen(activeRunsControllerProvider, (_, next) {
+      _followRepacing(next);
+      _syncDismissal(next.justFinished);
+    });
 
     final row = _row(state);
 
@@ -126,8 +129,25 @@ class _BackgroundActivityStripState
 
   /// What the strip has to say, or null when it has nothing.
   Widget? _row(ActiveRunsState state) {
-    // Outstanding work outranks a finished run's outcome: the outcome is news
-    // about something that is over, and the strip is one row.
+    // A failure outranks everything, including work still in flight. The strip
+    // is one row, so with two folders indexing and one of them failing, the
+    // other ordering drops the failure on the floor — and a failure the owner
+    // never sees is the outcome this whole row exists to prevent. The run it
+    // hides is still running, still polled, and back the moment the failure is
+    // dismissed; the failure, once overwritten, is gone for good.
+    if (state.justFinished case final finished?
+        when finished.status == IndexRunStatus.failed) {
+      return _OutcomeRow(
+        run: finished,
+        failed: true,
+        onDismiss: ref
+            .read(activeRunsControllerProvider.notifier)
+            .dismissFinished,
+      );
+    }
+
+    // Outstanding work outranks every *other* outcome: a completion is news
+    // about something that is over, and it clears itself either way.
     if (state.runs.length > 1) return _AggregateRow(runs: state.runs);
 
     if (state.single case final run?) {
@@ -152,23 +172,14 @@ class _BackgroundActivityStripState
       );
     }
 
-    if (state.justFinished case final finished?) {
-      return switch (finished.status) {
-        IndexRunStatus.complete => _OutcomeRow(run: finished, failed: false),
-        IndexRunStatus.failed => _OutcomeRow(
-          run: finished,
-          failed: true,
-          onDismiss: ref
-              .read(activeRunsControllerProvider.notifier)
-              .dismissFinished,
-        ),
-        // A cancelled run is the owner's own doing, reported back to them.
-        // [_syncDismissal] clears it on the next turn rather than announcing
-        // it as news.
-        _ => null,
-      };
+    if (state.justFinished case final finished?
+        when finished.status == IndexRunStatus.complete) {
+      return _OutcomeRow(run: finished, failed: false);
     }
 
+    // Anything else that dropped off the list — a cancelled run — is the
+    // owner's own doing rather than news, and [_syncDismissal] clears it on
+    // the next turn instead of announcing it.
     return null;
   }
 
@@ -506,7 +517,7 @@ class _OutcomeRow extends StatelessWidget {
           ),
         ),
         if (onDismiss case final dismiss?)
-          TextButton(onPressed: dismiss, child: Text(l10n.editorDismiss)),
+          TextButton(onPressed: dismiss, child: Text(l10n.activityDismiss)),
         const SizedBox(width: AppSpacing.sm),
       ],
     );
@@ -595,7 +606,5 @@ String _formatEstimate(BuildContext context, Duration remaining) {
     return l10n.activityDurationMinutes(remaining.inMinutes);
   }
 
-  final hours = (remaining.inMinutes / 60).round();
-
-  return l10n.activityDurationHours(hours < 1 ? 1 : hours);
+  return l10n.activityDurationHours((remaining.inMinutes / 60).round());
 }
