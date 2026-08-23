@@ -2068,5 +2068,148 @@
   "libraryToolsOpen": "Library tools",
   "@libraryToolsOpen": {
     "description": "UC-37 main flow step 1: the navigation panel entry that reaches the library-wide areas — sources, collections, watchlists, reading lists, deleted items, and the missing-files review."
+  },
+  "activityBarLabel": "Background indexing",
+  "@activityBarLabel": {
+    "description": "FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now."
+  },
+  "activityDiscovering": "Scanning folders…",
+  "@activityDiscovering": {
+    "description": "FR-FC-28: a run still walking the folder tree has no total yet, so this stands where the counts would be. A percentage here would be invented."
+  },
+  "activityProgress": "{processed} of {total}",
+  "@activityProgress": {
+    "description": "FR-FC-28: how far a processing run has got, in entries rather than a percentage, because the counts are what the owner recognizes.",
+    "placeholders": {
+      "processed": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "activityRemaining": "about {duration} left",
+  "@activityRemaining": {
+    "description": "FR-FC-28: how long the run has left. Shown only when the observed rate is steady enough to extrapolate from — see estimateRemaining.",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDurationMinutes": "{count, plural, =0{less than a minute} =1{1 minute} other{{count} minutes}}",
+  "@activityDurationMinutes": {
+    "description": "An estimate of under an hour, spelled in whole minutes rather than as a clock reading, because it is an approximation and reads as one.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityDurationHours": "{count, plural, =1{1 hour} other{{count} hours}}",
+  "@activityDurationHours": {
+    "description": "An estimate of an hour or more, rounded to whole hours — minutes are false precision at that distance.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityPaused": "Paused — {processed} of {total}",
+  "@activityPaused": {
+    "description": "FR-FC-29: a paused run keeps the strip on screen, which is how a resume is offered at launch.",
+    "placeholders": {
+      "processed": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "activityAggregate": "Indexing {count} folders — {processed} of {total}",
+  "@activityAggregate": {
+    "description": "FR-FC-29: several runs at once are one line rather than one line each, because the strip is forty pixels of the shell and not a screen.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "processed": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "activityAggregateDiscovering": "Indexing {count} folders",
+  "@activityAggregateDiscovering": {
+    "description": "FR-FC-29: the aggregate line while any of the runs is still discovering. Summing only the totals the core has given would report a total that is not the work outstanding.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activityComplete": "Finished indexing {folder}",
+  "@activityComplete": {
+    "description": "FR-FC-29: a run that dropped off the active list having finished. Dismisses itself after four seconds.",
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "activityFailed": "Indexing {folder} failed",
+  "@activityFailed": {
+    "description": "FR-FC-29: a run that ended on an error. Waits to be dismissed — a failure that vanishes unseen is worse than a strip that lingers.",
+    "placeholders": {
+      "folder": {
+        "type": "String"
+      }
+    }
+  },
+  "activityCatalog": "the catalog",
+  "@activityCatalog": {
+    "description": "What a refresh run is working on. A refresh covers everything already cataloged rather than one folder, so it carries no root to name (UC-07)."
+  },
+  "activityRepacing": "Re-checking from the start at low speed",
+  "@activityRepacing": {
+    "description": "FR-FC-31: the core cannot re-pace a running run, so the strip pauses it and resumes it at the new pace — and a resume restarts the segment, so the bar returns to zero. Without this the reset reads as lost work."
+  },
+  "activityRepacingNormal": "Re-checking from the start at normal speed",
+  "@activityRepacingNormal": {
+    "description": "FR-FC-31: the same restart, going the other way. Re-pacing back to the normal pace resets the segment exactly as slowing it down does."
+  },
+  "activityPause": "Pause",
+  "@activityPause": {
+    "description": "FR-FC-28: stops the run where it is, keeping what it has already done."
+  },
+  "activityResume": "Resume",
+  "@activityResume": {
+    "description": "FR-FC-29: picks a paused run back up. At launch this is the whole of the resume offer — there is no modal."
+  },
+  "activityCancel": "Cancel",
+  "@activityCancel": {
+    "description": "FR-FC-30: abandons the run for good."
+  },
+  "activityViewAll": "View",
+  "@activityViewAll": {
+    "description": "FR-FC-29: with several runs outstanding the strip offers the library-folders screen instead of per-run controls, because one row has no room to say which run a button would act on."
+  },
+  "activityPriorityLow": "Low",
+  "@activityPriorityLow": {
+    "description": "FR-FC-31: deliberately slower, so a large scan competes less with browsing and playback."
+  },
+  "activityPriorityNormal": "Normal",
+  "@activityPriorityNormal": {
+    "description": "FR-FC-31: the configured default pace."
   }
 }

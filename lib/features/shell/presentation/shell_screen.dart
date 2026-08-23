@@ -10,6 +10,7 @@ import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
 import '../../organization/presentation/bookmarks_view.dart';
 import '../domain/shell_destination.dart';
+import 'background_activity_strip.dart';
 import 'playback_bar.dart';
 import 'shell_navigation_panel.dart';
 
@@ -43,6 +44,10 @@ class ShellScreen extends ConsumerWidget {
               ],
             ),
           ),
+          // FR-FC-28: whatever the core is indexing, above the playback bar
+          // and below everything else. It takes no height when nothing is
+          // running, so the shell is unchanged for anyone not indexing.
+          const BackgroundActivityStrip(),
           const Divider(height: 1, thickness: 1),
           const PlaybackBar(),
         ],

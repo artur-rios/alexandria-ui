@@ -2747,6 +2747,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Library tools'**
   String get libraryToolsOpen;
+
+  /// FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now.
+  ///
+  /// In en, this message translates to:
+  /// **'Background indexing'**
+  String get activityBarLabel;
+
+  /// FR-FC-28: a run still walking the folder tree has no total yet, so this stands where the counts would be. A percentage here would be invented.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning folders…'**
+  String get activityDiscovering;
+
+  /// FR-FC-28: how far a processing run has got, in entries rather than a percentage, because the counts are what the owner recognizes.
+  ///
+  /// In en, this message translates to:
+  /// **'{processed} of {total}'**
+  String activityProgress(int processed, int total);
+
+  /// FR-FC-28: how long the run has left. Shown only when the observed rate is steady enough to extrapolate from — see estimateRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'about {duration} left'**
+  String activityRemaining(String duration);
+
+  /// An estimate of under an hour, spelled in whole minutes rather than as a clock reading, because it is an approximation and reads as one.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{less than a minute} =1{1 minute} other{{count} minutes}}'**
+  String activityDurationMinutes(int count);
+
+  /// An estimate of an hour or more, rounded to whole hours — minutes are false precision at that distance.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hour} other{{count} hours}}'**
+  String activityDurationHours(int count);
+
+  /// FR-FC-29: a paused run keeps the strip on screen, which is how a resume is offered at launch.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused — {processed} of {total}'**
+  String activityPaused(int processed, int total);
+
+  /// FR-FC-29: several runs at once are one line rather than one line each, because the strip is forty pixels of the shell and not a screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Indexing {count} folders — {processed} of {total}'**
+  String activityAggregate(int count, int processed, int total);
+
+  /// FR-FC-29: the aggregate line while any of the runs is still discovering. Summing only the totals the core has given would report a total that is not the work outstanding.
+  ///
+  /// In en, this message translates to:
+  /// **'Indexing {count} folders'**
+  String activityAggregateDiscovering(int count);
+
+  /// FR-FC-29: a run that dropped off the active list having finished. Dismisses itself after four seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished indexing {folder}'**
+  String activityComplete(String folder);
+
+  /// FR-FC-29: a run that ended on an error. Waits to be dismissed — a failure that vanishes unseen is worse than a strip that lingers.
+  ///
+  /// In en, this message translates to:
+  /// **'Indexing {folder} failed'**
+  String activityFailed(String folder);
+
+  /// What a refresh run is working on. A refresh covers everything already cataloged rather than one folder, so it carries no root to name (UC-07).
+  ///
+  /// In en, this message translates to:
+  /// **'the catalog'**
+  String get activityCatalog;
+
+  /// FR-FC-31: the core cannot re-pace a running run, so the strip pauses it and resumes it at the new pace — and a resume restarts the segment, so the bar returns to zero. Without this the reset reads as lost work.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-checking from the start at low speed'**
+  String get activityRepacing;
+
+  /// FR-FC-31: the same restart, going the other way. Re-pacing back to the normal pace resets the segment exactly as slowing it down does.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-checking from the start at normal speed'**
+  String get activityRepacingNormal;
+
+  /// FR-FC-28: stops the run where it is, keeping what it has already done.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get activityPause;
+
+  /// FR-FC-29: picks a paused run back up. At launch this is the whole of the resume offer — there is no modal.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get activityResume;
+
+  /// FR-FC-30: abandons the run for good.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get activityCancel;
+
+  /// FR-FC-29: with several runs outstanding the strip offers the library-folders screen instead of per-run controls, because one row has no room to say which run a button would act on.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get activityViewAll;
+
+  /// FR-FC-31: deliberately slower, so a large scan competes less with browsing and playback.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get activityPriorityLow;
+
+  /// FR-FC-31: the configured default pace.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get activityPriorityNormal;
 }
 
 class _AppLocalizationsDelegate

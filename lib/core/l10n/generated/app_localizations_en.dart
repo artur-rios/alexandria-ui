@@ -1550,4 +1550,117 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryToolsOpen => 'Library tools';
+
+  @override
+  String get activityBarLabel => 'Background indexing';
+
+  @override
+  String get activityDiscovering => 'Scanning folders…';
+
+  @override
+  String activityProgress(int processed, int total) {
+    final intl.NumberFormat processedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String processedString = processedNumberFormat.format(processed);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$processedString of $totalString';
+  }
+
+  @override
+  String activityRemaining(String duration) {
+    return 'about $duration left';
+  }
+
+  @override
+  String activityDurationMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes',
+      one: '1 minute',
+      zero: 'less than a minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String activityDurationHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours',
+      one: '1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String activityPaused(int processed, int total) {
+    final intl.NumberFormat processedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String processedString = processedNumberFormat.format(processed);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Paused — $processedString of $totalString';
+  }
+
+  @override
+  String activityAggregate(int count, int processed, int total) {
+    final intl.NumberFormat processedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String processedString = processedNumberFormat.format(processed);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Indexing $count folders — $processedString of $totalString';
+  }
+
+  @override
+  String activityAggregateDiscovering(int count) {
+    return 'Indexing $count folders';
+  }
+
+  @override
+  String activityComplete(String folder) {
+    return 'Finished indexing $folder';
+  }
+
+  @override
+  String activityFailed(String folder) {
+    return 'Indexing $folder failed';
+  }
+
+  @override
+  String get activityCatalog => 'the catalog';
+
+  @override
+  String get activityRepacing => 'Re-checking from the start at low speed';
+
+  @override
+  String get activityRepacingNormal =>
+      'Re-checking from the start at normal speed';
+
+  @override
+  String get activityPause => 'Pause';
+
+  @override
+  String get activityResume => 'Resume';
+
+  @override
+  String get activityCancel => 'Cancel';
+
+  @override
+  String get activityViewAll => 'View';
+
+  @override
+  String get activityPriorityLow => 'Low';
+
+  @override
+  String get activityPriorityNormal => 'Normal';
 }
