@@ -5,7 +5,7 @@
 ### 1.1 Purpose
 
 This document captures **cross-cutting platform concerns** for **Alexandria
-Desktop** that fall outside the business domain modeled in the
+UI** that fall outside the business domain modeled in the
 [Vision Document](Vision%20Document.md),
 [System Requirements Document](System%20Requirements%20Document.md), and
 [Use Case Specification Document](Use%20Case%20Specification%20Document.md).
