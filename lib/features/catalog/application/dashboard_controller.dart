@@ -56,7 +56,11 @@ IndexRunSummary mostRecentRun(IndexRunsState runs) {
   if (finished.any((run) => run.status == IndexRunStatus.failed)) {
     return IndexRunSummary.failed;
   }
-  if (finished.any((run) => run.status == IndexRunStatus.interrupted)) {
+  // The core calls this `paused` now, not `interrupted` — a run the
+  // application was closed on is resumable, not abandoned. `IndexRunSummary`
+  // keeps its own `interrupted` word for now; a later task carries the
+  // renaming through the dashboard's copy.
+  if (finished.any((run) => run.status == IndexRunStatus.paused)) {
     return IndexRunSummary.interrupted;
   }
 

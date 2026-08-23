@@ -35,7 +35,8 @@ void main() {
 
     // The same layout the real source tree uses, because the rules decide from
     // the path: lib/features/<feature>/<layer>/.
-    for (final template in fixtures.listSync(recursive: true).whereType<File>()) {
+    for (final template
+        in fixtures.listSync(recursive: true).whereType<File>()) {
       final relative = p.relative(template.path, from: fixtures.path);
       final destination = File(
         p.join(

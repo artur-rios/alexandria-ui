@@ -4,13 +4,15 @@ part 'index_run.freezed.dart';
 
 /// Where a run is (System Requirements §4.8).
 ///
-/// The core's own vocabulary, not a reinterpretation of it: `interrupted` is
-/// what a run becomes when the application was closed while it was in flight
-/// (UC-06 AF-05), and collapsing it into `failed` would tell the owner
-/// something went wrong when nothing did.
+/// The core's own vocabulary. `interrupted` is gone: a run the application
+/// was closed on now comes back `paused` and resumable, which is a different
+/// fact and deserves a different word.
 enum IndexRunStatus {
-  /// The core is still scanning.
+  /// The core is scanning right now.
   running,
+
+  /// The run stopped and can be picked up where it left off.
+  paused,
 
   /// The run finished.
   complete,
@@ -18,24 +20,55 @@ enum IndexRunStatus {
   /// The run stopped on an error, which the run carries.
   failed,
 
-  /// The run did not finish, and nothing is running now (AF-05).
-  interrupted;
+  /// The run was abandoned. Terminal, and not resumable.
+  cancelled;
 
-  /// The status [raw] names, or [IndexRunStatus.failed] when the core answers
-  /// one this application does not know.
+  /// The status [raw] names, or [IndexRunStatus.failed] for one this
+  /// application does not know.
   ///
   /// Falling back to failed rather than throwing: a core that grows a status
-  /// must not make the outcome screen unreadable, and "something is wrong
-  /// with this run" is the safe reading of a word we cannot interpret.
+  /// must not make the screen unreadable, and "something is wrong with this
+  /// run" is the safe reading of a word we cannot interpret.
   static IndexRunStatus parse(String? raw) => switch (raw) {
     'running' => IndexRunStatus.running,
+    'paused' => IndexRunStatus.paused,
     'complete' => IndexRunStatus.complete,
-    'interrupted' => IndexRunStatus.interrupted,
+    'cancelled' => IndexRunStatus.cancelled,
     _ => IndexRunStatus.failed,
   };
 
-  /// Whether the core is still working on this run.
+  /// Whether the core is working on this run right now.
+  ///
+  /// A paused run is outstanding but not in flight — nothing is happening
+  /// until the owner resumes it, which is why polling follows this rather
+  /// than "is the run finished".
   bool get isInFlight => this == IndexRunStatus.running;
+
+  /// Whether the run is over for good.
+  bool get isTerminal =>
+      this == IndexRunStatus.complete ||
+      this == IndexRunStatus.failed ||
+      this == IndexRunStatus.cancelled;
+}
+
+/// Which half of a run is executing (FR-FC-28).
+///
+/// `discovering` has no total yet — the walk is still counting what it will
+/// have to do — so a percentage during it would be invented.
+enum IndexRunPhase {
+  /// Walking the folder tree to find out what there is to process.
+  discovering,
+
+  /// Working through the entries discovery counted.
+  processing;
+
+  /// The phase [raw] names, or null for a run carrying none — which is every
+  /// terminal run, and any run that never published one.
+  static IndexRunPhase? parse(String? raw) => switch (raw) {
+    'discovering' => IndexRunPhase.discovering,
+    'processing' => IndexRunPhase.processing,
+    _ => null,
+  };
 }
 
 /// Which operation opened a run (System Requirements §4.8).
@@ -80,6 +113,12 @@ abstract class IndexRunCounts with _$IndexRunCounts {
     @Default(0) int indexed,
     @Default(0) int skipped,
 
+    /// Entries already in the catalog when the walk reached them. Distinct
+    /// from `skipped`, which is an unsupported file type: a resumed run
+    /// re-walks and meets everything an earlier segment indexed, and folding
+    /// the two together would report thousands of files as skipped.
+    @Default(0) int alreadyCataloged,
+
     // A refresh run's three, plus the shared failure count (UC-07).
     @Default(0) int refreshed,
     @Default(0) int markedMissing,
@@ -106,6 +145,25 @@ abstract class IndexRun with _$IndexRun {
 
     /// Where the run is.
     required IndexRunStatus status,
+
+    /// Which half of the run is executing, or null once it is terminal.
+    IndexRunPhase? phase,
+
+    /// How many entries the run has to get through, once discovery has
+    /// counted them. Null while discovery is still counting.
+    int? total,
+
+    /// How many entries the run has finished with. Null for a run that never
+    /// published progress.
+    int? processed,
+
+    /// How long the run has spent *working* — elapsed time minus the time it
+    /// spent paused. The input to a remaining-time estimate; wall time would
+    /// overstate the work done by however long the owner left it paused.
+    @Default(0) int activeMillis,
+
+    /// When the run was paused, for a run that is paused right now.
+    DateTime? pausedAt,
 
     /// What it counted, once it has finished.
     IndexRunCounts? counts,

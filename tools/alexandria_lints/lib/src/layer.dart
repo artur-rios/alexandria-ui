@@ -34,7 +34,8 @@ Layer? layerOf(String path) {
 /// restricted by a layering rule; a relative URI is always inside.
 bool isInternal(String uri) =>
     !uri.startsWith('dart:') &&
-    (!uri.startsWith('package:') || uri.startsWith('package:alexandria_desktop/'));
+    (!uri.startsWith('package:') ||
+        uri.startsWith('package:alexandria_desktop/'));
 
 /// The layer an import URI points at, as written in the directive.
 ///

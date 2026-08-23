@@ -352,7 +352,11 @@ class _RunReport extends ConsumerWidget {
     final counts = run.counts;
 
     final summary = switch (run.status) {
-      IndexRunStatus.interrupted => l10n.librarySourcesRunInterrupted,
+      // The core calls this `paused` now, not `interrupted` — it is
+      // resumable, which "interrupted" never was. Task 8 rewrites this
+      // screen's copy and adds the resume control; this keeps it compiling
+      // and reading no worse than before in the meantime.
+      IndexRunStatus.paused => l10n.librarySourcesRunInterrupted,
       IndexRunStatus.failed => l10n.librarySourcesRunFailed,
       _ when counts == null => l10n.librarySourcesRunFailed,
       _ => l10n.librarySourcesRunComplete(

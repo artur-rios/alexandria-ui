@@ -238,30 +238,29 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenAnInterruptedRun_WhenTheScreenOpens_ThenItReadsAsInterrupted',
-      (tester) async {
-        // Not a failure: the owner closed the application, and saying it
-        // failed would report a problem that did not happen.
-        await openScreen(
-          tester,
-          gateway: FakeIndexGateway()
-            ..readOutcomes = [
-              finishedRun(
-                status: IndexRunStatus.interrupted,
-                counts: const IndexRunCounts(scanned: 40, indexed: 12),
-              ),
-            ],
-          registered: [source(lastRunId: 'a-recorded-run')],
-        );
-        await tester.pumpAndSettle();
+    testWidgets('GivenAPausedRun_WhenTheScreenOpens_ThenItReadsAsInterrupted', (
+      tester,
+    ) async {
+      // Not a failure: the owner closed the application, and saying it
+      // failed would report a problem that did not happen.
+      await openScreen(
+        tester,
+        gateway: FakeIndexGateway()
+          ..readOutcomes = [
+            finishedRun(
+              status: IndexRunStatus.paused,
+              counts: const IndexRunCounts(scanned: 40, indexed: 12),
+            ),
+          ],
+        registered: [source(lastRunId: 'a-recorded-run')],
+      );
+      await tester.pumpAndSettle();
 
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(LibrarySourcesScreen)),
-        );
-        expect(find.text(l10n.librarySourcesRunInterrupted), findsOneWidget);
-      },
-    );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+      expect(find.text(l10n.librarySourcesRunInterrupted), findsOneWidget);
+    });
   });
 
   for (final (name, locale) in [
