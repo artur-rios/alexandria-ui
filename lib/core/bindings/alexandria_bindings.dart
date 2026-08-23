@@ -1025,6 +1025,33 @@ class AlexandriaBindings {
   late final _alexandria_health_status_code = _alexandria_health_status_codePtr
       .asFunction<int Function()>();
 
+  /// Abandon a running or paused index or re-index run (UC-42 / FR-FC-28).
+  /// Terminal — a cancelled run is never resumed. `run_id` is the id
+  /// `alexandria_index_start` or `alexandria_index_refresh_start` returned;
+  /// `token` is the bearer auth token. Calls the same
+  /// `RunControlHandler::cancel` the HTTP route (Task 12) calls.
+  ///
+  /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
+  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02),
+  /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid, and
+  /// `RUN_ERR_INVALID_STATE` when the run is already terminal (`complete`,
+  /// `failed`, or already `cancelled`) — there is nothing left to abandon.
+  int alexandria_index_cancel(
+    ffi.Pointer<ffi.Char> run_id,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_index_cancel(run_id, token);
+  }
+
+  late final _alexandria_index_cancelPtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+        >
+      >('alexandria_index_cancel');
+  late final _alexandria_index_cancel = _alexandria_index_cancelPtr
+      .asFunction<int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
+
   /// Count of indexed files. For tests waiting for the background scan.
   int alexandria_index_count_files() {
     return _alexandria_index_count_files();
@@ -1049,8 +1076,20 @@ class AlexandriaBindings {
   late final _alexandria_index_count_missing =
       _alexandria_index_count_missingPtr.asFunction<int Function()>();
 
-  /// JSON array of `{"path","name","type","hash"}` for every indexed file, or a
-  /// NUL pointer on error. Caller must free it with `alexandria_free_string`.
+  /// JSON array of `{"path","name","type","hash","missingAt"}` for every
+  /// indexed file, or a NUL pointer on error. Caller must free it with
+  /// `alexandria_free_string`.
+  ///
+  /// `content_hash` is nullable (Task 3: indexing never computes one; Task 4:
+  /// neither does refresh) and is decoded as `Option<String>` — not `String` —
+  /// so a `NULL` row serializes as JSON `null` here, matching what the shared
+  /// `File`/`FileView` model emits over HTTP for the same column
+  /// (`GET /v1/files`, `catalog/model.rs`). Decoding it as a bare `String`
+  /// used to silently turn a SQL `NULL` into `""` instead (sqlx does not error
+  /// on that mismatch for this driver), which was a byte-for-byte parity
+  /// violation (FR-FC-24) for every indexed or refreshed file — not an edge
+  /// case, since neither indexing nor refresh have computed a hash since
+  /// Task 3/4.
   ffi.Pointer<ffi.Char> alexandria_index_files_json() {
     return _alexandria_index_files_json();
   }
@@ -1084,22 +1123,127 @@ class AlexandriaBindings {
   late final _alexandria_index_init = _alexandria_index_initPtr
       .asFunction<int Function(ffi.Pointer<ffi.Char>)>();
 
+  /// Pause a running index or re-index run where it stands, leaving it
+  /// resumable (UC-42 / FR-FC-28). `run_id` is the id `alexandria_index_start`
+  /// or `alexandria_index_refresh_start` returned; `token` is the bearer auth
+  /// token. Calls the same `RunControlHandler::pause` the HTTP route (Task 12)
+  /// calls.
+  ///
+  /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
+  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02),
+  /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid, and
+  /// `RUN_ERR_INVALID_STATE` when the run is not currently `running` — pausing
+  /// an already-paused or already-finished run is refused rather than silently
+  /// accepted.
+  int alexandria_index_pause(
+    ffi.Pointer<ffi.Char> run_id,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_index_pause(run_id, token);
+  }
+
+  late final _alexandria_index_pausePtr =
+      _lookup<
+        ffi.NativeFunction<
+          ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+        >
+      >('alexandria_index_pause');
+  late final _alexandria_index_pause = _alexandria_index_pausePtr
+      .asFunction<int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
+
   /// Start an asynchronous re-index/refresh of every cataloged path (UC-02).
   /// Takes only a token (no root — refresh touches everything cataloged) and
   /// returns a `IndexStartResult` with a `run_id` and `status` (parity with the
   /// HTTP `POST /v1/index/refresh` 202 body). The refresh runs in the background
   /// on the FFI runtime; read results via the accessor functions.
-  IndexStartResult alexandria_index_refresh_start(ffi.Pointer<ffi.Char> token) {
-    return _alexandria_index_refresh_start(token);
+  ///
+  /// `priority` is parsed exactly as `alexandria_index_start`'s is — see that
+  /// function's doc comment for the accepted spellings and the NULL/garbage
+  /// fallback.
+  IndexStartResult alexandria_index_refresh_start(
+    ffi.Pointer<ffi.Char> token,
+    ffi.Pointer<ffi.Char> priority,
+  ) {
+    return _alexandria_index_refresh_start(token, priority);
   }
 
   late final _alexandria_index_refresh_startPtr =
       _lookup<
-        ffi.NativeFunction<IndexStartResult Function(ffi.Pointer<ffi.Char>)>
+        ffi.NativeFunction<
+          IndexStartResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
       >('alexandria_index_refresh_start');
   late final _alexandria_index_refresh_start =
       _alexandria_index_refresh_startPtr
-          .asFunction<IndexStartResult Function(ffi.Pointer<ffi.Char>)>();
+          .asFunction<
+            IndexStartResult Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+            )
+          >();
+
+  /// Put a paused index or re-index run back to work (UC-42 / FR-FC-28).
+  /// `run_id` is the id `alexandria_index_start` or `alexandria_index_refresh_start`
+  /// returned; `token` is the bearer auth token. Returns the *same* `run_id` on
+  /// success — a resume does not mint a fresh run, it continues the one it was
+  /// given — wrapped in the same `IndexStartResult` `alexandria_index_start`
+  /// returns (parity of shape, not of meaning: `status` here is a `RUN_ERR_*`
+  /// code, because resume is part of run control, not of starting a fresh run).
+  ///
+  /// `RunControlHandler::resume` only records the state transition; it does not
+  /// walk anything. Spawning the walk is this function's job, exactly as
+  /// `alexandria_index_start` spawns its own — the handler is kept free of the
+  /// runtime so `execute` is always spawned by whichever transport owns one.
+  /// Which handler gets spawned depends on `RunResumed::kind`: an index run
+  /// resumes into `index_handler.execute(&root, run_id)`, a refresh into
+  /// `refresh_handler.execute(run_id)` (a refresh carries no root — it touches
+  /// everything cataloged). A resumed index run whose stored `root` is somehow
+  /// absent — it should never be, every row `RunKind::Index` writes carries one
+  /// — is refused with `RUN_ERR_OTHER` and logged at `error`, rather than
+  /// silently doing nothing: a caller told `RUN_OK` for a run that never
+  /// actually resumes would have no way to notice.
+  ///
+  /// `priority` re-paces the run (FR-FC-08 / FR-FC-33): `"low"` or `"normal"`,
+  /// the same case-sensitive spelling `alexandria_index_start` accepts. Unlike
+  /// there, NULL or an unrecognised string does **not** mean `"normal"` — it
+  /// means *keep the width this run already has*, which is what every caller
+  /// written before this parameter existed was asking for. Passing NULL is
+  /// therefore the backward-compatible call, and `"normal"` is a real request
+  /// to speed a low-priority run back up. See `parse_resume_priority`.
+  ///
+  /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
+  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02),
+  /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid, and
+  /// `RUN_ERR_INVALID_STATE` when the run is not currently `paused`.
+  IndexStartResult alexandria_index_resume(
+    ffi.Pointer<ffi.Char> run_id,
+    ffi.Pointer<ffi.Char> token,
+    ffi.Pointer<ffi.Char> priority,
+  ) {
+    return _alexandria_index_resume(run_id, token, priority);
+  }
+
+  late final _alexandria_index_resumePtr =
+      _lookup<
+        ffi.NativeFunction<
+          IndexStartResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_index_resume');
+  late final _alexandria_index_resume = _alexandria_index_resumePtr
+      .asFunction<
+        IndexStartResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
 
   /// Report an index or re-index run's status and outcome (UC-42 / FR-FC-28).
   /// `run_id` is the id `alexandria_index_start` or
@@ -1128,14 +1272,44 @@ class AlexandriaBindings {
             RunJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
           >();
 
+  /// Every outstanding (`running` or `paused`) index and re-index run at once,
+  /// each with live progress overlaid exactly as `alexandria_index_run_status_json`
+  /// overlays a single run (UC-42 / FR-FC-28). `token` is the bearer auth
+  /// token. On success `json` is a NUL-terminated JSON array of `CatalogRun`
+  /// bodies, newest first — byte-for-byte the same shape the HTTP
+  /// `GET /v1/index/runs?status=active` route (Task 12) returns (FR-FC-24 / NFR-09).
+  /// The caller must free `json` with `alexandria_free_string`.
+  ///
+  /// A caller with nothing outstanding gets `RUN_OK` and an empty JSON array,
+  /// not an error — an idle library is the normal case, not a failure.
+  ///
+  /// Returns `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02).
+  RunJsonResult alexandria_index_runs_active_json(ffi.Pointer<ffi.Char> token) {
+    return _alexandria_index_runs_active_json(token);
+  }
+
+  late final _alexandria_index_runs_active_jsonPtr =
+      _lookup<
+        ffi.NativeFunction<RunJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_index_runs_active_json');
+  late final _alexandria_index_runs_active_json =
+      _alexandria_index_runs_active_jsonPtr
+          .asFunction<RunJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
   /// Start an asynchronous index scan of `root`. Returns a `IndexStartResult`
   /// with a `run_id` and `status` (parity with HTTP 202 body). The scan runs in
   /// the background on the FFI runtime; read results via the accessor functions.
+  ///
+  /// `priority` is `"low"` or `"normal"` (case-sensitive, matching the HTTP
+  /// body's spelling exactly — FR-FC-24). NULL or any other string is treated
+  /// as `"normal"`: a client that cannot spell the value gets the safe default
+  /// rather than a rejected call.
   IndexStartResult alexandria_index_start(
     ffi.Pointer<ffi.Char> root,
     ffi.Pointer<ffi.Char> token,
+    ffi.Pointer<ffi.Char> priority,
   ) {
-    return _alexandria_index_start(root, token);
+    return _alexandria_index_start(root, token, priority);
   }
 
   late final _alexandria_index_startPtr =
@@ -1144,12 +1318,17 @@ class AlexandriaBindings {
           IndexStartResult Function(
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
           )
         >
       >('alexandria_index_start');
   late final _alexandria_index_start = _alexandria_index_startPtr
       .asFunction<
-        IndexStartResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+        IndexStartResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
       >();
 
   /// Add a book or comic to a reading list (UC-28 / FR-RL-02, FR-RL-03).
@@ -1807,6 +1986,15 @@ const int INDEX_OK = 0;
 
 /// Result of starting an index run. `run_id` is a NUL-terminated UUID string
 /// on success (empty on failure).
+///
+/// Shared with `alexandria_index_resume` (UC-42), which reuses this same
+/// struct shape for a call that is not starting anything new. That reuse
+/// changes what `status` means: from `alexandria_index_start` and
+/// `alexandria_index_refresh_start` it is one of the `INDEX_ERR_*`
+/// constants, where `4` is `INDEX_ERR_OTHER`; from `alexandria_index_resume`
+/// it is one of the `RUN_ERR_*` constants, where `4` is `RUN_ERR_NOT_FOUND`
+/// instead. Check which function returned the value before reading `status`
+/// against either family.
 final class IndexStartResult extends ffi.Struct {
   @ffi.Int()
   external int status;
@@ -1864,6 +2052,8 @@ const int READING_LIST_ERR_UNAUTHORIZED = 2;
 const int READING_LIST_OK = 0;
 
 const int RUN_ERR_INVALID_INPUT = 1;
+
+const int RUN_ERR_INVALID_STATE = 5;
 
 const int RUN_ERR_NOT_FOUND = 4;
 
