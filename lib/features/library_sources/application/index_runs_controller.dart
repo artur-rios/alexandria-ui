@@ -73,6 +73,18 @@ class IndexRunsController extends Notifier<IndexRunsState> {
         await _poll(root);
         _schedulePolling();
 
+        // ActiveRunsController learns what is running from its own build-time
+        // read and from polling that only starts once a running run is
+        // already known — nothing else tells it a run has just started. Every
+        // caller of startIndex (this screen, and a future Rescan action)
+        // would otherwise leave the strip showing stale state until
+        // something unrelated remounted or re-read that provider, so the
+        // refresh belongs here rather than in each caller. Awaited, not
+        // fire-and-forget: an unawaited read can still be in flight when a
+        // caller (a test's container, most concretely) disposes the ref it
+        // needs to finish.
+        await ref.read(activeRunsControllerProvider.notifier).refresh();
+
       case IndexStartFailed(:final failure):
         _reportStartFailure(root, failure);
     }

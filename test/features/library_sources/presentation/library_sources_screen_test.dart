@@ -1,5 +1,6 @@
 import 'package:alexandria_desktop/core/di/providers.dart';
 import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_desktop/features/library_sources/application/active_runs_controller.dart';
 import 'package:alexandria_desktop/features/library_sources/domain/folder_registration.dart';
 import 'package:alexandria_desktop/features/library_sources/domain/library_source.dart';
 import 'package:alexandria_desktop/features/library_sources/presentation/library_sources_screen.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_index_gateway.dart';
 import '../../../support/fake_library_sources.dart';
 import '../../../support/shell_harness.dart';
 
@@ -32,6 +34,8 @@ void main() {
     List<LibrarySource>? registered,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
+    FakeIndexGateway? gateway,
+    List<Override> extraOverrides = const [],
   }) async {
     final picker = FakeFolderPicker(path: picked);
     final store = InMemoryLibrarySourceStore(registered);
@@ -46,6 +50,11 @@ void main() {
         ),
         librarySourceStoreProvider.overrideWithValue(store),
         clockProvider.overrideWithValue(() => registeredAt),
+        if (gateway != null) indexGatewayProvider.overrideWithValue(gateway),
+        // Long enough that no timer fires during a test: a running index run
+        // is observed by calling refresh directly, not by waiting on a poll.
+        runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
+        ...extraOverrides,
       ],
     );
 
@@ -282,6 +291,72 @@ void main() {
     });
   });
 
+  group('a registered folder is indexed without a second click (UC-06)', () {
+    testWidgets(
+      'GivenAFolderIsRegistered_WhenAdded_ThenItIsIndexedWithoutASecondClick',
+      (tester) async {
+        final gateway = FakeIndexGateway();
+
+        await openScreen(tester, gateway: gateway);
+        await addFolder(tester);
+
+        expect(gateway.starts.single.root, '/home/owner/music');
+      },
+    );
+
+    // The negative is what catches a naive implementation: chaining on the
+    // call rather than on its result would index a folder the controller
+    // refused.
+    testWidgets('GivenARefusedFolder_WhenAdded_ThenNothingIsIndexed', (
+      tester,
+    ) async {
+      final gateway = FakeIndexGateway();
+
+      await openScreen(tester, gateway: gateway, exists: false);
+      await addFolder(tester);
+
+      expect(gateway.starts, isEmpty);
+    });
+
+    testWidgets('GivenThePickerIsCancelled_WhenAdded_ThenNothingIsIndexed', (
+      tester,
+    ) async {
+      final gateway = FakeIndexGateway();
+
+      await openScreen(tester, gateway: gateway, picked: null);
+      await addFolder(tester);
+
+      expect(gateway.starts, isEmpty);
+    });
+
+    // Task 6's review traced this gap end to end: `ActiveRunsController`
+    // only learns what is running from its own build-time read and from
+    // polling that starts once a running run is already known. Nothing told
+    // it a run had just started here, so the strip would not show a scan
+    // that began by registering a folder until something else happened to
+    // remount or re-read the provider.
+    testWidgets(
+      'GivenAFolderIsRegistered_WhenAdded_ThenActiveRunsAreRefreshed',
+      (tester) async {
+        final gateway = FakeIndexGateway();
+        final activeRuns = _RefreshCountingActiveRunsController();
+
+        await openScreen(
+          tester,
+          gateway: gateway,
+          extraOverrides: [
+            activeRunsControllerProvider.overrideWith(() => activeRuns),
+          ],
+        );
+        final before = activeRuns.refreshCalls;
+
+        await addFolder(tester);
+
+        expect(activeRuns.refreshCalls, greaterThan(before));
+      },
+    );
+  });
+
   group('themes, languages, and the keyboard', () {
     testWidgets('GivenTheScreen_WhenItOpens_ThenItsPrimaryActionIsFocused', (
       tester,
@@ -343,4 +418,22 @@ void main() {
       );
     }
   });
+}
+
+/// An [ActiveRunsController] that counts calls to [refresh] rather than
+/// reaching the gateway.
+///
+/// It stands in for the real controller because the thing under test here is
+/// whether registering a folder *asks* the active-runs controller to
+/// re-read, not what the core would answer if it did — that answer is
+/// [ActiveRunsController]'s own tests' subject.
+class _RefreshCountingActiveRunsController extends ActiveRunsController {
+  /// How many times [refresh] was called, including the one the controller
+  /// makes of itself when it is first built.
+  int refreshCalls = 0;
+
+  @override
+  Future<void> refresh() async {
+    refreshCalls++;
+  }
 }

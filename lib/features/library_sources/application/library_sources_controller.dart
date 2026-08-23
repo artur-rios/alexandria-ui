@@ -40,17 +40,24 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
   /// question belongs in the middle of this flow — the folder has been picked
   /// and probed, and the owner is deciding whether to keep going. It takes
   /// both folders because the warning names both.
-  Future<void> registerFolder({
+  ///
+  /// Returns the [LibrarySource] that was recorded, or `null` on every path
+  /// that changed nothing — the picker was cancelled, the verdict refused the
+  /// folder, or the overlap confirmation was declined. A `void` return forced
+  /// the caller to guess what had happened from state; the caller needs to
+  /// know exactly what was registered so it can start indexing it (UC-06)
+  /// without a second, separate click.
+  Future<LibrarySource?> registerFolder({
     required Future<bool> Function(String path, LibrarySource existing)
     onOverlapConfirmed,
   }) async {
-    if (state.registering) return;
+    if (state.registering) return null;
 
     final path = await _picker.pickFolder();
     // AF-01: the owner cancelled. Nothing is registered and nothing on the
     // screen changes — including any notice already there, which was about a
     // different attempt and is not answered by this one.
-    if (path == null) return;
+    if (path == null) return null;
 
     state = state.copyWith(
       registering: true,
@@ -80,7 +87,7 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
         refusedPath: path,
         conflictingSource: conflictingSource(path, state.sources),
       );
-      return;
+      return null;
     }
 
     if (verdict == FolderRegistrationVerdict.overlaps) {
@@ -89,15 +96,15 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
         // AF-04, cancelled: nothing is registered, and no refusal is recorded
         // either — the owner was asked and said no, which is not an error.
         state = state.copyWith(registering: false);
-        return;
+        return null;
       }
     }
 
-    await _record(path);
+    return _record(path);
   }
 
   /// Records [path] and persists the set (main flow steps 4 and 5).
-  Future<void> _record(String path) async {
+  Future<LibrarySource> _record(String path) async {
     final source = LibrarySource(
       path: path,
       label: defaultLabelFor(path),
@@ -109,6 +116,8 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
     _log.info('library folder registered: $path');
 
     state = state.copyWith(sources: sources, registering: false);
+
+    return source;
   }
 
   /// Removes [path] from the registered sources (UC-08 main flow step 4,

@@ -130,7 +130,7 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
   Future<void> _addFolder(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
 
-    await ref
+    final registered = await ref
         .read(librarySourcesControllerProvider.notifier)
         .registerFolder(
           onOverlapConfirmed: (path, existing) async {
@@ -146,6 +146,15 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
             );
           },
         );
+
+    // Registering a folder is a request to have it in the library, and a
+    // library folder that is not indexed is not in the library yet. Chained
+    // here rather than inside either controller so registration and runs
+    // stay separately testable.
+    if (registered == null) return;
+    await ref
+        .read(indexRunsControllerProvider.notifier)
+        .startIndex(registered.path);
   }
 }
 
