@@ -230,14 +230,14 @@ class CoreIsolate {
 
       // The session token and an optional priority in, a status and a run id
       // out. No root: a refresh covers the whole catalog rather than one
-      // folder (FR-LB-06). Priority is threaded through
-      // withNullableNativeString, not withNativeString: null must reach the
-      // core as nullptr, which the core reads as "normal" here — see
+      // folder (FR-LB-06). withNativeString already passes null through as
+      // nullptr (see its signature), which is what a null priority needs:
+      // the core reads an absent priority as "normal" here — see
       // alexandria_index_start's doc comment, which this call shares.
       'indexRefreshStart' => withNativeString(arguments.first! as String, (
         token,
       ) {
-        final result = withNullableNativeString(
+        final result = withNativeString(
           arguments[1] as String?,
           (priority) =>
               bindings.alexandria_index_refresh_start(token, priority),
@@ -336,14 +336,22 @@ class CoreIsolate {
       // and a run id out. The run id is a fixed-size array inside the struct
       // rather than an allocation, so it is read straight off and there is
       // nothing to free on the way back — only the strings passed in, which
-      // the nesting handles (IR-09, NFR-13). Priority goes through
-      // withNullableNativeString: null must reach the core as nullptr, not
-      // as the string "null", or a caller who never set a priority would
-      // silently be asking for something other than "normal".
+      // the nesting handles (IR-09, NFR-13).
+      //
+      // priority is passed through withNativeString like everything else
+      // here — its `String?` parameter already turns null into nullptr — and
+      // that distinction matters more for this argument than for most: a
+      // null priority must reach the core as a null pointer, never as the
+      // string "null" or as "", because the core reads an absent priority as
+      // "normal" (see alexandria_index_start's doc comment). An empty string
+      // happens to land in the same branch today, since the core treats any
+      // unrecognised value as absent, but that is a coincidence of the
+      // core's parsing, not a guarantee — passing "" on purpose for "no
+      // priority" would be relying on it.
       'indexStart' => withNativeString(
         arguments.first! as String,
         (root) => withNativeString(arguments[1]! as String, (token) {
-          final result = withNullableNativeString(
+          final result = withNativeString(
             arguments[2] as String?,
             (priority) =>
                 bindings.alexandria_index_start(root, token, priority),
@@ -389,14 +397,20 @@ class CoreIsolate {
       // (FR-FC-33). The C function takes (run_id, token, priority) — not the
       // Dart-level (runId, priority, token) order this operation's argument
       // list uses — so the nesting reorders on the way in; getting this wrong
-      // would pass a token as a priority and a priority as a token. Priority
-      // goes through withNullableNativeString for the same reason it does in
-      // indexStart: null must reach the core as nullptr, which here means
-      // "keep the run's current width" rather than "normal".
+      // would pass a token as a priority and a priority as a token.
+      //
+      // priority goes through withNativeString for the same reason it does
+      // in indexStart, with a sharper stake here: null must reach the core
+      // as a null pointer because the core reads an absent priority as
+      // *keep the run's current width* — deliberately not the same as
+      // "normal". An empty string lands in that same branch today only
+      // because the core treats any unrecognised value as absent, which is a
+      // coincidence of its parsing, not a contract; relying on it would let
+      // a plain resume silently re-pace a scan the owner had throttled.
       'indexResume' => withNativeString(
         arguments.first! as String,
         (runId) => withNativeString(arguments[2]! as String, (token) {
-          final result = withNullableNativeString(
+          final result = withNativeString(
             arguments[1] as String?,
             (priority) =>
                 bindings.alexandria_index_resume(runId, token, priority),

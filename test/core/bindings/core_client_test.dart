@@ -4,21 +4,25 @@ import 'package:alexandria_desktop/core/bindings/core_strings.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// [withNullableNativeString] is what stands between a null `priority` and a
-/// native pointer the core can read (task-2-brief.md, "what matters most").
+/// [withNativeString] is what stands between a null `priority` and a native
+/// pointer the core can read at the `indexStart`, `indexRefreshStart`, and
+/// `indexResume` call sites (`core_isolate.dart`).
 ///
 /// The core reads an absent priority as *keep the run's current width* on
-/// resume, deliberately not the same as `"normal"` — so a null must reach it
-/// as `nullptr`, never as the four-character string `"null"` an unguarded
-/// `toNativeUtf8()` on `value.toString()` would produce, and never silently
-/// coerced to `""` by a helper that cannot tell "absent" from "empty".
+/// resume (or "normal" on a fresh start) — deliberately not the same as a
+/// value the client chose — so a null must reach it as `nullptr`, never as
+/// the four-character string `"null"` an unguarded `toNativeUtf8()` on
+/// `value.toString()` would produce, and never conflated with an empty
+/// string: the two are different arguments, even though the core happens to
+/// treat both as "unrecognised" today. Relying on that coincidence would let
+/// a plain resume silently re-pace a scan the owner had throttled.
 void main() {
   test(
-    'GivenANullValue_WhenPassedToWithNullableNativeString_ThenTheBodyReceivesNullptr',
+    'GivenANullValue_WhenPassedToWithNativeString_ThenTheBodyReceivesNullptr',
     () {
       Pointer<Char>? captured;
 
-      withNullableNativeString(null, (pointer) {
+      withNativeString(null, (pointer) {
         captured = pointer;
         return null;
       });
@@ -34,11 +38,11 @@ void main() {
   );
 
   test(
-    'GivenANonNullValue_WhenPassedToWithNullableNativeString_ThenTheBodyReceivesItAsANativeString',
+    'GivenANonNullValue_WhenPassedToWithNativeString_ThenTheBodyReceivesItAsANativeString',
     () {
       String? readBack;
 
-      withNullableNativeString('low', (pointer) {
+      withNativeString('low', (pointer) {
         readBack = pointer.cast<Utf8>().toDartString();
         return null;
       });
@@ -48,12 +52,12 @@ void main() {
   );
 
   test(
-    'GivenAnEmptyString_WhenPassedToWithNullableNativeString_ThenTheBodyReceivesAnEmptyNativeStringNotNullptr',
+    'GivenAnEmptyString_WhenPassedToWithNativeString_ThenTheBodyReceivesAnEmptyNativeStringNotNullptr',
     () {
       Pointer<Char>? captured;
       String? readBack;
 
-      withNullableNativeString('', (pointer) {
+      withNativeString('', (pointer) {
         captured = pointer;
         readBack = pointer.cast<Utf8>().toDartString();
         return null;
@@ -65,8 +69,8 @@ void main() {
         reason:
             'an empty string is a different argument from an absent one, even '
             'though the core happens to treat both as "unrecognised" today — '
-            'relying on that coincidence is exactly what this helper exists to '
-            'avoid',
+            'relying on that coincidence is what would let a plain resume '
+            'silently re-pace a throttled scan',
       );
       expect(readBack, '');
     },
