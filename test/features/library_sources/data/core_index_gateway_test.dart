@@ -89,6 +89,21 @@ void main() {
 
       expect(fake.indexResumes.single.priority, 'low');
     });
+
+    // Carried forward from Task 3's review: nothing pinned that a null
+    // priority stays null at the wire rather than becoming "normal". A
+    // plain resume must not silently re-pace a scan the owner throttled.
+    test(
+      'GivenNoPriority_WhenResumed_ThenNullReachesTheCoreNotNormal',
+      () async {
+        final fake = FakeCoreClient(resumeRunId: 'r1');
+        final gateway = CoreIndexGateway(fake);
+
+        await gateway.resumeRun(runId: 'r1', credential: 't');
+
+        expect(fake.indexResumes.single.priority, isNull);
+      },
+    );
   });
 
   group('listActiveRuns', () {

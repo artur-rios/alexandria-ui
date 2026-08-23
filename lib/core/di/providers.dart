@@ -50,6 +50,8 @@ import '../../features/catalog/domain/library_type.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
 import '../../features/catalog/domain/file_name.dart';
+import '../../features/library_sources/application/active_runs_controller.dart';
+import '../../features/library_sources/application/active_runs_state.dart';
 import '../../features/library_sources/application/index_runs_controller.dart';
 import '../../features/library_sources/application/index_runs_state.dart';
 import '../../features/library_sources/application/index_session_activity.dart';
@@ -320,6 +322,15 @@ final runPollIntervalProvider = Provider<Duration>(
 final indexRunsControllerProvider =
     NotifierProvider<IndexRunsController, IndexRunsState>(
       IndexRunsController.new,
+    );
+
+/// Every run the core still has outstanding, as one list (FR-FC-29).
+///
+/// The single source of truth for what is running, read directly from the
+/// core's `listActiveRuns` rather than reconstructed from per-folder state.
+final activeRunsControllerProvider =
+    NotifierProvider<ActiveRunsController, ActiveRunsState>(
+      ActiveRunsController.new,
     );
 
 /// The core's catalog queries (UC-09).
