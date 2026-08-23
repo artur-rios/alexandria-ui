@@ -206,8 +206,8 @@ class FakeCoreClient implements CoreClient {
   /// How many files [indexCountFiles] reports (UC-07 AF-02).
   final int countFilesResult;
 
-  /// The tokens [indexRefreshStart] was called with, in order.
-  final List<String> indexRefreshStarts = [];
+  /// What [indexRefreshStart] was called with, in order.
+  final List<({String token, String? priority})> indexRefreshStarts = [];
 
   /// What [filesList] answers (UC-09).
   final CoreJsonResponse filesListResult;
@@ -369,15 +369,21 @@ class FakeCoreClient implements CoreClient {
     if (failOnIndexRefreshStart) {
       throw const CoreCallException('index refresh start call failed');
     }
-    indexRefreshStarts.add(token);
+    indexRefreshStarts.add((token: token, priority: priority));
     return indexRefreshStartResult;
   }
 
   /// What [indexPause] answers.
   int indexPauseResult = 0;
 
+  /// Whether [indexPause] throws instead of answering.
+  bool failOnIndexPause = false;
+
   /// What [indexCancel] answers.
   int indexCancelResult = 0;
+
+  /// Whether [indexCancel] throws instead of answering.
+  bool failOnIndexCancel = false;
 
   /// Every run id [indexPause] was called with, in order.
   final List<({String runId, String token})> indexPauses = [];
@@ -387,12 +393,18 @@ class FakeCoreClient implements CoreClient {
 
   @override
   Future<int> indexPause(String runId, String token) async {
+    if (failOnIndexPause) {
+      throw const CoreCallException('index pause call failed');
+    }
     indexPauses.add((runId: runId, token: token));
     return indexPauseResult;
   }
 
   @override
   Future<int> indexCancel(String runId, String token) async {
+    if (failOnIndexCancel) {
+      throw const CoreCallException('index cancel call failed');
+    }
     indexCancels.add((runId: runId, token: token));
     return indexCancelResult;
   }
@@ -400,6 +412,9 @@ class FakeCoreClient implements CoreClient {
   /// What [indexResume] answers. Defaults to resuming the same run
   /// [indexStartResult] mints, since a resume answers the id it was given.
   CoreRunStart? indexResumeResult;
+
+  /// Whether [indexResume] throws instead of answering.
+  bool failOnIndexResume = false;
 
   /// Every call [indexResume] received, in order — the priority included, so
   /// a test can assert a plain resume passed null rather than "normal".
@@ -412,6 +427,9 @@ class FakeCoreClient implements CoreClient {
     String? priority,
     String token,
   ) async {
+    if (failOnIndexResume) {
+      throw const CoreCallException('index resume call failed');
+    }
     indexResumes.add((runId: runId, priority: priority, token: token));
     return indexResumeResult ?? (status: 0, runId: runId);
   }
@@ -420,11 +438,22 @@ class FakeCoreClient implements CoreClient {
   /// the normal case.
   CoreJsonResponse indexRunsActiveResult = (status: 0, json: '[]');
 
+  /// Whether [indexRunsActive] throws instead of answering.
+  ///
+  /// A poll that cannot reach the core must not be mistaken for a core that
+  /// answered "nothing running" — this is what lets a test of that distinction
+  /// exist (Task 5: a failed poll keeps the runs the controller already knew
+  /// about rather than reporting no work on no evidence).
+  bool failOnIndexRunsActive = false;
+
   /// Every token [indexRunsActive] was called with, in order.
   final List<String> indexRunsActiveCalls = [];
 
   @override
   Future<CoreJsonResponse> indexRunsActive(String token) async {
+    if (failOnIndexRunsActive) {
+      throw const CoreCallException('index runs active call failed');
+    }
     indexRunsActiveCalls.add(token);
     return indexRunsActiveResult;
   }
