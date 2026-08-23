@@ -192,6 +192,31 @@ void main() {
         expect(find.text('Rescan'), findsOneWidget);
       });
 
+      // The row-affordance rule's whole point is that a state must never
+      // offer a control it cannot support — running and paused each have
+      // their own test above, but a terminal run had none. The
+      // implementation falls through to Rescan for anything that is not
+      // running or paused, and this is what would catch a reordering of
+      // those branches that let Resume, Pause or Cancel leak onto a run
+      // that is over for good.
+      for (final (name, status) in [
+        ('Complete', IndexRunStatus.complete),
+        ('Failed', IndexRunStatus.failed),
+        ('Cancelled', IndexRunStatus.cancelled),
+      ]) {
+        testWidgets(
+          'GivenARowWithA${name}Run_WhenBuilt_ThenOnlyRescanIsOffered',
+          (tester) async {
+            await pumpSourcesScreen(tester, runs: {'D:/Music': status});
+
+            expect(find.text('Rescan'), findsOneWidget);
+            expect(find.byTooltip('Resume'), findsNothing);
+            expect(find.byTooltip('Pause'), findsNothing);
+            expect(find.byTooltip('Cancel'), findsNothing);
+          },
+        );
+      }
+
       // Cancel is terminal and not resumable, so it asks first — this is what
       // catches a naive implementation that wires the button straight to the
       // gateway.

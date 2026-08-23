@@ -235,7 +235,15 @@ class _SourceList extends ConsumerWidget {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _RunControls(root: source.path, runs: runs),
+                    // Keyed by path: without a key, Flutter can reuse a
+                    // `_RunControlsState` — and the priority label it
+                    // holds — for a different row at the same index once
+                    // the list reorders (a folder added or removed).
+                    _RunControls(
+                      key: ValueKey(source.path),
+                      root: source.path,
+                      runs: runs,
+                    ),
                     const SizedBox(width: AppSpacing.sm),
                     _UnregisterAction(source: source),
                   ],
@@ -261,7 +269,7 @@ class _SourceList extends ConsumerWidget {
 /// makes a specific run addressable here once the activity strip collapses
 /// to an aggregate and stops naming any one of them.
 class _RunControls extends ConsumerStatefulWidget {
-  const _RunControls({required this.root, required this.runs});
+  const _RunControls({super.key, required this.root, required this.runs});
 
   final String root;
   final IndexRunsState runs;
@@ -363,6 +371,17 @@ class _RunControlsState extends ConsumerState<_RunControls> {
     setState(() => _priority = priority);
 
     await controller.pause(widget.root);
+
+    // The pause can be refused — most likely `RUN_ERR_INVALID_STATE`,
+    // because the run moved on between the menu opening and the owner
+    // choosing a pace. Reading the run back rather than assuming success is
+    // what stops a resume from being sent against a run pause never
+    // actually reached.
+    final paused =
+        ref.read(indexRunsControllerProvider).runFor(widget.root)?.status ==
+        IndexRunStatus.paused;
+    if (!paused) return;
+
     await controller.resume(widget.root, priority: priority);
   }
 }
