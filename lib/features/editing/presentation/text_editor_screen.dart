@@ -32,11 +32,7 @@ class TextEditorScreen extends ConsumerStatefulWidget {
     unawaited(
       ref
           .read(textEditorControllerProvider.notifier)
-          .open(
-            uuid: file.uuid,
-            name: file.name,
-            contentHash: file.contentHash,
-          ),
+          .open(uuid: file.uuid, name: file.name, stamp: file.stamp),
     );
 
     // UC-33 AF-04: while the editor has the file open, a deletion knows about

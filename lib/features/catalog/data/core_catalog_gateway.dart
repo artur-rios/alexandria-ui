@@ -315,6 +315,12 @@ class CoreCatalogGateway implements CatalogGateway {
       path: row['path'] as String? ?? '',
       type: type,
       contentHash: row['contentHash'] as String? ?? '',
+      // The change signal indexing actually maintains, unlike the hash above.
+      sizeBytes: row['sizeBytes'] as int?,
+      mtime: switch (row['mtime']) {
+        final String raw => DateTime.tryParse(raw),
+        _ => null,
+      },
       isDeleted: row['state'] == 'deleted',
       indexedAt: indexedAt == null ? null : DateTime.tryParse(indexedAt),
       missingAt: missingAt == null ? null : DateTime.tryParse(missingAt),

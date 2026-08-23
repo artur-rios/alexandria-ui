@@ -94,6 +94,13 @@ class CoreTextContentGateway implements TextContentGateway {
           path: row['path'] as String? ?? '',
           type: type,
           contentHash: row['contentHash'] as String? ?? '',
+          // What the next AF-05 check compares against: the refreshed record
+          // is the truth about what is on disk after this write.
+          sizeBytes: row['sizeBytes'] as int?,
+          mtime: switch (row['mtime']) {
+            final String raw => DateTime.tryParse(raw),
+            _ => null,
+          },
           indexedAt: indexedAt == null ? null : DateTime.tryParse(indexedAt),
           missingAt: missingAt == null ? null : DateTime.tryParse(missingAt),
         ),

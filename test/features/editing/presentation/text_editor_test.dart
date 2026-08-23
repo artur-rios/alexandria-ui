@@ -28,13 +28,17 @@ void main() {
   const uuid = '4c2b9e10-7d3a-4b62-8e15-2f6a9c0d3b41';
   const originalContent = '# Notes\n\nSomething.';
 
-  FileDetails aNote({String contentHash = 'hash-1', bool isDeleted = false}) =>
+  // No content hash, which is what indexing leaves on a file nobody has
+  // edited: what says whether it changed on disk is its size and mtime.
+  FileDetails aNote({int sizeBytes = 120, bool isDeleted = false}) =>
       FileDetails(
         file: aFile(
           uuid: uuid,
           name: 'Notes.md',
           type: LibraryType.text,
-          contentHash: contentHash,
+          contentHash: '',
+          sizeBytes: sizeBytes,
+          mtime: DateTime.utc(2026, 8, 23, 9),
         ),
         metadata: const {},
         isDeleted: isDeleted,
@@ -500,7 +504,7 @@ void main() {
 
   // AF-05: the file changed on disk since it was loaded.
   group('a file that changed underneath', () {
-    /// Opens the editor, then has the catalog report a different hash — which
+    /// Opens the editor, then has the catalog report a different size — which
     /// is what somebody else writing the file looks like from here.
     Future<(ProviderContainer, FakeTextContentGateway)> withDiskChange(
       WidgetTester tester,
@@ -508,7 +512,7 @@ void main() {
       final (container, content, catalog) = await openEditor(tester);
 
       catalog.details[uuid] = FileDetailsOutcome.read(
-        details: aNote(contentHash: 'hash-2'),
+        details: aNote(sizeBytes: 340),
       );
 
       return (container, content);
@@ -569,7 +573,7 @@ void main() {
       },
     );
 
-    // An unchanged hash is not a conflict, so nothing stands in the way.
+    // An unchanged stamp is not a conflict, so nothing stands in the way.
     testWidgets('GivenTheFileIsUntouched_WhenSaving_ThenNoWarningIsShown', (
       tester,
     ) async {

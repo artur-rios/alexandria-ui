@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_gateway.dart';
+import '../../catalog/domain/file_stamp.dart';
 import '../domain/text_content_gateway.dart';
 
 /// Where the editor is (UC-18, Use Case Specification §4.6).
@@ -131,11 +132,12 @@ class TextEditorState {
 /// typed is lost without being told: every failure path keeps the content on
 /// screen.
 class TextEditorController extends Notifier<TextEditorState> {
-  /// The content hash the file had when the content was read.
+  /// What the file looked like on disk when the content was read.
   ///
-  /// What AF-05 compares against: if the core reports a different one at save
-  /// time, something else wrote the file in between.
-  String _hashWhenLoaded = '';
+  /// What AF-05 compares against: if the core reports a different size or
+  /// mtime at save time, something else wrote the file in between. It used to
+  /// be the content hash, until indexing stopped computing one.
+  FileStamp _stampWhenLoaded = const FileStamp();
 
   @override
   TextEditorState build() => const TextEditorState();
@@ -144,9 +146,9 @@ class TextEditorController extends Notifier<TextEditorState> {
   Future<void> open({
     required String uuid,
     required String name,
-    required String contentHash,
+    required FileStamp stamp,
   }) async {
-    _hashWhenLoaded = contentHash;
+    _stampWhenLoaded = stamp;
     state = TextEditorState(uuid: uuid, name: name, stage: EditorStage.loading);
 
     final credential = ref.read(sessionControllerProvider.notifier).credential;
@@ -221,10 +223,10 @@ class TextEditorController extends Notifier<TextEditorState> {
     switch (outcome) {
       case TextContentWritten(:final file):
         // The record the core refreshed is the truth about what is on disk
-        // now, so the next save compares against its hash.
-        _hashWhenLoaded = file.contentHash;
+        // now, so the next save compares against its stamp.
+        _stampWhenLoaded = file.stamp;
         // FR-ME-05's neighbours: the listing and the detail view read the core
-        // again, because the record's hash and index time have moved.
+        // again, because the record's stamp and index time have moved.
         ref.invalidate(fileDetailsControllerProvider);
         ref.invalidate(listingControllerProvider);
         ref.invalidate(catalogSearchProvider);
@@ -262,7 +264,7 @@ class TextEditorController extends Notifier<TextEditorState> {
     final uuid = state.uuid;
     if (uuid == null) return;
 
-    await open(uuid: uuid, name: state.name, contentHash: await _hashNow(uuid));
+    await open(uuid: uuid, name: state.name, stamp: await _stampNow(uuid));
   }
 
   /// Clears whatever the editor was asking, leaving the content alone.
@@ -305,31 +307,41 @@ class TextEditorController extends Notifier<TextEditorState> {
     if (state.stage == EditorStage.clean) state = const TextEditorState();
   }
 
-  /// Whether the file's content hash has moved since it was read (AF-05).
+  /// Whether the file's stamp has moved since it was read (AF-05).
+  ///
+  /// Size and mtime, because that is the change signal the core maintains now
+  /// that indexing computes no content hash. Either one moving is a change:
+  /// an external edit that happens to land on the same byte count still moves
+  /// the mtime, and that is the common shape of one.
+  ///
+  /// It inherits the signal's blind spot, the same one re-indexing accepts: a
+  /// file edited in place to exactly the same length with its mtime preserved
+  /// reads as unchanged.
   ///
   /// An unanswerable question is not a conflict: the core is the authority,
   /// and blocking a save on a reading nobody could take would make the editor
-  /// unusable whenever the catalog hiccups.
+  /// unusable whenever the catalog hiccups. So an unreadable stamp on either
+  /// side answers "unchanged", exactly as the empty hash did before it.
   Future<bool> _changedOnDisk(String uuid) async {
-    final hash = await _hashNow(uuid);
-    if (hash.isEmpty || _hashWhenLoaded.isEmpty) return false;
+    final stamp = await _stampNow(uuid);
+    if (!stamp.isReadable || !_stampWhenLoaded.isReadable) return false;
 
-    return hash != _hashWhenLoaded;
+    return stamp != _stampWhenLoaded;
   }
 
-  /// The content hash the core reports for [uuid] now, or empty when it will
+  /// The stamp the core reports for [uuid] now, or an empty one when it will
   /// not say.
-  Future<String> _hashNow(String uuid) async {
+  Future<FileStamp> _stampNow(String uuid) async {
     final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return '';
+    if (credential == null) return const FileStamp();
 
     final outcome = await ref
         .read(catalogGatewayProvider)
         .fileDetails(uuid: uuid, credential: credential);
 
     return switch (outcome) {
-      FileDetailsRead(:final details) => details.file.contentHash,
-      FileDetailsFailed() => '',
+      FileDetailsRead(:final details) => details.file.stamp,
+      FileDetailsFailed() => const FileStamp(),
     };
   }
 }

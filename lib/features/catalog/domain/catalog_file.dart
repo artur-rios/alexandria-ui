@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'file_stamp.dart';
 import 'library_type.dart';
 
 part 'catalog_file.freezed.dart';
@@ -28,11 +29,21 @@ abstract class CatalogFile with _$CatalogFile {
 
     /// The core's hash of the file's contents.
     ///
-    /// Read-only, and the only way to tell that a file changed on disk since
-    /// it was read: the editor compares it before it overwrites (UC-18
-    /// AF-05). Empty when the core answered without one, which reads as
-    /// "cannot tell" rather than as "unchanged".
+    /// Read-only, and empty for most records: indexing no longer computes one,
+    /// so only a file this application has written since carries a hash. What
+    /// tells that a file changed on disk is [stamp], not this.
     @Default('') String contentHash,
+
+    /// The file's size on disk in bytes, as the core last saw it.
+    ///
+    /// Half of [stamp]. Nullable because a core that answers without it must
+    /// not make the record unreadable.
+    int? sizeBytes,
+
+    /// When the file was last modified on disk, as the core last saw it.
+    ///
+    /// The other half of [stamp], and nullable for the same reason.
+    DateTime? mtime,
 
     /// When the core last indexed this file.
     ///
@@ -66,4 +77,10 @@ abstract class CatalogFile with _$CatalogFile {
 
   /// Whether the last refresh could not find this file on disk.
   bool get isMissing => missingAt != null;
+
+  /// What this file looked like on disk when the core last read it.
+  ///
+  /// The change signal the editor compares before it overwrites (UC-33 AF-05),
+  /// now that a content hash is no longer generally computed.
+  FileStamp get stamp => FileStamp(sizeBytes: sizeBytes, mtime: mtime);
 }

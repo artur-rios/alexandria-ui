@@ -20,11 +20,17 @@ mixin _$CatalogFile {
  String get path;/// What the core classified it as.
  LibraryType get type;/// The core's hash of the file's contents.
 ///
-/// Read-only, and the only way to tell that a file changed on disk since
-/// it was read: the editor compares it before it overwrites (UC-18
-/// AF-05). Empty when the core answered without one, which reads as
-/// "cannot tell" rather than as "unchanged".
- String get contentHash;/// When the core last indexed this file.
+/// Read-only, and empty for most records: indexing no longer computes one,
+/// so only a file this application has written since carries a hash. What
+/// tells that a file changed on disk is [stamp], not this.
+ String get contentHash;/// The file's size on disk in bytes, as the core last saw it.
+///
+/// Half of [stamp]. Nullable because a core that answers without it must
+/// not make the record unreadable.
+ int? get sizeBytes;/// When the file was last modified on disk, as the core last saw it.
+///
+/// The other half of [stamp], and nullable for the same reason.
+ DateTime? get mtime;/// When the core last indexed this file.
 ///
 /// What a date sort orders on (UC-12, FR-CT-08). Nullable because a core
 /// that answers without it must not make the listing unreadable.
@@ -54,16 +60,16 @@ $CatalogFileCopyWith<CatalogFile> get copyWith => _$CatalogFileCopyWithImpl<Cata
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatalogFile&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.path, path) || other.path == path)&&(identical(other.type, type) || other.type == type)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.indexedAt, indexedAt) || other.indexedAt == indexedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.missingAt, missingAt) || other.missingAt == missingAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatalogFile&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.path, path) || other.path == path)&&(identical(other.type, type) || other.type == type)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.sizeBytes, sizeBytes) || other.sizeBytes == sizeBytes)&&(identical(other.mtime, mtime) || other.mtime == mtime)&&(identical(other.indexedAt, indexedAt) || other.indexedAt == indexedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.missingAt, missingAt) || other.missingAt == missingAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,name,path,type,contentHash,indexedAt,isDeleted,deletedAt,missingAt);
+int get hashCode => Object.hash(runtimeType,uuid,name,path,type,contentHash,sizeBytes,mtime,indexedAt,isDeleted,deletedAt,missingAt);
 
 @override
 String toString() {
-  return 'CatalogFile(uuid: $uuid, name: $name, path: $path, type: $type, contentHash: $contentHash, indexedAt: $indexedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, missingAt: $missingAt)';
+  return 'CatalogFile(uuid: $uuid, name: $name, path: $path, type: $type, contentHash: $contentHash, sizeBytes: $sizeBytes, mtime: $mtime, indexedAt: $indexedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, missingAt: $missingAt)';
 }
 
 
@@ -74,7 +80,7 @@ abstract mixin class $CatalogFileCopyWith<$Res>  {
   factory $CatalogFileCopyWith(CatalogFile value, $Res Function(CatalogFile) _then) = _$CatalogFileCopyWithImpl;
 @useResult
 $Res call({
- String uuid, String name, String path, LibraryType type, String contentHash, DateTime? indexedAt, bool isDeleted, DateTime? deletedAt, DateTime? missingAt
+ String uuid, String name, String path, LibraryType type, String contentHash, int? sizeBytes, DateTime? mtime, DateTime? indexedAt, bool isDeleted, DateTime? deletedAt, DateTime? missingAt
 });
 
 
@@ -91,14 +97,16 @@ class _$CatalogFileCopyWithImpl<$Res>
 
 /// Create a copy of CatalogFile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? name = null,Object? path = null,Object? type = null,Object? contentHash = null,Object? indexedAt = freezed,Object? isDeleted = null,Object? deletedAt = freezed,Object? missingAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? name = null,Object? path = null,Object? type = null,Object? contentHash = null,Object? sizeBytes = freezed,Object? mtime = freezed,Object? indexedAt = freezed,Object? isDeleted = null,Object? deletedAt = freezed,Object? missingAt = freezed,}) {
   return _then(_self.copyWith(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as LibraryType,contentHash: null == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
-as String,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
+as String,sizeBytes: freezed == sizeBytes ? _self.sizeBytes : sizeBytes // ignore: cast_nullable_to_non_nullable
+as int?,mtime: freezed == mtime ? _self.mtime : mtime // ignore: cast_nullable_to_non_nullable
+as DateTime?,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
 as bool,deletedAt: freezed == deletedAt ? _self.deletedAt : deletedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,missingAt: freezed == missingAt ? _self.missingAt : missingAt // ignore: cast_nullable_to_non_nullable
@@ -187,10 +195,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  int? sizeBytes,  DateTime? mtime,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CatalogFile() when $default != null:
-return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.indexedAt,_that.isDeleted,_that.deletedAt,_that.missingAt);case _:
+return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.sizeBytes,_that.mtime,_that.indexedAt,_that.isDeleted,_that.deletedAt,_that.missingAt);case _:
   return orElse();
 
 }
@@ -208,10 +216,10 @@ return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  int? sizeBytes,  DateTime? mtime,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)  $default,) {final _that = this;
 switch (_that) {
 case _CatalogFile():
-return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.indexedAt,_that.isDeleted,_that.deletedAt,_that.missingAt);case _:
+return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.sizeBytes,_that.mtime,_that.indexedAt,_that.isDeleted,_that.deletedAt,_that.missingAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -228,10 +236,10 @@ return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  int? sizeBytes,  DateTime? mtime,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)?  $default,) {final _that = this;
 switch (_that) {
 case _CatalogFile() when $default != null:
-return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.indexedAt,_that.isDeleted,_that.deletedAt,_that.missingAt);case _:
+return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.sizeBytes,_that.mtime,_that.indexedAt,_that.isDeleted,_that.deletedAt,_that.missingAt);case _:
   return null;
 
 }
@@ -243,7 +251,7 @@ return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_t
 
 
 class _CatalogFile extends CatalogFile {
-  const _CatalogFile({required this.uuid, required this.name, required this.path, required this.type, this.contentHash = '', this.indexedAt, this.isDeleted = false, this.deletedAt, this.missingAt}): super._();
+  const _CatalogFile({required this.uuid, required this.name, required this.path, required this.type, this.contentHash = '', this.sizeBytes, this.mtime, this.indexedAt, this.isDeleted = false, this.deletedAt, this.missingAt}): super._();
   
 
 /// The public identifier passed on every call about this file.
@@ -256,11 +264,19 @@ class _CatalogFile extends CatalogFile {
 @override final  LibraryType type;
 /// The core's hash of the file's contents.
 ///
-/// Read-only, and the only way to tell that a file changed on disk since
-/// it was read: the editor compares it before it overwrites (UC-18
-/// AF-05). Empty when the core answered without one, which reads as
-/// "cannot tell" rather than as "unchanged".
+/// Read-only, and empty for most records: indexing no longer computes one,
+/// so only a file this application has written since carries a hash. What
+/// tells that a file changed on disk is [stamp], not this.
 @override@JsonKey() final  String contentHash;
+/// The file's size on disk in bytes, as the core last saw it.
+///
+/// Half of [stamp]. Nullable because a core that answers without it must
+/// not make the record unreadable.
+@override final  int? sizeBytes;
+/// When the file was last modified on disk, as the core last saw it.
+///
+/// The other half of [stamp], and nullable for the same reason.
+@override final  DateTime? mtime;
 /// When the core last indexed this file.
 ///
 /// What a date sort orders on (UC-12, FR-CT-08). Nullable because a core
@@ -295,16 +311,16 @@ _$CatalogFileCopyWith<_CatalogFile> get copyWith => __$CatalogFileCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CatalogFile&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.path, path) || other.path == path)&&(identical(other.type, type) || other.type == type)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.indexedAt, indexedAt) || other.indexedAt == indexedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.missingAt, missingAt) || other.missingAt == missingAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CatalogFile&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.path, path) || other.path == path)&&(identical(other.type, type) || other.type == type)&&(identical(other.contentHash, contentHash) || other.contentHash == contentHash)&&(identical(other.sizeBytes, sizeBytes) || other.sizeBytes == sizeBytes)&&(identical(other.mtime, mtime) || other.mtime == mtime)&&(identical(other.indexedAt, indexedAt) || other.indexedAt == indexedAt)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.missingAt, missingAt) || other.missingAt == missingAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,name,path,type,contentHash,indexedAt,isDeleted,deletedAt,missingAt);
+int get hashCode => Object.hash(runtimeType,uuid,name,path,type,contentHash,sizeBytes,mtime,indexedAt,isDeleted,deletedAt,missingAt);
 
 @override
 String toString() {
-  return 'CatalogFile(uuid: $uuid, name: $name, path: $path, type: $type, contentHash: $contentHash, indexedAt: $indexedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, missingAt: $missingAt)';
+  return 'CatalogFile(uuid: $uuid, name: $name, path: $path, type: $type, contentHash: $contentHash, sizeBytes: $sizeBytes, mtime: $mtime, indexedAt: $indexedAt, isDeleted: $isDeleted, deletedAt: $deletedAt, missingAt: $missingAt)';
 }
 
 
@@ -315,7 +331,7 @@ abstract mixin class _$CatalogFileCopyWith<$Res> implements $CatalogFileCopyWith
   factory _$CatalogFileCopyWith(_CatalogFile value, $Res Function(_CatalogFile) _then) = __$CatalogFileCopyWithImpl;
 @override @useResult
 $Res call({
- String uuid, String name, String path, LibraryType type, String contentHash, DateTime? indexedAt, bool isDeleted, DateTime? deletedAt, DateTime? missingAt
+ String uuid, String name, String path, LibraryType type, String contentHash, int? sizeBytes, DateTime? mtime, DateTime? indexedAt, bool isDeleted, DateTime? deletedAt, DateTime? missingAt
 });
 
 
@@ -332,14 +348,16 @@ class __$CatalogFileCopyWithImpl<$Res>
 
 /// Create a copy of CatalogFile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? name = null,Object? path = null,Object? type = null,Object? contentHash = null,Object? indexedAt = freezed,Object? isDeleted = null,Object? deletedAt = freezed,Object? missingAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? name = null,Object? path = null,Object? type = null,Object? contentHash = null,Object? sizeBytes = freezed,Object? mtime = freezed,Object? indexedAt = freezed,Object? isDeleted = null,Object? deletedAt = freezed,Object? missingAt = freezed,}) {
   return _then(_CatalogFile(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as LibraryType,contentHash: null == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
-as String,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
+as String,sizeBytes: freezed == sizeBytes ? _self.sizeBytes : sizeBytes // ignore: cast_nullable_to_non_nullable
+as int?,mtime: freezed == mtime ? _self.mtime : mtime // ignore: cast_nullable_to_non_nullable
+as DateTime?,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
 as bool,deletedAt: freezed == deletedAt ? _self.deletedAt : deletedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,missingAt: freezed == missingAt ? _self.missingAt : missingAt // ignore: cast_nullable_to_non_nullable

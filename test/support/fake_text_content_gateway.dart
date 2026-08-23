@@ -1,3 +1,4 @@
+import 'package:alexandria_desktop/features/catalog/domain/file_stamp.dart';
 import 'package:alexandria_desktop/features/editing/domain/text_content_gateway.dart';
 
 import 'fake_catalog_gateway.dart';
@@ -19,6 +20,13 @@ class FakeTextContentGateway implements TextContentGateway {
   /// A list so a test can have the disk refuse once and accept the retry,
   /// which is what AF-03 leaves the owner able to do.
   final List<TextContentWrite> writeOutcomes = [];
+
+  /// The stamp the refreshed record carries after a write.
+  ///
+  /// Derived from the written content's length when a test does not say,
+  /// which is what a real write produces: a file whose size follows what was
+  /// put in it.
+  FileStamp? writtenStamp;
 
   /// Every read asked for, in order.
   final List<String> reads = [];
@@ -52,14 +60,17 @@ class FakeTextContentGateway implements TextContentGateway {
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
 
     // Accepting means the file on disk now holds what was sent, and the
-    // record carries a new hash for it — which is what the *next* AF-05 check
-    // compares against.
+    // record carries a new stamp for it — which is what the *next* AF-05
+    // check compares against.
     this.content = content;
+    final stamp = writtenStamp ?? FileStamp(sizeBytes: content.length);
     return TextContentWrite.written(
       file: aFile(
         uuid: uuid,
         name: 'Notes.md',
         contentHash: 'hash-of-${content.hashCode}',
+        sizeBytes: stamp.sizeBytes,
+        mtime: stamp.mtime,
       ),
     );
   }
