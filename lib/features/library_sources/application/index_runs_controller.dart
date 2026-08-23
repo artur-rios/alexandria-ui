@@ -127,10 +127,10 @@ class IndexRunsController extends Notifier<IndexRunsState> {
   /// Picks [root]'s paused scan back up (FR-FC-29).
   ///
   /// [priority] carries forward if given; null asks the core to keep the
-  /// pace the run already had — the same convention [startIndex] follows, and
-  /// it must reach the core unchanged rather than default to `normal`, or a
-  /// plain resume would silently re-pace a scan the owner deliberately
-  /// throttled.
+  /// pace the run already had — not the core's default, which is what null
+  /// means to [startIndex]. It must reach the core unchanged rather than
+  /// default to `normal`, or a plain resume would silently re-pace a scan the
+  /// owner deliberately throttled.
   Future<void> resume(String root, {RunPriority? priority}) async {
     final run = state.runFor(root);
     final credential = _session.credential;
@@ -234,6 +234,13 @@ class IndexRunsController extends Notifier<IndexRunsState> {
         );
         await _pollRefresh();
         _schedulePolling();
+
+        // Same choke point [startIndex] refreshes through. A refresh is
+        // catalog-wide and can run for hours, and the strip cannot discover
+        // it on its own: its polling only starts once a run is already known,
+        // so without this "Re-check library" starts work the owner is never
+        // shown outside this screen.
+        await ref.read(activeRunsControllerProvider.notifier).refresh();
 
       // AF-04: the same rule every other call follows — a rejected session
       // returns the owner to login.
