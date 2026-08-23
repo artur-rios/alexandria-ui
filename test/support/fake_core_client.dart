@@ -241,7 +241,7 @@ class FakeCoreClient implements CoreClient {
   final List<({String filters, String token})> filesListCalls = [];
 
   /// What [indexStart] was called with, in order.
-  final List<({String root, String token})> indexStarts = [];
+  final List<({String root, String token, String? priority})> indexStarts = [];
 
   /// What [indexRunStatus] was called with, in order.
   final List<({String runId, String token})> indexRunStatusCalls = [];
@@ -340,11 +340,15 @@ class FakeCoreClient implements CoreClient {
   }
 
   @override
-  Future<CoreRunStart> indexStart(String root, String token) async {
+  Future<CoreRunStart> indexStart(
+    String root,
+    String token, [
+    String? priority,
+  ]) async {
     if (failOnIndexStart) {
       throw const CoreCallException('index start call failed');
     }
-    indexStarts.add((root: root, token: token));
+    indexStarts.add((root: root, token: token, priority: priority));
     return indexStartResult;
   }
 
@@ -358,12 +362,71 @@ class FakeCoreClient implements CoreClient {
   }
 
   @override
-  Future<CoreRunStart> indexRefreshStart(String token) async {
+  Future<CoreRunStart> indexRefreshStart(
+    String token, [
+    String? priority,
+  ]) async {
     if (failOnIndexRefreshStart) {
       throw const CoreCallException('index refresh start call failed');
     }
     indexRefreshStarts.add(token);
     return indexRefreshStartResult;
+  }
+
+  /// What [indexPause] answers.
+  int indexPauseResult = 0;
+
+  /// What [indexCancel] answers.
+  int indexCancelResult = 0;
+
+  /// Every run id [indexPause] was called with, in order.
+  final List<({String runId, String token})> indexPauses = [];
+
+  /// Every run id [indexCancel] was called with, in order.
+  final List<({String runId, String token})> indexCancels = [];
+
+  @override
+  Future<int> indexPause(String runId, String token) async {
+    indexPauses.add((runId: runId, token: token));
+    return indexPauseResult;
+  }
+
+  @override
+  Future<int> indexCancel(String runId, String token) async {
+    indexCancels.add((runId: runId, token: token));
+    return indexCancelResult;
+  }
+
+  /// What [indexResume] answers. Defaults to resuming the same run
+  /// [indexStartResult] mints, since a resume answers the id it was given.
+  CoreRunStart? indexResumeResult;
+
+  /// Every call [indexResume] received, in order — the priority included, so
+  /// a test can assert a plain resume passed null rather than "normal".
+  final List<({String runId, String? priority, String token})> indexResumes =
+      [];
+
+  @override
+  Future<CoreRunStart> indexResume(
+    String runId,
+    String? priority,
+    String token,
+  ) async {
+    indexResumes.add((runId: runId, priority: priority, token: token));
+    return indexResumeResult ?? (status: 0, runId: runId);
+  }
+
+  /// What [indexRunsActive] answers. Empty by default: no outstanding runs is
+  /// the normal case.
+  CoreJsonResponse indexRunsActiveResult = (status: 0, json: '[]');
+
+  /// Every token [indexRunsActive] was called with, in order.
+  final List<String> indexRunsActiveCalls = [];
+
+  @override
+  Future<CoreJsonResponse> indexRunsActive(String token) async {
+    indexRunsActiveCalls.add(token);
+    return indexRunsActiveResult;
   }
 
   @override

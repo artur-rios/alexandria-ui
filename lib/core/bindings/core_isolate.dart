@@ -228,12 +228,20 @@ class CoreIsolate {
 
       'countFiles' => bindings.alexandria_index_count_files(),
 
-      // The session token in, a status and a run id out. No root: a refresh
-      // covers the whole catalog rather than one folder (FR-LB-06).
+      // The session token and an optional priority in, a status and a run id
+      // out. No root: a refresh covers the whole catalog rather than one
+      // folder (FR-LB-06). Priority is threaded through
+      // withNullableNativeString, not withNativeString: null must reach the
+      // core as nullptr, which the core reads as "normal" here — see
+      // alexandria_index_start's doc comment, which this call shares.
       'indexRefreshStart' => withNativeString(arguments.first! as String, (
         token,
       ) {
-        final result = bindings.alexandria_index_refresh_start(token);
+        final result = withNullableNativeString(
+          arguments[1] as String?,
+          (priority) =>
+              bindings.alexandria_index_refresh_start(token, priority),
+        );
         return (status: result.status, runId: _readRunId(result.run_id));
       }),
 
@@ -324,15 +332,22 @@ class CoreIsolate {
         }),
       ),
 
-      // The root and the session token in, a status and a run id out. The run
-      // id is a fixed-size array inside the struct rather than an allocation,
-      // so it is read straight off and there is nothing to free on the way
-      // back — only the two strings passed in, which the nesting handles
-      // (IR-09, NFR-13).
+      // The root, the session token, and an optional priority in, a status
+      // and a run id out. The run id is a fixed-size array inside the struct
+      // rather than an allocation, so it is read straight off and there is
+      // nothing to free on the way back — only the strings passed in, which
+      // the nesting handles (IR-09, NFR-13). Priority goes through
+      // withNullableNativeString: null must reach the core as nullptr, not
+      // as the string "null", or a caller who never set a priority would
+      // silently be asking for something other than "normal".
       'indexStart' => withNativeString(
         arguments.first! as String,
         (root) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_index_start(root, token);
+          final result = withNullableNativeString(
+            arguments[2] as String?,
+            (priority) =>
+                bindings.alexandria_index_start(root, token, priority),
+          );
           return (status: result.status, runId: _readRunId(result.run_id));
         }),
       ),
@@ -350,6 +365,57 @@ class CoreIsolate {
           );
         }),
       ),
+
+      // Just a status code out, so nothing to free on the way back — only the
+      // two strings passed in.
+      'indexPause' => withNativeString(
+        arguments.first! as String,
+        (runId) => withNativeString(
+          arguments[1]! as String,
+          (token) => bindings.alexandria_index_pause(runId, token),
+        ),
+      ),
+
+      'indexCancel' => withNativeString(
+        arguments.first! as String,
+        (runId) => withNativeString(
+          arguments[1]! as String,
+          (token) => bindings.alexandria_index_cancel(runId, token),
+        ),
+      ),
+
+      // The run id, the session token, and an optional priority in, the same
+      // shape indexStart answers with — the *same* run id, not a fresh one
+      // (FR-FC-33). The C function takes (run_id, token, priority) — not the
+      // Dart-level (runId, priority, token) order this operation's argument
+      // list uses — so the nesting reorders on the way in; getting this wrong
+      // would pass a token as a priority and a priority as a token. Priority
+      // goes through withNullableNativeString for the same reason it does in
+      // indexStart: null must reach the core as nullptr, which here means
+      // "keep the run's current width" rather than "normal".
+      'indexResume' => withNativeString(
+        arguments.first! as String,
+        (runId) => withNativeString(arguments[2]! as String, (token) {
+          final result = withNullableNativeString(
+            arguments[1] as String?,
+            (priority) =>
+                bindings.alexandria_index_resume(runId, token, priority),
+          );
+          return (status: result.status, runId: _readRunId(result.run_id));
+        }),
+      ),
+
+      // The session token in, a JSON array out — freed by consume on the way
+      // back, on the failure path too (IR-09, NFR-13).
+      'indexRunsActive' => withNativeString(arguments.first! as String, (
+        token,
+      ) {
+        final result = bindings.alexandria_index_runs_active_json(token);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
       // Filters and the session token in, a JSON array out — freed by consume
       // on the way back, on the failure path too (IR-09, NFR-13).

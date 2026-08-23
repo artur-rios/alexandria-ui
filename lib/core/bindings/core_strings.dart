@@ -55,3 +55,17 @@ T withNativeString<T>(String? value, T Function(Pointer<Char>) use) {
     calloc.free(native);
   }
 }
+
+/// Runs [body] with a native string for [value], or with `nullptr` when it is
+/// null — which is how an absent optional argument reaches the core.
+///
+/// Distinct from [withNativeString] deliberately, at every call site that
+/// passes an *optional* argument such as `priority`: an empty string and an
+/// absent one are different arguments to the core, and collapsing them would
+/// let a resume silently re-pace a run the owner throttled (FR-FC-33). Naming
+/// the null case at the call site — `withNullableNativeString(priority, ...)`
+/// rather than a bare `withNativeString(priority, ...)` that happens to accept
+/// null too — is what keeps that distinction visible to a reader instead of
+/// resting on an implementation detail of the non-nullable-looking helper.
+T withNullableNativeString<T>(String? value, T Function(Pointer<Char>) body) =>
+    value == null ? body(nullptr) : withNativeString(value, body);

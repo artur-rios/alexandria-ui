@@ -92,11 +92,16 @@ abstract interface class CoreClient {
   ///
   /// The scan runs in the background on the core's own runtime; this returns
   /// as soon as it has been started. [token] is the active session's
-  /// credential.
+  /// credential. [priority] is `"normal"` or `"low"`; null means the core's
+  /// default (`"normal"`) rather than a value this client had to choose.
   ///
   /// The run id comes back in a fixed-size array inside the result struct
   /// rather than as an allocation, so there is nothing to free on this path.
-  Future<CoreRunStart> indexStart(String root, String token);
+  Future<CoreRunStart> indexStart(
+    String root,
+    String token, [
+    String? priority,
+  ]);
 
   /// Reads a run's status and outcome through
   /// `alexandria_index_run_status_json` (FR-LB-07, FR-LB-08, UC-06).
@@ -109,8 +114,40 @@ abstract interface class CoreClient {
   /// `alexandria_index_refresh_start` (FR-LB-06, UC-07).
   ///
   /// Takes no root: a refresh covers the whole catalog rather than one folder,
-  /// which is the difference between it and [indexStart].
-  Future<CoreRunStart> indexRefreshStart(String token);
+  /// which is the difference between it and [indexStart]. [priority] means the
+  /// same thing there does: null is the core's default.
+  Future<CoreRunStart> indexRefreshStart(String token, [String? priority]);
+
+  /// Pauses a run so it can be resumed later (FR-FC-32).
+  ///
+  /// Returns the core's status code rather than a payload: there is nothing
+  /// to read back, and the interesting outcomes are refusals — a run that is
+  /// not running answers `RUN_ERR_INVALID_STATE`.
+  Future<int> indexPause(String runId, String token);
+
+  /// Abandons a run (FR-FC-34). Terminal; the run keeps its tally for the
+  /// record but cannot be resumed.
+  Future<int> indexCancel(String runId, String token);
+
+  /// Resumes a paused run, optionally re-pacing it (FR-FC-33).
+  ///
+  /// [priority] is `"normal"`, `"low"`, or null meaning *keep the width the
+  /// run already has* — which is not the same as `"normal"`, and is what
+  /// keeps a plain resume from silently re-pacing a throttled scan.
+  ///
+  /// Answers with the same run id it was given, not a new one.
+  Future<CoreRunStart> indexResume(
+    String runId,
+    String? priority,
+    String token,
+  );
+
+  /// Every run that is outstanding — running or paused (FR-FC-35).
+  ///
+  /// The whole picture in one call, which is what lets a client show
+  /// background activity and offer resume at launch without tracking run ids
+  /// itself.
+  Future<CoreJsonResponse> indexRunsActive(String token);
 
   /// How many files the catalog holds, through
   /// `alexandria_index_count_files` (UC-07 AF-02).
@@ -456,16 +493,46 @@ class FfiCoreClient implements CoreClient {
           as CoreJsonResponse;
 
   @override
-  Future<CoreRunStart> indexStart(String root, String token) async =>
-      await _isolate.call('indexStart', [root, token]) as CoreRunStart;
+  Future<CoreRunStart> indexStart(
+    String root,
+    String token, [
+    String? priority,
+  ]) async =>
+      await _isolate.call('indexStart', [root, token, priority])
+          as CoreRunStart;
 
   @override
   Future<CoreJsonResponse> indexRunStatus(String runId, String token) async =>
       await _isolate.call('indexRunStatus', [runId, token]) as CoreJsonResponse;
 
   @override
-  Future<CoreRunStart> indexRefreshStart(String token) async =>
-      await _isolate.call('indexRefreshStart', [token]) as CoreRunStart;
+  Future<CoreRunStart> indexRefreshStart(
+    String token, [
+    String? priority,
+  ]) async =>
+      await _isolate.call('indexRefreshStart', [token, priority])
+          as CoreRunStart;
+
+  @override
+  Future<int> indexPause(String runId, String token) async =>
+      await _isolate.call('indexPause', [runId, token]) as int;
+
+  @override
+  Future<int> indexCancel(String runId, String token) async =>
+      await _isolate.call('indexCancel', [runId, token]) as int;
+
+  @override
+  Future<CoreRunStart> indexResume(
+    String runId,
+    String? priority,
+    String token,
+  ) async =>
+      await _isolate.call('indexResume', [runId, priority, token])
+          as CoreRunStart;
+
+  @override
+  Future<CoreJsonResponse> indexRunsActive(String token) async =>
+      await _isolate.call('indexRunsActive', [token]) as CoreJsonResponse;
 
   @override
   Future<int> indexCountFiles() async =>
