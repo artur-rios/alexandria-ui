@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../lifecycle/presentation/deleted_items_screen.dart';
 import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../organization/presentation/collections_screen.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
+import 'rail_action.dart';
 
 /// The library-wide areas, reached from the navigation panel (UC-37 main flow
 /// step 1, FR-UX-01).
@@ -22,7 +24,10 @@ import '../../tracking/presentation/watchlists_screen.dart';
 /// A menu rather than six more entries in the rail: at the minimum supported
 /// window the panel is already nine destinations tall in 640 pixels
 /// (`NFR-07`), and six more would turn a panel that adapts into one the owner
-/// scrolls. One icon, six labelled entries, the same at every breakpoint.
+/// scrolls. A labelled trigger and six labelled entries, the same at every
+/// breakpoint — and three headings inside the menu, because a single icon
+/// hiding six unrelated screens was itself unreadable: nothing about it told
+/// the owner what was behind it before they opened it.
 class LibraryToolsButton extends StatelessWidget {
   /// Creates the button.
   const LibraryToolsButton({super.key});
@@ -32,16 +37,21 @@ class LibraryToolsButton extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return MenuAnchor(
-      builder: (context, controller, child) => IconButton(
-        icon: const Icon(Icons.widgets_outlined),
-        tooltip: l10n.libraryToolsOpen,
+      builder: (context, controller, child) => RailAction(
+        icon: Icons.widgets_outlined,
+        label: l10n.libraryToolsLabel,
+        showsDisclosure: true,
         onPressed: () =>
             controller.isOpen ? controller.close() : controller.open(),
       ),
       menuChildren: [
-        // The catalog's own sources first: it is the one an empty library
-        // needs, and the order below runs from filling the library to
-        // reviewing what has left it.
+        // Three headings turn one unlabelled icon hiding six unrelated
+        // screens into a menu whose contents can be told apart at a glance —
+        // the complaint this menu drew once it stopped being new. The order
+        // beneath each heading is unchanged: it runs from filling the
+        // library to reviewing what has left it, and the headings only name
+        // the stretches that order already falls into.
+        _GroupHeading(l10n.libraryToolsGroupLibrary),
         _ToolItem(
           icon: Icons.folder_outlined,
           label: l10n.librarySourcesOpen,
@@ -52,6 +62,7 @@ class LibraryToolsButton extends StatelessWidget {
           label: l10n.collectionsOpen,
           onSelected: () => CollectionsScreen.show(context),
         ),
+        _GroupHeading(l10n.libraryToolsGroupTracking),
         _ToolItem(
           icon: Icons.playlist_play,
           label: l10n.watchlistsOpen,
@@ -62,6 +73,7 @@ class LibraryToolsButton extends StatelessWidget {
           label: l10n.readingListsOpen,
           onSelected: () => ReadingListsScreen.show(context),
         ),
+        _GroupHeading(l10n.libraryToolsGroupReview),
         _ToolItem(
           icon: Icons.delete_outline,
           label: l10n.deletedItemsOpen,
@@ -94,5 +106,32 @@ class _ToolItem extends StatelessWidget {
     leadingIcon: Icon(icon),
     onPressed: onSelected,
     child: Text(label),
+  );
+}
+
+/// A heading over one of the tools menu's three groups.
+///
+/// Not a `MenuItemButton`: a heading names a group, it does not open one, and
+/// giving it the same hoverable, focusable treatment as the entries below it
+/// would invite a tap that does nothing.
+class _GroupHeading extends StatelessWidget {
+  const _GroupHeading(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(
+      AppSpacing.md,
+      AppSpacing.sm,
+      AppSpacing.md,
+      AppSpacing.xs,
+    ),
+    child: Text(
+      text,
+      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    ),
   );
 }

@@ -470,6 +470,12 @@ abstract class AppLocalizations {
   /// **'Open preferences'**
   String get preferencesOpen;
 
+  /// Visible label of the preferences action in the navigation panel, shown beside or beneath its icon at every breakpoint wider than the minimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferencesLabel;
+
   /// Heading of the theme group in preferences (FR-UX-04).
   ///
   /// In en, this message translates to:
@@ -2789,6 +2795,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Library tools'**
   String get libraryToolsOpen;
+
+  /// Visible label of the library tools action in the navigation panel, shown beside or beneath its icon at every breakpoint wider than the minimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get libraryToolsLabel;
+
+  /// Heading over the library tools menu's first group: sources and collections — filling and organizing the library itself.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get libraryToolsGroupLibrary;
+
+  /// Heading over the library tools menu's second group: watchlists and reading lists — what the owner is following.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking'**
+  String get libraryToolsGroupTracking;
+
+  /// Heading over the library tools menu's third group: deleted items and the missing-files review — what has left the library or needs a look.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get libraryToolsGroupReview;
 
   /// FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now.
   ///

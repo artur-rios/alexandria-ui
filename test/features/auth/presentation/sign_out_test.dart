@@ -39,7 +39,15 @@ void main() {
       ],
     );
 
-    await tester.tap(find.byType(PreferencesButton));
+    // Not `find.byType(PreferencesButton)`: the shell now builds its
+    // preferences action as a `RailAction` inline, matching how the
+    // destinations beside it present at each breakpoint.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(ShellNavigationPanel),
+        matching: find.byIcon(Icons.settings_outlined),
+      ),
+    );
     await tester.pumpAndSettle();
 
     return container;
@@ -163,7 +171,12 @@ void main() {
             .length;
         expect(readWhileSignedIn, greaterThan(0));
 
-        await tester.tap(find.byType(PreferencesButton));
+        await tester.tap(
+          find.descendant(
+            of: find.byType(ShellNavigationPanel),
+            matching: find.byIcon(Icons.settings_outlined),
+          ),
+        );
         await tester.pumpAndSettle();
         await pressSignOut(tester);
 

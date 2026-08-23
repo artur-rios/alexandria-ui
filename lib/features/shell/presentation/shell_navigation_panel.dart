@@ -9,6 +9,7 @@ import '../../catalog/domain/library_type.dart';
 import '../domain/shell_destination.dart';
 import 'library_tools_button.dart';
 import 'preferences_dialog.dart';
+import 'rail_action.dart';
 
 /// The navigation panel (FR-UX-01, FR-UX-02).
 ///
@@ -84,11 +85,33 @@ class ShellNavigationPanel extends ConsumerWidget {
               // scroll view with an intrinsic height, and an unbounded child
               // in that arrangement is a layout error at the short windows
               // UC-38 added the scrolling for.
-              trailing: const Padding(
-                padding: EdgeInsets.only(top: AppSpacing.sm),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [LibraryToolsButton(), PreferencesButton()],
+              trailing: Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.sm),
+                // `IntrinsicWidth` rather than a bare `Column`: the rail sits
+                // inside a scroll view with an intrinsic height (UC-38), so
+                // this subtree's incoming width is unbounded — which is fine
+                // for the column itself but leaves a `Divider` with no width
+                // to stretch to, since it has none of its own. Measuring the
+                // actions' intrinsic width first gives the divider something
+                // concrete to fill.
+                child: IntrinsicWidth(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // A divider rather than just the extra spacing above:
+                      // these two are actions, not destinations, and the
+                      // line is what tells the eye that before it stops
+                      // mattering.
+                      const Divider(),
+                      const LibraryToolsButton(),
+                      RailAction(
+                        icon: Icons.settings_outlined,
+                        label: l10n.preferencesLabel,
+                        onPressed: () => PreferencesDialog.show(context),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               destinations: [

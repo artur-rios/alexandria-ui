@@ -8,6 +8,7 @@ import 'package:alexandria_desktop/features/auth/presentation/login_screen.dart'
 import 'package:alexandria_desktop/features/auth/presentation/recovery_codes_screen.dart';
 import 'package:alexandria_desktop/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_desktop/features/shell/presentation/preferences_dialog.dart';
+import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +20,16 @@ import '../../../support/shell_harness.dart';
 /// Regenerating the recovery codes (UC-42, FR-AU-14, FR-AU-17, FR-AU-19).
 void main() {
   const newCodes = ['new-aaaa', 'new-bbbb'];
+
+  /// The panel's preferences action.
+  ///
+  /// Not `find.byType(PreferencesButton)`: the shell now builds its
+  /// preferences action as a `RailAction` inline, matching how the
+  /// destinations beside it present at each breakpoint.
+  Finder preferencesActionInShell() => find.descendant(
+    of: find.byType(ShellNavigationPanel),
+    matching: find.byIcon(Icons.settings_outlined),
+  );
 
   /// Signs in and opens preferences, where the section lives (step 1).
   Future<({ProviderContainer container, FakeAuthGateway gateway})>
@@ -39,7 +50,7 @@ void main() {
       themeMode: themeMode,
     );
 
-    await tester.tap(find.byType(PreferencesButton));
+    await tester.tap(preferencesActionInShell());
     await tester.pumpAndSettle();
 
     return (container: container, gateway: gateway);
@@ -156,7 +167,7 @@ void main() {
       await regenerate(tester);
       // The preferences dialog closes on the way through, so the notice is
       // read from the section when it is opened again.
-      await tester.tap(find.byType(PreferencesButton));
+      await tester.tap(preferencesActionInShell());
       await tester.pumpAndSettle();
 
       expect(find.byType(RecoveryCodesScreen), findsNothing);

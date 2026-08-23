@@ -1,6 +1,7 @@
 import 'package:alexandria_desktop/core/di/providers.dart';
 import 'package:alexandria_desktop/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_desktop/features/shell/presentation/preferences_dialog.dart';
+import 'package:alexandria_desktop/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_desktop/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,13 +12,25 @@ import '../../../support/shell_harness.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-11, FR-UX-12).
 void main() {
+  /// The panel's preferences action.
+  ///
+  /// Not `find.byType(PreferencesButton)`: the panel now builds its
+  /// preferences action as a `RailAction` inline, matching how the
+  /// destinations beside it present at each breakpoint (`PreferencesButton`
+  /// stays a plain icon button on the screens reached without a session).
+  /// The icon is what stays constant across every tier.
+  Finder preferencesActionInShell() => find.descendant(
+    of: find.byType(ShellNavigationPanel),
+    matching: find.byIcon(Icons.settings_outlined),
+  );
+
   /// Opens preferences from the shell.
   Future<void> openFromShell(
     WidgetTester tester, {
     ThemeMode? themeMode,
   }) async {
     await tester.pumpShell(themeMode: themeMode ?? ThemeMode.light);
-    await tester.tap(find.byType(PreferencesButton));
+    await tester.tap(preferencesActionInShell());
     await tester.pumpAndSettle();
   }
 
@@ -109,7 +122,16 @@ void main() {
         final english = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
         );
-        expect(find.text(english.preferencesTitle), findsOneWidget);
+        // Scoped to the dialog: the panel's own preferences action carries
+        // the same word as its visible label now, and an unscoped finder
+        // would match both.
+        expect(
+          find.descendant(
+            of: find.byType(PreferencesDialog),
+            matching: find.text(english.preferencesTitle),
+          ),
+          findsOneWidget,
+        );
 
         await tester.tap(find.text('Português (Brasil)'));
         await tester.pumpAndSettle();
@@ -118,7 +140,13 @@ void main() {
           tester.element(find.byType(PreferencesDialog)),
         );
         expect(l10n.localeName, startsWith('pt'));
-        expect(find.text(l10n.preferencesTitle), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(PreferencesDialog),
+            matching: find.text(l10n.preferencesTitle),
+          ),
+          findsOneWidget,
+        );
       },
     );
 
@@ -140,7 +168,7 @@ void main() {
       'GivenTheStoreRefusesAWrite_WhenAThemeIsChosen_ThenTheOwnerIsTold',
       (tester) async {
         await tester.pumpShellWithFailingSettings();
-        await tester.tap(find.byType(PreferencesButton));
+        await tester.tap(preferencesActionInShell());
         await tester.pumpAndSettle();
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
@@ -182,7 +210,7 @@ void main() {
         // is that a preference change is not a reset, and the shell's
         // destination is the state available to prove it on.
         final container = await tester.pumpShell();
-        await tester.tap(find.byType(PreferencesButton));
+        await tester.tap(preferencesActionInShell());
         await tester.pumpAndSettle();
         final before = container.read(shellControllerProvider);
         final l10n = AppLocalizations.of(
@@ -237,7 +265,7 @@ void main() {
         'Given${name}_WhenPreferencesOpen_ThenNoStringRendersAsItsKey',
         (tester) async {
           await tester.pumpShell(locale: locale);
-          await tester.tap(find.byType(PreferencesButton));
+          await tester.tap(preferencesActionInShell());
           await tester.pumpAndSettle();
           final l10n = AppLocalizations.of(
             tester.element(find.byType(PreferencesDialog)),

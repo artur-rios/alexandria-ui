@@ -282,6 +282,10 @@
   "@preferencesOpen": {
     "description": "Accessible label and tooltip of the control that opens the preferences dialog."
   },
+  "preferencesLabel": "Preferences",
+  "@preferencesLabel": {
+    "description": "Visible label of the preferences action in the navigation panel, shown beside or beneath its icon at every breakpoint wider than the minimum."
+  },
   "preferencesThemeLabel": "Theme",
   "@preferencesThemeLabel": {
     "description": "Heading of the theme group in preferences (FR-UX-04)."
@@ -2096,6 +2100,22 @@
   "libraryToolsOpen": "Library tools",
   "@libraryToolsOpen": {
     "description": "UC-37 main flow step 1: the navigation panel entry that reaches the library-wide areas — sources, collections, watchlists, reading lists, deleted items, and the missing-files review."
+  },
+  "libraryToolsLabel": "Library",
+  "@libraryToolsLabel": {
+    "description": "Visible label of the library tools action in the navigation panel, shown beside or beneath its icon at every breakpoint wider than the minimum."
+  },
+  "libraryToolsGroupLibrary": "Library",
+  "@libraryToolsGroupLibrary": {
+    "description": "Heading over the library tools menu's first group: sources and collections — filling and organizing the library itself."
+  },
+  "libraryToolsGroupTracking": "Tracking",
+  "@libraryToolsGroupTracking": {
+    "description": "Heading over the library tools menu's second group: watchlists and reading lists — what the owner is following."
+  },
+  "libraryToolsGroupReview": "Review",
+  "@libraryToolsGroupReview": {
+    "description": "Heading over the library tools menu's third group: deleted items and the missing-files review — what has left the library or needs a look."
   },
   "activityBarLabel": "Background indexing",
   "@activityBarLabel": {

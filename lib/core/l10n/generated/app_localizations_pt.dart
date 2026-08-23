@@ -226,6 +226,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get preferencesOpen => 'Abrir preferências';
 
   @override
+  String get preferencesLabel => 'Preferências';
+
+  @override
   String get preferencesThemeLabel => 'Tema';
 
   @override
@@ -1575,6 +1578,18 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get libraryToolsOpen => 'Ferramentas da biblioteca';
+
+  @override
+  String get libraryToolsLabel => 'Biblioteca';
+
+  @override
+  String get libraryToolsGroupLibrary => 'Biblioteca';
+
+  @override
+  String get libraryToolsGroupTracking => 'Acompanhamento';
+
+  @override
+  String get libraryToolsGroupReview => 'Revisão';
 
   @override
   String get activityBarLabel => 'Indexação em segundo plano';
