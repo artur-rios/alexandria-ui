@@ -34,11 +34,10 @@ Layer? layerOf(String path) {
 /// restricted by a layering rule; a relative URI is always inside.
 bool isInternal(String uri) =>
     !uri.startsWith('dart:') &&
-    (!uri.startsWith('package:') ||
-        uri.startsWith('package:alexandria_desktop/'));
+    (!uri.startsWith('package:') || uri.startsWith('package:alexandria_ui/'));
 
 /// The layer an import URI points at, as written in the directive.
 ///
-/// Resolves `package:alexandria_desktop/features/auth/data/x.dart` and
+/// Resolves `package:alexandria_ui/features/auth/data/x.dart` and
 /// `../data/x.dart` alike: both carry the layer as a path segment.
 Layer? importedLayer(String uri) => isInternal(uri) ? layerOf(uri) : null;

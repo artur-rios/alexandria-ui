@@ -1,11 +1,11 @@
-# System Requirements Document — Alexandria Desktop
+# System Requirements Document — Alexandria UI
 
 ## 1. Introduction
 
 ### 1.1 Purpose
 
 This document specifies the functional and non-functional requirements for
-**Alexandria Desktop**.
+**Alexandria UI**.
 
 The concrete technology stack — platform and language versions, libraries, local
 storage, and tooling — is defined in the

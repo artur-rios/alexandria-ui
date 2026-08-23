@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.arturrios" "\0"
-            VALUE "FileDescription", "alexandria_desktop" "\0"
+            VALUE "FileDescription", "Alexandria" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "alexandria_desktop" "\0"
+            VALUE "InternalName", "alexandria.exe" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.arturrios. All rights reserved." "\0"
-            VALUE "OriginalFilename", "alexandria_desktop.exe" "\0"
-            VALUE "ProductName", "alexandria_desktop" "\0"
+            VALUE "OriginalFilename", "alexandria.exe" "\0"
+            VALUE "ProductName", "Alexandria" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

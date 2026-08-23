@@ -1,8 +1,8 @@
-# Project Overview — Alexandria Desktop
+# Project Overview — Alexandria UI
 
 ## What This Is
 
-Alexandria Desktop is the cross-platform desktop front-end for
+Alexandria UI is the cross-platform desktop front-end for
 [Alexandria](https://github.com/artur-rios/alexandria-api), a personal library
 system that indexes, organizes, and surfaces a single person's on-disk media and
 documents. The desktop app is where the owner actually *sees* and *uses* that

@@ -28,7 +28,7 @@ OUTPUT=${2:-}
 [ -d "$PAYLOAD" ] || { echo "error: no such directory: $PAYLOAD" >&2; exit 1; }
 
 APP_ID="io.github.artur_rios.Alexandria"
-EXE_NAME="alexandria_desktop"
+EXE_NAME="alexandria"
 
 command -v appimagetool > /dev/null 2>&1 || {
   echo "error: appimagetool is required and was not found" >&2
@@ -57,7 +57,7 @@ cp -r "$PAYLOAD/." "$APPDIR/usr/bin/"
 cat > "$APPDIR/AppRun" <<'APPRUN'
 #!/bin/sh
 HERE=$(dirname "$(readlink -f "$0")")
-exec "$HERE/usr/bin/alexandria_desktop" "$@"
+exec "$HERE/usr/bin/alexandria" "$@"
 APPRUN
 chmod 755 "$APPDIR/AppRun"
 

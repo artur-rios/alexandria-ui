@@ -45,7 +45,7 @@ LICENSE_DIR="$LIB_DIR/licenses"
 CORE="$LIB_DIR/libalexandria_ffi.so"
 
 [ -f "$CORE" ] || { echo "error: the core is not in $LIB_DIR — put it there first" >&2; exit 1; }
-[ -x "$SCAN/alexandria_desktop" ] || { echo "error: no executable in $SCAN" >&2; exit 1; }
+[ -x "$SCAN/alexandria" ] || { echo "error: no executable in $SCAN" >&2; exit 1; }
 
 for tool in ldd patchelf; do
   command -v "$tool" > /dev/null 2>&1 || { echo "error: $tool is required" >&2; exit 1; }
@@ -144,7 +144,7 @@ direct_dependencies() {
 # Anything the bundle needs is in scope here. What gets left to the host is
 # decided by DENY and host-libraries.txt, which is where that judgement
 # belongs, rather than by which binary the walk happened to start from.
-for _binary in "$SCAN/alexandria_desktop" "$SCAN"/lib/*.so*; do
+for _binary in "$SCAN/alexandria" "$SCAN"/lib/*.so*; do
   [ -e "$_binary" ] || continue
   direct_dependencies "$_binary" >> "$QUEUE"
 done

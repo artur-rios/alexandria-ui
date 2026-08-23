@@ -1,4 +1,4 @@
-# Technology Stack — Alexandria Desktop
+# Technology Stack — Alexandria UI
 
 ## Platform & Language
 

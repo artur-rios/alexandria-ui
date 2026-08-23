@@ -13,7 +13,7 @@ app-id: io.github.artur_rios.Alexandria
 runtime: org.freedesktop.Platform
 runtime-version: "24.08"
 sdk: org.freedesktop.Sdk
-command: alexandria_desktop
+command: alexandria
 
 # The base runtime ships ffmpeg with the patent-encumbered decoders left out —
 # no H.264, H.265, or AAC — which for a personal media library means the common
@@ -43,13 +43,13 @@ finish-args:
   - --filesystem=home
 
 modules:
-  - name: alexandria-desktop
+  - name: alexandria
     buildsystem: simple
     build-commands:
       # The mount point the extension above is attached to. It must exist in
       # the build or there is nothing for Flatpak to mount the extension onto.
       - mkdir -p /app/lib/ffmpeg
-      - install -Dm755 alexandria_desktop /app/bin/alexandria_desktop
+      - install -Dm755 alexandria /app/bin/alexandria
       - cp -r data /app/bin/data
       - cp -r lib /app/bin/lib
       - install -Dm644 io.github.artur_rios.Alexandria.desktop

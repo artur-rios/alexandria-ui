@@ -63,7 +63,7 @@ class CorePaths {
     // built for a platform it does not support, which is worth failing loudly
     // rather than probing for a file that cannot exist.
     throw UnsupportedError(
-      'Alexandria Desktop targets Windows and Linux only; '
+      'Alexandria UI targets Windows and Linux only; '
       'this build is running on ${Platform.operatingSystem}',
     );
   }

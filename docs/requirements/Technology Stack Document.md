@@ -1,9 +1,9 @@
-# Technology Stack Document — Alexandria Desktop
+# Technology Stack Document — Alexandria UI
 
 ## 1. Purpose
 
 This document is the **single source of truth for the technologies used to build
-Alexandria Desktop** — the runtime platform, language, libraries, local storage,
+Alexandria UI** — the runtime platform, language, libraries, local storage,
 cross-cutting concerns, and testing tools, together with the version each is
 pinned to and the role it plays.
 

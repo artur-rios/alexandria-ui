@@ -17,7 +17,7 @@
 
 #define AppName "Alexandria"
 #define AppPublisher "Artur Rios"
-#define AppExeName "alexandria_desktop.exe"
+#define AppExeName "alexandria.exe"
 #define AppVersion GetEnv('ALEXANDRIA_VERSION')
 
 ; The GUID lives here rather than being spelled out twice. `{{#AppGuid}` below
@@ -48,7 +48,7 @@ MinVersion=10.0
 
 ; The Restart Manager closes a running Alexandria before files are replaced.
 ; Without it, upgrading while the application is open fails on a locked
-; alexandria_desktop.exe or a loaded alexandria_ffi.dll — and a half-replaced
+; alexandria.exe or a loaded alexandria_ffi.dll — and a half-replaced
 ; bundle is worse than a refused one. Nothing is restarted afterwards: the
 ; [Run] entry below already offers to launch it.
 CloseApplications=yes

@@ -1,4 +1,4 @@
-# Workflow — Alexandria Desktop
+# Workflow — Alexandria UI
 
 How a single use case is delivered, from picking it up to closing it out.
 The formal, normative version of this process lives in the

@@ -115,7 +115,7 @@ and removing the directory removes the program.
 
 ```bash
 tar xzf alexandria-<version>-linux-x64.tar.gz
-./alexandria_desktop
+./alexandria
 ```
 
 Both archives are self-contained. The core links ffmpeg, and rather than
@@ -446,7 +446,7 @@ the Definition of Done — is in the
 
 Copyright © 2026 Artur Rios.
 
-Alexandria Desktop is free software: you can redistribute it and/or modify it
+Alexandria UI is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free
 Software Foundation, either version 3 of the License, or (at your option) any
 later version. The full text is in [LICENSE](LICENSE).

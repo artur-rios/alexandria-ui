@@ -1,4 +1,4 @@
-# Development Workflow Document — Alexandria Desktop
+# Development Workflow Document — Alexandria UI
 
 ## 1. Purpose
 

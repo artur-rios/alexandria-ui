@@ -187,7 +187,7 @@ jobs:
       # than from the tag: flutter_distributor names the .deb and the AppImage
       # from it, and the application reports it as its own version. Left alone,
       # a v0.0.1 release would carry a file called
-      # alexandria_desktop-1.0.0+1-linux.deb and an application that called
+      # alexandria-1.0.0+1-linux.deb and an application that called
       # itself 1.0.0. Stamped here so the tag is the one source of that number.
       #
       # The working copy only — nothing is committed. The pubspec in git keeps
@@ -401,7 +401,7 @@ jobs:
       # than from the tag: flutter_distributor names the .deb and the AppImage
       # from it, and the application reports it as its own version. Left alone,
       # a v0.0.1 release would carry a file called
-      # alexandria_desktop-1.0.0+1-linux.deb and an application that called
+      # alexandria-1.0.0+1-linux.deb and an application that called
       # itself 1.0.0. Stamped here so the tag is the one source of that number.
       #
       # The working copy only — nothing is committed. The pubspec in git keeps
@@ -509,7 +509,7 @@ jobs:
           fi
 
           sudo apt-get install -y "./$package"
-          test -x /opt/alexandria_desktop/alexandria_desktop
+          test -x /opt/alexandria/alexandria
           sudo apt-get remove -y alexandria
 
       # Taken now, while the bundle is still pristine. The Flatpak is built at
@@ -606,7 +606,7 @@ jobs:
               libasound2t64 libpulse0 libpipewire-0.3-0 \
               libusb-1.0-0 > /dev/null
             echo "--- executable ---"
-            ldd /payload/alexandria_desktop 2>&1
+            ldd /payload/alexandria 2>&1
             echo "--- core ---"
             ldd /payload/lib/libalexandria_ffi.so 2>&1
             echo "--- every staged library ---"
@@ -660,7 +660,7 @@ jobs:
           prefix="$RUNNER_TEMP/alexandria-smoke"
 
           "./$installer" --prefix "$prefix" --yes
-          test -x "$prefix/alexandria_desktop"
+          test -x "$prefix/alexandria"
           test -f "$prefix/lib/libalexandria_ffi.so"
           test -f "$HOME/.local/share/icons/hicolor/512x512/apps/io.github.artur_rios.Alexandria.png"
 
@@ -675,11 +675,11 @@ jobs:
           echo "not ours" > "$prefix/unrelated.txt"
 
           "./$installer" --prefix "$prefix" --yes
-          test -x "$prefix/alexandria_desktop"
+          test -x "$prefix/alexandria"
           test -f "$prefix/unrelated.txt"
 
           "./$installer" --uninstall --yes
-          test ! -e "$prefix/alexandria_desktop"
+          test ! -e "$prefix/alexandria"
           test -f "$prefix/unrelated.txt"
 
           rm -rf "$prefix"
@@ -816,7 +816,7 @@ jobs:
               catalog, and settings are left alone.
             - **`alexandria-${{ steps.version.outputs.value }}-windows-x64.zip`**
               — the application itself. Unpack it and run
-              `alexandria_desktop.exe`; nothing is registered, and deleting the
+              `alexandria.exe`; nothing is registered, and deleting the
               folder removes it.
             - **`alexandria.msix`** — published unsigned. Windows will not
               install an unsigned MSIX without a trusted certificate, so use
@@ -832,7 +832,7 @@ jobs:
               `--uninstall` removes what it installed and nothing else.
             - **`alexandria-${{ steps.version.outputs.value }}-linux-x64.tar.gz`**
               — the application itself. Unpack it and run
-              `./alexandria_desktop`.
+              `./alexandria`.
             - **`.deb`** — for Ubuntu 24.04, which is the release it is built
               on. Pulls ffmpeg, libmpv, and GTK in through apt.
             - **`.AppImage`** — carries everything it needs.

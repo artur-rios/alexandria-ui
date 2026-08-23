@@ -1,11 +1,11 @@
-# Vision Document — Alexandria Desktop
+# Vision Document — Alexandria UI
 
 ## 1. Introduction
 
 ### 1.1 Purpose
 
-This document establishes *why* Alexandria Desktop exists, *what* it is, and the
-boundaries it will not cross. Alexandria Desktop is the cross-platform desktop
+This document establishes *why* Alexandria UI exists, *what* it is, and the
+boundaries it will not cross. Alexandria UI is the cross-platform desktop
 application through which a single person uses their Alexandria library: it
 browses the catalog the Alexandria Rust core maintains, plays and reads the files
 that catalog points at, edits what is editable, and organizes everything into
@@ -18,7 +18,7 @@ the technologies in the
 
 ### 1.2 Scope
 
-Alexandria Desktop covers the whole owner-facing surface of the Alexandria
+Alexandria UI covers the whole owner-facing surface of the Alexandria
 product: signing the owner up, confirming their e-mail, logging them in and
 recovering their password, registering and indexing library folders,
 browsing and searching the catalog, playing audio and video, viewing documents,
@@ -98,7 +98,7 @@ can open.
 | --- | --- |
 | **For** | A person whose music, films, series, books, comics, notes, saved pages, and bookmarks already live on their own disk. |
 | **Who** | Wants to browse, play, read, edit, and organize all of it from one place, without importing it into somebody else's store. |
-| **The Alexandria Desktop application** | Is a local desktop front-end for a personal library. |
+| **The Alexandria UI application** | Is a local desktop front-end for a personal library. |
 | **That** | Turns an on-disk directory tree into a searchable, playable, trackable library — catalogued by type, organized into collections and tracking lists, and never re-encoded, duplicated, or relocated. |
 | **Unlike** | A file manager, or the stack of single-purpose players, readers, and bookmark managers it takes to replace one, or the media servers that require importing the library and running a service to reach it. |
 | **Our product** | Runs entirely on the owner's machine with the catalog engine linked in process, treats the files on disk as the source of truth, and never deletes or rewrites one except when the owner explicitly asks. |
@@ -120,10 +120,10 @@ can open.
 
 ```mermaid
 C4Context
-    title Alexandria Desktop — Context Diagram
+    title Alexandria UI — Context Diagram
 
     Person(owner, "Library owner", "Browses, plays, reads, edits, and organizes their personal library")
-    System(desktop, "Alexandria Desktop", "Flutter desktop application: catalog interface, players, viewers, editors")
+    System(desktop, "Alexandria UI", "Flutter desktop application: catalog interface, players, viewers, editors")
     System_Ext(core, "Alexandria core", "Rust library linked in process over FFI; owns the catalog and every domain rule")
     System_Ext(db, "Catalog database", "SQLite file owned exclusively by the core")
     System_Ext(disk, "Local filesystem", "The owner's library folders and the files they contain")

@@ -1,4 +1,4 @@
-# Business Rules — Alexandria Desktop
+# Business Rules — Alexandria UI
 
 The Alexandria Rust core owns the catalog's domain rules. This document does not
 restate them; it records the rules **the desktop application itself** is

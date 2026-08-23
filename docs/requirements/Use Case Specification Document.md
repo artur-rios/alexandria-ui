@@ -1,10 +1,10 @@
-# Use Case Specification Document — Alexandria Desktop
+# Use Case Specification Document — Alexandria UI
 
 ## 1. Introduction
 
 ### 1.1 Purpose
 
-This document specifies the use cases for **Alexandria Desktop**. Each use case
+This document specifies the use cases for **Alexandria UI**. Each use case
 describes actor interactions, preconditions, postconditions, main flows, and
 alternative/exception flows.
 

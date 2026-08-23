@@ -28,7 +28,7 @@ set -eu
 
 APP_NAME="Alexandria"
 APP_ID="io.github.artur_rios.Alexandria"
-EXE_NAME="alexandria_desktop"
+EXE_NAME="alexandria"
 LAUNCHER_NAME="alexandria"
 DESKTOP_FILE="${APP_ID}.desktop"
 VERSION="@VERSION@"

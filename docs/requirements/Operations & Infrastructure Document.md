@@ -1,4 +1,4 @@
-# Operations & Infrastructure Document — Alexandria Desktop
+# Operations & Infrastructure Document — Alexandria UI
 
 ## 1. Introduction
 
@@ -33,7 +33,7 @@ here rather than duplicated.
 
 ### 2.1 Overview
 
-Alexandria Desktop is a single Flutter application with no server component. Its
+Alexandria UI is a single Flutter application with no server component. Its
 foundation is a feature-first source tree over four layers, a provider graph that
 is the single composition root, a generated binding layer over the Alexandria
 core's C ABI, and the cross-cutting services — theme, localization, failure
@@ -102,7 +102,7 @@ the provider graph. Domain imports nothing outward at all.
 ### 2.3 Repository Layout
 
 ```txt
-alexandria-desktop-front/
+alexandria-ui/
 ├── README.md
 ├── LICENSE
 ├── analysis_options.yaml          layering and lint rules

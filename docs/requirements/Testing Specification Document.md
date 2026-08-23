@@ -1,4 +1,4 @@
-# Testing Specification Document — Alexandria Desktop
+# Testing Specification Document — Alexandria UI
 
 ## 1. Purpose
 
