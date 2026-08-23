@@ -622,4 +622,578 @@ $FailureCopyWith<$Res> get failure {
 }
 }
 
+/// @nodoc
+mixin _$RunControlOutcome {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RunControlOutcome);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'RunControlOutcome()';
+}
+
+
+}
+
+/// @nodoc
+class $RunControlOutcomeCopyWith<$Res>  {
+$RunControlOutcomeCopyWith(RunControlOutcome _, $Res Function(RunControlOutcome) __);
+}
+
+
+/// Adds pattern-matching-related methods to [RunControlOutcome].
+extension RunControlOutcomePatterns on RunControlOutcome {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( RunControlOk value)?  ok,TResult Function( RunControlFailed value)?  failed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case RunControlOk() when ok != null:
+return ok(_that);case RunControlFailed() when failed != null:
+return failed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( RunControlOk value)  ok,required TResult Function( RunControlFailed value)  failed,}){
+final _that = this;
+switch (_that) {
+case RunControlOk():
+return ok(_that);case RunControlFailed():
+return failed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( RunControlOk value)?  ok,TResult? Function( RunControlFailed value)?  failed,}){
+final _that = this;
+switch (_that) {
+case RunControlOk() when ok != null:
+return ok(_that);case RunControlFailed() when failed != null:
+return failed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  ok,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case RunControlOk() when ok != null:
+return ok();case RunControlFailed() when failed != null:
+return failed(_that.failure);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  ok,required TResult Function( Failure failure)  failed,}) {final _that = this;
+switch (_that) {
+case RunControlOk():
+return ok();case RunControlFailed():
+return failed(_that.failure);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  ok,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+switch (_that) {
+case RunControlOk() when ok != null:
+return ok();case RunControlFailed() when failed != null:
+return failed(_that.failure);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class RunControlOk implements RunControlOutcome {
+  const RunControlOk();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RunControlOk);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'RunControlOutcome.ok()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class RunControlFailed implements RunControlOutcome {
+  const RunControlFailed({required this.failure});
+  
+
+ final  Failure failure;
+
+/// Create a copy of RunControlOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RunControlFailedCopyWith<RunControlFailed> get copyWith => _$RunControlFailedCopyWithImpl<RunControlFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RunControlFailed&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,failure);
+
+@override
+String toString() {
+  return 'RunControlOutcome.failed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RunControlFailedCopyWith<$Res> implements $RunControlOutcomeCopyWith<$Res> {
+  factory $RunControlFailedCopyWith(RunControlFailed value, $Res Function(RunControlFailed) _then) = _$RunControlFailedCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+$FailureCopyWith<$Res> get failure;
+
+}
+/// @nodoc
+class _$RunControlFailedCopyWithImpl<$Res>
+    implements $RunControlFailedCopyWith<$Res> {
+  _$RunControlFailedCopyWithImpl(this._self, this._then);
+
+  final RunControlFailed _self;
+  final $Res Function(RunControlFailed) _then;
+
+/// Create a copy of RunControlOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(RunControlFailed(
+failure: null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+/// Create a copy of RunControlOutcome
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$FailureCopyWith<$Res> get failure {
+  
+  return $FailureCopyWith<$Res>(_self.failure, (value) {
+    return _then(_self.copyWith(failure: value));
+  });
+}
+}
+
+/// @nodoc
+mixin _$ActiveRunsOutcome {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActiveRunsOutcome);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'ActiveRunsOutcome()';
+}
+
+
+}
+
+/// @nodoc
+class $ActiveRunsOutcomeCopyWith<$Res>  {
+$ActiveRunsOutcomeCopyWith(ActiveRunsOutcome _, $Res Function(ActiveRunsOutcome) __);
+}
+
+
+/// Adds pattern-matching-related methods to [ActiveRunsOutcome].
+extension ActiveRunsOutcomePatterns on ActiveRunsOutcome {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( ActiveRunsRead value)?  read,TResult Function( ActiveRunsFailed value)?  failed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case ActiveRunsRead() when read != null:
+return read(_that);case ActiveRunsFailed() when failed != null:
+return failed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( ActiveRunsRead value)  read,required TResult Function( ActiveRunsFailed value)  failed,}){
+final _that = this;
+switch (_that) {
+case ActiveRunsRead():
+return read(_that);case ActiveRunsFailed():
+return failed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( ActiveRunsRead value)?  read,TResult? Function( ActiveRunsFailed value)?  failed,}){
+final _that = this;
+switch (_that) {
+case ActiveRunsRead() when read != null:
+return read(_that);case ActiveRunsFailed() when failed != null:
+return failed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<IndexRun> runs)?  read,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case ActiveRunsRead() when read != null:
+return read(_that.runs);case ActiveRunsFailed() when failed != null:
+return failed(_that.failure);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<IndexRun> runs)  read,required TResult Function( Failure failure)  failed,}) {final _that = this;
+switch (_that) {
+case ActiveRunsRead():
+return read(_that.runs);case ActiveRunsFailed():
+return failed(_that.failure);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<IndexRun> runs)?  read,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+switch (_that) {
+case ActiveRunsRead() when read != null:
+return read(_that.runs);case ActiveRunsFailed() when failed != null:
+return failed(_that.failure);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class ActiveRunsRead implements ActiveRunsOutcome {
+  const ActiveRunsRead({required final  List<IndexRun> runs}): _runs = runs;
+  
+
+ final  List<IndexRun> _runs;
+ List<IndexRun> get runs {
+  if (_runs is EqualUnmodifiableListView) return _runs;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_runs);
+}
+
+
+/// Create a copy of ActiveRunsOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ActiveRunsReadCopyWith<ActiveRunsRead> get copyWith => _$ActiveRunsReadCopyWithImpl<ActiveRunsRead>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActiveRunsRead&&const DeepCollectionEquality().equals(other._runs, _runs));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_runs));
+
+@override
+String toString() {
+  return 'ActiveRunsOutcome.read(runs: $runs)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ActiveRunsReadCopyWith<$Res> implements $ActiveRunsOutcomeCopyWith<$Res> {
+  factory $ActiveRunsReadCopyWith(ActiveRunsRead value, $Res Function(ActiveRunsRead) _then) = _$ActiveRunsReadCopyWithImpl;
+@useResult
+$Res call({
+ List<IndexRun> runs
+});
+
+
+
+
+}
+/// @nodoc
+class _$ActiveRunsReadCopyWithImpl<$Res>
+    implements $ActiveRunsReadCopyWith<$Res> {
+  _$ActiveRunsReadCopyWithImpl(this._self, this._then);
+
+  final ActiveRunsRead _self;
+  final $Res Function(ActiveRunsRead) _then;
+
+/// Create a copy of ActiveRunsOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? runs = null,}) {
+  return _then(ActiveRunsRead(
+runs: null == runs ? _self._runs : runs // ignore: cast_nullable_to_non_nullable
+as List<IndexRun>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class ActiveRunsFailed implements ActiveRunsOutcome {
+  const ActiveRunsFailed({required this.failure});
+  
+
+ final  Failure failure;
+
+/// Create a copy of ActiveRunsOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ActiveRunsFailedCopyWith<ActiveRunsFailed> get copyWith => _$ActiveRunsFailedCopyWithImpl<ActiveRunsFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ActiveRunsFailed&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,failure);
+
+@override
+String toString() {
+  return 'ActiveRunsOutcome.failed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ActiveRunsFailedCopyWith<$Res> implements $ActiveRunsOutcomeCopyWith<$Res> {
+  factory $ActiveRunsFailedCopyWith(ActiveRunsFailed value, $Res Function(ActiveRunsFailed) _then) = _$ActiveRunsFailedCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+$FailureCopyWith<$Res> get failure;
+
+}
+/// @nodoc
+class _$ActiveRunsFailedCopyWithImpl<$Res>
+    implements $ActiveRunsFailedCopyWith<$Res> {
+  _$ActiveRunsFailedCopyWithImpl(this._self, this._then);
+
+  final ActiveRunsFailed _self;
+  final $Res Function(ActiveRunsFailed) _then;
+
+/// Create a copy of ActiveRunsOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(ActiveRunsFailed(
+failure: null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+/// Create a copy of ActiveRunsOutcome
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$FailureCopyWith<$Res> get failure {
+  
+  return $FailureCopyWith<$Res>(_self.failure, (value) {
+    return _then(_self.copyWith(failure: value));
+  });
+}
+}
+
 // dart format on

@@ -1,5 +1,6 @@
 import 'package:alexandria_desktop/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_desktop/features/library_sources/domain/index_run.dart';
+import 'package:alexandria_desktop/features/library_sources/domain/run_priority.dart';
 
 /// An [IndexGateway] that never reaches the core (Testing Specification §2.3).
 ///
@@ -44,22 +45,50 @@ class FakeIndexGateway implements IndexGateway {
   final List<String> refreshStarts = [];
 
   /// What [startIndex] was called with, in order.
-  final List<({String root, String credential})> starts = [];
+  final List<({String root, RunPriority? priority, String credential})> starts =
+      [];
 
   /// What [readRun] was called with, in order.
   final List<({String runId, String credential})> reads = [];
 
+  /// What [pauseRun] answers.
+  RunControlOutcome pauseOutcome = const RunControlOutcome.ok();
+
+  /// What [cancelRun] answers.
+  RunControlOutcome cancelOutcome = const RunControlOutcome.ok();
+
+  /// What [resumeRun] answers, or `null` to reuse [startOutcome].
+  IndexStartOutcome? resumeOutcome;
+
+  /// What [listActiveRuns] answers. Empty by default: no outstanding runs is
+  /// the normal case.
+  ActiveRunsOutcome activeRunsOutcome = const ActiveRunsOutcome.read(runs: []);
+
+  /// What [pauseRun] was called with, in order.
+  final List<({String runId, String credential})> pauses = [];
+
+  /// What [cancelRun] was called with, in order.
+  final List<({String runId, String credential})> cancels = [];
+
+  /// What [resumeRun] was called with, in order.
+  final List<({String runId, RunPriority? priority, String credential})>
+  resumes = [];
+
   @override
   Future<IndexStartOutcome> startIndex({
     required String root,
+    RunPriority? priority,
     required String credential,
   }) async {
-    starts.add((root: root, credential: credential));
+    starts.add((root: root, priority: priority, credential: credential));
     return startOutcome;
   }
 
   @override
-  Future<IndexStartOutcome> startRefresh({required String credential}) async {
+  Future<IndexStartOutcome> startRefresh({
+    RunPriority? priority,
+    required String credential,
+  }) async {
     refreshStarts.add(credential);
     return refreshOutcome ?? startOutcome;
   }
@@ -76,6 +105,39 @@ class FakeIndexGateway implements IndexGateway {
 
     final index = reads.length - 1;
     return readOutcomes[index.clamp(0, readOutcomes.length - 1)];
+  }
+
+  @override
+  Future<RunControlOutcome> pauseRun({
+    required String runId,
+    required String credential,
+  }) async {
+    pauses.add((runId: runId, credential: credential));
+    return pauseOutcome;
+  }
+
+  @override
+  Future<RunControlOutcome> cancelRun({
+    required String runId,
+    required String credential,
+  }) async {
+    cancels.add((runId: runId, credential: credential));
+    return cancelOutcome;
+  }
+
+  @override
+  Future<IndexStartOutcome> resumeRun({
+    required String runId,
+    RunPriority? priority,
+    required String credential,
+  }) async {
+    resumes.add((runId: runId, priority: priority, credential: credential));
+    return resumeOutcome ?? IndexStartOutcome.started(runId: runId);
+  }
+
+  @override
+  Future<ActiveRunsOutcome> listActiveRuns({required String credential}) async {
+    return activeRunsOutcome;
   }
 }
 

@@ -8,6 +8,7 @@ import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
+import '../domain/run_priority.dart';
 
 /// [IndexGateway] over the generated bindings (IR-03, UC-06).
 class CoreIndexGateway implements IndexGateway {
@@ -25,11 +26,12 @@ class CoreIndexGateway implements IndexGateway {
   @override
   Future<IndexStartOutcome> startIndex({
     required String root,
+    RunPriority? priority,
     required String credential,
   }) async {
     final CoreRunStart result;
     try {
-      result = await _core.indexStart(root, credential);
+      result = await _core.indexStart(root, credential, priority?.wire);
     } on CoreCallException {
       return const IndexStartOutcome.failed(
         failure: Failure.unexpected(
@@ -62,10 +64,13 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<IndexStartOutcome> startRefresh({required String credential}) async {
+  Future<IndexStartOutcome> startRefresh({
+    RunPriority? priority,
+    required String credential,
+  }) async {
     final CoreRunStart result;
     try {
-      result = await _core.indexRefreshStart(credential);
+      result = await _core.indexRefreshStart(credential, priority?.wire);
     } on CoreCallException {
       return const IndexStartOutcome.failed(
         failure: Failure.unexpected(
@@ -144,6 +149,132 @@ class CoreIndexGateway implements IndexGateway {
     }
   }
 
+  @override
+  Future<RunControlOutcome> pauseRun({
+    required String runId,
+    required String credential,
+  }) async {
+    final int status;
+    try {
+      status = await _core.indexPause(runId, credential);
+    } on CoreCallException {
+      return const RunControlOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.run,
+          code: RUN_ERR_OTHER,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.run.isOk(status)) {
+      return RunControlOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.run, status),
+      );
+    }
+
+    return const RunControlOutcome.ok();
+  }
+
+  @override
+  Future<RunControlOutcome> cancelRun({
+    required String runId,
+    required String credential,
+  }) async {
+    final int status;
+    try {
+      status = await _core.indexCancel(runId, credential);
+    } on CoreCallException {
+      return const RunControlOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.run,
+          code: RUN_ERR_OTHER,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.run.isOk(status)) {
+      return RunControlOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.run, status),
+      );
+    }
+
+    return const RunControlOutcome.ok();
+  }
+
+  @override
+  Future<IndexStartOutcome> resumeRun({
+    required String runId,
+    RunPriority? priority,
+    required String credential,
+  }) async {
+    final CoreRunStart result;
+    try {
+      result = await _core.indexResume(runId, priority?.wire, credential);
+    } on CoreCallException {
+      return const IndexStartOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.run,
+          code: RUN_ERR_OTHER,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.run.isOk(result.status)) {
+      return IndexStartOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.run, result.status),
+      );
+    }
+
+    if (result.runId.isEmpty) {
+      return const IndexStartOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.run,
+          code: RUN_ERR_OTHER,
+        ),
+      );
+    }
+
+    return IndexStartOutcome.started(runId: result.runId);
+  }
+
+  @override
+  Future<ActiveRunsOutcome> listActiveRuns({required String credential}) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.indexRunsActive(credential);
+    } on CoreCallException {
+      return const ActiveRunsOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.run,
+          code: RUN_ERR_OTHER,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.run.isOk(response.status)) {
+      return ActiveRunsOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.run, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unreadableActiveRuns();
+
+    try {
+      final body = jsonDecode(json) as List<dynamic>;
+      final runs = body
+          .cast<Map<String, dynamic>>()
+          .map((entry) => _runFrom(entry, fallbackId: ''))
+          .toList();
+      return ActiveRunsOutcome.read(runs: runs);
+    } on Object {
+      // Broad by intent, as on every payload path: a malformed document
+      // surfaces as FormatException and a wrongly-typed field as TypeError,
+      // and the owner needs a readable failure either way.
+      return _unreadableActiveRuns();
+    }
+  }
+
   /// The run [body] describes.
   ///
   /// The counts are flattened into the body rather than nested — the core's
@@ -155,7 +286,13 @@ class CoreIndexGateway implements IndexGateway {
     // A running run carries no counts at all, and the two kinds carry
     // different ones — so the presence of any of them is what decides whether
     // there is a tally to read.
-    const countKeys = ['scanned', 'indexed', 'refreshed', 'markedMissing'];
+    const countKeys = [
+      'scanned',
+      'indexed',
+      'refreshed',
+      'markedMissing',
+      'alreadyCataloged',
+    ];
     final hasCounts = countKeys.any(body.containsKey);
 
     return IndexRun(
@@ -163,11 +300,20 @@ class CoreIndexGateway implements IndexGateway {
       root: body['root'] as String? ?? '',
       kind: IndexRunKind.parse(body['kind'] as String?),
       status: status,
+      phase: IndexRunPhase.parse(body['phase'] as String?),
+      total: body['total'] as int?,
+      processed: body['processed'] as int?,
+      activeMillis: body['activeMillis'] as int? ?? 0,
+      pausedAt: switch (body['pausedAt']) {
+        final String raw => DateTime.tryParse(raw),
+        _ => null,
+      },
       counts: hasCounts
           ? IndexRunCounts(
               scanned: body['scanned'] as int? ?? 0,
               indexed: body['indexed'] as int? ?? 0,
               skipped: body['skipped'] as int? ?? 0,
+              alreadyCataloged: body['alreadyCataloged'] as int? ?? 0,
               refreshed: body['refreshed'] as int? ?? 0,
               markedMissing: body['markedMissing'] as int? ?? 0,
               unchanged: body['unchanged'] as int? ?? 0,
@@ -179,6 +325,13 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   IndexRunOutcome _unreadable() => const IndexRunOutcome.failed(
+    failure: Failure.unexpected(
+      family: CoreStatusFamily.run,
+      code: RUN_ERR_OTHER,
+    ),
+  );
+
+  ActiveRunsOutcome _unreadableActiveRuns() => const ActiveRunsOutcome.failed(
     failure: Failure.unexpected(
       family: CoreStatusFamily.run,
       code: RUN_ERR_OTHER,

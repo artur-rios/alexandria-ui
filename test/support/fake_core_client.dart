@@ -38,6 +38,9 @@ class FakeCoreClient implements CoreClient {
     this.failOnFileByUuid = false,
     CoreJsonResponse? fileEditMetadataResult,
     this.failOnFileEditMetadata = false,
+    int? pauseStatus,
+    String? activeRunsJson,
+    String? resumeRunId,
   }) : fileEditMetadataResult =
            fileEditMetadataResult ??
            (
@@ -128,7 +131,19 @@ class FakeCoreClient implements CoreClient {
                  // is the core's business, and a fake that insisted on ten
                  // would be asserting it.
                  '"recoveryCodes":["aaaa-bbbb","cccc-dddd"]}',
-           );
+           ) {
+    // Assigned in the body rather than the initializer list: these three
+    // back mutable fields further down the class (set post-construction by
+    // other tests), and giving them constructor shortcuts here is only for
+    // the common case of a test that knows its answer up front.
+    if (pauseStatus != null) indexPauseResult = pauseStatus;
+    if (activeRunsJson != null) {
+      indexRunsActiveResult = (status: 0, json: activeRunsJson);
+    }
+    if (resumeRunId != null) {
+      indexResumeResult = (status: 0, runId: resumeRunId);
+    }
+  }
 
   /// What [version] returns.
   final String? versionResult;

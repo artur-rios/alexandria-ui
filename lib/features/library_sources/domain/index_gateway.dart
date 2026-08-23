@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
 import 'index_run.dart';
+import 'run_priority.dart';
 
 part 'index_gateway.freezed.dart';
 
@@ -28,6 +29,27 @@ sealed class IndexRunOutcome with _$IndexRunOutcome {
       IndexRunFailed;
 }
 
+/// What a pause or cancel produced.
+///
+/// No payload on success: the run's new state is read back through the
+/// status query like any other, and inventing a return value here would give
+/// callers a second, staler source for it.
+@freezed
+sealed class RunControlOutcome with _$RunControlOutcome {
+  const factory RunControlOutcome.ok() = RunControlOk;
+  const factory RunControlOutcome.failed({required Failure failure}) =
+      RunControlFailed;
+}
+
+/// What listing the outstanding runs produced.
+@freezed
+sealed class ActiveRunsOutcome with _$ActiveRunsOutcome {
+  const factory ActiveRunsOutcome.read({required List<IndexRun> runs}) =
+      ActiveRunsRead;
+  const factory ActiveRunsOutcome.failed({required Failure failure}) =
+      ActiveRunsFailed;
+}
+
 /// The application's view of the core's indexing operations (IR-02, NFR-17).
 ///
 /// Owned by the Domain layer so Application and Presentation depend on this
@@ -39,6 +61,7 @@ abstract interface class IndexGateway {
   /// core's own runtime, which is what leaves the interface free (FR-LB-07).
   Future<IndexStartOutcome> startIndex({
     required String root,
+    RunPriority? priority,
     required String credential,
   });
 
@@ -46,7 +69,10 @@ abstract interface class IndexGateway {
   ///
   /// Takes no folder: a refresh is catalog-wide, which is what separates it
   /// from [startIndex].
-  Future<IndexStartOutcome> startRefresh({required String credential});
+  Future<IndexStartOutcome> startRefresh({
+    RunPriority? priority,
+    required String credential,
+  });
 
   /// How many files the catalog holds, or a negative number when the core
   /// could not be asked (UC-07 AF-02).
@@ -60,4 +86,41 @@ abstract interface class IndexGateway {
     required String runId,
     required String credential,
   });
+
+  /// Pauses a running run (FR-FC-28, FR-FC-29).
+  ///
+  /// Refused with [Failure] wrapping `RUN_ERR_INVALID_STATE` for a run that
+  /// is not currently running — a terminal or already-paused run has nothing
+  /// to pause.
+  Future<RunControlOutcome> pauseRun({
+    required String runId,
+    required String credential,
+  });
+
+  /// Abandons a run for good (FR-FC-30).
+  ///
+  /// Terminal and not resumable, which is what separates this from
+  /// [pauseRun]: a cancelled run cannot be picked back up.
+  Future<RunControlOutcome> cancelRun({
+    required String runId,
+    required String credential,
+  });
+
+  /// Picks a paused run back up (FR-FC-29).
+  ///
+  /// [priority] carries forward if given; null asks the core to keep the
+  /// pace the run already had, the same convention [startIndex] and
+  /// [startRefresh] follow.
+  Future<IndexStartOutcome> resumeRun({
+    required String runId,
+    RunPriority? priority,
+    required String credential,
+  });
+
+  /// Lists every run the core still has outstanding — running or paused
+  /// (FR-FC-29).
+  ///
+  /// What lets the application find a paused run to offer resuming without
+  /// having kept its id since the session that started it.
+  Future<ActiveRunsOutcome> listActiveRuns({required String credential});
 }
