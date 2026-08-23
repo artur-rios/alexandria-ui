@@ -20,8 +20,8 @@
   </description>
 
   <launchable type="desktop-id">io.github.artur_rios.Alexandria.desktop</launchable>
-  <url type="homepage">https://github.com/artur-rios/alexandria-desktop-front</url>
-  <url type="bugtracker">https://github.com/artur-rios/alexandria-desktop-front/issues</url>
+  <url type="homepage">https://github.com/artur-rios/alexandria-ui</url>
+  <url type="bugtracker">https://github.com/artur-rios/alexandria-ui/issues</url>
 
   <content_rating type="oars-1.1" />
 </component>

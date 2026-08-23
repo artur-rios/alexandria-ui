@@ -109,8 +109,10 @@ abstract interface class IndexGateway {
   /// Picks a paused run back up (FR-FC-29).
   ///
   /// [priority] carries forward if given; null asks the core to keep the
-  /// pace the run already had, the same convention [startIndex] and
-  /// [startRefresh] follow.
+  /// pace the run already had — which is *not* what null means to
+  /// [startIndex] and [startRefresh], where it asks for the core's own
+  /// default. A run being resumed already has a width, and defaulting it to
+  /// `normal` here would silently re-pace a scan the owner throttled.
   Future<IndexStartOutcome> resumeRun({
     required String runId,
     RunPriority? priority,
