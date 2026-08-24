@@ -175,6 +175,30 @@ It is three. `alexandria-docs` exists and publishes the documentation site.
 **Fixed**, while keeping the point the sentence was making: only two of them have
 to be built to run the thing locally.
 
+### U-07 — Two configuration knobs were spelled differently on each side · **fixed**
+
+The product has two settings that both halves care about, and each was spelled
+one way here and another in the core:
+
+| Concept | This repository | The core |
+| --- | --- | --- |
+| Database path | `ALEXANDRIA_DB_PATH` | `ALEXANDRIA_DATABASE_PATH` |
+| Log level | `ALEXANDRIA_LOG_LEVEL` | `ALEXANDRIA_LOG_LEVEL`, since renamed to `ALEXANDRIA_LOGGING_LEVEL` |
+
+Neither collided, so nothing was broken — but two near-identical names for one
+concept, in one program, is exactly the kind of thing that gets set wrong once
+and then debugged for an hour.
+
+**Fixed** — both renamed to match the core, in `app_logger.dart`,
+`core_paths.dart`, `dev.ps1`, `dev.sh`, the README and a test. One name per
+concept across the product.
+
+The README now also records what the shared names do *not* imply, since the
+mechanisms genuinely differ: the database path is read from the environment at
+startup and handed to the core over FFI, so this side decides it; the log level
+is a `--dart-define` here and a runtime variable in the core, so turning up both
+halves means setting both.
+
 ---
 
 ## Reviewed and found correct

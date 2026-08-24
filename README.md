@@ -202,7 +202,21 @@ and takes about two seconds:
 
 `ALEXANDRIA_CORE_REPO` sets the core's location without passing it each time.
 
-> **Runs use a scratch catalog.** The script points `ALEXANDRIA_DB_PATH` at
+The two knobs this application shares a concept with the core over are spelled
+the same on both sides — `ALEXANDRIA_DATABASE_PATH` and
+`ALEXANDRIA_LOGGING_LEVEL` — so there is one name per concept across the
+product. They are not the same *mechanism*, though, and the difference matters
+when one of them appears not to take:
+
+- `ALEXANDRIA_DATABASE_PATH` is read from the environment at startup. The
+  application resolves it and hands the path to the core over FFI, so this side
+  is the one that decides.
+- `ALEXANDRIA_LOGGING_LEVEL` sets **this** application's level at build time,
+  through `--dart-define`, so changing it means rebuilding. The same name in the
+  environment sets the core's own level at run time. Setting both is how you
+  turn up both halves.
+
+> **Runs use a scratch catalog.** The script points `ALEXANDRIA_DATABASE_PATH` at
 > `.dev/catalog.db`, so indexing a folder, deleting an item, or testing a purge
 > never touches a catalog you care about. Delete that file to start clean;
 > `-RealData` / `--real-data` opts out. Settings and the log file are *not*
