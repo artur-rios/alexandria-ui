@@ -44,11 +44,11 @@ class CorePaths {
   static const String libraryPathVariable = 'ALEXANDRIA_CORE_LIBRARY';
 
   /// Overrides the resolved database path at run time.
-  static const String databasePathVariable = 'ALEXANDRIA_DB_PATH';
+  static const String databasePathVariable = 'ALEXANDRIA_DATABASE_PATH';
 
   /// Overrides the resolved database path at build time.
   static const String databasePathDefine = String.fromEnvironment(
-    'ALEXANDRIA_DB_PATH',
+    'ALEXANDRIA_DATABASE_PATH',
   );
 
   /// The folder the settings store, the log file, and the database live in.

@@ -21,7 +21,7 @@ void main() {
     'GivenAnUnrelatedVariable_WhenTheModeIsChecked_ThenTheApplicationSetsIt',
     () {
       expect(
-        shouldSetAuthMode(const {'ALEXANDRIA_LOG_LEVEL': 'debug'}),
+        shouldSetAuthMode(const {'ALEXANDRIA_LOGGING_LEVEL': 'debug'}),
         isTrue,
       );
     },

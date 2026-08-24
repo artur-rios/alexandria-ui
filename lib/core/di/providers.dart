@@ -324,7 +324,8 @@ final indexRunsControllerProvider =
       IndexRunsController.new,
     );
 
-/// Every run the core still has outstanding, as one list (FR-FC-29).
+/// Every run the core still has outstanding, as one list (FR-LB-15 /
+/// core FR-FC-35).
 ///
 /// The single source of truth for what is running, read directly from the
 /// core's `listActiveRuns` rather than reconstructed from per-folder state.

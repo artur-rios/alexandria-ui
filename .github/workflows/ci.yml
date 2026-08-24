@@ -25,19 +25,32 @@ env:
   # part of moving this value, and a moving target would make the drift check
   # pass against whatever the core happened to be that morning.
   #
-  # Moved from UC-46 to the core's relicensing commit, which changes LICENSE,
+  # This commit is the core's documentation review, and it is here for the
+  # header: it corrects the requirement and use case identifiers in the doc
+  # comments cbindgen copies into `header.h`, so the vendored copy below can
+  # only match at this commit or later.
+  #
+  # It sits on top of the core's UC-42 indexing work, which is the substantive
+  # reason the pin had to move at all: that added `alexandria_index_pause`,
+  # `alexandria_index_cancel`, `alexandria_index_resume` and
+  # `alexandria_index_runs_active_json`, and gave
+  # `alexandria_index_refresh_start` a second parameter. The indexing
+  # experience calls all five, and the pin before it predated every one of
+  # them — which left this check failing on `main` for two days and would have
+  # shipped a release whose FFI lookups miss at run time.
+  #
+  # It also carries the core's relicensing commit, which changes LICENSE,
   # README and the crates' metadata and no code at all. The desktop packages
   # carry copyleft libraries, so the core they are built from has to be the
   # tree whose licence says so — pointing at the commit before it would offer
   # anyone exercising their GPL rights a source tree marked proprietary.
   #
-  # This commit is `alexandria-api` UC-46, which added the collections listing
-  # UC-26 and UC-27 need. It is also the first ref this application follows
-  # since the core replaced e-mail confirmation and password reset with
-  # recovery codes on 2026-08-18: UC-40, UC-41, and UC-42 are specified against
-  # recovery codes now, so following the core is no longer a divergence.
+  # Everything the earlier pins were chosen for is still true of this one: the
+  # collections listing UC-26 and UC-27 need (core UC-46), and the recovery
+  # codes UC-40, UC-41 and UC-42 are specified against since the core dropped
+  # e-mail confirmation and password reset on 2026-08-18.
   CORE_REPOSITORY: artur-rios/alexandria-api
-  CORE_REF: 88ffd3b4f4c44ce243704fd12d00db92c3221f80
+  CORE_REF: 25b0ef45acd012b0cd7474b8359cca5e2288232a
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned

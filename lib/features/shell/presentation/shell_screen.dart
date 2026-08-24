@@ -44,7 +44,7 @@ class ShellScreen extends ConsumerWidget {
               ],
             ),
           ),
-          // FR-FC-28: whatever the core is indexing, above the playback bar
+          // FR-LB-15: whatever the core is indexing, above the playback bar
           // and below everything else. It takes no height when nothing is
           // running, so the shell is unchanged for anyone not indexing.
           const BackgroundActivityStrip(),

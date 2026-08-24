@@ -13,11 +13,11 @@ import 'rolling_file_log_sink.dart';
 /// developer's console is still a place a password should not appear.
 abstract final class AppLogger {
   /// The log level, set at build time by
-  /// `--dart-define=ALEXANDRIA_LOG_LEVEL=fine`.
+  /// `--dart-define=ALEXANDRIA_LOGGING_LEVEL=fine`.
   ///
   /// Verbose in development, informational in release, per §3.
   static const String _configuredLevel = String.fromEnvironment(
-    'ALEXANDRIA_LOG_LEVEL',
+    'ALEXANDRIA_LOGGING_LEVEL',
     defaultValue: 'INFO',
   );
 

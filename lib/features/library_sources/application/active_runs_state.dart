@@ -7,7 +7,7 @@ import '../domain/run_estimate.dart';
 part 'active_runs_state.freezed.dart';
 
 /// Every run the core still has outstanding, as one list rather than one per
-/// folder (FR-FC-29).
+/// folder (FR-LB-15 / core FR-FC-35).
 ///
 /// [IndexRunsState] keeps a run per registered folder because that is the
 /// question the library-sources screen asks. This is the other question —

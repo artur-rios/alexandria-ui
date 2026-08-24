@@ -82,6 +82,20 @@ abstract class IndexRunsState with _$IndexRunsState {
   /// Whether anything at all is being scanned.
   bool get hasRunInFlight => inFlightRoots.isNotEmpty;
 
+  /// Every folder still being scanned whose status is worth reading again.
+  ///
+  /// A folder whose last read failed is left out. Its run stays in [runs], so
+  /// the screen still shows what it was doing when the read broke, but polling
+  /// it every interval would only spin on the same error. Starting the folder
+  /// again clears the failure and puts it back in this list.
+  ///
+  /// This is what the poller iterates, rather than [inFlightRoots]: one
+  /// folder's unreadable status must not stop the others from being followed.
+  List<String> get pollableRoots => [
+    for (final root in inFlightRoots)
+      if (!failures.containsKey(root)) root,
+  ];
+
   /// [root]'s start is in flight.
   IndexRunsState starting_(String root) => copyWith(
     starting: {...starting, root},

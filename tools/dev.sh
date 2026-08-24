@@ -175,7 +175,7 @@ if [ "$REAL_DATA" = "yes" ]; then
 else
   SCRATCH="$REPO_ROOT/.dev/catalog.db"
   mkdir -p "$(dirname "$SCRATCH")"
-  export ALEXANDRIA_DB_PATH="$SCRATCH"
+  export ALEXANDRIA_DATABASE_PATH="$SCRATCH"
   step "Running against a scratch catalog"
   note "$SCRATCH"
   note "delete that file to start over; --real-data uses the real one"

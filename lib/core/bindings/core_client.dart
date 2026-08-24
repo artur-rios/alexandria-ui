@@ -44,7 +44,7 @@ abstract interface class CoreClient {
   Future<CoreJsonResponse> authLocalRegister(String jsonBody);
 
   /// Reads the owner's account through `alexandria_auth_local_account`
-  /// (FR-AU-14, UC-42).
+  /// (core FR-AU-18).
   ///
   /// Answers the address and how many recovery codes remain unconsumed.
   /// [token] is the active session's credential, never logged or retained
@@ -52,7 +52,8 @@ abstract interface class CoreClient {
   Future<CoreJsonResponse> authLocalAccount(String token);
 
   /// Replaces the whole recovery-code set through
-  /// `alexandria_auth_local_regenerate_recovery_codes` (FR-AU-17, UC-42).
+  /// `alexandria_auth_local_regenerate_recovery_codes` (core FR-AU-17,
+  /// FR-AU-19).
   ///
   /// Answers the ten new codes, once. Every code from the previous set stops
   /// working. [token] is the active session's credential.

@@ -10,7 +10,7 @@ collections, watchlists, and reading lists. It links the Alexandria Rust core in
 process over FFI rather than talking to a server, so the whole product runs as a
 single local application with no network hop between the interface and its data.
 
-> **Status:** all forty-three issues are delivered — the foundation and
+> **Status:** all forty-six issues are delivered — the foundation and
 > every use case in the backlog below.
 
 > Windows and Ubuntu. Single-user. Metadata and content editing only — never
@@ -23,7 +23,9 @@ single local application with no network hop between the interface and its data.
   and text notes, PDFs and e-books, comic books, images, and browser bookmarks —
   in list, detailed-list, and grid layouts.
 - Registers one or more library folders and runs indexing and re-scans from the
-  interface.
+  interface — indexing a folder as soon as it is added, showing live progress
+  wherever the owner happens to be, and letting a scan be paused, resumed,
+  cancelled, or paced down while it works.
 - Plays video with full screen, seeking, subtitle tracks, and audio tracks.
 - Plays audio in a persistent player, with the disc, vinyl, or tape animation
   turning for the duration of an album or artist and stopping on pause.
@@ -126,10 +128,12 @@ from your system. The Windows archive bundles the ffmpeg DLLs the same way.
 
 ## Building from source
 
-The product is two repositories. This one is the front end; the
+The product is three repositories: this one is the front end, the
 [Alexandria core](https://github.com/artur-rios/alexandria-api) is a Rust
-library it links in process over FFI. Running the real thing locally means
-building both.
+library it links in process over FFI, and
+[alexandria-docs](https://github.com/artur-rios/alexandria-docs) is the
+documentation site. Running the real thing locally means building the first
+two.
 
 Prerequisites, per the
 [Technology Stack Document](docs/requirements/Technology%20Stack%20Document.md):
@@ -198,7 +202,21 @@ and takes about two seconds:
 
 `ALEXANDRIA_CORE_REPO` sets the core's location without passing it each time.
 
-> **Runs use a scratch catalog.** The script points `ALEXANDRIA_DB_PATH` at
+The two knobs this application shares a concept with the core over are spelled
+the same on both sides — `ALEXANDRIA_DATABASE_PATH` and
+`ALEXANDRIA_LOGGING_LEVEL` — so there is one name per concept across the
+product. They are not the same *mechanism*, though, and the difference matters
+when one of them appears not to take:
+
+- `ALEXANDRIA_DATABASE_PATH` is read from the environment at startup. The
+  application resolves it and hands the path to the core over FFI, so this side
+  is the one that decides.
+- `ALEXANDRIA_LOGGING_LEVEL` sets **this** application's level at build time,
+  through `--dart-define`, so changing it means rebuilding. The same name in the
+  environment sets the core's own level at run time. Setting both is how you
+  turn up both halves.
+
+> **Runs use a scratch catalog.** The script points `ALEXANDRIA_DATABASE_PATH` at
 > `.dev/catalog.db`, so indexing a folder, deleting an item, or testing a purge
 > never touches a catalog you care about. Delete that file to start clean;
 > `-RealData` / `--real-data` opts out. Settings and the log file are *not*
@@ -301,29 +319,32 @@ its tests before its pull request is opened.
 
 ## Roadmap
 
-Ten milestones covering forty-three issues: one foundation issue plus one issue
+Eleven milestones covering forty-six issues: one foundation issue plus one issue
 per use case. Milestones are dependency-ordered — no milestone depends on a later
 one, and every milestone after `M-01` depends on it.
 
 | Milestone | Delivers | Depends on | Issues | Status |
 | --- | --- | --- | --- | --- |
-| [M-01 — Foundation](https://github.com/artur-rios/alexandria-desktop-front/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 1 / 1 closed |
-| [M-02 — Shell and access](https://github.com/artur-rios/alexandria-desktop-front/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, sign in to, and recover access to | M-01 | 9 | 9 / 9 closed |
-| [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-desktop-front/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 4 / 4 closed |
-| [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-desktop-front/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 6 / 6 closed |
-| [M-05 — Metadata and content editing](https://github.com/artur-rios/alexandria-desktop-front/milestone/5) | Music and video metadata, file names, and text content can be edited | M-04 | 4 | 4 / 4 closed |
-| [M-06 — Media playback](https://github.com/artur-rios/alexandria-desktop-front/milestone/6) | Video plays with subtitles and audio tracks; audio plays with a queue and the album animation | M-04 | 3 | 3 / 3 closed |
-| [M-07 — Document and image viewing](https://github.com/artur-rios/alexandria-desktop-front/milestone/7) | PDFs, e-books, comics, images, and saved pages can be read | M-04 | 4 | 4 / 4 closed |
-| [M-08 — Collections and bookmarks](https://github.com/artur-rios/alexandria-desktop-front/milestone/8) | Files and bookmarks can be grouped, and bookmarks managed and opened | M-04 | 3 | 3 / 3 closed |
-| [M-09 — Watchlists and reading lists](https://github.com/artur-rios/alexandria-desktop-front/milestone/9) | Movies, series, books, and comics can be tracked with per-episode and per-issue progress | M-08 | 4 | 4 / 4 closed |
-| [M-10 — Deletion lifecycle](https://github.com/artur-rios/alexandria-desktop-front/milestone/10) | Items can be deleted, restored, purged, purged on disk, and reviewed when missing | M-04 | 5 | 5 / 5 closed |
+| [M-01 — Foundation](https://github.com/artur-rios/alexandria-ui/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 1 / 1 closed |
+| [M-02 — Shell and access](https://github.com/artur-rios/alexandria-ui/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, sign in to, and recover access to | M-01 | 9 | 9 / 9 closed |
+| [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-ui/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 4 / 4 closed |
+| [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-ui/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 6 / 6 closed |
+| [M-05 — Metadata and content editing](https://github.com/artur-rios/alexandria-ui/milestone/5) | Music and video metadata, file names, and text content can be edited | M-04 | 4 | 4 / 4 closed |
+| [M-06 — Media playback](https://github.com/artur-rios/alexandria-ui/milestone/6) | Video plays with subtitles and audio tracks; audio plays with a queue and the album animation | M-04 | 3 | 3 / 3 closed |
+| [M-07 — Document and image viewing](https://github.com/artur-rios/alexandria-ui/milestone/7) | PDFs, e-books, comics, images, and saved pages can be read | M-04 | 4 | 4 / 4 closed |
+| [M-08 — Collections and bookmarks](https://github.com/artur-rios/alexandria-ui/milestone/8) | Files and bookmarks can be grouped, and bookmarks managed and opened | M-04 | 3 | 3 / 3 closed |
+| [M-09 — Watchlists and reading lists](https://github.com/artur-rios/alexandria-ui/milestone/9) | Movies, series, books, and comics can be tracked with per-episode and per-issue progress | M-08 | 4 | 4 / 4 closed |
+| [M-10 — Deletion lifecycle](https://github.com/artur-rios/alexandria-ui/milestone/10) | Items can be deleted, restored, purged, purged on disk, and reviewed when missing | M-04 | 5 | 5 / 5 closed |
+| [M-11 — Indexing experience](https://github.com/artur-rios/alexandria-ui/milestone/11) | A scan is visible from anywhere, controllable while it runs, and paceable; a newly registered folder indexes itself | M-03 | 3 | 3 / 3 closed |
 
 GitHub's milestone pages are the live view of progress; the counts here are as
 of the last update to this file.
 
 **The two repositories agree again.** `CORE_REF` tracks
-[`alexandria-api` UC-46](https://github.com/artur-rios/alexandria-api/pull/107),
-and the divergence that opened on 2026-08-18 is closed on both sides:
+[`alexandria-api` UC-42](https://github.com/artur-rios/alexandria-api/pull/114),
+which is what the indexing experience is built on — pause, resume, cancel, live
+progress, run priority, and the outstanding-runs listing. Earlier divergences
+are closed on both sides too:
 
 - **Account recovery is recovery codes.** The core dropped e-mail confirmation
   and password reset and replaced them with ten single-use codes minted at
@@ -346,94 +367,105 @@ and nesting stays a change of data rather than of interface.
 
 | Issue | Work | Spec |
 |---|---|---|
-| [#1](https://github.com/artur-rios/alexandria-desktop-front/issues/1) | Project scaffold and initial infrastructure (IR-01 … IR-16) | [Operations & Infrastructure](docs/requirements/Operations%20%26%20Infrastructure%20Document.md) |
+| [#1](https://github.com/artur-rios/alexandria-ui/issues/1) | Project scaffold and initial infrastructure (IR-01 … IR-16) | [Operations & Infrastructure](docs/requirements/Operations%20%26%20Infrastructure%20Document.md) |
 
 ### M-02 — Shell and access
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#39](https://github.com/artur-rios/alexandria-desktop-front/issues/39) | UC-38 — Navigate the application shell — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#40](https://github.com/artur-rios/alexandria-desktop-front/issues/40) | UC-39 — Manage application preferences — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#2](https://github.com/artur-rios/alexandria-desktop-front/issues/2) | UC-01 — Sign up — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#3](https://github.com/artur-rios/alexandria-desktop-front/issues/3) | UC-02 — Log in — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#4](https://github.com/artur-rios/alexandria-desktop-front/issues/4) | UC-03 — Sign out — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#5](https://github.com/artur-rios/alexandria-desktop-front/issues/5) | UC-04 — Change credentials — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#41](https://github.com/artur-rios/alexandria-desktop-front/issues/41) | UC-40 — Save the recovery codes — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#42](https://github.com/artur-rios/alexandria-desktop-front/issues/42) | UC-41 — Recover access with a recovery code — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#43](https://github.com/artur-rios/alexandria-desktop-front/issues/43) | UC-42 — Regenerate the recovery codes — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#39](https://github.com/artur-rios/alexandria-ui/issues/39) | UC-38 — Navigate the application shell — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#40](https://github.com/artur-rios/alexandria-ui/issues/40) | UC-39 — Manage application preferences — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#2](https://github.com/artur-rios/alexandria-ui/issues/2) | UC-01 — Sign up — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#3](https://github.com/artur-rios/alexandria-ui/issues/3) | UC-02 — Log in — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#4](https://github.com/artur-rios/alexandria-ui/issues/4) | UC-03 — Sign out — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#5](https://github.com/artur-rios/alexandria-ui/issues/5) | UC-04 — Change credentials — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#41](https://github.com/artur-rios/alexandria-ui/issues/41) | UC-40 — Save the recovery codes — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#42](https://github.com/artur-rios/alexandria-ui/issues/42) | UC-41 — Recover access with a recovery code — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#43](https://github.com/artur-rios/alexandria-ui/issues/43) | UC-42 — Regenerate the recovery codes — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-03 — Library sources and indexing
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#6](https://github.com/artur-rios/alexandria-desktop-front/issues/6) | UC-05 — Register a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#7](https://github.com/artur-rios/alexandria-desktop-front/issues/7) | UC-06 — Index a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#8](https://github.com/artur-rios/alexandria-desktop-front/issues/8) | UC-07 — Refresh the catalog — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#9](https://github.com/artur-rios/alexandria-desktop-front/issues/9) | UC-08 — Unregister a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#6](https://github.com/artur-rios/alexandria-ui/issues/6) | UC-05 — Register a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#7](https://github.com/artur-rios/alexandria-ui/issues/7) | UC-06 — Index a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#8](https://github.com/artur-rios/alexandria-ui/issues/8) | UC-07 — Refresh the catalog — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#9](https://github.com/artur-rios/alexandria-ui/issues/9) | UC-08 — Unregister a library folder — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-04 — Catalog browsing and search
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#10](https://github.com/artur-rios/alexandria-desktop-front/issues/10) | UC-09 — Browse the library by type — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#11](https://github.com/artur-rios/alexandria-desktop-front/issues/11) | UC-10 — Switch the view layout — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#12](https://github.com/artur-rios/alexandria-desktop-front/issues/12) | UC-11 — Search the catalog — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#13](https://github.com/artur-rios/alexandria-desktop-front/issues/13) | UC-12 — Filter and sort a listing — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#14](https://github.com/artur-rios/alexandria-desktop-front/issues/14) | UC-13 — View a file's details — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#15](https://github.com/artur-rios/alexandria-desktop-front/issues/15) | UC-14 — View the home dashboard — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#10](https://github.com/artur-rios/alexandria-ui/issues/10) | UC-09 — Browse the library by type — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#11](https://github.com/artur-rios/alexandria-ui/issues/11) | UC-10 — Switch the view layout — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#12](https://github.com/artur-rios/alexandria-ui/issues/12) | UC-11 — Search the catalog — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#13](https://github.com/artur-rios/alexandria-ui/issues/13) | UC-12 — Filter and sort a listing — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#14](https://github.com/artur-rios/alexandria-ui/issues/14) | UC-13 — View a file's details — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#15](https://github.com/artur-rios/alexandria-ui/issues/15) | UC-14 — View the home dashboard — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-05 — Metadata and content editing
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#16](https://github.com/artur-rios/alexandria-desktop-front/issues/16) | UC-15 — Edit music metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#17](https://github.com/artur-rios/alexandria-desktop-front/issues/17) | UC-16 — Edit video metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#18](https://github.com/artur-rios/alexandria-desktop-front/issues/18) | UC-17 — Rename a file — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#19](https://github.com/artur-rios/alexandria-desktop-front/issues/19) | UC-18 — Edit a Markdown or text file — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#16](https://github.com/artur-rios/alexandria-ui/issues/16) | UC-15 — Edit music metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#17](https://github.com/artur-rios/alexandria-ui/issues/17) | UC-16 — Edit video metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#18](https://github.com/artur-rios/alexandria-ui/issues/18) | UC-17 — Rename a file — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#19](https://github.com/artur-rios/alexandria-ui/issues/19) | UC-18 — Edit a Markdown or text file — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-06 — Media playback
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#20](https://github.com/artur-rios/alexandria-desktop-front/issues/20) | UC-19 — Play a video — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#21](https://github.com/artur-rios/alexandria-desktop-front/issues/21) | UC-20 — Play audio — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#22](https://github.com/artur-rios/alexandria-desktop-front/issues/22) | UC-21 — Show the album playback animation — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#20](https://github.com/artur-rios/alexandria-ui/issues/20) | UC-19 — Play a video — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#21](https://github.com/artur-rios/alexandria-ui/issues/21) | UC-20 — Play audio — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#22](https://github.com/artur-rios/alexandria-ui/issues/22) | UC-21 — Show the album playback animation — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-07 — Document and image viewing
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#23](https://github.com/artur-rios/alexandria-desktop-front/issues/23) | UC-22 — View a document — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#24](https://github.com/artur-rios/alexandria-desktop-front/issues/24) | UC-23 — Read a comic book — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#25](https://github.com/artur-rios/alexandria-desktop-front/issues/25) | UC-24 — View an image — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#26](https://github.com/artur-rios/alexandria-desktop-front/issues/26) | UC-25 — View a saved page — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#23](https://github.com/artur-rios/alexandria-ui/issues/23) | UC-22 — View a document — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#24](https://github.com/artur-rios/alexandria-ui/issues/24) | UC-23 — Read a comic book — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#25](https://github.com/artur-rios/alexandria-ui/issues/25) | UC-24 — View an image — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#26](https://github.com/artur-rios/alexandria-ui/issues/26) | UC-25 — View a saved page — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-08 — Collections and bookmarks
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#27](https://github.com/artur-rios/alexandria-desktop-front/issues/27) | UC-26 — Manage collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#28](https://github.com/artur-rios/alexandria-desktop-front/issues/28) | UC-27 — Organize items into collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#29](https://github.com/artur-rios/alexandria-desktop-front/issues/29) | UC-28 — Manage bookmarks — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#27](https://github.com/artur-rios/alexandria-ui/issues/27) | UC-26 — Manage collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#28](https://github.com/artur-rios/alexandria-ui/issues/28) | UC-27 — Organize items into collections — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#29](https://github.com/artur-rios/alexandria-ui/issues/29) | UC-28 — Manage bookmarks — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-09 — Watchlists and reading lists
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#30](https://github.com/artur-rios/alexandria-desktop-front/issues/30) | UC-29 — Manage watchlists — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#31](https://github.com/artur-rios/alexandria-desktop-front/issues/31) | UC-30 — Track watch progress — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#32](https://github.com/artur-rios/alexandria-desktop-front/issues/32) | UC-31 — Manage reading lists — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#33](https://github.com/artur-rios/alexandria-desktop-front/issues/33) | UC-32 — Track reading progress — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#30](https://github.com/artur-rios/alexandria-ui/issues/30) | UC-29 — Manage watchlists — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#31](https://github.com/artur-rios/alexandria-ui/issues/31) | UC-30 — Track watch progress — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#32](https://github.com/artur-rios/alexandria-ui/issues/32) | UC-31 — Manage reading lists — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#33](https://github.com/artur-rios/alexandria-ui/issues/33) | UC-32 — Track reading progress — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-10 — Deletion lifecycle
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#34](https://github.com/artur-rios/alexandria-desktop-front/issues/34) | UC-33 — Delete an item — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#35](https://github.com/artur-rios/alexandria-desktop-front/issues/35) | UC-34 — Browse and restore deleted items — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#36](https://github.com/artur-rios/alexandria-desktop-front/issues/36) | UC-35 — Purge a record — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#37](https://github.com/artur-rios/alexandria-desktop-front/issues/37) | UC-36 — Purge a file on disk — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#38](https://github.com/artur-rios/alexandria-desktop-front/issues/38) | UC-37 — Review missing files — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#34](https://github.com/artur-rios/alexandria-ui/issues/34) | UC-33 — Delete an item — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#35](https://github.com/artur-rios/alexandria-ui/issues/35) | UC-34 — Browse and restore deleted items — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#36](https://github.com/artur-rios/alexandria-ui/issues/36) | UC-35 — Purge a record — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#37](https://github.com/artur-rios/alexandria-ui/issues/37) | UC-36 — Purge a file on disk — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#38](https://github.com/artur-rios/alexandria-ui/issues/38) | UC-37 — Review missing files — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+
+### M-11 — Indexing experience
+
+Built on the core's UC-42 and UC-48 — the run status query, the outstanding-runs
+listing, and the pause, resume, and cancel controls.
+
+| Issue | Work | Spec |
+| --- | --- | --- |
+| — | UC-43 — Follow a scan while it runs — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-44 — Pause, resume, or cancel a scan — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-45 — Pace a scan — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ## Contributing
 

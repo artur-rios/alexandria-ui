@@ -213,7 +213,7 @@ Pass -Core <path>, set ALEXANDRIA_CORE_REPO, or clone it beside this one:
     } else {
         $scratch = Join-Path $RepoRoot '.dev\catalog.db'
         New-Item -ItemType Directory -Force (Split-Path $scratch) | Out-Null
-        $env:ALEXANDRIA_DB_PATH = $scratch
+        $env:ALEXANDRIA_DATABASE_PATH = $scratch
         Write-Step 'Running against a scratch catalog'
         Write-Note $scratch
         Write-Note 'delete that file to start over; -RealData uses the real one'
