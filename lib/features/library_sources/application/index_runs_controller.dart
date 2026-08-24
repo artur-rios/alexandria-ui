@@ -99,7 +99,7 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     }
   }
 
-  /// Pauses [root]'s running scan (FR-FC-28).
+  /// Pauses [root]'s running scan (FR-LB-16 / core FR-FC-32).
   ///
   /// Nothing to resolve against without a known run, so a folder with none
   /// is left alone rather than guessed at.
@@ -115,7 +115,7 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     await _afterControl(root, outcome);
   }
 
-  /// Abandons [root]'s scan for good (FR-FC-30).
+  /// Abandons [root]'s scan for good (FR-LB-16 / core FR-FC-34).
   ///
   /// Terminal and not resumable, which is what separates this from [pause] —
   /// the screen confirms before calling this, the same as every other
@@ -132,7 +132,7 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     await _afterControl(root, outcome);
   }
 
-  /// Picks [root]'s paused scan back up (FR-FC-29).
+  /// Picks [root]'s paused scan back up (FR-LB-16 / core FR-FC-33).
   ///
   /// [priority] carries forward if given; null asks the core to keep the
   /// pace the run already had — not the core's default, which is what null

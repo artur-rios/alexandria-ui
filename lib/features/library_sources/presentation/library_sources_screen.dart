@@ -259,7 +259,7 @@ class _SourceList extends ConsumerWidget {
 }
 
 /// The controls a folder's row offers, chosen from its own run state
-/// (FR-LB-07, FR-FC-28 … FR-FC-30).
+/// (FR-LB-07, FR-LB-13, FR-LB-16 / core FR-FC-28, FR-FC-32 … FR-FC-34).
 ///
 /// Each state offers only what it affords: running, this is pause, cancel
 /// and priority; paused, it is resume and cancel; anything else — no run at
@@ -419,7 +419,7 @@ class _PriorityMenu extends StatelessWidget {
   }
 }
 
-/// Confirms and then cancels [root]'s run (FR-FC-30).
+/// Confirms and then cancels [root]'s run (FR-LB-17 / core FR-FC-34).
 ///
 /// Cancel is terminal and not resumable, unlike pause, so — like every other
 /// destructive action (FR-UX-10) — it asks before doing anything the owner
@@ -527,7 +527,7 @@ class _RunReport extends ConsumerWidget {
       IndexRunStatus.paused => l10n.librarySourcesRunPaused,
       IndexRunStatus.failed => l10n.librarySourcesRunFailed,
 
-      // FR-FC-30: the core keeps a cancelled run's tally, so without this arm
+      // Core FR-FC-34: the core keeps a cancelled run's tally, so without this arm
       // the counts below fire and the owner who just abandoned a scan is told
       // it finished.
       IndexRunStatus.cancelled => l10n.librarySourcesRunCancelled,

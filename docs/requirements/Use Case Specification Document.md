@@ -1593,6 +1593,120 @@ graph LR
 
 ---
 
+### UC-43: Follow a scan while it runs
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-43 |
+| **Name** | Follow a scan while it runs |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner watches an index or refresh run make progress — from anywhere in the application, not only from the screen it was started on. |
+| **Preconditions** | At least one run is outstanding, whether started in this session or left behind by a previous one. |
+| **Postconditions** | None — this is observation. The catalog is unchanged. |
+| **Requirements** | FR-LB-07, FR-LB-13, FR-LB-14, FR-LB-15, FR-LB-19, FR-LB-20, FR-UX-08 |
+
+**Main Flow**
+
+1. A run is outstanding, so the application shows the background activity
+   indicator above the persistent playback bar.
+2. The application asks the core which runs are outstanding, and does so
+   repeatedly while any of them is running.
+3. For each run the application presents its phase, how far through it is, and
+   how long it has been working — counting only time the run spent working, not
+   time it spent paused.
+4. Where the run has reported a total, the application presents a remaining-time
+   estimate derived from the rate it has observed itself.
+5. When nothing is left running, the application stops asking. A run that has
+   finished is reported once and then dismissed.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The run has not yet reported a total | The application presents the count processed so far and no estimate, rather than dividing by a total it does not have. |
+| AF-02 | Several runs are outstanding at once | The application presents an aggregate line and directs the owner to the library folders screen, where a specific run can be addressed. One row has no space to say which run a control would act on. |
+| AF-03 | One run's status cannot be read | That run stops being polled and the others continue. A single unreadable run never stops the application following the rest. |
+| AF-04 | Every outstanding run is paused | The application says so rather than claiming work is under way, and offers the resume. |
+| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+
+---
+
+### UC-44: Pause, resume, or cancel a scan
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-44 |
+| **Name** | Pause, resume, or cancel a scan |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner stops a scan where it stands and picks it up later, or abandons it outright — from the folder's own row, or from the background activity indicator. |
+| **Preconditions** | A run exists and is outstanding. |
+| **Postconditions** | The core records the run paused, running again under the same identifier, or cancelled. Whatever the run already catalogued stays catalogued; nothing is undone. |
+| **Requirements** | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
+
+**Main Flow — pause**
+
+1. The owner asks to pause a running scan.
+2. The application asks the core to pause it, and reads the run back.
+3. The run is presented as paused, keeping the point it reached.
+
+**Main Flow — resume**
+
+1. The owner asks to resume a paused scan.
+2. The application asks the core to resume it, naming a pace only if the owner
+   chose one.
+3. The application reads the run back and follows it again.
+
+**Main Flow — cancel**
+
+1. The owner asks to cancel a scan.
+2. The application confirms first, stating that the run is abandoned rather than
+   paused (FR-UX-10). A pause is not confirmed — it is reversible.
+3. On confirmation the application asks the core to cancel, and reads the run
+   back.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The owner cancels the confirmation | Nothing is sent and the run continues. |
+| AF-02 | The core refuses because the run has moved on since the control was rendered | The application reads the run back and presents its actual state, rather than surfacing an error about a race the owner did not cause. |
+| AF-03 | The run resumes | Its progress restarts from zero for the new segment, and the application says so — a resumed run re-walks, and the reset must not read as lost work. |
+| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+
+---
+
+### UC-45: Pace a scan
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-45 |
+| **Name** | Pace a scan |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner chooses how hard a scan pushes, so a large library can be catalogued in the background without the application becoming unpleasant to use. |
+| **Preconditions** | A run is being started, or one is outstanding. |
+| **Postconditions** | The run carries the chosen pace, and keeps it across a further pause. |
+| **Requirements** | FR-LB-18, FR-LB-16 |
+
+**Main Flow**
+
+1. The owner chooses a pace — normal or low — when starting a scan.
+2. The application passes that choice to the core, which resolves it into how
+   many files the run works on at a time.
+3. To change the pace of a run already under way, the owner asks for the new
+   pace; the application pauses the run and resumes it at that pace, because the
+   pace is fixed for as long as a segment is walking.
+4. The application states that the progress bar returns to zero, since a resume
+   starts a new segment.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The owner resumes without naming a pace | The run keeps the pace it already had. Sending nothing is not a request to speed up, and a scan deliberately throttled must not quietly return to full speed. |
+| AF-02 | The re-pace fails partway, leaving the run paused | The run is presented as paused, which is what it is, and the owner may resume it. |
+
+---
+
 ## 3. Use Case — Requirements Traceability
 
 | Use Case | Requirements |
@@ -1601,7 +1715,7 @@ graph LR
 | UC-02: Log in | FR-AU-04, FR-AU-05, FR-AU-06, FR-AU-07, FR-AU-08, FR-AU-11 |
 | UC-03: Sign out | FR-AU-09 |
 | UC-04: Change credentials | FR-AU-10, FR-AU-11 |
-| UC-05: Register a library folder | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11 |
+| UC-05: Register a library folder | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12 |
 | UC-06: Index a library folder | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09 |
 | UC-07: Refresh the catalog | FR-LB-06, FR-LB-07, FR-LB-08 |
 | UC-08: Unregister a library folder | FR-LB-10 |
@@ -1639,6 +1753,9 @@ graph LR
 | UC-40: Save the recovery codes | FR-AU-12, FR-AU-13, FR-AU-19 |
 | UC-41: Recover access with a recovery code | FR-AU-15, FR-AU-16, FR-AU-18, FR-AU-19 |
 | UC-42: Regenerate the recovery codes | FR-AU-14, FR-AU-17, FR-AU-19 |
+| UC-43: Follow a scan while it runs | FR-LB-07, FR-LB-13, FR-LB-14, FR-LB-15, FR-LB-19, FR-LB-20, FR-UX-08 |
+| UC-44: Pause, resume, or cancel a scan | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
+| UC-45: Pace a scan | FR-LB-16, FR-LB-18 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) appears at least

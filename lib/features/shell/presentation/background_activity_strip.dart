@@ -13,7 +13,7 @@ import '../../library_sources/domain/run_priority.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 
 /// What the core is indexing, from anywhere in the application
-/// (FR-FC-28 … FR-FC-31).
+/// (FR-LB-13 … FR-LB-16 / core FR-FC-28, FR-FC-31 … FR-FC-35).
 ///
 /// A 418 GB library takes hours to scan, and the owner does not spend those
 /// hours on the library-folders screen. This is the answer to both halves of
@@ -276,7 +276,8 @@ class _BackgroundActivityStripState
 }
 
 /// The one outstanding run: what it is doing, how far it has got, and the
-/// controls for it (FR-FC-28, FR-FC-30, FR-FC-31).
+/// controls for it (FR-LB-13, FR-LB-16, FR-LB-18 / core FR-FC-28, FR-FC-31,
+/// FR-FC-34).
 class _RunRow extends StatelessWidget {
   const _RunRow({
     required this.run,
@@ -416,7 +417,7 @@ class _RunRow extends StatelessWidget {
   }
 }
 
-/// Several runs at once, as one line (FR-FC-29).
+/// Several runs at once, as one line (FR-LB-15 / core FR-FC-35).
 ///
 /// One row rather than one row per run: the strip is forty pixels of the
 /// shell, and a list of runs is the library-folders screen's job — which is
@@ -507,7 +508,7 @@ class _AggregateRow extends StatelessWidget {
   }
 }
 
-/// How a run ended (FR-FC-29).
+/// How a run ended (FR-LB-13).
 class _OutcomeRow extends StatelessWidget {
   const _OutcomeRow({required this.run, required this.failed, this.onDismiss});
 

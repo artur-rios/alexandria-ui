@@ -13,7 +13,7 @@ import '../domain/run_priority.dart';
 import 'active_runs_state.dart';
 
 /// The single source of truth for what the core is running right now
-/// (FR-FC-29).
+/// (FR-LB-15, FR-LB-19, FR-LB-20 / core FR-FC-35).
 ///
 /// [IndexRunsController] answers "is this folder being scanned?" by
 /// remembering one run id per registered folder. This controller answers a
@@ -100,7 +100,8 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
     }
   }
 
-  /// Pauses [runId], then re-reads the outstanding runs (FR-FC-28).
+  /// Pauses [runId], then re-reads the outstanding runs (FR-LB-16 / core
+  /// FR-FC-32).
   Future<void> pause(String runId) async {
     final credential = _session.credential;
     if (credential == null) return;
@@ -113,7 +114,7 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   }
 
   /// Abandons [runId] for good, then re-reads the outstanding runs
-  /// (FR-FC-30).
+  /// (FR-LB-16 / core FR-FC-34).
   Future<void> cancel(String runId) async {
     final credential = _session.credential;
     if (credential == null) return;
@@ -125,7 +126,8 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
     await _afterControl(outcome);
   }
 
-  /// Picks [runId] back up, then re-reads the outstanding runs (FR-FC-29).
+  /// Picks [runId] back up, then re-reads the outstanding runs (FR-LB-16 /
+  /// core FR-FC-33).
   ///
   /// [priority] carries forward if given; null asks the core to keep the
   /// pace the run already had — the same convention [IndexGateway.resumeRun]

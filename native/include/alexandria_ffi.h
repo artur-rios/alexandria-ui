@@ -198,7 +198,7 @@
 #define SETTINGS_ERR_OTHER 9
 
 /**
- * FFI status codes returned by run-status operations (UC-42 / FR-FC-28).
+ * FFI status codes returned by run-status operations (UC-42, UC-48 / FR-FC-28, FR-FC-32 … FR-FC-35).
  * Deliberately separate from `INDEX_*`, `FILE_*`, `COLLECTION_*`, `PLAYBACK_*`,
  * and `AUTH_*` — per the convention established above — so this surface can
  * grow independently; `RUN_OK == INDEX_OK == 0` by convention.
@@ -216,7 +216,7 @@
 /**
  * The run exists but is not in a state the requested verb permits — pausing
  * a run that is not `running`, or resuming one that is not `paused`
- * (`DomainError::InvalidState`, UC-42 Task 11). Distinct from
+ * (`DomainError::InvalidState`, UC-48). Distinct from
  * `RUN_ERR_OTHER` for the same reason `FILE_ERR_INVALID_STATE` and
  * `COLLECTION_ERR_INVALID_STATE` are distinct from their own catch-alls: a
  * caller retrying a transient failure and a caller that asked for an
@@ -230,7 +230,7 @@
  * Result of starting an index run. `run_id` is a NUL-terminated UUID string
  * on success (empty on failure).
  *
- * Shared with `alexandria_index_resume` (UC-42), which reuses this same
+ * Shared with `alexandria_index_resume` (UC-48), which reuses this same
  * struct shape for a call that is not starting anything new. That reuse
  * changes what `status` means: from `alexandria_index_start` and
  * `alexandria_index_refresh_start` it is one of the `INDEX_ERR_*`
@@ -1038,7 +1038,7 @@ struct RunJsonResult alexandria_index_run_status_json(const char *run_id, const 
 
 /**
  * Pause a running index or re-index run where it stands, leaving it
- * resumable (UC-42 / FR-FC-28). `run_id` is the id `alexandria_index_start`
+ * resumable (UC-48 / FR-FC-32). `run_id` is the id `alexandria_index_start`
  * or `alexandria_index_refresh_start` returned; `token` is the bearer auth
  * token. Calls the same `RunControlHandler::pause` the HTTP route (Task 12)
  * calls.
@@ -1053,7 +1053,7 @@ struct RunJsonResult alexandria_index_run_status_json(const char *run_id, const 
 int alexandria_index_pause(const char *run_id, const char *token);
 
 /**
- * Abandon a running or paused index or re-index run (UC-42 / FR-FC-28).
+ * Abandon a running or paused index or re-index run (UC-48 / FR-FC-34).
  * Terminal — a cancelled run is never resumed. `run_id` is the id
  * `alexandria_index_start` or `alexandria_index_refresh_start` returned;
  * `token` is the bearer auth token. Calls the same
@@ -1068,7 +1068,7 @@ int alexandria_index_pause(const char *run_id, const char *token);
 int alexandria_index_cancel(const char *run_id, const char *token);
 
 /**
- * Put a paused index or re-index run back to work (UC-42 / FR-FC-28).
+ * Put a paused index or re-index run back to work (UC-48 / FR-FC-33).
  * `run_id` is the id `alexandria_index_start` or `alexandria_index_refresh_start`
  * returned; `token` is the bearer auth token. Returns the *same* `run_id` on
  * success — a resume does not mint a fresh run, it continues the one it was
@@ -1109,7 +1109,7 @@ struct IndexStartResult alexandria_index_resume(const char *run_id,
 /**
  * Every outstanding (`running` or `paused`) index and re-index run at once,
  * each with live progress overlaid exactly as `alexandria_index_run_status_json`
- * overlays a single run (UC-42 / FR-FC-28). `token` is the bearer auth
+ * overlays a single run (UC-42 / FR-FC-35). `token` is the bearer auth
  * token. On success `json` is a NUL-terminated JSON array of `CatalogRun`
  * bodies, newest first — byte-for-byte the same shape the HTTP
  * `GET /v1/index/runs?status=active` route (Task 12) returns (FR-FC-24 / NFR-09).

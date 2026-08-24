@@ -87,7 +87,7 @@ abstract interface class IndexGateway {
     required String credential,
   });
 
-  /// Pauses a running run (FR-FC-28, FR-FC-29).
+  /// Pauses a running run (FR-LB-16 / core FR-FC-32).
   ///
   /// Refused with [Failure] wrapping `RUN_ERR_INVALID_STATE` for a run that
   /// is not currently running — a terminal or already-paused run has nothing
@@ -97,7 +97,7 @@ abstract interface class IndexGateway {
     required String credential,
   });
 
-  /// Abandons a run for good (FR-FC-30).
+  /// Abandons a run for good (FR-LB-16 / core FR-FC-34).
   ///
   /// Terminal and not resumable, which is what separates this from
   /// [pauseRun]: a cancelled run cannot be picked back up.
@@ -106,7 +106,7 @@ abstract interface class IndexGateway {
     required String credential,
   });
 
-  /// Picks a paused run back up (FR-FC-29).
+  /// Picks a paused run back up (FR-LB-16 / core FR-FC-33).
   ///
   /// [priority] carries forward if given; null asks the core to keep the
   /// pace the run already had — which is *not* what null means to
