@@ -35,6 +35,13 @@ Run against the real catalog instead of a scratch one. Off by default so that
 re-indexing, deleting, and purging while testing cannot touch a catalog you
 care about.
 
+.PARAMETER Clean
+Delete everything previous runs left behind before building, so the application
+starts as a first launch. Runs tools\clean.ps1, which is also useful on its own.
+
+The real catalog is never deleted this way, with or without -RealData; run
+tools\clean.ps1 -RealCatalog to ask for that by name.
+
 .PARAMETER Generate
 Run build_runner and gen-l10n before starting. Needed after changing anything
 they generate from — models, or the localisation ARB files.
@@ -54,6 +61,10 @@ Dart-only change: skip straight to running.
 .EXAMPLE
 .\tools\dev.ps1 -Core D:\somewhere\alexandria-api -DebugBuild
 Build a core from elsewhere, unoptimised.
+
+.EXAMPLE
+.\tools\dev.ps1 -SkipCore -Clean
+Dart-only change, seen as a first launch would see it.
 #>
 
 [CmdletBinding()]
@@ -62,6 +73,7 @@ param(
     [switch] $SkipCore,
     [switch] $DebugBuild,
     [switch] $RealData,
+    [switch] $Clean,
     [switch] $Generate,
     [switch] $NoRun
 )
@@ -75,6 +87,19 @@ try {
     function Write-Step($message) { Write-Host "==> $message" -ForegroundColor Cyan }
     function Write-Note($message) { Write-Host "    $message" -ForegroundColor DarkGray }
     function Fail($message) { Write-Host "error: $message" -ForegroundColor Red; exit 1 }
+
+    # -------------------------------------------------------------------- clean
+
+    # Before the preflight, so that asking for a clean environment gets one
+    # even on a machine where the toolchain is not set up yet.
+    if ($Clean) {
+        & (Join-Path $PSScriptRoot 'clean.ps1')
+        if ($LASTEXITCODE -ne 0) { Fail 'the clean did not finish' }
+
+        if ($RealData) {
+            Write-Note 'the real catalog was left alone; clean.ps1 -RealCatalog deletes it'
+        }
+    }
 
     # ---------------------------------------------------------------- preflight
 
@@ -206,6 +231,16 @@ Pass -Core <path>, set ALEXANDRIA_CORE_REPO, or clone it beside this one:
     }
 
     # ------------------------------------------------------------------ the data
+
+    # The core's thumbnail cache defaults to a path relative to the working
+    # directory, which would drop a thumbnails\ folder wherever the application
+    # was started from. Kept inside .dev so that everything a run writes outside
+    # the application-support folder is in one already-ignored place — which is
+    # what makes tools\clean.ps1 able to promise it leaves nothing behind.
+    #
+    # Set for -RealData too: a real catalog is a reason not to touch the index,
+    # not a reason to scatter cache files.
+    $env:ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR = Join-Path $RepoRoot '.dev\thumbnails'
 
     if ($RealData) {
         Write-Step 'Running against the real catalog'

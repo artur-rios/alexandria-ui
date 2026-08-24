@@ -52,9 +52,14 @@ native/linux/*.so
 # Local log files and scratch databases.
 *.log
 
-# tools/dev.ps1 and tools/dev.sh put the development catalog here, so that
-# indexing, deleting and purging while testing never touch a real one.
+# tools/dev.ps1 and tools/dev.sh put the development catalog and the core's
+# thumbnail cache here, so that indexing, deleting and purging while testing
+# never touch a real one and tools/clean.ps1 has one place to sweep.
 /.dev/
+
+# Where the core's thumbnail cache lands when the application is started by
+# hand rather than by the development script, which redirects it into .dev.
+/thumbnails/
 
 # gen_l10n's untranslated-messages record; the parity test in test/core/l10n is
 # what fails the build, not this file.

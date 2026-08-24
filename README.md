@@ -197,6 +197,7 @@ and takes about two seconds:
 | Skip the core build | `-SkipCore` | `--skip-core` |
 | Unoptimised core, faster to compile | `-DebugBuild` | `--debug` |
 | Use the real catalog, not a scratch one | `-RealData` | `--real-data` |
+| Start from nothing, as a first launch would | `-Clean` | `--clean` |
 | Re-run build_runner and gen-l10n | `-Generate` | `--generate` |
 | Build and wire up, but do not start | `-NoRun` | `--no-run` |
 
@@ -218,11 +219,40 @@ when one of them appears not to take:
 
 > **Runs use a scratch catalog.** The script points `ALEXANDRIA_DATABASE_PATH` at
 > `.dev/catalog.db`, so indexing a folder, deleting an item, or testing a purge
-> never touches a catalog you care about. Delete that file to start clean;
-> `-RealData` / `--real-data` opts out. Settings and the log file are *not*
-> redirected — they live in the application-support directory and are shared
-> with an installed copy, which is worth knowing before blaming the scratch
-> database for remembered state.
+> never touches a catalog you care about. `-RealData` / `--real-data` opts out.
+> Settings and the log file are *not* redirected — they live in the
+> application-support directory and are shared with an installed copy, which is
+> worth knowing before blaming the scratch database for remembered state, and
+> which is why starting over takes the clean script below rather than deleting
+> one file.
+
+### Starting from a clean environment
+
+State outlives a run: the scratch catalog carries the previous index, the
+preferences file carries the theme, the language and the window geometry, and
+the core's thumbnail cache outlives the catalog that produced it. Seeing what an
+owner sees the first time they open the application means removing all three.
+
+```powershell
+.\tools\clean.ps1
+```
+
+```bash
+./tools/clean.sh
+```
+
+It removes the scratch catalog, the application-support folder holding the
+preferences and the log, the thumbnail cache, and the folders left behind by
+earlier versions of the application. Build output is left alone — this is a
+fresh install, not a fresh clone — and no library source folder can be reached,
+because not one of the paths it deletes is derived from the catalog.
+
+The real catalog, the one `-RealData` runs against, survives unless you ask for
+it by name with `-RealCatalog` / `--real-catalog`. `-WhatIf` / `--dry-run` lists
+what would go and touches nothing.
+
+`-Clean` / `--clean` on the development script does the same before building, so
+one command starts the application from nothing.
 
 ### Doing it by hand
 

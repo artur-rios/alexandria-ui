@@ -20,6 +20,7 @@ CORE=""
 SKIP_CORE="no"
 PROFILE="release"
 REAL_DATA="no"
+CLEAN="no"
 GENERATE="no"
 NO_RUN="no"
 
@@ -40,6 +41,11 @@ Usage: tools/dev.sh [options]
   --real-data   Run against the real catalog. Off by default so that
                 re-indexing, deleting and purging while testing cannot touch a
                 catalog you care about.
+  --clean       Delete everything previous runs left behind before building, so
+                the application starts as a first launch. Runs tools/clean.sh,
+                which is also useful on its own. The real catalog is never
+                deleted this way, with or without --real-data; run
+                tools/clean.sh --real-catalog to ask for that by name.
   --generate    Run build_runner and gen-l10n first. Needed after changing
                 anything they generate from.
   --no-run      Do everything except start the application.
@@ -54,12 +60,28 @@ while [ $# -gt 0 ]; do
     --skip-core) SKIP_CORE="yes"; shift ;;
     --debug) PROFILE="debug"; shift ;;
     --real-data) REAL_DATA="yes"; shift ;;
+    --clean) CLEAN="yes"; shift ;;
     --generate) GENERATE="yes"; shift ;;
     --no-run) NO_RUN="yes"; shift ;;
     --help | -h) usage; exit 0 ;;
     *) printf 'error: unknown option: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
   esac
 done
+
+# ----------------------------------------------------------------------- clean
+
+# Before the preflight, so that asking for a clean environment gets one even on
+# a machine where the toolchain is not set up yet.
+if [ "$CLEAN" = "yes" ]; then
+  # Through sh rather than directly: the shell scripts in this repository are
+  # not stored with the executable bit, because the checkout they are written in
+  # cannot keep one.
+  sh "$REPO_ROOT/tools/clean.sh"
+
+  if [ "$REAL_DATA" = "yes" ]; then
+    note "the real catalog was left alone; clean.sh --real-catalog deletes it"
+  fi
+fi
 
 # ------------------------------------------------------------------- preflight
 
@@ -168,6 +190,16 @@ if [ "$GENERATE" = "yes" ]; then
 fi
 
 # -------------------------------------------------------------------- the data
+
+# The core's thumbnail cache defaults to a path relative to the working
+# directory, which would drop a thumbnails/ folder wherever the application was
+# started from. Kept inside .dev so that everything a run writes outside the
+# application-support folder is in one already-ignored place — which is what
+# makes tools/clean.sh able to promise it leaves nothing behind.
+#
+# Set for --real-data too: a real catalog is a reason not to touch the index,
+# not a reason to scatter cache files.
+export ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR="$REPO_ROOT/.dev/thumbnails"
 
 if [ "$REAL_DATA" = "yes" ]; then
   step "Running against the real catalog"
