@@ -110,9 +110,12 @@ dev_dependencies:
 
   # Code generation: freezed models and the ffigen bindings (IR-03, IR-08).
   build_runner: ^2.15.1
-  # 4.0.0 is out and needs Dart >= 3.13.0; the pinned Flutter 3.44.9 ships
-  # Dart 3.12.2, so this moves with the SDK pin in the workflows rather
-  # than on its own.
+  # 4.0.0 is out and is held back twice over. It needs Dart >= 3.13.0, which
+  # the 3.47 upgrade satisfied, and it needs analyzer ^13.0.0, which is the
+  # same cap json_annotation above is behind: custom_lint 0.8.1, its own
+  # latest, requires analyzer ^8.0.0. Raising the SDK was necessary and not
+  # sufficient -- re-checked on Dart 3.13.1, where resolution still fails, on
+  # analyzer rather than on the SDK. This moves when custom_lint does.
   freezed: ^3.2.3
   ffigen: ^21.0.0
   json_serializable: ^6.11.2

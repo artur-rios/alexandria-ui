@@ -85,7 +85,7 @@ env:
   # Must match the SDK the committed pubspec.lock was resolved with, for the
   # same reason CI pins it: a newer SDK rewrites the lock during `pub get`, and
   # a release built against dependencies nobody chose is worse here than in CI.
-  FLUTTER_VERSION: 3.44.9
+  FLUTTER_VERSION: 3.47.1
 
   # The LGPL build, not the GPL one CI uses.
   #

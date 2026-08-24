@@ -58,7 +58,7 @@ env:
   # build then runs against dependencies nobody chose. This must match the SDK
   # the committed lock was resolved with. Upgrading is a deliberate change to
   # both, never a side effect of a fresh runner.
-  FLUTTER_VERSION: 3.44.9
+  FLUTTER_VERSION: 3.47.1
 
   # The Windows ffmpeg development libraries, pinned. The 7.1 series
   # specifically — see the comment on the install step for why a newer one

@@ -23,6 +23,17 @@ analyzer:
     - lib/core/l10n/generated/**
     - "**/*.freezed.dart"
     - "**/*.g.dart"
+    # Written by `flutter pub get` from the 3.47 upgrade onwards, and kept as
+    # the tool writes it: it re-appends any entry that is missing, so trimming
+    # the platforms this project does not target (it is Windows and Ubuntu
+    # only) would just reappear as a diff on the next resolve.
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
   language:
     strict-casts: true
