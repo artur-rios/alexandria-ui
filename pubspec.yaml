@@ -28,9 +28,15 @@ dependencies:
   # (Technology Stack Document §5). First needed by UC-02's login result.
   #
   # Held at 4.9 rather than the current 4.12 because json_serializable above
-  # 6.11 needs analyzer 10+, and the in-repo custom_lint plugin in
-  # tools/alexandria_lints pins analyzer ^8.4.0. Both move together when that
-  # plugin is upgraded; neither moves alone.
+  # 6.11 needs analyzer 10+, and analyzer here cannot go past 8.
+  #
+  # The cap is upstream, not ours. `custom_lint` is already at its own latest
+  # release, 0.8.1, and that release depends on analyzer ^8.0.0; the plugin in
+  # tools/alexandria_lints only follows it. Re-checked 2026-08-24 by relaxing
+  # that plugin to analyzer ^14 and watching resolution fail on custom_lint
+  # rather than on the plugin, so raising the plugin's own constraint achieves
+  # nothing on its own. All three move when custom_lint ships a release that
+  # takes a newer analyzer.
   json_annotation: ^4.9.0
 
   # The Alexandria core boundary (IR-03, IR-04, IR-09).
@@ -104,6 +110,9 @@ dev_dependencies:
 
   # Code generation: freezed models and the ffigen bindings (IR-03, IR-08).
   build_runner: ^2.15.1
+  # 4.0.0 is out and needs Dart >= 3.13.0; the pinned Flutter 3.44.9 ships
+  # Dart 3.12.2, so this moves with the SDK pin in the workflows rather
+  # than on its own.
   freezed: ^3.2.3
   ffigen: ^21.0.0
   json_serializable: ^6.11.2
