@@ -40,6 +40,14 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     return const IndexRunsState();
   }
 
+  /// Whether the poller is running.
+  ///
+  /// Exposed only so a test can assert that one run finishing does not stop
+  /// the others from being followed — there is no other way to observe a
+  /// `Timer` from outside. The same hook [ActiveRunsController] carries, for
+  /// the same reason.
+  bool get debugIsPolling => _poller != null;
+
   /// Starts a run for [root] (main flow steps 1 and 2).
   ///
   /// AF-01: a folder with a run already in flight is refused rather than
@@ -281,9 +289,11 @@ class IndexRunsController extends Notifier<IndexRunsState> {
         _stopPolling();
         _session.invalidate(failure);
 
+      // The refresh is off the board, but the folder scans are not: stopping
+      // outright here would freeze every one of them on its last reading.
       case IndexRunFailed(:final failure):
         state = state.copyWith(refreshRun: null, refreshFailure: failure);
-        _stopPolling();
+        _stopPollingIfIdle();
     }
   }
 
@@ -292,12 +302,12 @@ class IndexRunsController extends Notifier<IndexRunsState> {
   /// Public so a test can advance the observation without waiting on a timer,
   /// and so the screen can ask for a fresh reading when it opens.
   Future<void> refresh() async {
-    for (final root in state.inFlightRoots) {
+    for (final root in state.pollableRoots) {
       await _poll(root);
     }
     if (state.isRefreshing) await _pollRefresh();
 
-    if (state.inFlightRoots.isEmpty && !state.isRefreshing) _stopPolling();
+    _stopPollingIfIdle();
   }
 
   /// Picks up runs the core is still doing, or finished while the application
@@ -346,7 +356,7 @@ class IndexRunsController extends Notifier<IndexRunsState> {
         state = state.observed(root, observed);
         if (!observed.isInFlight) {
           await _recordOutcome(root, observed);
-          if (state.inFlightRoots.isEmpty) _stopPolling();
+          _stopPollingIfIdle();
         }
 
       // AF-06: the core rejected the session. Discarding it returns the owner
@@ -355,12 +365,15 @@ class IndexRunsController extends Notifier<IndexRunsState> {
         _stopPolling();
         _session.invalidate(failure);
 
+      // This folder is the one that could not be read. Everything else still
+      // in flight — another folder's scan, or the catalog-wide refresh — is
+      // unaffected and must keep being followed.
       case IndexRunFailed(:final failure):
         _log.warning(
           'run status unreadable for $root (${failure.coreStatusCode})',
         );
         state = state.failing(root, failure);
-        _stopPolling();
+        _stopPollingIfIdle();
     }
   }
 
@@ -413,9 +426,21 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     await _store.write(sources);
   }
 
+  /// Stops the poller once there is nothing left for it to read.
+  ///
+  /// The one place that decides this. It used to be spelled out at each call
+  /// site, and three of the four spellings were wrong in the same direction:
+  /// they weighed only the folder scans, so a folder finishing — or one
+  /// folder's read failing — stopped the timer while the catalog-wide refresh
+  /// was still going, freezing it on its last reading with nothing left to
+  /// restart it.
+  void _stopPollingIfIdle() {
+    if (state.pollableRoots.isEmpty && !state.isRefreshing) _stopPolling();
+  }
+
   void _schedulePolling() {
     if (_poller != null) return;
-    if (state.inFlightRoots.isEmpty && !state.isRefreshing) return;
+    if (state.pollableRoots.isEmpty && !state.isRefreshing) return;
 
     // Polling rather than a subscription, because the core's FFI surface
     // publishes a status query and no callback. The interval is injected so a

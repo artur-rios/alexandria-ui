@@ -349,4 +349,92 @@ void main() {
       },
     );
   });
+
+  group('one run ending never stops the others being followed', () {
+    const other = '/home/owner/films';
+    const unreadable = Failure.invalidInput(
+      family: CoreStatusFamily.indexing,
+      code: 1,
+    );
+
+    test(
+      'GivenARefreshIsRunning_WhenAFolderScanFinishes_ThenTheRefreshIsStillPolled',
+      () async {
+        // The refresh is catalog-wide and can run for hours, while a folder
+        // scan beside it finishes in minutes. Weighing only the folder scans
+        // stopped the timer on the shorter one and froze the refresh on its
+        // last reading, with nothing left to restart it.
+        final sut = build(
+          gateway: FakeIndexGateway()
+            ..readOutcomes = [
+              runningRun(), // the folder scan, just started
+              runningRun(), // the refresh, just started
+              finishedRun(), // the folder scan, now complete
+              runningRun(), // the refresh, still going
+            ],
+        );
+        final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+
+        await controller.startIndex(root);
+        await controller.startRefresh();
+        await controller.refresh();
+
+        expect(sut.ref.read(indexRunsControllerProvider).isRefreshing, isTrue);
+        expect(controller.debugIsPolling, isTrue);
+      },
+    );
+
+    test(
+      'GivenTwoFoldersScanning_WhenOneStatusIsUnreadable_ThenTheOtherIsStillPolled',
+      () async {
+        final sut = build(
+          gateway: FakeIndexGateway()
+            ..readOutcomes = [
+              runningRun(), // first folder, just started
+              runningRun(), // second folder, just started
+              const IndexRunOutcome.failed(failure: unreadable),
+              runningRun(), // second folder, still going
+            ],
+          registered: [source(root), source(other)],
+        );
+        final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+
+        await controller.startIndex(root);
+        await controller.startIndex(other);
+        await controller.refresh();
+
+        final state = sut.ref.read(indexRunsControllerProvider);
+        // The folder that could not be read drops out of the rotation rather
+        // than spinning on the same error, and takes nothing else with it.
+        expect(state.failureFor(root), unreadable);
+        expect(state.pollableRoots, [other]);
+        expect(controller.debugIsPolling, isTrue);
+      },
+    );
+
+    test(
+      'GivenAFolderIsScanning_WhenTheRefreshStatusIsUnreadable_ThenTheFolderIsStillPolled',
+      () async {
+        final sut = build(
+          gateway: FakeIndexGateway()
+            ..readOutcomes = [
+              runningRun(), // the folder scan, just started
+              runningRun(), // the refresh, just started
+              runningRun(), // the folder scan, still going
+              const IndexRunOutcome.failed(failure: unreadable),
+            ],
+        );
+        final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+
+        await controller.startIndex(root);
+        await controller.startRefresh();
+        await controller.refresh();
+
+        final state = sut.ref.read(indexRunsControllerProvider);
+        expect(state.refreshFailure, unreadable);
+        expect(state.pollableRoots, [root]);
+        expect(controller.debugIsPolling, isTrue);
+      },
+    );
+  });
 }
