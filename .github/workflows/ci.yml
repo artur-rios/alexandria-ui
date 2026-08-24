@@ -25,13 +25,19 @@ env:
   # part of moving this value, and a moving target would make the drift check
   # pass against whatever the core happened to be that morning.
   #
-  # This commit is the core's UC-42 indexing work: it added
-  # `alexandria_index_pause`, `alexandria_index_cancel`,
-  # `alexandria_index_resume` and `alexandria_index_runs_active_json`, and gave
+  # This commit is the core's documentation review, and it is here for the
+  # header: it corrects the requirement and use case identifiers in the doc
+  # comments cbindgen copies into `header.h`, so the vendored copy below can
+  # only match at this commit or later.
+  #
+  # It sits on top of the core's UC-42 indexing work, which is the substantive
+  # reason the pin had to move at all: that added `alexandria_index_pause`,
+  # `alexandria_index_cancel`, `alexandria_index_resume` and
+  # `alexandria_index_runs_active_json`, and gave
   # `alexandria_index_refresh_start` a second parameter. The indexing
-  # experience calls all five, so the ref has to be here — the previous pin
-  # predated every one of them, which left CI's header check failing and would
-  # have shipped a release whose FFI lookups miss at run time.
+  # experience calls all five, and the pin before it predated every one of
+  # them — which left this check failing on `main` for two days and would have
+  # shipped a release whose FFI lookups miss at run time.
   #
   # It also carries the core's relicensing commit, which changes LICENSE,
   # README and the crates' metadata and no code at all. The desktop packages
@@ -44,7 +50,7 @@ env:
   # codes UC-40, UC-41 and UC-42 are specified against since the core dropped
   # e-mail confirmation and password reset on 2026-08-18.
   CORE_REPOSITORY: artur-rios/alexandria-api
-  CORE_REF: 80fe8ecca2dbcf039fa1733fb4b804cef3dca780
+  CORE_REF: 25b0ef45acd012b0cd7474b8359cca5e2288232a
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned
