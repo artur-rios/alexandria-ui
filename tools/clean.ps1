@@ -28,6 +28,9 @@ preferences and logs included, and the catalog is left where it is.
 .PARAMETER WhatIf
 List what would be removed and touch nothing.
 
+.PARAMETER Confirm
+Ask before each removal.
+
 .EXAMPLE
 .\tools\clean.ps1 -WhatIf
 See what a clean would remove.
@@ -93,10 +96,10 @@ function Remove-Target {
         return
     }
 
-    if ($WhatIfPreference) {
-        Write-Note "would remove the $What`: $Path"
-        return
-    }
+    # Rather than testing $WhatIfPreference and printing a line of our own: this
+    # is what makes -Confirm mean something as well, and CmdletBinding puts
+    # -Confirm in the syntax whether or not it is honoured.
+    if (-not $PSCmdlet.ShouldProcess($Path, "remove the $What")) { return }
 
     try {
         Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
