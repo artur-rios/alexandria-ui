@@ -322,8 +322,10 @@ GitHub's milestone pages are the live view of progress; the counts here are as
 of the last update to this file.
 
 **The two repositories agree again.** `CORE_REF` tracks
-[`alexandria-api` UC-46](https://github.com/artur-rios/alexandria-api/pull/107),
-and the divergence that opened on 2026-08-18 is closed on both sides:
+[`alexandria-api` UC-42](https://github.com/artur-rios/alexandria-api/pull/114),
+which is what the indexing experience is built on — pause, resume, cancel, live
+progress, run priority, and the outstanding-runs listing. Earlier divergences
+are closed on both sides too:
 
 - **Account recovery is recovery codes.** The core dropped e-mail confirmation
   and password reset and replaced them with ten single-use codes minted at
