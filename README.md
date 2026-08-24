@@ -463,9 +463,9 @@ listing, and the pause, resume, and cancel controls.
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| — | UC-43 — Follow a scan while it runs — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| — | UC-44 — Pause, resume, or cancel a scan — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| — | UC-45 — Pace a scan — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#103](https://github.com/artur-rios/alexandria-ui/issues/103) | UC-43 — Follow a scan while it runs — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#104](https://github.com/artur-rios/alexandria-ui/issues/104) | UC-44 — Pause, resume, or cancel a scan — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#105](https://github.com/artur-rios/alexandria-ui/issues/105) | UC-45 — Pace a scan — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ## Contributing
 
