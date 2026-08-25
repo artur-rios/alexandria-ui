@@ -7,7 +7,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import '../../catalog/domain/library_type.dart';
 import '../domain/shell_destination.dart';
-import 'library_tools_button.dart';
 import 'preferences_dialog.dart';
 import 'rail_action.dart';
 
@@ -104,7 +103,6 @@ class ShellNavigationPanel extends ConsumerWidget {
                       // line is what tells the eye that before it stops
                       // mattering.
                       const Divider(),
-                      const LibraryToolsButton(),
                       RailAction(
                         icon: Icons.settings_outlined,
                         label: l10n.preferencesLabel,

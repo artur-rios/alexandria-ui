@@ -11,8 +11,7 @@ import 'package:alexandria_ui/features/organization/domain/collection_gateway.da
 import 'package:alexandria_ui/features/organization/presentation/collections_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
-import 'package:alexandria_ui/features/shell/presentation/library_tools_button.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -106,19 +105,14 @@ void main() {
   }
 
   group('the main flow', () {
-    // Step 1. Reached from the navigation panel's tools menu, so it is
-    // available from every area rather than from the dashboard alone.
+    // Step 1. Reached from the menu bar's Library menu, so it is available
+    // from every area rather than from the dashboard alone.
     testWidgets(
       'GivenTheShell_WhenTheToolsAreOpened_ThenCollectionsAreReachable',
       (tester) async {
         await openCollections(tester, openScreen: false);
 
-        await tester.tap(
-          find.descendant(
-            of: find.byType(ShellNavigationPanel),
-            matching: find.byType(LibraryToolsButton),
-          ),
-        );
+        await tester.tap(find.byType(LibraryMenu));
         await tester.pumpAndSettle();
 
         expect(find.text(messages(tester).collectionsOpen), findsOneWidget);

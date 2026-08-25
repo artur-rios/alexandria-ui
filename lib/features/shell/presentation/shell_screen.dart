@@ -12,6 +12,7 @@ import '../../organization/presentation/bookmarks_view.dart';
 import '../domain/shell_destination.dart';
 import 'background_activity_strip.dart';
 import 'playback_bar.dart';
+import 'shell_menu_bar.dart';
 import 'shell_navigation_panel.dart';
 
 /// The application shell (UC-38, FR-UX-01, FR-UX-02).
@@ -32,6 +33,10 @@ class ShellScreen extends ConsumerWidget {
     return Scaffold(
       body: Column(
         children: [
+          // FR-UX-01: the library-wide menus, above everything the destination
+          // owns.
+          const ShellMenuBar(),
+          const Divider(height: 1, thickness: 1),
           Expanded(
             child: Row(
               children: [
