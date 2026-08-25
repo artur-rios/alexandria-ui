@@ -1,9 +1,11 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/login_harness.dart';
@@ -148,6 +150,49 @@ void main() {
 
         expect(find.text('English'), findsOneWidget);
         expect(find.text('Português (Brasil)'), findsOneWidget);
+      },
+    );
+  });
+
+  group('the album animation (FR-PL-11)', () {
+    testWidgets(
+      'GivenPreferences_WhenTheyOpen_ThenEveryAnimationModeIsOffered',
+      (tester) async {
+        await openFromShell(tester);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        for (final label in [
+          l10n.animationByYear,
+          l10n.animationVinyl,
+          l10n.animationTape,
+          l10n.animationDisc,
+          l10n.animationOff,
+        ]) {
+          expect(find.text(label), findsOneWidget, reason: label);
+        }
+      },
+    );
+
+    testWidgets(
+      'GivenPreferences_WhenAModeIsChosen_ThenItIsAppliedAndStored',
+      (tester) async {
+        await openFromShell(tester);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        await tester.tap(find.text(l10n.animationVinyl));
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(preferencesControllerProvider).albumAnimation,
+          AlbumAnimationMode.vinyl,
+        );
       },
     );
   });

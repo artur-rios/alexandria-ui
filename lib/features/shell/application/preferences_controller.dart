@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/settings/settings_store.dart';
 import '../../../core/startup/startup_state.dart';
+import '../../playback/domain/album_medium.dart';
 import 'preferences_state.dart';
 
 /// The owner's theme and language (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
@@ -35,6 +36,7 @@ class PreferencesController extends Notifier<PreferencesState> {
     return PreferencesState(
       themeMode: settings?.themeMode ?? ThemeMode.system,
       locale: settings?.locale,
+      albumAnimation: settings?.albumAnimationMode ?? AlbumAnimationMode.byYear,
     );
   }
 
@@ -56,6 +58,12 @@ class PreferencesController extends Notifier<PreferencesState> {
   Future<void> setLocale(Locale? locale) async {
     state = state.copyWith(locale: locale, lastChangeUnsaved: false);
     await _persist((settings) => settings.setLocale(locale));
+  }
+
+  /// Applies [mode] now and records it for the next launch (FR-PL-11).
+  Future<void> setAlbumAnimation(AlbumAnimationMode mode) async {
+    state = state.copyWith(albumAnimation: mode, lastChangeUnsaved: false);
+    await _persist((settings) => settings.setAlbumAnimationMode(mode));
   }
 
   /// Clears the unsaved notice once the owner has seen it.

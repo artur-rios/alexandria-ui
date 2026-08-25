@@ -33,3 +33,51 @@ AlbumMedium mediumForYear(int? year) {
 
   return AlbumMedium.vinyl;
 }
+
+/// What the owner chose the animation should show (FR-PL-11, UC-21).
+///
+/// The medium and the *choice of* medium are different things: [AlbumMedium]
+/// is what is on screen, and this is how the application decided. Keeping them
+/// apart is what lets the by-year rule stay one function that the pinned modes
+/// simply do not call.
+enum AlbumAnimationMode {
+  /// The album's year decides, which is the default.
+  byYear,
+
+  /// Always a record.
+  vinyl,
+
+  /// Always a cassette.
+  tape,
+
+  /// Always a compact disc.
+  disc,
+
+  /// No animation at all.
+  off;
+
+  /// The mode [name] names, or `null` when it names none.
+  ///
+  /// Used to read a stored choice back, where an unrecognized value means the
+  /// owner's preference is simply unknown and the default applies.
+  static AlbumAnimationMode? byName(String? name) {
+    for (final mode in AlbumAnimationMode.values) {
+      if (mode.name == name) return mode;
+    }
+    return null;
+  }
+}
+
+/// The medium [mode] shows for an album of [year], or `null` when the owner
+/// has turned the animation off (FR-PL-11).
+///
+/// `null` rather than a medium plus a separate "is it on" flag: there is
+/// exactly one question here — what, if anything, to draw — and a caller that
+/// has to ask two of them is a caller that can get the answer half right.
+AlbumMedium? mediumFor(AlbumAnimationMode mode, int? year) => switch (mode) {
+  AlbumAnimationMode.byYear => mediumForYear(year),
+  AlbumAnimationMode.vinyl => AlbumMedium.vinyl,
+  AlbumAnimationMode.tape => AlbumMedium.tape,
+  AlbumAnimationMode.disc => AlbumMedium.disc,
+  AlbumAnimationMode.off => null,
+};
