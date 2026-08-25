@@ -929,6 +929,10 @@
   "@musicUnknownAlbum": {
     "description": "Names the group of audio files whose metadata carries no album."
   },
+  "musicRowActions": "Actions for this track",
+  "@musicRowActions": {
+    "description": "Tooltip on the button that opens a track row's context menu, which right-clicking the row also opens."
+  },
   "musicLoading": "Reading metadata: {read} of {total}",
   "@musicLoading": {
     "description": "Progress while the music area reads each audio file's metadata, which the core answers one file at a time.",

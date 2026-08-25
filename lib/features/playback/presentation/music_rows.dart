@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../catalog/presentation/file_details_view.dart';
+import '../../catalog/presentation/music_metadata_form.dart';
+import '../application/audio_playback_controller.dart';
 import '../domain/music_browse.dart';
 import '../domain/music_grouping.dart';
 
@@ -121,31 +124,116 @@ class MusicTrackList extends ConsumerWidget {
       itemBuilder: (context, index) {
         final entry = entries[index];
 
-        return ListTile(
-          leading: numbered
-              ? SizedBox(
-                  width: AppSpacing.xl,
-                  child: Text(
-                    entry.metadata.track?.toString() ?? '',
-                    textAlign: TextAlign.end,
-                  ),
-                )
-              : const Icon(Icons.music_note_outlined),
-          title: Text(musicTitleOf(entry, l10n)),
-          subtitle: numbered ? null : Text(musicArtistOf(entry, l10n)),
-          // Inside a record, a track plays the record from there; in Songs it
-          // plays alone, because there is no record around it to continue.
-          onTap: () {
-            final player = ref.read(audioPlaybackControllerProvider.notifier);
+        return MusicRowMenu(
+          entry: entry,
+          child: ListTile(
+            leading: numbered
+                ? SizedBox(
+                    width: AppSpacing.xl,
+                    child: Text(
+                      entry.metadata.track?.toString() ?? '',
+                      textAlign: TextAlign.end,
+                    ),
+                  )
+                : const Icon(Icons.music_note_outlined),
+            title: Text(musicTitleOf(entry, l10n)),
+            subtitle: numbered ? null : Text(musicArtistOf(entry, l10n)),
+            // Inside a record, a track plays the record from there; in Songs
+            // it plays alone, because there is no record around it to
+            // continue.
+            onTap: () {
+              final player = ref.read(
+                audioPlaybackControllerProvider.notifier,
+              );
 
-            unawaited(
-              numbered
-                  ? player.playAlbum(entry.file)
-                  : player.playTrack(entry.file),
-            );
-          },
+              unawaited(
+                numbered
+                    ? player.playAlbum(entry.file)
+                    : player.playTrack(entry.file),
+              );
+            },
+          ),
         );
       },
     );
   }
+}
+
+/// A track's own actions (UC-46, FR-CT-14).
+///
+/// Right-click is what a desktop owner reaches for, and the button beside the
+/// row is what makes the same five actions reachable without a right mouse
+/// button and from the keyboard. Both open the one menu, so there is no second
+/// list of actions to keep in step.
+class MusicRowMenu extends ConsumerWidget {
+  /// Creates the wrapper.
+  const MusicRowMenu({required this.entry, required this.child, super.key});
+
+  /// The track the menu acts on.
+  final MusicEntry entry;
+
+  /// The row itself.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
+    return MenuAnchor(
+      menuChildren: [
+        MenuItemButton(
+          leadingIcon: const Icon(Icons.play_arrow),
+          onPressed: () => _play(ref, (player) => player.playTrack(entry.file)),
+          child: Text(l10n.audioPlay),
+        ),
+        MenuItemButton(
+          leadingIcon: const Icon(Icons.album_outlined),
+          onPressed: () => _play(ref, (player) => player.playAlbum(entry.file)),
+          child: Text(l10n.audioPlayAlbum),
+        ),
+        MenuItemButton(
+          leadingIcon: const Icon(Icons.person_outline),
+          onPressed: () =>
+              _play(ref, (player) => player.playArtist(entry.file)),
+          child: Text(l10n.audioPlayArtist),
+        ),
+        MenuItemButton(
+          leadingIcon: const Icon(Icons.info_outline),
+          onPressed: () =>
+              FileDetailsView.show(context, ref, entry.file.uuid),
+          child: Text(l10n.detailsTitle),
+        ),
+        MenuItemButton(
+          leadingIcon: const Icon(Icons.edit_outlined),
+          onPressed: () => MusicMetadataForm.showFor(
+            context,
+            ref,
+            entry.file.uuid,
+            entry.metadata,
+          ),
+          child: Text(l10n.detailsEditMetadata),
+        ),
+      ],
+      builder: (context, controller, _) => GestureDetector(
+        onSecondaryTapDown: (details) =>
+            controller.open(position: details.localPosition),
+        child: Row(
+          children: [
+            Expanded(child: child),
+            IconButton(
+              tooltip: l10n.musicRowActions,
+              icon: const Icon(Icons.more_vert),
+              onPressed: () =>
+                  controller.isOpen ? controller.close() : controller.open(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _play(
+    WidgetRef ref,
+    Future<void> Function(AudioPlaybackController player) play,
+  ) => unawaited(play(ref.read(audioPlaybackControllerProvider.notifier)));
 }

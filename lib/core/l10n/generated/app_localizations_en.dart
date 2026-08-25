@@ -703,6 +703,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get musicUnknownAlbum => 'Unknown album';
 
   @override
+  String get musicRowActions => 'Actions for this track';
+
+  @override
   String musicLoading(int read, int total) {
     return 'Reading metadata: $read of $total';
   }

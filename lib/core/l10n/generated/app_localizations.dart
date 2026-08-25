@@ -1320,6 +1320,12 @@ abstract class AppLocalizations {
   /// **'Unknown album'**
   String get musicUnknownAlbum;
 
+  /// Tooltip on the button that opens a track row's context menu, which right-clicking the row also opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions for this track'**
+  String get musicRowActions;
+
   /// Progress while the music area reads each audio file's metadata, which the core answers one file at a time.
   ///
   /// In en, this message translates to:

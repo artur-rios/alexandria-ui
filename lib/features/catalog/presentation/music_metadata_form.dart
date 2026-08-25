@@ -37,6 +37,25 @@ class MusicMetadataForm extends ConsumerStatefulWidget {
     );
   }
 
+  /// Presents the form for [uuid], on metadata already read.
+  ///
+  /// The music area holds every track's metadata already — it is what the
+  /// rows are named from — so opening the editor from a row should not cost a
+  /// second read of the same file.
+  static Future<void> showFor(
+    BuildContext context,
+    WidgetRef ref,
+    String uuid,
+    MusicMetadata metadata,
+  ) {
+    ref.read(musicMetadataEditorProvider.notifier).open(uuid, metadata);
+
+    return showDialog<void>(
+      context: context,
+      builder: (context) => const MusicMetadataForm(),
+    );
+  }
+
   @override
   ConsumerState<MusicMetadataForm> createState() => _MusicMetadataFormState();
 }
