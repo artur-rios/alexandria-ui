@@ -69,12 +69,8 @@ List<MusicEntry> tracksOfAlbum(
 ]);
 
 /// Every track in [library], by title, with the untitled ones last.
-List<MusicEntry> songsIn(List<MusicEntry> library) {
-  final sorted = [...library]
-    ..sort((a, b) => _byName(a.title, b.title));
-
-  return sorted;
-}
+List<MusicEntry> songsIn(List<MusicEntry> library) =>
+    [...library]..sort((a, b) => _byName(a.title, b.title));
 
 List<MusicGroup> _groupedBy(
   List<MusicEntry> library,

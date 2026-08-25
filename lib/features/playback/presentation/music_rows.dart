@@ -37,7 +37,11 @@ class MusicGroupList extends ConsumerWidget {
       itemCount: groups.length,
       itemBuilder: (context, index) {
         final group = groups[index];
-        final artist = group.entries.first.artist;
+        // Only an album row needs whose it is — an artist row already is
+        // the answer to that question, and does not read this.
+        final artist = kind == MusicGroupKind.album
+            ? group.entries.first.artist
+            : null;
 
         return ListTile(
           leading: Icon(
