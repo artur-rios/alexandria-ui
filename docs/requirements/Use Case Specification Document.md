@@ -833,26 +833,29 @@ graph LR
 | **Description** | While an album or artist plays, the disc, vinyl, or tape is shown on its matching player, turning while the audio runs. |
 | **Preconditions** | Audio playback of an album or artist is active (UC-20). |
 | **Postconditions** | The animation ran for the duration of the playback and stopped with it. |
-| **Requirements** | FR-PL-07 |
+| **Requirements** | FR-PL-07, FR-PL-11 |
 
 **Main Flow**
 
 1. Album or artist playback begins.
-2. The application presents the medium — a disc, a vinyl record, or a tape —
-   being introduced into its matching player.
-3. The medium turns while audio plays, for the duration of the queue.
-4. The owner pauses; the motion stops and the medium stays in place.
-5. The owner resumes; the motion continues.
-6. The queue ends or playback stops; the animation ends.
+2. An insertion is owed — the session's first play, or the album or the artist
+   has changed — and the application opens the full-window player.
+3. The application takes the medium — a disc, a vinyl record, or a tape —
+   from its case and inserts it into its matching player.
+4. The medium turns while audio plays, for the duration of the queue.
+5. The owner pauses; the motion stops and the medium stays in place.
+6. The owner resumes; the motion continues.
+7. The queue ends or playback stops; the animation ends.
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The window is too small to show the animation | The application presents the compact player without it, and playback is unaffected. |
+| AF-01 | The stage's available space falls below its floor, at a very large text scale | The application hides the stage and keeps the rest of the player; the screen scrolls to reach the transport controls instead of overflowing. |
 | AF-02 | A single track is played rather than an album or artist | The compact player is used; the animation is an album and artist behavior. |
 | AF-03 | The owner navigates to another screen | Playback and the persistent player continue; the animation is shown wherever the full player is visible. |
 | AF-04 | The system requests reduced motion | The application presents the medium without the turning motion, and playback is unaffected. |
+| AF-05 | The owner has turned the album animation off | The application shows no medium and does not open the full-window player on its own; audio plays normally. |
 
 ---
 
@@ -1763,7 +1766,7 @@ graph LR
 | UC-18: Edit a Markdown or text file | FR-ME-06, FR-ME-07, FR-ME-08, FR-ME-09, FR-ME-10 |
 | UC-19: Play a video | FR-PL-01, FR-PL-02, FR-PL-03, FR-PL-04, FR-PL-08, FR-PL-10 |
 | UC-20: Play audio | FR-PL-05, FR-PL-06, FR-PL-08, FR-PL-09, FR-PL-10 |
-| UC-21: Show the album playback animation | FR-PL-07 |
+| UC-21: Show the album playback animation | FR-PL-07, FR-PL-11 |
 | UC-22: View a document | FR-VW-01, FR-VW-02, FR-VW-07, FR-VW-08 |
 | UC-23: Read a comic book | FR-VW-03, FR-VW-07, FR-VW-08 |
 | UC-24: View an image | FR-VW-04, FR-VW-07 |
