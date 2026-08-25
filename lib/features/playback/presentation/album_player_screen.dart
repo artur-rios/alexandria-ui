@@ -8,7 +8,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import '../domain/album_medium.dart';
-import 'album_animation.dart';
+import 'album_stage.dart';
 import 'music_display_name.dart';
 
 /// The full audio player (UC-21, FR-PL-07).
@@ -53,12 +53,20 @@ class AlbumPlayerScreen extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (showsAnimation) ...[
-              AlbumAnimation(
+            if (showsAnimation && current != null) ...[
+              AlbumStage(
                 medium: mediumForYear(state.queue.year),
                 // Step 3: it turns while audio plays; steps 4 and 5 stop and
                 // continue it with the playback it belongs to.
                 isPlaying: state.isPlaying,
+                // Whether an insertion is owed is Task 6's job; until it is
+                // wired in here, the medium simply starts seated — the same
+                // "no insertion" behaviour `AlbumAnimation` always had.
+                insert: false,
+                title: musicTitleForFile(ref, current, l10n),
+                artist: musicArtistForFile(ref, current, l10n),
+                album: state.queue.label,
+                size: 220,
               ),
               const SizedBox(height: AppSpacing.lg),
             ],
