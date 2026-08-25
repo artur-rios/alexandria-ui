@@ -1428,8 +1428,8 @@ graph LR
 
 **Main Flow**
 
-1. The application presents the shell: the type navigation panel, the content
-   area, and the persistent playback bar.
+1. The application presents the shell: the library menu bar, the type
+   navigation panel, the content area, and the persistent playback bar.
 2. The owner navigates between areas from the panel, and by keyboard.
 3. The owner resizes the window; the shell adapts across the breakpoints,
    collapsing the navigation panel rather than clipping controls.

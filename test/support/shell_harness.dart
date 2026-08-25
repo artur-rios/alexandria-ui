@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
-import 'package:alexandria_ui/features/shell/presentation/library_tools_button.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
+import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 
 import 'failing_settings_store.dart';
 import 'fake_auth_gateway.dart';
@@ -55,19 +55,23 @@ extension PumpShell on WidgetTester {
     return container;
   }
 
-  /// Opens one of the panel's library-wide screens (UC-37 main flow step 1).
+  /// Opens one of the library-wide screens (UC-37 main flow step 1).
   ///
-  /// The tools menu is the one entry point every one of them has, so a test
+  /// The Library menu is the one entry point every one of them has, so a test
   /// that needs collections, deleted items, or the missing-files review opens
   /// it the way the owner does rather than through whichever screen happens to
   /// link to it.
   Future<void> openLibraryTool(String label) async {
-    await tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byType(LibraryToolsButton),
-      ),
-    );
+    await tap(find.byType(LibraryMenu));
+    await pumpAndSettle();
+
+    await tap(find.text(label).last);
+    await pumpAndSettle();
+  }
+
+  /// Chooses [label] from the shell's Settings menu (UC-39 main flow step 1).
+  Future<void> openSettingsMenuEntry(String label) async {
+    await tap(find.byType(SettingsMenu));
     await pumpAndSettle();
 
     await tap(find.text(label).last);

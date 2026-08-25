@@ -4,11 +4,10 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
+import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
 import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/auth/presentation/recovery_codes_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,19 +20,10 @@ import '../../../support/shell_harness.dart';
 void main() {
   const newCodes = ['new-aaaa', 'new-bbbb'];
 
-  /// The panel's preferences action.
-  ///
-  /// Not `find.byType(PreferencesButton)`: the shell now builds its
-  /// preferences action as a `RailAction` inline, matching how the
-  /// destinations beside it present at each breakpoint.
-  Finder preferencesActionInShell() => find.descendant(
-    of: find.byType(ShellNavigationPanel),
-    matching: find.byIcon(Icons.settings_outlined),
-  );
-
-  /// Signs in and opens preferences, where the section lives (step 1).
+  /// Signs in and opens the credential-change dialog from the Settings menu,
+  /// where the section lives (step 1) beside changing the password.
   Future<({ProviderContainer container, FakeAuthGateway gateway})>
-  openPreferences(
+  openCredentialsDialog(
     WidgetTester tester, {
     AccountOutcome? account,
     RegenerateOutcome? regenerate,
@@ -50,8 +40,11 @@ void main() {
       themeMode: themeMode,
     );
 
-    await tester.tap(preferencesActionInShell());
-    await tester.pumpAndSettle();
+    await tester.openSettingsMenuEntry(
+      AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      ).changeCredentialsOpen,
+    );
 
     return (container: container, gateway: gateway);
   }
@@ -78,7 +71,7 @@ void main() {
     testWidgets('GivenTheCoreReportsACount_WhenPreferencesOpen_ThenItIsShown', (
       tester,
     ) async {
-      await openPreferences(tester);
+      await openCredentialsDialog(tester);
 
       expect(
         find.text(messages(tester).recoveryCodesRemaining(7)),
@@ -90,7 +83,7 @@ void main() {
     testWidgets('GivenTheAction_WhenItIsPressed_ThenTheOwnerIsAskedFirst', (
       tester,
     ) async {
-      final opened = await openPreferences(tester);
+      final opened = await openCredentialsDialog(tester);
 
       await tester.tap(find.text(messages(tester).recoveryCodesRegenerate));
       await tester.pumpAndSettle();
@@ -107,7 +100,7 @@ void main() {
     testWidgets('GivenItIsConfirmed_WhenTheCoreAnswers_ThenTheNewSetIsShown', (
       tester,
     ) async {
-      final opened = await openPreferences(tester);
+      final opened = await openCredentialsDialog(tester);
 
       await regenerate(tester);
 
@@ -121,7 +114,7 @@ void main() {
     testWidgets('GivenTheNewSet_WhenItIsAcknowledged_ThenTheCatalogReturns', (
       tester,
     ) async {
-      await openPreferences(tester);
+      await openCredentialsDialog(tester);
       await regenerate(tester);
 
       await tester.tap(
@@ -143,7 +136,7 @@ void main() {
     testWidgets('GivenTheConfirmation_WhenItIsDeclined_ThenNothingChanges', (
       tester,
     ) async {
-      final opened = await openPreferences(tester);
+      final opened = await openCredentialsDialog(tester);
 
       await regenerate(tester, confirm: false);
 
@@ -157,7 +150,7 @@ void main() {
     testWidgets('GivenTheCoreRefuses_WhenItAnswers_ThenTheOwnerIsTold', (
       tester,
     ) async {
-      await openPreferences(
+      await openCredentialsDialog(
         tester,
         regenerate: const RegenerateOutcome.failed(
           failure: Failure.invalidInput(family: CoreStatusFamily.auth, code: 1),
@@ -165,10 +158,11 @@ void main() {
       );
 
       await regenerate(tester);
-      // The preferences dialog closes on the way through, so the notice is
+      // The credentials dialog closes on the way through, so the notice is
       // read from the section when it is opened again.
-      await tester.tap(preferencesActionInShell());
-      await tester.pumpAndSettle();
+      await tester.openSettingsMenuEntry(
+        messages(tester).changeCredentialsOpen,
+      );
 
       expect(find.byType(RecoveryCodesScreen), findsNothing);
       expect(find.text(messages(tester).failureInvalidInput), findsOneWidget);
@@ -181,7 +175,7 @@ void main() {
     testWidgets('GivenNoCount_WhenPreferencesOpen_ThenTheActionIsStillThere', (
       tester,
     ) async {
-      await openPreferences(
+      await openCredentialsDialog(
         tester,
         account: const AccountOutcome.read(
           account: AccountSummary(email: 'owner@example.com'),
@@ -204,7 +198,7 @@ void main() {
     testWidgets('GivenTheReadFailed_WhenPreferencesOpen_ThenTheActionRemains', (
       tester,
     ) async {
-      await openPreferences(
+      await openCredentialsDialog(
         tester,
         account: const AccountOutcome.failed(
           failure: Failure.unexpected(family: CoreStatusFamily.auth, code: 9),
@@ -223,7 +217,7 @@ void main() {
     testWidgets('GivenNoneRemain_WhenPreferencesOpen_ThenItSaysSoPlainly', (
       tester,
     ) async {
-      await openPreferences(
+      await openCredentialsDialog(
         tester,
         account: const AccountOutcome.read(
           account: AccountSummary(
@@ -242,7 +236,7 @@ void main() {
     testWidgets(
       'GivenTheCoreRejectsTheSession_WhenRegenerating_ThenTheOwnerSignsOut',
       (tester) async {
-        final opened = await openPreferences(
+        final opened = await openCredentialsDialog(
           tester,
           regenerate: const RegenerateOutcome.failed(
             failure: Failure.unauthorized(
@@ -268,7 +262,7 @@ void main() {
       testWidgets(
         'Given${locale.languageCode == 'en' ? 'English' : 'Portuguese'}_WhenTheSectionIsShown_ThenNoStringRendersAsItsKey',
         (tester) async {
-          await openPreferences(tester, locale: locale);
+          await openCredentialsDialog(tester, locale: locale);
 
           expect(
             find.textContaining(
@@ -288,11 +282,11 @@ void main() {
       testWidgets(
         'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
         (tester) async {
-          await openPreferences(tester, themeMode: mode);
+          await openCredentialsDialog(tester, themeMode: mode);
 
           expect(
             Theme.of(
-              tester.element(find.byType(PreferencesDialog).first),
+              tester.element(find.byType(ChangeCredentialsDialog).first),
             ).brightness,
             mode == ThemeMode.light ? Brightness.light : Brightness.dark,
           );

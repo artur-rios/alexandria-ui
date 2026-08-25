@@ -112,13 +112,17 @@ which is exactly what the menu bar is not for.
 FR-UX-02 allows collapsing a control and forbids hiding one, and the menu bar
 keeps that bargain the way the rail does:
 
-| Tier              | Menus                        | Search                      |
-| ----------------- | ---------------------------- | --------------------------- |
-| Expanded, medium  | Icon and label               | Fixed-width field           |
-| Compact           | Icon only, with a tooltip    | Fills the remaining width   |
+| Tier              | Menus                        | Search                             |
+| ----------------- | ---------------------------- | ----------------------------------- |
+| Expanded, medium  | Icon and label               | Fixed-width field, capped at 360 px |
+| Compact           | Icon only, with a tooltip    | Fixed-width field, capped at 360 px |
 
 Nothing is dropped at any tier, and no entry inside either menu changes with
-the width.
+the width. The field's cap does not relax at the compact tier either: it
+stays 360 px rather than growing to fill whatever width the collapsed menus
+give back. A field that grew with the window would put a single-word search
+term in the middle of a thousand pixels of empty input, which is worse than a
+field that simply stays the width it needs to be.
 
 ## Components
 

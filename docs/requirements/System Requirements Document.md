@@ -282,8 +282,8 @@ replace the FFI one without touching a screen.
 
 | ID | Requirement |
 | --- | --- |
-| FR-UX-01 | The system shall present a single-window shell comprising the type navigation panel, the content area, and the persistent playback bar. |
-| FR-UX-02 | The system shall adapt the shell across the defined width breakpoints, collapsing the navigation panel rather than clipping or hiding any control. |
+| FR-UX-01 | The system shall present a single-window shell comprising the library menu bar, the type navigation panel, the content area, and the persistent playback bar. |
+| FR-UX-02 | The system shall adapt the shell across the defined width breakpoints, collapsing the navigation panel and the menu bar rather than clipping or hiding any control. |
 | FR-UX-03 | The system shall enforce the minimum supported window size and shall persist and restore the window's size and position across runs. |
 | FR-UX-04 | The system shall offer light, dark, and system-matching themes, applying a change immediately without restarting. |
 | FR-UX-05 | The system shall offer Brazilian Portuguese and English, applying a change immediately without restarting. |

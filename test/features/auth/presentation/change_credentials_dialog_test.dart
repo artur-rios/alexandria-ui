@@ -7,28 +7,17 @@ import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
 import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
-import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
-import '../../../support/login_harness.dart';
 import '../../../support/shell_harness.dart';
 
 /// The credential-change form (UC-04, FR-AU-10, FR-AU-11).
 void main() {
-  /// The panel's preferences action.
-  ///
-  /// Not `find.byType(PreferencesButton)`: the shell now builds its
-  /// preferences action as a `RailAction` inline, matching how the
-  /// destinations beside it present at each breakpoint.
-  Finder preferencesActionInShell() => find.descendant(
-    of: find.byType(ShellNavigationPanel),
-    matching: find.byIcon(Icons.settings_outlined),
-  );
-
-  /// Signs in, opens preferences, and opens the credential-change form.
+  /// Signs in and opens the credential-change form from the Settings menu.
   Future<void> openForm(
     WidgetTester tester, {
     FakeAuthGateway? gateway,
@@ -40,14 +29,11 @@ void main() {
       locale: locale,
       themeMode: themeMode,
     );
-    await tester.tap(preferencesActionInShell());
-    await tester.pumpAndSettle();
-
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(PreferencesDialog)),
+    await tester.openSettingsMenuEntry(
+      AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      ).changeCredentialsOpen,
     );
-    await tester.tap(find.text(l10n.changeCredentialsOpen));
-    await tester.pumpAndSettle();
   }
 
   /// Fills the three fields and presses the form's primary action.
@@ -75,42 +61,28 @@ void main() {
 
   group('reachability (main flow step 1)', () {
     testWidgets(
-      'GivenASignedInOwner_WhenPreferencesOpen_ThenTheChangeIsOffered',
+      'GivenASignedInOwner_WhenTheSettingsMenuOpens_ThenTheChangeIsOffered',
       (tester) async {
         await tester.pumpShell();
-        await tester.tap(preferencesActionInShell());
-        await tester.pumpAndSettle();
         final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
+          tester.element(find.byType(ShellScreen)),
         );
+
+        await tester.tap(find.byType(SettingsMenu));
+        await tester.pumpAndSettle();
 
         expect(find.text(l10n.changeCredentialsOpen), findsOneWidget);
       },
     );
 
     testWidgets(
-      'GivenNoSession_WhenPreferencesOpen_ThenTheChangeIsNotOffered',
+      'GivenTheSettingsMenu_WhenTheChangeIsChosen_ThenTheFormOpens',
       (tester) async {
-        // The core requires a session to change credentials that already
-        // exist, and preferences are reachable without one (UC-39).
-        await tester.pumpLoginScreen();
-        await tester.tap(find.byType(PreferencesButton));
-        await tester.pumpAndSettle();
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
+        await openForm(tester);
 
-        expect(find.text(l10n.changeCredentialsOpen), findsNothing);
+        expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
       },
     );
-
-    testWidgets('GivenPreferences_WhenTheChangeIsChosen_ThenTheFormOpens', (
-      tester,
-    ) async {
-      await openForm(tester);
-
-      expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
-    });
   });
 
   group('the main flow', () {
@@ -161,13 +133,11 @@ void main() {
       tester,
     ) async {
       final container = await tester.pumpShell();
-      await tester.tap(preferencesActionInShell());
-      await tester.pumpAndSettle();
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(PreferencesDialog)),
+      await tester.openSettingsMenuEntry(
+        AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        ).changeCredentialsOpen,
       );
-      await tester.tap(find.text(l10n.changeCredentialsOpen));
-      await tester.pumpAndSettle();
 
       await submitForm(tester);
 

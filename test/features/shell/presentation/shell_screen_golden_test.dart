@@ -32,10 +32,13 @@ import '../../../support/shell_harness.dart';
 /// UC-28 then filled bookmarks, as that note predicted, and the goldens moved
 /// to it as the emptiest area there was. UC-28's collection filing has since
 /// added a filter beside the add button, so the images were regenerated
-/// again. The panel has since grown a library-tools button beside preferences
-/// and an extended arrangement at the widest tier, and the bookmarks area has
-/// lost the catalog search field it could not answer — all three visible in
-/// these images.
+/// again. The panel has since grown an extended arrangement at the widest
+/// tier, and the bookmarks area has lost the catalog search field it could
+/// not answer — both visible in these images.
+///
+/// The panel has since lost both actions beneath its destinations — the
+/// library tools and preferences now sit in the menu bar across the top of
+/// the shell, which these images show above the panel and the content area.
 ///
 /// That note's advice — move to a file type with an empty library — was tried
 /// and rejected on the evidence: an empty `music` renders a heading, a search

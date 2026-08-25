@@ -9,13 +9,15 @@ import '../application/change_credentials_state.dart';
 import 'auth_field_messages.dart';
 import 'auth_notice.dart';
 import 'core_rejection_messages.dart';
+import 'recovery_codes_section.dart';
 
 /// The credential-change form (UC-04, FR-AU-10).
 ///
-/// A dialog opened from preferences, which is where main flow step 1 puts it.
-/// It is offered only inside an active session: the core requires one to
-/// authorize the call, and the operation exists to change credentials that
-/// already exist.
+/// A dialog opened from the Settings menu, where main flow step 1 puts it,
+/// beside [RecoveryCodesSection] (UC-42): both are things an owner does to an
+/// account they still have access to, not a preference. It is offered only
+/// inside an active session: the core requires one to authorize the call, and
+/// the operation exists to change credentials that already exist.
 class ChangeCredentialsDialog extends ConsumerStatefulWidget {
   /// Creates the dialog.
   const ChangeCredentialsDialog({super.key});
@@ -156,6 +158,15 @@ class _ChangeCredentialsDialogState
                   ),
                 ),
               ],
+
+              const SizedBox(height: AppSpacing.md),
+              const Divider(),
+              const SizedBox(height: AppSpacing.sm),
+              // UC-42 beside UC-04: regenerating the recovery codes and
+              // changing the password are both things an owner does to an
+              // account they still have access to, and the preferences dialog
+              // they used to share was neither of those things.
+              const RecoveryCodesSection(),
             ],
           ),
         ),

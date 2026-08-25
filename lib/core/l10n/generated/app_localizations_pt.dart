@@ -229,6 +229,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get preferencesLabel => 'Preferências';
 
   @override
+  String get settingsMenuLabel => 'Configurações';
+
+  @override
+  String get settingsMenuOpen => 'Abrir configurações';
+
+  @override
   String get preferencesThemeLabel => 'Tema';
 
   @override
@@ -254,7 +260,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get preferencesClose => 'Concluído';
 
   @override
-  String get changeCredentialsOpen => 'Alterar seu e-mail e senha';
+  String get changeCredentialsOpen => 'Alterar credenciais…';
 
   @override
   String get changeCredentialsTitle => 'Alterar credenciais';

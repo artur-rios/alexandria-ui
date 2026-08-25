@@ -6,7 +6,7 @@ import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
-import 'package:alexandria_ui/features/shell/presentation/library_tools_button.dart';
+import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,14 +30,9 @@ void main() {
   };
 
   group('the library tools the panel reaches (UC-37 main flow step 1)', () {
-    /// Opens the panel's tools menu.
+    /// Opens the bar's Library menu.
     Future<AppLocalizations> openTools(WidgetTester tester) async {
-      await tester.tap(
-        find.descendant(
-          of: find.byType(ShellNavigationPanel),
-          matching: find.byType(LibraryToolsButton),
-        ),
-      );
+      await tester.tap(find.byType(LibraryMenu));
       await tester.pumpAndSettle();
 
       return AppLocalizations.of(tester.element(find.byType(ShellScreen)));
@@ -87,18 +82,12 @@ void main() {
     });
 
     testWidgets(
-      'GivenTheMinimumWindow_WhenThePanelIsRead_ThenTheToolsAreStillReachable',
+      'GivenTheMinimumWindow_WhenTheBarIsRead_ThenTheToolsAreStillReachable',
       (tester) async {
-        // FR-UX-02: the panel collapses rather than dropping an entry.
+        // FR-UX-02: the bar collapses rather than dropping an entry.
         await tester.pumpShell(surfaceSize: const Size(1024, 640));
 
-        expect(
-          find.descendant(
-            of: find.byType(ShellNavigationPanel),
-            matching: find.byType(LibraryToolsButton),
-          ),
-          findsOneWidget,
-        );
+        expect(find.byType(LibraryMenu), findsOneWidget);
       },
     );
   });
