@@ -83,6 +83,7 @@ import '../../features/organization/domain/bookmark_gateway.dart';
 import '../../features/organization/domain/collection.dart';
 import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
+import '../../features/playback/application/album_animation_controller.dart';
 import '../../features/playback/application/audio_playback_controller.dart';
 import '../../features/playback/application/audio_playback_session.dart';
 import '../../features/playback/application/music_browse_controller.dart';
@@ -539,6 +540,13 @@ final musicBrowseControllerProvider =
 final audioPlaybackControllerProvider =
     NotifierProvider<AudioPlaybackController, AudioPlaybackState>(
       AudioPlaybackController.new,
+    );
+
+/// Whether the album animation owes an insertion, and what medium it would
+/// show (UC-21).
+final albumAnimationControllerProvider =
+    NotifierProvider<AlbumAnimationController, AlbumAnimationState>(
+      AlbumAnimationController.new,
     );
 
 /// The video player (UC-19).
