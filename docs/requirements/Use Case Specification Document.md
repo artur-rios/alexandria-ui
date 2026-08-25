@@ -1707,6 +1707,38 @@ graph LR
 
 ---
 
+### UC-46: Browse the music library
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-46 |
+| **Name** | Browse the music library |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner browses the catalog's audio by artist, album, or song, named by its tags rather than by its files, and plays what they find. |
+| **Preconditions** | An active session exists and the catalog holds audio files. |
+| **Postconditions** | The catalog is unchanged; a queue exists when the owner played something. |
+| **Requirements** | FR-CT-13, FR-CT-14 |
+
+**Main Flow**
+
+1. The application reads each audio file's metadata, showing what it has while
+   the rest arrives.
+2. The owner chooses artists, albums, or songs.
+3. The owner drills into an artist and then an album, or straight into an
+   album, returning by the breadcrumb.
+4. The owner plays a track, an album, or an artist.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | A file's metadata names no title, artist, or album | The application shows it under the unknown names, grouped last, never under its file name. |
+| AF-02 | A file's metadata cannot be read | The file joins the library untagged rather than disappearing. |
+| AF-03 | No audio files are catalogued | The application says so. |
+| AF-04 | The audio listing fails outright | The application presents a failure view with a retry, distinct from an empty library. |
+
+---
+
 ## 3. Use Case — Requirements Traceability
 
 | Use Case | Requirements |
@@ -1756,6 +1788,7 @@ graph LR
 | UC-43: Follow a scan while it runs | FR-LB-07, FR-LB-13, FR-LB-14, FR-LB-15, FR-LB-19, FR-LB-20, FR-UX-08 |
 | UC-44: Pause, resume, or cancel a scan | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
 | UC-45: Pace a scan | FR-LB-16, FR-LB-18 |
+| UC-46: Browse the music library | FR-CT-13, FR-CT-14 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) appears at least
