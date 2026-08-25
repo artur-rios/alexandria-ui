@@ -6,9 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../catalog/domain/catalog_file.dart';
+import '../../catalog/domain/music_metadata.dart';
 import '../../playback/application/audio_playback_controller.dart';
 import '../../playback/domain/media_player.dart';
+import '../../playback/domain/music_grouping.dart';
 import '../../playback/presentation/album_player_screen.dart';
+import '../../playback/presentation/music_rows.dart';
 
 /// The persistent playback bar (FR-UX-01, FR-PL-05).
 ///
@@ -47,7 +51,7 @@ class PlaybackBar extends ConsumerWidget {
             // than replacing what is playing, because the queue has already
             // moved on and the owner is listening to the next one.
             if (state.lastSkipped case final skipped?)
-              _SkipNotice(name: skipped.name),
+              _SkipNotice(file: skipped),
 
             // AF-03: nothing in the selection could be played.
             if (state.stage == AudioStage.allFailed) const _NothingPlayable(),
@@ -111,7 +115,7 @@ class _Bar extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                current.name,
+                _musicTitleFor(ref, current, l10n),
                 style: theme.textTheme.bodyMedium,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -209,12 +213,12 @@ class _ResumePrompt extends ConsumerWidget {
 
 /// AF-01 and AF-02: which file was skipped, and why.
 class _SkipNotice extends ConsumerWidget {
-  const _SkipNotice({required this.name});
+  const _SkipNotice({required this.file});
 
   /// The file that was skipped, named. Which file it was is the whole of what
   /// the owner needs; why it failed is the same answer for every skip the
   /// queue makes, and a reason per line would bury the name.
-  final String name;
+  final CatalogFile file;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -232,7 +236,7 @@ class _SkipNotice extends ConsumerWidget {
         children: [
           Expanded(
             child: Text(
-              l10n.audioSkipped(name),
+              l10n.audioSkipped(_musicTitleFor(ref, file, l10n)),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onErrorContainer,
               ),
@@ -318,6 +322,32 @@ class _Position extends StatelessWidget {
       ),
     );
   }
+}
+
+/// [file]'s title from its metadata, never its name on disk (FR-CT-13).
+///
+/// The bar and the skip notice both name a file only by what music_rows.dart
+/// already agreed a track is called — [musicTitleOf] — so the browsing area
+/// and this bar never disagree about what an untitled track reads as, and the
+/// file name the owner never wants to see does not reappear here just because
+/// the queue was built from a track the progress read has not caught up to
+/// yet.
+///
+/// Watches [musicLibraryProvider] as well as the progress it publishes to,
+/// because playback is reachable without ever opening the music area — from
+/// search, from the dashboard, from a file's own details — and nothing else
+/// would otherwise start the read this title is drawn from.
+String _musicTitleFor(WidgetRef ref, CatalogFile file, AppLocalizations l10n) {
+  ref.watch(musicLibraryProvider);
+  final progress = ref.watch(musicLibraryProgressProvider);
+  final entry = progress.entries.firstWhere(
+    (candidate) => candidate.file.uuid == file.uuid,
+    // Not yet read (or read after this bar last rebuilt): reads as untitled
+    // rather than by name, which is what an entry with no title does too.
+    orElse: () => MusicEntry(file: file, metadata: const MusicMetadata()),
+  );
+
+  return musicTitleOf(entry, l10n);
 }
 
 /// A duration as the players show it.
