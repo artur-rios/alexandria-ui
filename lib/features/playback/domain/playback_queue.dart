@@ -19,7 +19,7 @@ class PlaybackQueue {
   const PlaybackQueue({
     required this.tracks,
     required this.kind,
-    this.label = '',
+    this.label,
     this.year,
     this.index = 0,
     this.skipped = const [],
@@ -38,8 +38,14 @@ class PlaybackQueue {
   /// artist gets the animation, a single track does not (UC-21 AF-02).
   final QueueKind kind;
 
-  /// The album or artist name, for the player to show.
-  final String label;
+  /// The album or artist name, or `null` — for a single track, where the
+  /// presentation layer shows the track's own title beside this label
+  /// instead; for an album or an artist whose tags name none, where an
+  /// absent label means the *tag* is absent (FR-CT-13). Neither the
+  /// application layer that builds this queue nor this domain class has the
+  /// localized strings to turn that absence into a word, so this class only
+  /// carries it; the presentation layer decides what to say.
+  final String? label;
 
   /// The year the album carries, which is what picks the medium the animation
   /// shows (UC-21, FR-PL-07).

@@ -10,6 +10,7 @@ import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart
     as widgets;
 import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_ui/features/organization/presentation/bookmarks_view.dart';
+import 'package:alexandria_ui/features/playback/presentation/music_library_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -28,7 +29,7 @@ void main() {
   Future<ProviderContainer> openListing(
     WidgetTester tester, {
     Map<LibraryType, CatalogListing>? listings,
-    ShellDestination destination = ShellDestination.music,
+    ShellDestination destination = ShellDestination.videos,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
   }) async {
@@ -60,17 +61,17 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.audio: CatalogListing.loaded(
+          LibraryType.video: CatalogListing.loaded(
             files: [
-              aFile(),
-              aFile(uuid: 'b', name: 'Blue Train.flac'),
+              aFile(type: LibraryType.video, name: 'Kind of Blue.mp4'),
+              aFile(uuid: 'b', type: LibraryType.video, name: 'Blue Train.mp4'),
             ],
           ),
         },
       );
 
-      expect(find.text('Kind of Blue.flac'), findsOneWidget);
-      expect(find.text('Blue Train.flac'), findsOneWidget);
+      expect(find.text('Kind of Blue.mp4'), findsOneWidget);
+      expect(find.text('Blue Train.mp4'), findsOneWidget);
     });
 
     testWidgets('GivenALargeListing_WhenItIsShown_ThenRowsAreBuiltOnDemand', (
@@ -81,10 +82,14 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.audio: CatalogListing.loaded(
+          LibraryType.video: CatalogListing.loaded(
             files: [
               for (var index = 0; index < 500; index++)
-                aFile(uuid: '$index', name: 'Track $index.flac'),
+                aFile(
+                  uuid: '$index',
+                  type: LibraryType.video,
+                  name: 'Clip $index.mp4',
+                ),
             ],
           ),
         },
@@ -104,8 +109,13 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.audio: CatalogListing.loaded(
-            files: [aFile(missingAt: DateTime.utc(2026, 8, 19))],
+          LibraryType.video: CatalogListing.loaded(
+            files: [
+              aFile(
+                type: LibraryType.video,
+                missingAt: DateTime.utc(2026, 8, 19),
+              ),
+            ],
           ),
         },
       );
@@ -160,7 +170,7 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.audio: const CatalogListing.failed(
+          LibraryType.video: const CatalogListing.failed(
             failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
           ),
         },
@@ -180,7 +190,7 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.audio: const CatalogListing.failed(
+          LibraryType.video: const CatalogListing.failed(
             failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
           ),
           LibraryType.image: CatalogListing.loaded(
@@ -210,10 +220,10 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.audio: CatalogListing.loaded(
+          LibraryType.video: CatalogListing.loaded(
             files: [
-              aFile(),
-              aFile(uuid: 'b'),
+              aFile(type: LibraryType.video),
+              aFile(uuid: 'b', type: LibraryType.video),
             ],
           ),
         },
@@ -233,6 +243,17 @@ void main() {
 
       expect(find.byType(widgets.CatalogListing), findsNothing);
       expect(find.byType(BookmarksView), findsOneWidget);
+    });
+
+    testWidgets('GivenMusic_WhenSelected_ThenNoFileListingIsShown', (
+      tester,
+    ) async {
+      // UC-46's whole point: a listing of file names is the one thing a
+      // music library must never be (FR-CT-13).
+      await openListing(tester, destination: ShellDestination.music);
+
+      expect(find.byType(widgets.CatalogListing), findsNothing);
+      expect(find.byType(MusicLibraryView), findsOneWidget);
     });
   });
 

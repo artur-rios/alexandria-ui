@@ -1,9 +1,13 @@
+import 'dart:async';
+
+import 'package:alexandria_ui/app.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_position_store.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_session.dart';
@@ -16,10 +20,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_media_player.dart';
 import '../../../support/fake_playback.dart';
+import '../../../support/in_memory_settings_store.dart';
+import '../../../support/login_harness.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/test_container.dart';
 
 /// Listening to a track, an album, or an artist (UC-20, FR-PL-05, FR-PL-06,
 /// FR-PL-08 … FR-PL-10).
@@ -112,14 +120,16 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.music.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(target.name).first);
+    // Opens the details dialog directly through the same static `show` the
+    // application calls, rather than reaching it via a listing: UC-46 gave
+    // audio its own browsing area (Task 4), whose rows play a track or an
+    // album on tap rather than opening this dialog, so this is how a test
+    // now reaches the play buttons several of these tests drive. `ShellScreen`
+    // is a `ConsumerWidget`, whose element implements `WidgetRef` — the same
+    // `ref` its own `build` would have received — so this calls `show` for
+    // real rather than re-implementing its body.
+    final element = tester.element(find.byType(ShellScreen));
+    unawaited(FileDetailsView.show(element, element as WidgetRef, target.uuid));
     await tester.pumpAndSettle();
 
     return (
@@ -230,7 +240,7 @@ void main() {
 
       await press(tester, messages(tester).audioPlay);
 
-      expect(inBar(find.text('So What.flac')), findsOneWidget);
+      expect(inBar(find.text('So What')), findsOneWidget);
     });
 
     // Step 3 / FR-PL-06: the album's tracks, in order.
@@ -348,7 +358,7 @@ void main() {
         opened.container.read(audioPlaybackControllerProvider).current?.uuid,
         'blue-1',
       );
-      expect(inBar(find.text('So What.flac')), findsOneWidget);
+      expect(inBar(find.text('So What')), findsOneWidget);
       expect(opened.player.stopCount, 0);
     });
 
@@ -419,7 +429,7 @@ void main() {
       await press(tester, messages(tester).audioPlayAlbum);
 
       expect(
-        find.text(messages(tester).audioSkipped('So What.flac')),
+        find.text(messages(tester).audioSkipped('So What')),
         findsOneWidget,
       );
     });
@@ -475,6 +485,84 @@ void main() {
 
       expect(find.text(messages(tester).audioNothingPlayable), findsOneWidget);
     });
+
+    // The consequence of MusicLibraryController now throwing a failed
+    // listing instead of returning an empty library (UC-46's fix 3): a
+    // grouped play can now fail before any track is even resolved. This
+    // asserts what the bar actually shows for it, which is where an
+    // earlier version of this fix got it wrong — see below.
+    testWidgets(
+      'GivenTheListingFails_WhenTheAlbumIsPlayed_ThenOneHonestBannerShows',
+      (tester) async {
+        final gateway = catalogWith([blue1, blue2, other])..failListing();
+        final player = FakeMediaPlayer();
+
+        // Sized the same as `pumpShell`'s default: this test builds its own
+        // widget tree instead of going through it (see below), so it would
+        // otherwise render at the 800x600 test-window default, too short for
+        // the details dialog's now-longer content to leave "Play album"
+        // inside the visible surface.
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(1280, 800);
+        addTearDown(tester.view.reset);
+
+        // Built directly rather than through tester.pumpShell: Riverpod
+        // retries a failed provider automatically (exponential backoff, up
+        // to ten attempts, ~35 seconds) before it settles into AsyncError,
+        // and pumpShell's container has no way to turn that off. Retrying
+        // is disabled here so this settles without a ~35-second test.
+        final container = ProviderContainer(
+          retry: (_, _) => null,
+          overrides: [
+            ...fakeCoreOverrides(settings: InMemorySettingsStore()),
+            authGatewayProvider.overrideWithValue(FakeAuthGateway()),
+            catalogGatewayProvider.overrideWithValue(gateway),
+            audioPlayerProvider.overrideWithValue(player),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway(),
+            ),
+            playbackPositionsProvider.overrideWithValue(
+              FakePlaybackPositionStore(),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: const AlexandriaApp(),
+          ),
+        );
+        await container.read(startupControllerProvider.notifier).start();
+        await tester.pumpAndSettle();
+        await tester.signIn();
+
+        final element = tester.element(find.byType(ShellScreen));
+        unawaited(
+          FileDetailsView.show(element, element as WidgetRef, blue1.uuid),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(messages(tester).audioPlayAlbum).last);
+        await tester.pumpAndSettle();
+
+        // Exactly one banner — "nothing in the selection could be played"
+        // — and not the skip notice a first version of this fix wrongly
+        // stacked on top of it (naming blue1 as a track that was "skipped"
+        // when nothing was ever attempted). One dismiss button proves only
+        // one banner is on screen; a second would mean the skip notice was
+        // showing too.
+        expect(
+          find.text(messages(tester).audioNothingPlayable),
+          findsOneWidget,
+        );
+        expect(find.text(messages(tester).editorDismiss), findsOneWidget);
+        expect(
+          container.read(audioPlaybackControllerProvider).lastSkipped,
+          isNull,
+        );
+      },
+    );
   });
 
   // AF-04: a resume position exists for a single track.

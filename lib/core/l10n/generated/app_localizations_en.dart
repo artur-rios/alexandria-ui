@@ -593,6 +593,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detailsDuration => 'Duration';
 
   @override
+  String get detailsFileSection => 'The file';
+
+  @override
+  String get detailsFileName => 'File name';
+
+  @override
+  String get detailsFileSize => 'Size on disk';
+
+  @override
+  String get detailsFileFormat => 'Format';
+
+  @override
+  String get detailsFileModified => 'Last modified';
+
+  @override
   String get dashboardRecent => 'Recently added';
 
   @override
@@ -680,6 +695,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String musicMetadataErrorTooLong(int max) {
     return 'Keep this under $max characters.';
   }
+
+  @override
+  String get musicViewArtists => 'Artists';
+
+  @override
+  String get musicViewAlbums => 'Albums';
+
+  @override
+  String get musicViewSongs => 'Songs';
+
+  @override
+  String get musicBreadcrumbRoot => 'Music library';
+
+  @override
+  String get musicUnknownTitle => 'Unknown title';
+
+  @override
+  String get musicUnknownArtist => 'Unknown artist';
+
+  @override
+  String get musicUnknownAlbum => 'Unknown album';
+
+  @override
+  String get musicRowActions => 'Actions for this track';
+
+  @override
+  String musicLoading(int read, int total) {
+    return 'Reading metadata: $read of $total';
+  }
+
+  @override
+  String get musicEmpty => 'No audio files are catalogued yet.';
 
   @override
   String get signOut => 'Sign out';

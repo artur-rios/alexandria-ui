@@ -1,14 +1,11 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_animation.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_player_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,35 +19,36 @@ import '../../../support/shell_harness.dart';
 
 /// The album playback animation (UC-21, FR-PL-07, BR-21).
 void main() {
-  final blue1 = aFile(uuid: 'blue-1', name: 'So What.flac');
-  final blue2 = aFile(uuid: 'blue-2', name: 'Blue in Green.flac');
-
-  /// Signs in and plays [file], as an album unless [asTrack] says otherwise.
+  /// Signs in and plays a track of Miles Davis's "Kind of Blue" from the
+  /// music area (UC-46), as an album unless [asTrack] says otherwise — the
+  /// real path an owner takes, and now the only one: the rows Task 4 built
+  /// play on tap rather than opening a details dialog with play buttons on
+  /// it.
   Future<({ProviderContainer container, FakeMediaPlayer player})> play(
     WidgetTester tester, {
     bool asTrack = false,
-    String year = '1959',
+    int year = 1959,
     Size surfaceSize = const Size(1440, 1000),
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
   }) async {
-    final catalog = FakeCatalogGateway(
-      listings: {
-        LibraryType.audio: CatalogListing.loaded(files: [blue1, blue2]),
-      },
-    );
-    for (final file in [blue1, blue2]) {
-      catalog.details[file.uuid] = FileDetailsOutcome.read(
-        details: FileDetails(
-          file: file,
-          metadata: {
-            'album': 'Kind of Blue',
-            'artist': 'Miles Davis',
-            'year': year,
-          },
-        ),
+    final catalog = FakeCatalogGateway()
+      ..addAudio(
+        uuid: 'blue-1',
+        title: 'So What',
+        artist: 'Miles Davis',
+        album: 'Kind of Blue',
+        year: year,
+        track: 1,
+      )
+      ..addAudio(
+        uuid: 'blue-2',
+        title: 'Blue in Green',
+        artist: 'Miles Davis',
+        album: 'Kind of Blue',
+        year: year,
+        track: 2,
       );
-    }
 
     final player = FakeMediaPlayer();
     final container = await tester.pumpShell(
@@ -69,20 +67,28 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.music.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('So What.flac').first);
+    container
+        .read(shellControllerProvider.notifier)
+        .go(ShellDestination.music);
     await tester.pumpAndSettle();
 
-    final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.tap(
-      find.text(asTrack ? l10n.audioPlay : l10n.audioPlayAlbum).last,
-    );
+    if (asTrack) {
+      // Songs, where a row plays alone rather than continuing an album.
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+      await tester.tap(find.text(l10n.musicViewSongs));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('So What'));
+    } else {
+      // Artists → the album → the track: a row here plays the album from
+      // where it was tapped (main flow steps 1 and 3).
+      await tester.tap(find.text('Miles Davis'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('Kind of Blue'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('So What'));
+    }
     await tester.pumpAndSettle();
 
     return (container: container, player: player);
@@ -163,7 +169,7 @@ void main() {
     testWidgets('GivenAnAlbumFrom2001_WhenTheFullPlayerOpens_ThenItIsADisc', (
       tester,
     ) async {
-      await play(tester, year: '2001');
+      await play(tester, year: 2001);
       await openPlayer(tester);
 
       expect(
@@ -329,7 +335,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(PlaybackBar),
-          matching: find.text('So What.flac'),
+          matching: find.text('So What'),
         ),
         findsOneWidget,
       );
@@ -428,5 +434,202 @@ void main() {
         },
       );
     }
+  });
+
+  // The queue label beside the track title (UC-20, UC-21, FR-CT-13): named
+  // through the controller directly rather than the browsing area's own
+  // navigation, since an untagged album or artist has no named group tile to
+  // tap through — the whole point of these fixtures is that the tag is
+  // absent.
+  group('the queue label (FR-CT-13)', () {
+    /// Signs in over [gateway] and asks the controller to play [file] via
+    /// [action], then settles the tree.
+    Future<ProviderContainer> playDirect(
+      WidgetTester tester, {
+      required FakeCatalogGateway gateway,
+      required Future<void> Function(AudioPlaybackController) action,
+    }) async {
+      final container = await tester.pumpShell(
+        extraOverrides: <Override>[
+          catalogGatewayProvider.overrideWithValue(gateway),
+          audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+          playbackSourceGatewayProvider.overrideWithValue(
+            FakePlaybackSourceGateway(),
+          ),
+          playbackPositionsProvider.overrideWithValue(
+            FakePlaybackPositionStore(),
+          ),
+        ],
+      );
+
+      await action(container.read(audioPlaybackControllerProvider.notifier));
+      await tester.pumpAndSettle();
+
+      return container;
+    }
+
+    /// No text anywhere on screen contains [needle].
+    ///
+    /// Unscoped, unlike a search limited to the bar or the full player: the
+    /// Home dashboard's own recent-files list is on screen underneath both of
+    /// them (`tester.pumpShell` lands there), and it once showed every file —
+    /// audio included — by its name on disk, which would have made an
+    /// unscoped search here fail on that list's text regardless of what a fix
+    /// in the bar or player did. That gap is closed: the dashboard names
+    /// audio by its metadata too, so nothing on screen carries the raw file
+    /// name for this to find by accident.
+    void expectAbsent(WidgetTester tester, String needle) {
+      expect(find.textContaining(needle), findsNothing);
+    }
+
+    testWidgets(
+      'GivenASingleTrackPlays_WhenShown_ThenNoFileNameIsOnScreen',
+      (tester) async {
+        // Tagged on every field a queue label could show, so a leak of any
+        // of them — the file name, or the album repeated as a label that
+        // means nothing beside a title that already says it — would be
+        // caught, not hidden by the fixture being untagged.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: '1',
+            name: 'DISKNAME-01.flac',
+            title: 'Airbag',
+            artist: 'Radiohead',
+            album: 'Kind of Blue',
+          );
+        final file = aFile(uuid: '1', name: 'DISKNAME-01.flac');
+
+        await playDirect(
+          tester,
+          gateway: gateway,
+          action: (controller) => controller.playTrack(file),
+        );
+
+        expectAbsent(tester, 'DISKNAME');
+        // No queue label at all for a single track: the bar already shows
+        // its title, so a label repeating the album would be noise.
+        expect(
+          find.descendant(
+            of: find.byType(PlaybackBar),
+            matching: find.text('Kind of Blue'),
+          ),
+          findsNothing,
+        );
+
+        await openPlayer(tester);
+
+        expectAbsent(tester, 'DISKNAME');
+        expect(
+          find.descendant(
+            of: find.byType(AlbumPlayerScreen),
+            matching: find.text('Kind of Blue'),
+          ),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenAnUntaggedAlbumPlays_WhenShown_ThenTheUnknownAlbumWordIsUsed',
+      (tester) async {
+        final gateway = FakeCatalogGateway()
+          ..addAudio(uuid: '1', name: 'DISKNAME-01.flac', title: 'Airbag');
+        final file = aFile(uuid: '1', name: 'DISKNAME-01.flac');
+
+        await playDirect(
+          tester,
+          gateway: gateway,
+          action: (controller) => controller.playAlbum(file),
+        );
+        final l10n = messages(tester);
+
+        expectAbsent(tester, 'DISKNAME');
+        expect(
+          find.descendant(
+            of: find.byType(PlaybackBar),
+            matching: find.text(l10n.musicUnknownAlbum),
+          ),
+          findsOneWidget,
+        );
+
+        await openPlayer(tester);
+
+        expectAbsent(tester, 'DISKNAME');
+        // The full player's title is the queue label, so the unknown-album
+        // word appears there too rather than the generic "Player" one.
+        expect(
+          find.descendant(
+            of: find.byType(AlbumPlayerScreen),
+            matching: find.text(l10n.musicUnknownAlbum),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenAnUntaggedArtistPlays_WhenShown_ThenTheUnknownArtistWordIsUsed',
+      (tester) async {
+        final gateway = FakeCatalogGateway()
+          ..addAudio(uuid: '1', name: 'DISKNAME-01.flac', title: 'Airbag');
+        final file = aFile(uuid: '1', name: 'DISKNAME-01.flac');
+
+        await playDirect(
+          tester,
+          gateway: gateway,
+          action: (controller) => controller.playArtist(file),
+        );
+        final l10n = messages(tester);
+
+        expectAbsent(tester, 'DISKNAME');
+        expect(
+          find.descendant(
+            of: find.byType(PlaybackBar),
+            matching: find.text(l10n.musicUnknownArtist),
+          ),
+          findsOneWidget,
+        );
+
+        await openPlayer(tester);
+
+        expectAbsent(tester, 'DISKNAME');
+        expect(
+          find.descendant(
+            of: find.byType(AlbumPlayerScreen),
+            matching: find.text(l10n.musicUnknownArtist),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheFullPlayerIsOpen_WhenTheCurrentTrackIsShown_ThenItIsTheTitleNotTheFileName',
+      (tester) async {
+        // The bug this whole group exists to catch had nothing to do with
+        // the queue label: the full player's own current-track text read
+        // `current.name` — the file name — directly, unrelated to whether
+        // the queue had a label at all.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(uuid: '1', name: 'DISKNAME-01.flac', title: 'Airbag');
+        final file = aFile(uuid: '1', name: 'DISKNAME-01.flac');
+
+        await playDirect(
+          tester,
+          gateway: gateway,
+          action: (controller) => controller.playTrack(file),
+        );
+        await openPlayer(tester);
+
+        expect(
+          find.descendant(
+            of: find.byType(AlbumPlayerScreen),
+            matching: find.text('Airbag'),
+          ),
+          findsOneWidget,
+        );
+        expectAbsent(tester, 'DISKNAME');
+      },
+    );
   });
 }

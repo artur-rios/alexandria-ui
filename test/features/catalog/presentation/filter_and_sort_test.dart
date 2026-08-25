@@ -18,7 +18,8 @@ import '../../../support/shell_harness.dart';
 
 /// Filtering and ordering a listing from the screen (UC-12).
 void main() {
-  /// Signs in and opens the music listing.
+  /// Signs in and opens a listing (UC-12 is generic across types; video
+  /// stands in for it now that music has its own browsing area, UC-46).
   Future<ProviderContainer> openListing(
     WidgetTester tester, {
     Map<LibraryType, CatalogListing>? listings,
@@ -35,10 +36,18 @@ void main() {
             listings:
                 listings ??
                 {
-                  LibraryType.audio: CatalogListing.loaded(
+                  LibraryType.video: CatalogListing.loaded(
                     files: [
-                      aFile(uuid: '1', name: 'zebra.flac'),
-                      aFile(uuid: '2', name: 'apple.flac'),
+                      aFile(
+                        uuid: '1',
+                        name: 'zebra.mp4',
+                        type: LibraryType.video,
+                      ),
+                      aFile(
+                        uuid: '2',
+                        name: 'apple.mp4',
+                        type: LibraryType.video,
+                      ),
                     ],
                   ),
                 },
@@ -50,7 +59,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.music.icon),
+        matching: find.byIcon(ShellDestination.videos.icon),
       ),
     );
     await tester.pumpAndSettle();
@@ -98,7 +107,7 @@ void main() {
         final container = await openListing(tester);
         expect(
           container.read(listingControllerProvider).value!.first.name,
-          'apple.flac',
+          'apple.mp4',
         );
 
         await openMenu(tester);
@@ -110,7 +119,7 @@ void main() {
 
         expect(
           container.read(listingControllerProvider).value!.first.name,
-          'zebra.flac',
+          'zebra.mp4',
         );
       },
     );
@@ -130,7 +139,7 @@ void main() {
       expect(
         container
             .read(listingViewControllerProvider)
-            .forType(LibraryType.audio)
+            .forType(LibraryType.video)
             .lifecycle,
         LifecycleFilter.deleted,
       );
@@ -144,7 +153,9 @@ void main() {
       final container = await openListing(
         tester,
         listings: {
-          LibraryType.audio: CatalogListing.loaded(files: [aFile()]),
+          LibraryType.video: CatalogListing.loaded(
+            files: [aFile(type: LibraryType.video)],
+          ),
         },
       );
 
@@ -152,7 +163,7 @@ void main() {
       await container
           .read(listingViewControllerProvider.notifier)
           .apply(
-            LibraryType.audio,
+            LibraryType.video,
             const ListingView(lifecycle: LifecycleFilter.deleted),
           );
       await tester.pumpAndSettle();
@@ -173,13 +184,15 @@ void main() {
       final container = await openListing(
         tester,
         listings: {
-          LibraryType.audio: CatalogListing.loaded(files: [aFile()]),
+          LibraryType.video: CatalogListing.loaded(
+            files: [aFile(type: LibraryType.video)],
+          ),
         },
       );
       await container
           .read(listingViewControllerProvider.notifier)
           .apply(
-            LibraryType.audio,
+            LibraryType.video,
             const ListingView(lifecycle: LifecycleFilter.deleted),
           );
       await tester.pumpAndSettle();
@@ -201,7 +214,7 @@ void main() {
       final container = await openListing(
         tester,
         listings: {
-          LibraryType.audio: const CatalogListing.failed(
+          LibraryType.video: const CatalogListing.failed(
             failure: Failure.invalidInput(
               family: CoreStatusFamily.file,
               code: 1,
@@ -213,7 +226,7 @@ void main() {
       await container
           .read(listingViewControllerProvider.notifier)
           .apply(
-            LibraryType.audio,
+            LibraryType.video,
             const ListingView(lifecycle: LifecycleFilter.all),
           );
       await tester.pumpAndSettle();

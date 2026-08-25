@@ -6,9 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../catalog/domain/catalog_file.dart';
 import '../../playback/application/audio_playback_controller.dart';
 import '../../playback/domain/media_player.dart';
 import '../../playback/presentation/album_player_screen.dart';
+import '../../playback/presentation/music_display_name.dart';
 
 /// The persistent playback bar (FR-UX-01, FR-PL-05).
 ///
@@ -47,7 +49,7 @@ class PlaybackBar extends ConsumerWidget {
             // than replacing what is playing, because the queue has already
             // moved on and the owner is listening to the next one.
             if (state.lastSkipped case final skipped?)
-              _SkipNotice(name: skipped.name),
+              _SkipNotice(file: skipped),
 
             // AF-03: nothing in the selection could be played.
             if (state.stage == AudioStage.allFailed) const _NothingPlayable(),
@@ -111,13 +113,13 @@ class _Bar extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                current.name,
+                musicTitleForFile(ref, current, l10n),
                 style: theme.textTheme.bodyMedium,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (state.queue.label.isNotEmpty)
+              if (queueLabelOf(state.queue, l10n) case final label?)
                 Text(
-                  state.queue.label,
+                  label,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -209,12 +211,12 @@ class _ResumePrompt extends ConsumerWidget {
 
 /// AF-01 and AF-02: which file was skipped, and why.
 class _SkipNotice extends ConsumerWidget {
-  const _SkipNotice({required this.name});
+  const _SkipNotice({required this.file});
 
   /// The file that was skipped, named. Which file it was is the whole of what
   /// the owner needs; why it failed is the same answer for every skip the
   /// queue makes, and a reason per line would bury the name.
-  final String name;
+  final CatalogFile file;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -232,7 +234,7 @@ class _SkipNotice extends ConsumerWidget {
         children: [
           Expanded(
             child: Text(
-              l10n.audioSkipped(name),
+              l10n.audioSkipped(musicTitleForFile(ref, file, l10n)),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onErrorContainer,
               ),

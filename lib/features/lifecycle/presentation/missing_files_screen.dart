@@ -7,7 +7,9 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_file.dart';
+import '../../catalog/domain/library_type.dart';
 import '../../catalog/presentation/file_details_view.dart';
+import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/async_state_view.dart';
 import '../application/missing_files_controller.dart';
 
@@ -133,12 +135,22 @@ class _MissingTile extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    // FR-CT-13: an audio file is named by its metadata here too, the same
+    // per-file path `catalog_search_view.dart` reads a search result's title
+    // from — never by the file on disk, and never by forcing the whole
+    // library's scan just to name one row of this review.
+    final isAudio = file.type == LibraryType.audio;
+    final metadata = isAudio ? ref.watch(audioMetadataProvider(file)).value : null;
+    final title = isAudio
+        ? tagOr(metadata?.title, l10n.musicUnknownTitle)
+        : file.name;
+
     return ListTile(
       leading: Icon(
         Icons.help_outline,
         color: theme.colorScheme.onSurfaceVariant,
       ),
-      title: Text(file.name),
+      title: Text(title),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

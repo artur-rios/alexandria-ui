@@ -594,6 +594,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String get detailsDuration => 'Duração';
 
   @override
+  String get detailsFileSection => 'O arquivo';
+
+  @override
+  String get detailsFileName => 'Nome do arquivo';
+
+  @override
+  String get detailsFileSize => 'Tamanho em disco';
+
+  @override
+  String get detailsFileFormat => 'Formato';
+
+  @override
+  String get detailsFileModified => 'Última modificação';
+
+  @override
   String get dashboardRecent => 'Adicionados recentemente';
 
   @override
@@ -680,6 +695,38 @@ class AppLocalizationsPt extends AppLocalizations {
   String musicMetadataErrorTooLong(int max) {
     return 'Use menos de $max caracteres.';
   }
+
+  @override
+  String get musicViewArtists => 'Artistas';
+
+  @override
+  String get musicViewAlbums => 'Álbuns';
+
+  @override
+  String get musicViewSongs => 'Músicas';
+
+  @override
+  String get musicBreadcrumbRoot => 'Biblioteca de música';
+
+  @override
+  String get musicUnknownTitle => 'Título desconhecido';
+
+  @override
+  String get musicUnknownArtist => 'Artista desconhecido';
+
+  @override
+  String get musicUnknownAlbum => 'Álbum desconhecido';
+
+  @override
+  String get musicRowActions => 'Ações desta faixa';
+
+  @override
+  String musicLoading(int read, int total) {
+    return 'Lendo metadados: $read de $total';
+  }
+
+  @override
+  String get musicEmpty => 'Nenhum arquivo de áudio catalogado ainda.';
 
   @override
   String get signOut => 'Sair';

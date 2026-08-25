@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
@@ -7,6 +9,7 @@ import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -168,6 +171,10 @@ void main() {
     testWidgets(
       'GivenAnAudioFile_WhenItsDetailsOpen_ThenTrackingIsNotOffered',
       (tester) async {
+        // Filed under audio, matching the fixture's own type: UC-46 gave
+        // audio its own browsing area whose rows play on tap rather than
+        // opening this dialog, so the dialog is opened directly the same
+        // way the application's own `FileDetailsView.show` is called.
         final catalog = FakeCatalogGateway(
           listings: {
             LibraryType.audio: CatalogListing.loaded(files: [aFile()]),
@@ -181,14 +188,10 @@ void main() {
             watchlistGatewayProvider.overrideWithValue(FakeWatchlistGateway()),
           ],
         );
-        await tester.tap(
-          find.descendant(
-            of: find.byType(ShellNavigationPanel),
-            matching: find.byIcon(ShellDestination.music.icon),
-          ),
+        final element = tester.element(find.byType(ShellScreen));
+        unawaited(
+          FileDetailsView.show(element, element as WidgetRef, aFile().uuid),
         );
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Kind of Blue.flac').first);
         await tester.pumpAndSettle();
 
         expect(find.text(messages(tester).watchlistAddTo), findsNothing);

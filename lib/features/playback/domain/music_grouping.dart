@@ -1,6 +1,18 @@
 import '../../catalog/domain/catalog_file.dart';
 import '../../catalog/domain/music_metadata.dart';
 
+/// A tag, trimmed, or `null` when it names nothing.
+///
+/// The one place blank-or-absent becomes `null` rather than a word — what
+/// word to show instead is a presentation decision, which is what `tagOr` in
+/// `music_display_name.dart` makes from this. [MusicEntry] uses this same
+/// function for its own getters, so there is one trimming rule rather than
+/// two that could drift apart.
+String? trimmedOrNull(String? value) {
+  final trimmed = value?.trim();
+  return trimmed == null || trimmed.isEmpty ? null : trimmed;
+}
+
 /// One audio file and the metadata the queue is grouped by (FR-PL-06).
 class MusicEntry {
   /// Creates an entry.
@@ -13,15 +25,16 @@ class MusicEntry {
   final MusicMetadata metadata;
 
   /// The album it belongs to, or `null` when it names none.
-  String? get album => _trimmed(metadata.album);
+  String? get album => trimmedOrNull(metadata.album);
 
   /// The artist, or `null` when it names none.
-  String? get artist => _trimmed(metadata.artist);
+  String? get artist => trimmedOrNull(metadata.artist);
 
-  static String? _trimmed(String? value) {
-    final trimmed = value?.trim();
-    return trimmed == null || trimmed.isEmpty ? null : trimmed;
-  }
+  /// The track's title, or `null` when it names none.
+  ///
+  /// What a row shows. A file whose tags carry no title has no name in this
+  /// application's terms — its name on disk is not one (FR-CT-13).
+  String? get title => trimmedOrNull(metadata.title);
 }
 
 /// The tracks of [entry]'s album, in track order (main flow step 3).

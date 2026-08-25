@@ -174,16 +174,18 @@ replace the FFI one without touching a screen.
 | --- | --- |
 | FR-CT-01 | The system shall present a navigation panel listing every file type in the library — music, videos, books, comic books, notes and text files, HTML pages, and images — plus bookmarks, with the count of items in each. Corrected in UC-09: this originally listed movies and series separately, but the core classifies a file as `video` and carries no subtype, so the two would be the same query returning the same rows. That distinction is a watchlist's (UC-29), not the catalog's. Bookmarks are not files and are listed through their own core call (UC-28). |
 | FR-CT-02 | The system shall list the files of a selected type, retrieved from the core. |
-| FR-CT-03 | The system shall offer three view layouts — list, list with details, and grid — and switch between them on request. |
+| FR-CT-03 | The system shall offer three view layouts — list, list with details, and grid — and switch between them on request, for every file type but audio, whose presentation is its own (FR-CT-13). |
 | FR-CT-04 | The system shall remember the chosen layout per file type across restarts. |
 | FR-CT-05 | The system shall present a detail view for a single file showing its type-specific metadata, its path, and its lifecycle state. |
 | FR-CT-06 | The system shall search the catalog by file name and by type-specific metadata, and present matches across every type. |
-| FR-CT-07 | The system shall filter the listed items by type, lifecycle state, containing collection, and the type-specific attributes the core exposes. |
+| FR-CT-07 | The system shall filter the listed items by type, lifecycle state, containing collection, and the type-specific attributes the core exposes, for every file type but audio, whose presentation is its own (FR-CT-13) and whose deleted records are reached through the deleted-items review (UC-34) like every other type's. |
 | FR-CT-08 | The system shall sort the listed items by name, by date, and by the type-specific attributes the core exposes. |
 | FR-CT-09 | The system shall present an empty-result state that is visually distinct from a loading state and from an error state. |
 | FR-CT-10 | The system shall render long catalog listings without materializing every row, so that scrolling cost does not grow with the size of the library. |
 | FR-CT-11 | The system shall present a home dashboard showing recently added items, items in progress in watchlists and reading lists, per-type counts, and the outcome of the most recent index run. |
 | FR-CT-12 | The system shall open the viewer or player registered for a file's type from any listing or from the detail view. |
+| FR-CT-13 | The system shall present a track by its metadata — artist, album, or title — everywhere it is presented as music: the music browsing area, catalog-wide search results, the playback surfaces (the bar, the full player, and skip notices), and the home dashboard's recent list. The file's own name is shown deliberately in the file's own detail view, under its own label, and in the rename dialog, where it is what is being renamed. The deleted-items review and a collection's membership list are unaffected: both read records that may carry no file type, which this decision needs to tell a track from any other file. |
+| FR-CT-14 | The system shall offer, for each file in the music area, a context menu carrying the file's playback actions, its details, and its metadata editor. |
 
 ### 3.4 Metadata and Content Editing — `ME`
 
@@ -657,7 +659,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | --- | --- |
 | F-01 Authentication and session | FR-AU-01 through FR-AU-19 |
 | F-02 Library sources and indexing | FR-LB-01 through FR-LB-20 |
-| F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-12 |
+| F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-14 |
 | F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
 | F-05 Media playback | FR-PL-01 through FR-PL-10 |
 | F-06 Document, image, and page viewing | FR-VW-01 through FR-VW-08 |
@@ -672,7 +674,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | --- | --- | --- |
 | Authentication and session | `AU` | FR-AU-01 … FR-AU-19 |
 | Library sources and indexing | `LB` | FR-LB-01 … FR-LB-20 |
-| Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-12 |
+| Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-14 |
 | Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
 | Media playback | `PL` | FR-PL-01 … FR-PL-10 |
 | Document, image, and page viewing | `VW` | FR-VW-01 … FR-VW-08 |

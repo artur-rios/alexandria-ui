@@ -64,8 +64,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Main flow step 1: the form is opened from the file's detail view.
-    await tester.tap(find.text('Kind of Blue.flac').first);
+    // Main flow step 1: the form is opened from the file's detail view,
+    // reached from the dashboard's recent list, which names an audio file by
+    // its metadata title rather than its file name (FR-CT-13).
+    await tester.tap(find.text('So What').first);
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.edit_outlined));
     await tester.pumpAndSettle();
@@ -441,7 +443,9 @@ void main() {
           ],
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Kind of Blue.flac').first);
+        // Named by its metadata title on the dashboard, not its file name
+        // (FR-CT-13).
+        await tester.tap(find.text('So What').first);
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.edit_outlined), findsNothing);

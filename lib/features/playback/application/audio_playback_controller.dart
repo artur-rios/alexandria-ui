@@ -97,6 +97,20 @@ class AudioPlaybackState {
 
 /// Drives UC-20: listening to a track, an album, or an artist.
 ///
+/// What [AudioPlaybackController._playGrouped] builds a queue for.
+///
+/// Not [QueueKind]: that type also has `track`, and [_playGrouped] is never
+/// called for one — [playTrack] builds its own single-track queue directly.
+/// A two-value type here rules that arm out at the call site instead of
+/// leaving a switch case that could never run.
+enum _GroupKind {
+  /// An album.
+  album,
+
+  /// An artist.
+  artist,
+}
+
 /// The player outlives the screen the owner started it from (FR-PL-05), which
 /// is why the queue and the engine live here and the player bar is only a view
 /// of them.
@@ -142,11 +156,11 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
   /// Plays the album [file] belongs to (main flow steps 1 and 3).
   Future<void> playAlbum(CatalogFile file) =>
-      _playGrouped(file, QueueKind.album);
+      _playGrouped(file, _GroupKind.album);
 
   /// Plays everything by [file]'s artist (main flow steps 1 and 3).
   Future<void> playArtist(CatalogFile file) =>
-      _playGrouped(file, QueueKind.artist);
+      _playGrouped(file, _GroupKind.artist);
 
   /// Answers AF-04 by resuming where playback stopped.
   Future<void> resume() async {
@@ -217,12 +231,44 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   void acknowledgeAllFailed() => state = const AudioPlaybackState();
 
   /// Builds and plays an album or artist queue.
-  Future<void> _playGrouped(CatalogFile file, QueueKind kind) async {
+  ///
+  /// [kind] is [_GroupKind] rather than [QueueKind]: [playTrack] builds a
+  /// single-track queue directly and never calls this, so a `QueueKind.track`
+  /// arm here would be dead code that reads as if single-track playback
+  /// waited on the whole library too. Narrowing the parameter's type rules
+  /// that reading out at the call site instead of a runtime check.
+  Future<void> _playGrouped(CatalogFile file, _GroupKind kind) async {
     await _stopOtherMedia();
 
     state = state.copyWith(stage: AudioStage.starting);
 
-    final library = await ref.read(musicLibraryProvider.future);
+    final List<MusicEntry> library;
+    try {
+      library = (await ref.read(musicLibraryProvider.future)).entries;
+    } on Object catch (error) {
+      // AF-03: the catalog itself could not be asked, so no album or artist
+      // grouping is knowable — there is nothing this can queue. Reported
+      // through the same stage the bar already renders as "nothing in the
+      // selection could be played" rather than left parked in `starting`
+      // forever: a queue built by falling back to the single track the
+      // owner asked for would silently turn "play the album" into "play the
+      // track" without ever saying so, which is worse than telling them the
+      // catalog could not be reached.
+      //
+      // lastSkipped stays null on purpose: nothing was ever attempted here —
+      // the listing itself failed before any track was resolved — so naming
+      // [file] as skipped would claim a specific track failed to play, which
+      // did not happen and may not even be true of that file. That field is
+      // for a track _openAt actually tried and actually failed; this is a
+      // different failure; and it shows a second, contradictory banner
+      // ("Skipped … it could not be played") stacked on this one otherwise.
+      state = AudioPlaybackState(
+        stage: AudioStage.allFailed,
+        lastSkipReason: error is Failure ? error : null,
+      );
+      return;
+    }
+
     final entry = library.firstWhere(
       (candidate) => candidate.file.uuid == file.uuid,
       // A file the library index does not hold is still playable on its own.
@@ -230,15 +276,18 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     );
 
     final tracks = switch (kind) {
-      QueueKind.album => albumOf(entry, library),
-      QueueKind.artist => artistOf(entry, library),
-      QueueKind.track => [file],
+      _GroupKind.album => albumOf(entry, library),
+      _GroupKind.artist => artistOf(entry, library),
     };
 
+    // Never the file name (FR-CT-13): an absent tag is carried as `null`
+    // rather than defaulting to `file.name` here, because this is
+    // application code with no `AppLocalizations` to turn that absence into
+    // the right word. That decision belongs to whichever presentation site
+    // renders the label — see `queueLabelOf` in `music_display_name.dart`.
     final label = switch (kind) {
-      QueueKind.album => entry.album ?? file.name,
-      QueueKind.artist => entry.artist ?? file.name,
-      QueueKind.track => file.name,
+      _GroupKind.album => entry.album,
+      _GroupKind.artist => entry.artist,
     };
 
     // Starting where the owner started, not at the top: they picked this
@@ -250,7 +299,10 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     await _playQueue(
       PlaybackQueue(
         tracks: tracks,
-        kind: kind,
+        kind: switch (kind) {
+          _GroupKind.album => QueueKind.album,
+          _GroupKind.artist => QueueKind.artist,
+        },
         label: label,
         // What UC-21 picks the medium from.
         year: entry.metadata.year,

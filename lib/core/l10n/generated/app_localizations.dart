@@ -1116,6 +1116,36 @@ abstract class AppLocalizations {
   /// **'Duration'**
   String get detailsDuration;
 
+  /// Heading over the section of the details dialog describing the file on disk, as opposed to what it holds.
+  ///
+  /// In en, this message translates to:
+  /// **'The file'**
+  String get detailsFileSection;
+
+  /// Label for the file's name on disk in the details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'File name'**
+  String get detailsFileName;
+
+  /// Label for the file's size in the details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Size on disk'**
+  String get detailsFileSize;
+
+  /// Label for the file's format, taken from its extension, in the details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get detailsFileFormat;
+
+  /// Label for when the file was last changed on disk, in the details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Last modified'**
+  String get detailsFileModified;
+
   /// Heading of the dashboard's recently added section (UC-14, FR-CT-11).
   ///
   /// In en, this message translates to:
@@ -1194,7 +1224,7 @@ abstract class AppLocalizations {
   /// **'The last scan was interrupted when Alexandria closed.'**
   String get dashboardLastRunInterrupted;
 
-  /// Opens the music metadata form from an audio file's detail view (UC-15 main flow step 1).
+  /// Opens the music metadata form for an audio file, from its detail view or from its row's context menu in the music area (UC-15 main flow step 1, UC-46, FR-CT-14).
   ///
   /// In en, this message translates to:
   /// **'Edit metadata'**
@@ -1277,6 +1307,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep this under {max} characters.'**
   String musicMetadataErrorTooLong(int max);
+
+  /// The music area's artists view, in its view switcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Artists'**
+  String get musicViewArtists;
+
+  /// The music area's albums view, in its view switcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get musicViewAlbums;
+
+  /// The music area's songs view, listing every track.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get musicViewSongs;
+
+  /// The first crumb of the music area's breadcrumb, leading back to the top of the current view. Deliberately distinct from the navigation panel's own 'Music' label (destinationMusic) rather than a translation of it — the panel, the area's heading and this crumb all sit in view together, and giving this one the same word three times over would not help the owner; do not 'correct' it to match destinationMusic.
+  ///
+  /// In en, this message translates to:
+  /// **'Music library'**
+  String get musicBreadcrumbRoot;
+
+  /// Shown in place of a track's name when its metadata carries no title. The file's name on disk is never shown here.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown title'**
+  String get musicUnknownTitle;
+
+  /// Names the group of audio files whose metadata carries no artist.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown artist'**
+  String get musicUnknownArtist;
+
+  /// Names the group of audio files whose metadata carries no album.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown album'**
+  String get musicUnknownAlbum;
+
+  /// Tooltip on the button that opens a track row's context menu, which right-clicking the row also opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions for this track'**
+  String get musicRowActions;
+
+  /// Progress while the music area reads each audio file's metadata, which the core answers one file at a time.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading metadata: {read} of {total}'**
+  String musicLoading(int read, int total);
+
+  /// The music area with nothing in it.
+  ///
+  /// In en, this message translates to:
+  /// **'No audio files are catalogued yet.'**
+  String get musicEmpty;
 
   /// UC-03 main flow step 1: ends the session without closing the application.
   ///

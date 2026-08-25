@@ -37,13 +37,18 @@ void main() {
         catalogGatewayProvider.overrideWithValue(
           FakeCatalogGateway(
             listings: {
-              LibraryType.audio: CatalogListing.loaded(
+              LibraryType.video: CatalogListing.loaded(
                 files: [
-                  aFile(),
+                  aFile(
+                    type: LibraryType.video,
+                    name: 'Interstellar.mp4',
+                    path: '/home/owner/videos/Interstellar.mp4',
+                  ),
                   aFile(
                     uuid: 'b',
-                    name: 'Blue Train.flac',
-                    path: '/home/owner/music/Blue Train.flac',
+                    type: LibraryType.video,
+                    name: 'Inception.mp4',
+                    path: '/home/owner/videos/Inception.mp4',
                   ),
                 ],
               ),
@@ -56,7 +61,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.music.icon),
+        matching: find.byIcon(ShellDestination.videos.icon),
       ),
     );
     await tester.pumpAndSettle();
@@ -95,18 +100,18 @@ void main() {
       await chooseLayout(tester, ViewLayout.grid);
 
       expect(find.byType(GridView), findsOneWidget);
-      expect(find.text('Kind of Blue.flac'), findsOneWidget);
+      expect(find.text('Interstellar.mp4'), findsOneWidget);
     });
 
     testWidgets('GivenTheList_WhenDetailsAreChosen_ThenEachRowShowsItsPath', (
       tester,
     ) async {
       await openListing(tester);
-      expect(find.text('/home/owner/music/Kind of Blue.flac'), findsNothing);
+      expect(find.text('/home/owner/videos/Interstellar.mp4'), findsNothing);
 
       await chooseLayout(tester, ViewLayout.detailedList);
 
-      expect(find.text('/home/owner/music/Kind of Blue.flac'), findsOneWidget);
+      expect(find.text('/home/owner/videos/Interstellar.mp4'), findsOneWidget);
     });
 
     testWidgets('GivenAChosenLayout_WhenItIsChosen_ThenItIsWritten', (
@@ -155,7 +160,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: find.byType(ShellNavigationPanel),
-          matching: find.byIcon(ShellDestination.music.icon),
+          matching: find.byIcon(ShellDestination.videos.icon),
         ),
       );
       await tester.pumpAndSettle();
@@ -182,7 +187,7 @@ void main() {
       expect(find.text(l10n.layoutSubstituted), findsOneWidget);
       // The substitution is stated, and the path column is not clipped onto
       // the name — it is simply not drawn.
-      expect(find.text('/home/owner/music/Kind of Blue.flac'), findsNothing);
+      expect(find.text('/home/owner/videos/Interstellar.mp4'), findsNothing);
     });
 
     testWidgets('GivenAFittingLayout_WhenDrawn_ThenNoSubstitutionIsClaimed', (
@@ -209,9 +214,9 @@ void main() {
 
       await chooseLayout(tester, ViewLayout.detailedList);
 
-      final name = tester.getCenter(find.text('Blue Train.flac'));
+      final name = tester.getCenter(find.text('Inception.mp4'));
       final path = tester.getCenter(
-        find.text('/home/owner/music/Blue Train.flac'),
+        find.text('/home/owner/videos/Inception.mp4'),
       );
 
       // Beside, not beneath: further right, on the same line.
