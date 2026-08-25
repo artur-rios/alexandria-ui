@@ -10,6 +10,7 @@ import '../domain/sleeve_design.dart';
 import 'media/case_painter.dart';
 import 'media/cassette_painter.dart';
 import 'media/cd_player_painter.dart';
+import 'media/device_layer.dart';
 import 'media/disc_painter.dart';
 import 'media/tape_deck_painter.dart';
 import 'media/turntable_painter.dart';
@@ -161,10 +162,25 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
   void didUpdateWidget(AlbumStage oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    // `repeat()` captures its period into a running simulation, so a bare
+    // duration assignment would leave a still-playing spin at the old rate
+    // until something next paused and resumed it. Re-applying restarts the
+    // repeat at the new period — `repeat()` continues from the current
+    // value rather than resetting it, so this does not jump the medium.
+    var spinNeedsReapplying = oldWidget.isPlaying != widget.isPlaying;
     if (oldWidget.medium != widget.medium) {
       _spin.duration = _spinPeriod(widget.medium);
+      spinNeedsReapplying = true;
     }
-    if (oldWidget.isPlaying != widget.isPlaying) _applySpin();
+    if (spinNeedsReapplying) _applySpin();
+
+    // An insertion that becomes owed after mount — Task 6's case, a
+    // different record loaded into a stage that stayed on screen — plays
+    // the same way the first one did.
+    if (widget.insert && !oldWidget.insert && !_reduceMotion) {
+      _insertion.value = 0;
+      unawaited(_insertion.forward());
+    }
   }
 
   @override
@@ -187,8 +203,20 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
     }
   }
 
+  /// Reports a finished insertion — but only one that actually played.
+  ///
+  /// Setting [_insertion]'s value to 1 directly (no insertion owed, or
+  /// motion reduced) also drives the controller to `completed`, which fires
+  /// this same status listener. Without the [AlbumStage.insert] and
+  /// [_reduceMotion] guard, a stage that never animated at all would still
+  /// report an insertion as finished — synchronously, from inside
+  /// `initState` or `didChangeDependencies` — which is exactly where Task 6
+  /// wires a `setState` into this callback that would then throw.
   void _onInsertionStatus(AnimationStatus status) {
-    if (status == AnimationStatus.completed) widget.onInserted?.call();
+    if (status != AnimationStatus.completed) return;
+    if (!widget.insert || _reduceMotion) return;
+
+    widget.onInserted?.call();
   }
 
   /// Steps 4 and 5: repeats for as long as [AlbumStage.isPlaying] and motion
@@ -251,16 +279,13 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
   /// What a screen reader is told the stage is — the medium turning, as
   /// `AlbumAnimation` already said it (UC-21, FR-PL-07).
   ///
-  /// `null` rather than a hard `AppLocalizations.of` lookup when no
-  /// `Localizations` ancestor supplies it: the stage's own goldens and
-  /// timing tests mount it under a bare `MaterialApp` with no
-  /// `localizationsDelegates` of its own, and a decorative label is worth
-  /// losing gracefully rather than crashing a host that forgot to wire one
-  /// up. Every screen that actually presents this to an owner supplies
-  /// `AppLocalizations` the normal way, so the label is never missing there.
-  String? _label(BuildContext context) {
-    final l10n = Localizations.of<AppLocalizations>(context, AppLocalizations);
-    if (l10n == null) return null;
+  /// A plain `AppLocalizations.of` lookup, same as every other widget in
+  /// this application: a host that mounts this without wiring up
+  /// `localizationsDelegates` is missing something every screen needs, not
+  /// something this widget should quietly work around by shipping a stage
+  /// with no screen-reader label.
+  String _label(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
 
     return switch (widget.medium) {
       AlbumMedium.vinyl => l10n.albumMediumVinyl,
@@ -270,8 +295,11 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
   }
 }
 
-/// The three painted layers, placed for one frame of the insertion or the
-/// spin. A plain function of its inputs — nothing here owns an
+/// The four painted layers, placed for one frame of the insertion or the
+/// spin: the device's chassis, the medium, the device's foreground, and the
+/// case — in that order, so a device's tonearm, door or lid lands in front
+/// of the medium it closes over rather than buried beneath it (Finding 2).
+/// A plain function of its inputs — nothing here owns an
 /// [AnimationController] — so it can be rebuilt on every tick without
 /// carrying animation state of its own.
 class _StageLayout extends StatelessWidget {
@@ -348,29 +376,26 @@ class _StageLayout extends StatelessWidget {
     final mediumWidth = seat.width * mediumScale;
     final mediumHeight = seat.height * mediumScale;
 
+    // Zero rather than `turns` until travel is under way: the medium is
+    // still sitting beside the case for the whole of the emergence and hold
+    // beats, and a record that visibly spins before anything has carried it
+    // toward the platter reads as turning in mid-air.
+    final appliedTurns = travel > 0 ? turns : 0.0;
+
+    Widget devicePainted(DeviceLayer layer) => Positioned.fromRect(
+      rect: deviceRect,
+      child: RepaintBoundary(
+        child: CustomPaint(painter: _devicePainter(layer)),
+      ),
+    );
+
     return Stack(
       children: [
-        Positioned.fromRect(
-          rect: deviceRect,
-          child: RepaintBoundary(
-            child: CustomPaint(
-              painter: switch (medium) {
-                AlbumMedium.vinyl => TurntablePainter(
-                  palette: palette,
-                  closed: closed,
-                ),
-                AlbumMedium.tape => TapeDeckPainter(
-                  palette: palette,
-                  closed: closed,
-                ),
-                AlbumMedium.disc => CdPlayerPainter(
-                  palette: palette,
-                  closed: closed,
-                ),
-              },
-            ),
-          ),
-        ),
+        // The chassis — everything a device shows before the medium is on
+        // it — sits behind the medium (Finding 2): the well the record or
+        // disc rests in, or the slot the cassette slides into, has to be
+        // under it, not painted over it.
+        devicePainted(DeviceLayer.chassis),
         Positioned(
           left: mediumCentre.dx - mediumWidth / 2,
           top: mediumCentre.dy - mediumHeight / 2,
@@ -381,17 +406,24 @@ class _StageLayout extends StatelessWidget {
               painter: switch (medium) {
                 AlbumMedium.vinyl => VinylPainter(
                   palette: palette,
-                  turns: turns,
+                  turns: appliedTurns,
                 ),
-                AlbumMedium.disc => DiscPainter(palette: palette, turns: turns),
+                AlbumMedium.disc => DiscPainter(
+                  palette: palette,
+                  turns: appliedTurns,
+                ),
                 AlbumMedium.tape => CassettePainter(
                   palette: palette,
-                  turns: turns,
+                  turns: appliedTurns,
                 ),
               },
             ),
           ),
         ),
+        // The foreground — the tonearm, the deck's door, the player's lid —
+        // is the part of the device whose entire job is to be seen touching
+        // or covering the medium, so it has to be painted after it.
+        devicePainted(DeviceLayer.foreground),
         if (caseOpacity > 0)
           Positioned(
             left: caseCentre.dx - caseWidth / 2,
@@ -417,6 +449,25 @@ class _StageLayout extends StatelessWidget {
       ],
     );
   }
+
+  /// The device painter for [layer], by medium.
+  CustomPainter _devicePainter(DeviceLayer layer) => switch (medium) {
+    AlbumMedium.vinyl => TurntablePainter(
+      palette: palette,
+      closed: closed,
+      layer: layer,
+    ),
+    AlbumMedium.tape => TapeDeckPainter(
+      palette: palette,
+      closed: closed,
+      layer: layer,
+    ),
+    AlbumMedium.disc => CdPlayerPainter(
+      palette: palette,
+      closed: closed,
+      layer: layer,
+    ),
+  };
 
   /// Where, and how large, the medium sits once fully seated on [device] —
   /// derived from the same geometry each device painter positions its own
