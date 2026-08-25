@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../auth/presentation/change_credentials_dialog.dart';
-import '../../auth/presentation/sign_out_button.dart';
+import '../../auth/presentation/sign_out.dart';
 import 'menu_entry.dart';
 import 'preferences_dialog.dart';
 
@@ -27,7 +27,7 @@ class SettingsMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
 
-    return SubmenuButton(
+    final button = SubmenuButton(
       leadingIcon: const Icon(Icons.settings_outlined),
       menuChildren: [
         MenuEntry(
@@ -49,12 +49,16 @@ class SettingsMenu extends ConsumerWidget {
           onSelected: () => unawaited(confirmAndSignOut(context, ref)),
         ),
       ],
-      child: showsLabel
-          ? Text(l10n.settingsMenuLabel)
-          : Tooltip(
-              message: l10n.settingsMenuOpen,
-              child: const SizedBox.shrink(),
-            ),
+      child: showsLabel ? Text(l10n.settingsMenuLabel) : const SizedBox.shrink(),
     );
+
+    if (showsLabel) return button;
+
+    // The tooltip has to wrap the whole trigger, not sit on its shrunk
+    // child: SubmenuButton lays `leadingIcon` and `child` side by side, so a
+    // tooltip anchored to a zero-height child alone would cover a sliver
+    // beside the icon that a pointer can never actually land on, and the
+    // name it carries could never be revealed (FR-UX-02).
+    return Tooltip(message: l10n.settingsMenuOpen, child: button);
   }
 }

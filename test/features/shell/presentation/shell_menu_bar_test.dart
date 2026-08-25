@@ -141,6 +141,56 @@ void main() {
         );
       },
     );
+
+    // The Settings menu collapses the same way the Library menu does; it
+    // needs the same three checks so a regression in one trigger's tooltip
+    // wiring cannot hide behind the other trigger's coverage.
+    testWidgets(
+      'GivenACompactWindow_WhenTheMenuBarIsShown_ThenTheSettingsMenuIsIconOnly',
+      (tester) async {
+        await tester.pumpShell(surfaceSize: Breakpoint.minimumWindowSize);
+        final l10n = localizations(tester);
+
+        expect(
+          find.descendant(
+            of: find.byType(SettingsMenu),
+            matching: find.text(l10n.settingsMenuLabel),
+          ),
+          findsNothing,
+        );
+        expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenACompactWindow_WhenTheSettingsMenuCollapses_ThenItsTooltipIsReachable',
+      (tester) async {
+        // A hoverable, non-zero-size hit region: the same measurement that
+        // catches a tooltip anchored to a shrunk-away child instead of the
+        // whole trigger.
+        await tester.pumpShell(surfaceSize: Breakpoint.minimumWindowSize);
+        final l10n = localizations(tester);
+
+        final size = tester.getSize(find.byTooltip(l10n.settingsMenuOpen));
+        expect(size.width, greaterThan(0));
+        expect(size.height, greaterThan(0));
+      },
+    );
+
+    testWidgets(
+      'GivenACompactWindow_WhenTheSettingsMenuIsOpened_ThenEveryEntryIsStillReachable',
+      (tester) async {
+        await tester.pumpShell(surfaceSize: Breakpoint.minimumWindowSize);
+        final l10n = localizations(tester);
+
+        await tester.tap(find.byType(SettingsMenu));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.preferencesLabel), findsOneWidget);
+        expect(find.text(l10n.changeCredentialsOpen), findsOneWidget);
+        expect(find.text(l10n.signOut), findsOneWidget);
+      },
+    );
   });
 
   group('the settings menu (UC-39 main flow step 1)', () {

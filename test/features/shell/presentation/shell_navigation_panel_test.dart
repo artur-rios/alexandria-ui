@@ -1,3 +1,4 @@
+import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -23,7 +24,7 @@ void main() {
   testWidgets(
     'GivenTheExtendedBreakpoint_WhenBuilt_ThenBothTriggersShowLabels',
     (tester) async {
-      await pumpPanel(tester, width: 1400);
+      await pumpPanel(tester, width: Breakpoint.expandedMinWidth);
 
       expect(find.text('Library'), findsOneWidget);
       expect(find.text('Settings'), findsOneWidget);
@@ -31,14 +32,20 @@ void main() {
   );
 
   // FR-UX-02: no entry is dropped at any breakpoint. At the minimum window the
-  // label becomes a tooltip rather than disappearing.
+  // label becomes a tooltip rather than disappearing — and "becomes" has to
+  // mean the tooltip can actually be revealed, not merely that a Tooltip
+  // widget is present somewhere in the tree, so this measures the rendered
+  // size of the region a pointer would have to hover to see it.
   testWidgets(
-    'GivenTheMinimumBreakpoint_WhenBuilt_ThenBothTriggersKeepTooltips',
+    'GivenTheMinimumWindow_WhenBuilt_ThenBothTriggersKeepReachableTooltips',
     (tester) async {
-      await pumpPanel(tester, width: 640);
+      await tester.pumpShell(surfaceSize: Breakpoint.minimumWindowSize);
 
-      expect(find.byTooltip('Library'), findsOneWidget);
-      expect(find.byTooltip('Open settings'), findsOneWidget);
+      for (final message in ['Library', 'Open settings']) {
+        final size = tester.getSize(find.byTooltip(message));
+        expect(size.width, greaterThan(0), reason: message);
+        expect(size.height, greaterThan(0), reason: message);
+      }
     },
   );
 

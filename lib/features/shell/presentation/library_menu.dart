@@ -35,7 +35,7 @@ class LibraryMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return SubmenuButton(
+    final button = SubmenuButton(
       leadingIcon: const Icon(Icons.widgets_outlined),
       menuChildren: [
         MenuGroupHeading(l10n.libraryToolsGroupLibrary),
@@ -72,15 +72,16 @@ class LibraryMenu extends StatelessWidget {
           onSelected: () => MissingFilesScreen.show(context),
         ),
       ],
-      // The tooltip is what carries the name when the label is gone: an icon
-      // alone would be a menu whose contents cannot be guessed before it is
-      // opened, which is the complaint the headings inside it answered.
-      child: showsLabel
-          ? Text(l10n.libraryToolsLabel)
-          : Tooltip(
-              message: l10n.libraryToolsLabel,
-              child: const SizedBox.shrink(),
-            ),
+      child: showsLabel ? Text(l10n.libraryToolsLabel) : const SizedBox.shrink(),
     );
+
+    if (showsLabel) return button;
+
+    // The tooltip has to wrap the whole trigger, not sit on its shrunk
+    // child: SubmenuButton lays `leadingIcon` and `child` side by side, so a
+    // tooltip anchored to a zero-height child alone would cover a sliver
+    // beside the icon that a pointer can never actually land on, and the
+    // name it carries could never be revealed (FR-UX-02).
+    return Tooltip(message: l10n.libraryToolsLabel, child: button);
   }
 }
