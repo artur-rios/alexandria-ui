@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import 'device_layer.dart';
 
 /// A tape deck, waiting for a cassette or playing one (UC-21, FR-PL-07).
 ///
@@ -10,9 +11,18 @@ import '../../../../core/theme/album_palette.dart';
 /// and waiting) to 1 (slid down over the well). [CassettePainter] is what the
 /// stage layers into that well; this painter only owns what the cassette sits
 /// inside.
+///
+/// Painted in two passes, chosen by [layer]: the door has to be seen sliding
+/// down *over* the cassette, so it cannot share a pass with the well it
+/// closes over — the stage paints the well behind the cassette and the door
+/// in front of it. See [DeviceLayer].
 class TapeDeckPainter extends CustomPainter {
   /// Creates the painter.
-  const TapeDeckPainter({required this.palette, required this.closed});
+  const TapeDeckPainter({
+    required this.palette,
+    required this.closed,
+    required this.layer,
+  });
 
   /// The artwork's colours (FR-UX-07).
   final AlbumPalette palette;
@@ -20,6 +30,9 @@ class TapeDeckPainter extends CustomPainter {
   /// 0 with the door racked open above the well; 1 with it slid down,
   /// closed over the cassette.
   final double closed;
+
+  /// Which pass this paint call draws.
+  final DeviceLayer layer;
 
   /// A deck face is a wide, short panel.
   static const double aspect = 1.7;
@@ -36,23 +49,29 @@ class TapeDeckPainter extends CustomPainter {
       w - faceMargin * 2,
       h - faceMargin * 2,
     );
-
-    _paintFace(canvas, face);
-    _paintVuMeter(canvas, face);
-    _paintButtons(canvas, face);
-
     final well = Rect.fromLTWH(
       face.left + face.width * 0.06,
       face.top + face.height * 0.50,
       face.width * 0.55,
       face.height * 0.42,
     );
-    _paintWell(canvas, well);
-    _paintDoor(canvas, face, well);
+
+    switch (layer) {
+      case DeviceLayer.chassis:
+        _paintFace(canvas, face);
+        _paintVuMeter(canvas, face);
+        _paintButtons(canvas, face);
+        _paintWell(canvas, well);
+      case DeviceLayer.foreground:
+        _paintDoor(canvas, face, well);
+    }
   }
 
   void _paintFace(Canvas canvas, Rect face) {
-    final panel = RRect.fromRectAndRadius(face, Radius.circular(face.height * 0.04));
+    final panel = RRect.fromRectAndRadius(
+      face,
+      Radius.circular(face.height * 0.04),
+    );
 
     // A four-stop sweep rather than the raw two-colour gradient: repeating
     // through the tonal range once gives the brushed aluminium a visible
@@ -221,7 +240,10 @@ class TapeDeckPainter extends CustomPainter {
     // gradient that darkens toward the back of the cavity, a lit rim
     // catching light along the top the way a real inset edge would, and an
     // outer stroke deep enough to read as a wall rather than a hairline.
-    final shape = RRect.fromRectAndRadius(well, Radius.circular(well.height * 0.05));
+    final shape = RRect.fromRectAndRadius(
+      well,
+      Radius.circular(well.height * 0.05),
+    );
 
     // A lighter tone at the mouth of the cavity fading to wellDark at the
     // back — panelDark and wellDark alone were too close to each other in
@@ -353,5 +375,7 @@ class TapeDeckPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(TapeDeckPainter oldDelegate) =>
-      oldDelegate.closed != closed || oldDelegate.palette != palette;
+      oldDelegate.closed != closed ||
+      oldDelegate.palette != palette ||
+      oldDelegate.layer != layer;
 }

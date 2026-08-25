@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import 'device_layer.dart';
 
 /// A turntable, waiting for a record or playing one (UC-21, FR-PL-07).
 ///
@@ -13,9 +14,18 @@ import '../../../../core/theme/album_palette.dart';
 /// the record as [closed] runs from 0 to 1. The platter itself does not spin
 /// here; that motion belongs to [VinylPainter], which the stage layers on
 /// top once the arm is down.
+///
+/// Painted in two passes, chosen by [layer]: the tonearm's whole point is to
+/// be seen resting on the record, so it cannot be part of the same pass as
+/// the plinth and platter, which the stage paints *behind* the record. See
+/// [DeviceLayer].
 class TurntablePainter extends CustomPainter {
   /// Creates the painter.
-  const TurntablePainter({required this.palette, required this.closed});
+  const TurntablePainter({
+    required this.palette,
+    required this.closed,
+    required this.layer,
+  });
 
   /// The artwork's colours (FR-UX-07).
   final AlbumPalette palette;
@@ -23,6 +33,9 @@ class TurntablePainter extends CustomPainter {
   /// 0 with the tonearm lifted and parked on its rest; 1 with it lowered
   /// onto the record.
   final double closed;
+
+  /// Which pass this paint call draws.
+  final DeviceLayer layer;
 
   /// A turntable's plinth is noticeably wider than it is tall.
   static const double aspect = 1.5;
@@ -40,18 +53,27 @@ class TurntablePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-
-    _paintPlinth(canvas, w, h);
     final platterCentre = Offset(w * 0.40, h * 0.52);
     final platterRadius = h * 0.40;
-    _paintPlatter(canvas, platterCentre, platterRadius);
-    _paintControls(canvas, w, h);
-    _paintTonearm(canvas, w, h, platterCentre, platterRadius);
+
+    switch (layer) {
+      case DeviceLayer.chassis:
+        _paintPlinth(canvas, w, h);
+        _paintPlatter(canvas, platterCentre, platterRadius);
+        _paintControls(canvas, w, h);
+      case DeviceLayer.foreground:
+        _paintTonearm(canvas, w, h, platterCentre, platterRadius);
+    }
   }
 
   void _paintPlinth(Canvas canvas, double w, double h) {
     final margin = h * 0.03;
-    final bounds = Rect.fromLTWH(margin, margin, w - margin * 2, h - margin * 2);
+    final bounds = Rect.fromLTWH(
+      margin,
+      margin,
+      w - margin * 2,
+      h - margin * 2,
+    );
     final plinth = RRect.fromRectAndRadius(bounds, Radius.circular(h * 0.03));
 
     canvas.drawRRect(
@@ -125,8 +147,9 @@ class TurntablePainter extends CustomPainter {
       final x = bounds.left + bounds.width * t;
       final dark = math.sin(i * 2.4) > 0;
       final alpha = 0.10 + 0.14 * (0.5 + 0.5 * math.sin(i * 1.7 + 0.4));
-      line.color = (dark ? palette.plinthEdge : palette.plinthTop)
-          .withValues(alpha: alpha);
+      line.color = (dark ? palette.plinthEdge : palette.plinthTop).withValues(
+        alpha: alpha,
+      );
       canvas.drawLine(
         Offset(x, bounds.top + bounds.height * 0.02),
         Offset(x, bounds.bottom - bounds.height * 0.02),
@@ -164,13 +187,25 @@ class TurntablePainter extends CustomPainter {
       );
     }
 
-    canvas.drawCircle(centre, radius * 0.05, Paint()..color = palette.chromeDark);
-    canvas.drawCircle(centre, radius * 0.024, Paint()..color = palette.chromeLight);
+    canvas.drawCircle(
+      centre,
+      radius * 0.05,
+      Paint()..color = palette.chromeDark,
+    );
+    canvas.drawCircle(
+      centre,
+      radius * 0.024,
+      Paint()..color = palette.chromeLight,
+    );
   }
 
   void _paintControls(Canvas canvas, double w, double h) {
     final indicatorCentre = Offset(w * 0.86, h * 0.16);
-    canvas.drawCircle(indicatorCentre, h * 0.018, Paint()..color = palette.indicator);
+    canvas.drawCircle(
+      indicatorCentre,
+      h * 0.018,
+      Paint()..color = palette.indicator,
+    );
     canvas.drawCircle(
       indicatorCentre,
       h * 0.018,
@@ -212,7 +247,8 @@ class TurntablePainter extends CustomPainter {
     // near the inner grooves, where a needle actually rides — rather than
     // the centre itself, which is where the spindle sits, not the stylus.
     final toCentre = platterCentre - pivot;
-    final playTip = platterCentre - toCentre / toCentre.distance * platterRadius * 0.32;
+    final playTip =
+        platterCentre - toCentre / toCentre.distance * platterRadius * 0.32;
     final toPlayTip = playTip - pivot;
     final armLength = toPlayTip.distance;
     final playAngle = toPlayTip.direction;
@@ -244,7 +280,11 @@ class TurntablePainter extends CustomPainter {
     );
 
     // The pivot housing.
-    canvas.drawCircle(Offset.zero, h * 0.03, Paint()..color = palette.chromeMid);
+    canvas.drawCircle(
+      Offset.zero,
+      h * 0.03,
+      Paint()..color = palette.chromeMid,
+    );
 
     // The chrome tube, tapering slightly toward the headshell.
     canvas.drawLine(
@@ -293,5 +333,7 @@ class TurntablePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(TurntablePainter oldDelegate) =>
-      oldDelegate.closed != closed || oldDelegate.palette != palette;
+      oldDelegate.closed != closed ||
+      oldDelegate.palette != palette ||
+      oldDelegate.layer != layer;
 }

@@ -2,6 +2,7 @@ import 'package:alexandria_ui/core/theme/album_palette.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/case_painter.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/cd_player_painter.dart';
+import 'package:alexandria_ui/features/playback/presentation/media/device_layer.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/tape_deck_painter.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/turntable_painter.dart';
 import 'package:flutter/material.dart';
@@ -27,35 +28,47 @@ void main() {
     // racked up, lid standing open; `closed: 1` is the same device shut on
     // its medium. Task 5's stage drives the value between the two with a
     // curve; here each end is pinned on its own.
-    for (final (name, painter) in [
-      ('turntable-open', const TurntablePainter(palette: palette, closed: 0)),
-      (
-        'turntable-closed',
-        const TurntablePainter(palette: palette, closed: 1),
-      ),
-      ('tape-deck-open', const TapeDeckPainter(palette: palette, closed: 0)),
-      (
-        'tape-deck-closed',
-        const TapeDeckPainter(palette: palette, closed: 1),
-      ),
-      ('cd-player-open', const CdPlayerPainter(palette: palette, closed: 0)),
-      (
-        'cd-player-closed',
-        const CdPlayerPainter(palette: palette, closed: 1),
-      ),
-    ]) {
-      testWidgets(
-        'GivenThe${_pascal(name)}Painter_WhenItIsDrawn_ThenItMatchesItsGolden',
-        (tester) async {
-          await tester.pumpWidget(painted(painter, const Size(320, 220)));
+    //
+    // Each end is now two goldens rather than one: the stage paints a
+    // device's [DeviceLayer.chassis] behind the medium and its
+    // [DeviceLayer.foreground] — the tonearm, the door, the lid — in front
+    // of it (Finding 2), so there is no longer a single call that draws
+    // "the whole device" to golden in one shot. Checking both passes
+    // separately is what actually proves the split: a chassis pass that
+    // silently included the tonearm, or a foreground pass that came out
+    // empty, would both still look right if recombined and wrong on its own.
+    for (final (state, closed) in [('open', 0.0), ('closed', 1.0)]) {
+      for (final layer in DeviceLayer.values) {
+        for (final (device, painter) in [
+          (
+            'turntable',
+            TurntablePainter(palette: palette, closed: closed, layer: layer),
+          ),
+          (
+            'tape-deck',
+            TapeDeckPainter(palette: palette, closed: closed, layer: layer),
+          ),
+          (
+            'cd-player',
+            CdPlayerPainter(palette: palette, closed: closed, layer: layer),
+          ),
+        ]) {
+          final name = '$device-$state-${layer.name}';
 
-          await expectLater(
-            find.byType(CustomPaint).last,
-            matchesGoldenFile('goldens/$name.png'),
+          testWidgets(
+            'GivenThe${_pascal(name)}Painter_WhenItIsDrawn_ThenItMatchesItsGolden',
+            (tester) async {
+              await tester.pumpWidget(painted(painter, const Size(320, 220)));
+
+              await expectLater(
+                find.byType(CustomPaint).last,
+                matchesGoldenFile('goldens/$name.png'),
+              );
+            },
+            skip: !goldensAreComparable,
           );
-        },
-        skip: !goldensAreComparable,
-      );
+        }
+      }
     }
   });
 
@@ -93,8 +106,16 @@ void main() {
 
   group('what closed means', () {
     test('GivenATurntablePainter_WhenOnlyClosedChanges_ThenItRepaints', () {
-      const first = TurntablePainter(palette: palette, closed: 0);
-      const second = TurntablePainter(palette: palette, closed: 1);
+      const first = TurntablePainter(
+        palette: palette,
+        closed: 0,
+        layer: DeviceLayer.chassis,
+      );
+      const second = TurntablePainter(
+        palette: palette,
+        closed: 1,
+        layer: DeviceLayer.chassis,
+      );
 
       expect(second.shouldRepaint(first), isTrue);
     });
@@ -103,15 +124,83 @@ void main() {
       // Two distinct instances with identical fields, not the same
       // instance compared to itself — the latter would pass even if `==`
       // were broken, since `identical(this, other)` alone would satisfy it.
-      const first = TapeDeckPainter(palette: palette, closed: 0.5);
-      const second = TapeDeckPainter(palette: palette, closed: 0.5);
+      const first = TapeDeckPainter(
+        palette: palette,
+        closed: 0.5,
+        layer: DeviceLayer.foreground,
+      );
+      const second = TapeDeckPainter(
+        palette: palette,
+        closed: 0.5,
+        layer: DeviceLayer.foreground,
+      );
 
       expect(second.shouldRepaint(first), isFalse);
     });
 
     test('GivenACdPlayerPainter_WhenOnlyClosedChanges_ThenItRepaints', () {
-      const first = CdPlayerPainter(palette: palette, closed: 0);
-      const second = CdPlayerPainter(palette: palette, closed: 0.3);
+      const first = CdPlayerPainter(
+        palette: palette,
+        closed: 0,
+        layer: DeviceLayer.chassis,
+      );
+      const second = CdPlayerPainter(
+        palette: palette,
+        closed: 0.3,
+        layer: DeviceLayer.chassis,
+      );
+
+      expect(second.shouldRepaint(first), isTrue);
+    });
+  });
+
+  // Finding 2: splitting a device painter into two passes is only safe if
+  // each painter still repaints when the pass itself changes — a stage that
+  // toggled `layer` between frames (it never does, but nothing stops a
+  // future caller) must not have that change silently ignored the way a
+  // `closed`-only `shouldRepaint` would.
+  group('what layer means', () {
+    test('GivenATurntablePainter_WhenOnlyLayerChanges_ThenItRepaints', () {
+      const first = TurntablePainter(
+        palette: palette,
+        closed: 0,
+        layer: DeviceLayer.chassis,
+      );
+      const second = TurntablePainter(
+        palette: palette,
+        closed: 0,
+        layer: DeviceLayer.foreground,
+      );
+
+      expect(second.shouldRepaint(first), isTrue);
+    });
+
+    test('GivenATapeDeckPainter_WhenOnlyLayerChanges_ThenItRepaints', () {
+      const first = TapeDeckPainter(
+        palette: palette,
+        closed: 0,
+        layer: DeviceLayer.chassis,
+      );
+      const second = TapeDeckPainter(
+        palette: palette,
+        closed: 0,
+        layer: DeviceLayer.foreground,
+      );
+
+      expect(second.shouldRepaint(first), isTrue);
+    });
+
+    test('GivenACdPlayerPainter_WhenOnlyLayerChanges_ThenItRepaints', () {
+      const first = CdPlayerPainter(
+        palette: palette,
+        closed: 0,
+        layer: DeviceLayer.chassis,
+      );
+      const second = CdPlayerPainter(
+        palette: palette,
+        closed: 0,
+        layer: DeviceLayer.foreground,
+      );
 
       expect(second.shouldRepaint(first), isTrue);
     });
@@ -168,27 +257,26 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenALongTitle_WhenTheCaseIsDrawn_ThenItDoesNotThrow',
-      (tester) async {
-        // maxLines: 2 with an ellipsis is what keeps a long title from
-        // overflowing the jacket; a painter that ignored the caller's
-        // TextDirection or omitted the ellipsis could still throw or
-        // overflow, and this is the check that catches it.
-        final painter = CasePainter(
-          palette: palette,
-          medium: AlbumMedium.disc,
-          sleeve: palette.sleeveHues.first,
-          title: 'ثلاثة أرباع الليل والقمر بعيد جداً عن هذا المكان الصغير',
-          artist: 'فرقة تجريبية',
-          direction: TextDirection.rtl,
-        );
+    testWidgets('GivenALongTitle_WhenTheCaseIsDrawn_ThenItDoesNotThrow', (
+      tester,
+    ) async {
+      // maxLines: 2 with an ellipsis is what keeps a long title from
+      // overflowing the jacket; a painter that ignored the caller's
+      // TextDirection or omitted the ellipsis could still throw or
+      // overflow, and this is the check that catches it.
+      final painter = CasePainter(
+        palette: palette,
+        medium: AlbumMedium.disc,
+        sleeve: palette.sleeveHues.first,
+        title: 'ثلاثة أرباع الليل والقمر بعيد جداً عن هذا المكان الصغير',
+        artist: 'فرقة تجريبية',
+        direction: TextDirection.rtl,
+      );
 
-        await tester.pumpWidget(painted(painter, const Size(180, 200)));
+      await tester.pumpWidget(painted(painter, const Size(180, 200)));
 
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(tester.takeException(), isNull);
+    });
   });
 }
 

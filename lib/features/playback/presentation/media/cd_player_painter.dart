@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import 'device_layer.dart';
 
 /// A CD player, waiting for a disc or playing one (UC-21, FR-PL-07).
 ///
@@ -9,9 +10,18 @@ import '../../../../core/theme/album_palette.dart';
 /// at the well's back edge and flattening down over it as [closed] runs from
 /// 0 (standing open) to 1 (shut flat). [DiscPainter] is what the stage lays
 /// into the well; this painter only owns what the disc sits inside.
+///
+/// Painted in two passes, chosen by [layer]: the lid has to be seen closing
+/// *over* the disc, so it cannot share a pass with the well underneath it —
+/// the stage paints the well behind the disc and the lid in front of it. See
+/// [DeviceLayer].
 class CdPlayerPainter extends CustomPainter {
   /// Creates the painter.
-  const CdPlayerPainter({required this.palette, required this.closed});
+  const CdPlayerPainter({
+    required this.palette,
+    required this.closed,
+    required this.layer,
+  });
 
   /// The artwork's colours (FR-UX-07).
   final AlbumPalette palette;
@@ -19,6 +29,9 @@ class CdPlayerPainter extends CustomPainter {
   /// 0 with the lid standing open on its hinge; 1 with it shut flat over
   /// the disc.
   final double closed;
+
+  /// Which pass this paint call draws.
+  final DeviceLayer layer;
 
   /// A CD player face is wide, like the tape deck it sits beside.
   static const double aspect = 1.7;
@@ -36,10 +49,6 @@ class CdPlayerPainter extends CustomPainter {
       h - faceMargin * 2,
     );
 
-    _paintFace(canvas, face);
-    _paintDisplay(canvas, face);
-    _paintButtons(canvas, face);
-
     // The well is the dominant feature and sits centred in the body, below
     // the display/button band, with room on every side so the lid — sized
     // to the well alone — can never reach either of them. The first version
@@ -48,12 +57,23 @@ class CdPlayerPainter extends CustomPainter {
     // at both ends of `closed`.
     final wellCentre = Offset(face.center.dx, face.top + face.height * 0.66);
     final wellRadius = face.height * 0.26;
-    _paintWell(canvas, wellCentre, wellRadius);
-    _paintLid(canvas, face, wellCentre, wellRadius);
+
+    switch (layer) {
+      case DeviceLayer.chassis:
+        _paintFace(canvas, face);
+        _paintDisplay(canvas, face);
+        _paintButtons(canvas, face);
+        _paintWell(canvas, wellCentre, wellRadius);
+      case DeviceLayer.foreground:
+        _paintLid(canvas, face, wellCentre, wellRadius);
+    }
   }
 
   void _paintFace(Canvas canvas, Rect face) {
-    final panel = RRect.fromRectAndRadius(face, Radius.circular(face.height * 0.04));
+    final panel = RRect.fromRectAndRadius(
+      face,
+      Radius.circular(face.height * 0.04),
+    );
 
     canvas.drawRRect(
       panel,
@@ -199,11 +219,24 @@ class CdPlayerPainter extends CustomPainter {
         ..strokeWidth = radius * 0.05
         ..color = palette.panelEdge,
     );
-    canvas.drawCircle(centre, radius * 0.14, Paint()..color = palette.chromeMid);
-    canvas.drawCircle(centre, radius * 0.06, Paint()..color = palette.chromeLight);
+    canvas.drawCircle(
+      centre,
+      radius * 0.14,
+      Paint()..color = palette.chromeMid,
+    );
+    canvas.drawCircle(
+      centre,
+      radius * 0.06,
+      Paint()..color = palette.chromeLight,
+    );
   }
 
-  void _paintLid(Canvas canvas, Rect face, Offset wellCentre, double wellRadius) {
+  void _paintLid(
+    Canvas canvas,
+    Rect face,
+    Offset wellCentre,
+    double wellRadius,
+  ) {
     // The lid is hinged at the well's back (top) edge and flattens down to
     // lie over the whole well as it closes. Modelled as a vertical scale
     // about the hinge line rather than a slide, because a lid opens by
@@ -257,5 +290,7 @@ class CdPlayerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CdPlayerPainter oldDelegate) =>
-      oldDelegate.closed != closed || oldDelegate.palette != palette;
+      oldDelegate.closed != closed ||
+      oldDelegate.palette != palette ||
+      oldDelegate.layer != layer;
 }
