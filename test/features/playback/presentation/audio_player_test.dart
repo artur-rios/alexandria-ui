@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:alexandria_ui/app.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
@@ -19,10 +20,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_media_player.dart';
 import '../../../support/fake_playback.dart';
+import '../../../support/in_memory_settings_store.dart';
+import '../../../support/login_harness.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/test_container.dart';
 
 /// Listening to a track, an album, or an artist (UC-20, FR-PL-05, FR-PL-06,
 /// FR-PL-08 … FR-PL-10).
@@ -480,6 +485,75 @@ void main() {
 
       expect(find.text(messages(tester).audioNothingPlayable), findsOneWidget);
     });
+
+    // The consequence of MusicLibraryController now throwing a failed
+    // listing instead of returning an empty library (UC-46's fix 3): a
+    // grouped play can now fail before any track is even resolved. This
+    // asserts what the bar actually shows for it, which is where an
+    // earlier version of this fix got it wrong — see below.
+    testWidgets(
+      'GivenTheListingFails_WhenTheAlbumIsPlayed_ThenOneHonestBannerShows',
+      (tester) async {
+        final gateway = catalogWith([blue1, blue2, other])..failListing();
+        final player = FakeMediaPlayer();
+
+        // Built directly rather than through tester.pumpShell: Riverpod
+        // retries a failed provider automatically (exponential backoff, up
+        // to ten attempts, ~35 seconds) before it settles into AsyncError,
+        // and pumpShell's container has no way to turn that off. Retrying
+        // is disabled here so this settles without a ~35-second test.
+        final container = ProviderContainer(
+          retry: (_, _) => null,
+          overrides: [
+            ...fakeCoreOverrides(settings: InMemorySettingsStore()),
+            authGatewayProvider.overrideWithValue(FakeAuthGateway()),
+            catalogGatewayProvider.overrideWithValue(gateway),
+            audioPlayerProvider.overrideWithValue(player),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway(),
+            ),
+            playbackPositionsProvider.overrideWithValue(
+              FakePlaybackPositionStore(),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: const AlexandriaApp(),
+          ),
+        );
+        await container.read(startupControllerProvider.notifier).start();
+        await tester.pumpAndSettle();
+        await tester.signIn();
+
+        final element = tester.element(find.byType(ShellScreen));
+        unawaited(
+          FileDetailsView.show(element, element as WidgetRef, blue1.uuid),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(messages(tester).audioPlayAlbum).last);
+        await tester.pumpAndSettle();
+
+        // Exactly one banner — "nothing in the selection could be played"
+        // — and not the skip notice a first version of this fix wrongly
+        // stacked on top of it (naming blue1 as a track that was "skipped"
+        // when nothing was ever attempted). One dismiss button proves only
+        // one banner is on screen; a second would mean the skip notice was
+        // showing too.
+        expect(
+          find.text(messages(tester).audioNothingPlayable),
+          findsOneWidget,
+        );
+        expect(find.text(messages(tester).editorDismiss), findsOneWidget);
+        expect(
+          container.read(audioPlaybackControllerProvider).lastSkipped,
+          isNull,
+        );
+      },
+    );
   });
 
   // AF-04: a resume position exists for a single track.

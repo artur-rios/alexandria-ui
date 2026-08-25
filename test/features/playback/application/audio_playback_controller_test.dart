@@ -60,7 +60,12 @@ void main() {
       final state = container.read(audioPlaybackControllerProvider);
       expect(state.stage, AudioStage.allFailed);
       expect(state.queue.tracks, isEmpty);
-      expect(state.lastSkipped?.uuid, file.uuid);
+      // Not "skipped": nothing was ever attempted, since the listing itself
+      // failed before any track was resolved. lastSkipped names a track
+      // _openAt actually tried and actually failed — claiming that of [file]
+      // here would say something untrue, and the bar would show a second,
+      // contradictory "Skipped" banner alongside "nothing playable".
+      expect(state.lastSkipped, isNull);
       expect(state.lastSkipReason, isA<Failure>());
     },
   );

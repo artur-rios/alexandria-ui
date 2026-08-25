@@ -228,15 +228,22 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     } on Object catch (error) {
       // AF-03: the catalog itself could not be asked, so no album or artist
       // grouping is knowable — there is nothing this can queue. Reported
-      // through the same state the bar already renders for "nothing in the
+      // through the same stage the bar already renders as "nothing in the
       // selection could be played" rather than left parked in `starting`
       // forever: a queue built by falling back to the single track the
       // owner asked for would silently turn "play the album" into "play the
       // track" without ever saying so, which is worse than telling them the
       // catalog could not be reached.
+      //
+      // lastSkipped stays null on purpose: nothing was ever attempted here —
+      // the listing itself failed before any track was resolved — so naming
+      // [file] as skipped would claim a specific track failed to play, which
+      // did not happen and may not even be true of that file. That field is
+      // for a track _openAt actually tried and actually failed; this is a
+      // different failure; and it shows a second, contradictory banner
+      // ("Skipped … it could not be played") stacked on this one otherwise.
       state = AudioPlaybackState(
         stage: AudioStage.allFailed,
-        lastSkipped: file,
         lastSkipReason: error is Failure ? error : null,
       );
       return;
