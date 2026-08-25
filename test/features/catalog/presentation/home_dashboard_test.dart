@@ -214,6 +214,50 @@ void main() {
         expect(find.text('track01.flac'), findsNothing);
       },
     );
+
+    testWidgets(
+      'GivenAudioOutsideTheRecentList_WhenTheDashboardShows_ThenItsDetailsAreNeverRead',
+      (tester) async {
+        // Naming the one audio file the dashboard actually shows must not
+        // force the whole-library scan `musicLibraryProvider` performs: that
+        // reads every audio file's details, in order, which this proves did
+        // not happen by adding audio files old enough to fall outside
+        // RecentFilesController.limit and asserting their details were never
+        // asked for.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'shown',
+            name: 'track01.flac',
+            title: 'So What',
+            indexedAt: DateTime.utc(2026, 1, 10),
+          )
+          ..addAudio(
+            uuid: 'buried-1',
+            name: 'old1.flac',
+            title: 'Freddie Freeloader',
+            indexedAt: DateTime.utc(2020, 1, 1),
+          )
+          ..addAudio(
+            uuid: 'buried-2',
+            name: 'old2.flac',
+            title: 'Blue in Green',
+            indexedAt: DateTime.utc(2019, 1, 1),
+          );
+        for (var i = 0; i < 8; i++) {
+          gateway.addFile(
+            uuid: 'doc-$i',
+            name: 'doc-$i.pdf',
+            type: LibraryType.document,
+            indexedAt: DateTime.utc(2026, 1, 5),
+          );
+        }
+
+        await openDashboard(tester, gateway: gateway);
+
+        expect(find.text('So What'), findsOneWidget);
+        expect(gateway.detailsRequested, ['shown']);
+      },
+    );
   });
 
   group('the catalog is empty (AF-01)', () {

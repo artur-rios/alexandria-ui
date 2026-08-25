@@ -5,7 +5,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
-import '../../playback/presentation/music_rows.dart' show musicTitleForFile;
+import '../../playback/presentation/music_rows.dart' show tagOr;
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/catalog_file.dart';
 import '../application/dashboard_controller.dart';
@@ -78,11 +78,19 @@ class _RecentSection extends ConsumerWidget {
             itemBuilder: (context, index) {
               final file = files[index];
               // FR-CT-13: an audio file is named by its metadata here too,
-              // the same way the bar, the skip notice, and the full player
-              // already read musicTitleForFile — never by the file on disk.
-              // Every other type is still called by its own name.
+              // the same way `catalog_search_view.dart` reads a search
+              // result's title — per file through `audioMetadataProvider`,
+              // never by reading the whole library. This section shows a
+              // screenful of recent files; naming one of them must not force
+              // the complete metadata scan that `musicLibraryProvider`
+              // performs (that is what the music area itself deliberately
+              // triggers, and what a queue is built from). Every other type
+              // is still called by its own name.
+              final metadata = file.type == LibraryType.audio
+                  ? ref.watch(audioMetadataProvider(file)).value
+                  : null;
               final title = file.type == LibraryType.audio
-                  ? musicTitleForFile(ref, file, l10n)
+                  ? tagOr(metadata?.title, l10n.musicUnknownTitle)
                   : file.name;
 
               return ListTile(

@@ -210,8 +210,9 @@ class FakeCatalogGateway implements CatalogGateway {
     required String uuid,
     required String name,
     LibraryType type = LibraryType.document,
+    DateTime? indexedAt,
   }) {
-    final file = aFile(uuid: uuid, name: name, type: type);
+    final file = aFile(uuid: uuid, name: name, type: type, indexedAt: indexedAt);
     final existing = listings[type];
     final files = existing is CatalogListingLoaded
         ? existing.files
