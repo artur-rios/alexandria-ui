@@ -31,28 +31,3 @@ Future<void> confirmAndSignOut(BuildContext context, WidgetRef ref) async {
 
   await controller.signOut();
 }
-
-/// Ends the session (UC-03 main flow step 1, FR-AU-09).
-///
-/// A button rather than a menu entry: this is for a screen reached without
-/// the shell's menu bar around it, where there is no menu to add an entry to.
-/// Inside the shell, the Settings menu offers the same action through
-/// [confirmAndSignOut] directly.
-class SignOutButton extends ConsumerWidget {
-  /// Creates the button.
-  const SignOutButton({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: TextButton.icon(
-        onPressed: () => confirmAndSignOut(context, ref),
-        icon: const Icon(Icons.logout_outlined),
-        label: Text(l10n.signOut),
-      ),
-    );
-  }
-}
