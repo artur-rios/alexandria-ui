@@ -84,6 +84,7 @@ import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
 import '../../features/playback/application/audio_playback_controller.dart';
 import '../../features/playback/application/audio_playback_session.dart';
+import '../../features/playback/application/music_browse_controller.dart';
 import '../../features/playback/application/music_library_controller.dart';
 import '../../features/playback/application/video_playback_controller.dart';
 import '../../features/playback/application/video_playback_session.dart';
@@ -478,6 +479,12 @@ final musicLibraryProvider =
 final musicLibraryProgressProvider =
     NotifierProvider<MusicLibraryProgress, MusicLibrary>(
       MusicLibraryProgress.new,
+    );
+
+/// Where the owner is in the music area (UC-46).
+final musicBrowseControllerProvider =
+    NotifierProvider<MusicBrowseController, MusicBrowseState>(
+      MusicBrowseController.new,
     );
 
 /// The persistent audio player (UC-20).
