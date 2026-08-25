@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../auth/application/session_state.dart';
-import '../../auth/presentation/sign_out_button.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
 ///
@@ -32,10 +30,6 @@ class PreferencesDialog extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final preferences = ref.watch(preferencesControllerProvider);
     final controller = ref.read(preferencesControllerProvider.notifier);
-    // UC-03 main flow step 1 puts signing out here. It is offered only with a
-    // session — there is nothing to sign out of without one — and preferences
-    // themselves are reachable without one (UC-39).
-    final signedIn = ref.watch(sessionControllerProvider) is SessionActive;
 
     return AlertDialog(
       title: Text(l10n.preferencesTitle),
@@ -94,15 +88,6 @@ class PreferencesDialog extends ConsumerWidget {
                   ],
                 ),
               ),
-
-              if (signedIn) ...[
-                const SizedBox(height: AppSpacing.md),
-                const Divider(),
-                const SizedBox(height: AppSpacing.sm),
-                // UC-03 main flow step 1. Last in the group, because it is the
-                // one action here that ends what the others operate on.
-                const SignOutButton(),
-              ],
             ],
           ),
         ),

@@ -3,11 +3,11 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/auth/presentation/auth_notice.dart';
 import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
-import 'package:alexandria_ui/features/auth/presentation/sign_out_button.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/shell/domain/session_activity.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
+import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +22,8 @@ import '../../../support/shell_harness.dart';
 
 /// Signing out (UC-03, FR-AU-09).
 void main() {
-  /// Signs in, then opens the preferences dialog where sign-out lives.
-  Future<ProviderContainer> openPreferences(
+  /// Signs in and opens the Settings menu, where sign-out lives.
+  Future<ProviderContainer> openSettings(
     WidgetTester tester, {
     List<SessionActivity> activities = const [],
     Locale? locale,
@@ -39,45 +39,24 @@ void main() {
       ],
     );
 
-    // Not `find.byType(PreferencesButton)`: the shell now offers preferences
-    // through the bar's Settings menu rather than a rail action.
-    await tester.openSettingsMenuEntry(
-      AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-          .preferencesLabel,
-    );
+    await tester.tap(find.byType(SettingsMenu));
+    await tester.pumpAndSettle();
 
     return container;
   }
 
-  /// Presses the sign-out action.
-  ///
-  /// Scrolled to first: the dialog's content is scrollable so it stays usable
-  /// at the minimum window (NFR-07), and the account actions sit below the
-  /// theme and language groups.
+  /// Chooses the sign-out entry.
   Future<void> pressSignOut(WidgetTester tester) async {
-    // The button itself, not the alignment it sits in: the action is aligned
-    // to the left of a full-width row, so the row's centre is empty space.
-    final action = find.descendant(
-      of: find.byType(SignOutButton),
-      matching: find.byType(TextButton),
-    );
+    final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
 
-    await tester.ensureVisible(action);
-    await tester.pumpAndSettle();
-    await tester.tap(action);
+    await tester.tap(find.text(l10n.signOut).last);
     await tester.pumpAndSettle();
   }
 
   group('the main flow', () {
-    testWidgets(
-      'GivenASignedInOwner_WhenPreferencesAreOpen_ThenSigningOutIsOffered',
-      (tester) async {
-        await openPreferences(tester);
-
-        expect(find.byType(SignOutButton), findsOneWidget);
-      },
-    );
-
+    // Reached without a session: preferences are open (UC-39), but signing
+    // out is offered only through the shell's Settings menu, which does not
+    // exist without a session to sign out of.
     testWidgets(
       'GivenNoSession_WhenPreferencesAreOpen_ThenSigningOutIsNotOffered',
       (tester) async {
@@ -85,14 +64,17 @@ void main() {
         await tester.tap(find.byType(PreferencesButton));
         await tester.pumpAndSettle();
 
-        expect(find.byType(SignOutButton), findsNothing);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+        expect(find.text(l10n.signOut), findsNothing);
       },
     );
 
     testWidgets(
       'GivenASignedInOwner_WhenTheySignOut_ThenTheLoginScreenIsShown',
       (tester) async {
-        await openPreferences(tester);
+        await openSettings(tester);
 
         await pressSignOut(tester);
 
@@ -102,20 +84,9 @@ void main() {
     );
 
     testWidgets(
-      'GivenASignedInOwner_WhenTheySignOut_ThenThePreferencesDialogIsClosed',
-      (tester) async {
-        await openPreferences(tester);
-
-        await pressSignOut(tester);
-
-        expect(find.byType(PreferencesDialog), findsNothing);
-      },
-    );
-
-    testWidgets(
       'GivenASignedInOwner_WhenTheySignOut_ThenTheSessionIsDiscarded',
       (tester) async {
-        final container = await openPreferences(tester);
+        final container = await openSettings(tester);
 
         await pressSignOut(tester);
 
@@ -127,7 +98,7 @@ void main() {
       'GivenAnActivityIsRunning_WhenTheOwnerSignsOut_ThenItIsWoundDown',
       (tester) async {
         final playback = FakeSessionActivity();
-        await openPreferences(tester, activities: [playback]);
+        await openSettings(tester, activities: [playback]);
         // Signing in wound down whatever the previous session left; what is
         // asserted here is what signing out adds to that.
         playback.endCount = 0;
@@ -167,10 +138,8 @@ void main() {
             .length;
         expect(readWhileSignedIn, greaterThan(0));
 
-        await tester.openSettingsMenuEntry(
-          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-              .preferencesLabel,
-        );
+        await tester.tap(find.byType(SettingsMenu));
+        await tester.pumpAndSettle();
         await pressSignOut(tester);
 
         // Signing back in lands on the same area, and the listing there has to
@@ -192,7 +161,7 @@ void main() {
     testWidgets(
       'GivenUnsavedChanges_WhenTheOwnerSignsOut_ThenTheyAreWarnedFirst',
       (tester) async {
-        await openPreferences(
+        await openSettings(
           tester,
           activities: [FakeSessionActivity(holdsUnsavedChanges: true)],
         );
@@ -207,7 +176,7 @@ void main() {
       tester,
     ) async {
       final activity = FakeSessionActivity(holdsUnsavedChanges: true);
-      final container = await openPreferences(tester, activities: [activity]);
+      final container = await openSettings(tester, activities: [activity]);
       activity.endCount = 0;
 
       await pressSignOut(tester);
@@ -227,7 +196,7 @@ void main() {
     testWidgets('GivenTheWarning_WhenTheOwnerConfirms_ThenTheyAreSignedOut', (
       tester,
     ) async {
-      await openPreferences(
+      await openSettings(
         tester,
         activities: [FakeSessionActivity(holdsUnsavedChanges: true)],
       );
@@ -247,7 +216,7 @@ void main() {
     testWidgets(
       'GivenNothingUnsaved_WhenTheOwnerSignsOut_ThenNoWarningIsShown',
       (tester) async {
-        await openPreferences(tester, activities: [FakeSessionActivity()]);
+        await openSettings(tester, activities: [FakeSessionActivity()]);
 
         await pressSignOut(tester);
 
@@ -262,7 +231,7 @@ void main() {
     testWidgets(
       'GivenARunInFlight_WhenTheOwnerSignsOut_ThenTheLoginScreenSaysItContinues',
       (tester) async {
-        await openPreferences(
+        await openSettings(
           tester,
           activities: [FakeSessionActivity(continuesInTheCore: true)],
         );
@@ -280,7 +249,7 @@ void main() {
     testWidgets(
       'GivenTheNotice_WhenItIsShown_ThenItReadsAsInformationNotAFailure',
       (tester) async {
-        await openPreferences(
+        await openSettings(
           tester,
           activities: [FakeSessionActivity(continuesInTheCore: true)],
         );
@@ -297,7 +266,7 @@ void main() {
     testWidgets(
       'GivenNothingRunning_WhenTheOwnerSignsOut_ThenNoSuchNoticeIsShown',
       (tester) async {
-        await openPreferences(tester);
+        await openSettings(tester);
 
         await pressSignOut(tester);
 
@@ -308,7 +277,7 @@ void main() {
     testWidgets('GivenTheNotice_WhenTheOwnerSignsInAgain_ThenItIsGone', (
       tester,
     ) async {
-      await openPreferences(
+      await openSettings(
         tester,
         activities: [FakeSessionActivity(continuesInTheCore: true)],
       );
@@ -326,7 +295,7 @@ void main() {
       testWidgets(
         'GivenThe${themeMode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheWarningIsShown_ThenItRendersInThatBrightness',
         (tester) async {
-          await openPreferences(
+          await openSettings(
             tester,
             themeMode: themeMode,
             activities: [FakeSessionActivity(holdsUnsavedChanges: true)],
@@ -347,7 +316,7 @@ void main() {
       testWidgets(
         'Given${locale.languageCode == 'en' ? 'English' : 'Portuguese'}_WhenSignOutIsOffered_ThenNoStringRendersAsItsKey',
         (tester) async {
-          await openPreferences(
+          await openSettings(
             tester,
             locale: locale,
             activities: [FakeSessionActivity(continuesInTheCore: true)],

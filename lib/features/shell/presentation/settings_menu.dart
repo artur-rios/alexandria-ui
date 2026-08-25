@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../auth/presentation/change_credentials_dialog.dart';
+import '../../auth/presentation/sign_out_button.dart';
 import 'menu_entry.dart';
 import 'preferences_dialog.dart';
 
@@ -12,7 +16,7 @@ import 'preferences_dialog.dart';
 /// the application took three levels of nesting through a screen that does not
 /// announce it holds the exit. A named menu is one level, and it is where a
 /// desktop owner looks first.
-class SettingsMenu extends StatelessWidget {
+class SettingsMenu extends ConsumerWidget {
   /// Creates the menu.
   const SettingsMenu({required this.showsLabel, super.key});
 
@@ -20,7 +24,7 @@ class SettingsMenu extends StatelessWidget {
   final bool showsLabel;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
 
     return SubmenuButton(
@@ -35,6 +39,14 @@ class SettingsMenu extends StatelessWidget {
           icon: Icons.key_outlined,
           label: l10n.changeCredentialsOpen,
           onSelected: () => ChangeCredentialsDialog.show(context),
+        ),
+        // Last, and after a divider: it is the one action here that ends what
+        // the others operate on.
+        const Divider(),
+        MenuEntry(
+          icon: Icons.logout_outlined,
+          label: l10n.signOut,
+          onSelected: () => unawaited(confirmAndSignOut(context, ref)),
         ),
       ],
       child: showsLabel

@@ -1,6 +1,7 @@
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
+import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/auth/presentation/recovery_codes_section.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
@@ -223,6 +224,31 @@ void main() {
 
         expect(find.text(l10n.changeCredentialsOpen), findsNothing);
         expect(find.byType(RecoveryCodesSection), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenTheSettingsMenu_WhenItIsOpened_ThenSigningOutIsOffered',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await tester.tap(find.byType(SettingsMenu));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.signOut), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheSettingsMenu_WhenSigningOutIsChosen_ThenTheLoginScreenReturns',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await tester.openSettingsMenuEntry(l10n.signOut);
+
+        expect(find.byType(LoginScreen), findsOneWidget);
       },
     );
   });
