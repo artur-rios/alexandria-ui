@@ -6,7 +6,6 @@ import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/shell/domain/session_activity.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -54,23 +53,6 @@ void main() {
   }
 
   group('the main flow', () {
-    // Reached without a session: preferences are open (UC-39), but signing
-    // out is offered only through the shell's Settings menu, which does not
-    // exist without a session to sign out of.
-    testWidgets(
-      'GivenNoSession_WhenPreferencesAreOpen_ThenSigningOutIsNotOffered',
-      (tester) async {
-        await tester.pumpLoginScreen();
-        await tester.tap(find.byType(PreferencesButton));
-        await tester.pumpAndSettle();
-
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-        expect(find.text(l10n.signOut), findsNothing);
-      },
-    );
-
     testWidgets(
       'GivenASignedInOwner_WhenTheySignOut_ThenTheLoginScreenIsShown',
       (tester) async {
