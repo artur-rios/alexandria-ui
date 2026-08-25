@@ -57,6 +57,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     required this.displayInk,
     required this.indicator,
     required this.sleeveHues,
+    required this.sleeveInk,
   });
 
   /// The lit face of the turntable plinth — walnut.
@@ -187,6 +188,16 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
   /// `test/core/theme/album_palette_test.dart`.
   final List<Color> sleeveHues;
 
+  /// The ink of the title and artist Task 4 typesets over a case's
+  /// [sleeveHues] colour.
+  ///
+  /// A field of its own rather than `Colors.white` inline, because BR-18
+  /// puts every colour in this file — and opaque white is exactly what
+  /// `test/core/theme/album_palette_test.dart` already pins every sleeve hue
+  /// to carry at a 4.5:1 contrast ratio, so this is that same value given a
+  /// name rather than a second, independent choice.
+  final Color sleeveInk;
+
   /// The values both themes use.
   static const AlbumPalette standard = AlbumPalette(
     plinthTop: Color(0xFF6B4A34),
@@ -236,6 +247,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
       Color(0xFFA6501F),
       Color(0xFF1F6E78),
     ],
+    sleeveInk: Color(0xFFFFFFFF),
   );
 
   @override
@@ -279,6 +291,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     Color? displayInk,
     Color? indicator,
     List<Color>? sleeveHues,
+    Color? sleeveInk,
   }) => AlbumPalette(
     plinthTop: plinthTop ?? this.plinthTop,
     plinthBottom: plinthBottom ?? this.plinthBottom,
@@ -319,6 +332,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     displayInk: displayInk ?? this.displayInk,
     indicator: indicator ?? this.indicator,
     sleeveHues: sleeveHues ?? this.sleeveHues,
+    sleeveInk: sleeveInk ?? this.sleeveInk,
   );
 
   @override
@@ -384,6 +398,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
       displayInk: Color.lerp(displayInk, other.displayInk, t) ?? displayInk,
       indicator: Color.lerp(indicator, other.indicator, t) ?? indicator,
       sleeveHues: lerpHues(sleeveHues, other.sleeveHues, t),
+      sleeveInk: Color.lerp(sleeveInk, other.sleeveInk, t) ?? sleeveInk,
     );
   }
 
@@ -430,7 +445,8 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
           contactShadow == other.contactShadow &&
           displayInk == other.displayInk &&
           indicator == other.indicator &&
-          listEquals(sleeveHues, other.sleeveHues);
+          listEquals(sleeveHues, other.sleeveHues) &&
+          sleeveInk == other.sleeveInk;
 
   @override
   int get hashCode => Object.hashAll([
@@ -473,6 +489,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     displayInk,
     indicator,
     Object.hashAll(sleeveHues),
+    sleeveInk,
   ]);
 }
 
