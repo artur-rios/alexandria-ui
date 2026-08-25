@@ -4,6 +4,7 @@ import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_stage.dart';
+import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
 import 'package:alexandria_ui/features/playback/presentation/now_playing_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
@@ -279,6 +280,74 @@ void main() {
 
         expect(find.byType(AlbumStage), findsNothing);
         expect(find.byType(NowPlayingScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheQueueEndsWithThePlayerOpen_WhenItDoes_ThenTheStageIsGone',
+      (tester) async {
+        // Restores coverage lost across the branch's test shuffles
+        // (Finding 6): `AlbumVisor`'s own equivalent
+        // (`GivenNothingPlaying_WhenTheBarIsShown_ThenThereIsNoVisor`) exists,
+        // but the screen's had gone missing. `showsAnimation` requires
+        // `current != null`, so stopping the queue while the player is open
+        // has to take the stage away, not leave it drawing over nothing.
+        final container = await playSomething(
+          tester,
+          mode: AlbumAnimationMode.byYear,
+        );
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(find.byType(AlbumStage), findsOneWidget);
+
+        await container.read(audioPlaybackControllerProvider.notifier).stop();
+        await settle(tester);
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(find.byType(AlbumStage), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenSomethingPlaying_WhenTheScreenAndTheVisorAreBothShown_ThenTheyShowTheSameMedium',
+      (tester) async {
+        // Finding 6: nothing previously asserted the visor and the stage
+        // agree on which medium is turning, as a pair rather than as two
+        // fixtures that happen to use the same one. The bar's own route stays
+        // in the tree beneath the pushed `NowPlayingScreen` (Flutter does not
+        // remove a covered route until it is popped), so both `AlbumVisor`
+        // and `AlbumStage` are reachable from the same pumped tree at once.
+        await playSomething(tester, mode: AlbumAnimationMode.byYear);
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+
+        final stageMedium = tester
+            .widgetList<AlbumStage>(find.byType(AlbumStage))
+            .single
+            .medium;
+        // The visor draws no `AlbumMedium` of its own to compare against
+        // directly, so its label — the same words `AlbumStage._label` uses
+        // for the same medium — stands in for it: if the two widgets ever
+        // disagreed about which medium is playing, they would announce
+        // different labels for the one record on screen.
+        final l10n = messages(tester);
+        final expectedLabel = switch (stageMedium) {
+          AlbumMedium.vinyl => l10n.albumMediumVinyl,
+          AlbumMedium.tape => l10n.albumMediumTape,
+          AlbumMedium.disc => l10n.albumMediumDisc,
+        };
+
+        /// The `Semantics` inside [finder] that actually carries a label —
+        /// both `AlbumStage` and `AlbumVisor` wrap their own drawing in one,
+        /// returned from their own `build`, so it is a descendant of the
+        /// widget, not an ancestor of it.
+        String? labelOf(Finder finder) => tester
+            .widgetList<Semantics>(
+              find.descendant(of: finder, matching: find.byType(Semantics)),
+            )
+            .map((widget) => widget.properties.label)
+            .firstWhere((label) => label != null, orElse: () => null);
+
+        expect(labelOf(find.byType(AlbumStage)), expectedLabel);
+        expect(labelOf(find.byType(AlbumVisor)), expectedLabel);
       },
     );
   });
