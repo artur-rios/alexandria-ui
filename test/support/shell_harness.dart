@@ -29,6 +29,16 @@ extension PumpShell on WidgetTester {
   /// because the layout adapts. The device pixel ratio is pinned to 1 so the
   /// logical and physical sizes agree and a golden comes out at the size it
   /// says it is.
+  ///
+  /// [reduceMotion] defaults to `false` — the real, untouched default any
+  /// owner starts a session with — so a test built on this harness exercises
+  /// real motion unless it deliberately asks not to. UC-21's album animation
+  /// (Task 7) spins for as long as something plays, which is forever from
+  /// `pumpAndSettle`'s point of view; a caller whose own assertions do not
+  /// depend on that motion should let it play and step past it with a bounded
+  /// `pump(duration)` rather than flipping this flag — turning it on suite-
+  /// wide once made every other suite's coverage of `AlbumStage` motionless
+  /// by accident, which is exactly what this default now avoids.
   Future<ProviderContainer> pumpShell({
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
@@ -36,22 +46,17 @@ extension PumpShell on WidgetTester {
     SettingsStore? settings,
     FakeAuthGateway? gateway,
     List<Override> extraOverrides = const [],
+    bool reduceMotion = false,
   }) async {
     view.devicePixelRatio = 1;
     view.physicalSize = surfaceSize;
     addTearDown(view.reset);
 
-    // UC-21 (Task 7): the album animation spins for as long as something
-    // plays, which is forever from `pumpAndSettle`'s point of view. Every
-    // suite that reaches the shell through here starts playback at some
-    // point without meaning to test that motion — the motion itself belongs
-    // to `album_stage_test.dart`, which builds its own harness precisely so
-    // it can turn this back on. Disabling it by default is what keeps every
-    // other suite from hanging the moment the shell's own auto-open listener
-    // (`ShellScreen`) puts a spinning medium on screen.
-    platformDispatcher.accessibilityFeaturesTestValue =
-        const FakeAccessibilityFeatures(disableAnimations: true);
-    addTearDown(platformDispatcher.clearAccessibilityFeaturesTestValue);
+    if (reduceMotion) {
+      platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(platformDispatcher.clearAccessibilityFeaturesTestValue);
+    }
 
     final container = await pumpLoginScreen(
       gateway: gateway ?? FakeAuthGateway(),
