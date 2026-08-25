@@ -134,6 +134,39 @@ void main() {
   );
 
   test(
+    'GivenALargeLibrary_WhenItLoads_ThenThePublishCountIsBoundedNotLinear',
+    () async {
+      // MusicLibraryView re-sorts its whole list on every publish
+      // (artistsIn/albumsIn/songsIn), so one publish per file made that cost
+      // O(N² log N) across a load — the design's own risk section sizes one
+      // at a few thousand tracks. Checkpointing publishes to a constant count
+      // is what keeps the total re-sort cost from growing quadratically; this
+      // asserts the publish count stays bounded rather than tracking the
+      // library's own size, for a library well past where one-per-file would
+      // start to matter.
+      const total = 250;
+      final gateway = FakeCatalogGateway();
+      for (var i = 0; i < total; i++) {
+        gateway.addAudio(uuid: '$i', title: 'Track $i');
+      }
+      final container = testContainer(gateway: gateway);
+
+      var publishCount = 0;
+      container.listen(musicLibraryProgressProvider, (previous, next) {
+        publishCount++;
+      });
+
+      final library = await container.read(musicLibraryProvider.future);
+
+      expect(library.entries.length, total);
+      // Comfortably under `total`, and independent of it: the cap this
+      // proves is on the publish *count*, not on how fast it grows with the
+      // library's own size.
+      expect(publishCount, lessThan(150));
+    },
+  );
+
+  test(
     'GivenAScanInFlight_WhenBothProvidersAreInvalidated_ThenTheOrphanStops',
     () async {
       // Retry (music_library_view.dart) and sign-out

@@ -55,6 +55,12 @@ class MusicLibrary {
 /// is where "everything read so far" is published instead; a queue must never
 /// be built from it.
 class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
+  /// The most publishes one scan makes to [MusicLibraryProgress], regardless
+  /// of how many files it reads. See `checkpoint` in [build] for why this
+  /// caps the number is what keeps the browsing area's re-sort cost from
+  /// growing quadratically with the library.
+  static const int _progressCheckpoints = 100;
+
   @override
   Future<MusicLibrary> build() async {
     // Set the moment this `build` stops being the live one: invalidating a
@@ -102,6 +108,23 @@ class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
 
     final progress = ref.read(musicLibraryProgressProvider.notifier);
     final entries = <MusicEntry>[];
+
+    // A bounded number of checkpoints rather than one publish per file. Each
+    // publish makes `MusicLibraryView` rebuild, and `artistsIn`/`albumsIn`/
+    // `songsIn` re-sort the *entire* list so far from scratch — cheap once,
+    // but paid at every one of N publishes it costs O(N² log N) across a
+    // load, against the low thousands of tracks the design's own risk
+    // section sizes one at. Capping the publish count to a constant
+    // (`_progressCheckpoints`) independent of the library's size is what
+    // makes the total re-sort cost O(N log N) instead: `checkpoint` grows
+    // with the library, so a library at or under the cap still publishes
+    // every file — which is every test fixture in this codebase, and every
+    // library small enough that the quadratic cost was never the problem —
+    // while a large one is the one whose publish count this actually bounds.
+    // The final file always publishes on its own, so the last checkpoint is
+    // never late by more than one file's read.
+    final checkpoint = (files.length / _progressCheckpoints).ceil();
+
     for (final file in files) {
       final details = await gateway.fileDetails(
         uuid: file.uuid,
@@ -135,10 +158,14 @@ class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
       // Published to the progress provider rather than to this notifier's own
       // state: this is what lets the area show the artists it already knows
       // while the rest are still being read, without touching what `.future`
-      // resolves to.
-      progress.publish(
-        MusicLibrary(entries: [...entries], total: files.length),
-      );
+      // resolves to. Skipped for a file that is neither a checkpoint nor the
+      // last one — see `checkpoint` above.
+      final isLast = entries.length == files.length;
+      if (isLast || entries.length % checkpoint == 0) {
+        progress.publish(
+          MusicLibrary(entries: [...entries], total: files.length),
+        );
+      }
     }
 
     return MusicLibrary(entries: entries, total: files.length);
