@@ -1,5 +1,6 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_stage.dart';
@@ -31,11 +32,36 @@ import '../../../support/shell_harness.dart';
 /// (moved to `album_stage_test.dart` in Task 5) and for
 /// `AlbumAnimationController` (covered directly in
 /// `album_animation_controller_test.dart`, Task 6).
+///
+/// `pumpShell` runs with real motion by default — `AlbumStage`'s spin never
+/// settles on its own while something plays, so every wait in this file that
+/// might run while a stage is on screen uses [settle], a bounded pump,
+/// rather than `pumpAndSettle`.
 void main() {
+  /// Pumps a few frames without waiting for the tree to settle.
+  ///
+  /// The stage repeats for as long as audio plays, so `pumpAndSettle` never
+  /// returns once a medium is on screen and spinning — which is the point of
+  /// it, and exactly why this file does not lean on `pumpAndSettle` past the
+  /// point playback starts.
+  Future<void> settle(WidgetTester tester) async {
+    for (var frame = 0; frame < 6; frame++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+  }
+
   /// Signs in and plays a track of Miles Davis's "Kind of Blue" from the
   /// music area (UC-46), as an album unless [asTrack] says otherwise — the
   /// real path an owner takes, and now the only one: the rows play on tap
   /// rather than opening a details dialog with play buttons on it.
+  ///
+  /// [mode] defaults to off: most of the groups built on this helper are
+  /// about the screen's own behaviour once it is open by hand, not about
+  /// Task 7 step 4's auto-open, and leaving the animation on by default would
+  /// make every one of them race the shell's own listener for which route
+  /// gets there first (Finding 5). The groups that want the auto-open ask
+  /// for it explicitly, by name, and know to expect the screen already open
+  /// when `play` returns.
   Future<({ProviderContainer container, FakeMediaPlayer player})> play(
     WidgetTester tester, {
     bool asTrack = false,
@@ -43,6 +69,7 @@ void main() {
     Size surfaceSize = const Size(1440, 1000),
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
+    AlbumAnimationMode mode = AlbumAnimationMode.off,
   }) async {
     final catalog = FakeCatalogGateway()
       ..addAudio(
@@ -79,6 +106,10 @@ void main() {
       ],
     );
 
+    await container
+        .read(preferencesControllerProvider.notifier)
+        .setAlbumAnimation(mode);
+
     container.read(shellControllerProvider.notifier).go(ShellDestination.music);
     await tester.pumpAndSettle();
 
@@ -99,7 +130,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('So What'));
     }
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     return (container: container, player: player);
   }
@@ -107,16 +138,25 @@ void main() {
   AppLocalizations messages(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(ShellScreen)));
 
-  /// Opens the full player from the bar (main flow step 2) — unless step 4's
-  /// own auto-open listener already has, which it does for every album
-  /// `play` starts here (`play`'s queue always owes an insertion under the
-  /// default, untouched preference these older groups play under). Tapping
-  /// the bar's own button again in that case would hit nothing: the bar is
-  /// the route beneath the one already pushed. Idempotent either way is what
-  /// lets every group written before step 4 existed keep asking for the
-  /// player open without needing to know which route got it there.
+  /// Opens the full player from the bar (main flow step 2).
+  ///
+  /// Always taps the button — never skips it, and asserts first that the
+  /// player is not already open — so a caller's assumption about which
+  /// route got the screen open is never silently wrong (Finding 5). Waits
+  /// with [settle] rather than `pumpAndSettle`: whether the stage that
+  /// appears here spins for real depends on the caller's own choice of
+  /// `AlbumAnimationMode` and motion setting, not on anything this helper
+  /// controls, so it cannot assume settling is safe.
   Future<void> openPlayer(WidgetTester tester) async {
-    if (find.byType(NowPlayingScreen).evaluate().isNotEmpty) return;
+    expect(
+      find.byType(NowPlayingScreen),
+      findsNothing,
+      reason:
+          'openPlayer taps the bar\'s own button; if the player is already '
+          'open, something opened it before this call did — most likely '
+          'Task 7 step 4\'s auto-open, for a caller playing under a mode '
+          'that owes an insertion.',
+    );
 
     await tester.tap(
       find.descendant(
@@ -124,28 +164,16 @@ void main() {
         matching: find.byIcon(Icons.expand_less),
       ),
     );
-    await tester.pumpAndSettle();
+    await settle(tester);
   }
 
-  /// Signs in (`pumpShell` disables the animation via accessibility
-  /// settings, so the medium's spin — which repeats for as long as audio
-  /// plays — never leaves a frame scheduled for `pumpAndSettle` to wait out)
-  /// and starts an album playing. These tests are about the screen the
-  /// medium sits inside, not about the medium's own motion, which
-  /// `album_stage_test.dart` already covers.
-  ///
-  /// Plays an album of two tracks (never a single one) so that whatever
-  /// [mode] resolves to actually has a queue eligible to show it (AF-02).
-  ///
-  /// [mode] defaults to off rather than to the owner's untouched default: the
-  /// shell's own auto-open listener (step 4) would otherwise push the player
-  /// before a caller here ever gets to, which is exactly wrong for the tests
-  /// in this file that open it by hand. The step 4 group below passes a mode
-  /// that owes an insertion explicitly, which is what makes that behaviour
-  /// its own to test rather than something every other test trips over.
+  /// Signs in and starts an album of two tracks playing (never a single one,
+  /// so whatever [mode] resolves to actually has a queue eligible to show it
+  /// — AF-02) under [mode] and [reduceMotion].
   Future<ProviderContainer> playSomething(
     WidgetTester tester, {
     AlbumAnimationMode mode = AlbumAnimationMode.off,
+    bool reduceMotion = false,
   }) async {
     final catalog = FakeCatalogGateway()
       ..addAudio(
@@ -166,6 +194,7 @@ void main() {
       );
 
     final container = await tester.pumpShell(
+      reduceMotion: reduceMotion,
       extraOverrides: <Override>[
         catalogGatewayProvider.overrideWithValue(catalog),
         audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
@@ -184,7 +213,7 @@ void main() {
     await container
         .read(audioPlaybackControllerProvider.notifier)
         .playAlbum(aFile(uuid: 'kob-1'));
-    await tester.pumpAndSettle();
+    await settle(tester);
 
     return container;
   }
@@ -261,14 +290,20 @@ void main() {
   // the stage has less room than the dialog ever offered, so the two tests
   // that used to assert the medium was hidden at the minimum window are
   // replaced by the opposite assertion — the medium is still shown there,
-  // and playback still runs.
+  // with real motion, and playback still runs.
   group('the minimum window', () {
     testWidgets(
       'GivenTheMinimumWindow_WhenTheFullPlayerOpens_ThenTheStageIsStillShown',
       (tester) async {
-        await play(tester, surfaceSize: const Size(1024, 700));
-
-        await openPlayer(tester);
+        await play(
+          tester,
+          mode: AlbumAnimationMode.byYear,
+          surfaceSize: Breakpoint.minimumWindowSize,
+        );
+        // The album's first play owes an insertion, so the auto-open
+        // (Task 7 step 4) already has the player open here — real motion is
+        // running underneath it, which is the point of this group.
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
 
         expect(find.byType(AlbumStage), findsOneWidget);
       },
@@ -277,9 +312,12 @@ void main() {
     testWidgets(
       'GivenTheMinimumWindow_WhenTheFullPlayerOpens_ThenItStillPlays',
       (tester) async {
-        final playing = await play(tester, surfaceSize: const Size(1024, 700));
-
-        await openPlayer(tester);
+        final playing = await play(
+          tester,
+          mode: AlbumAnimationMode.byYear,
+          surfaceSize: Breakpoint.minimumWindowSize,
+        );
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
 
         expect(playing.player.opened, hasLength(1));
         expect(find.byIcon(Icons.pause_circle), findsOneWidget);
@@ -292,7 +330,7 @@ void main() {
     testWidgets(
       'GivenOneTrackPlays_WhenTheFullPlayerOpens_ThenNoMediumIsShown',
       (tester) async {
-        await play(tester, asTrack: true);
+        await play(tester, asTrack: true, mode: AlbumAnimationMode.byYear);
 
         await openPlayer(tester);
 
@@ -303,7 +341,7 @@ void main() {
     testWidgets('GivenOneTrackPlays_WhenTheFullPlayerOpens_ThenItStillPlays', (
       tester,
     ) async {
-      await play(tester, asTrack: true);
+      await play(tester, asTrack: true, mode: AlbumAnimationMode.byYear);
 
       await openPlayer(tester);
 
@@ -335,11 +373,15 @@ void main() {
     testWidgets(
       'GivenTheOwnerReopensThePlayer_WhenTheyDo_ThenTheMediumIsBack',
       (tester) async {
-        await play(tester);
-        await openPlayer(tester);
+        await play(tester, mode: AlbumAnimationMode.byYear);
+        // The album's first play owes an insertion, so the auto-open
+        // (Task 7 step 4) already has the player open here.
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
         await tester.tap(find.byTooltip(closeLabel(tester)));
         await tester.pumpAndSettle();
 
+        // Closed now, so `openPlayer` is unambiguous again: this is a
+        // deliberate, manual reopen, not a race with another auto-open.
         await openPlayer(tester);
 
         expect(find.byType(AlbumStage), findsOneWidget);
@@ -568,7 +610,7 @@ void main() {
         // safe for its caller to settle, and pushing a route from a listener
         // callback is the closest thing to that here. A framework exception
         // (Navigator/setState-during-build) would otherwise pass silently:
-        // `pumpAndSettle` does not fail on its own just because a frame threw.
+        // nothing else in this test would fail because of it.
         expect(tester.takeException(), isNull);
       },
     );
@@ -586,10 +628,10 @@ void main() {
         // track of the same record starts.
         container.read(albumAnimationControllerProvider.notifier).insertionShown();
         await tester.tap(find.byTooltip(closeLabel(tester)));
-        await tester.pumpAndSettle();
+        await settle(tester);
 
         await container.read(audioPlaybackControllerProvider.notifier).next();
-        await tester.pumpAndSettle();
+        await settle(tester);
 
         expect(find.byType(NowPlayingScreen), findsNothing);
       },
@@ -601,6 +643,159 @@ void main() {
         await playSomething(tester, mode: AlbumAnimationMode.off);
 
         expect(find.byType(NowPlayingScreen), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenALoneTrackStarts_WhenItPlays_ThenThePlayerDoesNotOpenItself',
+      (tester) async {
+        // Finding 4: the forward half of the AF-02 guard — a lone track
+        // owes no insertion at all (`AlbumAnimationController` folds AF-02
+        // into `insertionOwed` itself), so nothing here should ever cross
+        // the edge the auto-open listens for.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'loose-1',
+            title: 'Naima',
+            artist: 'John Coltrane',
+            year: 2001,
+          );
+        final container = await tester.pumpShell(
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(gateway),
+            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway(),
+            ),
+            playbackPositionsProvider.overrideWithValue(
+              FakePlaybackPositionStore(),
+            ),
+          ],
+        );
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setAlbumAnimation(AlbumAnimationMode.byYear);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playTrack(aFile(uuid: 'loose-1'));
+        await settle(tester);
+
+        expect(find.byType(NowPlayingScreen), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenALoneTrackPlayedFirst_WhenAnAlbumIsStarted_ThenThePlayerOpensItself',
+      (tester) async {
+        // Finding 1's recovery case: before the fix, a lone track's owed
+        // insertion never had anything to clear it (nothing shows a stage
+        // for a lone track, so `AlbumStage.onInserted` never fires), so the
+        // flag stuck at `true` and the album below found it already `true`
+        // — never crossing the edge that opens the player. With AF-02 folded
+        // into `insertionOwed` itself, a lone track never owes one to begin
+        // with, so there is nothing left to get stuck.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'loose-1',
+            title: 'Naima',
+            artist: 'John Coltrane',
+            year: 2001,
+          )
+          ..addAudio(
+            uuid: 'kob-1',
+            title: 'So What',
+            artist: 'Miles Davis',
+            album: 'Kind of Blue',
+            year: 1959,
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'kob-2',
+            title: 'Freddie Freeloader',
+            artist: 'Miles Davis',
+            album: 'Kind of Blue',
+            year: 1959,
+            track: 2,
+          );
+        final container = await tester.pumpShell(
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(gateway),
+            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway(),
+            ),
+            playbackPositionsProvider.overrideWithValue(
+              FakePlaybackPositionStore(),
+            ),
+          ],
+        );
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setAlbumAnimation(AlbumAnimationMode.byYear);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playTrack(aFile(uuid: 'loose-1'));
+        await settle(tester);
+        expect(find.byType(NowPlayingScreen), findsNothing);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'kob-1'));
+        await settle(tester);
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenMotionIsReduced_WhenTheInsertionIsSeated_ThenNothingStaysOwed',
+      (tester) async {
+        // Finding 1's other half: under reduced motion, `AlbumStage` never
+        // calls `onInserted` (`album_stage.dart`'s own guard — nothing
+        // "finished playing" when nothing played), so `NowPlayingScreen`'s
+        // own acknowledgement is what has to clear the flag instead.
+        final container = await playSomething(
+          tester,
+          mode: AlbumAnimationMode.byYear,
+          reduceMotion: true,
+        );
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(
+          container.read(albumAnimationControllerProvider).insertionOwed,
+          isFalse,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenMotionIsNotReduced_WhenTheInsertionPlaysThrough_ThenNoExceptionIsThrown',
+      (tester) async {
+        // Finding 3: the build-phase question Task 6 left open is about
+        // `AlbumStage`'s own status listener firing from a genuine animation
+        // completion — a path only reachable with real motion running, which
+        // reduced-motion coverage elsewhere in this file cannot exercise.
+        final container = await playSomething(
+          tester,
+          mode: AlbumAnimationMode.byYear,
+        );
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+
+        // Jumps the insertion's controller to completed in one step — the
+        // test binding's clock is simulated, so this does not take 4.4 real
+        // seconds — which is what drives `AlbumStage`'s status listener to
+        // call `onInserted` (wired to `insertionShown()`) from a real
+        // animation frame rather than from a build.
+        await tester.pump(AlbumStage.insertionDuration);
+        await settle(tester);
+
+        expect(tester.takeException(), isNull);
+        expect(
+          container.read(albumAnimationControllerProvider).insertionOwed,
+          isFalse,
+        );
       },
     );
   });
