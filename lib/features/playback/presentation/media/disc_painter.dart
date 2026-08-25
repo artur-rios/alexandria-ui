@@ -44,31 +44,47 @@ class DiscPainter extends CustomPainter {
   void _paintTurning(Canvas canvas, Offset centre, double radius) {
     final discRect = Rect.fromCircle(center: centre, radius: radius);
 
-    // The diffraction rainbow: a CD's data layer splits white light into a
-    // ring of colour that sweeps as the disc turns, which a plain metallic
-    // fill would not capture.
+    // The disc is aluminium first: a CD is fundamentally silver, and the
+    // rainbow is a sheen that plays across that metal, not the disc's own
+    // colour. A sweep through the chrome tones gives it the brushed,
+    // lathe-turned look real pressed metal has, before any colour is added.
     canvas.drawCircle(
       centre,
       radius,
       Paint()
         ..shader = SweepGradient(
           colors: [
-            palette.discSheenA,
-            palette.discSheenB,
-            palette.discSheenC,
-            palette.discSheenD,
-            palette.discSheenE,
-            palette.discSheenA,
+            palette.chromeLight,
+            palette.chromeMid,
+            palette.chromeDark,
+            palette.chromeMid,
+            palette.chromeLight,
+            palette.chromeMid,
+            palette.chromeDark,
+            palette.chromeMid,
+            palette.chromeLight,
           ],
         ).createShader(discRect),
     );
 
-    // A thin wash over the rainbow so it reads as disc-coloured metal
-    // catching colour, rather than a printed rainbow disc.
+    // The diffraction rainbow, riding the metal at low alpha rather than
+    // replacing it — a sheen that shifts with the angle, not the disc's own
+    // paint. Full-strength stops here are what made the disc read as a
+    // pastel rainbow ball instead of shiny metal catching colour.
     canvas.drawCircle(
       centre,
       radius,
-      Paint()..color = palette.discRing.withValues(alpha: 0.22),
+      Paint()
+        ..shader = SweepGradient(
+          colors: [
+            palette.discSheenA.withValues(alpha: 0.32),
+            palette.discSheenB.withValues(alpha: 0.32),
+            palette.discSheenC.withValues(alpha: 0.32),
+            palette.discSheenD.withValues(alpha: 0.32),
+            palette.discSheenE.withValues(alpha: 0.32),
+            palette.discSheenA.withValues(alpha: 0.32),
+          ],
+        ).createShader(discRect),
     );
 
     // Four fine concentric highlights: the faint rings a pressed disc's
@@ -91,9 +107,18 @@ class DiscPainter extends CustomPainter {
       Paint()..color = palette.discRing.withValues(alpha: 0.55),
     );
 
-    // The data area proper — the mirrored zone the laser reads — darker and
-    // flatter than the diffraction band around it.
-    canvas.drawCircle(centre, radius * 0.37, Paint()..color = palette.discHub);
+    // The data area proper — the mirrored zone the laser reads. Still
+    // silver, but a shade duller than the outer field, the way an inner
+    // ring pressed for data differs subtly from the reflective rim around
+    // it rather than dropping to flat grey.
+    canvas.drawCircle(
+      centre,
+      radius * 0.37,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [palette.chromeMid, palette.chromeDark],
+        ).createShader(Rect.fromCircle(center: centre, radius: radius * 0.37)),
+    );
 
     // The hub and its spindle hole.
     canvas.drawCircle(centre, radius * 0.16, Paint()..color = palette.discRing);

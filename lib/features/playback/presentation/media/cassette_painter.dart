@@ -44,18 +44,38 @@ class CassettePainter extends CustomPainter {
   }
 
   void _paintShell(Canvas canvas, double w, double h) {
-    final shell = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, w, h),
-      Radius.circular(h * 0.08),
-    );
+    // A small margin so the shell reads as an object sitting inside the
+    // painter's bounds rather than a flat rectangle filling the frame edge
+    // to edge.
+    final margin = h * 0.035;
+    final bounds = Rect.fromLTWH(margin, margin, w - margin * 2, h - margin * 2);
+    final shell = RRect.fromRectAndRadius(bounds, Radius.circular(h * 0.09));
+
     canvas.drawRRect(
       shell,
       Paint()
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [palette.shellTop, palette.shellBottom],
-        ).createShader(Rect.fromLTWH(0, 0, w, h)),
+          // shellBottom alone was too close to shellTop to read as a
+          // gradient at all; mixing in panelEdge deepens the shadow half so
+          // the shell reads as moulded plastic with real thickness.
+          colors: [
+            palette.shellTop,
+            Color.lerp(palette.shellBottom, palette.panelEdge, 0.55) ??
+                palette.shellBottom,
+          ],
+        ).createShader(bounds),
+    );
+
+    // A thin edge line completes the moulded look — the shadow a bevel
+    // casts along the shell's own rim.
+    canvas.drawRRect(
+      shell,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = h * 0.01
+        ..color = palette.panelEdge.withValues(alpha: 0.6),
     );
   }
 
@@ -94,34 +114,48 @@ class CassettePainter extends CustomPainter {
   }
 
   void _paintWindow(Canvas canvas, double w, double h) {
+    final windowRect = Rect.fromLTWH(w * 0.12, h * 0.22, w * 0.76, h * 0.46);
     final window = RRect.fromRectAndRadius(
-      Rect.fromLTWH(w * 0.12, h * 0.22, w * 0.76, h * 0.46),
+      windowRect,
       Radius.circular(h * 0.03),
     );
     canvas.drawRRect(window, Paint()..color = palette.glassTint);
 
-    // A diagonal sheen, the way moulded clear plastic catches light unevenly
-    // rather than as a flat tint.
-    canvas.save();
-    canvas.clipRRect(window);
-    canvas.drawParallelogram(
-      Rect.fromLTWH(w * 0.12, h * 0.22, w * 0.3, h * 0.46),
-      palette.glassSheen,
+    // A soft diagonal sheen, the way moulded clear plastic catches light
+    // unevenly rather than as a flat tint. Driven entirely by gradient
+    // stops rather than a separately clipped shape, so there is no hard
+    // geometric edge to read as a stray mark on the window.
+    canvas.drawRRect(
+      window,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            palette.glassSheen.withValues(alpha: 0),
+            palette.glassSheen.withValues(alpha: 0.55),
+            palette.glassSheen.withValues(alpha: 0),
+          ],
+          stops: const [0.05, 0.22, 0.45],
+        ).createShader(windowRect),
     );
-    canvas.restore();
   }
 
-  void _paintTapePath(Canvas canvas, double w, double h) {
-    final path = Path()
-      ..moveTo(w * 0.305, h * 0.60)
-      ..quadraticBezierTo(w * 0.5, h * 0.665, w * 0.695, h * 0.60);
+  /// The height the tape path (and the pressure pad it crosses) sit at.
+  double _tapePathY(double h) => h * 0.62;
 
-    canvas.drawPath(
-      path,
+  void _paintTapePath(Canvas canvas, double w, double h) {
+    // A straight ribbon between the packs, not a sagging line — a real
+    // cassette's tape is held taut between the two hubs by the guide posts
+    // either side of the head opening.
+    final y = _tapePathY(h);
+    canvas.drawLine(
+      Offset(w * 0.305, y),
+      Offset(w * 0.695, y),
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = h * 0.018
-        ..strokeCap = StrokeCap.round
+        ..strokeWidth = h * 0.025
+        ..strokeCap = StrokeCap.butt
         ..color = palette.tapePack,
     );
   }
@@ -129,9 +163,9 @@ class CassettePainter extends CustomPainter {
   void _paintPressurePad(Canvas canvas, double w, double h) {
     final pad = RRect.fromRectAndRadius(
       Rect.fromCenter(
-        center: Offset(w * 0.5, h * 0.665),
+        center: Offset(w * 0.5, _tapePathY(h)),
         width: w * 0.045,
-        height: h * 0.05,
+        height: h * 0.07,
       ),
       Radius.circular(h * 0.008),
     );
@@ -144,10 +178,25 @@ class CassettePainter extends CustomPainter {
     double h, {
     required double packRadius,
   }) {
-    // The wound tape pack, seen edge-on. It does not need to rotate to read
-    // correctly — a plain disc looks the same at any angle — but it is
-    // grouped with the hub because the two are one physical part.
-    canvas.drawCircle(centre, packRadius, Paint()..color = palette.tapePack);
+    // The wound tape pack, seen edge-on. A radial gradient rather than a
+    // flat fill: wound tape is a spiral of thousands of layers, and the
+    // outer layers catch the light while the pack darkens toward the hub —
+    // a flat brown circle read as a coloured disc, not spooled tape. It
+    // does not need to rotate to read correctly, but is grouped with the
+    // hub because the two are one physical part.
+    canvas.drawCircle(
+      centre,
+      packRadius,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [
+            palette.tapePack,
+            Color.lerp(palette.tapePack, palette.chromeLight, 0.28) ??
+                palette.tapePack,
+          ],
+          stops: const [0.55, 1],
+        ).createShader(Rect.fromCircle(center: centre, radius: packRadius)),
+    );
 
     canvas.save();
     canvas.translate(centre.dx, centre.dy);
@@ -183,10 +232,13 @@ class CassettePainter extends CustomPainter {
     // A single index mark, off the six-fold tooth pattern. Six teeth are
     // symmetric under a half turn, so without this a hub at 0.5 turns would
     // render pixel-identical to a hub at rest — a passing golden that proved
-    // nothing about rotation.
+    // nothing about rotation. Sized well above a single pixel so the
+    // asymmetry survives the antialiasing differences between machines and
+    // Flutter versions the golden comparator already tolerates, rather than
+    // being a fragile one-pixel feature itself.
     canvas.drawCircle(
       centre.translate(0, -hubRadius * 0.85),
-      hubRadius * 0.1,
+      hubRadius * 0.22,
       Paint()..color = palette.wellDark,
     );
     canvas.restore();
@@ -195,29 +247,4 @@ class CassettePainter extends CustomPainter {
   @override
   bool shouldRepaint(CassettePainter oldDelegate) =>
       oldDelegate.turns != turns || oldDelegate.palette != palette;
-}
-
-extension _ParallelogramPainting on Canvas {
-  /// A slanted band of colour across [bounds], fading out at both ends — the
-  /// window's plastic sheen. A private extension rather than a method on
-  /// [CassettePainter] because it is pure canvas geometry, not cassette
-  /// domain logic.
-  void drawParallelogram(Rect bounds, Color colour) {
-    final path = Path()
-      ..moveTo(bounds.left + bounds.width * 0.1, bounds.top)
-      ..lineTo(bounds.left + bounds.width * 0.4, bounds.top)
-      ..lineTo(bounds.left - bounds.width * 0.3, bounds.bottom)
-      ..lineTo(bounds.left - bounds.width * 0.6, bounds.bottom)
-      ..close();
-
-    drawPath(
-      path,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [colour.withValues(alpha: 0), colour, colour.withValues(alpha: 0)],
-        ).createShader(bounds),
-    );
-  }
 }
