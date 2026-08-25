@@ -7,14 +7,12 @@ import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
 import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
-import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
-import '../../../support/login_harness.dart';
 import '../../../support/shell_harness.dart';
 
 /// The credential-change form (UC-04, FR-AU-10, FR-AU-11).
@@ -78,28 +76,13 @@ void main() {
     );
 
     testWidgets(
-      'GivenNoSession_WhenPreferencesOpen_ThenTheChangeIsNotOffered',
+      'GivenTheSettingsMenu_WhenTheChangeIsChosen_ThenTheFormOpens',
       (tester) async {
-        // The core requires a session to change credentials that already
-        // exist, and preferences are reachable without one (UC-39).
-        await tester.pumpLoginScreen();
-        await tester.tap(find.byType(PreferencesButton));
-        await tester.pumpAndSettle();
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
+        await openForm(tester);
 
-        expect(find.text(l10n.changeCredentialsOpen), findsNothing);
+        expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
       },
     );
-
-    testWidgets('GivenPreferences_WhenTheChangeIsChosen_ThenTheFormOpens', (
-      tester,
-    ) async {
-      await openForm(tester);
-
-      expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
-    });
   });
 
   group('the main flow', () {
