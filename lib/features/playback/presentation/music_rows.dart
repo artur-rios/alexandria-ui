@@ -6,11 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../catalog/domain/catalog_file.dart';
+import '../../catalog/domain/music_metadata.dart';
 import '../../catalog/presentation/file_details_view.dart';
 import '../../catalog/presentation/music_metadata_form.dart';
 import '../application/audio_playback_controller.dart';
 import '../domain/music_browse.dart';
 import '../domain/music_grouping.dart';
+import '../domain/playback_queue.dart';
 
 /// What a group of tracks is (UC-46 main flow step 2).
 enum MusicGroupKind {
@@ -40,6 +43,54 @@ String musicTitleOf(MusicEntry entry, AppLocalizations l10n) =>
 /// A track's artist, or the word for a file whose tags carry none.
 String musicArtistOf(MusicEntry entry, AppLocalizations l10n) =>
     tagOr(entry.metadata.artist, l10n.musicUnknownArtist);
+
+/// [file]'s title from its metadata, never its name on disk (FR-CT-13).
+///
+/// Shared by the bar, the skip notice, and the full player, so nothing that
+/// names the file currently playing can disagree with what the browsing area
+/// already agreed a track is called — [musicTitleOf] — and the file name the
+/// owner never wants to see does not reappear just because the queue was
+/// built from a track the progress read has not caught up to yet.
+///
+/// Watches [musicLibraryProvider] as well as the progress it publishes to,
+/// because playback is reachable without ever opening the music area — from
+/// search, from the dashboard, from a file's own details — and nothing else
+/// would otherwise start the read this title is drawn from.
+String musicTitleForFile(
+  WidgetRef ref,
+  CatalogFile file,
+  AppLocalizations l10n,
+) {
+  ref.watch(musicLibraryProvider);
+  final progress = ref.watch(musicLibraryProgressProvider);
+  final entry = progress.entries.firstWhere(
+    (candidate) => candidate.file.uuid == file.uuid,
+    // Not yet read (or read after the caller last rebuilt): reads as
+    // untitled rather than by name, which is what an entry with no title
+    // does too.
+    orElse: () => MusicEntry(file: file, metadata: const MusicMetadata()),
+  );
+
+  return musicTitleOf(entry, l10n);
+}
+
+/// The queue's own name, or `null` when there is none to show (UC-20,
+/// UC-21, FR-CT-13).
+///
+/// `null` for a single track: the bar and the full player already show that
+/// track's own title beside this label (via [musicTitleForFile]), so
+/// repeating it here would be noise rather than information, and both
+/// surfaces already treat `null` as "no queue name" — the bar omits the
+/// line, and the full player's title falls back to the generic one. For an
+/// album or an artist, a `null` [PlaybackQueue.label] means the *tag* is
+/// absent, not the queue itself, so this reads through [tagOr] to the same
+/// rule an absent album or artist tag gets everywhere else.
+String? queueLabelOf(PlaybackQueue queue, AppLocalizations l10n) =>
+    switch (queue.kind) {
+      QueueKind.track => null,
+      QueueKind.album => tagOr(queue.label, l10n.musicUnknownAlbum),
+      QueueKind.artist => tagOr(queue.label, l10n.musicUnknownArtist),
+    };
 
 /// A group's name, or the word for the files that name none.
 String musicGroupName(

@@ -7,10 +7,8 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_file.dart';
-import '../../catalog/domain/music_metadata.dart';
 import '../../playback/application/audio_playback_controller.dart';
 import '../../playback/domain/media_player.dart';
-import '../../playback/domain/music_grouping.dart';
 import '../../playback/presentation/album_player_screen.dart';
 import '../../playback/presentation/music_rows.dart';
 
@@ -115,13 +113,13 @@ class _Bar extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _musicTitleFor(ref, current, l10n),
+                musicTitleForFile(ref, current, l10n),
                 style: theme.textTheme.bodyMedium,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (state.queue.label.isNotEmpty)
+              if (queueLabelOf(state.queue, l10n) case final label?)
                 Text(
-                  state.queue.label,
+                  label,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -236,7 +234,7 @@ class _SkipNotice extends ConsumerWidget {
         children: [
           Expanded(
             child: Text(
-              l10n.audioSkipped(_musicTitleFor(ref, file, l10n)),
+              l10n.audioSkipped(musicTitleForFile(ref, file, l10n)),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onErrorContainer,
               ),
@@ -322,32 +320,6 @@ class _Position extends StatelessWidget {
       ),
     );
   }
-}
-
-/// [file]'s title from its metadata, never its name on disk (FR-CT-13).
-///
-/// The bar and the skip notice both name a file only by what music_rows.dart
-/// already agreed a track is called — [musicTitleOf] — so the browsing area
-/// and this bar never disagree about what an untitled track reads as, and the
-/// file name the owner never wants to see does not reappear here just because
-/// the queue was built from a track the progress read has not caught up to
-/// yet.
-///
-/// Watches [musicLibraryProvider] as well as the progress it publishes to,
-/// because playback is reachable without ever opening the music area — from
-/// search, from the dashboard, from a file's own details — and nothing else
-/// would otherwise start the read this title is drawn from.
-String _musicTitleFor(WidgetRef ref, CatalogFile file, AppLocalizations l10n) {
-  ref.watch(musicLibraryProvider);
-  final progress = ref.watch(musicLibraryProgressProvider);
-  final entry = progress.entries.firstWhere(
-    (candidate) => candidate.file.uuid == file.uuid,
-    // Not yet read (or read after this bar last rebuilt): reads as untitled
-    // rather than by name, which is what an entry with no title does too.
-    orElse: () => MusicEntry(file: file, metadata: const MusicMetadata()),
-  );
-
-  return musicTitleOf(entry, l10n);
 }
 
 /// A duration as the players show it.

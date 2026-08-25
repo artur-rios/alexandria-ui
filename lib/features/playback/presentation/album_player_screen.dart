@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import '../domain/album_medium.dart';
 import 'album_animation.dart';
+import 'music_rows.dart';
 
 /// The full audio player (UC-21, FR-PL-07).
 ///
@@ -40,10 +41,13 @@ class AlbumPlayerScreen extends ConsumerWidget {
     // AF-02: a single track is not a record, so it gets the compact player too.
     final showsAnimation = hasRoom && state.queue.showsAlbumAnimation;
 
+    // Never the file name (FR-CT-13), and never the queue's own label for a
+    // single track — the generic title stands in for both an untagged queue
+    // and a queue with no name of its own.
+    final queueLabel = queueLabelOf(state.queue, l10n);
+
     return AlertDialog(
-      title: Text(
-        state.queue.label.isEmpty ? l10n.audioPlayer : state.queue.label,
-      ),
+      title: Text(queueLabel ?? l10n.audioPlayer),
       content: SizedBox(
         width: 360,
         child: Column(
@@ -60,7 +64,13 @@ class AlbumPlayerScreen extends ConsumerWidget {
             ],
 
             Text(
-              current?.name ?? l10n.playbackNothingPlaying,
+              // Never the file name (FR-CT-13): the metadata title, the same
+              // one the bar and the browsing area already agree a track is
+              // called — this dialog does not get to disagree just because
+              // it names the track in its own body text.
+              current == null
+                  ? l10n.playbackNothingPlaying
+                  : musicTitleForFile(ref, current, l10n),
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),

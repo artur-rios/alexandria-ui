@@ -261,10 +261,15 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
       QueueKind.track => [file],
     };
 
+    // Never the file name (FR-CT-13): an absent tag is carried as `null`
+    // rather than defaulting to `file.name` here, because this is
+    // application code with no `AppLocalizations` to turn that absence into
+    // the right word. That decision belongs to whichever presentation site
+    // renders the label — see `queueLabelOf` in `music_rows.dart`.
     final label = switch (kind) {
-      QueueKind.album => entry.album ?? file.name,
-      QueueKind.artist => entry.artist ?? file.name,
-      QueueKind.track => file.name,
+      QueueKind.album => entry.album,
+      QueueKind.artist => entry.artist,
+      QueueKind.track => null,
     };
 
     // Starting where the owner started, not at the top: they picked this
