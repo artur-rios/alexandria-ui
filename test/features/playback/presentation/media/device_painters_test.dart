@@ -100,9 +100,13 @@ void main() {
     });
 
     test('GivenATapeDeckPainter_WhenNothingChanges_ThenItDoesNotRepaint', () {
-      const painter = TapeDeckPainter(palette: palette, closed: 0.5);
+      // Two distinct instances with identical fields, not the same
+      // instance compared to itself — the latter would pass even if `==`
+      // were broken, since `identical(this, other)` alone would satisfy it.
+      const first = TapeDeckPainter(palette: palette, closed: 0.5);
+      const second = TapeDeckPainter(palette: palette, closed: 0.5);
 
-      expect(painter.shouldRepaint(painter), isFalse);
+      expect(second.shouldRepaint(first), isFalse);
     });
 
     test('GivenACdPlayerPainter_WhenOnlyClosedChanges_ThenItRepaints', () {
@@ -141,6 +145,28 @@ void main() {
 
       expect(second.shouldRepaint(first), isTrue);
     });
+
+    testWidgets(
+      'GivenAnEmptyTitleAndArtist_WhenTheCaseIsDrawn_ThenItDoesNotThrow',
+      (tester) async {
+        // An album with no title or artist yet is not a hypothetical here —
+        // sleeveIndexFor already defines what an unnamed album's sleeve
+        // colour is, and the case has to lay out that same album's (empty)
+        // text without a TextPainter tripping over a zero-length string.
+        final painter = CasePainter(
+          palette: palette,
+          medium: AlbumMedium.tape,
+          sleeve: palette.sleeveHues.first,
+          title: '',
+          artist: '',
+          direction: TextDirection.ltr,
+        );
+
+        await tester.pumpWidget(painted(painter, const Size(150, 220)));
+
+        expect(tester.takeException(), isNull);
+      },
+    );
 
     testWidgets(
       'GivenALongTitle_WhenTheCaseIsDrawn_ThenItDoesNotThrow',

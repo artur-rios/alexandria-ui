@@ -64,6 +64,11 @@ class TurntablePainter extends CustomPainter {
         ).createShader(bounds),
     );
 
+    canvas.save();
+    canvas.clipRRect(plinth);
+    _paintGrain(canvas, bounds);
+    canvas.restore();
+
     // The lit top edge: a thin, brighter stroke along the upper rim, the way
     // a raking light catches the front lip of a wooden case.
     canvas.drawLine(
@@ -95,6 +100,37 @@ class TurntablePainter extends CustomPainter {
           Radius.circular(h * 0.006),
         ),
         foot,
+      );
+    }
+  }
+
+  /// A walnut plinth's vertical grain and the tonal drift that runs with it.
+  ///
+  /// The gradient fill alone read as a flat painted slab rather than wood —
+  /// there was no texture running across the surface at all, only a single
+  /// smooth fade top to bottom. Real veneer varies along its length as well
+  /// as its depth, so the lines here are drawn at deterministic, uneven
+  /// spacing and alpha (via `sin`, not `Random`) rather than as one regular
+  /// hatch, which is what keeps them reading as grain instead of a pattern —
+  /// and keeps the golden reproducible.
+  void _paintGrain(Canvas canvas, Rect bounds) {
+    // Wide enough and dark/light enough to survive being drawn at the small
+    // sizes this painter is actually shown at — the first pass used an
+    // alpha low enough that it disappeared into the fill entirely once
+    // rendered at animation size rather than a diagram's zoom level.
+    final line = Paint()..strokeWidth = bounds.height * 0.01;
+    const count = 22;
+    for (var i = 0; i < count; i++) {
+      final t = i / count;
+      final x = bounds.left + bounds.width * t;
+      final dark = math.sin(i * 2.4) > 0;
+      final alpha = 0.10 + 0.14 * (0.5 + 0.5 * math.sin(i * 1.7 + 0.4));
+      line.color = (dark ? palette.plinthEdge : palette.plinthTop)
+          .withValues(alpha: alpha);
+      canvas.drawLine(
+        Offset(x, bounds.top + bounds.height * 0.02),
+        Offset(x, bounds.bottom - bounds.height * 0.02),
+        line,
       );
     }
   }
@@ -190,38 +226,40 @@ class TurntablePainter extends CustomPainter {
     canvas.translate(pivot.dx, pivot.dy);
     canvas.rotate(angle);
 
-    // The counterweight, behind the pivot.
+    // The counterweight, behind the pivot — thickened along with the tube
+    // below, both of which were the least visible part of the assembly at
+    // the original size.
     canvas.drawCircle(
       Offset(-armLength * 0.12, 0),
-      h * 0.028,
+      h * 0.04,
       Paint()..color = palette.chromeDark,
     );
     canvas.drawCircle(
       Offset(-armLength * 0.12, 0),
-      h * 0.028,
+      h * 0.04,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = h * 0.004
+        ..strokeWidth = h * 0.006
         ..color = palette.chromeLight.withValues(alpha: 0.6),
     );
 
     // The pivot housing.
-    canvas.drawCircle(Offset.zero, h * 0.024, Paint()..color = palette.chromeMid);
+    canvas.drawCircle(Offset.zero, h * 0.03, Paint()..color = palette.chromeMid);
 
     // The chrome tube, tapering slightly toward the headshell.
     canvas.drawLine(
       Offset.zero,
       Offset(armLength, 0),
       Paint()
-        ..strokeWidth = h * 0.014
+        ..strokeWidth = h * 0.022
         ..strokeCap = StrokeCap.round
         ..color = palette.chromeLight,
     );
     canvas.drawLine(
-      Offset(h * 0.02, -h * 0.003),
-      Offset(armLength - h * 0.02, -h * 0.003),
+      Offset(h * 0.02, -h * 0.004),
+      Offset(armLength - h * 0.02, -h * 0.004),
       Paint()
-        ..strokeWidth = h * 0.005
+        ..strokeWidth = h * 0.008
         ..strokeCap = StrokeCap.round
         ..color = palette.chromeDark.withValues(alpha: 0.5),
     );

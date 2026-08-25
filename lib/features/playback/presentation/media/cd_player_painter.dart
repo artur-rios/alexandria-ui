@@ -40,11 +40,14 @@ class CdPlayerPainter extends CustomPainter {
     _paintDisplay(canvas, face);
     _paintButtons(canvas, face);
 
-    final wellCentre = Offset(
-      face.left + face.width * 0.315,
-      face.top + face.height * 0.62,
-    );
-    final wellRadius = face.height * 0.30;
+    // The well is the dominant feature and sits centred in the body, below
+    // the display/button band, with room on every side so the lid — sized
+    // to the well alone — can never reach either of them. The first version
+    // of this put the well off-centre and undersized the top band, which
+    // let the well, the display and the lid all fight for the same pixels
+    // at both ends of `closed`.
+    final wellCentre = Offset(face.center.dx, face.top + face.height * 0.66);
+    final wellRadius = face.height * 0.26;
     _paintWell(canvas, wellCentre, wellRadius);
     _paintLid(canvas, face, wellCentre, wellRadius);
   }
@@ -89,9 +92,9 @@ class CdPlayerPainter extends CustomPainter {
   void _paintDisplay(Canvas canvas, Rect face) {
     final recessRect = Rect.fromLTWH(
       face.left + face.width * 0.06,
-      face.top + face.height * 0.12,
+      face.top + face.height * 0.08,
       face.width * 0.46,
-      face.height * 0.24,
+      face.height * 0.20,
     );
     final recess = RRect.fromRectAndRadius(
       recessRect,
@@ -136,7 +139,7 @@ class CdPlayerPainter extends CustomPainter {
       ..strokeWidth = face.height * 0.005
       ..color = palette.panelEdge;
 
-    final buttonsY = face.top + face.height * 0.14;
+    final buttonsY = face.top + face.height * 0.18;
     final size = face.height * 0.11;
     // Kept clear of the display recess, which occupies the left half of
     // this same band — a button drawn over the readout was the bug an

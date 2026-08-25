@@ -18,6 +18,12 @@ int sleeveIndexFor(String? album, int hueCount) {
 
   // FNV-1a: stable across runs and platforms, which `hashCode` is not
   // promised to be — and this value decides what the owner sees.
+  //
+  // `hash * 0x01000193` can exceed 2^53 before the `& 0xffffffff` mask
+  // brings it back into range, which would lose precision if this ever ran
+  // on dart2js, where a Dart int is a JS double. Harmless on the native
+  // desktop VM this project targets, where ints are true 64-bit integers —
+  // flagged here so a future web target doesn't have to rediscover it.
   var hash = 0x811c9dc5;
   for (final unit in name.toLowerCase().codeUnits) {
     hash = ((hash ^ unit) * 0x01000193) & 0xffffffff;

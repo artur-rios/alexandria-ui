@@ -215,15 +215,78 @@ class TapeDeckPainter extends CustomPainter {
   }
 
   void _paintWell(Canvas canvas, Rect well) {
+    // The well is where the eye lands, and a flat fill read as a shape
+    // painted on the face rather than a cavity cut into it. The fix is the
+    // same recess vocabulary the VU meter and display use elsewhere: a
+    // gradient that darkens toward the back of the cavity, a lit rim
+    // catching light along the top the way a real inset edge would, and an
+    // outer stroke deep enough to read as a wall rather than a hairline.
+    final shape = RRect.fromRectAndRadius(well, Radius.circular(well.height * 0.05));
+
+    // A lighter tone at the mouth of the cavity fading to wellDark at the
+    // back — panelDark and wellDark alone were too close to each other in
+    // value to read as a gradient at this size, the same problem the deck
+    // face solved by repeating its two tones through four stops rather than
+    // fading once.
     canvas.drawRRect(
-      RRect.fromRectAndRadius(well, Radius.circular(well.height * 0.05)),
-      Paint()..color = palette.wellDark,
+      shape,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.lerp(palette.panelDark, palette.chromeMid, 0.22) ??
+                palette.panelDark,
+            palette.wellDark,
+          ],
+          stops: const [0, 0.6],
+        ).createShader(well),
     );
+
+    // A vignette along the side and bottom walls, darker than the cavity's
+    // own gradient — the shadow the walls of a real recess throw across
+    // their own floor, which is what turns a gradient into depth rather
+    // than just a second flat tone.
     canvas.drawRRect(
-      RRect.fromRectAndRadius(well, Radius.circular(well.height * 0.05)),
+      shape,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(0, -0.4),
+          radius: 1.1,
+          colors: [
+            palette.wellDark.withValues(alpha: 0),
+            palette.panelEdge.withValues(alpha: 0.85),
+          ],
+          stops: const [0.55, 1],
+        ).createShader(well),
+    );
+
+    // The lit lip: a bright, deliberately thick stroke along the top inside
+    // edge, with a dark line just beneath it standing in for the shadow the
+    // lip itself casts a hair's-width into the cavity — the pairing that
+    // reads as an inset edge rather than a line drawn on a flat surface.
+    canvas.drawLine(
+      Offset(well.left + well.height * 0.1, well.top + well.height * 0.03),
+      Offset(well.right - well.height * 0.1, well.top + well.height * 0.03),
+      Paint()
+        ..strokeWidth = well.height * 0.035
+        ..strokeCap = StrokeCap.round
+        ..color = palette.chromeLight.withValues(alpha: 0.55),
+    );
+    canvas.drawLine(
+      Offset(well.left + well.height * 0.1, well.top + well.height * 0.09),
+      Offset(well.right - well.height * 0.1, well.top + well.height * 0.09),
+      Paint()
+        ..strokeWidth = well.height * 0.02
+        ..strokeCap = StrokeCap.round
+        ..color = palette.wellDark.withValues(alpha: 0.7),
+    );
+
+    canvas.drawRRect(
+      shape,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = well.height * 0.02
+        ..strokeWidth = well.height * 0.035
         ..color = palette.panelEdge,
     );
   }
