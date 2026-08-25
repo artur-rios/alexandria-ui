@@ -260,7 +260,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preferencesClose => 'Done';
 
   @override
-  String get changeCredentialsOpen => 'Change your e-mail and password';
+  String get changeCredentialsOpen => 'Change credentials…';
 
   @override
   String get changeCredentialsTitle => 'Change credentials';

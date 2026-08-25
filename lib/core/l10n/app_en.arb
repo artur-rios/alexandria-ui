@@ -284,7 +284,7 @@
   },
   "preferencesLabel": "Preferences",
   "@preferencesLabel": {
-    "description": "Visible label of the preferences action in the navigation panel, shown beside or beneath its icon at every breakpoint wider than the minimum."
+    "description": "Visible label of the preferences entry in the Settings menu, shown beside its icon at every breakpoint wider than the minimum."
   },
   "settingsMenuLabel": "Settings",
   "@settingsMenuLabel": {
@@ -326,9 +326,9 @@
   "@preferencesClose": {
     "description": "The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made."
   },
-  "changeCredentialsOpen": "Change your e-mail and password",
+  "changeCredentialsOpen": "Change credentials…",
   "@changeCredentialsOpen": {
-    "description": "The action in preferences that opens the credential-change form (UC-04 main flow step 1). Offered only while a session is active."
+    "description": "Label of the entry in the Settings menu that opens the credential-change form (UC-04 main flow step 1)."
   },
   "changeCredentialsTitle": "Change credentials",
   "@changeCredentialsTitle": {
@@ -2115,7 +2115,7 @@
   },
   "libraryToolsLabel": "Library",
   "@libraryToolsLabel": {
-    "description": "Visible label of the library tools action in the navigation panel, shown beside or beneath its icon at every breakpoint wider than the minimum."
+    "description": "Visible label of the Library menu's trigger in the shell's menu bar, shown beside its icon at every breakpoint wider than the minimum."
   },
   "libraryToolsGroupLibrary": "Library",
   "@libraryToolsGroupLibrary": {

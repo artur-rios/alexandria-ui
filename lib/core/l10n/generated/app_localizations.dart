@@ -470,7 +470,7 @@ abstract class AppLocalizations {
   /// **'Open preferences'**
   String get preferencesOpen;
 
-  /// Visible label of the preferences action in the navigation panel, shown beside or beneath its icon at every breakpoint wider than the minimum.
+  /// Visible label of the preferences entry in the Settings menu, shown beside its icon at every breakpoint wider than the minimum.
   ///
   /// In en, this message translates to:
   /// **'Preferences'**
@@ -536,10 +536,10 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get preferencesClose;
 
-  /// The action in preferences that opens the credential-change form (UC-04 main flow step 1). Offered only while a session is active.
+  /// Label of the entry in the Settings menu that opens the credential-change form (UC-04 main flow step 1).
   ///
   /// In en, this message translates to:
-  /// **'Change your e-mail and password'**
+  /// **'Change credentials…'**
   String get changeCredentialsOpen;
 
   /// Title of the credential-change dialog (UC-04).
@@ -2814,7 +2814,7 @@ abstract class AppLocalizations {
   /// **'Library tools'**
   String get libraryToolsOpen;
 
-  /// Visible label of the library tools action in the navigation panel, shown beside or beneath its icon at every breakpoint wider than the minimum.
+  /// Visible label of the Library menu's trigger in the shell's menu bar, shown beside its icon at every breakpoint wider than the minimum.
   ///
   /// In en, this message translates to:
   /// **'Library'**
