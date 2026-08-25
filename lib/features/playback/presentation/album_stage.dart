@@ -351,12 +351,27 @@ class _StageLayout extends StatelessWidget {
     final caseAspect = CasePainter.aspectFor(medium);
     final caseWidth = size * 0.5;
     final caseHeight = caseWidth / caseAspect;
+    // Finding 8, beat 1: the case floats in from the left, its sleeve facing
+    // the owner — not centred and faded up in place, which read as a sleeve
+    // pasted flat over the device rather than something arriving from
+    // anywhere. `caseSettle` (the `caseIn` interval) now drives *where* the
+    // case is, not only how visible it is: it starts off-canvas, past the
+    // stage's own left edge, and slides in to where it parks.
+    //
+    // The parked X is left of centre rather than centred on the device: a
+    // centred jacket at this width sits squarely over a device's well and
+    // display, which is exactly the "sleeve pasted on top" Finding 8 named —
+    // every device's own controls (`_paintControls`/`_paintButtons`, drawn
+    // from roughly 0.66 to 0.90 of the width in each device painter) sit well
+    // clear of a case parked here.
+    final caseParkX = size * 0.30;
+    final caseArriveX = ui.lerpDouble(-caseWidth * 0.7, caseParkX, caseSettle)!;
     // The case settles into place as it arrives, then drifts up and away as
     // it fades — the same beats that drive its opacity, read as a slide
     // rather than a plain cross-fade.
-    final caseSlide =
+    final caseSlideY =
         size * 0.12 * (1 - caseSettle) - size * 0.08 * caseDeparture;
-    final caseCentre = Offset(size / 2, size * 0.66 + caseSlide);
+    final caseCentre = Offset(caseArriveX, size * 0.66 + caseSlideY);
 
     final mediumScale = ui.lerpDouble(
       _insideCaseScale(medium),

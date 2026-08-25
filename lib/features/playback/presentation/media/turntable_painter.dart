@@ -243,12 +243,13 @@ class TurntablePainter extends CustomPainter {
   ) {
     final pivot = Offset(w * 0.86, h * 0.60);
 
-    // The played position points at a spot short of the platter's centre —
-    // near the inner grooves, where a needle actually rides — rather than
-    // the centre itself, which is where the spindle sits, not the stylus.
+    // The played position points at a spot near the platter's rim — the
+    // outer, lead-in groove a stylus sits on when a record has just been
+    // seated (Finding 9) — rather than close to the centre, which is where
+    // the paper label sits, not a groove at all.
     final toCentre = platterCentre - pivot;
     final playTip =
-        platterCentre - toCentre / toCentre.distance * platterRadius * 0.32;
+        platterCentre - toCentre / toCentre.distance * platterRadius * 0.90;
     final toPlayTip = playTip - pivot;
     final armLength = toPlayTip.distance;
     final playAngle = toPlayTip.direction;

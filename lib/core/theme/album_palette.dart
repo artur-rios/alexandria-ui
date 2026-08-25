@@ -232,7 +232,11 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     tapePack: Color(0xFF3E2A1E),
     tapeLabel: Color(0xFFEDE3CC),
     tapeLabelInk: Color(0xFF2A2016),
-    glassTint: Color(0xB3303840),
+    // Lifted from 0xB3 (Finding 9): at full opacity the tape deck's own
+    // door washed the cassette's reel hubs out to the point of being barely
+    // legible behind it — deferred at Task 3 to be judged in motion, and
+    // this is the judgment.
+    glassTint: Color(0x80303840),
     glassSheen: Color(0x66FFFFFF),
     specular: Color(0xFFF5F5F0),
     contactShadow: Color(0x66000000),
