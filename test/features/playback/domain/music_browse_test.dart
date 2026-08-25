@@ -101,6 +101,26 @@ void main() {
       },
     );
 
+    test(
+      'GivenTwoArtistsSharingAnAlbumName_WhenAlbumsAreListed_ThenTheirOrderIsByArtist',
+      () {
+        // Same album title, so the primary sort key ties; nothing pinned the
+        // tiebreak, which made the relative order between them whichever the
+        // underlying map happened to iterate in — insertion order — rather
+        // than anything predictable. Added in reverse-artist order so an
+        // insertion-order tiebreak would fail this the other way around.
+        final albums = albumsIn([
+          entry(uuid: '7', artist: 'Zeta', album: 'Home'),
+          entry(uuid: '8', artist: 'Alpha', album: 'Home'),
+        ]);
+
+        expect(
+          [for (final group in albums) group.entries.first.artist],
+          ['Alpha', 'Zeta'],
+        );
+      },
+    );
+
     test('GivenAnArtist_WhenTheirAlbumsAreListed_ThenOnlyTheirsAreReturned', () {
       final albums = albumsOfArtist('Radiohead', tagged);
 

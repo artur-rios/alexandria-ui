@@ -140,4 +140,36 @@ void main() {
       expect(state.current?.uuid, '1');
     },
   );
+
+  testWidgets('GivenTheMenu_WhenPlayIsChosen_ThenTheTrackAlonePlays', (
+    tester,
+  ) async {
+    final container = await openSongs(tester);
+    final l10n = localizations(tester);
+
+    await rightClickRow(tester);
+    await tester.tap(find.text(l10n.audioPlay));
+    await tester.pumpAndSettle();
+
+    final state = container.read(audioPlaybackControllerProvider);
+    expect(state.queue.kind, QueueKind.track);
+    expect(state.queue.tracks, hasLength(1));
+    expect(state.current?.uuid, '1');
+  });
+
+  testWidgets(
+    'GivenTheMenu_WhenPlayArtistIsChosen_ThenTheArtistIsQueued',
+    (tester) async {
+      final container = await openSongs(tester);
+      final l10n = localizations(tester);
+
+      await rightClickRow(tester);
+      await tester.tap(find.text(l10n.audioPlayArtist));
+      await tester.pumpAndSettle();
+
+      final state = container.read(audioPlaybackControllerProvider);
+      expect(state.queue.kind, QueueKind.artist);
+      expect(state.current?.uuid, '1');
+    },
+  );
 }

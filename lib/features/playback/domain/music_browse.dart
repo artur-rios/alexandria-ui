@@ -40,7 +40,12 @@ List<MusicGroup> albumsIn(List<MusicEntry> library) {
       MusicGroup(name: key.$1, entries: _inTrackOrder(byKey[key]!)),
   ];
 
-  return _sortedByName(groups);
+  // Artist as the tiebreak: two albums can share a title under different
+  // artists — `albumsIn` keys by `(album, artist)` precisely so they stay
+  // two groups — and with no tiebreak their relative order was whichever the
+  // map happened to iterate them in, which is insertion order and not
+  // anything an owner could predict or rely on.
+  return _sortedByName(groups, tiebreak: (group) => group.entries.first.artist);
 }
 
 /// [artist]'s albums, alphabetically.
@@ -86,8 +91,22 @@ List<MusicGroup> _groupedBy(
   ]);
 }
 
-List<MusicGroup> _sortedByName(List<MusicGroup> groups) =>
-    [...groups]..sort((a, b) => _byName(a.name, b.name));
+/// [groups], sorted by name and, on a tie, by [tiebreak].
+///
+/// A second key rather than none: without one, two groups whose names are
+/// equal — same title, different artist — sort in whatever order the map
+/// building them happened to iterate in, which is insertion order and not
+/// something an owner could rely on staying put between one load and the
+/// next.
+List<MusicGroup> _sortedByName(
+  List<MusicGroup> groups, {
+  String? Function(MusicGroup group)? tiebreak,
+}) => [...groups]..sort((a, b) {
+  final byName = _byName(a.name, b.name);
+  if (byName != 0 || tiebreak == null) return byName;
+
+  return _byName(tiebreak(a), tiebreak(b));
+});
 
 /// Case-insensitively by name, with an absent name last.
 ///
