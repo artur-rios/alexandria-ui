@@ -10,7 +10,7 @@ import '../../catalog/domain/catalog_file.dart';
 import '../../playback/application/audio_playback_controller.dart';
 import '../../playback/domain/media_player.dart';
 import '../../playback/presentation/album_player_screen.dart';
-import '../../playback/presentation/music_rows.dart';
+import '../../playback/presentation/music_display_name.dart';
 
 /// The persistent playback bar (FR-UX-01, FR-PL-05).
 ///

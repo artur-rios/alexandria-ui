@@ -2,6 +2,7 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/playback/domain/music_browse.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
+import 'package:alexandria_ui/features/playback/presentation/music_display_name.dart';
 import 'package:alexandria_ui/features/playback/presentation/music_rows.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

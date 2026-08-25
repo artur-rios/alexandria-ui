@@ -9,6 +9,7 @@ import '../application/music_browse_controller.dart';
 import '../application/music_library_controller.dart';
 import '../domain/music_browse.dart';
 import '../domain/music_grouping.dart';
+import 'music_display_name.dart';
 import 'music_rows.dart';
 
 /// The music area (UC-46, FR-CT-13).

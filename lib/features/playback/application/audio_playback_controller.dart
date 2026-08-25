@@ -284,7 +284,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     // rather than defaulting to `file.name` here, because this is
     // application code with no `AppLocalizations` to turn that absence into
     // the right word. That decision belongs to whichever presentation site
-    // renders the label — see `queueLabelOf` in `music_rows.dart`.
+    // renders the label — see `queueLabelOf` in `music_display_name.dart`.
     final label = switch (kind) {
       _GroupKind.album => entry.album,
       _GroupKind.artist => entry.artist,

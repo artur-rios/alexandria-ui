@@ -8,7 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../../catalog/domain/library_type.dart';
 import '../../organization/domain/bookmark.dart';
-import '../../playback/presentation/music_rows.dart' show tagOr;
+import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/deletion_controller.dart';
 

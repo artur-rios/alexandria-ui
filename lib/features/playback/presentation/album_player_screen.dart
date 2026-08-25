@@ -9,7 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import '../domain/album_medium.dart';
 import 'album_animation.dart';
-import 'music_rows.dart';
+import 'music_display_name.dart';
 
 /// The full audio player (UC-21, FR-PL-07).
 ///

@@ -5,7 +5,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
-import '../../playback/presentation/music_rows.dart' show tagOr;
+import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/async_state_view.dart';
 import '../application/search_controller.dart';
 import '../domain/catalog_file.dart';
