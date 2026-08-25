@@ -18,6 +18,12 @@ class MusicEntry {
   /// The artist, or `null` when it names none.
   String? get artist => _trimmed(metadata.artist);
 
+  /// The track's title, or `null` when it names none.
+  ///
+  /// What a row shows. A file whose tags carry no title has no name in this
+  /// application's terms — its name on disk is not one (FR-CT-13).
+  String? get title => _trimmed(metadata.title);
+
   static String? _trimmed(String? value) {
     final trimmed = value?.trim();
     return trimmed == null || trimmed.isEmpty ? null : trimmed;
