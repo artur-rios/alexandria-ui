@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/file_details.dart';
+import '../domain/file_size.dart';
 import '../domain/library_type.dart';
 import 'music_metadata_form.dart';
 import '../../editing/presentation/text_editor_screen.dart';
@@ -144,6 +146,10 @@ class _Details extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
           _Section(l10n.detailsPath),
           SelectableText(details.file.path, style: theme.textTheme.bodySmall),
+
+          const SizedBox(height: AppSpacing.md),
+          _Section(l10n.detailsFileSection),
+          _FileFacts(file: details.file),
 
           const SizedBox(height: AppSpacing.md),
           _Section(l10n.detailsMetadata),
@@ -343,6 +349,73 @@ class _Metadata extends StatelessWidget {
       );
     }
 
+    return _LabelValueRows(rows: rows);
+  }
+
+  /// A duration as hours, minutes and seconds.
+  ///
+  /// Formatted here rather than localized: the separators are colons in both
+  /// supported languages, and a duration is read the same way in each.
+  String _formatDuration(double seconds) {
+    final total = Duration(seconds: seconds.round());
+    final minutes = total.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final remaining = total.inSeconds.remainder(60).toString().padLeft(2, '0');
+
+    return total.inHours > 0
+        ? '${total.inHours}:$minutes:$remaining'
+        : '$minutes:$remaining';
+  }
+}
+
+/// What the file is, as opposed to what it holds (UC-13, FR-CT-05).
+///
+/// The name, the size and the modification time come off the record the core
+/// already returned with the listing, so this section costs no extra call.
+/// A value the core did not answer is absent rather than shown as a zero,
+/// which would be this application inventing a fact.
+class _FileFacts extends StatelessWidget {
+  const _FileFacts({required this.file});
+
+  final CatalogFile file;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    final extension = p.extension(file.name).replaceFirst('.', '');
+    final rows = <(String, String)>[
+      (l10n.detailsFileName, file.name),
+      if (file.sizeBytes case final bytes?)
+        (l10n.detailsFileSize, formatFileSize(bytes)),
+      if (extension.isNotEmpty)
+        (l10n.detailsFileFormat, extension.toUpperCase()),
+      if (file.mtime case final modified?)
+        (l10n.detailsFileModified, _formatMoment(context, modified)),
+    ];
+
+    return _LabelValueRows(rows: rows);
+  }
+
+  /// The modification date in the owner's own locale.
+  ///
+  /// `MaterialLocalizations` rather than a raw `toString`, which would print
+  /// the value as Dart's debug representation (`2026-08-19 00:00:00.000Z`)
+  /// instead of a date the owner reads the way their system does.
+  String _formatMoment(BuildContext context, DateTime moment) =>
+      MaterialLocalizations.of(context).formatFullDate(moment);
+}
+
+/// A column of label/value rows, shared by every section of the details
+/// dialog that is just a list of facts about the file.
+class _LabelValueRows extends StatelessWidget {
+  const _LabelValueRows({required this.rows});
+
+  final List<(String, String)> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -362,20 +435,6 @@ class _Metadata extends StatelessWidget {
           ),
       ],
     );
-  }
-
-  /// A duration as hours, minutes and seconds.
-  ///
-  /// Formatted here rather than localized: the separators are colons in both
-  /// supported languages, and a duration is read the same way in each.
-  String _formatDuration(double seconds) {
-    final total = Duration(seconds: seconds.round());
-    final minutes = total.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final remaining = total.inSeconds.remainder(60).toString().padLeft(2, '0');
-
-    return total.inHours > 0
-        ? '${total.inHours}:$minutes:$remaining'
-        : '$minutes:$remaining';
   }
 }
 

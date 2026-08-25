@@ -74,6 +74,30 @@ void main() {
     return container;
   }
 
+  /// Opens the details for a fixture file carrying [name] and [sizeBytes],
+  /// for the tests about the file's own facts rather than about the flow.
+  Future<void> openDetailsFor(
+    WidgetTester tester, {
+    required String name,
+    int? sizeBytes,
+  }) => openDetails(
+    tester,
+    outcome: FileDetailsOutcome.read(
+      details: FileDetails(
+        file: aFile(
+          uuid: uuid,
+          type: LibraryType.video,
+          name: name,
+          sizeBytes: sizeBytes,
+        ),
+      ),
+    ),
+  );
+
+  /// The localizations the dialog itself reads from.
+  AppLocalizations localizations(WidgetTester tester) =>
+      AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+
   group('the main flow', () {
     testWidgets('GivenAListing_WhenARowIsTapped_ThenTheDetailsOpen', (
       tester,
@@ -486,6 +510,40 @@ void main() {
   }
   // Testing Specification 7.1: both themes are test surface, not review
   // surface. A screen that only reads correctly in one is a failing screen.
+  group('the file itself (FR-CT-05)', () {
+    testWidgets(
+      'GivenAFile_WhenItsDetailsOpen_ThenItsNameSizeAndFormatAreShown',
+      (tester) async {
+        // The one place the name on disk belongs, under a label saying that is
+        // what it is — FR-CT-13 keeps it out of the music area, not out of the
+        // record of what the file is.
+        await openDetailsFor(
+          tester,
+          name: 'DISKNAME-01.flac',
+          sizeBytes: 4922880,
+        );
+        final l10n = localizations(tester);
+
+        expect(find.text(l10n.detailsFileName), findsOneWidget);
+        expect(find.text('DISKNAME-01.flac'), findsWidgets);
+        expect(find.text('4.7 MB'), findsOneWidget);
+        expect(find.text('FLAC'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenAFileWithNoRecordedSize_WhenItsDetailsOpen_ThenNoSizeRowIsShown',
+      (tester) async {
+        // A core that answered without a size has not told us the file is
+        // empty, and a row reading "0 B" would say it had.
+        await openDetailsFor(tester, name: 'DISKNAME-01.flac', sizeBytes: null);
+        final l10n = localizations(tester);
+
+        expect(find.text(l10n.detailsFileSize), findsNothing);
+      },
+    );
+  });
+
   group('both themes', () {
     for (final mode in [ThemeMode.light, ThemeMode.dark]) {
       testWidgets(

@@ -775,6 +775,26 @@
   "@detailsDuration": {
     "description": "Label of a video's extracted duration."
   },
+  "detailsFileSection": "The file",
+  "@detailsFileSection": {
+    "description": "Heading over the section of the details dialog describing the file on disk, as opposed to what it holds."
+  },
+  "detailsFileName": "File name",
+  "@detailsFileName": {
+    "description": "Label for the file's name on disk in the details dialog."
+  },
+  "detailsFileSize": "Size on disk",
+  "@detailsFileSize": {
+    "description": "Label for the file's size in the details dialog."
+  },
+  "detailsFileFormat": "Format",
+  "@detailsFileFormat": {
+    "description": "Label for the file's format, taken from its extension, in the details dialog."
+  },
+  "detailsFileModified": "Last modified",
+  "@detailsFileModified": {
+    "description": "Label for when the file was last changed on disk, in the details dialog."
+  },
   "dashboardRecent": "Recently added",
   "@dashboardRecent": {
     "description": "Heading of the dashboard's recently added section (UC-14, FR-CT-11)."

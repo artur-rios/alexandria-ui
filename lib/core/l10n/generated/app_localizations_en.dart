@@ -593,6 +593,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detailsDuration => 'Duration';
 
   @override
+  String get detailsFileSection => 'The file';
+
+  @override
+  String get detailsFileName => 'File name';
+
+  @override
+  String get detailsFileSize => 'Size on disk';
+
+  @override
+  String get detailsFileFormat => 'Format';
+
+  @override
+  String get detailsFileModified => 'Last modified';
+
+  @override
   String get dashboardRecent => 'Recently added';
 
   @override

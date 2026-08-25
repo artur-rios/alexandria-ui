@@ -497,6 +497,15 @@ void main() {
         final gateway = catalogWith([blue1, blue2, other])..failListing();
         final player = FakeMediaPlayer();
 
+        // Sized the same as `pumpShell`'s default: this test builds its own
+        // widget tree instead of going through it (see below), so it would
+        // otherwise render at the 800x600 test-window default, too short for
+        // the details dialog's now-longer content to leave "Play album"
+        // inside the visible surface.
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(1280, 800);
+        addTearDown(tester.view.reset);
+
         // Built directly rather than through tester.pumpShell: Riverpod
         // retries a failed provider automatically (exponential backoff, up
         // to ten attempts, ~35 seconds) before it settles into AsyncError,

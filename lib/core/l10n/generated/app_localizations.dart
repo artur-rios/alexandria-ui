@@ -1116,6 +1116,36 @@ abstract class AppLocalizations {
   /// **'Duration'**
   String get detailsDuration;
 
+  /// Heading over the section of the details dialog describing the file on disk, as opposed to what it holds.
+  ///
+  /// In en, this message translates to:
+  /// **'The file'**
+  String get detailsFileSection;
+
+  /// Label for the file's name on disk in the details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'File name'**
+  String get detailsFileName;
+
+  /// Label for the file's size in the details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Size on disk'**
+  String get detailsFileSize;
+
+  /// Label for the file's format, taken from its extension, in the details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get detailsFileFormat;
+
+  /// Label for when the file was last changed on disk, in the details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Last modified'**
+  String get detailsFileModified;
+
   /// Heading of the dashboard's recently added section (UC-14, FR-CT-11).
   ///
   /// In en, this message translates to:

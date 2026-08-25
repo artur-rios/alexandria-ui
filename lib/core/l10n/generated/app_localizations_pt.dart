@@ -594,6 +594,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String get detailsDuration => 'Duração';
 
   @override
+  String get detailsFileSection => 'O arquivo';
+
+  @override
+  String get detailsFileName => 'Nome do arquivo';
+
+  @override
+  String get detailsFileSize => 'Tamanho em disco';
+
+  @override
+  String get detailsFileFormat => 'Formato';
+
+  @override
+  String get detailsFileModified => 'Última modificação';
+
+  @override
   String get dashboardRecent => 'Adicionados recentemente';
 
   @override
