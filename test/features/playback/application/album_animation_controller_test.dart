@@ -65,6 +65,12 @@ void main() {
       artist: 'John Coltrane',
       year: 1957,
     );
+    // Two loose, untagged files — no album tag on either — so a test can
+    // play one "album of one" and then the other. `albumOf` groups an
+    // untagged file with itself alone (`music_grouping.dart`), so these are
+    // two different records despite sharing a null label.
+    gateway.addAudio(uuid: 'loose-1', year: 2001);
+    gateway.addAudio(uuid: 'loose-2', year: 2001);
     return gateway;
   }
 
@@ -119,6 +125,30 @@ void main() {
     final state = container.read(albumAnimationControllerProvider);
     expect(state.insertionOwed, isTrue);
   });
+
+  test(
+    'GivenAnUntaggedAlbumIsPlaying_WhenADifferentUntaggedAlbumStarts_ThenAnInsertionIsOwed',
+    () async {
+      // Both untagged albums have a null label, so `(kind, label)` alone
+      // would call them the same record — exactly what `albumOf`
+      // (`music_grouping.dart`) already refuses to do: "two untitled files
+      // are not the same record". The identity has to fall back to
+      // something that tells them apart, such as the first track's uuid.
+      final gateway = libraryGateway();
+      final container = buildContainer(gateway);
+      final audio = container.read(audioPlaybackControllerProvider.notifier);
+
+      await audio.playAlbum(aFile(uuid: 'loose-1'));
+      container
+          .read(albumAnimationControllerProvider.notifier)
+          .insertionShown();
+
+      await audio.playAlbum(aFile(uuid: 'loose-2'));
+
+      final state = container.read(albumAnimationControllerProvider);
+      expect(state.insertionOwed, isTrue);
+    },
+  );
 
   test(
     'GivenAnArtistIsPlaying_WhenAnotherArtistStarts_ThenAnInsertionIsOwed',

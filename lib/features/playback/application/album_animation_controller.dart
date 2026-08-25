@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../domain/album_medium.dart';
+import '../domain/playback_queue.dart';
 
 /// What the animation should be showing, and whether it owes an insertion
 /// (UC-21 main flow step 2, FR-PL-07, FR-PL-11).
@@ -24,14 +25,14 @@ class AlbumAnimationState {
 /// are what say which record is playing: two queues with the same pair are the
 /// same record continuing.
 class AlbumAnimationController extends Notifier<AlbumAnimationState> {
-  /// What the last insertion was shown for, as `(kind, label)`.
+  /// What the last insertion was shown for, as `(kind, identity)`.
   ///
   /// `null` until one has been shown, which is what makes the session's first
   /// play owe one. Held here rather than in [state] so that it survives every
   /// rebuild [build] runs for — a rebuild is not a new session — while still
   /// resetting whenever the provider itself is invalidated or recreated,
   /// which is what a new session is.
-  (Object, String?)? _shownFor;
+  (Object, String)? _shownFor;
 
   @override
   AlbumAnimationState build() {
@@ -45,19 +46,35 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
 
     return AlbumAnimationState(
       medium: medium,
-      insertionOwed: _shownFor != (queue.kind, queue.label),
+      insertionOwed: _shownFor != _identityOf(queue),
     );
   }
 
   /// Records that the insertion for what is playing has been shown.
   ///
-  /// Called from `AlbumStage` once its own insertion has actually played
-  /// (never for a no-op skip), which happens from a build phase — this only
-  /// writes an instance field and reassigns [state], both of which are safe
-  /// there.
+  /// Whether this may safely be called synchronously from a widget's build
+  /// phase is not settled here — this controller has no consumer yet. What is
+  /// known is that it is cheap and free of side effects beyond the state
+  /// assignment; Task 7's caller is what determines, and should test, whether
+  /// calling it from a build is safe.
   void insertionShown() {
     final queue = ref.read(audioPlaybackControllerProvider).queue;
-    _shownFor = (queue.kind, queue.label);
+    _shownFor = _identityOf(queue);
     state = AlbumAnimationState(medium: state.medium);
   }
+
+  /// What identifies "which record is playing", as `(kind, identity)`.
+  ///
+  /// The label alone is not enough: `albumOf`/`artistOf`
+  /// (`music_grouping.dart`) already treat an absent tag as "this file's own
+  /// group of one" rather than as a shared value — two different untitled
+  /// albums are not the same record, and folding them together here would
+  /// silently break that rule for the one consumer that reads `label` as an
+  /// identity instead of a display string. Falling back to the first track's
+  /// uuid keeps the tracks of one untagged record identified with each other
+  /// (the uuid does not change between them) while telling two different
+  /// untagged records apart (their first tracks differ). Called only once
+  /// [build] has confirmed the queue is non-empty, so `tracks.first` is safe.
+  (Object, String) _identityOf(PlaybackQueue queue) =>
+      (queue.kind, queue.label ?? queue.tracks.first.uuid);
 }
