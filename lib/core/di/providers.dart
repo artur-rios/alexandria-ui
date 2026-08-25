@@ -92,7 +92,6 @@ import '../../features/playback/data/media_kit_player.dart';
 import '../../features/playback/data/settings_playback_position_store.dart';
 import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
-import '../../features/playback/domain/music_grouping.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/shell/domain/session_activity.dart';
@@ -465,7 +464,7 @@ final audioPlayerProvider = Provider<MediaPlayer>((ref) {
 
 /// Every audio file with the metadata a queue is grouped by (UC-20, FR-PL-06).
 final musicLibraryProvider =
-    AsyncNotifierProvider<MusicLibraryController, List<MusicEntry>>(
+    AsyncNotifierProvider<MusicLibraryController, MusicLibrary>(
       MusicLibraryController.new,
     );
 

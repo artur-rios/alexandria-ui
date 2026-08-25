@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
@@ -81,6 +85,14 @@ class FakeCatalogGateway implements CatalogGateway {
   /// The lifecycle filter each call was made with (UC-12).
   final List<LifecycleFilter> lifecycles = [];
 
+  /// After this many calls to [fileDetails] have been answered, every call
+  /// after that never completes. `null` means every call answers normally.
+  ///
+  /// What a music library test uses to represent metadata that is still
+  /// arriving: the reply is genuinely still in flight, not merely slow, so
+  /// nothing here ever resolves it for the test.
+  int? _holdDetailsAfter;
+
   @override
   Future<CatalogListing> listFiles({
     required LibraryType type,
@@ -110,13 +122,77 @@ class FakeCatalogGateway implements CatalogGateway {
   Future<FileDetailsOutcome> fileDetails({
     required String uuid,
     required String credential,
-  }) async {
+  }) {
     detailsRequested.add(uuid);
 
-    return details[uuid] ??
-        FileDetailsOutcome.read(
-          details: FileDetails(file: aFile(uuid: uuid)),
-        );
+    final hold = _holdDetailsAfter;
+    if (hold != null && detailsRequested.length > hold) {
+      // Never completes, on purpose — see [_holdDetailsAfter].
+      return Completer<FileDetailsOutcome>().future;
+    }
+
+    return Future.value(
+      details[uuid] ??
+          FileDetailsOutcome.read(
+            details: FileDetails(file: aFile(uuid: uuid)),
+          ),
+    );
+  }
+
+  /// Adds an audio file that answers [title]/[artist]/… when its details are
+  /// read, to both the audio listing and [details] in one call.
+  ///
+  /// The two are otherwise separate maps a test has to keep in step by hand;
+  /// a music library test only ever wants "a file with these tags".
+  void addAudio({
+    required String uuid,
+    String? title,
+    String? artist,
+    String? album,
+    int? year,
+    String? genre,
+    int? track,
+  }) {
+    final file = aFile(uuid: uuid, name: '$uuid.flac');
+    final existing = listings[LibraryType.audio];
+    final files = existing is CatalogListingLoaded
+        ? existing.files
+        : const <CatalogFile>[];
+    listings[LibraryType.audio] = CatalogListing.loaded(
+      files: [...files, file],
+    );
+
+    details[uuid] = FileDetailsOutcome.read(
+      details: FileDetails(
+        file: file,
+        metadata: {
+          MusicField.title.wireName: ?title,
+          MusicField.artist.wireName: ?artist,
+          MusicField.album.wireName: ?album,
+          MusicField.year.wireName: ?year?.toString(),
+          MusicField.genre.wireName: ?genre,
+          MusicField.track.wireName: ?track?.toString(),
+        },
+      ),
+    );
+  }
+
+  /// After [count] calls to [fileDetails] have been answered, every call
+  /// after that never completes (see [_holdDetailsAfter]).
+  void holdDetailsAfter(int count) => _holdDetailsAfter = count;
+
+  /// Makes [uuid]'s details answer a failure instead of a record.
+  void failDetailsFor(String uuid) {
+    details[uuid] = const FileDetailsOutcome.failed(
+      failure: Failure.notFound(family: CoreStatusFamily.file, code: 4),
+    );
+  }
+
+  /// Makes [type]'s listing answer a failure instead of files.
+  void failListing({LibraryType type = LibraryType.audio}) {
+    listings[type] = const CatalogListing.failed(
+      failure: Failure.notFound(family: CoreStatusFamily.file, code: 4),
+    );
   }
 
   @override

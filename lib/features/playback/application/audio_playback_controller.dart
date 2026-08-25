@@ -222,7 +222,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
     state = state.copyWith(stage: AudioStage.starting);
 
-    final library = await ref.read(musicLibraryProvider.future);
+    final library = (await ref.read(musicLibraryProvider.future)).entries;
     final entry = library.firstWhere(
       (candidate) => candidate.file.uuid == file.uuid,
       // A file the library index does not hold is still playable on its own.
