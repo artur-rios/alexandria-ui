@@ -27,6 +27,7 @@ void main() {
   Future<ProviderContainer> openDashboard(
     WidgetTester tester, {
     Map<LibraryType, CatalogListing>? listings,
+    FakeCatalogGateway? gateway,
     FakeIndexGateway? indexGateway,
     Locale? locale,
     List<Watchlist> watchlists = const [],
@@ -39,7 +40,7 @@ void main() {
       surfaceSize: const Size(1440, 1000),
       extraOverrides: <Override>[
         catalogGatewayProvider.overrideWithValue(
-          FakeCatalogGateway(listings: listings),
+          gateway ?? FakeCatalogGateway(listings: listings),
         ),
         if (indexGateway != null)
           indexGatewayProvider.overrideWithValue(indexGateway),
@@ -57,13 +58,33 @@ void main() {
     return container;
   }
 
-  /// A library with three audio files, added on three different days.
+  /// A library with three documents, added on three different days.
+  ///
+  /// A non-audio type, deliberately: most of the tests below only need a
+  /// stocked catalog, and a document is named by its file name with no
+  /// metadata detour — audio's own naming (FR-CT-13) gets its own fixtures
+  /// further down, where the distinction is the point.
   Map<LibraryType, CatalogListing> aLibrary() => {
-    LibraryType.audio: CatalogListing.loaded(
+    LibraryType.document: CatalogListing.loaded(
       files: [
-        aFile(uuid: '1', name: 'oldest.flac', indexedAt: DateTime.utc(2026, 1)),
-        aFile(uuid: '2', name: 'newest.flac', indexedAt: DateTime.utc(2026, 3)),
-        aFile(uuid: '3', name: 'middle.flac', indexedAt: DateTime.utc(2026, 2)),
+        aFile(
+          uuid: '1',
+          name: 'oldest.pdf',
+          type: LibraryType.document,
+          indexedAt: DateTime.utc(2026, 1),
+        ),
+        aFile(
+          uuid: '2',
+          name: 'newest.pdf',
+          type: LibraryType.document,
+          indexedAt: DateTime.utc(2026, 3),
+        ),
+        aFile(
+          uuid: '3',
+          name: 'middle.pdf',
+          type: LibraryType.document,
+          indexedAt: DateTime.utc(2026, 2),
+        ),
       ],
     ),
   };
@@ -104,7 +125,7 @@ void main() {
             .toList();
         // Newest first, oldest last: the dashboard is a glance at what has
         // just arrived.
-        expect(titles, ['newest.flac', 'middle.flac', 'oldest.flac']);
+        expect(titles, ['newest.pdf', 'middle.pdf', 'oldest.pdf']);
       },
     );
 
@@ -115,7 +136,7 @@ void main() {
       // because it is the same view.
       await openDashboard(tester, listings: aLibrary());
 
-      await tester.tap(find.text('newest.flac'));
+      await tester.tap(find.text('newest.pdf'));
       await tester.pumpAndSettle();
 
       expect(find.byType(FileDetailsView), findsOneWidget);
@@ -127,6 +148,70 @@ void main() {
         await openDashboard(tester, listings: aLibrary());
 
         expect(find.byType(Chip), findsWidgets);
+      },
+    );
+  });
+
+  group('audio in the recent list (FR-CT-13)', () {
+    testWidgets(
+      'GivenARecentAudioFile_WhenShown_ThenItsMetadataTitleAppearsNotItsName',
+      (tester) async {
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: '1',
+            name: 'track01.flac',
+            title: 'So What',
+            indexedAt: DateTime.utc(2026, 1),
+          );
+
+        await openDashboard(tester, gateway: gateway);
+
+        expect(find.text('So What'), findsOneWidget);
+        expect(find.text('track01.flac'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenARecentUntaggedAudioFile_WhenShown_ThenTheUnknownTitleWordAppears',
+      (tester) async {
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: '1',
+            name: 'track01.flac',
+            indexedAt: DateTime.utc(2026, 1),
+          );
+
+        await openDashboard(tester, gateway: gateway);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+
+        expect(find.text(l10n.musicUnknownTitle), findsOneWidget);
+        expect(find.text('track01.flac'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenAMixOfTypes_WhenShown_ThenOnlyTheNonAudioFileIsNamedByItsFile',
+      (tester) async {
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: '1',
+            name: 'track01.flac',
+            title: 'So What',
+            indexedAt: DateTime.utc(2026, 1),
+          )
+          ..addFile(
+            uuid: '2',
+            name: 'itinerary.pdf',
+            type: LibraryType.document,
+          );
+
+        await openDashboard(tester, gateway: gateway);
+
+        expect(find.text('So What'), findsOneWidget);
+        expect(find.text('itinerary.pdf'), findsOneWidget);
+        expect(find.text('track01.flac'), findsNothing);
       },
     );
   });

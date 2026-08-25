@@ -148,6 +148,9 @@ class FakeCatalogGateway implements CatalogGateway {
   /// [name] defaults to a name derived from [uuid]; a music area test passes
   /// one explicitly when it needs a name unmistakable enough to prove FR-CT-13
   /// by its absence from the screen.
+  ///
+  /// [indexedAt] lets a dashboard test (FR-CT-11, FR-CT-13) order a fixture
+  /// among recently added files without building its own [aFile].
   void addAudio({
     required String uuid,
     String? name,
@@ -157,8 +160,13 @@ class FakeCatalogGateway implements CatalogGateway {
     int? year,
     String? genre,
     int? track,
+    DateTime? indexedAt,
   }) {
-    final file = aFile(uuid: uuid, name: name ?? '$uuid.flac');
+    final file = aFile(
+      uuid: uuid,
+      name: name ?? '$uuid.flac',
+      indexedAt: indexedAt,
+    );
     final existing = listings[LibraryType.audio];
     final files = existing is CatalogListingLoaded
         ? existing.files

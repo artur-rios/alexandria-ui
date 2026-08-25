@@ -5,6 +5,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
+import '../../playback/presentation/music_rows.dart' show musicTitleForFile;
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/catalog_file.dart';
 import '../application/dashboard_controller.dart';
@@ -76,11 +77,18 @@ class _RecentSection extends ConsumerWidget {
             itemCount: files.length,
             itemBuilder: (context, index) {
               final file = files[index];
+              // FR-CT-13: an audio file is named by its metadata here too,
+              // the same way the bar, the skip notice, and the full player
+              // already read musicTitleForFile — never by the file on disk.
+              // Every other type is still called by its own name.
+              final title = file.type == LibraryType.audio
+                  ? musicTitleForFile(ref, file, l10n)
+                  : file.name;
 
               return ListTile(
                 dense: true,
                 leading: const Icon(Icons.insert_drive_file_outlined),
-                title: Text(file.name),
+                title: Text(title),
                 subtitle: Text(file.type.label(l10n)),
                 // Main flow step 4: opening an item here behaves exactly as
                 // opening it from its listing, because it is the same view.

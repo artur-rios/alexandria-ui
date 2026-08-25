@@ -59,7 +59,9 @@ void main() {
       ],
     );
 
-    await tester.tap(find.text('Kind of Blue.flac').first);
+    // Reached from the dashboard's recent list, which names an audio file by
+    // its metadata title rather than its file name (FR-CT-13).
+    await tester.tap(find.text('So What').first);
     await tester.pumpAndSettle();
 
     if (!loaded.isDeleted) {
