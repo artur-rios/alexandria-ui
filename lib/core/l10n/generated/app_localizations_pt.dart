@@ -682,6 +682,35 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get musicViewArtists => 'Artistas';
+
+  @override
+  String get musicViewAlbums => 'Álbuns';
+
+  @override
+  String get musicViewSongs => 'Músicas';
+
+  @override
+  String get musicBreadcrumbRoot => 'Biblioteca de música';
+
+  @override
+  String get musicUnknownTitle => 'Título desconhecido';
+
+  @override
+  String get musicUnknownArtist => 'Artista desconhecido';
+
+  @override
+  String get musicUnknownAlbum => 'Álbum desconhecido';
+
+  @override
+  String musicLoading(int read, int total) {
+    return 'Lendo metadados: $read de $total';
+  }
+
+  @override
+  String get musicEmpty => 'Nenhum arquivo de áudio catalogado ainda.';
+
+  @override
   String get signOut => 'Sair';
 
   @override

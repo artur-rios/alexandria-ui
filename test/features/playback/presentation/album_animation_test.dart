@@ -1,14 +1,15 @@
+import 'dart:async';
+
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_animation.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_player_screen.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,14 +70,18 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.music.icon),
+    // Opens the details dialog directly rather than reaching it through a
+    // listing: UC-46 gave audio its own browsing area (Task 4), whose rows
+    // play a track or an album on tap rather than opening this dialog, so
+    // this is how a test now reaches the play buttons it drives.
+    final context = tester.element(find.byType(ShellScreen));
+    container.read(openFileProvider.notifier).open(blue1.uuid);
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (context) => const FileDetailsView(),
       ),
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('So What.flac').first);
     await tester.pumpAndSettle();
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));

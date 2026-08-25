@@ -37,7 +37,7 @@ void main() {
         catalogGatewayProvider.overrideWithValue(
           FakeCatalogGateway(
             listings: {
-              LibraryType.audio: CatalogListing.loaded(
+              LibraryType.video: CatalogListing.loaded(
                 files: [
                   aFile(),
                   aFile(
@@ -56,7 +56,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.music.icon),
+        matching: find.byIcon(ShellDestination.videos.icon),
       ),
     );
     await tester.pumpAndSettle();
@@ -155,7 +155,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: find.byType(ShellNavigationPanel),
-          matching: find.byIcon(ShellDestination.music.icon),
+          matching: find.byIcon(ShellDestination.videos.icon),
         ),
       );
       await tester.pumpAndSettle();

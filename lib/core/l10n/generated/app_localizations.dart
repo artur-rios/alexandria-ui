@@ -1278,6 +1278,60 @@ abstract class AppLocalizations {
   /// **'Keep this under {max} characters.'**
   String musicMetadataErrorTooLong(int max);
 
+  /// The music area's artists view, in its view switcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Artists'**
+  String get musicViewArtists;
+
+  /// The music area's albums view, in its view switcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get musicViewAlbums;
+
+  /// The music area's songs view, listing every track.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs'**
+  String get musicViewSongs;
+
+  /// The first crumb of the music area's breadcrumb, leading back to the top of the current view.
+  ///
+  /// In en, this message translates to:
+  /// **'Music library'**
+  String get musicBreadcrumbRoot;
+
+  /// Shown in place of a track's name when its metadata carries no title. The file's name on disk is never shown here.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown title'**
+  String get musicUnknownTitle;
+
+  /// Names the group of audio files whose metadata carries no artist.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown artist'**
+  String get musicUnknownArtist;
+
+  /// Names the group of audio files whose metadata carries no album.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown album'**
+  String get musicUnknownAlbum;
+
+  /// Progress while the music area reads each audio file's metadata, which the core answers one file at a time.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading metadata: {read} of {total}'**
+  String musicLoading(int read, int total);
+
+  /// The music area with nothing in it.
+  ///
+  /// In en, this message translates to:
+  /// **'No audio files are catalogued yet.'**
+  String get musicEmpty;
+
   /// UC-03 main flow step 1: ends the session without closing the application.
   ///
   /// In en, this message translates to:

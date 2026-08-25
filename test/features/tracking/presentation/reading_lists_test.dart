@@ -168,9 +168,12 @@ void main() {
     testWidgets(
       'GivenAnAudioFile_WhenItsDetailsOpen_ThenTrackingIsNotOffered',
       (tester) async {
+        // Filed under video rather than music: UC-46 gave audio its own
+        // browsing area with no path to the details dialog, but the file
+        // itself is still typed audio, which is what this test needs.
         final catalog = FakeCatalogGateway(
           listings: {
-            LibraryType.audio: CatalogListing.loaded(files: [aFile()]),
+            LibraryType.video: CatalogListing.loaded(files: [aFile()]),
           },
         );
 
@@ -186,7 +189,7 @@ void main() {
         await tester.tap(
           find.descendant(
             of: find.byType(ShellNavigationPanel),
-            matching: find.byIcon(ShellDestination.music.icon),
+            matching: find.byIcon(ShellDestination.videos.icon),
           ),
         );
         await tester.pumpAndSettle();

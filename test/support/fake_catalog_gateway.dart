@@ -144,8 +144,13 @@ class FakeCatalogGateway implements CatalogGateway {
   ///
   /// The two are otherwise separate maps a test has to keep in step by hand;
   /// a music library test only ever wants "a file with these tags".
+  ///
+  /// [name] defaults to a name derived from [uuid]; a music area test passes
+  /// one explicitly when it needs a name unmistakable enough to prove FR-CT-13
+  /// by its absence from the screen.
   void addAudio({
     required String uuid,
+    String? name,
     String? title,
     String? artist,
     String? album,
@@ -153,7 +158,7 @@ class FakeCatalogGateway implements CatalogGateway {
     String? genre,
     int? track,
   }) {
-    final file = aFile(uuid: uuid, name: '$uuid.flac');
+    final file = aFile(uuid: uuid, name: name ?? '$uuid.flac');
     final existing = listings[LibraryType.audio];
     final files = existing is CatalogListingLoaded
         ? existing.files

@@ -901,6 +901,46 @@
       }
     }
   },
+  "musicViewArtists": "Artists",
+  "@musicViewArtists": {
+    "description": "The music area's artists view, in its view switcher."
+  },
+  "musicViewAlbums": "Albums",
+  "@musicViewAlbums": {
+    "description": "The music area's albums view, in its view switcher."
+  },
+  "musicViewSongs": "Songs",
+  "@musicViewSongs": {
+    "description": "The music area's songs view, listing every track."
+  },
+  "musicBreadcrumbRoot": "Music library",
+  "@musicBreadcrumbRoot": {
+    "description": "The first crumb of the music area's breadcrumb, leading back to the top of the current view."
+  },
+  "musicUnknownTitle": "Unknown title",
+  "@musicUnknownTitle": {
+    "description": "Shown in place of a track's name when its metadata carries no title. The file's name on disk is never shown here."
+  },
+  "musicUnknownArtist": "Unknown artist",
+  "@musicUnknownArtist": {
+    "description": "Names the group of audio files whose metadata carries no artist."
+  },
+  "musicUnknownAlbum": "Unknown album",
+  "@musicUnknownAlbum": {
+    "description": "Names the group of audio files whose metadata carries no album."
+  },
+  "musicLoading": "Reading metadata: {read} of {total}",
+  "@musicLoading": {
+    "description": "Progress while the music area reads each audio file's metadata, which the core answers one file at a time.",
+    "placeholders": {
+      "read": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "musicEmpty": "No audio files are catalogued yet.",
+  "@musicEmpty": {
+    "description": "The music area with nothing in it."
+  },
   "signOut": "Sign out",
   "@signOut": {
     "description": "UC-03 main flow step 1: ends the session without closing the application."

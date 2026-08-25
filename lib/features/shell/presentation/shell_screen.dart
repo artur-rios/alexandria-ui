@@ -9,6 +9,7 @@ import '../../catalog/presentation/catalog_listing.dart';
 import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
 import '../../organization/presentation/bookmarks_view.dart';
+import '../../playback/presentation/music_library_view.dart';
 import '../domain/shell_destination.dart';
 import 'background_activity_strip.dart';
 import 'playback_bar.dart';
@@ -108,6 +109,9 @@ class ShellContentArea extends ConsumerWidget {
               // reads which one from the shell.
               ShellDestination.home => const HomeDashboard(),
               ShellDestination.bookmarks => const BookmarksView(),
+              // UC-46: audio has its own area. A listing of file names is the
+              // one thing a music library should never be.
+              ShellDestination.music => const MusicLibraryView(),
               _ => const CatalogListing(),
             },
           ),

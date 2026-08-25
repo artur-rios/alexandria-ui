@@ -33,9 +33,14 @@ void main() {
     FakeLifecycleGateway? lifecycle,
     ThemeMode themeMode = ThemeMode.light,
   }) async {
+    // Filed under video rather than music: UC-46 gave audio its own browsing
+    // area, and this suite is about the details dialog in general, reached
+    // the way every other type reaches it — through the generic listing. The
+    // file itself is still typed audio, which is what the type-gated tests
+    // elsewhere in this file need.
     final gateway = FakeCatalogGateway(
       listings: {
-        LibraryType.audio: CatalogListing.loaded(files: [aFile(uuid: uuid)]),
+        LibraryType.video: CatalogListing.loaded(files: [aFile(uuid: uuid)]),
       },
     );
     if (outcome != null) gateway.details[uuid] = outcome;
@@ -53,7 +58,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.music.icon),
+        matching: find.byIcon(ShellDestination.videos.icon),
       ),
     );
     await tester.pumpAndSettle();
