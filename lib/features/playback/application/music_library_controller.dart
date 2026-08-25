@@ -57,6 +57,17 @@ class MusicLibrary {
 class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
   @override
   Future<MusicLibrary> build() async {
+    // Set the moment this `build` stops being the live one: invalidating a
+    // non-autoDispose provider — the area's own Retry, or sign-out — rebuilds
+    // this *same* element in place rather than disposing it, so `ref.mounted`
+    // never turns false here and cannot be the guard. `ref.onDispose` does
+    // fire at that moment, though: `invalidateSelf` runs every registered
+    // `onDispose` callback before it reruns `build`, which is exactly the
+    // signal a still-running `build` from the run being replaced needs to
+    // know it is now the orphan.
+    var isCurrent = true;
+    ref.onDispose(() => isCurrent = false);
+
     final credential = ref.read(sessionControllerProvider.notifier).credential;
     if (credential == null) return MusicLibrary.empty;
 
@@ -96,6 +107,14 @@ class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
         uuid: file.uuid,
         credential: credential,
       );
+
+      // Checked right after the `await` that could have outlived this run:
+      // without it, an orphaned scan would keep awaiting `fileDetails` for
+      // every remaining file, queuing its calls ahead of whatever replaced it
+      // on the single FIFO core isolate, and its next `publish` would throw
+      // `UnmountedRefException` into the progress notifier a new run now
+      // owns.
+      if (!isCurrent) return MusicLibrary.empty;
 
       // A file whose details will not come back is still a file that can be
       // played: it joins the library with no album and no artist, which makes

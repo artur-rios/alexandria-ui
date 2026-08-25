@@ -93,6 +93,14 @@ class FakeCatalogGateway implements CatalogGateway {
   /// nothing here ever resolves it for the test.
   int? _holdDetailsAfter;
 
+  /// Held [fileDetails] calls, keyed by uuid, that a test releases by hand.
+  ///
+  /// Unlike [_holdDetailsAfter] — which never completes, standing in for
+  /// metadata that is simply still arriving — this is for a test that needs
+  /// to catch a call mid-flight and then choose what happens next: complete
+  /// it, or leave it hanging while asserting nothing else happened.
+  final Map<String, Completer<FileDetailsOutcome>> _heldDetails = {};
+
   @override
   Future<CatalogListing> listFiles({
     required LibraryType type,
@@ -124,6 +132,9 @@ class FakeCatalogGateway implements CatalogGateway {
     required String credential,
   }) {
     detailsRequested.add(uuid);
+
+    final held = _heldDetails[uuid];
+    if (held != null) return held.future;
 
     final hold = _holdDetailsAfter;
     if (hold != null && detailsRequested.length > hold) {
@@ -215,6 +226,19 @@ class FakeCatalogGateway implements CatalogGateway {
   /// After [count] calls to [fileDetails] have been answered, every call
   /// after that never completes (see [_holdDetailsAfter]).
   void holdDetailsAfter(int count) => _holdDetailsAfter = count;
+
+  /// Holds the call for [uuid]'s details in flight until [releaseDetails]
+  /// completes it.
+  void holdDetailsFor(String uuid) =>
+      _heldDetails[uuid] = Completer<FileDetailsOutcome>();
+
+  /// Completes a call held by [holdDetailsFor], answering [uuid]'s own
+  /// details by default.
+  void releaseDetails(String uuid) {
+    _heldDetails.remove(uuid)?.complete(
+      details[uuid] ?? FileDetailsOutcome.read(details: FileDetails(file: aFile(uuid: uuid))),
+    );
+  }
 
   /// Makes [uuid]'s details answer a failure instead of a record.
   void failDetailsFor(String uuid) {

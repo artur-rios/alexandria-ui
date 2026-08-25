@@ -132,4 +132,60 @@ void main() {
       expect(container.read(musicLibraryProgressProvider).total, 0);
     },
   );
+
+  test(
+    'GivenAScanInFlight_WhenBothProvidersAreInvalidated_ThenTheOrphanStops',
+    () async {
+      // Retry (music_library_view.dart) and sign-out
+      // (catalog_session_activity.dart) both invalidate the pair mid-scan.
+      // The running `build()` is not cancelled by that on its own; this
+      // proves it notices and stops rather than racing the new scan's calls
+      // on the single FIFO core isolate.
+      final gateway = FakeCatalogGateway()
+        ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead')
+        ..addAudio(uuid: '2', title: 'Karma', artist: 'Radiohead')
+        ..addAudio(uuid: '3', title: 'Nude', artist: 'Radiohead')
+        ..holdDetailsFor('2');
+      final container = testContainer(gateway: gateway);
+
+      // An active listener, as `MusicLibraryView` keeps by watching it: only
+      // a provider with one is rebuilt eagerly on `invalidate`, which is what
+      // lets this test catch the orphan in the same shape the view's own
+      // Retry does rather than one this test staged.
+      container.listen(musicLibraryProvider, (previous, next) {});
+
+      // Starts the scan; file 1 answers and publishes, then file 2's
+      // `fileDetails` call is held in flight — this is the "details call
+      // held" moment referred to below.
+      await pumpEventQueue();
+      expect(gateway.detailsRequested, ['1', '2']);
+
+      // The retry/sign-out gesture: both halves of the pair go together,
+      // while file 2's call is still held.
+      container.invalidate(musicLibraryProvider);
+      container.invalidate(musicLibraryProgressProvider);
+      await pumpEventQueue();
+
+      // Invalidating a non-autoDispose provider rebuilds it in place rather
+      // than disposing the element outright, so the replacement scan starts
+      // right away, in parallel with the orphan — it is what makes file 2's
+      // details asked for a second time before either has answered.
+      expect(gateway.detailsRequested, ['1', '2', '1', '2']);
+
+      // Now let file 2's call answer — both the orphan and the replacement
+      // are awaiting the very same held call, so this resumes both at once.
+      // The orphan resumes right where the guard sits: this is what proves
+      // the guard is actually reached, rather than the scan simply never
+      // getting that far.
+      gateway.releaseDetails('2');
+      await pumpEventQueue();
+
+      // No unhandled error: `publish` on the invalidated progress notifier's
+      // stale run was never reached — pumpEventQueue would surface it as a
+      // failed test otherwise. And exactly one run reaches file 3: the
+      // orphan stopped at the guard instead of continuing past file 2, so
+      // only the replacement scan's own request for it appears.
+      expect(gateway.detailsRequested, ['1', '2', '1', '2', '3']);
+    },
+  );
 }
