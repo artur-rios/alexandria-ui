@@ -107,7 +107,7 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
 
   late final AnimationController _spin = AnimationController(
     vsync: this,
-    duration: _spinPeriod(widget.medium),
+    duration: spinPeriodFor(widget.medium),
   );
 
   late final Animation<double> _caseIn = CurvedAnimation(
@@ -169,7 +169,7 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
     // value rather than resetting it, so this does not jump the medium.
     var spinNeedsReapplying = oldWidget.isPlaying != widget.isPlaying;
     if (oldWidget.medium != widget.medium) {
-      _spin.duration = _spinPeriod(widget.medium);
+      _spin.duration = spinPeriodFor(widget.medium);
       spinNeedsReapplying = true;
     }
     if (spinNeedsReapplying) _applySpin();
@@ -232,15 +232,6 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
       _spin.stop();
     }
   }
-
-  /// How long one full turn takes, by medium (Reference values). Read off
-  /// the medium rather than a single constant: a record, a disc and a
-  /// cassette's reels turn at genuinely different rates.
-  Duration _spinPeriod(AlbumMedium medium) => switch (medium) {
-    AlbumMedium.vinyl => const Duration(milliseconds: 1500),
-    AlbumMedium.disc => const Duration(milliseconds: 900),
-    AlbumMedium.tape => const Duration(milliseconds: 1800),
-  };
 
   @override
   Widget build(BuildContext context) {

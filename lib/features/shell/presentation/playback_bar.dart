@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../../playback/application/audio_playback_controller.dart';
 import '../../playback/domain/media_player.dart';
+import '../../playback/presentation/album_visor.dart';
 import '../../playback/presentation/music_display_name.dart';
 import '../../playback/presentation/now_playing_screen.dart';
 
@@ -28,8 +29,11 @@ class PlaybackBar extends ConsumerWidget {
   ///
   /// Fixed rather than intrinsic: the content area is laid out above it, and a
   /// bar that changed height as its contents arrived would reflow the listing
-  /// behind it.
-  static const double height = 64;
+  /// behind it. Tall enough for [AlbumVisor]'s 64-pixel recess plus a sliver
+  /// of the panel around it (Task 8) — without that margin the recess would
+  /// touch the bar's own top and bottom edges, which reads as the bar being
+  /// cut to the icon's size rather than the icon sitting inside the bar.
+  static const double height = 64 + AppSpacing.sm * 2;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -105,7 +109,7 @@ class _Bar extends ConsumerWidget {
     return Row(
       children: [
         const SizedBox(width: AppSpacing.md),
-        const Icon(Icons.music_note),
+        const AlbumVisor(),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(

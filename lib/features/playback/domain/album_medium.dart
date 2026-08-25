@@ -81,3 +81,15 @@ AlbumMedium? mediumFor(AlbumAnimationMode mode, int? year) => switch (mode) {
   AlbumAnimationMode.disc => AlbumMedium.disc,
   AlbumAnimationMode.off => null,
 };
+
+/// How long one full turn of [medium] takes (Reference values).
+///
+/// The single source of truth for the three rates: `AlbumStage` (Task 5) and
+/// `AlbumVisor` (Task 8) both draw the same medium turning, at the same
+/// rate, and a second copy of these numbers in either widget would be a place
+/// the two could quietly drift apart.
+Duration spinPeriodFor(AlbumMedium medium) => switch (medium) {
+  AlbumMedium.vinyl => const Duration(milliseconds: 1500),
+  AlbumMedium.disc => const Duration(milliseconds: 900),
+  AlbumMedium.tape => const Duration(milliseconds: 1800),
+};

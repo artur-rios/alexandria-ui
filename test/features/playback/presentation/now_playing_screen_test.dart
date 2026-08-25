@@ -378,7 +378,15 @@ void main() {
         // (Task 7 step 4) already has the player open here.
         expect(find.byType(NowPlayingScreen), findsOneWidget);
         await tester.tap(find.byTooltip(closeLabel(tester)));
-        await tester.pumpAndSettle();
+        // Not `pumpAndSettle`: closing the full player leaves the bar on
+        // screen, and `AlbumVisor` (Task 8) now spins in it for as long as
+        // this record keeps playing — exactly the reason every other wait in
+        // this file past the point playback starts already uses [settle].
+        // Called twice: one [settle] run is 300ms, exactly the pop route's
+        // own transition duration, and a single run leaves the close too
+        // close to that edge to reliably land after it finishes.
+        await settle(tester);
+        await settle(tester);
 
         // Closed now, so `openPlayer` is unambiguous again: this is a
         // deliberate, manual reopen, not a race with another auto-open.
