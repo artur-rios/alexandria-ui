@@ -2,6 +2,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/album_palette.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_stage.dart';
+import 'package:alexandria_ui/features/playback/presentation/media/disc_painter.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/vinyl_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -52,6 +53,19 @@ void main() {
       )
       .map((widget) => widget.painter)
       .whereType<VinylPainter>()
+      .single;
+
+  /// [DiscPainter]'s own `CustomPaint`, found the same way [vinylPainterOf]
+  /// finds [VinylPainter]'s.
+  DiscPainter discPainterOf(WidgetTester tester) => tester
+      .widgetList<CustomPaint>(
+        find.descendant(
+          of: find.byType(AlbumStage),
+          matching: find.byType(CustomPaint),
+        ),
+      )
+      .map((widget) => widget.painter)
+      .whereType<DiscPainter>()
       .single;
 
   group('the insertion (main flow steps 2 and 3)', () {
@@ -173,28 +187,22 @@ void main() {
     testWidgets('GivenAPlayingStage_WhenTimePasses_ThenTheMediumHasTurned', (
       tester,
     ) async {
+      // `vinylPainterOf` (the file's own helper, already used by the paused
+      // test below) rather than `.last` and identity comparison: `.last` is
+      // the device's foreground painter, not the medium, and no painter here
+      // overrides `==`, so two distinct instances are never `equal` even when
+      // both describe a stopped, reset or absent spin — a diff on `.painter`
+      // identity can never fail for the reason this test's name claims
+      // (Finding 2). Asserting the `turns` value itself actually advanced is
+      // what a "the medium has turned" test has to check.
       await tester.pumpWidget(staged(medium: AlbumMedium.vinyl, insert: false));
       await tester.pump(const Duration(milliseconds: 16));
-      final first = tester.widget<CustomPaint>(
-        find
-            .descendant(
-              of: find.byType(AlbumStage),
-              matching: find.byType(CustomPaint),
-            )
-            .last,
-      );
+      final first = vinylPainterOf(tester).turns;
 
       await tester.pump(const Duration(milliseconds: 400));
-      final later = tester.widget<CustomPaint>(
-        find
-            .descendant(
-              of: find.byType(AlbumStage),
-              matching: find.byType(CustomPaint),
-            )
-            .last,
-      );
+      final later = vinylPainterOf(tester).turns;
 
-      expect(later.painter, isNot(equals(first.painter)));
+      expect(later, isNot(first));
     });
 
     testWidgets('GivenAPausedStage_WhenTimePasses_ThenItHoldsWhereItStopped', (
@@ -234,6 +242,64 @@ void main() {
         matchesGoldenFile('goldens/paused.png'),
       );
     }, skip: !goldensAreComparable);
+
+    testWidgets(
+      'GivenPausedPlayback_WhenItResumes_ThenTheMotionContinues',
+      (tester) async {
+        // Restores coverage lost across the branch's test shuffles
+        // (Finding 6): resuming from where a pause left off is named in the
+        // design's own testing section, and — until this test — nothing in
+        // the stage asserted it. Played, paused, then played again, all
+        // through `pumpWidget`/`didUpdateWidget`, the same path a real
+        // pause-then-resume takes.
+        await tester.pumpWidget(staged(medium: AlbumMedium.vinyl, insert: false));
+        await tester.pump(const Duration(milliseconds: 400));
+
+        await tester.pumpWidget(
+          staged(medium: AlbumMedium.vinyl, insert: false, isPlaying: false),
+        );
+        await tester.pump(const Duration(milliseconds: 16));
+        final atPause = vinylPainterOf(tester).turns;
+
+        // Held while paused — the same assertion the test above makes, kept
+        // here too so a resume test that starts from a spin that never
+        // actually stopped could not pass this by accident.
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(vinylPainterOf(tester).turns, atPause);
+
+        await tester.pumpWidget(
+          staged(medium: AlbumMedium.vinyl, insert: false, isPlaying: true),
+        );
+        await tester.pump(const Duration(milliseconds: 400));
+
+        // Continues from where it stopped, not from zero: a reset on resume
+        // would still satisfy "the medium has turned", so the value is
+        // checked against where the pause left it rather than merely against
+        // zero.
+        expect(vinylPainterOf(tester).turns, isNot(atPause));
+      },
+    );
+
+    testWidgets(
+      'GivenADisc_WhenItSpins_ThenTheRateComesFromSpinPeriodFor',
+      (tester) async {
+        // Finding 6: `spinPeriodFor` is the single source of truth for every
+        // medium's spin rate — this proves the stage actually reads it
+        // rather than keeping its own copy, by pumping exactly one of that
+        // function's own periods and checking the spin has returned to the
+        // same phase it started at. A hardcoded rate that happened to differ
+        // from `spinPeriodFor(AlbumMedium.disc)` would land at a different
+        // phase after the same wall-clock wait, which this would catch.
+        await tester.pumpWidget(staged(medium: AlbumMedium.disc, insert: false));
+        await tester.pump(const Duration(milliseconds: 137));
+        final before = discPainterOf(tester).turns;
+
+        await tester.pump(spinPeriodFor(AlbumMedium.disc));
+        final after = discPainterOf(tester).turns;
+
+        expect(after, closeTo(before, 1e-9));
+      },
+    );
   });
 
   group('reduced motion (AF-04)', () {

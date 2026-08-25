@@ -29,4 +29,32 @@ void main() {
       expect(mediumFor(AlbumAnimationMode.byYear, null), AlbumMedium.disc);
     });
   });
+
+  group('the spin rate (Finding 6)', () {
+    // `spinPeriodFor` had no test of its own: `AlbumStage` (Task 5) and
+    // `AlbumVisor` (Task 8) both draw from it rather than keeping their own
+    // copy of these numbers specifically so the two could never drift apart —
+    // pinned here as the single source of truth those two widgets' own tests
+    // (`album_stage_test.dart`, `album_visor_test.dart`) assume holds.
+    test('GivenARecord_WhenTheSpinRateIsRead_ThenItIsOneAndAHalfSeconds', () {
+      expect(
+        spinPeriodFor(AlbumMedium.vinyl),
+        const Duration(milliseconds: 1500),
+      );
+    });
+
+    test('GivenADisc_WhenTheSpinRateIsRead_ThenItIsNineHundredMilliseconds', () {
+      expect(
+        spinPeriodFor(AlbumMedium.disc),
+        const Duration(milliseconds: 900),
+      );
+    });
+
+    test('GivenACassette_WhenTheSpinRateIsRead_ThenItIsOnePointEightSeconds', () {
+      expect(
+        spinPeriodFor(AlbumMedium.tape),
+        const Duration(milliseconds: 1800),
+      );
+    });
+  });
 }

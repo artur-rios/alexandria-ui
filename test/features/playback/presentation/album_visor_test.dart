@@ -7,6 +7,7 @@ import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
+import 'package:alexandria_ui/features/playback/presentation/media/disc_painter.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/vinyl_painter.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
 import 'package:flutter/material.dart';
@@ -83,6 +84,19 @@ void main() {
       )
       .map((widget) => widget.painter)
       .whereType<VinylPainter>()
+      .single;
+
+  /// [DiscPainter]'s own `CustomPaint`, found the same way [vinylPainterOf]
+  /// finds [VinylPainter]'s.
+  DiscPainter discPainterOf(WidgetTester tester) => tester
+      .widgetList<CustomPaint>(
+        find.descendant(
+          of: find.byType(AlbumVisor),
+          matching: find.byType(CustomPaint),
+        ),
+      )
+      .map((widget) => widget.painter)
+      .whereType<DiscPainter>()
       .single;
 
   testWidgets(
@@ -172,6 +186,60 @@ void main() {
       );
     },
     skip: !goldensAreComparable,
+  );
+
+  testWidgets(
+    'GivenPausedPlayback_WhenItResumes_ThenTheMotionContinues',
+    (tester) async {
+      // Restores coverage lost across the branch's test shuffles
+      // (Finding 6) — the visor's own version of the same pause-then-resume
+      // check `album_stage_test.dart` makes for `AlbumStage`.
+      final fixtures = await pumpBar(
+        tester,
+        audio: playingState(),
+        medium: AlbumMedium.vinyl,
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+
+      fixtures.audio.seed(playingState(isPlaying: false));
+      await tester.pump(const Duration(milliseconds: 16));
+      final atPause = vinylPainterOf(tester).turns;
+
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(vinylPainterOf(tester).turns, atPause);
+
+      fixtures.audio.seed(playingState());
+      // `repeat()`'s ticker sets its own start time on the *first* frame it
+      // ticks in, so the pump that first observes the resumed state has to
+      // land before the pump that measures real elapsed time against it —
+      // otherwise the first tick after `repeat()` would read as zero elapsed,
+      // same as `AlbumStage`'s own resume test relies on `pumpWidget` for.
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(vinylPainterOf(tester).turns, isNot(atPause));
+    },
+  );
+
+  testWidgets(
+    'GivenADisc_WhenItSpins_ThenTheRateComesFromSpinPeriodFor',
+    (tester) async {
+      // Finding 6: the visor's own version of `album_stage_test.dart`'s spin
+      // rate check — both widgets have to read `spinPeriodFor` rather than
+      // keep their own copy of these numbers.
+      await pumpBar(
+        tester,
+        audio: playingState(),
+        medium: AlbumMedium.disc,
+      );
+      await tester.pump(const Duration(milliseconds: 137));
+      final before = discPainterOf(tester).turns;
+
+      await tester.pump(spinPeriodFor(AlbumMedium.disc));
+      final after = discPainterOf(tester).turns;
+
+      expect(after, closeTo(before, 1e-9));
+    },
   );
 
   testWidgets('GivenReducedMotion_WhenTheVisorIsShown_ThenItIsStill', (
