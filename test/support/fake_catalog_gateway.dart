@@ -172,11 +172,13 @@ class FakeCatalogGateway implements CatalogGateway {
     String? genre,
     int? track,
     DateTime? indexedAt,
+    DateTime? missingAt,
   }) {
     final file = aFile(
       uuid: uuid,
       name: name ?? '$uuid.flac',
       indexedAt: indexedAt,
+      missingAt: missingAt,
     );
     final existing = listings[LibraryType.audio];
     final files = existing is CatalogListingLoaded

@@ -526,7 +526,9 @@ void main() {
         final l10n = localizations(tester);
 
         expect(find.text(l10n.detailsFileName), findsOneWidget);
-        expect(find.text('DISKNAME-01.flac'), findsWidgets);
+        // Once, under its label — not also as an unlabelled heading above
+        // it, which the labelled row made a duplicate of.
+        expect(find.text('DISKNAME-01.flac'), findsOneWidget);
         expect(find.text('4.7 MB'), findsOneWidget);
         expect(find.text('FLAC'), findsOneWidget);
       },

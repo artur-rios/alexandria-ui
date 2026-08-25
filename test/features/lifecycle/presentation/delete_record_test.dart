@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
@@ -7,6 +9,7 @@ import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/file_hold.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
@@ -191,6 +194,57 @@ void main() {
 
       expect(opened.lifecycle.deletedBookmarks, ['bm-1']);
     });
+  });
+
+  group('deleting an audio file (FR-CT-13)', () {
+    testWidgets(
+      'GivenAnAudioFile_WhenADeleteIsAsked_ThenTheConfirmationNamesItByItsMetadata',
+      (tester) async {
+        const audioUuid = 'a1a2a3a4-5d6e-4f70-8912-a3b4c5d6e7f8';
+        final track = aFile(
+          uuid: audioUuid,
+          name: 'track-07.flac',
+          type: LibraryType.audio,
+        );
+        final gateway = FakeCatalogGateway(
+          listings: {LibraryType.audio: CatalogListing.loaded(files: [track])},
+        )..details[audioUuid] = FileDetailsOutcome.read(
+          details: FileDetails(
+            file: track,
+            metadata: const {'title': 'So What'},
+          ),
+        );
+
+        await tester.pumpShell(
+          surfaceSize: const Size(1440, 1000),
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(gateway),
+          ],
+        );
+
+        // Reached the same way `audio_player_test.dart` reaches the details
+        // dialog for an audio file: UC-46 gave audio its own browsing area
+        // whose rows do not open this dialog on tap, so this calls the same
+        // static `show` the application does rather than a listing row.
+        final element = tester.element(find.byType(ShellScreen));
+        unawaited(
+          FileDetailsView.show(element, element as WidgetRef, audioUuid),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text(messages(tester).deleteFile).last);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(messages(tester).deleteFileMessage('So What')),
+          findsOneWidget,
+        );
+        expect(
+          find.text(messages(tester).deleteFileMessage('track-07.flac')),
+          findsNothing,
+        );
+      },
+    );
   });
 
   // AF-01: the owner cancels.

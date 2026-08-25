@@ -145,6 +145,56 @@ void main() {
   });
 
   // AF-01: no file is missing.
+  group('a missing audio file (FR-CT-13)', () {
+    testWidgets(
+      'GivenAMissingAudioFile_WhenTheReviewListsIt_ThenItsMetadataTitleAppearsNotItsName',
+      (tester) async {
+        final catalog = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'c0000000-0000-4000-8000-000000000009',
+            name: 'track-09.flac',
+            title: 'So What',
+            missingAt: missingAt,
+          )
+          ..listings[LibraryType.document] = CatalogListing.loaded(
+            files: [present],
+          );
+        for (final file in [present]) {
+          catalog.details[file.uuid] = FileDetailsOutcome.read(
+            details: FileDetails(file: file, metadata: const {}),
+          );
+        }
+
+        await tester.pumpShell(
+          surfaceSize: const Size(1440, 1000),
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(catalog),
+            librarySourceStoreProvider.overrideWithValue(
+              InMemoryLibrarySourceStore([registered]),
+            ),
+          ],
+        );
+
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+        await tester.openLibraryTool(l10n.missingFilesOpen);
+        await tester.pumpAndSettle();
+
+        // Scoped to the screen: the dashboard behind it may show the same
+        // recently-added file, named the same way.
+        expect(
+          find.descendant(
+            of: find.byType(MissingFilesScreen),
+            matching: find.text('So What'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('track-09.flac'), findsNothing);
+      },
+    );
+  });
+
   group('a library nothing is missing from', () {
     testWidgets('GivenNothingIsMissing_WhenTheReviewOpens_ThenItSaysSo', (
       tester,

@@ -184,7 +184,7 @@ replace the FFI one without touching a screen.
 | FR-CT-10 | The system shall render long catalog listings without materializing every row, so that scrolling cost does not grow with the size of the library. |
 | FR-CT-11 | The system shall present a home dashboard showing recently added items, items in progress in watchlists and reading lists, per-type counts, and the outcome of the most recent index run. |
 | FR-CT-12 | The system shall open the viewer or player registered for a file's type from any listing or from the detail view. |
-| FR-CT-13 | The system shall present audio files by their metadata — artist, album, or title — and shall not present an audio file by its file name in any listing, grouping, or search result. |
+| FR-CT-13 | The system shall present a track by its metadata — artist, album, or title — everywhere it is presented as music: the music browsing area, catalog-wide search results, the playback surfaces (the bar, the full player, and skip notices), and the home dashboard's recent list. The file's own name is shown deliberately in the file's own detail view, under its own label, and in the rename dialog, where it is what is being renamed. The deleted-items review and a collection's membership list are unaffected: both read records that may carry no file type, which this decision needs to tell a track from any other file. |
 | FR-CT-14 | The system shall offer, for each file in the music area, a context menu carrying the file's playback actions, its details, and its metadata editor. |
 
 ### 3.4 Metadata and Content Editing — `ME`

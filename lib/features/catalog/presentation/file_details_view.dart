@@ -92,9 +92,6 @@ class _Details extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(details.file.name, style: theme.textTheme.titleMedium),
-          const SizedBox(height: AppSpacing.md),
-
           _Section(l10n.detailsState),
           Text(
             switch ((details.isDeleted, details.isMissing)) {
