@@ -207,7 +207,15 @@ void main() {
     testWidgets(
       'GivenMetadataStillArriving_WhenTheAreaIsShown_ThenItSaysHowFarItHasGot',
       (tester) async {
-        final gateway = libraryOfThree()..holdDetailsAfter(1);
+        // Held by uuid rather than by call count: the dashboard the shell
+        // lands on first also reads a recent audio file's own metadata
+        // (FR-CT-13, per file, not the whole library), so a count-based hold
+        // could be spent there before the music area's own scan ever starts.
+        // Holding files 2 and 3 by name leaves file 1 free to answer
+        // wherever it is asked from.
+        final gateway = libraryOfThree()
+          ..holdDetailsFor('2')
+          ..holdDetailsFor('3');
         await openMusic(tester, gateway: gateway);
         final l10n = localizations(tester);
 
