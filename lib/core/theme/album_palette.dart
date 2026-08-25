@@ -181,7 +181,10 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
   /// The hues a jacket sleeve is picked from, indexed by a hash of the
   /// album's name (Task 4). At least six, and chosen to differ in hue
   /// rather than only in lightness, so a library of many sleeves does not
-  /// read as one colour repeated.
+  /// read as one colour repeated. Task 4 typesets the album title and
+  /// artist directly over the sleeve in white, so every hue is also kept
+  /// dark enough to carry white text — see
+  /// `test/core/theme/album_palette_test.dart`.
   final List<Color> sleeveHues;
 
   /// The values both themes use.
@@ -227,11 +230,11 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     sleeveHues: [
       Color(0xFFB5473D),
       Color(0xFF3D6EB5),
-      Color(0xFF4A8F5C),
-      Color(0xFFC9A227),
+      Color(0xFF357A45),
+      Color(0xFF8A6D1E),
       Color(0xFF7C4FA0),
-      Color(0xFFD97A3D),
-      Color(0xFF3D9CA8),
+      Color(0xFFA6501F),
+      Color(0xFF1F6E78),
     ],
   );
 
