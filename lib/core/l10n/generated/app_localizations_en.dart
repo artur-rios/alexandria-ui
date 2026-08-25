@@ -997,6 +997,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get audioOpenPlayer => 'Open the player';
 
   @override
+  String get audioClosePlayer => 'Close the player';
+
+  @override
   String get albumMediumVinyl => 'A record turning on a turntable';
 
   @override

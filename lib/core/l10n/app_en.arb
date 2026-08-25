@@ -1319,6 +1319,10 @@
   "@audioOpenPlayer": {
     "description": "UC-21 main flow step 2: opens the full player, where the album's medium is shown."
   },
+  "audioClosePlayer": "Close the player",
+  "@audioClosePlayer": {
+    "description": "UC-21 AF-03: leaves the full player and returns to wherever the owner opened it from, without touching playback."
+  },
   "albumMediumVinyl": "A record turning on a turntable",
   "@albumMediumVinyl": {
     "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."

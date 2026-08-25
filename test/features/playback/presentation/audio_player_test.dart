@@ -8,6 +8,7 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
+import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_position_store.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_session.dart';
@@ -119,6 +120,17 @@ void main() {
           playbackSessionsProvider.overrideWithValue(sessions),
       ],
     );
+
+    // This file is about UC-20's transport itself — the bar, the queue, the
+    // resume prompt — not about UC-21's animation or the screen Task 7 gives
+    // it (`now_playing_screen_test.dart` covers those). Left at its
+    // untouched default, playing an album here would owe an insertion and
+    // the shell's own auto-open listener would push that screen over the
+    // bar mid-test, which is exactly what these tests do not expect from
+    // pressing a transport button.
+    await container
+        .read(preferencesControllerProvider.notifier)
+        .setAlbumAnimation(AlbumAnimationMode.off);
 
     // Opens the details dialog directly through the same static `show` the
     // application calls, rather than reaching it via a listing: UC-46 gave

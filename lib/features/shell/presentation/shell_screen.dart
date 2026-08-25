@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,6 +12,7 @@ import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
 import '../../organization/presentation/bookmarks_view.dart';
 import '../../playback/presentation/music_library_view.dart';
+import '../../playback/presentation/now_playing_screen.dart';
 import '../domain/shell_destination.dart';
 import 'background_activity_strip.dart';
 import 'playback_bar.dart';
@@ -31,6 +34,39 @@ class ShellScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final destination = ref.watch(shellControllerProvider);
+
+    // UC-21 main flow step 2: the player opens itself the moment something
+    // that owes an insertion starts, from wherever it was started — the
+    // shell is where every path into playback converges, so a listener here
+    // is the one place that covers all of them without any call site having
+    // to remember to open it itself.
+    //
+    // `ref.listen` rather than reading `insertionOwed` in `build` and pushing
+    // from inside it: a route push is a side effect, and Riverpod only calls
+    // a widget's `listen` callback once the state change has actually been
+    // committed — after this build, not during it — which is what lets
+    // `Navigator.of(context).push` run here safely. The `previous?.
+    // insertionOwed` guard is what keeps that push to once per owed
+    // insertion: the flag stays true across every rebuild until
+    // `AlbumStage.onInserted` (wired to `insertionShown()` in
+    // `NowPlayingScreen`) clears it, and without the guard every one of
+    // those rebuilds would push another route.
+    //
+    // `showsAlbumAnimation` (AF-02) is checked here too, not just in
+    // `NowPlayingScreen`'s own build: `AlbumAnimationController` tracks
+    // whether an insertion is owed for *any* queue, single tracks included,
+    // because it has no reason of its own to treat a lone track differently.
+    // Without this guard, playing one ad-hoc track would pop the full player
+    // open onto a screen with no medium to show — the animation this whole
+    // feature is for.
+    ref.listen(albumAnimationControllerProvider, (previous, next) {
+      final owesAVisibleInsertion =
+          next.insertionOwed &&
+          ref.read(audioPlaybackControllerProvider).queue.showsAlbumAnimation;
+      if (owesAVisibleInsertion && !(previous?.insertionOwed ?? false)) {
+        unawaited(NowPlayingScreen.show(context));
+      }
+    });
 
     return Scaffold(
       body: Column(

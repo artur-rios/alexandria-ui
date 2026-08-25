@@ -9,8 +9,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../../playback/application/audio_playback_controller.dart';
 import '../../playback/domain/media_player.dart';
-import '../../playback/presentation/album_player_screen.dart';
 import '../../playback/presentation/music_display_name.dart';
+import '../../playback/presentation/now_playing_screen.dart';
 
 /// The persistent playback bar (FR-UX-01, FR-PL-05).
 ///
@@ -165,7 +165,7 @@ class _Bar extends ConsumerWidget {
         IconButton(
           tooltip: l10n.audioOpenPlayer,
           icon: const Icon(Icons.expand_less),
-          onPressed: () => unawaited(AlbumPlayerScreen.show(context)),
+          onPressed: () => unawaited(NowPlayingScreen.show(context)),
         ),
         const SizedBox(width: AppSpacing.md),
       ],

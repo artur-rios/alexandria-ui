@@ -1,8 +1,9 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
-import 'package:alexandria_ui/features/playback/presentation/album_player_screen.dart';
+import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_stage.dart';
+import 'package:alexandria_ui/features/playback/presentation/now_playing_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -19,15 +20,17 @@ import '../../../support/shell_harness.dart';
 /// The full player's own behaviour, apart from whatever medium `AlbumStage`
 /// draws inside it (UC-21, FR-PL-07, FR-CT-13).
 ///
-/// Split out of what was `album_animation_test.dart`: that file's coverage
-/// of `AlbumAnimation` itself moved into Task 5's own
-/// `album_stage_test.dart`, but these groups were never about that widget —
-/// they are about what this screen does when there is no room for a medium
-/// (AF-01), when the queue is a single track (AF-02), about leaving and
-/// returning to the player (AF-03), and about the screen never leaking a raw
-/// file name onto the page (FR-CT-13). `AlbumPlayerScreen` is replaced
-/// wholesale by `now_playing_screen.dart` in a later task; until then, this
-/// is what keeps it covered.
+/// Renamed from `album_player_screen_test.dart`, Task 7's own file, when
+/// `AlbumPlayerScreen` — a 360-pixel dialog — was replaced wholesale by
+/// `NowPlayingScreen`, a route that fills the window. The groups below cover
+/// what still holds: what this screen does when the queue is a single track
+/// (AF-02), leaving and returning to the player (AF-03), the screen never
+/// leaking a raw file name onto the page (FR-CT-13), that the route really
+/// does fill the window, and the auto-open behaviour Task 7 adds on top of
+/// what `album_animation_test.dart` covered for `AlbumAnimation` itself
+/// (moved to `album_stage_test.dart` in Task 5) and for
+/// `AlbumAnimationController` (covered directly in
+/// `album_animation_controller_test.dart`, Task 6).
 void main() {
   /// Signs in and plays a track of Miles Davis's "Kind of Blue" from the
   /// music area (UC-46), as an album unless [asTrack] says otherwise — the
@@ -104,41 +107,173 @@ void main() {
   AppLocalizations messages(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(ShellScreen)));
 
-  /// Pumps a few frames without waiting for the tree to settle.
-  ///
-  /// The stage repeats for as long as audio plays, so `pumpAndSettle` never
-  /// returns once the medium is on screen — which is the point of it.
-  Future<void> settle(WidgetTester tester) async {
-    for (var frame = 0; frame < 4; frame++) {
-      await tester.pump(const Duration(milliseconds: 50));
-    }
-  }
-
-  /// Opens the full player from the bar (main flow step 2).
+  /// Opens the full player from the bar (main flow step 2) — unless step 4's
+  /// own auto-open listener already has, which it does for every album
+  /// `play` starts here (`play`'s queue always owes an insertion under the
+  /// default, untouched preference these older groups play under). Tapping
+  /// the bar's own button again in that case would hit nothing: the bar is
+  /// the route beneath the one already pushed. Idempotent either way is what
+  /// lets every group written before step 4 existed keep asking for the
+  /// player open without needing to know which route got it there.
   Future<void> openPlayer(WidgetTester tester) async {
+    if (find.byType(NowPlayingScreen).evaluate().isNotEmpty) return;
+
     await tester.tap(
       find.descendant(
         of: find.byType(PlaybackBar),
         matching: find.byIcon(Icons.expand_less),
       ),
     );
-    await settle(tester);
+    await tester.pumpAndSettle();
   }
 
-  // AF-01: the window is too small.
-  group('a window with no room for it', () {
+  /// Signs in (`pumpShell` disables the animation via accessibility
+  /// settings, so the medium's spin — which repeats for as long as audio
+  /// plays — never leaves a frame scheduled for `pumpAndSettle` to wait out)
+  /// and starts an album playing. These tests are about the screen the
+  /// medium sits inside, not about the medium's own motion, which
+  /// `album_stage_test.dart` already covers.
+  ///
+  /// Plays an album of two tracks (never a single one) so that whatever
+  /// [mode] resolves to actually has a queue eligible to show it (AF-02).
+  ///
+  /// [mode] defaults to off rather than to the owner's untouched default: the
+  /// shell's own auto-open listener (step 4) would otherwise push the player
+  /// before a caller here ever gets to, which is exactly wrong for the tests
+  /// in this file that open it by hand. The step 4 group below passes a mode
+  /// that owes an insertion explicitly, which is what makes that behaviour
+  /// its own to test rather than something every other test trips over.
+  Future<ProviderContainer> playSomething(
+    WidgetTester tester, {
+    AlbumAnimationMode mode = AlbumAnimationMode.off,
+  }) async {
+    final catalog = FakeCatalogGateway()
+      ..addAudio(
+        uuid: 'kob-1',
+        title: 'So What',
+        artist: 'Miles Davis',
+        album: 'Kind of Blue',
+        year: 1959,
+        track: 1,
+      )
+      ..addAudio(
+        uuid: 'kob-2',
+        title: 'Freddie Freeloader',
+        artist: 'Miles Davis',
+        album: 'Kind of Blue',
+        year: 1959,
+        track: 2,
+      );
+
+    final container = await tester.pumpShell(
+      extraOverrides: <Override>[
+        catalogGatewayProvider.overrideWithValue(catalog),
+        audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+        playbackSourceGatewayProvider.overrideWithValue(
+          FakePlaybackSourceGateway(),
+        ),
+        playbackPositionsProvider.overrideWithValue(
+          FakePlaybackPositionStore(),
+        ),
+      ],
+    );
+
+    await container
+        .read(preferencesControllerProvider.notifier)
+        .setAlbumAnimation(mode);
+    await container
+        .read(audioPlaybackControllerProvider.notifier)
+        .playAlbum(aFile(uuid: 'kob-1'));
+    await tester.pumpAndSettle();
+
+    return container;
+  }
+
+  /// The tooltip the close control carries, read the same way every other
+  /// helper in this file reads a string — through the running app's own
+  /// [AppLocalizations], never a literal that could drift from it.
+  ///
+  /// Resolved from [NowPlayingScreen] itself rather than [ShellScreen]:
+  /// `NowPlayingScreen.show` is a full route push, and the screen it covers
+  /// is not guaranteed to still be the one a bare [find.byType] search on
+  /// [ShellScreen] would resolve against once something is stacked over it.
+  String closeLabel(WidgetTester tester) => AppLocalizations.of(
+    tester.element(find.byType(NowPlayingScreen)),
+  ).audioClosePlayer;
+
+  // The player is a route that fills the window, not a 360-pixel dialog
+  // (Task 7).
+  group('the full window (Task 7)', () {
     testWidgets(
-      'GivenTheMinimumWindow_WhenTheFullPlayerOpens_ThenItIsCompact',
+      'GivenSomethingPlaying_WhenThePlayerIsOpened_ThenItFillsTheWindow',
+      (tester) async {
+        // A dialog cannot give the animation the room it needs, which is why
+        // this stopped being one.
+        await playSomething(tester);
+        await tester.tap(find.byIcon(Icons.expand_less));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(
+          tester.getSize(find.byType(NowPlayingScreen)).width,
+          tester.getSize(find.byType(MaterialApp)).width,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenThePlayerIsOpen_WhenItIsClosed_ThenTheQueueAndTheBarAreUntouched',
+      (tester) async {
+        // AF-03: closing the player is not stopping playback.
+        final container = await playSomething(tester);
+        await tester.tap(find.byIcon(Icons.expand_less));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip(closeLabel(tester)));
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(audioPlaybackControllerProvider).isPlaying,
+          isTrue,
+        );
+        expect(find.byType(PlaybackBar), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheAnimationIsOff_WhenThePlayerIsOpened_ThenNoStageIsShown',
+      (tester) async {
+        // FR-PL-11: off means off, on every surface.
+        await playSomething(tester, mode: AlbumAnimationMode.off);
+        await tester.tap(find.byIcon(Icons.expand_less));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlbumStage), findsNothing);
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+      },
+    );
+  });
+
+  // AF-01 was "the window is too small" — a check the compact *dialog*
+  // needed because its own content was fixed at 360 pixels wide regardless of
+  // the window around it. A route that fills the window has no such ceiling:
+  // there is no width the shell runs at (NFR-07's floor is 1024 × 640) where
+  // the stage has less room than the dialog ever offered, so the two tests
+  // that used to assert the medium was hidden at the minimum window are
+  // replaced by the opposite assertion — the medium is still shown there,
+  // and playback still runs.
+  group('the minimum window', () {
+    testWidgets(
+      'GivenTheMinimumWindow_WhenTheFullPlayerOpens_ThenTheStageIsStillShown',
       (tester) async {
         await play(tester, surfaceSize: const Size(1024, 700));
 
         await openPlayer(tester);
 
-        expect(find.byType(AlbumStage), findsNothing);
+        expect(find.byType(AlbumStage), findsOneWidget);
       },
     );
 
-    // Playback is unaffected.
     testWidgets(
       'GivenTheMinimumWindow_WhenTheFullPlayerOpens_ThenItStillPlays',
       (tester) async {
@@ -184,8 +319,8 @@ void main() {
       final playing = await play(tester);
       await openPlayer(tester);
 
-      await tester.tap(find.text(messages(tester).preferencesClose));
-      await settle(tester);
+      await tester.tap(find.byTooltip(closeLabel(tester)));
+      await tester.pumpAndSettle();
 
       expect(playing.player.stopCount, 0);
       expect(
@@ -202,7 +337,7 @@ void main() {
       (tester) async {
         await play(tester);
         await openPlayer(tester);
-        await tester.tap(find.text(messages(tester).preferencesClose));
+        await tester.tap(find.byTooltip(closeLabel(tester)));
         await tester.pumpAndSettle();
 
         await openPlayer(tester);
@@ -220,6 +355,12 @@ void main() {
   group('the queue label (FR-CT-13)', () {
     /// Signs in over [gateway] and asks the controller to play [file] via
     /// [action], then settles the tree.
+    ///
+    /// The animation is turned off first: an untagged album or artist here
+    /// is still a record, not a lone track, so step 4's auto-open would
+    /// otherwise push the player open on its own before `openPlayer` below
+    /// gets a chance to — a real interaction this group is not the one
+    /// testing. `opening itself for an owed insertion` (Task 7 step 4) is.
     Future<ProviderContainer> playDirect(
       WidgetTester tester, {
       required FakeCatalogGateway gateway,
@@ -238,6 +379,9 @@ void main() {
         ],
       );
 
+      await container
+          .read(preferencesControllerProvider.notifier)
+          .setAlbumAnimation(AlbumAnimationMode.off);
       await action(container.read(audioPlaybackControllerProvider.notifier));
       await tester.pumpAndSettle();
 
@@ -297,7 +441,7 @@ void main() {
       expectAbsent(tester, 'DISKNAME');
       expect(
         find.descendant(
-          of: find.byType(AlbumPlayerScreen),
+          of: find.byType(NowPlayingScreen),
           matching: find.text('Kind of Blue'),
         ),
         findsNothing,
@@ -334,7 +478,7 @@ void main() {
         // word appears there too rather than the generic "Player" one.
         expect(
           find.descendant(
-            of: find.byType(AlbumPlayerScreen),
+            of: find.byType(NowPlayingScreen),
             matching: find.text(l10n.musicUnknownAlbum),
           ),
           findsOneWidget,
@@ -370,7 +514,7 @@ void main() {
         expectAbsent(tester, 'DISKNAME');
         expect(
           find.descendant(
-            of: find.byType(AlbumPlayerScreen),
+            of: find.byType(NowPlayingScreen),
             matching: find.text(l10n.musicUnknownArtist),
           ),
           findsOneWidget,
@@ -398,12 +542,65 @@ void main() {
 
         expect(
           find.descendant(
-            of: find.byType(AlbumPlayerScreen),
+            of: find.byType(NowPlayingScreen),
             matching: find.text('Airbag'),
           ),
           findsOneWidget,
         );
         expectAbsent(tester, 'DISKNAME');
+      },
+    );
+  });
+
+  // Task 7 step 4: the player opens itself for an owed insertion, from
+  // wherever playback was started — a shell-level listener rather than
+  // anything wired into `playAlbum`/`playArtist`/`playTrack` themselves, so
+  // every entry point gets it for free.
+  group('opening itself for an owed insertion (Task 7 step 4)', () {
+    testWidgets(
+      'GivenNothingHasPlayed_WhenATrackIsStarted_ThenThePlayerOpensItself',
+      (tester) async {
+        await playSomething(tester, mode: AlbumAnimationMode.byYear);
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        // Proves the shell's `ref.listen` push is safe to run when it runs —
+        // Task 6 left whether a build-phase call to `insertionShown()` is
+        // safe for its caller to settle, and pushing a route from a listener
+        // callback is the closest thing to that here. A framework exception
+        // (Navigator/setState-during-build) would otherwise pass silently:
+        // `pumpAndSettle` does not fail on its own just because a frame threw.
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'GivenARecordIsPlaying_WhenTheNextTrackStarts_ThenThePlayerDoesNotOpen',
+      (tester) async {
+        final container = await playSomething(
+          tester,
+          mode: AlbumAnimationMode.byYear,
+        );
+        // The player already auto-opened for the first track. Acknowledge
+        // the insertion the way `AlbumStage.onInserted` does when it plays,
+        // then leave the player the way AF-03 already does, before the next
+        // track of the same record starts.
+        container.read(albumAnimationControllerProvider.notifier).insertionShown();
+        await tester.tap(find.byTooltip(closeLabel(tester)));
+        await tester.pumpAndSettle();
+
+        await container.read(audioPlaybackControllerProvider.notifier).next();
+        await tester.pumpAndSettle();
+
+        expect(find.byType(NowPlayingScreen), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenTheAnimationIsOff_WhenATrackIsStarted_ThenThePlayerDoesNotOpen',
+      (tester) async {
+        await playSomething(tester, mode: AlbumAnimationMode.off);
+
+        expect(find.byType(NowPlayingScreen), findsNothing);
       },
     );
   });

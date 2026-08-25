@@ -998,6 +998,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get audioOpenPlayer => 'Abrir o player';
 
   @override
+  String get audioClosePlayer => 'Fechar o player';
+
+  @override
   String get albumMediumVinyl => 'Um disco de vinil girando em uma vitrola';
 
   @override

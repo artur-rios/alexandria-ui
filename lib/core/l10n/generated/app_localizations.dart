@@ -1854,6 +1854,12 @@ abstract class AppLocalizations {
   /// **'Open the player'**
   String get audioOpenPlayer;
 
+  /// UC-21 AF-03: leaves the full player and returns to wherever the owner opened it from, without touching playback.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the player'**
+  String get audioClosePlayer;
+
   /// UC-21 / FR-PL-07: what the animation is, for a screen reader.
   ///
   /// In en, this message translates to:

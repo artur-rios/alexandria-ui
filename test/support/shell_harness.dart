@@ -41,6 +41,18 @@ extension PumpShell on WidgetTester {
     view.physicalSize = surfaceSize;
     addTearDown(view.reset);
 
+    // UC-21 (Task 7): the album animation spins for as long as something
+    // plays, which is forever from `pumpAndSettle`'s point of view. Every
+    // suite that reaches the shell through here starts playback at some
+    // point without meaning to test that motion — the motion itself belongs
+    // to `album_stage_test.dart`, which builds its own harness precisely so
+    // it can turn this back on. Disabling it by default is what keeps every
+    // other suite from hanging the moment the shell's own auto-open listener
+    // (`ShellScreen`) puts a spinning medium on screen.
+    platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(platformDispatcher.clearAccessibilityFeaturesTestValue);
+
     final container = await pumpLoginScreen(
       gateway: gateway ?? FakeAuthGateway(),
       locale: locale,
