@@ -12,7 +12,7 @@ import '../domain/media_player.dart';
 /// be decoded — which is why the flows are testable without libmpv.
 class MediaKitPlayer implements MediaPlayer {
   /// Wraps a media_kit player.
-  MediaKitPlayer([mk.Player? player]) : _player = player ?? mk.Player() {
+  MediaKitPlayer([mk.Player? player]) : _player = player ?? _createPlayer() {
     _subscriptions.addAll([
       _player.stream.playing.listen((playing) {
         _update(_status.copyWith(isPlaying: playing));
@@ -66,6 +66,19 @@ class MediaKitPlayer implements MediaPlayer {
         _update(_status.copyWith(failedToDecode: true, isPlaying: false));
       }),
     ]);
+  }
+
+  /// Builds the real engine, resolving libmpv first.
+  ///
+  /// media_kit throws the moment a player is constructed if its native library
+  /// has not been located, so the resolution belongs with the construction:
+  /// the players are built lazily by their providers, and a bootstrap step in
+  /// `main` would be a rule about ordering that the first `ref.read` is free to
+  /// break. `ensureInitialized` returns immediately once it has run, so every
+  /// player after the first pays nothing for it.
+  static mk.Player _createPlayer() {
+    mk.MediaKit.ensureInitialized();
+    return mk.Player();
   }
 
   final mk.Player _player;
