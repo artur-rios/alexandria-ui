@@ -468,22 +468,18 @@ void main() {
       return container;
     }
 
-    /// No text under [ancestor] contains [needle].
+    /// No text anywhere on screen contains [needle].
     ///
-    /// Scoped to the bar or the full player rather than the whole screen: the
+    /// Unscoped, unlike a search limited to the bar or the full player: the
     /// Home dashboard's own recent-files list is on screen underneath both of
-    /// them (`tester.pumpShell` lands there) and shows every file — audio
-    /// included — by its name on disk, a pre-existing gap this task does not
-    /// touch. An unscoped search would fail on that list's text regardless of
-    /// what this fix does, which would be testing the wrong surface.
-    void expectAbsent(WidgetTester tester, Type ancestor, String needle) {
-      expect(
-        find.descendant(
-          of: find.byType(ancestor),
-          matching: find.textContaining(needle),
-        ),
-        findsNothing,
-      );
+    /// them (`tester.pumpShell` lands there), and it once showed every file —
+    /// audio included — by its name on disk, which would have made an
+    /// unscoped search here fail on that list's text regardless of what a fix
+    /// in the bar or player did. That gap is closed: the dashboard names
+    /// audio by its metadata too, so nothing on screen carries the raw file
+    /// name for this to find by accident.
+    void expectAbsent(WidgetTester tester, String needle) {
+      expect(find.textContaining(needle), findsNothing);
     }
 
     testWidgets(
@@ -509,7 +505,7 @@ void main() {
           action: (controller) => controller.playTrack(file),
         );
 
-        expectAbsent(tester, PlaybackBar, 'DISKNAME');
+        expectAbsent(tester, 'DISKNAME');
         // No queue label at all for a single track: the bar already shows
         // its title, so a label repeating the album would be noise.
         expect(
@@ -522,7 +518,7 @@ void main() {
 
         await openPlayer(tester);
 
-        expectAbsent(tester, AlbumPlayerScreen, 'DISKNAME');
+        expectAbsent(tester, 'DISKNAME');
         expect(
           find.descendant(
             of: find.byType(AlbumPlayerScreen),
@@ -547,7 +543,7 @@ void main() {
         );
         final l10n = messages(tester);
 
-        expectAbsent(tester, PlaybackBar, 'DISKNAME');
+        expectAbsent(tester, 'DISKNAME');
         expect(
           find.descendant(
             of: find.byType(PlaybackBar),
@@ -558,7 +554,7 @@ void main() {
 
         await openPlayer(tester);
 
-        expectAbsent(tester, AlbumPlayerScreen, 'DISKNAME');
+        expectAbsent(tester, 'DISKNAME');
         // The full player's title is the queue label, so the unknown-album
         // word appears there too rather than the generic "Player" one.
         expect(
@@ -585,7 +581,7 @@ void main() {
         );
         final l10n = messages(tester);
 
-        expectAbsent(tester, PlaybackBar, 'DISKNAME');
+        expectAbsent(tester, 'DISKNAME');
         expect(
           find.descendant(
             of: find.byType(PlaybackBar),
@@ -596,7 +592,7 @@ void main() {
 
         await openPlayer(tester);
 
-        expectAbsent(tester, AlbumPlayerScreen, 'DISKNAME');
+        expectAbsent(tester, 'DISKNAME');
         expect(
           find.descendant(
             of: find.byType(AlbumPlayerScreen),
@@ -632,7 +628,7 @@ void main() {
           ),
           findsOneWidget,
         );
-        expectAbsent(tester, AlbumPlayerScreen, 'DISKNAME');
+        expectAbsent(tester, 'DISKNAME');
       },
     );
   });
