@@ -778,6 +778,188 @@ void main() {
       },
     );
 
+    /// Two two-track albums by different artists, both eligible for the
+    /// animation, so a test can move from one to the other without the
+    /// second's `playAlbum` racing a gateway swap.
+    FakeCatalogGateway twoAlbumsGateway() => FakeCatalogGateway()
+      ..addAudio(
+        uuid: 'kob-1',
+        title: 'So What',
+        artist: 'Miles Davis',
+        album: 'Kind of Blue',
+        year: 1959,
+        track: 1,
+      )
+      ..addAudio(
+        uuid: 'kob-2',
+        title: 'Freddie Freeloader',
+        artist: 'Miles Davis',
+        album: 'Kind of Blue',
+        year: 1959,
+        track: 2,
+      )
+      ..addAudio(
+        uuid: 'bt-1',
+        title: 'Blue Train',
+        artist: 'John Coltrane',
+        album: 'Blue Train',
+        year: 1957,
+        track: 1,
+      )
+      ..addAudio(
+        uuid: 'bt-2',
+        title: 'Moment\'s Notice',
+        artist: 'John Coltrane',
+        album: 'Blue Train',
+        year: 1957,
+        track: 2,
+      );
+
+    /// Signs in over [twoAlbumsGateway] under [mode] and [reduceMotion], and
+    /// returns the container without playing anything yet — the two tests
+    /// below each play the two albums in their own order.
+    Future<ProviderContainer> pumpTwoAlbums(
+      WidgetTester tester, {
+      required AlbumAnimationMode mode,
+      bool reduceMotion = false,
+    }) async {
+      final container = await tester.pumpShell(
+        reduceMotion: reduceMotion,
+        extraOverrides: <Override>[
+          catalogGatewayProvider.overrideWithValue(twoAlbumsGateway()),
+          audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+          playbackSourceGatewayProvider.overrideWithValue(
+            FakePlaybackSourceGateway(),
+          ),
+          playbackPositionsProvider.overrideWithValue(
+            FakePlaybackPositionStore(),
+          ),
+        ],
+      );
+      await container
+          .read(preferencesControllerProvider.notifier)
+          .setAlbumAnimation(mode);
+      return container;
+    }
+
+    testWidgets(
+      'GivenThePlayerIsClosedMidInsertion_WhenAnotherAlbumStarts_ThenThePlayerOpensItself',
+      (tester) async {
+        // Finding 1: closing the route while `AlbumStage`'s insertion is
+        // still running disposes the stage before `onInserted` ever fires, so
+        // nothing clears `insertionOwed` for the interrupted album. Before
+        // the fix this left the flag permanently `true` — `owedIdentity`
+        // still pointed at the interrupted album, and a listener keyed on
+        // the bare boolean never saw it change — so no later album could ever
+        // re-open the player for the rest of the session. Run against the
+        // pre-fix `shell_screen.dart` (edge-triggering on `insertionOwed`
+        // alone), this test fails: the boolean is `true` both before and
+        // after the second album starts, so the `!(previous?.insertionOwed
+        // ?? false)` guard never lets the second push through.
+        final container = await pumpTwoAlbums(
+          tester,
+          mode: AlbumAnimationMode.byYear,
+        );
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'kob-1'));
+        await settle(tester);
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+
+        // Well short of `AlbumStage.insertionDuration` (4.4s): the case is
+        // still on its way in, not seated, when the route closes.
+        await tester.pump(const Duration(milliseconds: 700));
+        await tester.tap(find.byTooltip(closeLabel(tester)));
+        // Two runs, as `GivenTheOwnerReopensThePlayer...` above already
+        // documents: one `settle` run is 300ms, exactly the pop route's own
+        // transition duration, and a single run leaves the close too close
+        // to that edge to reliably land after it finishes.
+        await settle(tester);
+        await settle(tester);
+        expect(find.byType(NowPlayingScreen), findsNothing);
+
+        // A different record — not the next track of the one that was
+        // interrupted, which correctly owes nothing more.
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'bt-1'));
+        await settle(tester);
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenThePlayerIsAlreadyOpen_WhenAnotherAlbumStarts_ThenOnlyOneScreenShows',
+      (tester) async {
+        // Finding 3: `shell_screen.dart`'s own push was unconditional, so an
+        // album started while the auto-opened player is still on screen
+        // stacked a second `NowPlayingScreen` route on top of the first —
+        // the owner would then have to close it twice, and the buried
+        // stage's tickers would keep running underneath. Starting a second,
+        // different album while the first's player is still open must still
+        // leave exactly one screen on the stack.
+        final container = await pumpTwoAlbums(
+          tester,
+          mode: AlbumAnimationMode.byYear,
+        );
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'kob-1'));
+        await settle(tester);
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        // Let the first insertion finish so the second album's own insertion
+        // is a clean, independent owed-insertion edge.
+        await tester.pump(AlbumStage.insertionDuration);
+        await settle(tester);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'bt-1'));
+        await settle(tester);
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenMotionIsReduced_WhenTheAlbumChangesWithThePlayerOpen_ThenNothingStaysOwed',
+      (tester) async {
+        // Finding 5: reduced motion means `AlbumStage` never calls
+        // `onInserted` for *any* insertion, including one that becomes newly
+        // owed while the stage stays mounted across an album change — the
+        // player already open, a different record starting under it. The
+        // only thing that can clear that owed insertion is
+        // `NowPlayingScreen`'s own post-frame acknowledgement, and until now
+        // nothing exercised it past the screen's first build.
+        final container = await pumpTwoAlbums(
+          tester,
+          mode: AlbumAnimationMode.byYear,
+          reduceMotion: true,
+        );
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'kob-1'));
+        await settle(tester);
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(
+          container.read(albumAnimationControllerProvider).insertionOwed,
+          isFalse,
+        );
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'bt-1'));
+        await settle(tester);
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(
+          container.read(albumAnimationControllerProvider).insertionOwed,
+          isFalse,
+        );
+      },
+    );
+
     testWidgets(
       'GivenMotionIsNotReduced_WhenTheInsertionPlaysThrough_ThenNoExceptionIsThrown',
       (tester) async {

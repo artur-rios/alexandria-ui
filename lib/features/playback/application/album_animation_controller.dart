@@ -4,11 +4,19 @@ import '../../../core/di/providers.dart';
 import '../domain/album_medium.dart';
 import '../domain/playback_queue.dart';
 
+/// What identifies "which record is playing", as `(kind, identity)`
+/// (see [AlbumAnimationController._identityOf]).
+typedef AlbumIdentity = (Object, String);
+
 /// What the animation should be showing, and whether it owes an insertion
 /// (UC-21 main flow step 2, FR-PL-07, FR-PL-11).
 class AlbumAnimationState {
   /// Creates a state.
-  const AlbumAnimationState({this.medium, this.insertionOwed = false});
+  const AlbumAnimationState({
+    this.medium,
+    this.insertionOwed = false,
+    this.owedIdentity,
+  });
 
   /// The medium to draw, or `null` when the owner turned the animation off,
   /// or when the queue is a single track (UC-21 AF-02) — a lone track is not
@@ -25,6 +33,22 @@ class AlbumAnimationState {
   /// re-derive "is this queue even the kind of thing that owes one" for
   /// itself and risk answering it differently than this class did.
   final bool insertionOwed;
+
+  /// *Which* record [insertionOwed] is true for — `null` whenever
+  /// [insertionOwed] is `false` (Finding 1).
+  ///
+  /// `insertionOwed` alone is a level, not an edge: a stage that is closed
+  /// mid-insertion never calls `AlbumStage.onInserted`, so the flag can stay
+  /// stuck `true` across a later album that also owes one — the boolean
+  /// value never actually changes, it is `true` before and `true` after. A
+  /// listener that edge-triggers on the boolean would then never fire for
+  /// that later album. This field changes with every record that becomes
+  /// newly owed, including one owed right behind an interrupted one, because
+  /// it is derived straight from the queue's own identity on every rebuild —
+  /// so a caller can edge-trigger on *this* changing instead, which it always
+  /// does when the record actually playing has changed, whether or not the
+  /// previous insertion ever finished.
+  final AlbumIdentity? owedIdentity;
 }
 
 /// Whether the medium has to go in again (UC-21 main flow step 2).
@@ -50,9 +74,13 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
   /// `null` until one has been shown, which is what makes the session's first
   /// play owe one. Held here rather than in [state] so that it survives every
   /// rebuild [build] runs for — a rebuild is not a new session — while still
-  /// resetting whenever the provider itself is invalidated or recreated,
-  /// which is what a new session is.
-  (Object, String)? _shownFor;
+  /// resetting whenever the provider itself is invalidated or recreated.
+  /// `albumAnimationControllerProvider` is invalidated by
+  /// `PlaybackSessionActivity.end` (Finding 4), which both `SignOutController`
+  /// and `SessionController.establish` run — a sign-out and a fresh sign-in
+  /// both end a session, so both are what "a new session" means here, and
+  /// both are covered.
+  AlbumIdentity? _shownFor;
 
   @override
   AlbumAnimationState build() {
@@ -66,9 +94,13 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
       return const AlbumAnimationState();
     }
 
+    final identity = _identityOf(queue);
+    final owed = _shownFor != identity;
+
     return AlbumAnimationState(
       medium: medium,
-      insertionOwed: _shownFor != _identityOf(queue),
+      insertionOwed: owed,
+      owedIdentity: owed ? identity : null,
     );
   }
 
@@ -97,6 +129,6 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
   /// (the uuid does not change between them) while telling two different
   /// untagged records apart (their first tracks differ). Called only once
   /// [build] has confirmed the queue is non-empty, so `tracks.first` is safe.
-  (Object, String) _identityOf(PlaybackQueue queue) =>
+  AlbumIdentity _identityOf(PlaybackQueue queue) =>
       (queue.kind, queue.label ?? queue.tracks.first.uuid);
 }

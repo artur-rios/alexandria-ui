@@ -19,7 +19,7 @@ import 'music_display_name.dart';
 /// Filling the window is what gives them it. Closing the route is how AF-03's
 /// "navigates to another screen" happens — popping it leaves the queue and
 /// the bar exactly where they were, because neither one lives in this widget.
-class NowPlayingScreen extends ConsumerWidget {
+class NowPlayingScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
   const NowPlayingScreen({super.key});
 
@@ -40,13 +40,49 @@ class NowPlayingScreen extends ConsumerWidget {
   /// overflowing.
   static const double _reservedForTextAndControls = 260;
 
-  /// Pushes the full-window player over [context] (main flow step 2).
-  static Future<void> show(BuildContext context) => Navigator.of(
-    context,
-  ).push<void>(MaterialPageRoute(builder: (context) => const NowPlayingScreen()));
+  /// Whether a [NowPlayingScreen] is currently mounted anywhere in the tree.
+  ///
+  /// What [show] checks before pushing another one (Finding 3): the shell's
+  /// own auto-open and the playback bar's button are two independent paths
+  /// to the same route, and either could otherwise stack a second copy on
+  /// top of a first that is already open — the owner would then have to
+  /// close it twice, and the buried stage would keep both its tickers
+  /// running underneath. Tied to [_NowPlayingScreenState]'s own
+  /// `initState`/`dispose` rather than to the push/pop that opened this
+  /// particular route, so it stays correct however the screen leaves the
+  /// tree — a pop, a replaced route, or (in a test) the widget tree being
+  /// torn down between cases — every one of those already calls `dispose`.
+  static bool _mounted = false;
+
+  /// Pushes the full-window player over [context] (main flow step 2), unless
+  /// one is already open.
+  static Future<void> show(BuildContext context) {
+    if (_mounted) return Future<void>.value();
+
+    return Navigator.of(
+      context,
+    ).push<void>(MaterialPageRoute(builder: (context) => const NowPlayingScreen()));
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NowPlayingScreen> createState() => _NowPlayingScreenState();
+}
+
+class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    NowPlayingScreen._mounted = true;
+  }
+
+  @override
+  void dispose() {
+    NowPlayingScreen._mounted = false;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final state = ref.watch(audioPlaybackControllerProvider);
@@ -105,9 +141,11 @@ class NowPlayingScreen extends ConsumerWidget {
         builder: (context, viewport) {
           final stageSize = math.min(
             viewport.maxWidth - AppSpacing.lg * 2,
-            viewport.maxHeight - _reservedForTextAndControls,
+            viewport.maxHeight - NowPlayingScreen._reservedForTextAndControls,
           );
-          final showsStage = showsAnimation && stageSize >= _minimumStageSize;
+          final showsStage =
+              showsAnimation &&
+              stageSize >= NowPlayingScreen._minimumStageSize;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),

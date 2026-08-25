@@ -45,21 +45,40 @@ class ShellScreen extends ConsumerWidget {
     // from inside it: a route push is a side effect, and Riverpod only calls
     // a widget's `listen` callback once the state change has actually been
     // committed — after this build, not during it — which is what lets
-    // `Navigator.of(context).push` run here safely. The `previous?.
-    // insertionOwed` guard is what keeps that push to once per owed
-    // insertion: the flag stays true across every rebuild until
-    // `AlbumStage.onInserted` (wired to `insertionShown()` in
-    // `NowPlayingScreen`) clears it, and without the guard every one of
-    // those rebuilds would push another route.
+    // `Navigator.of(context).push` run here safely.
     //
-    // No separate AF-02 check here: `AlbumAnimationState.insertionOwed` is
-    // already `false` for a single track — `AlbumAnimationController` folds
-    // that rule in itself — so the level this edge-triggers on and the level
-    // `NowPlayingScreen` draws a stage from are the same one, and cannot
-    // disagree the way an independently-checked `showsAlbumAnimation` here
-    // once could.
+    // Edge-triggers on `owedIdentity` rather than on the bare `insertionOwed`
+    // boolean (Finding 1). The boolean is a level, cleared only by
+    // `AlbumStage.onInserted` — and a stage closed mid-insertion never calls
+    // it, so the flag can stay stuck `true` across a later album that also
+    // owes one: the boolean is `true` before that album starts and `true`
+    // after, never re-crossing false→true, so a listener keyed on it would
+    // never open the player again for the rest of the session.
+    // `owedIdentity` does not have that failure mode: it is recomputed from
+    // the queue on every rebuild `AlbumAnimationController.build` runs for,
+    // and it changes with *every* record that becomes newly owed — including
+    // one owed right behind an interrupted one — so it edges every time the
+    // record actually playing changes, independent of whether the previous
+    // insertion's stage ever finished, was closed early, or was never shown
+    // at all. Nothing about that depends on this widget, on `NowPlayingScreen`,
+    // or on `AlbumStage`'s lifecycle, so no path that opens or closes the
+    // player early can leave it stuck: the only thing that could is the
+    // controller itself reusing an identity for two different records, which
+    // `_identityOf`'s own contract already rules out.
+    //
+    // No separate AF-02 check here: `AlbumAnimationState.insertionOwed` (and
+    // so `owedIdentity`) is already `null`/`false` for a single track —
+    // `AlbumAnimationController` folds that rule in itself — so the level
+    // this edge-triggers on and the level `NowPlayingScreen` draws a stage
+    // from are the same one, and cannot disagree the way an
+    // independently-checked `showsAlbumAnimation` here once could.
+    //
+    // `NowPlayingScreen.show` is its own guard against stacking a second
+    // route on top of one already open (Finding 3) — every caller, this one
+    // included, goes through it, so there is nothing left to guard here.
     ref.listen(albumAnimationControllerProvider, (previous, next) {
-      if (next.insertionOwed && !(previous?.insertionOwed ?? false)) {
+      final owed = next.owedIdentity;
+      if (owed != null && owed != previous?.owedIdentity) {
         unawaited(NowPlayingScreen.show(context));
       }
     });
