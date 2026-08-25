@@ -41,8 +41,14 @@ class BackgroundActivityStrip extends ConsumerStatefulWidget {
   /// The height of the row, in logical pixels.
   ///
   /// One line of text with its controls, and deliberately less than the
-  /// playback bar's 64: this reports on work the owner set going and left, not
-  /// something they are operating.
+  /// playback bar's own `PlaybackBar.height` (80 — Task 8's visor, not the
+  /// bar's original 64): this reports on work the owner set going and left,
+  /// not something they are operating. A plain-text reference, not a
+  /// `[PlaybackBar.height]` doc link: linking it would need an import this
+  /// file has no other reason to carry, and a dartdoc `[...]` reference does
+  /// not count as a use for `unused_import` anyway, so the link would not
+  /// even keep this number honest — a human still has to notice the bar
+  /// changed and update the words here, the same as today.
   static const double expandedHeight = 40;
 
   @override

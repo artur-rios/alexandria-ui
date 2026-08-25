@@ -46,6 +46,7 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
   /// re-issue `repeat()`/`stop()` for values that have not actually changed.
   AlbumMedium? _medium;
   bool _isPlaying = false;
+  bool _hasCurrent = false;
 
   /// AF-04: whether the system asked for less motion, exactly as `AlbumStage`
   /// reads it — decided in `didChangeDependencies`, not `build`, because a
@@ -60,6 +61,7 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
     final audio = ref.read(audioPlaybackControllerProvider);
     _medium = animation.medium;
     _isPlaying = audio.isPlaying;
+    _hasCurrent = audio.current != null;
     if (_medium case final medium?) _spin.duration = spinPeriodFor(medium);
     _applySpin();
   }
@@ -85,8 +87,14 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
   /// controller's current value and `reset()` does not, and a paused medium
   /// has to stay where playback left it (main flow steps 4 and 5, mirrored
   /// from `AlbumStage._applySpin`).
+  ///
+  /// `_hasCurrent` is guarded here as well as in `build`'s own "nothing to
+  /// show" check: `AudioPlaybackController` never reports `isPlaying` with an
+  /// empty queue today, but this widget should not be correct only because of
+  /// that — a controller change elsewhere must not be able to leave a ticker
+  /// running behind an empty recess.
   void _applySpin() {
-    if (_medium == null || _reduceMotion || !_isPlaying) {
+    if (_medium == null || _reduceMotion || !_isPlaying || !_hasCurrent) {
       _spin.stop();
       return;
     }
@@ -113,8 +121,13 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
       previous,
       next,
     ) {
-      if (previous?.isPlaying == next.isPlaying) return;
+      final hasCurrent = next.current != null;
+      if (previous?.isPlaying == next.isPlaying &&
+          (previous?.current != null) == hasCurrent) {
+        return;
+      }
       _isPlaying = next.isPlaying;
+      _hasCurrent = hasCurrent;
       _applySpin();
     });
 
