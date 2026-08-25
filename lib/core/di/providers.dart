@@ -50,6 +50,7 @@ import '../../features/catalog/domain/library_type.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
 import '../../features/catalog/domain/file_name.dart';
+import '../../features/catalog/domain/music_metadata.dart';
 import '../../features/library_sources/application/active_runs_controller.dart';
 import '../../features/library_sources/application/active_runs_state.dart';
 import '../../features/library_sources/application/index_runs_controller.dart';
@@ -480,6 +481,48 @@ final musicLibraryProgressProvider =
     NotifierProvider<MusicLibraryProgress, MusicLibrary>(
       MusicLibraryProgress.new,
     );
+
+/// The metadata title of an audio file, or `null` while it is not known
+/// (UC-11, FR-CT-13).
+///
+/// Per file rather than over the whole library: a search shows a screenful of
+/// results, and reading every audio file in the catalog to name three of them
+/// would make searching cost what browsing costs. Consults
+/// [musicLibraryProgressProvider] rather than [musicLibraryProvider]: the
+/// latter resolves only once the *entire* library has been read and throws if
+/// that read fails, and neither behaviour belongs to a single search result —
+/// waiting on the whole library would make a search cost what browsing costs,
+/// and a library-wide failure has nothing to do with whether this one file's
+/// title is known. The progress provider never throws and already holds
+/// whatever has been read so far, so a search after a visit to the music area
+/// costs nothing at all, and a failed library read cannot break a result that
+/// does not depend on it.
+final audioTitleProvider = FutureProvider.family<String?, CatalogFile>((
+  ref,
+  file,
+) async {
+  if (file.type != LibraryType.audio) return null;
+
+  final cached = ref.watch(musicLibraryProgressProvider);
+  for (final entry in cached.entries) {
+    if (entry.file.uuid == file.uuid) return entry.title;
+  }
+
+  final credential = ref.read(sessionControllerProvider.notifier).credential;
+  if (credential == null) return null;
+
+  final details = await ref
+      .read(catalogGatewayProvider)
+      .fileDetails(uuid: file.uuid, credential: credential);
+
+  return switch (details) {
+    FileDetailsRead(:final details) =>
+      MusicMetadata.fromDetails(details.metadata).title?.trim(),
+    // A file whose details will not come back is a file with no title we can
+    // show, which the row already has a word for.
+    FileDetailsFailed() => null,
+  };
+});
 
 /// Where the owner is in the music area (UC-46).
 final musicBrowseControllerProvider =

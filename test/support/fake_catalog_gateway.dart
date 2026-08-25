@@ -182,6 +182,28 @@ class FakeCatalogGateway implements CatalogGateway {
     );
   }
 
+  /// Adds a file of [type] to that type's listing, named by [name] on disk.
+  ///
+  /// Unlike [addAudio], nothing is added to [details]: every type but audio is
+  /// named by its file name, so a search never has a reason to read one of
+  /// these back.
+  void addFile({
+    required String uuid,
+    required String name,
+    LibraryType type = LibraryType.document,
+  }) {
+    final file = aFile(uuid: uuid, name: name, type: type);
+    final existing = listings[type];
+    final files = existing is CatalogListingLoaded
+        ? existing.files
+        : const <CatalogFile>[];
+    listings[type] = CatalogListing.loaded(files: [...files, file]);
+  }
+
+  /// Adds a document file to the document listing, named by [name] on disk.
+  void addDocument({required String uuid, required String name}) =>
+      addFile(uuid: uuid, name: name, type: LibraryType.document);
+
   /// After [count] calls to [fileDetails] have been answered, every call
   /// after that never completes (see [_holdDetailsAfter]).
   void holdDetailsAfter(int count) => _holdDetailsAfter = count;

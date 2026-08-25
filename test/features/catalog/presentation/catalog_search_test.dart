@@ -45,6 +45,26 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// The active locale's strings, read off the shell that is already open.
+  AppLocalizations localizations(WidgetTester tester) =>
+      AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+
+  /// Opens the shell over [gateway] and searches for [term].
+  ///
+  /// Takes a whole gateway rather than [openShell]'s `listings` map, because
+  /// the audio-result tests need [FakeCatalogGateway.addAudio]'s paired
+  /// listing-and-details entry, not just a listing.
+  Future<void> searchFor(
+    WidgetTester tester, {
+    required String term,
+    required FakeCatalogGateway gateway,
+  }) async {
+    await tester.pumpShell(
+      extraOverrides: [catalogGatewayProvider.overrideWithValue(gateway)],
+    );
+    await search(tester, term);
+  }
+
   /// A library with one audio file and one image in it.
   Map<LibraryType, gateway.CatalogListing> aLibrary() => {
     LibraryType.audio: gateway.CatalogListing.loaded(
@@ -151,10 +171,14 @@ void main() {
       tester,
     ) async {
       await openShell(tester, listings: aLibrary());
+      final l10n = localizations(tester);
 
       await search(tester, 'blue');
 
-      expect(find.text('Kind of Blue.flac'), findsOneWidget);
+      // The audio match still matches on its name on disk (FR-CT-06), but
+      // carries no title tag, so FR-CT-13 shows the word for that rather than
+      // the name — matching by disk name and showing it are different rules.
+      expect(find.text(l10n.musicUnknownTitle), findsOneWidget);
       expect(find.text('blue.png'), findsOneWidget);
       expect(find.text('Giant Steps.flac'), findsNothing);
     });
@@ -296,6 +320,70 @@ void main() {
 
       expect(find.byType(LibrarySourcesScreen), findsOneWidget);
     });
+  });
+
+  group('audio results (FR-CT-13)', () {
+    testWidgets(
+      'GivenAnAudioMatch_WhenTheResultsAreShown_ThenItReadsItsMetadataTitle',
+      (tester) async {
+        // The rule follows the file type, not the screen: if the results
+        // showed names on disk, every file name the music area removes would
+        // come back the moment anyone searched.
+        //
+        // The search itself still matches on the name on disk (FR-CT-06 does
+        // not read metadata), so the term has to appear there for the file to
+        // be found at all — "AIR" in the disk name is what makes this a match,
+        // and "Airbag" in the title is what the row is asserted to show for it.
+        await searchFor(
+          tester,
+          term: 'air',
+          gateway: FakeCatalogGateway()
+            ..addAudio(
+              uuid: '1',
+              name: 'AIR-DISKNAME-01.flac',
+              title: 'Airbag',
+              artist: 'Radiohead',
+            ),
+        );
+
+        expect(find.textContaining('Airbag'), findsOneWidget);
+        expect(find.textContaining('DISKNAME'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenAnUntaggedAudioMatch_WhenTheResultsAreShown_ThenItReadsUnknownTitle',
+      (tester) async {
+        await searchFor(
+          tester,
+          term: 'disk',
+          gateway: FakeCatalogGateway()
+            ..addAudio(uuid: '1', name: 'DISKNAME-01.flac'),
+        );
+        final l10n = localizations(tester);
+
+        expect(find.textContaining(l10n.musicUnknownTitle), findsOneWidget);
+        expect(find.textContaining('DISKNAME'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenANonAudioMatch_WhenTheResultsAreShown_ThenItStillReadsItsFileName',
+      (tester) async {
+        // Only audio has a metadata name to show instead. A document's name
+        // on disk is what it is called.
+        await searchFor(
+          tester,
+          term: 'notes',
+          gateway: FakeCatalogGateway()..addDocument(uuid: '2', name: 'notes.pdf'),
+        );
+
+        // Exact rather than containing: the subtitle shows the file's path,
+        // which also contains "notes.pdf" as its tail, and a containing match
+        // would pass even if the title itself were never checked.
+        expect(find.text('notes.pdf'), findsOneWidget);
+      },
+    );
   });
 
   for (final (name, locale) in [
