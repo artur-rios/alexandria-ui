@@ -24,7 +24,7 @@ import '../../../support/shell_harness.dart';
 void main() {
   const uuid = '6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f';
 
-  /// Signs in, opens the music listing, and taps the file.
+  /// Signs in, opens a listing, and taps the file.
   Future<ProviderContainer> openDetails(
     WidgetTester tester, {
     FileDetailsOutcome? outcome,
@@ -35,12 +35,15 @@ void main() {
   }) async {
     // Filed under video rather than music: UC-46 gave audio its own browsing
     // area, and this suite is about the details dialog in general, reached
-    // the way every other type reaches it — through the generic listing. The
-    // file itself is still typed audio, which is what the type-gated tests
-    // elsewhere in this file need.
+    // the way every other type reaches it — through the generic listing.
+    // `aFile()` defaults to audio and nothing in this file depends on that;
+    // typed explicitly as video so the fixture matches the listing it sits
+    // in.
     final gateway = FakeCatalogGateway(
       listings: {
-        LibraryType.video: CatalogListing.loaded(files: [aFile(uuid: uuid)]),
+        LibraryType.video: CatalogListing.loaded(
+          files: [aFile(uuid: uuid, type: LibraryType.video)],
+        ),
       },
     );
     if (outcome != null) gateway.details[uuid] = outcome;
@@ -97,7 +100,7 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid),
+            file: aFile(uuid: uuid, type: LibraryType.video),
             metadata: const {'artist': 'Miles Davis'},
           ),
         ),
@@ -118,7 +121,10 @@ void main() {
       await openDetails(
         tester,
         outcome: FileDetailsOutcome.read(
-          details: FileDetails(file: aFile(uuid: uuid), durationSeconds: 545),
+          details: FileDetails(
+            file: aFile(uuid: uuid, type: LibraryType.video),
+            durationSeconds: 545,
+          ),
         ),
       );
 
@@ -164,7 +170,10 @@ void main() {
       await openDetails(
         tester,
         outcome: FileDetailsOutcome.read(
-          details: FileDetails(file: aFile(uuid: uuid), isDeleted: true),
+          details: FileDetails(
+            file: aFile(uuid: uuid, type: LibraryType.video),
+            isDeleted: true,
+          ),
         ),
       );
 
@@ -183,7 +192,10 @@ void main() {
       await openDetails(
         tester,
         outcome: FileDetailsOutcome.read(
-          details: FileDetails(file: aFile(uuid: uuid), isDeleted: true),
+          details: FileDetails(
+            file: aFile(uuid: uuid, type: LibraryType.video),
+            isDeleted: true,
+          ),
         ),
       );
 
@@ -200,7 +212,10 @@ void main() {
         await openDetails(
           tester,
           outcome: FileDetailsOutcome.read(
-            details: FileDetails(file: aFile(uuid: uuid), isDeleted: true),
+            details: FileDetails(
+              file: aFile(uuid: uuid, type: LibraryType.video),
+              isDeleted: true,
+            ),
           ),
           lifecycle: lifecycle,
         );
@@ -222,7 +237,10 @@ void main() {
         await openDetails(
           tester,
           outcome: FileDetailsOutcome.read(
-            details: FileDetails(file: aFile(uuid: uuid), isDeleted: true),
+            details: FileDetails(
+              file: aFile(uuid: uuid, type: LibraryType.video),
+              isDeleted: true,
+            ),
           ),
         );
 
@@ -369,7 +387,11 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, missingAt: DateTime.utc(2026, 8, 19)),
+            file: aFile(
+              uuid: uuid,
+              type: LibraryType.video,
+              missingAt: DateTime.utc(2026, 8, 19),
+            ),
           ),
         ),
       );
@@ -391,7 +413,11 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, missingAt: DateTime.utc(2026, 8, 19)),
+            file: aFile(
+              uuid: uuid,
+              type: LibraryType.video,
+              missingAt: DateTime.utc(2026, 8, 19),
+            ),
             isDeleted: true,
           ),
         ),

@@ -10,6 +10,7 @@ import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart
     as widgets;
 import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_ui/features/organization/presentation/bookmarks_view.dart';
+import 'package:alexandria_ui/features/playback/presentation/music_library_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -63,11 +64,7 @@ void main() {
           LibraryType.video: CatalogListing.loaded(
             files: [
               aFile(type: LibraryType.video, name: 'Kind of Blue.mp4'),
-              aFile(
-                uuid: 'b',
-                type: LibraryType.video,
-                name: 'Blue Train.mp4',
-              ),
+              aFile(uuid: 'b', type: LibraryType.video, name: 'Blue Train.mp4'),
             ],
           ),
         },
@@ -246,6 +243,17 @@ void main() {
 
       expect(find.byType(widgets.CatalogListing), findsNothing);
       expect(find.byType(BookmarksView), findsOneWidget);
+    });
+
+    testWidgets('GivenMusic_WhenSelected_ThenNoFileListingIsShown', (
+      tester,
+    ) async {
+      // UC-46's whole point: a listing of file names is the one thing a
+      // music library must never be (FR-CT-13).
+      await openListing(tester, destination: ShellDestination.music);
+
+      expect(find.byType(widgets.CatalogListing), findsNothing);
+      expect(find.byType(MusicLibraryView), findsOneWidget);
     });
   });
 
