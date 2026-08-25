@@ -851,7 +851,7 @@ graph LR
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The stage's available space falls below its floor, at a very large text scale | The application hides the stage and keeps the rest of the player; the screen scrolls to reach the transport controls instead of overflowing. |
+| AF-01 | The window's available height or width falls below the floor the stage needs | The application hides the stage and keeps the rest of the player; the screen scrolls to reach the transport controls instead of overflowing. |
 | AF-02 | A single track is played rather than an album or artist | The compact player is used; the animation is an album and artist behavior. |
 | AF-03 | The owner navigates to another screen | Playback and the persistent player continue; the animation is shown wherever the full player is visible. |
 | AF-04 | The system requests reduced motion | The application presents the medium without the turning motion, and playback is unaffected. |
