@@ -17,11 +17,12 @@ import 'shell_navigation_panel.dart';
 
 /// The application shell (UC-38, FR-UX-01, FR-UX-02).
 ///
-/// Three regions and nothing else: the navigation panel down the left, the
-/// content area beside it, and the playback bar across the bottom. Everything
-/// the owner does happens inside the content area, which is why this widget
-/// stays this small — it is a frame, and a frame that grew feature logic would
-/// be the thing every later use case has to edit.
+/// Four regions and nothing else: the menu bar across the top, the navigation
+/// panel down the left, the content area beside it, and the playback bar
+/// across the bottom. Everything the owner does happens inside the content
+/// area, which is why this widget stays this small — it is a frame, and a
+/// frame that grew feature logic would be the thing every later use case has
+/// to edit.
 class ShellScreen extends ConsumerWidget {
   /// Creates the shell.
   const ShellScreen({super.key});
