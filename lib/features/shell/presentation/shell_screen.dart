@@ -52,18 +52,14 @@ class ShellScreen extends ConsumerWidget {
     // `NowPlayingScreen`) clears it, and without the guard every one of
     // those rebuilds would push another route.
     //
-    // `showsAlbumAnimation` (AF-02) is checked here too, not just in
-    // `NowPlayingScreen`'s own build: `AlbumAnimationController` tracks
-    // whether an insertion is owed for *any* queue, single tracks included,
-    // because it has no reason of its own to treat a lone track differently.
-    // Without this guard, playing one ad-hoc track would pop the full player
-    // open onto a screen with no medium to show — the animation this whole
-    // feature is for.
+    // No separate AF-02 check here: `AlbumAnimationState.insertionOwed` is
+    // already `false` for a single track — `AlbumAnimationController` folds
+    // that rule in itself — so the level this edge-triggers on and the level
+    // `NowPlayingScreen` draws a stage from are the same one, and cannot
+    // disagree the way an independently-checked `showsAlbumAnimation` here
+    // once could.
     ref.listen(albumAnimationControllerProvider, (previous, next) {
-      final owesAVisibleInsertion =
-          next.insertionOwed &&
-          ref.read(audioPlaybackControllerProvider).queue.showsAlbumAnimation;
-      if (owesAVisibleInsertion && !(previous?.insertionOwed ?? false)) {
+      if (next.insertionOwed && !(previous?.insertionOwed ?? false)) {
         unawaited(NowPlayingScreen.show(context));
       }
     });

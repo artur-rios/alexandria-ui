@@ -34,6 +34,15 @@ String musicTitleOf(MusicEntry entry, AppLocalizations l10n) =>
 String musicArtistOf(MusicEntry entry, AppLocalizations l10n) =>
     tagOr(entry.metadata.artist, l10n.musicUnknownArtist);
 
+/// A track's own album tag, or the word for a file whose tags carry none.
+///
+/// Not [musicTitleOf]: a track's title is its own name ("So What"), and its
+/// album is the record it belongs to ("Kind of Blue") — two different tags
+/// that happen to share a fallback word only by coincidence of both being
+/// "unknown".
+String musicAlbumOf(MusicEntry entry, AppLocalizations l10n) =>
+    tagOr(entry.metadata.album, l10n.musicUnknownAlbum);
+
 /// [file] read as a [MusicEntry], never by its name on disk (FR-CT-13).
 ///
 /// Shared by the bar, the skip notice and the full player, so nothing that
@@ -72,6 +81,14 @@ String musicArtistForFile(
   CatalogFile file,
   AppLocalizations l10n,
 ) => musicArtistOf(musicEntryForFile(ref, file), l10n);
+
+/// [file]'s own album tag from its metadata, never its name on disk
+/// (FR-CT-13).
+String musicAlbumForFile(
+  WidgetRef ref,
+  CatalogFile file,
+  AppLocalizations l10n,
+) => musicAlbumOf(musicEntryForFile(ref, file), l10n);
 
 /// The queue's own name, or `null` when there is none to show (UC-20,
 /// UC-21, FR-CT-13).

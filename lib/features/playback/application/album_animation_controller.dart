@@ -10,10 +10,20 @@ class AlbumAnimationState {
   /// Creates a state.
   const AlbumAnimationState({this.medium, this.insertionOwed = false});
 
-  /// The medium to draw, or `null` when the owner turned the animation off.
+  /// The medium to draw, or `null` when the owner turned the animation off,
+  /// or when the queue is a single track (UC-21 AF-02) — a lone track is not
+  /// a record, so there is nothing here for the caller to draw or to open a
+  /// player over.
   final AlbumMedium? medium;
 
   /// Whether the medium has to be put into its device before it turns.
+  ///
+  /// Always `false` when [medium] is `null`: there is no consumer for which
+  /// "owed, but nothing to show for it" is a meaningful state to be in, and
+  /// keeping the two facts tied together here is what stops a caller (the
+  /// shell's auto-open, `NowPlayingScreen`'s own stage) from having to
+  /// re-derive "is this queue even the kind of thing that owes one" for
+  /// itself and risk answering it differently than this class did.
   final bool insertionOwed;
 }
 
@@ -21,9 +31,19 @@ class AlbumAnimationState {
 ///
 /// An insertion is owed on the session's first play, and whenever the album or
 /// the artist changes — never between the tracks of one record, which is what
-/// a record already on the platter does not need. The queue's kind and label
-/// are what say which record is playing: two queues with the same pair are the
-/// same record continuing.
+/// a record already on the platter does not need, and never for a single track
+/// (AF-02), which never owes one at all. The queue's kind and label are what
+/// say which record is playing: two queues with the same pair are the same
+/// record continuing.
+///
+/// AF-02 lives here, not only in whichever widget draws the stage: a single
+/// track queue's `insertionOwed` has to be `false`, permanently, not merely
+/// "owed but not drawn" — the flag is a level, cleared only by
+/// [insertionShown], and a caller that hid the stage without also clearing the
+/// flag would leave it stuck `true` through every track that plays until the
+/// caller happens to draw a stage again. A record played straight after a lone
+/// track would then find the flag already `true` and never see the edge that
+/// says "this became newly owed."
 class AlbumAnimationController extends Notifier<AlbumAnimationState> {
   /// What the last insertion was shown for, as `(kind, identity)`.
   ///
@@ -40,7 +60,9 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
     final mode = ref.watch(preferencesControllerProvider).albumAnimation;
     final medium = mediumFor(mode, queue.year);
 
-    if (medium == null || queue.isEmpty) {
+    // `showsAlbumAnimation` already requires a non-empty queue, so there is
+    // no separate `queue.isEmpty` check left to make here.
+    if (medium == null || !queue.showsAlbumAnimation) {
       return const AlbumAnimationState();
     }
 
@@ -52,11 +74,11 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
 
   /// Records that the insertion for what is playing has been shown.
   ///
-  /// Whether this may safely be called synchronously from a widget's build
-  /// phase is not settled here — this controller has no consumer yet. What is
-  /// known is that it is cheap and free of side effects beyond the state
-  /// assignment; Task 7's caller is what determines, and should test, whether
-  /// calling it from a build is safe.
+  /// Settled by Task 7: never called synchronously from a build. Both of its
+  /// callers — `AlbumStage`'s own animation-status listener, and
+  /// `NowPlayingScreen`'s `ref.listen` for the case where motion is reduced
+  /// and that listener never fires — run after a build has already
+  /// committed, which is what a state assignment here requires.
   void insertionShown() {
     final queue = ref.read(audioPlaybackControllerProvider).queue;
     _shownFor = _identityOf(queue);
