@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../domain/music_browse.dart';
 import '../domain/music_grouping.dart';
 
@@ -34,10 +35,13 @@ String musicArtistOf(MusicEntry entry, AppLocalizations l10n) =>
 String musicGroupName(
   MusicGroup group,
   AppLocalizations l10n, {
-  required bool isArtist,
+  required MusicGroupKind kind,
 }) =>
     group.name ??
-    (isArtist ? l10n.musicUnknownArtist : l10n.musicUnknownAlbum);
+    switch (kind) {
+      MusicGroupKind.artist => l10n.musicUnknownArtist,
+      MusicGroupKind.album => l10n.musicUnknownAlbum,
+    };
 
 /// The artists, or the albums (UC-46 main flow step 2).
 ///
@@ -71,9 +75,7 @@ class MusicGroupList extends ConsumerWidget {
                 ? Icons.person_outline
                 : Icons.album_outlined,
           ),
-          title: Text(
-            musicGroupName(group, l10n, isArtist: kind == MusicGroupKind.artist),
-          ),
+          title: Text(musicGroupName(group, l10n, kind: kind)),
           // An album says whose it is; an artist is already the answer to
           // that question.
           subtitle: kind == MusicGroupKind.album
@@ -122,7 +124,7 @@ class MusicTrackList extends ConsumerWidget {
         return ListTile(
           leading: numbered
               ? SizedBox(
-                  width: 32,
+                  width: AppSpacing.xl,
                   child: Text(
                     entry.metadata.track?.toString() ?? '',
                     textAlign: TextAlign.end,
