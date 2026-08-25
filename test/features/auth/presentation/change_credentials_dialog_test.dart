@@ -8,7 +8,7 @@ import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
 import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -18,17 +18,8 @@ import '../../../support/shell_harness.dart';
 
 /// The credential-change form (UC-04, FR-AU-10, FR-AU-11).
 void main() {
-  /// The panel's preferences action.
-  ///
-  /// Not `find.byType(PreferencesButton)`: the shell now builds its
-  /// preferences action as a `RailAction` inline, matching how the
-  /// destinations beside it present at each breakpoint.
-  Finder preferencesActionInShell() => find.descendant(
-    of: find.byType(ShellNavigationPanel),
-    matching: find.byIcon(Icons.settings_outlined),
-  );
-
-  /// Signs in, opens preferences, and opens the credential-change form.
+  /// Signs in, opens preferences from the Settings menu, and opens the
+  /// credential-change form.
   Future<void> openForm(
     WidgetTester tester, {
     FakeAuthGateway? gateway,
@@ -40,8 +31,10 @@ void main() {
       locale: locale,
       themeMode: themeMode,
     );
-    await tester.tap(preferencesActionInShell());
-    await tester.pumpAndSettle();
+    await tester.openSettingsMenuEntry(
+      AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+          .preferencesLabel,
+    );
 
     final l10n = AppLocalizations.of(
       tester.element(find.byType(PreferencesDialog)),
@@ -78,8 +71,10 @@ void main() {
       'GivenASignedInOwner_WhenPreferencesOpen_ThenTheChangeIsOffered',
       (tester) async {
         await tester.pumpShell();
-        await tester.tap(preferencesActionInShell());
-        await tester.pumpAndSettle();
+        await tester.openSettingsMenuEntry(
+          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+              .preferencesLabel,
+        );
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
         );
@@ -161,8 +156,10 @@ void main() {
       tester,
     ) async {
       final container = await tester.pumpShell();
-      await tester.tap(preferencesActionInShell());
-      await tester.pumpAndSettle();
+      await tester.openSettingsMenuEntry(
+        AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+            .preferencesLabel,
+      );
       final l10n = AppLocalizations.of(
         tester.element(find.byType(PreferencesDialog)),
       );

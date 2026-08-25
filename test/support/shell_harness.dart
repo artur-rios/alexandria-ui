@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
+import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 
 import 'failing_settings_store.dart';
 import 'fake_auth_gateway.dart';
@@ -62,6 +63,15 @@ extension PumpShell on WidgetTester {
   /// link to it.
   Future<void> openLibraryTool(String label) async {
     await tap(find.byType(LibraryMenu));
+    await pumpAndSettle();
+
+    await tap(find.text(label).last);
+    await pumpAndSettle();
+  }
+
+  /// Chooses [label] from the shell's Settings menu (UC-39 main flow step 1).
+  Future<void> openSettingsMenuEntry(String label) async {
+    await tap(find.byType(SettingsMenu));
     await pumpAndSettle();
 
     await tap(find.text(label).last);

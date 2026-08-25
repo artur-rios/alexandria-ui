@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import 'library_menu.dart';
+import 'settings_menu.dart';
 
 /// The shell's menu bar (FR-UX-01, FR-UX-02).
 ///
@@ -41,7 +42,10 @@ class ShellMenuBar extends StatelessWidget {
                 elevation: const WidgetStatePropertyAll(0),
                 padding: const WidgetStatePropertyAll(EdgeInsets.zero),
               ),
-              children: [LibraryMenu(showsLabel: showsLabels)],
+              children: [
+                LibraryMenu(showsLabel: showsLabels),
+                SettingsMenu(showsLabel: showsLabels),
+              ],
             ),
           ],
         ),

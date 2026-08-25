@@ -476,6 +476,18 @@ abstract class AppLocalizations {
   /// **'Preferences'**
   String get preferencesLabel;
 
+  /// The menu bar's settings menu, holding preferences and the account actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsMenuLabel;
+
+  /// Tooltip on the settings menu where the bar is too narrow to show its label.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get settingsMenuOpen;
+
   /// Heading of the theme group in preferences (FR-UX-04).
   ///
   /// In en, this message translates to:

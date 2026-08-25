@@ -286,6 +286,14 @@
   "@preferencesLabel": {
     "description": "Visible label of the preferences action in the navigation panel, shown beside or beneath its icon at every breakpoint wider than the minimum."
   },
+  "settingsMenuLabel": "Settings",
+  "@settingsMenuLabel": {
+    "description": "The menu bar's settings menu, holding preferences and the account actions."
+  },
+  "settingsMenuOpen": "Open settings",
+  "@settingsMenuOpen": {
+    "description": "Tooltip on the settings menu where the bar is too narrow to show its label."
+  },
   "preferencesThemeLabel": "Theme",
   "@preferencesThemeLabel": {
     "description": "Heading of the theme group in preferences (FR-UX-04)."

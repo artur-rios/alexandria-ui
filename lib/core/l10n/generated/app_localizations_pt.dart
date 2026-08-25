@@ -229,6 +229,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get preferencesLabel => 'Preferências';
 
   @override
+  String get settingsMenuLabel => 'Configurações';
+
+  @override
+  String get settingsMenuOpen => 'Abrir configurações';
+
+  @override
   String get preferencesThemeLabel => 'Tema';
 
   @override

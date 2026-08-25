@@ -3,12 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
-import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/breakpoints.dart';
 import '../../catalog/domain/library_type.dart';
 import '../domain/shell_destination.dart';
-import 'preferences_dialog.dart';
-import 'rail_action.dart';
 
 /// The navigation panel (FR-UX-01, FR-UX-02).
 ///
@@ -71,47 +68,6 @@ class ShellNavigationPanel extends ConsumerWidget {
                   ? NavigationRailLabelType.all
                   : NavigationRailLabelType.none,
               groupAlignment: -1,
-              // The library tools and preferences sit below the destinations
-              // rather than among them: neither is an area of the library
-              // (FR-CT-01), and UC-39 reaches preferences from here and from
-              // the authentication screens alike. The tools menu is what makes
-              // the library-wide screens — sources, collections, watchlists,
-              // reading lists, deleted items, and the missing-files review
-              // (UC-37 step 1) — reachable from wherever the owner is.
-              //
-              // Placed in the flow after the destinations rather than pinned
-              // to the bottom with an Expanded: the rail already sits inside a
-              // scroll view with an intrinsic height, and an unbounded child
-              // in that arrangement is a layout error at the short windows
-              // UC-38 added the scrolling for.
-              trailing: Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.sm),
-                // `IntrinsicWidth` rather than a bare `Column`: the rail sits
-                // inside a scroll view with an intrinsic height (UC-38), so
-                // this subtree's incoming width is unbounded — which is fine
-                // for the column itself but leaves a `Divider` with no width
-                // to stretch to, since it has none of its own. Measuring the
-                // actions' intrinsic width first gives the divider something
-                // concrete to fill.
-                child: IntrinsicWidth(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // A divider rather than just the extra spacing above:
-                      // these two are actions, not destinations, and the
-                      // line is what tells the eye that before it stops
-                      // mattering.
-                      const Divider(),
-                      RailAction(
-                        icon: Icons.settings_outlined,
-                        label: l10n.preferencesLabel,
-                        onPressed: () => PreferencesDialog.show(context),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               destinations: [
                 for (final destination in ShellDestination.values)
                   NavigationRailDestination(

@@ -63,6 +63,8 @@
   "preferencesTitle": "Preferências",
   "preferencesOpen": "Abrir preferências",
   "preferencesLabel": "Preferências",
+  "settingsMenuLabel": "Configurações",
+  "settingsMenuOpen": "Abrir configurações",
   "preferencesThemeLabel": "Tema",
   "preferencesThemeSystem": "Acompanhar o sistema",
   "preferencesThemeLight": "Claro",

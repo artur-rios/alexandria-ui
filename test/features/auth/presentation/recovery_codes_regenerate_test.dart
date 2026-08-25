@@ -8,7 +8,6 @@ import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/auth/presentation/recovery_codes_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,17 +20,8 @@ import '../../../support/shell_harness.dart';
 void main() {
   const newCodes = ['new-aaaa', 'new-bbbb'];
 
-  /// The panel's preferences action.
-  ///
-  /// Not `find.byType(PreferencesButton)`: the shell now builds its
-  /// preferences action as a `RailAction` inline, matching how the
-  /// destinations beside it present at each breakpoint.
-  Finder preferencesActionInShell() => find.descendant(
-    of: find.byType(ShellNavigationPanel),
-    matching: find.byIcon(Icons.settings_outlined),
-  );
-
-  /// Signs in and opens preferences, where the section lives (step 1).
+  /// Signs in and opens preferences from the Settings menu, where the
+  /// section lives (step 1).
   Future<({ProviderContainer container, FakeAuthGateway gateway})>
   openPreferences(
     WidgetTester tester, {
@@ -50,8 +40,10 @@ void main() {
       themeMode: themeMode,
     );
 
-    await tester.tap(preferencesActionInShell());
-    await tester.pumpAndSettle();
+    await tester.openSettingsMenuEntry(
+      AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+          .preferencesLabel,
+    );
 
     return (container: container, gateway: gateway);
   }
@@ -167,8 +159,7 @@ void main() {
       await regenerate(tester);
       // The preferences dialog closes on the way through, so the notice is
       // read from the section when it is opened again.
-      await tester.tap(preferencesActionInShell());
-      await tester.pumpAndSettle();
+      await tester.openSettingsMenuEntry(messages(tester).preferencesLabel);
 
       expect(find.byType(RecoveryCodesScreen), findsNothing);
       expect(find.text(messages(tester).failureInvalidInput), findsOneWidget);

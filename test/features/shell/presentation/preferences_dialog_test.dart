@@ -1,7 +1,6 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,26 +11,16 @@ import '../../../support/shell_harness.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-11, FR-UX-12).
 void main() {
-  /// The panel's preferences action.
-  ///
-  /// Not `find.byType(PreferencesButton)`: the panel now builds its
-  /// preferences action as a `RailAction` inline, matching how the
-  /// destinations beside it present at each breakpoint (`PreferencesButton`
-  /// stays a plain icon button on the screens reached without a session).
-  /// The icon is what stays constant across every tier.
-  Finder preferencesActionInShell() => find.descendant(
-    of: find.byType(ShellNavigationPanel),
-    matching: find.byIcon(Icons.settings_outlined),
-  );
-
-  /// Opens preferences from the shell.
+  /// Opens preferences from the shell's Settings menu.
   Future<void> openFromShell(
     WidgetTester tester, {
     ThemeMode? themeMode,
   }) async {
     await tester.pumpShell(themeMode: themeMode ?? ThemeMode.light);
-    await tester.tap(preferencesActionInShell());
-    await tester.pumpAndSettle();
+    await tester.openSettingsMenuEntry(
+      AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+          .preferencesLabel,
+    );
   }
 
   group('reachability (main flow step 1)', () {
@@ -168,8 +157,10 @@ void main() {
       'GivenTheStoreRefusesAWrite_WhenAThemeIsChosen_ThenTheOwnerIsTold',
       (tester) async {
         await tester.pumpShellWithFailingSettings();
-        await tester.tap(preferencesActionInShell());
-        await tester.pumpAndSettle();
+        await tester.openSettingsMenuEntry(
+          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+              .preferencesLabel,
+        );
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
         );
@@ -210,8 +201,10 @@ void main() {
         // is that a preference change is not a reset, and the shell's
         // destination is the state available to prove it on.
         final container = await tester.pumpShell();
-        await tester.tap(preferencesActionInShell());
-        await tester.pumpAndSettle();
+        await tester.openSettingsMenuEntry(
+          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+              .preferencesLabel,
+        );
         final before = container.read(shellControllerProvider);
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
@@ -265,8 +258,10 @@ void main() {
         'Given${name}_WhenPreferencesOpen_ThenNoStringRendersAsItsKey',
         (tester) async {
           await tester.pumpShell(locale: locale);
-          await tester.tap(preferencesActionInShell());
-          await tester.pumpAndSettle();
+          await tester.openSettingsMenuEntry(
+            AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+                .preferencesLabel,
+          );
           final l10n = AppLocalizations.of(
             tester.element(find.byType(PreferencesDialog)),
           );

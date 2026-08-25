@@ -39,16 +39,12 @@ void main() {
       ],
     );
 
-    // Not `find.byType(PreferencesButton)`: the shell now builds its
-    // preferences action as a `RailAction` inline, matching how the
-    // destinations beside it present at each breakpoint.
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(Icons.settings_outlined),
-      ),
+    // Not `find.byType(PreferencesButton)`: the shell now offers preferences
+    // through the bar's Settings menu rather than a rail action.
+    await tester.openSettingsMenuEntry(
+      AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+          .preferencesLabel,
     );
-    await tester.pumpAndSettle();
 
     return container;
   }
@@ -171,13 +167,10 @@ void main() {
             .length;
         expect(readWhileSignedIn, greaterThan(0));
 
-        await tester.tap(
-          find.descendant(
-            of: find.byType(ShellNavigationPanel),
-            matching: find.byIcon(Icons.settings_outlined),
-          ),
+        await tester.openSettingsMenuEntry(
+          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+              .preferencesLabel,
         );
-        await tester.pumpAndSettle();
         await pressSignOut(tester);
 
         // Signing back in lands on the same area, and the listing there has to

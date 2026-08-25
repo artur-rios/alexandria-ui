@@ -2,6 +2,8 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
+import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
+import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_menu_bar.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -130,6 +132,53 @@ void main() {
             matching: find.text(l10n.libraryToolsLabel),
           ),
           findsOneWidget,
+        );
+      },
+    );
+  });
+
+  group('the settings menu (UC-39 main flow step 1)', () {
+    testWidgets(
+      'GivenTheMenuBar_WhenTheSettingsMenuIsOpened_ThenPreferencesAreOffered',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await tester.tap(find.byType(SettingsMenu));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.preferencesLabel), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheSettingsMenu_WhenPreferencesAreChosen_ThenTheDialogOpens',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await tester.tap(find.byType(SettingsMenu));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(l10n.preferencesLabel));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(PreferencesDialog), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheShell_WhenTheRailIsShown_ThenItCarriesNoActionsBesideDestinations',
+      (tester) async {
+        // The rail is destinations and nothing else once the bar carries the
+        // two actions that used to sit under it.
+        await tester.pumpShell();
+
+        expect(
+          find.descendant(
+            of: find.byType(ShellNavigationPanel),
+            matching: find.byIcon(Icons.settings_outlined),
+          ),
+          findsNothing,
         );
       },
     );
