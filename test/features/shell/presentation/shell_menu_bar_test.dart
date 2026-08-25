@@ -300,4 +300,70 @@ void main() {
       },
     );
   });
+
+  group('the bar\'s fit with the field shown (FR-UX-01, FR-UX-02)', () {
+    // Every golden captures bookmarks, which withholds the field, so none of
+    // them ever exercises the arrangement the bar spends most of its life
+    // in: a full `TextField` — label, prefix icon — sitting in a `Row`
+    // beside the `MenuBar`. A compact-window test elsewhere already renders
+    // that arrangement at the bar's narrowest width, so a `RenderFlex`
+    // overflow there would already throw; what nothing checks is the bar's
+    // height and whether the field actually shares the menus' row rather
+    // than being pushed onto one of its own.
+    //
+    // Material lays out a labelled `TextField` at 48 logical pixels tall,
+    // and `ShellMenuBar` wraps its row in `AppSpacing.xs` (4) of padding on
+    // each side, so a bar doing its job sits at 56. 64 is the ceiling used
+    // below: 8 pixels of slack for font-metric variance across platforms,
+    // not so much slack that a genuinely broken layout — the field wrapping
+    // under the menu row and roughly doubling the bar's height — would pass
+    // unnoticed.
+    const maxBarHeight = 64.0;
+
+    Future<void> expectTheBarFitsInOneRow(WidgetTester tester) async {
+      final barHeight = tester.getSize(find.byType(ShellMenuBar)).height;
+      expect(barHeight, lessThanOrEqualTo(maxBarHeight));
+
+      final libraryRect = tester.getRect(find.byType(LibraryMenu));
+      final settingsRect = tester.getRect(find.byType(SettingsMenu));
+      final fieldRect = tester.getRect(find.byType(CatalogSearchField));
+
+      // Same row rather than one control pushing the other out of the bar:
+      // each control's vertical extent overlaps the other two's.
+      for (final menuRect in [libraryRect, settingsRect]) {
+        expect(fieldRect.top, lessThan(menuRect.bottom));
+        expect(fieldRect.bottom, greaterThan(menuRect.top));
+      }
+    }
+
+    testWidgets(
+      'GivenTheMinimumWindow_WhenASearchableDestinationIsShown_ThenTheBarFitsInOneRow',
+      (tester) async {
+        final container = await tester.pumpShell(
+          surfaceSize: Breakpoint.minimumWindowSize,
+        );
+        container
+            .read(shellControllerProvider.notifier)
+            .go(ShellDestination.music);
+        await tester.pumpAndSettle();
+
+        await expectTheBarFitsInOneRow(tester);
+      },
+    );
+
+    testWidgets(
+      'GivenAMediumWindow_WhenASearchableDestinationIsShown_ThenTheBarFitsInOneRow',
+      (tester) async {
+        final container = await tester.pumpShell(
+          surfaceSize: const Size(1280, 800),
+        );
+        container
+            .read(shellControllerProvider.notifier)
+            .go(ShellDestination.music);
+        await tester.pumpAndSettle();
+
+        await expectTheBarFitsInOneRow(tester);
+      },
+    );
+  });
 }
