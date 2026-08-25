@@ -1,14 +1,9 @@
-import 'dart:async';
-
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
-import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_animation.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_player_screen.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
@@ -23,35 +18,36 @@ import '../../../support/shell_harness.dart';
 
 /// The album playback animation (UC-21, FR-PL-07, BR-21).
 void main() {
-  final blue1 = aFile(uuid: 'blue-1', name: 'So What.flac');
-  final blue2 = aFile(uuid: 'blue-2', name: 'Blue in Green.flac');
-
-  /// Signs in and plays [file], as an album unless [asTrack] says otherwise.
+  /// Signs in and plays a track of Miles Davis's "Kind of Blue" from the
+  /// music area (UC-46), as an album unless [asTrack] says otherwise — the
+  /// real path an owner takes, and now the only one: the rows Task 4 built
+  /// play on tap rather than opening a details dialog with play buttons on
+  /// it.
   Future<({ProviderContainer container, FakeMediaPlayer player})> play(
     WidgetTester tester, {
     bool asTrack = false,
-    String year = '1959',
+    int year = 1959,
     Size surfaceSize = const Size(1440, 1000),
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
   }) async {
-    final catalog = FakeCatalogGateway(
-      listings: {
-        LibraryType.audio: CatalogListing.loaded(files: [blue1, blue2]),
-      },
-    );
-    for (final file in [blue1, blue2]) {
-      catalog.details[file.uuid] = FileDetailsOutcome.read(
-        details: FileDetails(
-          file: file,
-          metadata: {
-            'album': 'Kind of Blue',
-            'artist': 'Miles Davis',
-            'year': year,
-          },
-        ),
+    final catalog = FakeCatalogGateway()
+      ..addAudio(
+        uuid: 'blue-1',
+        title: 'So What',
+        artist: 'Miles Davis',
+        album: 'Kind of Blue',
+        year: year,
+        track: 1,
+      )
+      ..addAudio(
+        uuid: 'blue-2',
+        title: 'Blue in Green',
+        artist: 'Miles Davis',
+        album: 'Kind of Blue',
+        year: year,
+        track: 2,
       );
-    }
 
     final player = FakeMediaPlayer();
     final container = await tester.pumpShell(
@@ -70,24 +66,28 @@ void main() {
       ],
     );
 
-    // Opens the details dialog directly rather than reaching it through a
-    // listing: UC-46 gave audio its own browsing area (Task 4), whose rows
-    // play a track or an album on tap rather than opening this dialog, so
-    // this is how a test now reaches the play buttons it drives.
-    final context = tester.element(find.byType(ShellScreen));
-    container.read(openFileProvider.notifier).open(blue1.uuid);
-    unawaited(
-      showDialog<void>(
-        context: context,
-        builder: (context) => const FileDetailsView(),
-      ),
-    );
+    container
+        .read(shellControllerProvider.notifier)
+        .go(ShellDestination.music);
     await tester.pumpAndSettle();
 
-    final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.tap(
-      find.text(asTrack ? l10n.audioPlay : l10n.audioPlayAlbum).last,
-    );
+    if (asTrack) {
+      // Songs, where a row plays alone rather than continuing an album.
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+      await tester.tap(find.text(l10n.musicViewSongs));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('So What'));
+    } else {
+      // Artists → the album → the track: a row here plays the album from
+      // where it was tapped (main flow steps 1 and 3).
+      await tester.tap(find.text('Miles Davis'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('Kind of Blue'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('So What'));
+    }
     await tester.pumpAndSettle();
 
     return (container: container, player: player);
@@ -168,7 +168,7 @@ void main() {
     testWidgets('GivenAnAlbumFrom2001_WhenTheFullPlayerOpens_ThenItIsADisc', (
       tester,
     ) async {
-      await play(tester, year: '2001');
+      await play(tester, year: 2001);
       await openPlayer(tester);
 
       expect(
@@ -334,7 +334,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(PlaybackBar),
-          matching: find.text('So What.flac'),
+          matching: find.text('So What'),
         ),
         findsOneWidget,
       );

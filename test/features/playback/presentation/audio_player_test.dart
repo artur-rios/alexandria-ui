@@ -115,18 +115,16 @@ void main() {
       ],
     );
 
-    // Opens the details dialog directly rather than reaching it through a
-    // listing: UC-46 gave audio its own browsing area (Task 4), whose rows
-    // play a track or an album on tap rather than opening this dialog, so
-    // this is how a test now reaches the play buttons it drives.
-    final context = tester.element(find.byType(ShellScreen));
-    container.read(openFileProvider.notifier).open(target.uuid);
-    unawaited(
-      showDialog<void>(
-        context: context,
-        builder: (context) => const FileDetailsView(),
-      ),
-    );
+    // Opens the details dialog directly through the same static `show` the
+    // application calls, rather than reaching it via a listing: UC-46 gave
+    // audio its own browsing area (Task 4), whose rows play a track or an
+    // album on tap rather than opening this dialog, so this is how a test
+    // now reaches the play buttons several of these tests drive. `ShellScreen`
+    // is a `ConsumerWidget`, whose element implements `WidgetRef` — the same
+    // `ref` its own `build` would have received — so this calls `show` for
+    // real rather than re-implementing its body.
+    final element = tester.element(find.byType(ShellScreen));
+    unawaited(FileDetailsView.show(element, element as WidgetRef, target.uuid));
     await tester.pumpAndSettle();
 
     return (
@@ -237,7 +235,7 @@ void main() {
 
       await press(tester, messages(tester).audioPlay);
 
-      expect(inBar(find.text('So What.flac')), findsOneWidget);
+      expect(inBar(find.text('So What')), findsOneWidget);
     });
 
     // Step 3 / FR-PL-06: the album's tracks, in order.
@@ -355,7 +353,7 @@ void main() {
         opened.container.read(audioPlaybackControllerProvider).current?.uuid,
         'blue-1',
       );
-      expect(inBar(find.text('So What.flac')), findsOneWidget);
+      expect(inBar(find.text('So What')), findsOneWidget);
       expect(opened.player.stopCount, 0);
     });
 
@@ -426,7 +424,7 @@ void main() {
       await press(tester, messages(tester).audioPlayAlbum);
 
       expect(
-        find.text(messages(tester).audioSkipped('So What.flac')),
+        find.text(messages(tester).audioSkipped('So What')),
         findsOneWidget,
       );
     });
