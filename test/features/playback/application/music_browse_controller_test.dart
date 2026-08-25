@@ -96,4 +96,25 @@ void main() {
       expect(state.artist, 'Radiohead');
     },
   );
+
+  test(
+    'GivenAnAlbumOpenedDirectly_WhenTheOwnerGoesUp_ThenTheyReturnToAlbums',
+    () {
+      // Going up from an album opened straight off the Albums view must not
+      // land the owner inside an artist they never opened.
+      final container = buildContainer();
+      final controller = container.read(
+        musicBrowseControllerProvider.notifier,
+      );
+
+      controller.show(MusicView.albums);
+      controller.openAlbum('OK', 'Radiohead');
+      controller.upToArtist();
+
+      final state = container.read(musicBrowseControllerProvider);
+      expect(state.inArtist, isFalse);
+      expect(state.inAlbum, isFalse);
+      expect(state.artist, isNull);
+    },
+  );
 }

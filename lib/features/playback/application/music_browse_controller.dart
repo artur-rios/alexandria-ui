@@ -73,10 +73,18 @@ class MusicBrowseController extends Notifier<MusicBrowseState> {
   /// Goes back to the top of the current view.
   void upToArtists() => state = MusicBrowseState(view: state.view);
 
-  /// Goes back to the open artist's albums.
-  void upToArtist() => state = MusicBrowseState(
-    view: state.view,
-    artist: state.artist,
-    inArtist: true,
-  );
+  /// Goes back to the open artist's albums, or to the top of the view if no
+  /// artist was open — which is the case for an album opened straight off
+  /// the Albums view, where there is no artist to go back to.
+  void upToArtist() {
+    if (!state.inArtist) {
+      upToArtists();
+      return;
+    }
+    state = MusicBrowseState(
+      view: state.view,
+      artist: state.artist,
+      inArtist: true,
+    );
+  }
 }
