@@ -11,10 +11,14 @@ import '../../shell/domain/session_activity.dart';
 /// replaying the insertion. Nothing about that memory belongs to a *later*
 /// session: an owner who signs out, signs back in and plays the very same
 /// album is starting over, and the animation owes that play an insertion the
-/// same way the first session's first play did (Finding 4). Invalidating
-/// disposes the controller and lets it rebuild from empty on the next read,
-/// exactly as `CatalogSessionActivity` already resets the catalog's own
-/// per-session state.
+/// same way the first session's first play did (Finding 4).
+///
+/// `forgetSession` rather than `_ref.invalidate`: `AlbumAnimationController`
+/// is a `Notifier`, and invalidating one reruns its `build` on the same
+/// instance rather than replacing it, so `_shownFor` would otherwise survive
+/// untouched across the very reset this activity exists to perform. Calling
+/// the controller's own method is what actually clears it, the same way
+/// `CatalogSessionActivity` resets the catalog's own per-session state.
 class PlaybackSessionActivity implements SessionActivity {
   /// Creates the activity over [_ref].
   const PlaybackSessionActivity(this._ref);
@@ -32,6 +36,6 @@ class PlaybackSessionActivity implements SessionActivity {
 
   @override
   Future<void> end() async {
-    _ref.invalidate(albumAnimationControllerProvider);
+    _ref.read(albumAnimationControllerProvider.notifier).forgetSession();
   }
 }

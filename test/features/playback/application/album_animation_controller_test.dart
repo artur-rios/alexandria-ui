@@ -227,4 +227,52 @@ void main() {
       expect(state.medium, AlbumMedium.tape);
     },
   );
+
+  group('across a session (Finding 4)', () {
+    test(
+      'GivenAnInsertionWasShown_WhenTheOwnerSignsOutAndBackIn_ThenTheSameAlbumOwesOneAgain',
+      () async {
+        // The doc comment on `_shownFor` claimed it reset "whenever the
+        // provider itself is invalidated ... which is what a new session
+        // is" — but nothing invalidated it. Signing out and back in and
+        // playing the very same album must owe an insertion the same way the
+        // session's first play did, not find `_shownFor` still remembering
+        // it from before.
+        final gateway = libraryGateway();
+        final container = buildContainer(gateway);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'kob-1'));
+        container.read(albumAnimationControllerProvider.notifier).insertionShown();
+        expect(
+          container.read(albumAnimationControllerProvider).insertionOwed,
+          isFalse,
+        );
+
+        // `SessionController.end`/`.establish` directly, rather than
+        // `signOutControllerProvider`: `SignOutController` also asks every
+        // activity whether an index run continues in the core, which pulls
+        // in library-sources dependencies this file's fakes do not set up —
+        // orthogonal to what this test is about. `establish` runs every
+        // registered activity's `end()` the same way sign-out does (see its
+        // own doc comment), which is the half of the reset this test is
+        // checking either way: a fresh session's activities are wound down
+        // the same way an ended one's are.
+        container.read(sessionControllerProvider.notifier).end();
+        container
+            .read(sessionControllerProvider.notifier)
+            .establish(FakeAuthGateway.defaultSession);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'kob-1'));
+
+        expect(
+          container.read(albumAnimationControllerProvider).insertionOwed,
+          isTrue,
+        );
+      },
+    );
+  });
 }

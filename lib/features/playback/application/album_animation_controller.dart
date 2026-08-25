@@ -74,12 +74,11 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
   /// `null` until one has been shown, which is what makes the session's first
   /// play owe one. Held here rather than in [state] so that it survives every
   /// rebuild [build] runs for — a rebuild is not a new session — while still
-  /// resetting whenever the provider itself is invalidated or recreated.
-  /// `albumAnimationControllerProvider` is invalidated by
-  /// `PlaybackSessionActivity.end` (Finding 4), which both `SignOutController`
-  /// and `SessionController.establish` run — a sign-out and a fresh sign-in
-  /// both end a session, so both are what "a new session" means here, and
-  /// both are covered.
+  /// being forgotten explicitly by [forgetSession] when one actually ends
+  /// (Finding 4). Not reset by `ref.invalidate` alone: a `Notifier` provider
+  /// reruns [build] on the *same* instance when it is invalidated rather than
+  /// replacing it, so a plain instance field here would otherwise survive
+  /// every session unless something clears it on purpose.
   AlbumIdentity? _shownFor;
 
   @override
@@ -115,6 +114,23 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
     final queue = ref.read(audioPlaybackControllerProvider).queue;
     _shownFor = _identityOf(queue);
     state = AlbumAnimationState(medium: state.medium);
+  }
+
+  /// Forgets which record has already had its insertion shown, so the next
+  /// play — even of the very same record — owes one again (Finding 4).
+  ///
+  /// Called by `PlaybackSessionActivity.end`, which both `SignOutController`
+  /// and `SessionController.establish` run, so both a sign-out and a fresh
+  /// sign-in over it count as ending the session this memory belongs to.
+  /// `ref.invalidate` alone cannot do this: a `Notifier` reruns [build] on
+  /// the *same* instance rather than replacing it, so `_shownFor` would
+  /// otherwise survive untouched. Recomputing [state] directly, rather than
+  /// only clearing the field and waiting for the next natural rebuild, is
+  /// what makes the reset visible immediately rather than only the next time
+  /// something else happens to change the queue or the mode.
+  void forgetSession() {
+    _shownFor = null;
+    state = build();
   }
 
   /// What identifies "which record is playing", as `(kind, identity)`.
