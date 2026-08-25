@@ -1,8 +1,12 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/core/theme/album_palette.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
+import 'package:alexandria_ui/features/playback/application/album_animation_controller.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
+import 'package:alexandria_ui/features/playback/domain/media_player.dart';
+import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_stage.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
 import 'package:alexandria_ui/features/playback/presentation/now_playing_screen.dart';
@@ -360,6 +364,102 @@ void main() {
   // that used to assert the medium was hidden at the minimum window are
   // replaced by the opposite assertion — the medium is still shown there,
   // with real motion, and playback still runs.
+  // Finding 11: `_minimumStageSize` is correct defensive code, but cannot
+  // trigger at the 1024x640 floor NFR-07 enforces on the real window — the
+  // group below proves the path is reachable and behaves the way AF-01
+  // (Use Case Specification Document, UC-21) describes, at a surface no
+  // owner can actually reach but a test can still lay the screen out at.
+  //
+  // Pumps `NowPlayingScreen` on its own, over fixed controllers, inside a
+  // `SizedBox` — not `pumpShell` resized down: the shell's own navigation
+  // cannot lay out at 1024x350 at all, so neither an owner nor `play`'s own
+  // tap-through-the-library helper could ever reach a stage this small by
+  // way of it, and a `SizedBox` constrains the actual render tree in a way a
+  // physical view resize applied to an already-built route did not reliably
+  // do (confirmed: the route's own `LayoutBuilder` never re-ran against the
+  // new size).
+  group('below the stage floor (Finding 11, AF-01)', () {
+    Future<void> pumpBelowFloor(WidgetTester tester) async {
+      final audioController = _FixedAudioPlaybackController(
+        AudioPlaybackState(
+          queue: PlaybackQueue(
+            tracks: [aFile(uuid: 'kob-1', name: 'So What.flac')],
+            kind: QueueKind.album,
+            label: 'Kind of Blue',
+          ),
+          stage: AudioStage.playing,
+          status: const PlaybackStatus(isPlaying: true),
+        ),
+      );
+      final animationController = _FixedAlbumAnimationController(
+        const AlbumAnimationState(medium: AlbumMedium.vinyl),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            audioPlaybackControllerProvider.overrideWith(() => audioController),
+            albumAnimationControllerProvider.overrideWith(
+              () => animationController,
+            ),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(extensions: const [AlbumPalette.standard]),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            // Short enough that `_reservedForTextAndControls` (260) leaves
+            // under `_minimumStageSize` (160) of the height for the stage —
+            // well below anything NFR-07 lets the real window reach.
+            home: const Center(
+              child: SizedBox(
+                width: 1024,
+                height: 350,
+                child: NowPlayingScreen(),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    testWidgets(
+      'GivenASurfaceBelowTheStageFloor_WhenTheFullPlayerOpens_ThenTheStageHides',
+      (tester) async {
+        await pumpBelowFloor(tester);
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(find.byType(AlbumStage), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenASurfaceBelowTheStageFloor_WhenTheFullPlayerOpens_ThenTheRestStillShowsWithoutOverflowing',
+      (tester) async {
+        // AF-01: "the application hides the stage and keeps the rest of the
+        // player; the screen scrolls to reach the transport controls instead
+        // of overflowing." The title and the transport are what "the rest of
+        // the player" names — both still have to be reachable, and nothing
+        // may have overflowed to get there.
+        await pumpBelowFloor(tester);
+
+        // The queue's own label — never the track's title, which this
+        // harness's fixed controllers leave unresolved (no catalog behind
+        // them) and so falls back to the generic "untitled" word; the label
+        // is what proves the rest of the player laid out and read state
+        // correctly regardless.
+        expect(find.text('Kind of Blue'), findsOneWidget);
+        expect(find.byIcon(Icons.pause_circle), findsOneWidget);
+        expect(find.byIcon(Icons.skip_next), findsOneWidget);
+        // An overflowing `Column`/`Row` throws during layout or paint, which
+        // the test binding records rather than letting the widget tree
+        // silently clip or crash — reaching here with nothing recorded is
+        // what "without overflowing" means for this test.
+        expect(tester.takeException(), isNull);
+      },
+    );
+  });
+
   group('the minimum window', () {
     testWidgets(
       'GivenTheMinimumWindow_WhenTheFullPlayerOpens_ThenTheStageIsStillShown',
@@ -1058,4 +1158,28 @@ void main() {
       },
     );
   });
+}
+
+/// An [AudioPlaybackController] that answers with a fixed state — mirrors
+/// `album_visor_test.dart`'s own fixture, used here for Finding 11's
+/// below-the-floor group, which needs a stage-sized surface `pumpShell`'s
+/// own real navigation cannot lay out at all.
+class _FixedAudioPlaybackController extends AudioPlaybackController {
+  _FixedAudioPlaybackController(this._state);
+
+  final AudioPlaybackState _state;
+
+  @override
+  AudioPlaybackState build() => _state;
+}
+
+/// An [AlbumAnimationController] that answers with a fixed state — mirrors
+/// `album_visor_test.dart`'s own fixture.
+class _FixedAlbumAnimationController extends AlbumAnimationController {
+  _FixedAlbumAnimationController(this._state);
+
+  final AlbumAnimationState _state;
+
+  @override
+  AlbumAnimationState build() => _state;
 }
