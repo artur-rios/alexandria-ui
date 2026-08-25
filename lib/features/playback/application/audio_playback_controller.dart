@@ -222,7 +222,26 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
     state = state.copyWith(stage: AudioStage.starting);
 
-    final library = (await ref.read(musicLibraryProvider.future)).entries;
+    final List<MusicEntry> library;
+    try {
+      library = (await ref.read(musicLibraryProvider.future)).entries;
+    } on Object catch (error) {
+      // AF-03: the catalog itself could not be asked, so no album or artist
+      // grouping is knowable — there is nothing this can queue. Reported
+      // through the same state the bar already renders for "nothing in the
+      // selection could be played" rather than left parked in `starting`
+      // forever: a queue built by falling back to the single track the
+      // owner asked for would silently turn "play the album" into "play the
+      // track" without ever saying so, which is worse than telling them the
+      // catalog could not be reached.
+      state = AudioPlaybackState(
+        stage: AudioStage.allFailed,
+        lastSkipped: file,
+        lastSkipReason: error is Failure ? error : null,
+      );
+      return;
+    }
+
     final entry = library.firstWhere(
       (candidate) => candidate.file.uuid == file.uuid,
       // A file the library index does not hold is still playable on its own.
