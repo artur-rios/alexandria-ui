@@ -1,9 +1,12 @@
+import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
 import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/auth/presentation/recovery_codes_section.dart';
+import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
@@ -249,6 +252,51 @@ void main() {
         await tester.openSettingsMenuEntry(l10n.signOut);
 
         expect(find.byType(LoginScreen), findsOneWidget);
+      },
+    );
+  });
+
+  group('the search field (UC-11 main flow step 1)', () {
+    testWidgets(
+      'GivenTheShell_WhenAFileTypeIsShown_ThenTheSearchFieldIsInTheMenuBar',
+      (tester) async {
+        await tester.pumpShell();
+
+        expect(
+          find.descendant(
+            of: find.byType(ShellMenuBar),
+            matching: find.byType(CatalogSearchField),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheShell_WhenBookmarksAreShown_ThenNoSearchFieldIsOffered',
+      (tester) async {
+        // FR-CT-06 matches files and metadata, and a bookmark is neither: the
+        // field would answer a question the area cannot ask.
+        final container = await tester.pumpShell();
+
+        container
+            .read(shellControllerProvider.notifier)
+            .go(ShellDestination.bookmarks);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(CatalogSearchField), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenTheMenuBarsField_WhenATermIsTyped_ThenTheResultsReplaceTheListing',
+      (tester) async {
+        await tester.pumpShell();
+
+        await tester.enterText(find.byType(CatalogSearchField), 'anything');
+        await tester.pumpAndSettle();
+
+        expect(find.byType(CatalogSearchResults), findsOneWidget);
       },
     );
   });
