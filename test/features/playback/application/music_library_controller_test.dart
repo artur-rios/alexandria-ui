@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,6 +21,9 @@ void main() {
         ..addAudio(uuid: '2', title: 'Karma', artist: 'Radiohead');
       final container = testContainer(gateway: gateway);
 
+      // musicLibraryProvider.future only ever resolves once, with the
+      // complete library — this is the assertion that catches a regression
+      // back to publishing partial state through it.
       final library = await container.read(musicLibraryProvider.future);
 
       expect(library.total, 2);
@@ -31,18 +36,32 @@ void main() {
     'GivenMetadataStillArriving_WhenTheLibraryIsRead_ThenTheEntriesSoFarAreShown',
     () async {
       // The point of loading incrementally: the area shows artists while the
-      // rest of the calls are still running, rather than sitting blank.
+      // rest of the calls are still running, rather than sitting blank. The
+      // second file's details never answer, so musicLibraryProvider.future
+      // never resolves in this test — what is being read here is
+      // musicLibraryProgressProvider, the one the browsing area watches while
+      // a load is still in flight.
       final gateway = FakeCatalogGateway()
         ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead')
         ..addAudio(uuid: '2', title: 'Karma', artist: 'Radiohead')
         ..holdDetailsAfter(1);
       final container = testContainer(gateway: gateway);
 
-      final library = await container.read(musicLibraryProvider.future);
+      final firstPublish = Completer<void>();
+      container.listen(musicLibraryProgressProvider, (previous, next) {
+        if (!firstPublish.isCompleted) firstPublish.complete();
+      });
 
-      expect(library.entries.length, 1);
-      expect(library.total, 2);
-      expect(library.isComplete, isFalse);
+      // Starts the load; deliberately not awaited — the second file's
+      // details never answer, so the load itself never finishes.
+      container.read(musicLibraryProvider);
+
+      await firstPublish.future;
+      final progress = container.read(musicLibraryProgressProvider);
+
+      expect(progress.entries.length, 1);
+      expect(progress.total, 2);
+      expect(progress.isComplete, isFalse);
     },
   );
 

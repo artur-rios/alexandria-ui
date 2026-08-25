@@ -463,9 +463,21 @@ final audioPlayerProvider = Provider<MediaPlayer>((ref) {
 });
 
 /// Every audio file with the metadata a queue is grouped by (UC-20, FR-PL-06).
+///
+/// Resolves once, with the complete library — see
+/// [MusicLibraryController]'s doc comment for why a queue must always be
+/// built from this and never from [musicLibraryProgressProvider].
 final musicLibraryProvider =
     AsyncNotifierProvider<MusicLibraryController, MusicLibrary>(
       MusicLibraryController.new,
+    );
+
+/// The music library as far as it has been read, for the browsing area to
+/// draw its rows and progress line from while [musicLibraryProvider] is still
+/// loading (UC-46).
+final musicLibraryProgressProvider =
+    NotifierProvider<MusicLibraryProgress, MusicLibrary>(
+      MusicLibraryProgress.new,
     );
 
 /// The persistent audio player (UC-20).

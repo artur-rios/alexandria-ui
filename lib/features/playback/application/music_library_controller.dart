@@ -28,20 +28,31 @@ class MusicLibrary {
   bool get isComplete => entries.length >= total;
 }
 
-/// Every audio file with its metadata (UC-20 main flow step 3, UC-46,
-/// FR-PL-06, FR-CT-13).
+/// Every audio file with its metadata, once every file has been read (UC-20
+/// main flow step 3, UC-46, FR-PL-06, FR-CT-13).
 ///
 /// The core's listing answers `File` records and no metadata, and it publishes
 /// no "files by album" query — so the album a track belongs to is only
 /// knowable by reading each file. This does exactly that, once, and holds the
 /// result for the run.
 ///
-/// It publishes the entries as they arrive rather than one all-or-nothing
-/// future: browsing needs this data to draw its first screen, and a library of
-/// a few thousand tracks is a few thousand calls. An area that fills in is the
-/// difference between a wait and a hang. The cost itself is the core's shape
-/// rather than a choice made here — BR-02 forbids inventing the narrower call
-/// this would rather have.
+/// One file at a time, in the order the listing gave them, and never
+/// concurrently: every core call — this one included — crosses into a single
+/// worker isolate that serves requests FIFO (see `core_isolate.dart`), so
+/// firing several `fileDetails`
+/// calls at once buys no parallelism. It would only queue this scan ahead of
+/// every other core call the application makes while it runs — playback
+/// source resolution, a listing, a sign-in — behind it. The cost of N calls is
+/// the core's own shape rather than a choice made here; BR-02 forbids
+/// inventing the narrower call this would rather have.
+///
+/// `build` never assigns `state` before it returns. `AsyncNotifier.future`
+/// resolves once, with the *first* state ever published, not with whatever
+/// `build` eventually returns — publishing here would mean a reader who awaits
+/// `.future`, such as `audio_playback_controller.dart`'s queue builder, could
+/// permanently lock onto a library of one file. `musicLibraryProgressProvider`
+/// is where "everything read so far" is published instead; a queue must never
+/// be built from it.
 class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
   @override
   Future<MusicLibrary> build() async {
@@ -61,72 +72,60 @@ class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
       CatalogListingFailed() => const [],
     };
 
-    if (files.isEmpty) {
-      return const MusicLibrary(entries: [], total: 0);
-    }
+    if (files.isEmpty) return MusicLibrary.empty;
 
-    final resolved = <String, MusicEntry>{};
-
-    // Fired for every file up front rather than one at a time: a reader is
-    // free to read `state` while this is still running (that is the whole
-    // point), but `AsyncNotifier.future` resolves with the *first* state this
-    // publishes and then never again — a Riverpod guarantee, not a choice
-    // made here. Firing sequentially would make that first publish whatever
-    // the single earliest reply happened to be, which the code below has no
-    // way to distinguish from "that is the whole library". Firing every call
-    // together and waiting a beat before the first publish lets replies that
-    // land close together — the common case, since nothing here is genuinely
-    // slower than anything else — settle into one complete publish, so a
-    // reader who only ever awaits `.future` still gets the whole library
-    // rather than whichever file happened to answer first.
-    final pending = <String, Future<void>>{
-      for (final file in files)
-        file.uuid: gateway
-            .fileDetails(uuid: file.uuid, credential: credential)
-            .then((details) {
-              // A file whose details will not come back is still a file that
-              // can be played: it joins the library with no album and no
-              // artist, which makes it an album of one rather than absent
-              // from its own queue, and puts it in the untagged group where
-              // browsing can find it.
-              resolved[file.uuid] = MusicEntry(
-                file: file,
-                metadata: switch (details) {
-                  FileDetailsRead(:final details) => MusicMetadata.fromDetails(
-                    details.metadata,
-                  ),
-                  FileDetailsFailed() => const MusicMetadata(),
-                },
-              );
-            }),
-    };
-
-    // In file order, not arrival order: two owners browsing the same library
-    // should see the same list grow in the same place, not tracks jumping in
-    // wherever their reply happened to land.
-    List<MusicEntry> entriesSoFar() => [
-      for (final file in files)
-        if (resolved.containsKey(file.uuid)) resolved[file.uuid]!,
-    ];
-
-    while (resolved.length < files.length) {
-      // At least one reply has to land before there is anything new to
-      // publish.
-      await Future.any(
-        pending.entries
-            .where((entry) => !resolved.containsKey(entry.key))
-            .map((entry) => entry.value),
+    final progress = ref.read(musicLibraryProgressProvider.notifier);
+    final entries = <MusicEntry>[];
+    for (final file in files) {
+      final details = await gateway.fileDetails(
+        uuid: file.uuid,
+        credential: credential,
       );
-      // The beat mentioned above: give replies that were already on their way
-      // a turn of the event loop to land too, so they join this publish
-      // instead of trailing it by one.
-      await Future<void>.delayed(Duration.zero);
 
-      state = AsyncData(
-        MusicLibrary(entries: entriesSoFar(), total: files.length),
+      // A file whose details will not come back is still a file that can be
+      // played: it joins the library with no album and no artist, which makes
+      // it an album of one rather than absent from its own queue, and puts it
+      // in the untagged group where browsing can find it.
+      entries.add(
+        MusicEntry(
+          file: file,
+          metadata: switch (details) {
+            FileDetailsRead(:final details) => MusicMetadata.fromDetails(
+              details.metadata,
+            ),
+            FileDetailsFailed() => const MusicMetadata(),
+          },
+        ),
+      );
+
+      // Published to the progress provider rather than to this notifier's own
+      // state: this is what lets the area show the artists it already knows
+      // while the rest are still being read, without touching what `.future`
+      // resolves to.
+      progress.publish(
+        MusicLibrary(entries: [...entries], total: files.length),
       );
     }
 
-    return MusicLibrary(entries: entriesSoFar(), total: files.length);
+    return MusicLibrary(entries: entries, total: files.length);
   }
+}
+
+/// "Everything read so far", updated as [MusicLibraryController] reads each
+/// file (UC-46).
+///
+/// The browsing area's rows and progress line are drawn from this while the
+/// library is still loading; [musicLibraryProvider] is drawn from for
+/// everything else, including any track queue, because it is the one that
+/// answers "everything" — once, and only once complete. A plain [Notifier]
+/// rather than another `AsyncNotifier`, because nothing should ever await this
+/// one through `.future`: every watcher here is a live listener that sees
+/// every publish in order, which a `Future` — resolved exactly once — cannot
+/// offer.
+class MusicLibraryProgress extends Notifier<MusicLibrary> {
+  @override
+  MusicLibrary build() => MusicLibrary.empty;
+
+  /// Records another publish from [MusicLibraryController].
+  void publish(MusicLibrary snapshot) => state = snapshot;
 }
