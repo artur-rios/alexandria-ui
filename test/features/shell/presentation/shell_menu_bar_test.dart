@@ -1,5 +1,7 @@
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
+import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
+import 'package:alexandria_ui/features/auth/presentation/recovery_codes_section.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
@@ -180,6 +182,47 @@ void main() {
           ),
           findsNothing,
         );
+      },
+    );
+
+    testWidgets(
+      'GivenTheSettingsMenu_WhenCredentialsAreChosen_ThenTheCredentialsDialogOpens',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await tester.openSettingsMenuEntry(l10n.changeCredentialsOpen);
+
+        expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheCredentialsDialog_WhenItIsOpen_ThenTheRecoveryCodesAreOffered',
+      (tester) async {
+        // UC-42 beside UC-04: both are things an owner does to an account they
+        // still have access to, and neither is a preference.
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await tester.openSettingsMenuEntry(l10n.changeCredentialsOpen);
+
+        expect(find.byType(RecoveryCodesSection), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenPreferences_WhenTheyAreOpen_ThenNoAccountActionIsOffered',
+      (tester) async {
+        // The dialog is theme and language: an account action inside it is
+        // what made signing out three levels deep.
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await tester.openSettingsMenuEntry(l10n.preferencesLabel);
+
+        expect(find.text(l10n.changeCredentialsOpen), findsNothing);
+        expect(find.byType(RecoveryCodesSection), findsNothing);
       },
     );
   });

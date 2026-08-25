@@ -5,8 +5,6 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/application/session_state.dart';
-import '../../auth/presentation/recovery_codes_section.dart';
-import '../../auth/presentation/change_credentials_dialog.dart';
 import '../../auth/presentation/sign_out_button.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
@@ -34,9 +32,9 @@ class PreferencesDialog extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final preferences = ref.watch(preferencesControllerProvider);
     final controller = ref.read(preferencesControllerProvider.notifier);
-    // UC-04 main flow step 1 puts the credential change here. It is offered
-    // only with a session, because the core requires one to authorize the call
-    // — and preferences themselves are reachable without one (UC-39).
+    // UC-03 main flow step 1 puts signing out here. It is offered only with a
+    // session — there is nothing to sign out of without one — and preferences
+    // themselves are reachable without one (UC-39).
     final signedIn = ref.watch(sessionControllerProvider) is SessionActive;
 
     return AlertDialog(
@@ -101,18 +99,6 @@ class PreferencesDialog extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.md),
                 const Divider(),
                 const SizedBox(height: AppSpacing.sm),
-                // UC-42 main flow step 1: beside changing the password,
-                // because both are things an owner does to an account they
-                // still have access to.
-                const RecoveryCodesSection(),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () => ChangeCredentialsDialog.show(context),
-                    icon: const Icon(Icons.key_outlined),
-                    label: Text(l10n.changeCredentialsOpen),
-                  ),
-                ),
                 // UC-03 main flow step 1. Last in the group, because it is the
                 // one action here that ends what the others operate on.
                 const SignOutButton(),

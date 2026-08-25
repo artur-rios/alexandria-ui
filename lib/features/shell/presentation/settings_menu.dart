@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
+import '../../auth/presentation/change_credentials_dialog.dart';
 import 'menu_entry.dart';
 import 'preferences_dialog.dart';
 
@@ -29,6 +30,11 @@ class SettingsMenu extends StatelessWidget {
           icon: Icons.tune_outlined,
           label: l10n.preferencesLabel,
           onSelected: () => PreferencesDialog.show(context),
+        ),
+        MenuEntry(
+          icon: Icons.key_outlined,
+          label: l10n.changeCredentialsOpen,
+          onSelected: () => ChangeCredentialsDialog.show(context),
         ),
       ],
       child: showsLabel
