@@ -1224,7 +1224,7 @@ abstract class AppLocalizations {
   /// **'The last scan was interrupted when Alexandria closed.'**
   String get dashboardLastRunInterrupted;
 
-  /// Opens the music metadata form from an audio file's detail view (UC-15 main flow step 1).
+  /// Opens the music metadata form for an audio file, from its detail view or from its row's context menu in the music area (UC-15 main flow step 1, UC-46, FR-CT-14).
   ///
   /// In en, this message translates to:
   /// **'Edit metadata'**
