@@ -7,7 +7,9 @@ import '../../../core/theme/album_palette.dart';
 import '../application/album_animation_controller.dart';
 import '../application/audio_playback_controller.dart';
 import '../domain/album_medium.dart';
+import 'album_medium_label.dart';
 import 'media/cassette_painter.dart';
+import 'media/diagonal_sheen.dart';
 import 'media/disc_painter.dart';
 import 'media/vinyl_painter.dart';
 
@@ -25,7 +27,13 @@ import 'media/vinyl_painter.dart';
 /// between two otherwise independent widgets to introduce.
 class AlbumVisor extends ConsumerStatefulWidget {
   /// Creates the visor.
-  const AlbumVisor({this.size = 64, super.key});
+  const AlbumVisor({this.size = defaultSize, super.key});
+
+  /// [size]'s own default (Finding 10) — `PlaybackBar.height` derives its
+  /// own room for the visor from this rather than a second, hardcoded copy
+  /// of the same number, which is what let the two drift apart in the first
+  /// place.
+  static const double defaultSize = 64;
 
   /// How wide and tall the recess is drawn, as a square.
   final double size;
@@ -158,14 +166,12 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
     );
   }
 
-  /// What a screen reader is told the visor is — the same words `AlbumStage`
-  /// uses for the same mediums (UC-21, FR-PL-07), so the bar and the full
-  /// player never describe the same record differently.
-  String _label(AppLocalizations l10n, AlbumMedium medium) => switch (medium) {
-    AlbumMedium.vinyl => l10n.albumMediumVinyl,
-    AlbumMedium.tape => l10n.albumMediumTape,
-    AlbumMedium.disc => l10n.albumMediumDisc,
-  };
+  /// What a screen reader is told the visor is — [albumMediumLabel]
+  /// (Finding 10), the same words `AlbumStage` uses for the same mediums
+  /// (UC-21, FR-PL-07), so the bar and the full player never describe the
+  /// same record differently.
+  String _label(AppLocalizations l10n, AlbumMedium medium) =>
+      albumMediumLabel(medium, l10n);
 }
 
 /// The recess itself, and the medium turning inside it: a dark well, a
@@ -258,10 +264,11 @@ class _InnerShadowPainter extends CustomPainter {
       oldDelegate.color != color;
 }
 
-/// A sheet of glass laid diagonally over the recess, the same device
-/// `CassettePainter._paintWindow` uses for its own window — a soft band of
-/// light rather than a flat tint, so it reads as a reflection and not as a
-/// stain on the medium underneath it.
+/// A sheet of glass laid diagonally over the recess — a soft band of light
+/// rather than a flat tint, so it reads as a reflection and not as a stain
+/// on the medium underneath it. Built from [diagonalSheenPaint] (Finding
+/// 10), the same device `CassettePainter._paintWindow` uses for its own
+/// window, rather than a second copy of it.
 class _SheenPainter extends CustomPainter {
   const _SheenPainter({required this.color});
 
@@ -272,17 +279,7 @@ class _SheenPainter extends CustomPainter {
     final rect = Offset.zero & size;
     canvas.drawRect(
       rect,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            color.withValues(alpha: 0),
-            color.withValues(alpha: 0.4),
-            color.withValues(alpha: 0),
-          ],
-          stops: const [0.05, 0.25, 0.5],
-        ).createShader(rect),
+      diagonalSheenPaint(rect, color, alpha: 0.4, stops: const [0.05, 0.25, 0.5]),
     );
   }
 

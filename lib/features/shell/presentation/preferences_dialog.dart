@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -94,8 +96,13 @@ class PreferencesDialog extends ConsumerWidget {
               _GroupLabel(l10n.animationLabel),
               RadioGroup<AlbumAnimationMode>(
                 groupValue: preferences.albumAnimation,
-                onChanged: (mode) =>
-                    mode == null ? null : controller.setAlbumAnimation(mode),
+                // Finding 10: `setAlbumAnimation` returns a `Future<void>`,
+                // and a bare ternary would discard it — `unawaited` says so
+                // on purpose, the same way every other fire-and-forget call
+                // in this application does.
+                onChanged: (mode) => mode == null
+                    ? null
+                    : unawaited(controller.setAlbumAnimation(mode)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

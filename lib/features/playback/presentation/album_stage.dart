@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -7,14 +6,8 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/album_palette.dart';
 import '../domain/album_medium.dart';
 import '../domain/sleeve_design.dart';
-import 'media/case_painter.dart';
-import 'media/cassette_painter.dart';
-import 'media/cd_player_painter.dart';
-import 'media/device_layer.dart';
-import 'media/disc_painter.dart';
-import 'media/tape_deck_painter.dart';
-import 'media/turntable_painter.dart';
-import 'media/vinyl_painter.dart';
+import 'album_medium_label.dart';
+import 'stage_layout.dart';
 
 /// The two timelines over the painters from Tasks 3 and 4 (UC-21 main flow,
 /// FR-PL-07, BR-21): a one-shot insertion, then a continuous spin.
@@ -246,7 +239,7 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
         dimension: widget.size,
         child: AnimatedBuilder(
           animation: Listenable.merge([_insertion, _spin]),
-          builder: (context, _) => _StageLayout(
+          builder: (context, _) => StageLayout(
             medium: widget.medium,
             palette: palette,
             sleeve: sleeve,
@@ -274,248 +267,9 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
   /// this application: a host that mounts this without wiring up
   /// `localizationsDelegates` is missing something every screen needs, not
   /// something this widget should quietly work around by shipping a stage
-  /// with no screen-reader label.
-  String _label(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return switch (widget.medium) {
-      AlbumMedium.vinyl => l10n.albumMediumVinyl,
-      AlbumMedium.tape => l10n.albumMediumTape,
-      AlbumMedium.disc => l10n.albumMediumDisc,
-    };
-  }
-}
-
-/// The four painted layers, placed for one frame of the insertion or the
-/// spin: the device's chassis, the medium, the device's foreground, and the
-/// case — in that order, so a device's tonearm, door or lid lands in front
-/// of the medium it closes over rather than buried beneath it (Finding 2).
-/// A plain function of its inputs — nothing here owns an
-/// [AnimationController] — so it can be rebuilt on every tick without
-/// carrying animation state of its own.
-class _StageLayout extends StatelessWidget {
-  const _StageLayout({
-    required this.medium,
-    required this.palette,
-    required this.sleeve,
-    required this.title,
-    required this.artist,
-    required this.direction,
-    required this.size,
-    required this.closed,
-    required this.turns,
-    required this.caseOpacity,
-    required this.caseSettle,
-    required this.caseDeparture,
-    required this.mediumEmergence,
-    required this.travel,
-  });
-
-  final AlbumMedium medium;
-  final AlbumPalette palette;
-  final Color sleeve;
-  final String title;
-  final String artist;
-  final TextDirection direction;
-  final double size;
-  final double closed;
-  final double turns;
-  final double caseOpacity;
-  final double caseSettle;
-  final double caseDeparture;
-  final double mediumEmergence;
-  final double travel;
-
-  /// The medium's scale while still nested in the case (Reference values):
-  /// smaller for the cassette, whose case is wider than the record or disc
-  /// sleeves either side of it.
-  static double _insideCaseScale(AlbumMedium medium) =>
-      medium == AlbumMedium.tape ? 0.48 : 0.60;
-
-  @override
-  Widget build(BuildContext context) {
-    final deviceAspect = switch (medium) {
-      AlbumMedium.vinyl => TurntablePainter.aspect,
-      AlbumMedium.tape => TapeDeckPainter.aspect,
-      AlbumMedium.disc => CdPlayerPainter.aspect,
-    };
-    final deviceHeight = size / deviceAspect;
-    final deviceRect = Rect.fromLTWH(
-      0,
-      (size - deviceHeight) / 2,
-      size,
-      deviceHeight,
-    );
-    final seat = _seatFor(medium, deviceRect);
-
-    final caseAspect = CasePainter.aspectFor(medium);
-    final caseWidth = size * 0.5;
-    final caseHeight = caseWidth / caseAspect;
-    // Finding 8, beat 1: the case floats in from the left, its sleeve facing
-    // the owner — not centred and faded up in place, which read as a sleeve
-    // pasted flat over the device rather than something arriving from
-    // anywhere. `caseSettle` (the `caseIn` interval) now drives *where* the
-    // case is, not only how visible it is: it starts off-canvas, past the
-    // stage's own left edge, and slides in to where it parks.
-    //
-    // The parked X is left of centre rather than centred on the device: a
-    // centred jacket at this width sits squarely over a device's well and
-    // display, which is exactly the "sleeve pasted on top" Finding 8 named —
-    // every device's own controls (`_paintControls`/`_paintButtons`, drawn
-    // from roughly 0.66 to 0.90 of the width in each device painter) sit well
-    // clear of a case parked here.
-    final caseParkX = size * 0.30;
-    final caseArriveX = ui.lerpDouble(-caseWidth * 0.7, caseParkX, caseSettle)!;
-    // The case settles into place as it arrives, then drifts up and away as
-    // it fades — the same beats that drive its opacity, read as a slide
-    // rather than a plain cross-fade.
-    final caseSlideY =
-        size * 0.12 * (1 - caseSettle) - size * 0.08 * caseDeparture;
-    final caseCentre = Offset(caseArriveX, size * 0.66 + caseSlideY);
-
-    final mediumScale = ui.lerpDouble(
-      _insideCaseScale(medium),
-      1,
-      mediumEmergence,
-    )!;
-    final mediumCentre = Offset.lerp(caseCentre, seat.centre, travel)!;
-    final mediumWidth = seat.width * mediumScale;
-    final mediumHeight = seat.height * mediumScale;
-
-    // Zero rather than `turns` until travel is under way: the medium is
-    // still sitting beside the case for the whole of the emergence and hold
-    // beats, and a record that visibly spins before anything has carried it
-    // toward the platter reads as turning in mid-air.
-    final appliedTurns = travel > 0 ? turns : 0.0;
-
-    Widget devicePainted(DeviceLayer layer) => Positioned.fromRect(
-      rect: deviceRect,
-      child: RepaintBoundary(
-        child: CustomPaint(painter: _devicePainter(layer)),
-      ),
-    );
-
-    return Stack(
-      children: [
-        // The chassis — everything a device shows before the medium is on
-        // it — sits behind the medium (Finding 2): the well the record or
-        // disc rests in, or the slot the cassette slides into, has to be
-        // under it, not painted over it.
-        devicePainted(DeviceLayer.chassis),
-        Positioned(
-          left: mediumCentre.dx - mediumWidth / 2,
-          top: mediumCentre.dy - mediumHeight / 2,
-          width: mediumWidth,
-          height: mediumHeight,
-          child: RepaintBoundary(
-            child: CustomPaint(
-              painter: switch (medium) {
-                AlbumMedium.vinyl => VinylPainter(
-                  palette: palette,
-                  turns: appliedTurns,
-                ),
-                AlbumMedium.disc => DiscPainter(
-                  palette: palette,
-                  turns: appliedTurns,
-                ),
-                AlbumMedium.tape => CassettePainter(
-                  palette: palette,
-                  turns: appliedTurns,
-                ),
-              },
-            ),
-          ),
-        ),
-        // The foreground — the tonearm, the deck's door, the player's lid —
-        // is the part of the device whose entire job is to be seen touching
-        // or covering the medium, so it has to be painted after it.
-        devicePainted(DeviceLayer.foreground),
-        if (caseOpacity > 0)
-          Positioned(
-            left: caseCentre.dx - caseWidth / 2,
-            top: caseCentre.dy - caseHeight / 2,
-            width: caseWidth,
-            height: caseHeight,
-            child: Opacity(
-              opacity: caseOpacity,
-              child: RepaintBoundary(
-                child: CustomPaint(
-                  painter: CasePainter(
-                    palette: palette,
-                    medium: medium,
-                    sleeve: sleeve,
-                    title: title,
-                    artist: artist,
-                    direction: direction,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  /// The device painter for [layer], by medium.
-  CustomPainter _devicePainter(DeviceLayer layer) => switch (medium) {
-    AlbumMedium.vinyl => TurntablePainter(
-      palette: palette,
-      closed: closed,
-      layer: layer,
-    ),
-    AlbumMedium.tape => TapeDeckPainter(
-      palette: palette,
-      closed: closed,
-      layer: layer,
-    ),
-    AlbumMedium.disc => CdPlayerPainter(
-      palette: palette,
-      closed: closed,
-      layer: layer,
-    ),
-  };
-
-  /// Where, and how large, the medium sits once fully seated on [device] —
-  /// derived from the same geometry each device painter positions its own
-  /// platter, well or hub at, so the medium lands where the device is
-  /// actually drawn to hold it.
-  _Seat _seatFor(AlbumMedium medium, Rect device) => switch (medium) {
-    AlbumMedium.vinyl => _Seat(
-      centre: Offset(
-        device.left + device.width * 0.40,
-        device.top + device.height * 0.52,
-      ),
-      width: device.height * 0.80,
-      height: device.height * 0.80,
-    ),
-    AlbumMedium.disc => _Seat(
-      centre: Offset(
-        device.left + device.width * 0.50,
-        device.top + device.height * 0.66,
-      ),
-      width: device.height * 0.52,
-      height: device.height * 0.52,
-    ),
-    AlbumMedium.tape => _Seat(
-      centre: Offset(
-        device.left + device.width * 0.335,
-        device.top + device.height * 0.71,
-      ),
-      width: device.height * 0.42 * CassettePainter.aspect,
-      height: device.height * 0.42,
-    ),
-  };
-}
-
-/// A layer's centre point and footprint, in the stage's own coordinates.
-class _Seat {
-  const _Seat({
-    required this.centre,
-    required this.width,
-    required this.height,
-  });
-
-  final Offset centre;
-  final double width;
-  final double height;
+  /// with no screen-reader label. The words themselves come from
+  /// [albumMediumLabel] (Finding 10), shared with `AlbumVisor` so the two
+  /// can never describe the same medium differently.
+  String _label(BuildContext context) =>
+      albumMediumLabel(widget.medium, AppLocalizations.of(context));
 }

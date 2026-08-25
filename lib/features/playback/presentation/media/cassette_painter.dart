@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import 'diagonal_sheen.dart';
 
 /// A cassette, turning (UC-21, FR-PL-07).
 ///
@@ -122,22 +123,19 @@ class CassettePainter extends CustomPainter {
     canvas.drawRRect(window, Paint()..color = palette.glassTint);
 
     // A soft diagonal sheen, the way moulded clear plastic catches light
-    // unevenly rather than as a flat tint. Driven entirely by gradient
-    // stops rather than a separately clipped shape, so there is no hard
-    // geometric edge to read as a stray mark on the window.
+    // unevenly rather than as a flat tint (Finding 10: shared with
+    // `AlbumVisor`'s own recess via `diagonalSheenPaint`, rather than each
+    // keeping its own copy). Driven entirely by gradient stops rather than a
+    // separately clipped shape, so there is no hard geometric edge to read
+    // as a stray mark on the window.
     canvas.drawRRect(
       window,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            palette.glassSheen.withValues(alpha: 0),
-            palette.glassSheen.withValues(alpha: 0.55),
-            palette.glassSheen.withValues(alpha: 0),
-          ],
-          stops: const [0.05, 0.22, 0.45],
-        ).createShader(windowRect),
+      diagonalSheenPaint(
+        windowRect,
+        palette.glassSheen,
+        alpha: 0.55,
+        stops: const [0.05, 0.22, 0.45],
+      ),
     );
   }
 
