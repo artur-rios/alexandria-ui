@@ -21,18 +21,25 @@ enum MusicGroupKind {
   album,
 }
 
-/// A track's title, or the word for a file whose tags carry none.
+/// A tag, trimmed, or [whenAbsent] for a file whose tags carry none.
 ///
-/// The one place an absent tag becomes a word, so the area and the search
-/// results cannot disagree about what a file with no title is called — and so
-/// that "never the file name" (FR-CT-13) is enforced in one function rather
-/// than remembered at every call site.
+/// The one place a blank or absent tag becomes a word, so nothing that names
+/// a track — a [MusicEntry]'s own title or artist, or a search result reading
+/// a fetched [MusicMetadata] before a [MusicEntry] exists for it — has to
+/// remember the rule itself. That is what keeps "never the file name"
+/// (FR-CT-13) one rule instead of one remembered at every call site.
+String tagOr(String? value, String whenAbsent) {
+  final trimmed = value?.trim();
+  return trimmed == null || trimmed.isEmpty ? whenAbsent : trimmed;
+}
+
+/// A track's title, or the word for a file whose tags carry none.
 String musicTitleOf(MusicEntry entry, AppLocalizations l10n) =>
-    entry.title ?? l10n.musicUnknownTitle;
+    tagOr(entry.metadata.title, l10n.musicUnknownTitle);
 
 /// A track's artist, or the word for a file whose tags carry none.
 String musicArtistOf(MusicEntry entry, AppLocalizations l10n) =>
-    entry.artist ?? l10n.musicUnknownArtist;
+    tagOr(entry.metadata.artist, l10n.musicUnknownArtist);
 
 /// A group's name, or the word for the files that name none.
 String musicGroupName(

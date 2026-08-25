@@ -352,6 +352,33 @@ void main() {
     );
 
     testWidgets(
+      'GivenAnAudioMatch_WhenTheResultsAreShown_ThenItReadsItsArtist',
+      (tester) async {
+        // Two tracks can share a title — a remix, a live take, a duplicate
+        // rip — and the artist is what tells them apart in a result list
+        // that no longer shows the file name.
+        await searchFor(
+          tester,
+          term: 'air',
+          gateway: FakeCatalogGateway()
+            ..addAudio(
+              uuid: '1',
+              name: 'AIR-DISKNAME-01.flac',
+              title: 'Airbag',
+              artist: 'Radiohead',
+            ),
+        );
+
+        expect(find.textContaining('Radiohead'), findsOneWidget);
+        // Neither the file name nor the path it lives at is shown alongside
+        // the artist — FR-CT-13 is not satisfied by moving the leak from the
+        // title to the subtitle.
+        expect(find.textContaining('DISKNAME'), findsNothing);
+        expect(find.textContaining('/home/owner'), findsNothing);
+      },
+    );
+
+    testWidgets(
       'GivenAnUntaggedAudioMatch_WhenTheResultsAreShown_ThenItReadsUnknownTitle',
       (tester) async {
         await searchFor(
@@ -364,6 +391,23 @@ void main() {
 
         expect(find.textContaining(l10n.musicUnknownTitle), findsOneWidget);
         expect(find.textContaining('DISKNAME'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenAnUntaggedAudioMatch_WhenTheResultsAreShown_ThenItReadsUnknownArtist',
+      (tester) async {
+        await searchFor(
+          tester,
+          term: 'disk',
+          gateway: FakeCatalogGateway()
+            ..addAudio(uuid: '1', name: 'DISKNAME-01.flac'),
+        );
+        final l10n = localizations(tester);
+
+        expect(find.textContaining(l10n.musicUnknownArtist), findsOneWidget);
+        expect(find.textContaining('DISKNAME'), findsNothing);
+        expect(find.textContaining('/home/owner'), findsNothing);
       },
     );
 

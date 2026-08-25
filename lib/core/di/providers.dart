@@ -482,8 +482,12 @@ final musicLibraryProgressProvider =
       MusicLibraryProgress.new,
     );
 
-/// The metadata title of an audio file, or `null` while it is not known
-/// (UC-11, FR-CT-13).
+/// An audio file's metadata, or `null` while it is not known (UC-11,
+/// FR-CT-13).
+///
+/// The whole record rather than just the title: a search result needs the
+/// artist too, to tell two identically-titled tracks — a remix, a live take,
+/// a duplicate rip — apart, and it is the same [fileDetails] call either way.
 ///
 /// Per file rather than over the whole library: a search shows a screenful of
 /// results, and reading every audio file in the catalog to name three of them
@@ -493,11 +497,11 @@ final musicLibraryProgressProvider =
 /// that read fails, and neither behaviour belongs to a single search result —
 /// waiting on the whole library would make a search cost what browsing costs,
 /// and a library-wide failure has nothing to do with whether this one file's
-/// title is known. The progress provider never throws and already holds
+/// metadata is known. The progress provider never throws and already holds
 /// whatever has been read so far, so a search after a visit to the music area
 /// costs nothing at all, and a failed library read cannot break a result that
 /// does not depend on it.
-final audioTitleProvider = FutureProvider.family<String?, CatalogFile>((
+final audioMetadataProvider = FutureProvider.family<MusicMetadata?, CatalogFile>((
   ref,
   file,
 ) async {
@@ -505,7 +509,7 @@ final audioTitleProvider = FutureProvider.family<String?, CatalogFile>((
 
   final cached = ref.watch(musicLibraryProgressProvider);
   for (final entry in cached.entries) {
-    if (entry.file.uuid == file.uuid) return entry.title;
+    if (entry.file.uuid == file.uuid) return entry.metadata;
   }
 
   final credential = ref.read(sessionControllerProvider.notifier).credential;
@@ -516,10 +520,11 @@ final audioTitleProvider = FutureProvider.family<String?, CatalogFile>((
       .fileDetails(uuid: file.uuid, credential: credential);
 
   return switch (details) {
-    FileDetailsRead(:final details) =>
-      MusicMetadata.fromDetails(details.metadata).title?.trim(),
-    // A file whose details will not come back is a file with no title we can
-    // show, which the row already has a word for.
+    FileDetailsRead(:final details) => MusicMetadata.fromDetails(
+      details.metadata,
+    ),
+    // A file whose details will not come back is a file with no tags we can
+    // show, which the row already has words for.
     FileDetailsFailed() => null,
   };
 });

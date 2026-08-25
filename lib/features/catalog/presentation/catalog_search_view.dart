@@ -5,14 +5,12 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
-import '../../playback/domain/music_grouping.dart';
-import '../../playback/presentation/music_rows.dart' show musicTitleOf;
+import '../../playback/presentation/music_rows.dart' show tagOr;
 import '../../shell/presentation/async_state_view.dart';
 import '../application/search_controller.dart';
 import '../domain/catalog_file.dart';
 import '../domain/catalog_search.dart';
 import '../domain/library_type.dart';
-import '../domain/music_metadata.dart';
 
 /// The catalog-wide search field (UC-11 main flow step 1).
 ///
@@ -182,20 +180,16 @@ class _ResultRow extends ConsumerWidget {
     final theme = Theme.of(context);
 
     final isAudio = file.type == LibraryType.audio;
-    // Wrapped through `musicTitleOf` rather than falling back to
-    // `l10n.musicUnknownTitle` here directly: that function is the one place
-    // an absent title becomes that word, and a second copy of the rule here
-    // is exactly what would let this screen and the music area disagree.
+    // `tagOr` rather than a fallback written out here: that helper is the one
+    // place an absent tag becomes a word, and a second copy of the rule here
+    // is exactly what would let this screen and the music area disagree. No
+    // `MusicEntry` is built to reach it — the fetched metadata's tags are
+    // passed straight through, the same way `MusicEntry` itself does.
+    final metadata = isAudio
+        ? ref.watch(audioMetadataProvider(file)).value
+        : null;
     final title = isAudio
-        ? musicTitleOf(
-            MusicEntry(
-              file: file,
-              metadata: MusicMetadata(
-                title: ref.watch(audioTitleProvider(file)).value,
-              ),
-            ),
-            l10n,
-          )
+        ? tagOr(metadata?.title, l10n.musicUnknownTitle)
         : file.name;
 
     return ListTile(
@@ -205,12 +199,18 @@ class _ResultRow extends ConsumerWidget {
       // The term is marked in the name the row shows; marking a name the row
       // does not show would point at nothing.
       title: _Highlighted(text: title, term: term),
-      // The path ends in the name on disk, so showing it for audio would put
-      // the very name FR-CT-13 removed from the title back in the subtitle.
-      // Every other type is named by its file name already, so its path is
-      // no more revealing than the title above it.
+      // The artist for audio, so two identically-titled tracks — a remix, a
+      // live take, a duplicate rip — read as different rows. Never the path:
+      // it ends in the name on disk, which would put the very name FR-CT-13
+      // removed from the title back in the subtitle. Every other type is
+      // named by its file name already, so its path is no more revealing than
+      // the title above it.
       subtitle: isAudio
-          ? null
+          ? Text(
+              tagOr(metadata?.artist, l10n.musicUnknownArtist),
+              style: theme.textTheme.bodySmall,
+              overflow: TextOverflow.ellipsis,
+            )
           : Text(
               file.path,
               style: theme.textTheme.bodySmall,
