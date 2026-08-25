@@ -1,8 +1,12 @@
 import 'dart:async';
 
 import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/features/playback/application/music_library_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/test_container.dart';
 
@@ -83,16 +87,49 @@ void main() {
   );
 
   test(
-    'GivenAListingThatFails_WhenTheLibraryLoads_ThenItIsEmptyAndComplete',
+    'GivenAListingThatFails_WhenTheLibraryLoads_ThenTheFailureIsThrown',
     () async {
+      // Thrown rather than swallowed into an empty library: every other
+      // type's listing does the same (UC-09 AF-02), and "No audio files are
+      // catalogued yet" would be a lie about a listing that never answered.
       final gateway = FakeCatalogGateway()..failListing();
-      final container = testContainer(gateway: gateway);
 
-      final library = await container.read(musicLibraryProvider.future);
+      // Riverpod retries a failed provider automatically (exponential
+      // backoff up to ten attempts) before it settles into `AsyncError` —
+      // real time a widget test never waits out because its pumps run on a
+      // fake clock, but a plain `test()` does. Retrying is disabled here so
+      // this asserts the settled state without a ~35-second test.
+      final container = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [catalogGatewayProvider.overrideWithValue(gateway)],
+      );
+      addTearDown(container.dispose);
+      container
+          .read(sessionControllerProvider.notifier)
+          .establish(FakeAuthGateway.defaultSession);
 
-      expect(library.entries, isEmpty);
-      expect(library.total, 0);
-      expect(library.isComplete, isTrue);
+      // Watched rather than awaited through `.future`: the state this
+      // becomes is `AsyncError`, and it is the state — what
+      // `MusicLibraryView` actually reads — that this asserts on.
+      final errorReported = Completer<Object>();
+      container.listen(musicLibraryProvider, (previous, next) {
+        if (next case AsyncError(:final error)) {
+          if (!errorReported.isCompleted) errorReported.complete(error);
+        }
+      });
+      container.read(musicLibraryProvider);
+
+      final error = await errorReported.future;
+
+      expect(error, isA<Failure>());
+      expect(
+        container.read(musicLibraryProvider),
+        isA<AsyncError<MusicLibrary>>(),
+      );
+      // The progress read never touched: nothing was published before the
+      // listing itself failed, so it still reads as "nothing yet" rather
+      // than carrying a stale count from a run that never got started.
+      expect(container.read(musicLibraryProgressProvider).total, 0);
     },
   );
 }

@@ -57,7 +57,15 @@ class MusicLibraryView extends ConsumerWidget {
         Expanded(
           child: AsyncStateView<MusicLibrary>(
             value: gate,
-            onRetry: () => ref.invalidate(musicLibraryProvider),
+            // Both halves of the pair, as `CatalogSessionActivity.end` does:
+            // the progress provider is never awaited on its own, so
+            // invalidating only the complete one would leave it re-serving
+            // the failed run's last snapshot and the area would never show
+            // as loading again.
+            onRetry: () {
+              ref.invalidate(musicLibraryProvider);
+              ref.invalidate(musicLibraryProgressProvider);
+            },
             isEmpty: (loaded) => loaded.total == 0,
             emptyBuilder: (context) => const _Empty(),
             builder: (context, loaded) => Column(

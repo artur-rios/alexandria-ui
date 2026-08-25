@@ -1296,7 +1296,7 @@ abstract class AppLocalizations {
   /// **'Songs'**
   String get musicViewSongs;
 
-  /// The first crumb of the music area's breadcrumb, leading back to the top of the current view.
+  /// The first crumb of the music area's breadcrumb, leading back to the top of the current view. Deliberately distinct from the navigation panel's own 'Music' label (destinationMusic) rather than a translation of it — the panel, the area's heading and this crumb all sit in view together, and giving this one the same word three times over would not help the owner; do not 'correct' it to match destinationMusic.
   ///
   /// In en, this message translates to:
   /// **'Music library'**

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
+import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../../catalog/domain/catalog_gateway.dart';
 import '../../catalog/domain/library_type.dart';
@@ -65,12 +66,26 @@ class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
       credential: credential,
     );
 
-    final List<CatalogFile> files = switch (listing) {
-      CatalogListingLoaded(:final files) => files,
-      // A listing that failed groups nothing. The player reports the failure
-      // it gets from playing, and the queue is a single track.
-      CatalogListingFailed() => const [],
-    };
+    final List<CatalogFile> files;
+    switch (listing) {
+      case CatalogListingLoaded(files: final loaded):
+        files = loaded;
+
+      // AF-04-equivalent: the core rejected the session. Discarding it
+      // returns the owner to login, as `ListingController` does; the failure
+      // is still thrown so this does not read as an empty library on the
+      // way out.
+      case CatalogListingFailed(failure: final UnauthorizedFailure failure):
+        ref.read(sessionControllerProvider.notifier).invalidate(failure);
+        throw failure;
+
+      // Thrown rather than returned empty: every other type's listing does
+      // the same (UC-09 AF-02), and a disk or core failure reading as "No
+      // audio files are catalogued yet" would be a lie the owner has no way
+      // to tell from the truth.
+      case CatalogListingFailed(:final failure):
+        throw failure;
+    }
 
     if (files.isEmpty) return MusicLibrary.empty;
 

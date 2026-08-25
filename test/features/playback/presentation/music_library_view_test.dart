@@ -1,6 +1,8 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/playback/presentation/music_library_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -145,7 +147,19 @@ void main() {
 
         await tester.tap(find.text('Radiohead'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text(l10n.musicBreadcrumbRoot));
+        await tester.tap(find.textContaining('OK'));
+        await tester.pumpAndSettle();
+        // Scoped to the area: the root crumb reads the same word the
+        // breadcrumb always has ("Music library"), which is deliberately
+        // distinct from the navigation panel's own "Music" label — but
+        // scoping the finder is what makes this test robust to either
+        // string, rather than depending on that distinction holding.
+        await tester.tap(
+          find.descendant(
+            of: find.byType(MusicLibraryView),
+            matching: find.text(l10n.musicBreadcrumbRoot),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('Portishead'), findsOneWidget);
@@ -208,6 +222,24 @@ void main() {
         final l10n = localizations(tester);
 
         expect(find.text(l10n.musicEmpty), findsOneWidget);
+      },
+    );
+  });
+
+  group('the listing fails', () {
+    testWidgets(
+      'GivenTheListingFails_WhenTheAreaIsShown_ThenAMessageAndRetryAppear',
+      (tester) async {
+        // The one failure the domain actually models must never read as
+        // "nothing is catalogued yet" — that would be a lie, and every other
+        // type shows a failure view with a retry for exactly this.
+        final gateway = FakeCatalogGateway()..failListing();
+        await openMusic(tester, gateway: gateway);
+        final l10n = localizations(tester);
+
+        expect(find.byType(ShellFailureView), findsOneWidget);
+        expect(find.text(l10n.retry), findsOneWidget);
+        expect(find.text(l10n.musicEmpty), findsNothing);
       },
     );
   });
