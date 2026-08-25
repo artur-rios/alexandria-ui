@@ -19,7 +19,20 @@ String formatFileSize(int bytes) {
 
   // One decimal, and none when it would be a trailing zero: "4.7 MB" is the
   // detail worth having, "4.0 MB" is noise.
-  final rounded = size.toStringAsFixed(size < 10 && unit > 0 ? 1 : 0);
+  var rounded = size.toStringAsFixed(size < 10 && unit > 0 ? 1 : 0);
+
+  // Rounding, not just division, decides the unit. 1048575 B divides to
+  // 1023.999... KB — under the 1024 threshold the loop above checks, so it
+  // stops at KB — and then toStringAsFixed(0) rounds that up to "1024",
+  // printing "1024 KB" next to a file manager that reads the same file as
+  // "1.0 MB". Promoting here, once, after rounding, keeps the printed number
+  // and the printed unit in agreement.
+  if (double.parse(rounded) >= 1024 && unit < units.length - 1) {
+    unit++;
+    size /= 1024;
+    rounded = size.toStringAsFixed(size < 10 && unit > 0 ? 1 : 0);
+  }
+
   final trimmed = rounded.endsWith('.0')
       ? rounded.substring(0, rounded.length - 2)
       : rounded;

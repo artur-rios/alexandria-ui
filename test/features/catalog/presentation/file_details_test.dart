@@ -74,12 +74,14 @@ void main() {
     return container;
   }
 
-  /// Opens the details for a fixture file carrying [name] and [sizeBytes],
-  /// for the tests about the file's own facts rather than about the flow.
+  /// Opens the details for a fixture file carrying [name], [sizeBytes] and
+  /// [mtime], for the tests about the file's own facts rather than about the
+  /// flow.
   Future<void> openDetailsFor(
     WidgetTester tester, {
     required String name,
     int? sizeBytes,
+    DateTime? mtime,
   }) => openDetails(
     tester,
     outcome: FileDetailsOutcome.read(
@@ -89,6 +91,7 @@ void main() {
           type: LibraryType.video,
           name: name,
           sizeBytes: sizeBytes,
+          mtime: mtime,
         ),
       ),
     ),
@@ -508,8 +511,6 @@ void main() {
       }
     });
   }
-  // Testing Specification 7.1: both themes are test surface, not review
-  // surface. A screen that only reads correctly in one is a failing screen.
   group('the file itself (FR-CT-05)', () {
     testWidgets(
       'GivenAFile_WhenItsDetailsOpen_ThenItsNameSizeAndFormatAreShown',
@@ -542,8 +543,23 @@ void main() {
         expect(find.text(l10n.detailsFileSize), findsNothing);
       },
     );
+
+    testWidgets(
+      'GivenAFileWithNoRecordedModificationTime_WhenItsDetailsOpen_ThenNoModifiedRowIsShown',
+      (tester) async {
+        // The same rule as the size row: a core that answered without an
+        // mtime has not told us when the file changed, and showing an epoch
+        // date would say it had.
+        await openDetailsFor(tester, name: 'DISKNAME-01.flac', mtime: null);
+        final l10n = localizations(tester);
+
+        expect(find.text(l10n.detailsFileModified), findsNothing);
+      },
+    );
   });
 
+  // Testing Specification 7.1: both themes are test surface, not review
+  // surface. A screen that only reads correctly in one is a failing screen.
   group('both themes', () {
     for (final mode in [ThemeMode.light, ThemeMode.dark]) {
       testWidgets(
