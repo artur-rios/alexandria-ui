@@ -1,4 +1,5 @@
 import 'package:alexandria_ui/features/catalog/domain/catalog_search.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -22,19 +23,36 @@ void main() {
     });
   });
 
-  group('matching', () {
+  group('matching the file', () {
     test('GivenANameContainingTheTerm_WhenMatched_ThenItMatches', () {
-      expect(matchesSearch(aFile(name: 'Kind of Blue.flac'), 'blue'), isTrue);
+      expect(
+        matchesSearch(
+          FileDetails(file: aFile(name: 'Kind of Blue.flac')),
+          'blue',
+        ),
+        isTrue,
+      );
     });
 
     test('GivenADifferentCase_WhenMatched_ThenItStillMatches', () {
-      expect(matchesSearch(aFile(name: 'Kind of Blue.flac'), 'BLUE'), isTrue);
+      expect(
+        matchesSearch(
+          FileDetails(file: aFile(name: 'Kind of Blue.flac')),
+          'BLUE',
+        ),
+        isTrue,
+      );
     });
 
     test('GivenTheTermOnlyInThePath_WhenMatched_ThenItMatches', () {
       expect(
         matchesSearch(
-          aFile(name: 'track01.flac', path: '/home/owner/jazz/track01.flac'),
+          FileDetails(
+            file: aFile(
+              name: 'track01.flac',
+              path: '/home/owner/jazz/track01.flac',
+            ),
+          ),
           'jazz',
         ),
         isTrue,
@@ -43,35 +61,97 @@ void main() {
 
     test('GivenNoOccurrence_WhenMatched_ThenItDoesNotMatch', () {
       expect(
-        matchesSearch(aFile(name: 'Kind of Blue.flac'), 'reggae'),
+        matchesSearch(
+          FileDetails(file: aFile(name: 'Kind of Blue.flac')),
+          'reggae',
+        ),
         isFalse,
       );
     });
 
     test('GivenABlankTerm_WhenMatched_ThenNothingMatches', () {
       // A blank term is not a search that matches everything.
-      expect(matchesSearch(aFile(), '   '), isFalse);
+      expect(matchesSearch(FileDetails(file: aFile()), '   '), isFalse);
     });
+  });
+
+  group('matching the metadata (FR-CT-06)', () {
+    test('GivenATermInTheMetadata_WhenMatched_ThenItMatches', () {
+      // The row carries its metadata already — this is what a listing now
+      // answers, so an owner searching a track's title finds it.
+      expect(
+        matchesSearch(
+          FileDetails(
+            file: aFile(name: 'DISKNAME-01.flac'),
+            metadata: const {'title': 'Airbag'},
+          ),
+          'airbag',
+        ),
+        isTrue,
+      );
+    });
+
+    test(
+      'GivenATermMatchingOnlyAnArtistTag_WhenAnUnrelatedFileNameIsSearched_ThenItStillMatches',
+      () {
+        // The rip's file name shares nothing with the tag, and it still
+        // matches: the metadata alone is enough.
+        expect(
+          matchesSearch(
+            FileDetails(
+              file: aFile(name: 'DISKNAME-01.flac'),
+              metadata: const {'artist': 'Radiohead'},
+            ),
+            'radiohead',
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'GivenNoMetadataValueContainsTheTerm_WhenMatched_ThenItDoesNotMatch',
+      () {
+        expect(
+          matchesSearch(
+            FileDetails(
+              file: aFile(name: 'DISKNAME-01.flac'),
+              metadata: const {'title': 'Airbag', 'artist': 'Radiohead'},
+            ),
+            'reggae',
+          ),
+          isFalse,
+        );
+      },
+    );
   });
 
   group('results', () {
     final files = [
-      aFile(uuid: '1', name: 'Kind of Blue.flac'),
-      aFile(uuid: '2', name: 'Blue Train.flac'),
-      aFile(uuid: '3', name: 'Giant Steps.flac'),
-      aFile(uuid: '4', name: 'blue.png', type: LibraryType.image),
+      FileDetails(
+        file: aFile(uuid: '1', name: 'Kind of Blue.flac'),
+      ),
+      FileDetails(
+        file: aFile(uuid: '2', name: 'Blue Train.flac'),
+      ),
+      FileDetails(
+        file: aFile(uuid: '3', name: 'Giant Steps.flac'),
+      ),
+      FileDetails(
+        file: aFile(uuid: '4', name: 'blue.png', type: LibraryType.image),
+      ),
     ];
 
     test('GivenATerm_WhenTheCatalogIsSearched_ThenOnlyMatchesAreReturned', () {
       final results = searchResults(files, 'blue');
 
-      expect(results.map((file) => file.uuid), ['1', '2', '4']);
+      expect(results.map((details) => details.file.uuid), ['1', '2', '4']);
     });
 
     test('GivenATerm_WhenTheCatalogIsSearched_ThenTypesAreNotFilteredOut', () {
       // Across every type at once: the image matches on the same footing.
       expect(
-        searchResults(files, 'blue').map((file) => file.type),
+        searchResults(files, 'blue').map((details) => details.file.type),
         contains(LibraryType.image),
       );
     });

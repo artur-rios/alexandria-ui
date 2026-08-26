@@ -52,7 +52,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.video: CatalogListing.loaded(files: [video]),
+        LibraryType.video: loadedDetails([video]),
       },
     );
     catalog.details[videoUuid] = FileDetailsOutcome.read(
@@ -177,7 +177,7 @@ void main() {
         // way the application's own `FileDetailsView.show` is called.
         final catalog = FakeCatalogGateway(
           listings: {
-            LibraryType.audio: CatalogListing.loaded(files: [aFile()]),
+            LibraryType.audio: loadedDetails([aFile()]),
           },
         );
 

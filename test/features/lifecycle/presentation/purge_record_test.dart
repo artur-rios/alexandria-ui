@@ -5,7 +5,6 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
-import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
@@ -74,11 +73,10 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: CatalogListing.loaded(files: [aFile()]),
+        LibraryType.document: loadedDetails([aFile()]),
       },
       deleted: {
-        if (file != null)
-          LibraryType.text: CatalogListing.loaded(files: [file]),
+        if (file != null) LibraryType.text: loadedDetails([file]),
       },
     );
 

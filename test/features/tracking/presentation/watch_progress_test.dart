@@ -74,7 +74,7 @@ void main() {
 
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.video: CatalogListing.loaded(files: [series, movie]),
+        LibraryType.video: loadedDetails([series, movie]),
       },
     );
     catalog.details[seriesUuid] = FileDetailsOutcome.read(

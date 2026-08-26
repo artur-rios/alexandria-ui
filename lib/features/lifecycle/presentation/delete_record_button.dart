@@ -7,7 +7,9 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/music_metadata.dart';
 import '../../organization/domain/bookmark.dart';
+import '../../playback/domain/music_grouping.dart';
 import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/deletion_controller.dart';
@@ -41,15 +43,23 @@ class DeleteFileButton extends ConsumerWidget {
     final deletion = ref.read(deletionControllerProvider.notifier);
     final isOpen = deletion.holdsOn(file.uuid).isNotEmpty;
 
-    // FR-CT-13: the confirmation names an audio file by its metadata, the
-    // same per-file path `catalog_search_view.dart` reads a search result's
-    // title from, rather than the file on disk — read rather than watched,
-    // because this runs from a button press, not a build.
-    final name = file.type == LibraryType.audio
-        ? tagOr(
-            (await ref.read(audioMetadataProvider(file).future))?.title,
-            l10n.musicUnknownTitle,
+    // FR-CT-13: the confirmation names an audio file by its metadata, read
+    // off the same `musicLibraryProvider` the music area and playback read —
+    // read rather than watched, because this runs from a button press, not a
+    // build.
+    String? title;
+    if (file.type == LibraryType.audio) {
+      final library = await ref.read(musicLibraryProvider.future);
+      title = library.entries
+          .firstWhere(
+            (candidate) => candidate.file.uuid == file.uuid,
+            orElse: () =>
+                MusicEntry(file: file, metadata: const MusicMetadata()),
           )
+          .title;
+    }
+    final name = file.type == LibraryType.audio
+        ? tagOr(title, l10n.musicUnknownTitle)
         : file.name;
     if (!context.mounted) return;
 

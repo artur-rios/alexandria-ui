@@ -52,7 +52,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: CatalogListing.loaded(files: [book]),
+        LibraryType.document: loadedDetails([book]),
       },
     );
     catalog.details[bookUuid] = FileDetailsOutcome.read(
@@ -177,7 +177,7 @@ void main() {
         // way the application's own `FileDetailsView.show` is called.
         final catalog = FakeCatalogGateway(
           listings: {
-            LibraryType.audio: CatalogListing.loaded(files: [aFile()]),
+            LibraryType.audio: loadedDetails([aFile()]),
           },
         );
 

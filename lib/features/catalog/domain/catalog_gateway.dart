@@ -14,7 +14,12 @@ part 'catalog_gateway.freezed.dart';
 @freezed
 sealed class CatalogListing with _$CatalogListing {
   /// The core answered with [files], which may be empty (AF-01).
-  const factory CatalogListing.loaded({required List<CatalogFile> files}) =
+  ///
+  /// Each row is the same [FileDetails] record the single-file call answers:
+  /// the file, its metadata, and the scalars the core extracted from it. The
+  /// core's listing route answers this shape now, not a bare file — a caller
+  /// that only ever wanted the file reads `.file` off each row.
+  const factory CatalogListing.loaded({required List<FileDetails> files}) =
       CatalogListingLoaded;
 
   /// The core could not answer (AF-02, AF-04).

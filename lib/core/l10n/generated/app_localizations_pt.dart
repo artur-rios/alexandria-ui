@@ -739,11 +739,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get musicRowActions => 'Ações desta faixa';
 
   @override
-  String musicLoading(int read, int total) {
-    return 'Lendo metadados: $read de $total';
-  }
-
-  @override
   String get musicEmpty => 'Nenhum arquivo de áudio catalogado ainda.';
 
   @override

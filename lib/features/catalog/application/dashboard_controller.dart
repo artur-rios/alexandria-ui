@@ -25,7 +25,7 @@ class RecentFilesController extends AsyncNotifier<List<CatalogFile>> {
     final index = await ref.watch(catalogSearchProvider.future);
 
     final byNewest = sortFiles(
-      index.files,
+      [for (final row in index.files) row.file],
       const ListingView(
         sortField: SortField.indexed,
         direction: SortDirection.descending,

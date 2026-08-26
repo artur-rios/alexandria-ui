@@ -53,7 +53,7 @@ void main() {
     final loaded = details ?? aVideo();
     final gateway = FakeCatalogGateway(
       listings: {
-        LibraryType.video: CatalogListing.loaded(files: [loaded.file]),
+        LibraryType.video: loadedDetails([loaded.file]),
       },
     );
     gateway.details[loaded.file.uuid] = FileDetailsOutcome.read(
@@ -247,7 +247,7 @@ void main() {
         // the action is not offered for one.
         final gateway = FakeCatalogGateway(
           listings: {
-            LibraryType.video: CatalogListing.loaded(files: [aVideo().file]),
+            LibraryType.video: loadedDetails([aVideo().file]),
           },
         );
         gateway.details[uuid] = FileDetailsOutcome.read(

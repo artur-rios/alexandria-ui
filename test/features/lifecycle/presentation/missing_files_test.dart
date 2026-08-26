@@ -67,7 +67,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: CatalogListing.loaded(files: [present, ...files]),
+        LibraryType.document: loadedDetails([present, ...files]),
       },
     );
     for (final file in [present, missing, fromUnregistered]) {
@@ -156,9 +156,7 @@ void main() {
             title: 'So What',
             missingAt: missingAt,
           )
-          ..listings[LibraryType.document] = CatalogListing.loaded(
-            files: [present],
-          );
+          ..listings[LibraryType.document] = loadedDetails([present]);
         for (final file in [present]) {
           catalog.details[file.uuid] = FileDetailsOutcome.read(
             details: FileDetails(file: file, metadata: const {}),

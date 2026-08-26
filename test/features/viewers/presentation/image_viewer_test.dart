@@ -45,7 +45,7 @@ void main() {
     final target = file ?? first;
 
     final catalog = FakeCatalogGateway(
-      listings: {LibraryType.image: CatalogListing.loaded(files: files)},
+      listings: {LibraryType.image: loadedDetails(files)},
     );
     for (final entry in files) {
       catalog.details[entry.uuid] = FileDetailsOutcome.read(

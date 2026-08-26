@@ -119,7 +119,7 @@ return failed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<CatalogFile> files)?  loaded,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<FileDetails> files)?  loaded,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case CatalogListingLoaded() when loaded != null:
 return loaded(_that.files);case CatalogListingFailed() when failed != null:
@@ -141,7 +141,7 @@ return failed(_that.failure);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<CatalogFile> files)  loaded,required TResult Function( Failure failure)  failed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<FileDetails> files)  loaded,required TResult Function( Failure failure)  failed,}) {final _that = this;
 switch (_that) {
 case CatalogListingLoaded():
 return loaded(_that.files);case CatalogListingFailed():
@@ -159,7 +159,7 @@ return failed(_that.failure);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<CatalogFile> files)?  loaded,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<FileDetails> files)?  loaded,TResult? Function( Failure failure)?  failed,}) {final _that = this;
 switch (_that) {
 case CatalogListingLoaded() when loaded != null:
 return loaded(_that.files);case CatalogListingFailed() when failed != null:
@@ -175,11 +175,11 @@ return failed(_that.failure);case _:
 
 
 class CatalogListingLoaded implements CatalogListing {
-  const CatalogListingLoaded({required final  List<CatalogFile> files}): _files = files;
+  const CatalogListingLoaded({required final  List<FileDetails> files}): _files = files;
   
 
- final  List<CatalogFile> _files;
- List<CatalogFile> get files {
+ final  List<FileDetails> _files;
+ List<FileDetails> get files {
   if (_files is EqualUnmodifiableListView) return _files;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_files);
@@ -216,7 +216,7 @@ abstract mixin class $CatalogListingLoadedCopyWith<$Res> implements $CatalogList
   factory $CatalogListingLoadedCopyWith(CatalogListingLoaded value, $Res Function(CatalogListingLoaded) _then) = _$CatalogListingLoadedCopyWithImpl;
 @useResult
 $Res call({
- List<CatalogFile> files
+ List<FileDetails> files
 });
 
 
@@ -236,7 +236,7 @@ class _$CatalogListingLoadedCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') $Res call({Object? files = null,}) {
   return _then(CatalogListingLoaded(
 files: null == files ? _self._files : files // ignore: cast_nullable_to_non_nullable
-as List<CatalogFile>,
+as List<FileDetails>,
   ));
 }
 

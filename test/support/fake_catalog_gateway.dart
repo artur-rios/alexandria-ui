@@ -101,6 +101,13 @@ class FakeCatalogGateway implements CatalogGateway {
   /// it, or leave it hanging while asserting nothing else happened.
   final Map<String, Completer<FileDetailsOutcome>> _heldDetails = {};
 
+  /// Every call to [listFiles], in order.
+  ///
+  /// What Finding 2's "one call" assertion counts: a music library test
+  /// asserts this has exactly one entry rather than one per file, which is
+  /// the one thing a regression to per-file reads would make visible.
+  int get listCalls => requested.length;
+
   @override
   Future<CatalogListing> listFiles({
     required LibraryType type,
@@ -180,27 +187,24 @@ class FakeCatalogGateway implements CatalogGateway {
       indexedAt: indexedAt,
       missingAt: missingAt,
     );
+    final row = FileDetails(
+      file: file,
+      metadata: {
+        MusicField.title.wireName: ?title,
+        MusicField.artist.wireName: ?artist,
+        MusicField.album.wireName: ?album,
+        MusicField.year.wireName: ?year?.toString(),
+        MusicField.genre.wireName: ?genre,
+        MusicField.track.wireName: ?track?.toString(),
+      },
+    );
     final existing = listings[LibraryType.audio];
     final files = existing is CatalogListingLoaded
         ? existing.files
-        : const <CatalogFile>[];
-    listings[LibraryType.audio] = CatalogListing.loaded(
-      files: [...files, file],
-    );
+        : const <FileDetails>[];
+    listings[LibraryType.audio] = CatalogListing.loaded(files: [...files, row]);
 
-    details[uuid] = FileDetailsOutcome.read(
-      details: FileDetails(
-        file: file,
-        metadata: {
-          MusicField.title.wireName: ?title,
-          MusicField.artist.wireName: ?artist,
-          MusicField.album.wireName: ?album,
-          MusicField.year.wireName: ?year?.toString(),
-          MusicField.genre.wireName: ?genre,
-          MusicField.track.wireName: ?track?.toString(),
-        },
-      ),
-    );
+    details[uuid] = FileDetailsOutcome.read(details: row);
   }
 
   /// Adds a file of [type] to that type's listing, named by [name] on disk.
@@ -214,12 +218,22 @@ class FakeCatalogGateway implements CatalogGateway {
     LibraryType type = LibraryType.document,
     DateTime? indexedAt,
   }) {
-    final file = aFile(uuid: uuid, name: name, type: type, indexedAt: indexedAt);
+    final file = aFile(
+      uuid: uuid,
+      name: name,
+      type: type,
+      indexedAt: indexedAt,
+    );
     final existing = listings[type];
     final files = existing is CatalogListingLoaded
         ? existing.files
-        : const <CatalogFile>[];
-    listings[type] = CatalogListing.loaded(files: [...files, file]);
+        : const <FileDetails>[];
+    listings[type] = CatalogListing.loaded(
+      files: [
+        ...files,
+        FileDetails(file: file),
+      ],
+    );
   }
 
   /// Adds a document file to the document listing, named by [name] on disk.
@@ -238,9 +252,14 @@ class FakeCatalogGateway implements CatalogGateway {
   /// Completes a call held by [holdDetailsFor], answering [uuid]'s own
   /// details by default.
   void releaseDetails(String uuid) {
-    _heldDetails.remove(uuid)?.complete(
-      details[uuid] ?? FileDetailsOutcome.read(details: FileDetails(file: aFile(uuid: uuid))),
-    );
+    _heldDetails
+        .remove(uuid)
+        ?.complete(
+          details[uuid] ??
+              FileDetailsOutcome.read(
+                details: FileDetails(file: aFile(uuid: uuid)),
+              ),
+        );
   }
 
   /// Makes [uuid]'s details answer a failure instead of a record.
@@ -340,4 +359,15 @@ CatalogFile aFile({
   missingAt: missingAt,
   deletedAt: deletedAt,
   isDeleted: isDeleted,
+);
+
+/// A listing of [files], each wrapped as a [FileDetails] row with no
+/// metadata — the shape [CatalogListing.loaded] now carries.
+///
+/// Most fixtures only care about the file half of a row; this is the one
+/// place a bare [CatalogFile] list becomes what the gateway actually answers,
+/// so a test that wants metadata alongside a file builds a [FileDetails]
+/// (or uses [FakeCatalogGateway.addAudio]) instead of reaching in here.
+CatalogListing loadedDetails(List<CatalogFile> files) => CatalogListing.loaded(
+  files: [for (final file in files) FileDetails(file: file)],
 );

@@ -1392,12 +1392,6 @@ abstract class AppLocalizations {
   /// **'Actions for this track'**
   String get musicRowActions;
 
-  /// Progress while the music area reads each audio file's metadata, which the core answers one file at a time.
-  ///
-  /// In en, this message translates to:
-  /// **'Reading metadata: {read} of {total}'**
-  String musicLoading(int read, int total);
-
   /// The music area with nothing in it.
   ///
   /// In en, this message translates to:

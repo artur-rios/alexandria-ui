@@ -66,12 +66,10 @@ void main() {
       () async {
         final sut = await started(
           listings: {
-            LibraryType.audio: CatalogListing.loaded(
-              files: [
-                aFile(uuid: '1', name: 'zebra.flac'),
-                aFile(uuid: '2', name: 'apple.flac'),
-              ],
-            ),
+            LibraryType.audio: loadedDetails([
+              aFile(uuid: '1', name: 'zebra.flac'),
+              aFile(uuid: '2', name: 'apple.flac'),
+            ]),
           },
         );
         sut.ref
@@ -235,7 +233,7 @@ void main() {
         // listing works, and it is the change that the core rejects.
         final sut = await started(
           listings: {
-            LibraryType.audio: CatalogListing.loaded(files: [aFile()]),
+            LibraryType.audio: loadedDetails([aFile()]),
           },
           deleted: {
             LibraryType.audio: const CatalogListing.failed(

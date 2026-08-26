@@ -2,7 +2,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
-import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
@@ -37,21 +36,19 @@ void main() {
         catalogGatewayProvider.overrideWithValue(
           FakeCatalogGateway(
             listings: {
-              LibraryType.video: CatalogListing.loaded(
-                files: [
-                  aFile(
-                    type: LibraryType.video,
-                    name: 'Interstellar.mp4',
-                    path: '/home/owner/videos/Interstellar.mp4',
-                  ),
-                  aFile(
-                    uuid: 'b',
-                    type: LibraryType.video,
-                    name: 'Inception.mp4',
-                    path: '/home/owner/videos/Inception.mp4',
-                  ),
-                ],
-              ),
+              LibraryType.video: loadedDetails([
+                aFile(
+                  type: LibraryType.video,
+                  name: 'Interstellar.mp4',
+                  path: '/home/owner/videos/Interstellar.mp4',
+                ),
+                aFile(
+                  uuid: 'b',
+                  type: LibraryType.video,
+                  name: 'Inception.mp4',
+                  path: '/home/owner/videos/Inception.mp4',
+                ),
+              ]),
             },
           ),
         ),

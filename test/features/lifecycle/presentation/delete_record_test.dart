@@ -70,7 +70,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: CatalogListing.loaded(files: [book]),
+        LibraryType.document: loadedDetails([book]),
       },
     );
     catalog.details[bookUuid] = FileDetailsOutcome.read(
@@ -206,14 +206,15 @@ void main() {
           name: 'track-07.flac',
           type: LibraryType.audio,
         );
-        final gateway = FakeCatalogGateway(
-          listings: {LibraryType.audio: CatalogListing.loaded(files: [track])},
-        )..details[audioUuid] = FileDetailsOutcome.read(
-          details: FileDetails(
-            file: track,
-            metadata: const {'title': 'So What'},
-          ),
+        final row = FileDetails(
+          file: track,
+          metadata: const {'title': 'So What'},
         );
+        final gateway = FakeCatalogGateway(
+          listings: {
+            LibraryType.audio: CatalogListing.loaded(files: [row]),
+          },
+        )..details[audioUuid] = FileDetailsOutcome.read(details: row);
 
         await tester.pumpShell(
           surfaceSize: const Size(1440, 1000),

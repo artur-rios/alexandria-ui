@@ -31,7 +31,9 @@ class MissingFilesController extends AsyncNotifier<List<CatalogFile>> {
 
       switch (listing) {
         case CatalogListingLoaded(:final files):
-          missing.addAll(files.where((file) => file.isMissing));
+          missing.addAll(
+            files.map((row) => row.file).where((file) => file.isMissing),
+          );
 
         // AF-04: a rejected session returns the owner to login.
         case CatalogListingFailed(failure: final UnauthorizedFailure failure):

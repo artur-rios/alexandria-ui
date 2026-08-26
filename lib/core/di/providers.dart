@@ -50,7 +50,6 @@ import '../../features/catalog/domain/library_type.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
 import '../../features/catalog/domain/file_name.dart';
-import '../../features/catalog/domain/music_metadata.dart';
 import '../../features/library_sources/application/active_runs_controller.dart';
 import '../../features/library_sources/application/active_runs_state.dart';
 import '../../features/library_sources/application/index_runs_controller.dart';
@@ -468,68 +467,13 @@ final audioPlayerProvider = Provider<MediaPlayer>((ref) {
 
 /// Every audio file with the metadata a queue is grouped by (UC-20, FR-PL-06).
 ///
-/// Resolves once, with the complete library — see
-/// [MusicLibraryController]'s doc comment for why a queue must always be
-/// built from this and never from [musicLibraryProgressProvider].
+/// One gateway call, listing the audio files: the core's listing now answers
+/// each row with the same metadata the single-file call does, so this reads
+/// the library whole rather than one file at a time.
 final musicLibraryProvider =
     AsyncNotifierProvider<MusicLibraryController, MusicLibrary>(
       MusicLibraryController.new,
     );
-
-/// The music library as far as it has been read, for the browsing area to
-/// draw its rows and progress line from while [musicLibraryProvider] is still
-/// loading (UC-46).
-final musicLibraryProgressProvider =
-    NotifierProvider<MusicLibraryProgress, MusicLibrary>(
-      MusicLibraryProgress.new,
-    );
-
-/// An audio file's metadata, or `null` while it is not known (UC-11,
-/// FR-CT-13).
-///
-/// The whole record rather than just the title: a search result needs the
-/// artist too, to tell two identically-titled tracks — a remix, a live take,
-/// a duplicate rip — apart, and it is the same [fileDetails] call either way.
-///
-/// Per file rather than over the whole library: a search shows a screenful of
-/// results, and reading every audio file in the catalog to name three of them
-/// would make searching cost what browsing costs. Consults
-/// [musicLibraryProgressProvider] rather than [musicLibraryProvider]: the
-/// latter resolves only once the *entire* library has been read and throws if
-/// that read fails, and neither behaviour belongs to a single search result —
-/// waiting on the whole library would make a search cost what browsing costs,
-/// and a library-wide failure has nothing to do with whether this one file's
-/// metadata is known. The progress provider never throws and already holds
-/// whatever has been read so far, so a search after a visit to the music area
-/// costs nothing at all, and a failed library read cannot break a result that
-/// does not depend on it.
-final audioMetadataProvider = FutureProvider.family<MusicMetadata?, CatalogFile>((
-  ref,
-  file,
-) async {
-  if (file.type != LibraryType.audio) return null;
-
-  final cached = ref.watch(musicLibraryProgressProvider);
-  for (final entry in cached.entries) {
-    if (entry.file.uuid == file.uuid) return entry.metadata;
-  }
-
-  final credential = ref.read(sessionControllerProvider.notifier).credential;
-  if (credential == null) return null;
-
-  final details = await ref
-      .read(catalogGatewayProvider)
-      .fileDetails(uuid: file.uuid, credential: credential);
-
-  return switch (details) {
-    FileDetailsRead(:final details) => MusicMetadata.fromDetails(
-      details.metadata,
-    ),
-    // A file whose details will not come back is a file with no tags we can
-    // show, which the row already has words for.
-    FileDetailsFailed() => null,
-  };
-});
 
 /// Where the owner is in the music area (UC-46).
 final musicBrowseControllerProvider =

@@ -65,28 +65,26 @@ void main() {
   /// metadata detour — audio's own naming (FR-CT-13) gets its own fixtures
   /// further down, where the distinction is the point.
   Map<LibraryType, CatalogListing> aLibrary() => {
-    LibraryType.document: CatalogListing.loaded(
-      files: [
-        aFile(
-          uuid: '1',
-          name: 'oldest.pdf',
-          type: LibraryType.document,
-          indexedAt: DateTime.utc(2026, 1),
-        ),
-        aFile(
-          uuid: '2',
-          name: 'newest.pdf',
-          type: LibraryType.document,
-          indexedAt: DateTime.utc(2026, 3),
-        ),
-        aFile(
-          uuid: '3',
-          name: 'middle.pdf',
-          type: LibraryType.document,
-          indexedAt: DateTime.utc(2026, 2),
-        ),
-      ],
-    ),
+    LibraryType.document: loadedDetails([
+      aFile(
+        uuid: '1',
+        name: 'oldest.pdf',
+        type: LibraryType.document,
+        indexedAt: DateTime.utc(2026, 1),
+      ),
+      aFile(
+        uuid: '2',
+        name: 'newest.pdf',
+        type: LibraryType.document,
+        indexedAt: DateTime.utc(2026, 3),
+      ),
+      aFile(
+        uuid: '3',
+        name: 'middle.pdf',
+        type: LibraryType.document,
+        indexedAt: DateTime.utc(2026, 2),
+      ),
+    ]),
   };
 
   group('the main flow', () {
@@ -218,12 +216,11 @@ void main() {
     testWidgets(
       'GivenAudioOutsideTheRecentList_WhenTheDashboardShows_ThenItsDetailsAreNeverRead',
       (tester) async {
-        // Naming the one audio file the dashboard actually shows must not
-        // force the whole-library scan `musicLibraryProvider` performs: that
-        // reads every audio file's details, in order, which this proves did
-        // not happen by adding audio files old enough to fall outside
-        // RecentFilesController.limit and asserting their details were never
-        // asked for.
+        // Naming the one audio file the dashboard actually shows reads
+        // `musicLibraryProvider`, which is one gateway listing call rather
+        // than a per-file `fileDetails` read — proved here by adding audio
+        // files old enough to fall outside RecentFilesController.limit and
+        // asserting no file's details are ever asked for individually.
         final gateway = FakeCatalogGateway()
           ..addAudio(
             uuid: 'shown',
@@ -255,7 +252,7 @@ void main() {
         await openDashboard(tester, gateway: gateway);
 
         expect(find.text('So What'), findsOneWidget);
-        expect(gateway.detailsRequested, ['shown']);
+        expect(gateway.detailsRequested, isEmpty);
       },
     );
   });
@@ -420,9 +417,9 @@ void main() {
             LibraryType.audio: const CatalogListing.failed(
               failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
             ),
-            LibraryType.image: CatalogListing.loaded(
-              files: [aFile(uuid: 'i', name: 'a.png', type: LibraryType.image)],
-            ),
+            LibraryType.image: loadedDetails([
+              aFile(uuid: 'i', name: 'a.png', type: LibraryType.image),
+            ]),
           },
         );
         final l10n = AppLocalizations.of(
@@ -522,9 +519,9 @@ void main() {
         LibraryType.audio: const CatalogListing.failed(
           failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
         ),
-        LibraryType.image: CatalogListing.loaded(
-          files: [aFile(uuid: 'i', name: 'a.png', type: LibraryType.image)],
-        ),
+        LibraryType.image: loadedDetails([
+          aFile(uuid: 'i', name: 'a.png', type: LibraryType.image),
+        ]),
       },
     );
 

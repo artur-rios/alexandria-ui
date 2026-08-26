@@ -58,7 +58,7 @@ class CoreCatalogGateway implements CatalogGateway {
       final rows = jsonDecode(json) as List<dynamic>;
       return CatalogListing.loaded(
         files: [
-          for (final row in rows) ?_fileFrom(row as Map<String, dynamic>),
+          for (final row in rows) ?_detailsFrom(row as Map<String, dynamic>),
         ],
       );
     } on Object {
@@ -98,26 +98,10 @@ class CoreCatalogGateway implements CatalogGateway {
     if (json == null) return _unreadableDetails();
 
     try {
-      final body = jsonDecode(json) as Map<String, dynamic>;
-      final file = _fileFrom(body['file'] as Map<String, dynamic>);
-      if (file == null) return _unreadableDetails();
+      final details = _detailsFrom(jsonDecode(json) as Map<String, dynamic>);
+      if (details == null) return _unreadableDetails();
 
-      return FileDetailsOutcome.read(
-        details: FileDetails(
-          file: file,
-          metadata: _metadataFrom(body['metadata']),
-          width: body['width'] as int?,
-          height: body['height'] as int?,
-          // The core names a comic's page count separately from a document's,
-          // because a FileView carries both fields and they are never both
-          // answered for one file. Either is "how many pages" to a reader.
-          pageCount:
-              body['pageCount'] as int? ?? body['comicPageCount'] as int?,
-          durationSeconds: (body['durationSeconds'] as num?)?.toDouble(),
-          isDeleted:
-              (body['file'] as Map<String, dynamic>)['state'] == 'deleted',
-        ),
-      );
+      return FileDetailsOutcome.read(details: details);
     } on Object {
       return _unreadableDetails();
     }
@@ -294,6 +278,31 @@ class CoreCatalogGateway implements CatalogGateway {
       code: FILE_ERR_OTHER,
     ),
   );
+
+  /// The [FileDetails] record [body] describes, or `null` when its file is
+  /// one of a type this application does not know.
+  ///
+  /// One parse for both the single-file call and each row of the listing:
+  /// the core answers the same `FileView` shape for both, so there is one
+  /// place that reads it rather than a second copy that could drift from the
+  /// first.
+  FileDetails? _detailsFrom(Map<String, dynamic> body) {
+    final file = _fileFrom(body['file'] as Map<String, dynamic>);
+    if (file == null) return null;
+
+    return FileDetails(
+      file: file,
+      metadata: _metadataFrom(body['metadata']),
+      width: body['width'] as int?,
+      height: body['height'] as int?,
+      // The core names a comic's page count separately from a document's,
+      // because a FileView carries both fields and they are never both
+      // answered for one file. Either is "how many pages" to a reader.
+      pageCount: body['pageCount'] as int? ?? body['comicPageCount'] as int?,
+      durationSeconds: (body['durationSeconds'] as num?)?.toDouble(),
+      isDeleted: (body['file'] as Map<String, dynamic>)['state'] == 'deleted',
+    );
+  }
 
   /// The file [row] describes, or `null` when its type is one this
   /// application does not know.

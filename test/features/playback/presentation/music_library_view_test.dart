@@ -23,9 +23,7 @@ void main() {
       extraOverrides: [catalogGatewayProvider.overrideWithValue(gateway)],
     );
 
-    container
-        .read(shellControllerProvider.notifier)
-        .go(ShellDestination.music);
+    container.read(shellControllerProvider.notifier).go(ShellDestination.music);
     await tester.pumpAndSettle();
   }
 
@@ -58,26 +56,24 @@ void main() {
     );
 
   group('the views (main flow step 2)', () {
-    testWidgets(
-      'GivenTheMusicArea_WhenItOpens_ThenItListsTheArtists',
-      (tester) async {
-        await openMusic(tester, gateway: libraryOfThree());
+    testWidgets('GivenTheMusicArea_WhenItOpens_ThenItListsTheArtists', (
+      tester,
+    ) async {
+      await openMusic(tester, gateway: libraryOfThree());
 
-        expect(find.text('Radiohead'), findsOneWidget);
-        expect(find.text('Portishead'), findsOneWidget);
-      },
-    );
+      expect(find.text('Radiohead'), findsOneWidget);
+      expect(find.text('Portishead'), findsOneWidget);
+    });
 
-    testWidgets(
-      'GivenTheMusicArea_WhenItOpens_ThenNoFileNameIsShown',
-      (tester) async {
-        // FR-CT-13, asserted the only way that means anything: a name that
-        // would be unmistakable if the view ever fell back to it.
-        await openMusic(tester, gateway: libraryOfThree());
+    testWidgets('GivenTheMusicArea_WhenItOpens_ThenNoFileNameIsShown', (
+      tester,
+    ) async {
+      // FR-CT-13, asserted the only way that means anything: a name that
+      // would be unmistakable if the view ever fell back to it.
+      await openMusic(tester, gateway: libraryOfThree());
 
-        expect(find.textContaining('DISKNAME'), findsNothing);
-      },
-    );
+      expect(find.textContaining('DISKNAME'), findsNothing);
+    });
 
     testWidgets(
       'GivenTheArtistsView_WhenAlbumsAreChosen_ThenTheAlbumsAreListed',
@@ -110,18 +106,17 @@ void main() {
   });
 
   group('drilling in (main flow step 3)', () {
-    testWidgets(
-      'GivenTheArtists_WhenOneIsOpened_ThenOnlyTheirAlbumsAreShown',
-      (tester) async {
-        await openMusic(tester, gateway: libraryOfThree());
+    testWidgets('GivenTheArtists_WhenOneIsOpened_ThenOnlyTheirAlbumsAreShown', (
+      tester,
+    ) async {
+      await openMusic(tester, gateway: libraryOfThree());
 
-        await tester.tap(find.text('Radiohead'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Radiohead'));
+      await tester.pumpAndSettle();
 
-        expect(find.textContaining('OK'), findsOneWidget);
-        expect(find.textContaining('Dummy'), findsNothing);
-      },
-    );
+      expect(find.textContaining('OK'), findsOneWidget);
+      expect(find.textContaining('Dummy'), findsNothing);
+    });
 
     testWidgets(
       'GivenAnArtistsAlbums_WhenOneIsOpened_ThenItsTracksComeInTrackOrder',
@@ -205,21 +200,18 @@ void main() {
 
   group('loading and emptiness', () {
     testWidgets(
-      'GivenMetadataStillArriving_WhenTheAreaIsShown_ThenItSaysHowFarItHasGot',
+      'GivenTheAreaHasLoaded_WhenItIsShown_ThenNoProgressLineAppears',
       (tester) async {
-        // Held by uuid rather than by call count: the dashboard the shell
-        // lands on first also reads a recent audio file's own metadata
-        // (FR-CT-13, per file, not the whole library), so a count-based hold
-        // could be spent there before the music area's own scan ever starts.
-        // Holding files 2 and 3 by name leaves file 1 free to answer
-        // wherever it is asked from.
-        final gateway = libraryOfThree()
-          ..holdDetailsFor('2')
-          ..holdDetailsFor('3');
-        await openMusic(tester, gateway: gateway);
-        final l10n = localizations(tester);
+        // The library now resolves in one gateway call, so there is nothing
+        // "so far" to report — the progress line this area used to show
+        // while metadata was still arriving one file at a time is gone. Its
+        // exact wording ("Reading metadata: N of M") is what a regression
+        // back to it would look like on screen; a track's own number (shown
+        // as "1", "2" in the album view) is not this, so the check is on the
+        // phrase's shape rather than on digits appearing at all.
+        await openMusic(tester, gateway: libraryOfThree());
 
-        expect(find.text(l10n.musicLoading(1, 3)), findsOneWidget);
+        expect(find.textContaining(RegExp(r'\d+ of \d+')), findsNothing);
       },
     );
 

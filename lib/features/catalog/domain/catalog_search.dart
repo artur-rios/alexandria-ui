@@ -1,4 +1,4 @@
-import 'catalog_file.dart';
+import 'file_details.dart';
 
 /// Matching a search term against the loaded catalog (UC-11, FR-CT-06).
 ///
@@ -7,17 +7,20 @@ import 'catalog_file.dart';
 /// while more arrives. The core publishes no search call, and this is not a
 /// workaround for that — it is what the use case asks for.
 ///
-/// What is matched is the file's name and its path. `FR-CT-06` also asks for
-/// type-specific metadata, which the core's file projection does not carry: a
-/// listing answers uuid, name, path, type and state, and nothing about an
-/// album or an author. That half arrives when the catalog carries metadata,
-/// and is deliberately absent rather than faked.
-bool matchesSearch(CatalogFile file, String term) {
+/// What is matched is the file's name and path, plus the type-specific
+/// metadata FR-CT-06 also asks for: each row the listing answers now carries
+/// it, exactly as the single-file call does, so there is no second call to
+/// make and nothing here to fake.
+bool matchesSearch(FileDetails details, String term) {
   final needle = term.trim().toLowerCase();
   if (needle.isEmpty) return false;
 
-  return file.name.toLowerCase().contains(needle) ||
-      file.path.toLowerCase().contains(needle);
+  if (details.file.name.toLowerCase().contains(needle)) return true;
+  if (details.file.path.toLowerCase().contains(needle)) return true;
+
+  return details.metadata.values.any(
+    (value) => value.toLowerCase().contains(needle),
+  );
 }
 
 /// Whether [term] is something to search for at all (AF-02).
@@ -26,10 +29,10 @@ bool matchesSearch(CatalogFile file, String term) {
 /// question, so the previous listing is what belongs on screen.
 bool isSearchable(String term) => term.trim().isNotEmpty;
 
-/// The files of [files] matching [term], in the order they arrived.
-List<CatalogFile> searchResults(Iterable<CatalogFile> files, String term) => [
-  for (final file in files)
-    if (matchesSearch(file, term)) file,
+/// The rows of [files] matching [term], in the order they arrived.
+List<FileDetails> searchResults(Iterable<FileDetails> files, String term) => [
+  for (final details in files)
+    if (matchesSearch(details, term)) details,
 ];
 
 /// Where [term] appears in [text], as the span to highlight (main flow step 3).

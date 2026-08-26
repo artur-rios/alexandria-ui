@@ -67,8 +67,8 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: CatalogListing.loaded(files: [book]),
-        LibraryType.comic: CatalogListing.loaded(files: [comic]),
+        LibraryType.document: loadedDetails([book]),
+        LibraryType.comic: loadedDetails([comic]),
       },
     );
     for (final file in [book, comic]) {

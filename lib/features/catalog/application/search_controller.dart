@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
-import '../domain/catalog_file.dart';
 import '../domain/catalog_gateway.dart';
+import '../domain/file_details.dart';
 import '../domain/library_type.dart';
 
 /// What the owner has typed (UC-11 main flow step 1).
@@ -38,7 +38,7 @@ class CatalogSearchController extends AsyncNotifier<CatalogSearchIndex> {
     if (credential == null) return const CatalogSearchIndex();
 
     final gateway = ref.read(catalogGatewayProvider);
-    final files = <CatalogFile>[];
+    final files = <FileDetails>[];
     var complete = true;
 
     for (final type in LibraryType.values) {
@@ -78,8 +78,8 @@ class CatalogSearchIndex {
   /// Creates an index.
   const CatalogSearchIndex({this.files = const [], this.isComplete = true});
 
-  /// Every file that could be read.
-  final List<CatalogFile> files;
+  /// Every file that could be read, with the metadata each row carries.
+  final List<FileDetails> files;
 
   /// Whether every type answered.
   ///
