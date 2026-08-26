@@ -52,7 +52,9 @@ void main() {
         .read(preferencesControllerProvider.notifier)
         .setAlbumAnimation(AlbumAnimationMode.off);
 
-    container.read(shellControllerProvider.notifier).go(ShellDestination.music);
+    container
+        .read(shellControllerProvider.notifier)
+        .go(ShellDestination.music);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(localizations(tester).musicViewSongs));
@@ -105,46 +107,49 @@ void main() {
     },
   );
 
-  testWidgets('GivenTheMenu_WhenDetailsAreChosen_ThenTheDetailsDialogOpens', (
-    tester,
-  ) async {
-    await openSongs(tester);
-    final l10n = localizations(tester);
+  testWidgets(
+    'GivenTheMenu_WhenDetailsAreChosen_ThenTheDetailsDialogOpens',
+    (tester) async {
+      await openSongs(tester);
+      final l10n = localizations(tester);
 
-    await rightClickRow(tester);
-    await tester.tap(find.text(l10n.detailsTitle));
-    await tester.pumpAndSettle();
+      await rightClickRow(tester);
+      await tester.tap(find.text(l10n.detailsTitle));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(FileDetailsView), findsOneWidget);
-  });
+      expect(find.byType(FileDetailsView), findsOneWidget);
+    },
+  );
 
-  testWidgets('GivenTheMenu_WhenEditingMetadataIsChosen_ThenTheFormOpens', (
-    tester,
-  ) async {
-    await openSongs(tester);
-    final l10n = localizations(tester);
+  testWidgets(
+    'GivenTheMenu_WhenEditingMetadataIsChosen_ThenTheFormOpens',
+    (tester) async {
+      await openSongs(tester);
+      final l10n = localizations(tester);
 
-    await rightClickRow(tester);
-    await tester.tap(find.text(l10n.detailsEditMetadata));
-    await tester.pumpAndSettle();
+      await rightClickRow(tester);
+      await tester.tap(find.text(l10n.detailsEditMetadata));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(MusicMetadataForm), findsOneWidget);
-  });
+      expect(find.byType(MusicMetadataForm), findsOneWidget);
+    },
+  );
 
-  testWidgets('GivenTheMenu_WhenPlayAlbumIsChosen_ThenTheAlbumIsQueued', (
-    tester,
-  ) async {
-    final container = await openSongs(tester);
-    final l10n = localizations(tester);
+  testWidgets(
+    'GivenTheMenu_WhenPlayAlbumIsChosen_ThenTheAlbumIsQueued',
+    (tester) async {
+      final container = await openSongs(tester);
+      final l10n = localizations(tester);
 
-    await rightClickRow(tester);
-    await tester.tap(find.text(l10n.audioPlayAlbum));
-    await tester.pumpAndSettle();
+      await rightClickRow(tester);
+      await tester.tap(find.text(l10n.audioPlayAlbum));
+      await tester.pumpAndSettle();
 
-    final state = container.read(audioPlaybackControllerProvider);
-    expect(state.queue.kind, QueueKind.album);
-    expect(state.current?.uuid, '1');
-  });
+      final state = container.read(audioPlaybackControllerProvider);
+      expect(state.queue.kind, QueueKind.album);
+      expect(state.current?.uuid, '1');
+    },
+  );
 
   testWidgets('GivenTheMenu_WhenPlayIsChosen_ThenTheTrackAlonePlays', (
     tester,
@@ -162,18 +167,19 @@ void main() {
     expect(state.current?.uuid, '1');
   });
 
-  testWidgets('GivenTheMenu_WhenPlayArtistIsChosen_ThenTheArtistIsQueued', (
-    tester,
-  ) async {
-    final container = await openSongs(tester);
-    final l10n = localizations(tester);
+  testWidgets(
+    'GivenTheMenu_WhenPlayArtistIsChosen_ThenTheArtistIsQueued',
+    (tester) async {
+      final container = await openSongs(tester);
+      final l10n = localizations(tester);
 
-    await rightClickRow(tester);
-    await tester.tap(find.text(l10n.audioPlayArtist));
-    await tester.pumpAndSettle();
+      await rightClickRow(tester);
+      await tester.tap(find.text(l10n.audioPlayArtist));
+      await tester.pumpAndSettle();
 
-    final state = container.read(audioPlaybackControllerProvider);
-    expect(state.queue.kind, QueueKind.artist);
-    expect(state.current?.uuid, '1');
-  });
+      final state = container.read(audioPlaybackControllerProvider);
+      expect(state.queue.kind, QueueKind.artist);
+      expect(state.current?.uuid, '1');
+    },
+  );
 }

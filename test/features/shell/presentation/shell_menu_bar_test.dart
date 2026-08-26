@@ -30,13 +30,14 @@ void main() {
   }
 
   group('placement (FR-UX-01)', () {
-    testWidgets('GivenASignedInOwner_WhenTheShellOpens_ThenTheMenuBarIsShown', (
-      tester,
-    ) async {
-      await tester.pumpShell();
+    testWidgets(
+      'GivenASignedInOwner_WhenTheShellOpens_ThenTheMenuBarIsShown',
+      (tester) async {
+        await tester.pumpShell();
 
-      expect(find.byType(ShellMenuBar), findsOneWidget);
-    });
+        expect(find.byType(ShellMenuBar), findsOneWidget);
+      },
+    );
 
     testWidgets(
       'GivenTheShell_WhenTheMenuBarIsShown_ThenTheRailCarriesNoLibraryMenu',
@@ -78,18 +79,19 @@ void main() {
       },
     );
 
-    testWidgets('GivenTheLibraryMenu_WhenAnEntryIsChosen_ThenItsScreenOpens', (
-      tester,
-    ) async {
-      await tester.pumpShell();
-      final l10n = localizations(tester);
+    testWidgets(
+      'GivenTheLibraryMenu_WhenAnEntryIsChosen_ThenItsScreenOpens',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
 
-      await openLibrary(tester);
-      await tester.tap(find.text(l10n.missingFilesOpen));
-      await tester.pumpAndSettle();
+        await openLibrary(tester);
+        await tester.tap(find.text(l10n.missingFilesOpen));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(MissingFilesScreen), findsOneWidget);
-    });
+        expect(find.byType(MissingFilesScreen), findsOneWidget);
+      },
+    );
   });
 
   group('across the breakpoints (FR-UX-02)', () {
@@ -278,17 +280,18 @@ void main() {
       },
     );
 
-    testWidgets('GivenTheSettingsMenu_WhenItIsOpened_ThenSigningOutIsOffered', (
-      tester,
-    ) async {
-      await tester.pumpShell();
-      final l10n = localizations(tester);
+    testWidgets(
+      'GivenTheSettingsMenu_WhenItIsOpened_ThenSigningOutIsOffered',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
 
-      await tester.tap(find.byType(SettingsMenu));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byType(SettingsMenu));
+        await tester.pumpAndSettle();
 
-      expect(find.text(l10n.signOut), findsOneWidget);
-    });
+        expect(find.text(l10n.signOut), findsOneWidget);
+      },
+    );
 
     testWidgets(
       'GivenTheSettingsMenu_WhenSigningOutIsChosen_ThenTheLoginScreenReturns',

@@ -43,24 +43,18 @@ void main() {
       );
     });
 
-    test(
-      'GivenADisc_WhenTheSpinRateIsRead_ThenItIsNineHundredMilliseconds',
-      () {
-        expect(
-          spinPeriodFor(AlbumMedium.disc),
-          const Duration(milliseconds: 900),
-        );
-      },
-    );
+    test('GivenADisc_WhenTheSpinRateIsRead_ThenItIsNineHundredMilliseconds', () {
+      expect(
+        spinPeriodFor(AlbumMedium.disc),
+        const Duration(milliseconds: 900),
+      );
+    });
 
-    test(
-      'GivenACassette_WhenTheSpinRateIsRead_ThenItIsOnePointEightSeconds',
-      () {
-        expect(
-          spinPeriodFor(AlbumMedium.tape),
-          const Duration(milliseconds: 1800),
-        );
-      },
-    );
+    test('GivenACassette_WhenTheSpinRateIsRead_ThenItIsOnePointEightSeconds', () {
+      expect(
+        spinPeriodFor(AlbumMedium.tape),
+        const Duration(milliseconds: 1800),
+      );
+    });
   });
 }

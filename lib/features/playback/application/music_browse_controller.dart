@@ -57,11 +57,8 @@ class MusicBrowseController extends Notifier<MusicBrowseState> {
   void show(MusicView view) => state = MusicBrowseState(view: view);
 
   /// Opens [artist]'s albums.
-  void openArtist(String? artist) => state = MusicBrowseState(
-    view: state.view,
-    artist: artist,
-    inArtist: true,
-  );
+  void openArtist(String? artist) =>
+      state = MusicBrowseState(view: state.view, artist: artist, inArtist: true);
 
   /// Opens [album]'s tracks. [artist] is the album's, which is what tells two
   /// records that share a title apart.

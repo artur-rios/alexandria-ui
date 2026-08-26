@@ -356,10 +356,13 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
       plinthBottom:
           Color.lerp(plinthBottom, other.plinthBottom, t) ?? plinthBottom,
       plinthEdge: Color.lerp(plinthEdge, other.plinthEdge, t) ?? plinthEdge,
-      deckFaceTop: Color.lerp(deckFaceTop, other.deckFaceTop, t) ?? deckFaceTop,
+      deckFaceTop:
+          Color.lerp(deckFaceTop, other.deckFaceTop, t) ?? deckFaceTop,
       deckFaceBottom:
-          Color.lerp(deckFaceBottom, other.deckFaceBottom, t) ?? deckFaceBottom,
-      chromeLight: Color.lerp(chromeLight, other.chromeLight, t) ?? chromeLight,
+          Color.lerp(deckFaceBottom, other.deckFaceBottom, t) ??
+          deckFaceBottom,
+      chromeLight:
+          Color.lerp(chromeLight, other.chromeLight, t) ?? chromeLight,
       chromeMid: Color.lerp(chromeMid, other.chromeMid, t) ?? chromeMid,
       chromeDark: Color.lerp(chromeDark, other.chromeDark, t) ?? chromeDark,
       wellDark: Color.lerp(wellDark, other.wellDark, t) ?? wellDark,
@@ -383,7 +386,8 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
       discHub: Color.lerp(discHub, other.discHub, t) ?? discHub,
       discRing: Color.lerp(discRing, other.discRing, t) ?? discRing,
       shellTop: Color.lerp(shellTop, other.shellTop, t) ?? shellTop,
-      shellBottom: Color.lerp(shellBottom, other.shellBottom, t) ?? shellBottom,
+      shellBottom:
+          Color.lerp(shellBottom, other.shellBottom, t) ?? shellBottom,
       reelHub: Color.lerp(reelHub, other.reelHub, t) ?? reelHub,
       reelTeeth: Color.lerp(reelTeeth, other.reelTeeth, t) ?? reelTeeth,
       tapePack: Color.lerp(tapePack, other.tapePack, t) ?? tapePack,

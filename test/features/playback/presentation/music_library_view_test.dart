@@ -260,82 +260,71 @@ void main() {
     );
   });
 
-  group(
-    'a run finishes while the area is open (bug: catalog never refreshes)',
-    () {
-      // The reported bug: an owner indexes a folder full of music, the run
-      // reports done, and the Music tab keeps showing the empty library it
-      // resolved before the run — nothing tells it the catalog changed.
-      // `musicLibraryProvider` is watched here (the area is open) precisely
-      // because that is what distinguishes this from a listing tab, which
-      // re-lists on every navigation anyway.
-      testWidgets(
-        'GivenTheMusicAreaIsOpenAndEmpty_WhenAnIndexRunFinishes_ThenTheNewTracksAppear',
-        (tester) async {
-          final catalogGateway = FakeCatalogGateway();
-          final indexGateway = FakeIndexGateway();
+  group('a run finishes while the area is open (bug: catalog never refreshes)', () {
+    // The reported bug: an owner indexes a folder full of music, the run
+    // reports done, and the Music tab keeps showing the empty library it
+    // resolved before the run — nothing tells it the catalog changed.
+    // `musicLibraryProvider` is watched here (the area is open) precisely
+    // because that is what distinguishes this from a listing tab, which
+    // re-lists on every navigation anyway.
+    testWidgets(
+      'GivenTheMusicAreaIsOpenAndEmpty_WhenAnIndexRunFinishes_ThenTheNewTracksAppear',
+      (tester) async {
+        final catalogGateway = FakeCatalogGateway();
+        final indexGateway = FakeIndexGateway();
 
-          // No run outstanding yet at launch, so the shell's activity strip has
-          // nothing to animate and sign-in's own `pumpAndSettle` can still
-          // settle.
-          final container = await openMusic(
-            tester,
-            gateway: catalogGateway,
-            extraOverrides: [
-              indexGatewayProvider.overrideWithValue(indexGateway),
-              // Long enough that no timer fires during the test: the run
-              // ending is observed by calling refresh directly, the same way
-              // the poller itself would call it.
-              runPollIntervalProvider.overrideWithValue(
-                const Duration(hours: 1),
-              ),
-            ],
-          );
-          final l10n = localizations(tester);
+        // No run outstanding yet at launch, so the shell's activity strip has
+        // nothing to animate and sign-in's own `pumpAndSettle` can still
+        // settle.
+        final container = await openMusic(
+          tester,
+          gateway: catalogGateway,
+          extraOverrides: [
+            indexGatewayProvider.overrideWithValue(indexGateway),
+            // Long enough that no timer fires during the test: the run
+            // ending is observed by calling refresh directly, the same way
+            // the poller itself would call it.
+            runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
+          ],
+        );
+        final l10n = localizations(tester);
 
-          // Before the run: nothing catalogued yet, so the area is empty.
-          expect(find.text(l10n.musicEmpty), findsOneWidget);
+        // Before the run: nothing catalogued yet, so the area is empty.
+        expect(find.text(l10n.musicEmpty), findsOneWidget);
 
-          // The folder starts being indexed — a run is now outstanding.
-          indexGateway.activeRunsOutcome = ActiveRunsOutcome.read(
-            runs: [
-              IndexRun(
-                runId: indexGateway.runId,
-                root: '/home/owner/music',
-                status: IndexRunStatus.running,
-              ),
-            ],
-          );
-          await container.read(activeRunsControllerProvider.notifier).refresh();
-          // Pumped rather than settled: the running indicator in the shell's
-          // activity strip is an animation that never idles on its own.
-          await tester.pump();
+        // The folder starts being indexed — a run is now outstanding.
+        indexGateway.activeRunsOutcome = ActiveRunsOutcome.read(
+          runs: [
+            IndexRun(
+              runId: indexGateway.runId,
+              root: '/home/owner/music',
+              status: IndexRunStatus.running,
+            ),
+          ],
+        );
+        await container.read(activeRunsControllerProvider.notifier).refresh();
+        // Pumped rather than settled: the running indicator in the shell's
+        // activity strip is an animation that never idles on its own.
+        await tester.pump();
 
-          // The run finishes and leaves audio behind in the catalog — the
-          // scan itself is what added it, not this test reaching around it.
-          catalogGateway.addAudio(
-            uuid: '1',
-            title: 'Airbag',
-            artist: 'Radiohead',
-          );
-          indexGateway.activeRunsOutcome = const ActiveRunsOutcome.read(
-            runs: [],
-          );
+        // The run finishes and leaves audio behind in the catalog — the
+        // scan itself is what added it, not this test reaching around it.
+        catalogGateway.addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
+        indexGateway.activeRunsOutcome = const ActiveRunsOutcome.read(runs: []);
 
-          // What the poller does on its own schedule, driven directly rather
-          // than waiting out a timer.
-          await container.read(activeRunsControllerProvider.notifier).refresh();
-          // Two bounded pumps rather than `pumpAndSettle`: the outcome banner
-          // this transition also raises clears itself on a timer that would
-          // otherwise never elapse. One frame to flush the refetch's Future,
-          // one more so the rebuilt list actually paints.
-          await tester.pump();
-          await tester.pump();
+        // What the poller does on its own schedule, driven directly rather
+        // than waiting out a timer.
+        await container.read(activeRunsControllerProvider.notifier).refresh();
+        // Two bounded pumps rather than `pumpAndSettle`: the outcome banner
+        // this transition also raises clears itself on a timer that would
+        // otherwise never elapse. One frame to flush the refetch's Future,
+        // one more so the rebuilt list actually paints.
+        await tester.pump();
+        await tester.pump();
 
-          expect(find.text(l10n.musicEmpty), findsNothing);
-          expect(find.text('Radiohead'), findsOneWidget);
-        },
-      );
-    },
-  );
+        expect(find.text(l10n.musicEmpty), findsNothing);
+        expect(find.text('Radiohead'), findsOneWidget);
+      },
+    );
+  });
 }

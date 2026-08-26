@@ -18,21 +18,23 @@ void main() {
 
   const palette = AlbumPalette.standard;
 
-  testWidgets('GivenTheDiscPainter_WhenItIsDrawn_ThenItMatchesItsGolden', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      painted(
-        const DiscPainter(palette: palette, turns: 0),
-        const Size(240, 240),
-      ),
-    );
+  testWidgets(
+    'GivenTheDiscPainter_WhenItIsDrawn_ThenItMatchesItsGolden',
+    (tester) async {
+      await tester.pumpWidget(
+        painted(
+          const DiscPainter(palette: palette, turns: 0),
+          const Size(240, 240),
+        ),
+      );
 
-    await expectLater(
-      find.byType(CustomPaint).last,
-      matchesGoldenFile('goldens/disc.png'),
-    );
-  }, skip: !goldensAreComparable);
+      await expectLater(
+        find.byType(CustomPaint).last,
+        matchesGoldenFile('goldens/disc.png'),
+      );
+    },
+    skip: !goldensAreComparable,
+  );
 
   group('what turning means', () {
     test('GivenAPainter_WhenOnlyItsTurnsChange_ThenItRepaints', () {

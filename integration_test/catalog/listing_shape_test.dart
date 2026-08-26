@@ -106,9 +106,10 @@ void main() {
       catalog.addFixture('note.md', '# a note');
       await indexAndSettle(client, credential, catalog.libraryDirectory.path);
 
-      final listing = await CoreCatalogGateway(
-        client,
-      ).listFiles(type: LibraryType.text, credential: credential);
+      final listing = await CoreCatalogGateway(client).listFiles(
+        type: LibraryType.text,
+        credential: credential,
+      );
 
       expect(
         listing,
@@ -133,9 +134,10 @@ void main() {
       catalog.addFixture('note.md', '# a note');
       await indexAndSettle(client, credential, catalog.libraryDirectory.path);
 
-      final listing = await CoreCatalogGateway(
-        client,
-      ).listFiles(type: LibraryType.text, credential: credential);
+      final listing = await CoreCatalogGateway(client).listFiles(
+        type: LibraryType.text,
+        credential: credential,
+      );
 
       final row = (listing as CatalogListingLoaded).files.single;
       expect(row.file.name, 'note.md');

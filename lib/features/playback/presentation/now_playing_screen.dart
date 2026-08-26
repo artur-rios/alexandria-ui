@@ -60,9 +60,9 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
   static Future<void> show(BuildContext context) {
     if (_mounted) return Future<void>.value();
 
-    return Navigator.of(context).push<void>(
-      MaterialPageRoute(builder: (context) => const NowPlayingScreen()),
-    );
+    return Navigator.of(
+      context,
+    ).push<void>(MaterialPageRoute(builder: (context) => const NowPlayingScreen()));
   }
 
   @override
@@ -155,7 +155,8 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             viewport.maxHeight - NowPlayingScreen._reservedForTextAndControls,
           );
           final showsStage =
-              showsAnimation && stageSize >= NowPlayingScreen._minimumStageSize;
+              showsAnimation &&
+              stageSize >= NowPlayingScreen._minimumStageSize;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),

@@ -29,13 +29,6 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
-    // No startup ever runs over this container, so it is honest about never
-    // having a core to re-check against: `establish`'s own unawaited call to
-    // `begin()` (FR-LB-21) would otherwise reach for one that was never
-    // loaded, over a scenario this suite has nothing to do with.
-    container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
     container
         .read(sessionControllerProvider.notifier)
         .establish(FakeAuthGateway.defaultSession);
@@ -109,9 +102,7 @@ void main() {
       final audio = container.read(audioPlaybackControllerProvider.notifier);
 
       await audio.playAlbum(aFile(uuid: 'kob-1'));
-      container
-          .read(albumAnimationControllerProvider.notifier)
-          .insertionShown();
+      container.read(albumAnimationControllerProvider.notifier).insertionShown();
 
       await audio.next();
 
@@ -120,24 +111,20 @@ void main() {
     },
   );
 
-  test(
-    'GivenARecordIsPlaying_WhenAnotherAlbumStarts_ThenAnInsertionIsOwed',
-    () async {
-      final gateway = libraryGateway();
-      final container = buildContainer(gateway);
-      final audio = container.read(audioPlaybackControllerProvider.notifier);
+  test('GivenARecordIsPlaying_WhenAnotherAlbumStarts_ThenAnInsertionIsOwed', (
+  ) async {
+    final gateway = libraryGateway();
+    final container = buildContainer(gateway);
+    final audio = container.read(audioPlaybackControllerProvider.notifier);
 
-      await audio.playAlbum(aFile(uuid: 'kob-1'));
-      container
-          .read(albumAnimationControllerProvider.notifier)
-          .insertionShown();
+    await audio.playAlbum(aFile(uuid: 'kob-1'));
+    container.read(albumAnimationControllerProvider.notifier).insertionShown();
 
-      await audio.playAlbum(aFile(uuid: 'bt-1'));
+    await audio.playAlbum(aFile(uuid: 'bt-1'));
 
-      final state = container.read(albumAnimationControllerProvider);
-      expect(state.insertionOwed, isTrue);
-    },
-  );
+    final state = container.read(albumAnimationControllerProvider);
+    expect(state.insertionOwed, isTrue);
+  });
 
   test(
     'GivenAnUntaggedAlbumIsPlaying_WhenADifferentUntaggedAlbumStarts_ThenAnInsertionIsOwed',
@@ -182,30 +169,22 @@ void main() {
     },
   );
 
-  test(
-    'GivenAnInsertionWasShown_WhenItIsAcknowledged_ThenNoneIsOwed',
-    () async {
-      final gateway = libraryGateway();
-      final container = buildContainer(gateway);
+  test('GivenAnInsertionWasShown_WhenItIsAcknowledged_ThenNoneIsOwed', () async {
+    final gateway = libraryGateway();
+    final container = buildContainer(gateway);
 
-      await container
-          .read(audioPlaybackControllerProvider.notifier)
-          .playAlbum(aFile(uuid: 'kob-1'));
-      expect(
-        container.read(albumAnimationControllerProvider).insertionOwed,
-        isTrue,
-      );
+    await container
+        .read(audioPlaybackControllerProvider.notifier)
+        .playAlbum(aFile(uuid: 'kob-1'));
+    expect(container.read(albumAnimationControllerProvider).insertionOwed, isTrue);
 
-      container
-          .read(albumAnimationControllerProvider.notifier)
-          .insertionShown();
+    container.read(albumAnimationControllerProvider.notifier).insertionShown();
 
-      expect(
-        container.read(albumAnimationControllerProvider).insertionOwed,
-        isFalse,
-      );
-    },
-  );
+    expect(
+      container.read(albumAnimationControllerProvider).insertionOwed,
+      isFalse,
+    );
+  });
 
   test(
     'GivenTheModeIsOff_WhenAnythingPlays_ThenThereIsNoMediumAndNothingIsOwed',
@@ -265,9 +244,7 @@ void main() {
         await container
             .read(audioPlaybackControllerProvider.notifier)
             .playAlbum(aFile(uuid: 'kob-1'));
-        container
-            .read(albumAnimationControllerProvider.notifier)
-            .insertionShown();
+        container.read(albumAnimationControllerProvider.notifier).insertionShown();
         expect(
           container.read(albumAnimationControllerProvider).insertionOwed,
           isFalse,

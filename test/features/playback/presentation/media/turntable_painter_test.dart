@@ -35,11 +35,7 @@ void main() {
           (tester) async {
             await tester.pumpWidget(
               painted(
-                TurntablePainter(
-                  palette: palette,
-                  closed: closed,
-                  layer: layer,
-                ),
+                TurntablePainter(palette: palette, closed: closed, layer: layer),
                 const Size(320, 220),
               ),
             );
