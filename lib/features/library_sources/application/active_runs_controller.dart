@@ -190,6 +190,10 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
     // the list would decide by list order which outcome the owner is told
     // about.
     var justFinished = state.justFinished;
+    // Whether any run left the active list on this read — the edge that
+    // means the catalog itself changed, as opposed to the polling loop
+    // simply running again while a run is still in flight.
+    var anyEnded = false;
     for (final run in state.runs) {
       if (stillActive.contains(run.runId)) continue;
 
@@ -203,6 +207,16 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
       if (ended != null && justFinished?.status != IndexRunStatus.failed) {
         justFinished = ended;
       }
+
+      // A run leaving the active list is the edge that means the catalog
+      // changed — regardless of which status it ended on. A failed run has
+      // usually still catalogued something part-way through, so this is not
+      // narrowed to `complete`; only a cancellation with nothing processed
+      // would have nothing to show for it, and re-reading an unchanged
+      // catalog costs nothing worth guarding against. `ended == null` means
+      // the outcome could not even be read, which is not evidence the
+      // catalog changed, so that case invalidates nothing.
+      if (ended != null) anyEnded = true;
     }
 
     final samples = <String, List<RunSample>>{};
@@ -234,6 +248,10 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
       justFinished: justFinished,
       failure: null,
     );
+
+    // Once per read, not once per run: a batch where two runs end together
+    // still only needs the catalog's projections read again once.
+    if (anyEnded) _invalidateCatalogProjections();
 
     if (state.anyRunning) {
       _schedulePolling();
@@ -291,6 +309,30 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
 
         return null;
     }
+  }
+
+  /// Refetches every projection the catalog itself feeds, once a run's
+  /// ending has just changed what the catalog holds (FR-LB-15 /
+  /// FR-CT-01/09/11/13).
+  ///
+  /// This is what `deletion_controller.dart`'s `onDone` does for a deletion —
+  /// the catalog changed, so its listings, counts, search index, recent
+  /// files, open file details, and music library are all read again rather
+  /// than kept from before the run. Deliberately narrower than what signing
+  /// out invalidates (`catalog_session_activity.dart`): a run finishing is
+  /// not a session ending, so what the owner has open or typed —
+  /// `openFileProvider`, `searchTermProvider`, the metadata and rename
+  /// editors — is left alone. An owner mid-search or mid-edit when a scan
+  /// completes underneath them must not have that thrown away.
+  void _invalidateCatalogProjections() {
+    ref.invalidate(listingControllerProvider);
+    ref.invalidate(typeCountsControllerProvider);
+    ref.invalidate(recentFilesProvider);
+    ref.invalidate(catalogSearchProvider);
+    ref.invalidate(fileDetailsControllerProvider);
+    // The bug this exists to fix: with nothing invalidating it, the music
+    // area kept showing whatever it first resolved for the whole session.
+    ref.invalidate(musicLibraryProvider);
   }
 
   void _schedulePolling() {
