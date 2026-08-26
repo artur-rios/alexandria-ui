@@ -13,6 +13,15 @@ class InMemorySettingsStore implements SettingsStore {
     ThemeMode themeMode = ThemeMode.system,
     Locale? locale,
     AlbumAnimationMode albumAnimationMode = AlbumAnimationMode.byYear,
+    // On, matching the real default (`SettingsStore.rechecksAtStartup`'s own
+    // doc) — the honest default any owner starts a session with. This is a
+    // live coupling worth knowing about: `pumpShell` (shell_harness.dart)
+    // signs in over a store built with this default, so every widget test
+    // built on it fires a real startup re-check through whatever fake index
+    // gateway that container happens to have. Benign today because the
+    // default fake gateway answers with nothing to refresh, but a test that
+    // adds a stateful fake gateway to a `pumpShell`-based suite inherits this
+    // call whether or not it has anything to do with FR-LB-21.
     bool rechecksAtStartup = true,
     Map<String, String>? values,
   })
