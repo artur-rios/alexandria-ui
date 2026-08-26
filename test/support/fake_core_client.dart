@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/bindings/core_client.dart';
 import 'package:alexandria_ui/core/bindings/core_isolate.dart';
@@ -728,6 +730,36 @@ class FakeCoreClient implements CoreClient {
   ) async {
     comicPages.add((uuid: uuid, page: page));
     return comicPageResponse;
+  }
+
+  /// What [fileThumbnail] answers (UC-21, FR-PL-07).
+  CoreJsonResponse thumbnailResponse = (status: PLAYBACK_OK, json: null);
+
+  /// Every uuid a thumbnail was asked for, in order.
+  final List<String> thumbnailRequests = [];
+
+  /// Raised by [fileThumbnail] instead of answering, when set.
+  bool failOnFileThumbnail = false;
+
+  /// Held open to keep a thumbnail call in flight, so a test can observe the
+  /// case mid-fetch — in particular, a cover arriving after an insertion has
+  /// already begun. Completed by [releaseFileThumbnail].
+  Completer<void>? _thumbnailGate;
+
+  /// Makes the next [fileThumbnail] call hang until [releaseFileThumbnail].
+  void holdFileThumbnail() => _thumbnailGate = Completer<void>();
+
+  /// Lets a held [fileThumbnail] call finish.
+  void releaseFileThumbnail() => _thumbnailGate?.complete();
+
+  @override
+  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async {
+    thumbnailRequests.add(uuid);
+    if (failOnFileThumbnail) {
+      throw const CoreCallException('file thumbnail call failed');
+    }
+    await _thumbnailGate?.future;
+    return thumbnailResponse;
   }
 
   /// What [fileReadContent] answers (UC-18).

@@ -1,13 +1,13 @@
 /// Which jacket colour an album gets (UC-21).
 ///
-/// The core carries no cover art for audio, so the case shows a designed
-/// jacket instead of an empty square. Derived from the album's own name rather
-/// than picked at random, because a record whose sleeve changed colour between
-/// two plays would read as a bug — and derived rather than stored, because
-/// there is nothing here worth a row in a settings file.
-///
-/// Replaced wholesale when the core starts answering with the picture the file
-/// usually already contains; nothing else about the case changes then.
+/// The core can answer a file's embedded picture now, but not every file
+/// carries one, and `AlbumCoverController` treats every case where none
+/// arrives — no picture embedded, the call failing, or the cover simply not
+/// having arrived yet — as ordinary rather than exceptional. This is the
+/// colour the case falls back to then: derived from the album's own name
+/// rather than picked at random, because a record whose sleeve changed colour
+/// between two plays would read as a bug — and derived rather than stored,
+/// because there is nothing here worth a row in a settings file.
 int sleeveIndexFor(String? album, int hueCount) {
   final name = album?.trim() ?? '';
 

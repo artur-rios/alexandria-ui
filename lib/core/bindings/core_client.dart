@@ -201,6 +201,14 @@ abstract interface class CoreClient {
   /// lets the archive be read without being extracted to disk.
   Future<CoreJsonResponse> comicPage(String uuid, int page, String token);
 
+  /// Reads the picture embedded in an audio, video, image or comic file
+  /// through `alexandria_file_thumbnail` (FR-PL-07, FR-MP-05, UC-21).
+  ///
+  /// Answers `{uuid, mimeType, bytesBase64}`. A file with no embedded picture
+  /// answers `InvalidInput`, which is common rather than exceptional — see
+  /// `AlbumCoverController`, the one caller today.
+  Future<CoreJsonResponse> fileThumbnail(String uuid, String token);
+
   /// Reads a text file's content from disk through
   /// `alexandria_file_read_content` (FR-ME-06, UC-18).
   ///
@@ -572,6 +580,10 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async =>
       await _isolate.call('comicPage', [uuid, page, token]) as CoreJsonResponse;
+
+  @override
+  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async =>
+      await _isolate.call('fileThumbnail', [uuid, token]) as CoreJsonResponse;
 
   @override
   Future<CoreJsonResponse> fileReadContent(String uuid, String token) async =>

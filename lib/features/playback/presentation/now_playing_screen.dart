@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../domain/album_cover.dart';
 import 'album_stage.dart';
 import 'music_display_name.dart';
 
@@ -89,6 +90,16 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     final controller = ref.read(audioPlaybackControllerProvider.notifier);
     final animation = ref.watch(albumAnimationControllerProvider);
     final current = state.current;
+
+    // The sleeve's own picture, when `AlbumCoverController` has one — never
+    // read for anything but the image itself: `null` for the designed
+    // jacket, whether that is because the file carries no picture, the call
+    // failed, or the cover simply has not arrived yet, is one case to this
+    // screen, exactly as design section 4 asks.
+    final cover = switch (ref.watch(albumCoverControllerProvider)) {
+      AlbumCoverFetched(:final image) => image,
+      AlbumCoverDesigned() => null,
+    };
 
     // `AlbumAnimationState.medium` is already `null` for a single track
     // (AF-02) as well as for the mode being off — `AlbumAnimationController`
@@ -174,6 +185,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                       title: musicAlbumForFile(ref, current, l10n),
                       artist: musicArtistForFile(ref, current, l10n),
                       album: state.queue.label,
+                      cover: cover,
                       size: stageSize,
                       onInserted: ref
                           .read(albumAnimationControllerProvider.notifier)

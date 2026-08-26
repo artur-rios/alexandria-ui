@@ -284,6 +284,46 @@ class FakeCatalogGateway implements CatalogGateway {
 
     return renameOutcomes.removeAt(0);
   }
+
+  /// What [fileThumbnail] answers, keyed by uuid.
+  ///
+  /// A uuid with no entry answers `InvalidInput` — the core's own answer for
+  /// a file with no embedded picture, and the ordinary case a test does not
+  /// have to opt into.
+  final Map<String, FileThumbnailOutcome> thumbnails = {};
+
+  /// Every uuid a thumbnail was asked for, in order.
+  final List<String> thumbnailsRequested = [];
+
+  /// Held open to keep a [fileThumbnail] call in flight, so a test can
+  /// observe the case mid-fetch — in particular, a cover arriving after an
+  /// insertion has already begun (design section 4). Completed by
+  /// [releaseThumbnail].
+  Completer<void>? _thumbnailGate;
+
+  /// Makes the next [fileThumbnail] call hang until [releaseThumbnail].
+  void holdThumbnail() => _thumbnailGate = Completer<void>();
+
+  /// Lets a held [fileThumbnail] call finish.
+  void releaseThumbnail() => _thumbnailGate?.complete();
+
+  @override
+  Future<FileThumbnailOutcome> fileThumbnail({
+    required String uuid,
+    required String credential,
+  }) async {
+    thumbnailsRequested.add(uuid);
+    credentials.add(credential);
+    await _thumbnailGate?.future;
+
+    return thumbnails[uuid] ??
+        const FileThumbnailOutcome.failed(
+          failure: Failure.invalidInput(
+            family: CoreStatusFamily.playback,
+            code: 1,
+          ),
+        );
+  }
 }
 
 /// A file of [type], for a test that needs one in a listing.

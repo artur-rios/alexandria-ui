@@ -343,4 +343,52 @@ class CoreCatalogGateway implements CatalogGateway {
       code: FILE_ERR_OTHER,
     ),
   );
+
+  @override
+  Future<FileThumbnailOutcome> fileThumbnail({
+    required String uuid,
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.fileThumbnail(uuid, credential);
+    } on CoreCallException {
+      return _unreadableThumbnail();
+    }
+
+    // `InvalidInput` (a file with no embedded picture) is told apart from
+    // anything else here only by the `Failure` it carries — the caller reads
+    // every member of `.failed` the same way, the designed jacket, so no
+    // narrower status check belongs here.
+    if (!CoreStatusFamily.playback.isOk(response.status)) {
+      return FileThumbnailOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.playback, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return _unreadableThumbnail();
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+      final encoded = body['bytesBase64'] as String?;
+      final mimeType = body['mimeType'] as String?;
+      if (encoded == null || mimeType == null) return _unreadableThumbnail();
+
+      return FileThumbnailOutcome.read(
+        bytes: base64Decode(encoded),
+        mimeType: mimeType,
+      );
+    } on Object {
+      return _unreadableThumbnail();
+    }
+  }
+
+  FileThumbnailOutcome _unreadableThumbnail() =>
+      const FileThumbnailOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.playback,
+          code: PLAYBACK_ERR_OTHER,
+        ),
+      );
 }

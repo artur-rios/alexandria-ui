@@ -1,13 +1,34 @@
+import 'dart:ui' as ui;
+
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/album_palette.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_stage.dart';
+import 'package:alexandria_ui/features/playback/presentation/media/case_painter.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/disc_painter.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/vinyl_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../flutter_test_config.dart';
+
+/// A small decoded image, standing in for a fetched album cover — nothing
+/// here cares what it looks like, only that it is a distinct [ui.Image]
+/// instance a real `AlbumCoverController` could have handed down.
+Future<ui.Image> _testCover() async {
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawRect(
+    const Rect.fromLTWH(0, 0, 20, 20),
+    Paint()..color = const Color(0xFF808080),
+  );
+  final picture = recorder.endRecording();
+  try {
+    return await picture.toImage(20, 20);
+  } finally {
+    picture.dispose();
+  }
+}
 
 /// The insertion and the spin (UC-21 main flow, FR-PL-07).
 void main() {
@@ -16,6 +37,8 @@ void main() {
     required bool insert,
     bool isPlaying = true,
     bool reduceMotion = false,
+    ui.Image? cover,
+    VoidCallback? onInserted,
   }) => MediaQuery(
     data: MediaQueryData(disableAnimations: reduceMotion),
     child: MaterialApp(
@@ -34,11 +57,29 @@ void main() {
             title: 'Paranoid Android',
             artist: 'Radiohead',
             album: 'OK Computer',
+            cover: cover,
+            onInserted: onInserted,
           ),
         ),
       ),
     ),
   );
+
+  /// The case's own painted opacity, mid-insertion — [_Beats.caseIn] minus
+  /// [_Beats.hold] in `AlbumStage`, read back through the [Opacity] widget
+  /// `StageLayout` wraps the case in, so a test can tell whether the
+  /// insertion's progress moved without reaching into private animation
+  /// state.
+  double caseOpacityOf(WidgetTester tester) => tester
+      .widget<Opacity>(
+        find.ancestor(
+          of: find.byWidgetPredicate(
+            (widget) => widget is CustomPaint && widget.painter is CasePainter,
+          ),
+          matching: find.byType(Opacity),
+        ),
+      )
+      .opacity;
 
   /// The medium's own `CustomPaint`, found among the stage's four layers
   /// (device chassis, medium, device foreground, case) by the type of
@@ -179,6 +220,88 @@ void main() {
         await tester.pump(const Duration(milliseconds: 16));
 
         expect(reported, isFalse);
+      },
+    );
+  });
+
+  group('a cover arriving mid-insertion (design section 4)', () {
+    testWidgets(
+      'GivenAnInsertionUnderWay_WhenACoverArrives_ThenItDoesNotRestartTheInsertion',
+      (tester) async {
+        // The rule design section 4 names explicitly: a cover that shows up
+        // after the insertion has already begun swaps the sleeve in place —
+        // it must not be read as a reason to play the insertion again.
+        var done = false;
+        await tester.pumpWidget(
+          staged(
+            medium: AlbumMedium.disc,
+            insert: true,
+            onInserted: () => done = true,
+          ),
+        );
+        // `_Beats.caseIn` runs from 0 to 0.16 of the 4400ms insertion —
+        // 0 to 704ms — so 300ms lands the case still fading and sliding in,
+        // its opacity strictly between 0 and 1. Neither end of that range is
+        // what a genuine restart could also produce (a reset insertion is
+        // back at 0), so this is the value a restart would actually have to
+        // disturb.
+        await tester.pump(const Duration(milliseconds: 300));
+        final beforeCover = caseOpacityOf(tester);
+        expect(beforeCover, isNot(0));
+        expect(beforeCover, isNot(1));
+
+        final cover = await _testCover();
+        addTearDown(cover.dispose);
+
+        // The same mount, still `insert: true`, rebuilt with a cover now
+        // available — exactly what `NowPlayingScreen` does when
+        // `AlbumCoverController`'s fetch resolves mid-insertion. No time
+        // passes between the two pumps, so a restarted insertion and an
+        // undisturbed one are still told apart by this same opacity value.
+        await tester.pumpWidget(
+          staged(
+            medium: AlbumMedium.disc,
+            insert: true,
+            cover: cover,
+            onInserted: () => done = true,
+          ),
+        );
+
+        expect(caseOpacityOf(tester), beforeCover);
+        expect(done, isFalse);
+
+        // And the insertion — the very same one, never restarted — goes on
+        // to finish and report once, from wherever the swap left it.
+        await tester.pump(const Duration(milliseconds: 4300));
+
+        expect(done, isTrue);
+      },
+    );
+
+    testWidgets(
+      'GivenACoverArrives_WhenTheCaseIsRepainted_ThenItPaintsTheCover',
+      (tester) async {
+        await tester.pumpWidget(staged(medium: AlbumMedium.disc, insert: true));
+        await tester.pump(const Duration(milliseconds: 1000));
+
+        final cover = await _testCover();
+        addTearDown(cover.dispose);
+        await tester.pumpWidget(
+          staged(medium: AlbumMedium.disc, insert: true, cover: cover),
+        );
+
+        final painter = tester
+            .widgetList<CustomPaint>(
+              find.descendant(
+                of: find.byType(AlbumStage),
+                matching: find.byType(CustomPaint),
+              ),
+            )
+            .map((widget) => widget.painter)
+            .whereType<CasePainter>()
+            .single;
+
+        expect(painter.cover, same(cover));
       },
     );
   });

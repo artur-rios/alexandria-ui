@@ -83,6 +83,7 @@ import '../../features/organization/domain/collection.dart';
 import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
 import '../../features/playback/application/album_animation_controller.dart';
+import '../../features/playback/application/album_cover_controller.dart';
 import '../../features/playback/application/audio_playback_controller.dart';
 import '../../features/playback/application/audio_playback_session.dart';
 import '../../features/playback/application/music_browse_controller.dart';
@@ -93,6 +94,7 @@ import '../../features/playback/application/video_playback_session.dart';
 import '../../features/playback/data/core_playback_source_gateway.dart';
 import '../../features/playback/data/media_kit_player.dart';
 import '../../features/playback/data/settings_playback_position_store.dart';
+import '../../features/playback/domain/album_cover.dart';
 import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
@@ -492,6 +494,13 @@ final audioPlaybackControllerProvider =
 final albumAnimationControllerProvider =
     NotifierProvider<AlbumAnimationController, AlbumAnimationState>(
       AlbumAnimationController.new,
+    );
+
+/// What the current album's case sleeve shows — its own cover, or the
+/// designed jacket (UC-21, FR-PL-07, design section 4).
+final albumCoverControllerProvider =
+    NotifierProvider<AlbumCoverController, AlbumCover>(
+      AlbumCoverController.new,
     );
 
 /// The video player (UC-19).

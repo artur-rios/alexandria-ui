@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
@@ -18,17 +20,21 @@ class CasePainter extends CustomPainter {
     required this.title,
     required this.artist,
     required this.direction,
+    this.cover,
   });
 
   /// The artwork's colours (FR-UX-07) — used here for the lit edge and the
-  /// drop shadow; the jacket's own face colour is [sleeve].
+  /// drop shadow; the jacket's own face colour is [sleeve] when there is no
+  /// [cover] to draw instead.
   final AlbumPalette palette;
 
   /// Which case shape to draw.
   final AlbumMedium medium;
 
   /// The jacket's face colour, picked by `sleeveIndexFor` from
-  /// [AlbumPalette.sleeveHues].
+  /// [AlbumPalette.sleeveHues] — the designed jacket's fill, used whenever
+  /// [cover] is `null` (design section 4: no picture embedded, the fetch
+  /// failing, or it simply not having arrived yet, are all this case).
   final Color sleeve;
 
   /// The album title, wrapped over up to two lines.
@@ -41,6 +47,17 @@ class CasePainter extends CustomPainter {
   /// the caller rather than assumed, so a right-to-left album title reads
   /// correctly on the jacket.
   final TextDirection direction;
+
+  /// The album's own embedded picture, decoded and ready to paint — drawn
+  /// over the whole sleeve, cropped to fill it, in place of [sleeve]'s flat
+  /// colour. `null` draws the designed jacket, which is this case's normal
+  /// fallback rather than an error state (design section 4).
+  ///
+  /// Ownership of the image stays with whoever passed it in — this painter
+  /// only ever reads it, never disposes it, because the same instance is
+  /// handed to a fresh [CasePainter] on every repaint for as long as the
+  /// album it belongs to keeps playing.
+  final ui.Image? cover;
 
   /// The case's own aspect ratio, by medium — a jacket is square, a
   /// cassette case is taller than it is wide, and a jewel case is a little
@@ -126,7 +143,18 @@ class CasePainter extends CustomPainter {
 
   /// The fill, lit top edge and outline shared by every case shape.
   void _paintFace(Canvas canvas, RRect shape) {
-    canvas.drawRRect(shape, Paint()..color = sleeve);
+    final cover = this.cover;
+    if (cover == null) {
+      canvas.drawRRect(shape, Paint()..color = sleeve);
+    } else {
+      // Cropped to fill the sleeve — the same `BoxFit.cover` behaviour an
+      // `Image` widget would give a picture whose own aspect ratio rarely
+      // matches the case it is going on.
+      canvas.save();
+      canvas.clipRRect(shape);
+      paintImage(canvas: canvas, rect: shape.outerRect, image: cover, fit: BoxFit.cover);
+      canvas.restore();
+    }
 
     canvas.drawRRect(
       shape,
@@ -207,5 +235,9 @@ class CasePainter extends CustomPainter {
       oldDelegate.sleeve != sleeve ||
       oldDelegate.title != title ||
       oldDelegate.artist != artist ||
-      oldDelegate.direction != direction;
+      oldDelegate.direction != direction ||
+      // Identity, not `==`: `ui.Image` has none of its own, and a cover
+      // that arrived since the last frame is a different instance from
+      // `null`, which is exactly the swap this has to catch.
+      !identical(oldDelegate.cover, cover);
 }
