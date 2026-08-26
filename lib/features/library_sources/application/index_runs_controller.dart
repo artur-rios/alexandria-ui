@@ -204,7 +204,9 @@ class IndexRunsController extends Notifier<IndexRunsState> {
   /// [reportRefusals] is false when nobody pressed anything — the startup
   /// re-check (FR-LB-21). A refusal explains to an owner why the button they
   /// pressed did nothing; left on screen after a re-check they never asked
-  /// for, it is an answer to a question nobody asked.
+  /// for, it is an answer to a question nobody asked. This covers AF-01's own
+  /// refusal notice and a failure the core returns for the start itself —
+  /// both are equally an answer to a question nobody asked.
   Future<void> startRefresh({bool reportRefusals = true}) async {
     if (state.isRefreshing) {
       if (reportRefusals) {
@@ -265,7 +267,10 @@ class IndexRunsController extends Notifier<IndexRunsState> {
 
       case IndexStartFailed(:final failure):
         _log.info('refresh refused (${failure.coreStatusCode})');
-        state = state.copyWith(refreshStarting: false, refreshFailure: failure);
+        state = state.copyWith(
+          refreshStarting: false,
+          refreshFailure: reportRefusals ? failure : null,
+        );
     }
   }
 

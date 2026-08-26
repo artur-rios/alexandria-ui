@@ -238,6 +238,33 @@ void main() {
         );
       },
     );
+
+    test(
+      'GivenARefusalIsNotReported_WhenTheCoreRefusesTheStart_ThenNoFailureIsLeft',
+      () async {
+        // The core's own refusal of the start itself — not AF-01's "already
+        // running" — must be just as silent for a re-check nobody asked for.
+        // Left on screen, it would explain a failure to an owner who never
+        // pressed anything.
+        const failure = Failure.invalidInput(
+          family: CoreStatusFamily.indexing,
+          code: 1,
+        );
+        final sut = build(
+          gateway: FakeIndexGateway()
+            ..refreshOutcome = const IndexStartOutcome.failed(failure: failure),
+        );
+
+        await sut.ref
+            .read(indexRunsControllerProvider.notifier)
+            .startRefresh(reportRefusals: false);
+
+        expect(
+          sut.ref.read(indexRunsControllerProvider).refreshFailure,
+          isNull,
+        );
+      },
+    );
   });
 
   group('the core refuses the start (AF-02, AF-03)', () {
