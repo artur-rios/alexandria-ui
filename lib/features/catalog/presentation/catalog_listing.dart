@@ -372,10 +372,16 @@ class _EmptyListing extends ConsumerWidget {
         ref.watch(listingViewControllerProvider).forType(type).isFiltered;
 
     final counts = ref.watch(typeCountsControllerProvider);
+    // Every type has to have actually been counted before this reads as
+    // empty — a map shorter than every type means some listing failed rather
+    // than answered zero (see `TypeCountsController`), and unknown counts
+    // (loading, or every type failed) are not an empty catalog either:
+    // offering the first-run guidance because a query failed would be
+    // guessing.
     final catalogEmpty = counts.maybeWhen(
-      data: (byType) => byType.values.every((count) => count == 0),
-      // Unknown counts are not an empty catalog: offering the first-run
-      // guidance because a query failed would be guessing.
+      data: (byType) =>
+          byType.length == LibraryType.values.length &&
+          byType.values.every((count) => count == 0),
       orElse: () => false,
     );
 

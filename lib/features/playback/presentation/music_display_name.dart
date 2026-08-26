@@ -58,12 +58,14 @@ String musicAlbumOf(MusicEntry entry, AppLocalizations l10n) =>
 /// title does too.
 MusicEntry musicEntryForFile(WidgetRef ref, CatalogFile file) {
   final library = ref.watch(musicLibraryProvider).value;
+  final untitled = MusicEntry(file: file, metadata: const MusicMetadata());
 
-  return library?.entries.firstWhere(
-        (candidate) => candidate.file.uuid == file.uuid,
-        orElse: () => MusicEntry(file: file, metadata: const MusicMetadata()),
-      ) ??
-      MusicEntry(file: file, metadata: const MusicMetadata());
+  if (library == null) return untitled;
+
+  return library.entries.firstWhere(
+    (candidate) => candidate.file.uuid == file.uuid,
+    orElse: () => untitled,
+  );
 }
 
 /// [file]'s title from its metadata, never its name on disk (FR-CT-13).

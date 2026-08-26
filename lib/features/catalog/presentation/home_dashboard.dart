@@ -5,10 +5,10 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
-import '../../playback/presentation/music_display_name.dart'
-    show musicTitleForFile;
+import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/async_state_view.dart';
-import '../domain/catalog_file.dart';
+import '../domain/file_details.dart';
+import '../domain/music_metadata.dart';
 import '../application/dashboard_controller.dart';
 import '../application/in_progress.dart';
 import '../domain/library_type.dart';
@@ -36,9 +36,16 @@ class HomeDashboard extends ConsumerWidget {
 
     // AF-01: nothing is cataloged, so the whole dashboard is the first-run
     // guidance — four empty sections would be four ways of saying the same
-    // thing.
+    // thing. Every type has to have actually been counted before this reads
+    // as empty: `TypeCountsController` leaves a type out of the map rather
+    // than counting it as zero when its listing fails, so a map shorter than
+    // every type means "some of this could not be read", not "there is
+    // nothing here" — vacuously true on an empty map is exactly the lie a
+    // core outage would otherwise tell the owner.
     final catalogEmpty = counts.maybeWhen(
-      data: (byType) => byType.values.every((count) => count == 0),
+      data: (byType) =>
+          byType.length == LibraryType.values.length &&
+          byType.values.every((count) => count == 0),
       orElse: () => false,
     );
     if (catalogEmpty) return const _FirstRun();
@@ -69,22 +76,26 @@ class _RecentSection extends ConsumerWidget {
       title: l10n.dashboardRecent,
       child: SizedBox(
         height: 220,
-        child: AsyncStateView<List<CatalogFile>>(
+        child: AsyncStateView<List<FileDetails>>(
           value: ref.watch(recentFilesProvider),
           onRetry: () => ref.read(recentFilesProvider.notifier).reload(),
-          isEmpty: (files) => files.isEmpty,
+          isEmpty: (rows) => rows.isEmpty,
           emptyBuilder: (context) => _Quiet(l10n.dashboardRecentNone),
-          builder: (context, files) => ListView.builder(
-            itemCount: files.length,
+          builder: (context, rows) => ListView.builder(
+            itemCount: rows.length,
             itemBuilder: (context, index) {
-              final file = files[index];
+              final details = rows[index];
+              final file = details.file;
               // FR-CT-13: an audio file is named by its metadata here too,
-              // through the same `musicLibraryProvider` the music area and
-              // playback read — one gateway call for the whole library, so
-              // naming a row here costs nothing beyond that one read. Every
-              // other type is still called by its own name.
+              // read straight off the row this section already holds —
+              // `catalogSearchProvider`'s own listing read carried it, so
+              // naming it here asks nothing further of the core. Every other
+              // type is still called by its own name.
               final title = file.type == LibraryType.audio
-                  ? musicTitleForFile(ref, file, l10n)
+                  ? tagOr(
+                      MusicMetadata.fromDetails(details.metadata).title,
+                      l10n.musicUnknownTitle,
+                    )
                   : file.name;
 
               return ListTile(

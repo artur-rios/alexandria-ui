@@ -85,27 +85,13 @@ class FakeCatalogGateway implements CatalogGateway {
   /// The lifecycle filter each call was made with (UC-12).
   final List<LifecycleFilter> lifecycles = [];
 
-  /// After this many calls to [fileDetails] have been answered, every call
-  /// after that never completes. `null` means every call answers normally.
-  ///
-  /// What a music library test uses to represent metadata that is still
-  /// arriving: the reply is genuinely still in flight, not merely slow, so
-  /// nothing here ever resolves it for the test.
-  int? _holdDetailsAfter;
-
-  /// Held [fileDetails] calls, keyed by uuid, that a test releases by hand.
-  ///
-  /// Unlike [_holdDetailsAfter] — which never completes, standing in for
-  /// metadata that is simply still arriving — this is for a test that needs
-  /// to catch a call mid-flight and then choose what happens next: complete
-  /// it, or leave it hanging while asserting nothing else happened.
-  final Map<String, Completer<FileDetailsOutcome>> _heldDetails = {};
-
   /// Every call to [listFiles], in order.
   ///
-  /// What Finding 2's "one call" assertion counts: a music library test
-  /// asserts this has exactly one entry rather than one per file, which is
-  /// the one thing a regression to per-file reads would make visible.
+  /// What the music library's "one call" assertion counts. Counts every
+  /// type asked for, not just audio — meaningful on its own only for a
+  /// fixture that lists one type, such as the music library's. The paired
+  /// `expect(gateway.detailsRequested, isEmpty)` is what actually catches a
+  /// regression to per-file reads.
   int get listCalls => requested.length;
 
   @override
@@ -139,15 +125,6 @@ class FakeCatalogGateway implements CatalogGateway {
     required String credential,
   }) {
     detailsRequested.add(uuid);
-
-    final held = _heldDetails[uuid];
-    if (held != null) return held.future;
-
-    final hold = _holdDetailsAfter;
-    if (hold != null && detailsRequested.length > hold) {
-      // Never completes, on purpose — see [_holdDetailsAfter].
-      return Completer<FileDetailsOutcome>().future;
-    }
 
     return Future.value(
       details[uuid] ??
@@ -239,28 +216,6 @@ class FakeCatalogGateway implements CatalogGateway {
   /// Adds a document file to the document listing, named by [name] on disk.
   void addDocument({required String uuid, required String name}) =>
       addFile(uuid: uuid, name: name, type: LibraryType.document);
-
-  /// After [count] calls to [fileDetails] have been answered, every call
-  /// after that never completes (see [_holdDetailsAfter]).
-  void holdDetailsAfter(int count) => _holdDetailsAfter = count;
-
-  /// Holds the call for [uuid]'s details in flight until [releaseDetails]
-  /// completes it.
-  void holdDetailsFor(String uuid) =>
-      _heldDetails[uuid] = Completer<FileDetailsOutcome>();
-
-  /// Completes a call held by [holdDetailsFor], answering [uuid]'s own
-  /// details by default.
-  void releaseDetails(String uuid) {
-    _heldDetails
-        .remove(uuid)
-        ?.complete(
-          details[uuid] ??
-              FileDetailsOutcome.read(
-                details: FileDetails(file: aFile(uuid: uuid)),
-              ),
-        );
-  }
 
   /// Makes [uuid]'s details answer a failure instead of a record.
   void failDetailsFor(String uuid) {

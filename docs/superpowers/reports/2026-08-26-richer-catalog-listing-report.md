@@ -228,3 +228,73 @@ whole task exists to remove.
   thrown" and "unknown type is dropped, not failed" behaviors — direct,
   fast, non-widget coverage.
 - Section 4 (album cover on the case) is untouched, as instructed.
+
+## Code review response (same day)
+
+Review confirmed the deletions were sound (one-call resolution, no partial
+publish, empty distinguishable from failed, FR-CT-13 held end to end,
+localization clean) and raised seven findings, all addressed:
+
+- **Finding 1 (Critical)** — `DeleteFileButton` (`lib/features/lifecycle/presentation/delete_record_button.dart`)
+  awaited `musicLibraryProvider.future`, which throws on a failed audio
+  listing or a rejected session; fired unawaited from `onPressed`, that
+  exception escaped and the confirmation dialog never opened. Fixed by
+  changing the button to take the `FileDetails` its caller already has
+  (`lib/features/catalog/presentation/file_details_view.dart:277`, now
+  `DeleteFileButton(details: details)`) and reading
+  `MusicMetadata.fromDetails(details.metadata).title` directly — no
+  provider, no await, no failure path. Added
+  `GivenTheAudioListingHasFailed_WhenADeleteIsAsked_ThenTheConfirmationStillOpens`
+  to `test/features/lifecycle/presentation/delete_record_test.dart`, which
+  fails the audio listing and asserts the dialog still opens and still names
+  the track correctly.
+- **Finding 2 (Important)** — `RecentFilesController` and
+  `MissingFilesController` mapped their rows to `.file`, discarding the
+  metadata already on hand, then `home_dashboard.dart` and
+  `missing_files_screen.dart` watched `musicLibraryProvider` to get it back —
+  a second whole-audio-library listing for data the first listing already
+  had, with "Unknown title" shown until (or if) that second read resolved.
+  Both controllers now publish `List<FileDetails>` and both screens read each
+  row's own metadata directly, the way `catalog_search_view.dart` already
+  did. Neither screen touches `musicLibraryProvider` any more.
+- **Finding 3 (Important)** — `TypeCountsController` leaves a failed type out
+  of its map rather than counting it as zero, and `byType.values.every(...)`
+  on a resulting short (or empty) map is vacuously true — so a core outage
+  that fails every listing made the dashboard (and the listing's own empty
+  state in `catalog_listing.dart`, which had the identical bug) tell the
+  owner their library was empty and offer to register a folder. Both sites
+  now additionally require `byType.length == LibraryType.values.length`
+  before treating the catalog as empty, so an unread type keeps the ordinary
+  (non-first-run) view rather than asserting emptiness it cannot back up.
+- **Finding 4 (Minor)** — deleted `_holdDetailsAfter`, `_heldDetails`,
+  `holdDetailsAfter`, `holdDetailsFor`, and `releaseDetails` from
+  `test/support/fake_catalog_gateway.dart`; none had callers left after the
+  N+1 tests they existed for were removed.
+- **Finding 5 (Minor)** — rewrote UC-46 main flow step 1 in
+  `docs/requirements/Use Case Specification Document.md` from "reads each
+  audio file's metadata, showing what it has while the rest arrives" to "reads
+  the audio library in one call, metadata included."
+- **Finding 6 (Minor)** — `musicEntryForFile` in `music_display_name.dart`
+  built the same fallback `MusicEntry` twice (once in `orElse:`, once after
+  `??`); now built once and reused.
+- **Finding 7 (Minor)** — added a caveat to `FakeCatalogGateway.listCalls`'s
+  doc comment: it counts every type requested, not just audio, so it is only
+  meaningful for a single-type fixture, and the paired
+  `expect(gateway.detailsRequested, isEmpty)` is what actually catches a
+  regression to per-file reads.
+
+### Commands run and output (review-fix pass)
+
+```
+$ flutter analyze
+Analyzing alexandria-ui...
+No issues found! (ran in 11.8s)
+
+$ flutter test test
+...
+01:04 +1838: All tests passed!
+```
+
+1838 tests passed (1837 from the first pass, plus the new failed-listing
+regression test for Finding 1), 0 failed. `integration_test` was not run,
+per instructions.

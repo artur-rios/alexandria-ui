@@ -274,7 +274,7 @@ class _Details extends ConsumerWidget {
               // to delete, which is why this is offered for an active one
               // only. Last in the group, because it is the one action here
               // that takes the file out of the library.
-              if (!details.isDeleted) DeleteFileButton(file: details.file),
+              if (!details.isDeleted) DeleteFileButton(details: details),
             ],
           ),
 

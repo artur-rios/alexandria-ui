@@ -392,7 +392,7 @@ final fileDetailsControllerProvider =
 
 /// The most recently added files, for the dashboard (UC-14).
 final recentFilesProvider =
-    AsyncNotifierProvider<RecentFilesController, List<CatalogFile>>(
+    AsyncNotifierProvider<RecentFilesController, List<FileDetails>>(
       RecentFilesController.new,
     );
 
@@ -827,7 +827,7 @@ final restoreControllerProvider =
 
 /// The files the core reports as missing on disk (UC-37).
 final missingFilesControllerProvider =
-    AsyncNotifierProvider<MissingFilesController, List<CatalogFile>>(
+    AsyncNotifierProvider<MissingFilesController, List<FileDetails>>(
       MissingFilesController.new,
     );
 
