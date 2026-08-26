@@ -26,4 +26,8 @@ class EditingSessionActivity implements SessionActivity {
 
   @override
   Future<void> end() async => _ref.invalidate(textEditorControllerProvider);
+
+  /// Nothing to start: this activity only has state to drop, not work to do.
+  @override
+  Future<void> begin() async {}
 }

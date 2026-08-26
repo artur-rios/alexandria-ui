@@ -48,6 +48,18 @@ class SessionController extends Notifier<SessionState> {
     // into the log file this line lands in (FR-AU-11).
     _log.info('session established for ${session.email}');
     state = SessionState.active(session: session, recoveryCodes: recoveryCodes);
+
+    // After the state assignment, not with the `end()` calls above: an
+    // activity that begins by reading the credential — the library re-check
+    // does — would find none if it ran before the session was recorded.
+    for (final activity in ref.read(sessionActivitiesProvider)) {
+      // Not awaited, for the same reason as the `end()` loop above, though not
+      // for the same cause: `end()` only drops what it already holds, but a
+      // `begin()` may genuinely go and ask the core, and establishing a
+      // session — what the login screen calls on its way to the shell — must
+      // not block on that.
+      unawaited(activity.begin());
+    }
   }
 
   /// Puts a freshly regenerated set on screen (UC-42 main flow step 4).

@@ -6,6 +6,7 @@ import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/auth/domain/session.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../support/fake_session_activity.dart';
 import '../../../support/test_container.dart';
 
 void main() {
@@ -33,6 +34,29 @@ void main() {
 
     expect(sut.state, SessionState.active(session: session));
   });
+
+  test(
+    'GivenActivities_WhenASessionIsEstablished_ThenEachIsBegunAfterItIsRecorded',
+    () {
+      // After, not before: an activity that reads the credential — as the
+      // library re-check does — would find none if it ran alongside the
+      // winding-down of the session that just ended.
+      late final RecordingSessionActivity activity;
+      final container = buildTestContainer(
+        overrides: [
+          ...fakeCoreOverrides(),
+          sessionActivitiesProvider.overrideWith((ref) {
+            activity = RecordingSessionActivity(ref);
+            return [activity];
+          }),
+        ],
+      );
+
+      container.read(sessionControllerProvider.notifier).establish(session);
+
+      expect(activity.begunWithSessionActive, isTrue);
+    },
+  );
 
   test(
     'GivenAnActiveSession_WhenTheCredentialIsRead_ThenItIsTheCoresSessionId',

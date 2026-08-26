@@ -34,4 +34,9 @@ class IndexSessionActivity implements SessionActivity {
     // credential the next line discards (FR-AU-06).
     _ref.invalidate(indexRunsControllerProvider);
   }
+
+  // A no-op for now: Task 3 fills this in with the library re-check
+  // (FR-LB-21). The hook fires here; it just has nothing to do yet.
+  @override
+  Future<void> begin() async {}
 }

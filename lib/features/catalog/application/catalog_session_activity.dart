@@ -84,4 +84,8 @@ class CatalogSessionActivity implements SessionActivity {
     // are how the owner prefers to see their library, not a projection of it,
     // and UC-10 and UC-12 carry them across the run on purpose.
   }
+
+  /// Nothing to start: this activity only has state to drop, not work to do.
+  @override
+  Future<void> begin() async {}
 }
