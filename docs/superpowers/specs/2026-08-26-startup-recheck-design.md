@@ -44,7 +44,7 @@ Three silences, each a decision rather than a failure:
 | Condition | Why |
 | --- | --- |
 | The preference is off | The owner said not to. |
-| Nothing is catalogued yet | A first run has no library sources and nothing to re-check; a strip flashing at someone who has not added a folder is noise about work that could not have found anything. |
+| The catalog holds no files | A refresh walks the paths the catalog already knows (FR-LB-06), so an empty catalog gives it nothing to walk. The test is the file count, not whether a folder has been registered: a source added but never scanned leaves the catalog empty too, and a refresh would still find nothing to compare. |
 | A run is already in flight | The core's runs outlive the application (`continuesInTheCore`), so a scan started before the last close may still be going. It is neither interrupted nor duplicated. |
 
 Each is silent. None of them is a state an owner needs to be told about, and a
@@ -108,7 +108,7 @@ No change to the strip, to the run controllers, or to the gateway.
 
 - **FR-LB-06** covers the catalog-wide refresh and gains the startup trigger.
 - **FR-LB-21** (new): the system shall re-check the catalog when a session is
-  established, unless the owner has turned that off, nothing is catalogued, or
+  established, unless the owner has turned that off, the catalog is empty, or
   a run is already outstanding.
 
 No new use case: UC-07 already covers re-checking the catalog, and this adds
@@ -117,7 +117,7 @@ when one starts.
 ## Testing
 
 - Establishing a session starts a re-check.
-- It does not, when the preference is off; when nothing is catalogued; and when
+- It does not, when the preference is off; when the catalog is empty; and when
   a run is already in flight — three separate tests, because they are three
   separate reasons and a single one would not say which rule failed.
 - The strip shows a startup re-check exactly as it shows a manual one.
