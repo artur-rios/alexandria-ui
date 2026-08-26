@@ -63,7 +63,11 @@ class VinylPainter extends CustomPainter {
       canvas.drawCircle(centre, radius * ring, groove);
     }
 
-    canvas.drawCircle(centre, radius * 0.36, Paint()..color = palette.labelPaper);
+    canvas.drawCircle(
+      centre,
+      radius * 0.36,
+      Paint()..color = palette.labelPaper,
+    );
     canvas.drawArc(
       Rect.fromCircle(center: centre, radius: radius * 0.27),
       -math.pi / 2,

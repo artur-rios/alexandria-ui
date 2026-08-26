@@ -49,7 +49,9 @@ class SettingsMenu extends ConsumerWidget {
           onSelected: () => unawaited(confirmAndSignOut(context, ref)),
         ),
       ],
-      child: showsLabel ? Text(l10n.settingsMenuLabel) : const SizedBox.shrink(),
+      child: showsLabel
+          ? Text(l10n.settingsMenuLabel)
+          : const SizedBox.shrink(),
     );
 
     if (showsLabel) return button;

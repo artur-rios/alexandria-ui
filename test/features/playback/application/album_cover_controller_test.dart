@@ -36,6 +36,13 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
+    // No startup ever runs over this container, so it is honest about never
+    // having a core to re-check against: `establish`'s own unawaited call to
+    // `begin()` (FR-LB-21) would otherwise reach for one that was never
+    // loaded, over a scenario this suite has nothing to do with.
+    container
+        .read(preferencesControllerProvider.notifier)
+        .setRechecksAtStartup(false);
     container
         .read(sessionControllerProvider.notifier)
         .establish(FakeAuthGateway.defaultSession);
@@ -156,10 +163,7 @@ void main() {
     () async {
       final gateway = libraryGateway();
       gateway.thumbnails['kob-1'] = const FileThumbnailOutcome.failed(
-        failure: Failure.unexpected(
-          family: CoreStatusFamily.playback,
-          code: 9,
-        ),
+        failure: Failure.unexpected(family: CoreStatusFamily.playback, code: 9),
       );
       final container = buildContainer(gateway);
 

@@ -73,58 +73,98 @@ void main() {
       .whereType<IndexSessionActivity>()
       .single;
 
-  test('GivenTheRecheckIsOn_WhenTheSessionBegins_ThenTheLibraryIsRechecked', () async {
-    // A non-empty catalog: nothing stands between the session starting and
-    // the core being asked to re-check once the preference is on.
-    final sut = await build();
-    await sut.ref
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(true);
+  test(
+    'GivenTheRecheckIsOn_WhenTheSessionBegins_ThenTheLibraryIsRechecked',
+    () async {
+      // A non-empty catalog: nothing stands between the session starting and
+      // the core being asked to re-check once the preference is on.
+      final sut = await build();
+      await sut.ref
+          .read(preferencesControllerProvider.notifier)
+          .setRechecksAtStartup(true);
 
-    await activityOf(sut.ref).begin();
+      await activityOf(sut.ref).begin();
 
-    expect(
-      sut.gateway.refreshStarts.single,
-      FakeAuthGateway.defaultSession.credential,
-    );
-  });
+      expect(
+        sut.gateway.refreshStarts.single,
+        FakeAuthGateway.defaultSession.credential,
+      );
+    },
+  );
 
-  test('GivenTheRecheckIsOff_WhenTheSessionBegins_ThenNothingIsStarted', () async {
-    // The preference build() already turned off.
-    final sut = await build();
+  test(
+    'GivenTheRecheckIsOff_WhenTheSessionBegins_ThenNothingIsStarted',
+    () async {
+      // The preference build() already turned off.
+      //
+      // Nothing distinguishes "the preference gate correctly returned early"
+      // from "begin() does nothing at all" beyond what's asserted here — an
+      // empty `begin()` would pass this test just as well. What makes that
+      // acceptable is the pair above it: `...ThenTheLibraryIsRechecked` only
+      // passes if `begin()` genuinely reaches the gateway when the preference
+      // is on, so between the two, an empty `begin()` fails one of them and a
+      // `begin()` that ignores the preference fails this one. Also asserted
+      // is that the gateway was never asked *anything at all* — not even the
+      // catalog count `startRefresh` checks before deciding — which is a
+      // strictly stronger claim than "no refresh started" on its own.
+      final sut = await build();
 
-    await activityOf(sut.ref).begin();
+      await activityOf(sut.ref).begin();
 
-    expect(sut.gateway.refreshStarts, isEmpty);
-  });
+      expect(sut.gateway.catalogedFileCountAsked, 0);
+      expect(sut.gateway.refreshStarts, isEmpty);
+    },
+  );
 
-  test('GivenAnEmptyCatalog_WhenTheSessionBegins_ThenNothingIsStarted', () async {
-    final sut = await build(gateway: FakeIndexGateway()..catalogedFileCount = 0);
-    await sut.ref
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(true);
+  test(
+    'GivenAnEmptyCatalog_WhenTheSessionBegins_ThenNothingIsStarted',
+    () async {
+      final sut = await build(
+        gateway: FakeIndexGateway()..catalogedFileCount = 0,
+      );
+      await sut.ref
+          .read(preferencesControllerProvider.notifier)
+          .setRechecksAtStartup(true);
 
-    await activityOf(sut.ref).begin();
+      await activityOf(sut.ref).begin();
 
-    // The catalog was asked about (that is `startRefresh`'s own AF-02 rule),
-    // but the core was never asked to start a run over it.
-    expect(sut.gateway.refreshStarts, isEmpty);
-  });
+      // The catalog *was* asked about — proving `begin()` reached
+      // `startRefresh` rather than returning early on its own — but the core
+      // was never asked to start a run over it (`startRefresh`'s own AF-02
+      // rule).
+      expect(sut.gateway.catalogedFileCountAsked, 1);
+      expect(sut.gateway.refreshStarts, isEmpty);
+    },
+  );
 
-  test('GivenARunAlreadyInFlight_WhenTheSessionBegins_ThenItIsNotDisturbed', () async {
-    final sut = await build(
-      gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
-    );
-    await sut.ref.read(indexRunsControllerProvider.notifier).startRefresh();
-    expect(sut.gateway.refreshStarts, hasLength(1));
-    await sut.ref
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(true);
+  test(
+    'GivenARunAlreadyInFlight_WhenTheSessionBegins_ThenItIsNotDisturbed',
+    () async {
+      final sut = await build(
+        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+      );
+      await sut.ref.read(indexRunsControllerProvider.notifier).startRefresh();
+      final runningId = sut.ref
+          .read(indexRunsControllerProvider)
+          .refreshRun
+          ?.runId;
+      expect(sut.gateway.refreshStarts, hasLength(1));
+      await sut.ref
+          .read(preferencesControllerProvider.notifier)
+          .setRechecksAtStartup(true);
 
-    await activityOf(sut.ref).begin();
+      await activityOf(sut.ref).begin();
 
-    // AF-01's own rule: a second refresh is refused while one is running.
-    // Nothing about the run already in flight changes because of this call.
-    expect(sut.gateway.refreshStarts, hasLength(1));
-  });
+      // AF-01's own rule: a second refresh is refused while one is running.
+      // "Not disturbed" is measured, not assumed: the gateway was not asked
+      // again, the run already in flight is still the very same run, and no
+      // refusal was left on state — `begin()` asks `startRefresh` for
+      // `reportRefusals: false`, so AF-01's own refusal notice never reaches
+      // the screen for a re-check nobody asked for.
+      expect(sut.gateway.refreshStarts, hasLength(1));
+      final state = sut.ref.read(indexRunsControllerProvider);
+      expect(state.refreshRun?.runId, runningId);
+      expect(state.refreshRefusal, isNull);
+    },
+  );
 }

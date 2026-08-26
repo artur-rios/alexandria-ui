@@ -49,7 +49,12 @@ class CassettePainter extends CustomPainter {
     // painter's bounds rather than a flat rectangle filling the frame edge
     // to edge.
     final margin = h * 0.035;
-    final bounds = Rect.fromLTWH(margin, margin, w - margin * 2, h - margin * 2);
+    final bounds = Rect.fromLTWH(
+      margin,
+      margin,
+      w - margin * 2,
+      h - margin * 2,
+    );
     final shell = RRect.fromRectAndRadius(bounds, Radius.circular(h * 0.09));
 
     canvas.drawRRect(
@@ -104,10 +109,7 @@ class CassettePainter extends CustomPainter {
     canvas.drawRRect(label, Paint()..color = palette.tapeLabel);
 
     final ink = Paint()..color = palette.tapeLabelInk;
-    canvas.drawRect(
-      Rect.fromLTWH(w * 0.13, h * 0.075, w * 0.4, h * 0.03),
-      ink,
-    );
+    canvas.drawRect(Rect.fromLTWH(w * 0.13, h * 0.075, w * 0.4, h * 0.03), ink);
     canvas.drawRect(
       Rect.fromLTWH(w * 0.13, h * 0.125, w * 0.24, h * 0.02),
       ink,
@@ -225,7 +227,11 @@ class CassettePainter extends CustomPainter {
       canvas.restore();
     }
 
-    canvas.drawCircle(centre, hubRadius * 0.22, Paint()..color = palette.wellDark);
+    canvas.drawCircle(
+      centre,
+      hubRadius * 0.22,
+      Paint()..color = palette.wellDark,
+    );
 
     // A single index mark, off the six-fold tooth pattern. Six teeth are
     // symmetric under a half turn, so without this a hub at 0.5 turns would

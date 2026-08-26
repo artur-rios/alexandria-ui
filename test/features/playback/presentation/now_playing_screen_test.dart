@@ -803,7 +803,9 @@ void main() {
         // the insertion the way `AlbumStage.onInserted` does when it plays,
         // then leave the player the way AF-03 already does, before the next
         // track of the same record starts.
-        container.read(albumAnimationControllerProvider.notifier).insertionShown();
+        container
+            .read(albumAnimationControllerProvider.notifier)
+            .insertionShown();
         await tester.tap(find.byTooltip(closeLabel(tester)));
         await settle(tester);
 

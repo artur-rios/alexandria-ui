@@ -7,8 +7,9 @@ import '../domain/album_medium.dart';
 /// their own copy of this same switch, which is exactly the kind of two
 /// copies that can quietly drift — the bar and the full player describing
 /// the same record differently. One function is what keeps that impossible.
-String albumMediumLabel(AlbumMedium medium, AppLocalizations l10n) => switch (medium) {
-  AlbumMedium.vinyl => l10n.albumMediumVinyl,
-  AlbumMedium.tape => l10n.albumMediumTape,
-  AlbumMedium.disc => l10n.albumMediumDisc,
-};
+String albumMediumLabel(AlbumMedium medium, AppLocalizations l10n) =>
+    switch (medium) {
+      AlbumMedium.vinyl => l10n.albumMediumVinyl,
+      AlbumMedium.tape => l10n.albumMediumTape,
+      AlbumMedium.disc => l10n.albumMediumDisc,
+    };

@@ -41,6 +41,15 @@ class FakeIndexGateway implements IndexGateway {
   /// How many files [countCatalogedFiles] reports. Negative is "unknown".
   int catalogedFileCount = 120;
 
+  /// How many times [countCatalogedFiles] was asked.
+  ///
+  /// AF-02's own count-before-call ordering means every `startRefresh`
+  /// reaches this whether or not it goes on to call the core, so a test
+  /// that wants proof `startRefresh` was reached at all — not merely that
+  /// the core was not asked to start — asserts on this rather than on
+  /// [refreshStarts].
+  int catalogedFileCountAsked = 0;
+
   /// The credentials [startRefresh] was called with, in order.
   final List<String> refreshStarts = [];
 
@@ -94,7 +103,10 @@ class FakeIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<int> countCatalogedFiles() async => catalogedFileCount;
+  Future<int> countCatalogedFiles() async {
+    catalogedFileCountAsked++;
+    return catalogedFileCount;
+  }
 
   @override
   Future<IndexRunOutcome> readRun({

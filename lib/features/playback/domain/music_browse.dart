@@ -97,12 +97,13 @@ List<MusicGroup> _groupedBy(
 List<MusicGroup> _sortedByName(
   List<MusicGroup> groups, {
   String? Function(MusicGroup group)? tiebreak,
-}) => [...groups]..sort((a, b) {
-  final byName = _byName(a.name, b.name);
-  if (byName != 0 || tiebreak == null) return byName;
+}) => [...groups]
+  ..sort((a, b) {
+    final byName = _byName(a.name, b.name);
+    if (byName != 0 || tiebreak == null) return byName;
 
-  return _byName(tiebreak(a), tiebreak(b));
-});
+    return _byName(tiebreak(a), tiebreak(b));
+  });
 
 /// Case-insensitively by name, with an absent name last.
 ///

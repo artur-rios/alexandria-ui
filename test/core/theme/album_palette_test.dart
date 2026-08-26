@@ -7,7 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// relative luminance the same way a browser or a design tool would:
 /// `(L_lighter + 0.05) / (L_darker + 0.05)`. White's luminance is 1.0, so
 /// this simplifies to `1.05 / (L(color) + 0.05)`.
-double _contrastAgainstWhite(Color color) => 1.05 / (color.computeLuminance() + 0.05);
+double _contrastAgainstWhite(Color color) =>
+    1.05 / (color.computeLuminance() + 0.05);
 
 /// The colours the album artwork is painted in (FR-UX-07, BR-18).
 void main() {

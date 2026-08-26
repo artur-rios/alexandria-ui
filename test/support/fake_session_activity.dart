@@ -66,6 +66,7 @@ class RecordingSessionActivity implements SessionActivity {
 
   @override
   Future<void> begin() async {
-    begunWithSessionActive = _ref.read(sessionControllerProvider) is SessionActive;
+    begunWithSessionActive =
+        _ref.read(sessionControllerProvider) is SessionActive;
   }
 }

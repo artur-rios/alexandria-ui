@@ -75,14 +75,13 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenTheSettingsMenu_WhenTheChangeIsChosen_ThenTheFormOpens',
-      (tester) async {
-        await openForm(tester);
+    testWidgets('GivenTheSettingsMenu_WhenTheChangeIsChosen_ThenTheFormOpens', (
+      tester,
+    ) async {
+      await openForm(tester);
 
-        expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
-      },
-    );
+      expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
+    });
   });
 
   group('the main flow', () {

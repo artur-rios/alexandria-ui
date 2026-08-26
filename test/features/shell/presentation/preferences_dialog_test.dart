@@ -30,8 +30,9 @@ void main() {
       surfaceSize: surfaceSize ?? const Size(1280, 800),
     );
     await tester.openSettingsMenuEntry(
-      AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-          .preferencesLabel,
+      AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      ).preferencesLabel,
     );
   }
 
@@ -185,33 +186,32 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenPreferences_WhenAModeIsChosen_ThenItIsAppliedAndStored',
-      (tester) async {
-        // The controller's own state holds the applied value whether or not
-        // the write reached the store — that is exactly AF-02's "applied but
-        // not saved" case. A test named "...AndStored" has to look at the
-        // store itself, or it would pass unchanged if the write silently
-        // failed.
-        final store = InMemorySettingsStore();
-        await openFromShell(tester, settings: store);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-        final container = ProviderScope.containerOf(
-          tester.element(find.byType(PreferencesDialog)),
-        );
+    testWidgets('GivenPreferences_WhenAModeIsChosen_ThenItIsAppliedAndStored', (
+      tester,
+    ) async {
+      // The controller's own state holds the applied value whether or not
+      // the write reached the store — that is exactly AF-02's "applied but
+      // not saved" case. A test named "...AndStored" has to look at the
+      // store itself, or it would pass unchanged if the write silently
+      // failed.
+      final store = InMemorySettingsStore();
+      await openFromShell(tester, settings: store);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(PreferencesDialog)),
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(PreferencesDialog)),
+      );
 
-        await tester.tap(find.text(l10n.animationVinyl));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.animationVinyl));
+      await tester.pumpAndSettle();
 
-        expect(
-          container.read(preferencesControllerProvider).albumAnimation,
-          AlbumAnimationMode.vinyl,
-        );
-        expect(store.albumAnimationMode, AlbumAnimationMode.vinyl);
-      },
-    );
+      expect(
+        container.read(preferencesControllerProvider).albumAnimation,
+        AlbumAnimationMode.vinyl,
+      );
+      expect(store.albumAnimationMode, AlbumAnimationMode.vinyl);
+    });
 
     testWidgets(
       'GivenTheStoreRefusesAWrite_WhenAModeIsChosen_ThenTheOwnerIsTold',
@@ -221,8 +221,9 @@ void main() {
         // nothing exercised it for the animation setter until now.
         await tester.pumpShellWithFailingSettings();
         await tester.openSettingsMenuEntry(
-          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-              .preferencesLabel,
+          AppLocalizations.of(
+            tester.element(find.byType(ShellScreen)),
+          ).preferencesLabel,
         );
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
@@ -252,10 +253,7 @@ void main() {
         // this is the test that would catch the day scrolling stops being
         // enough. The switch, not the last radio option, is the true bottom
         // of the dialog now.
-        await openFromShell(
-          tester,
-          surfaceSize: Breakpoint.minimumWindowSize,
-        );
+        await openFromShell(tester, surfaceSize: Breakpoint.minimumWindowSize);
 
         await tester.scrollUntilVisible(
           find.byType(SwitchListTile),
@@ -287,8 +285,9 @@ void main() {
       (tester) async {
         await tester.pumpShellWithFailingSettings();
         await tester.openSettingsMenuEntry(
-          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-              .preferencesLabel,
+          AppLocalizations.of(
+            tester.element(find.byType(ShellScreen)),
+          ).preferencesLabel,
         );
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
@@ -331,8 +330,9 @@ void main() {
         // destination is the state available to prove it on.
         final container = await tester.pumpShell();
         await tester.openSettingsMenuEntry(
-          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-              .preferencesLabel,
+          AppLocalizations.of(
+            tester.element(find.byType(ShellScreen)),
+          ).preferencesLabel,
         );
         final before = container.read(shellControllerProvider);
         final l10n = AppLocalizations.of(
@@ -388,8 +388,9 @@ void main() {
         (tester) async {
           await tester.pumpShell(locale: locale);
           await tester.openSettingsMenuEntry(
-            AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-                .preferencesLabel,
+            AppLocalizations.of(
+              tester.element(find.byType(ShellScreen)),
+            ).preferencesLabel,
           );
           final l10n = AppLocalizations.of(
             tester.element(find.byType(PreferencesDialog)),

@@ -72,7 +72,9 @@ class LibraryMenu extends StatelessWidget {
           onSelected: () => MissingFilesScreen.show(context),
         ),
       ],
-      child: showsLabel ? Text(l10n.libraryToolsLabel) : const SizedBox.shrink(),
+      child: showsLabel
+          ? Text(l10n.libraryToolsLabel)
+          : const SizedBox.shrink(),
     );
 
     if (showsLabel) return button;

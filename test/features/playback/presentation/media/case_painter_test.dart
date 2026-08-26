@@ -17,8 +17,14 @@ Future<ui.Image> _testCover({int width = 60, int height = 60}) async {
   final canvas = Canvas(recorder);
   final w = width.toDouble();
   final h = height.toDouble();
-  canvas.drawRect(Rect.fromLTWH(0, 0, w / 2, h), Paint()..color = const Color(0xFFE0A030));
-  canvas.drawRect(Rect.fromLTWH(w / 2, 0, w / 2, h), Paint()..color = const Color(0xFF3060C0));
+  canvas.drawRect(
+    Rect.fromLTWH(0, 0, w / 2, h),
+    Paint()..color = const Color(0xFFE0A030),
+  );
+  canvas.drawRect(
+    Rect.fromLTWH(w / 2, 0, w / 2, h),
+    Paint()..color = const Color(0xFF3060C0),
+  );
   final picture = recorder.endRecording();
   try {
     return await picture.toImage(width, height);

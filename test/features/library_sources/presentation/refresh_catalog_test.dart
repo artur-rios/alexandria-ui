@@ -41,17 +41,20 @@ void main() {
     required FakeIndexGateway gateway,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
+    // Off by default, so `establish`'s own unawaited call to `begin()`
+    // (FR-LB-21) does not itself start a refresh ahead of the one each test
+    // drives through the button, doubling up on the gateway. The one test
+    // that turns this on is the one asking what `begin()` itself puts on
+    // screen after a real sign-in (FR-LB-21's own end-to-end coverage).
+    bool rechecksAtStartup = false,
   }) async {
     final container = await tester.pumpShell(
       themeMode: themeMode,
       locale: locale,
-      // Off, so `establish`'s own unawaited call to `begin()` (FR-LB-21)
-      // does not itself start a refresh ahead of the one each test drives
-      // through the button, doubling up on the gateway.
       settings: InMemorySettingsStore(
         themeMode: themeMode,
         locale: locale,
-        rechecksAtStartup: false,
+        rechecksAtStartup: rechecksAtStartup,
       ),
       extraOverrides: <Override>[
         librarySourceStoreProvider.overrideWithValue(
@@ -86,6 +89,40 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
   }
+
+  testWidgets(
+    'GivenTheRecheckIsOn_WhenTheOwnerSignsIn_ThenTheScreenShowsARefreshWithNoRefusal',
+    (tester) async {
+      // The end-to-end path FR-LB-21 is actually for: signing in for real
+      // (through the login form `pumpShell` drives, not a container built by
+      // hand) reaches `SessionController.establish`, which fires
+      // `IndexSessionActivity.begin()` unawaited — the same hook every other
+      // test in this suite turns off so its own button-press stays the only
+      // thing touching the gateway. This is the one place that leaves it on.
+      final gateway = FakeIndexGateway()..readOutcomes = [refreshed()];
+      await openScreen(tester, gateway: gateway, rechecksAtStartup: true);
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+
+      // The gateway answers `startRefresh` with a completed outcome
+      // synchronously enough that opening the screen's own `pumpAndSettle`
+      // (inside `openLibraryTool`) already sees it finished — so the
+      // completed outcome, not a busy state, is what the assertions below
+      // read.
+      expect(gateway.refreshStarts, isNotEmpty);
+      expect(
+        find.textContaining(l10n.librarySourcesRefreshComplete(9, 110, 0)),
+        findsOneWidget,
+      );
+      // Neither of AF-01/AF-02's refusal texts reached the screen: nobody
+      // pressed anything, so there is nothing to explain (`reportRefusals:
+      // false`).
+      expect(find.text(l10n.librarySourcesRefreshRunning), findsNothing);
+      expect(find.text(l10n.librarySourcesRefreshEmpty), findsNothing);
+    },
+  );
 
   testWidgets('GivenTheScreen_WhenItOpens_ThenARefreshIsOffered', (
     tester,

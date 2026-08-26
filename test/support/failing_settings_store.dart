@@ -21,12 +21,12 @@ class FailingSettingsStore implements SettingsStore {
     // in_memory_settings_store.dart.
     // ignore: prefer_initializing_formals
     : _themeMode = themeMode,
-      // ignore: prefer_initializing_formals
-      _locale = locale,
-      // ignore: prefer_initializing_formals
-      _albumAnimationMode = albumAnimationMode,
-      // ignore: prefer_initializing_formals
-      _rechecksAtStartup = rechecksAtStartup;
+       // ignore: prefer_initializing_formals
+       _locale = locale,
+       // ignore: prefer_initializing_formals
+       _albumAnimationMode = albumAnimationMode,
+       // ignore: prefer_initializing_formals
+       _rechecksAtStartup = rechecksAtStartup;
 
   final ThemeMode _themeMode;
   final Locale? _locale;

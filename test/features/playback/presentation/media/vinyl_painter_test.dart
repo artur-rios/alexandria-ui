@@ -18,23 +18,21 @@ void main() {
 
   const palette = AlbumPalette.standard;
 
-  testWidgets(
-    'GivenTheVinylPainter_WhenItIsDrawn_ThenItMatchesItsGolden',
-    (tester) async {
-      await tester.pumpWidget(
-        painted(
-          const VinylPainter(palette: palette, turns: 0),
-          const Size(240, 240),
-        ),
-      );
+  testWidgets('GivenTheVinylPainter_WhenItIsDrawn_ThenItMatchesItsGolden', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      painted(
+        const VinylPainter(palette: palette, turns: 0),
+        const Size(240, 240),
+      ),
+    );
 
-      await expectLater(
-        find.byType(CustomPaint).last,
-        matchesGoldenFile('goldens/vinyl.png'),
-      );
-    },
-    skip: !goldensAreComparable,
-  );
+    await expectLater(
+      find.byType(CustomPaint).last,
+      matchesGoldenFile('goldens/vinyl.png'),
+    );
+  }, skip: !goldensAreComparable);
 
   group('what turning means', () {
     test('GivenAPainter_WhenOnlyItsTurnsChange_ThenItRepaints', () {

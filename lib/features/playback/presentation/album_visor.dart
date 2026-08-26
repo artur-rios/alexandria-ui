@@ -122,7 +122,9 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
     ) {
       if (previous?.medium == next.medium) return;
       _medium = next.medium;
-      if (next.medium case final medium?) _spin.duration = spinPeriodFor(medium);
+      if (next.medium case final medium?) {
+        _spin.duration = spinPeriodFor(medium);
+      }
       _applySpin();
     });
     ref.listen<AudioPlaybackState>(audioPlaybackControllerProvider, (
@@ -182,7 +184,11 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
 /// `_StageLayout` — nothing here owns the ticker, which is what lets it be
 /// rebuilt on every frame without carrying animation state of its own.
 class _Recess extends StatelessWidget {
-  const _Recess({required this.medium, required this.palette, required this.turns});
+  const _Recess({
+    required this.medium,
+    required this.palette,
+    required this.turns,
+  });
 
   final AlbumMedium medium;
   final AlbumPalette palette;
@@ -218,7 +224,9 @@ class _Recess extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CustomPaint(painter: _InnerShadowPainter(color: palette.contactShadow)),
+            CustomPaint(
+              painter: _InnerShadowPainter(color: palette.contactShadow),
+            ),
             // The medium is fit to the recess by its own aspect rather than
             // forced square: `CassettePainter.aspect` is 130/66, and filling
             // a square with it would squash the shell into a circle-adjacent
@@ -226,11 +234,15 @@ class _Recess extends StatelessWidget {
             Center(
               child: AspectRatio(
                 aspectRatio: _aspect,
-                child: RepaintBoundary(child: CustomPaint(painter: _mediumPainter)),
+                child: RepaintBoundary(
+                  child: CustomPaint(painter: _mediumPainter),
+                ),
               ),
             ),
             IgnorePointer(
-              child: CustomPaint(painter: _SheenPainter(color: palette.glassSheen)),
+              child: CustomPaint(
+                painter: _SheenPainter(color: palette.glassSheen),
+              ),
             ),
           ],
         ),
@@ -279,7 +291,12 @@ class _SheenPainter extends CustomPainter {
     final rect = Offset.zero & size;
     canvas.drawRect(
       rect,
-      diagonalSheenPaint(rect, color, alpha: 0.4, stops: const [0.05, 0.25, 0.5]),
+      diagonalSheenPaint(
+        rect,
+        color,
+        alpha: 0.4,
+        stops: const [0.05, 0.25, 0.5],
+      ),
     );
   }
 

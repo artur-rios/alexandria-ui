@@ -73,7 +73,12 @@ class CasePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
     final margin = w * 0.04;
-    final bounds = Rect.fromLTWH(margin, margin, w - margin * 2, h - margin * 2);
+    final bounds = Rect.fromLTWH(
+      margin,
+      margin,
+      w - margin * 2,
+      h - margin * 2,
+    );
 
     _paintShadow(canvas, bounds);
 
@@ -97,7 +102,9 @@ class CasePainter extends CustomPainter {
   }
 
   void _paintShadow(Canvas canvas, Rect bounds) {
-    final shadowRect = bounds.shift(Offset(bounds.width * 0.03, bounds.height * 0.04));
+    final shadowRect = bounds.shift(
+      Offset(bounds.width * 0.03, bounds.height * 0.04),
+    );
     canvas.drawRRect(
       RRect.fromRectAndRadius(shadowRect, Radius.circular(bounds.width * 0.02)),
       Paint()
@@ -107,11 +114,17 @@ class CasePainter extends CustomPainter {
   }
 
   void _paintJacket(Canvas canvas, Rect bounds) {
-    _paintFace(canvas, RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.015)));
+    _paintFace(
+      canvas,
+      RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.015)),
+    );
   }
 
   void _paintCassetteCase(Canvas canvas, Rect bounds) {
-    _paintFace(canvas, RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.03)));
+    _paintFace(
+      canvas,
+      RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.03)),
+    );
   }
 
   void _paintJewelCase(Canvas canvas, Rect bounds) {
@@ -122,13 +135,21 @@ class CasePainter extends CustomPainter {
       bounds.width - spineWidth,
       bounds.height,
     );
-    _paintFace(canvas, RRect.fromRectAndRadius(caseRect, Radius.circular(bounds.width * 0.01)));
+    _paintFace(
+      canvas,
+      RRect.fromRectAndRadius(caseRect, Radius.circular(bounds.width * 0.01)),
+    );
 
     // The hinge spine: a narrower, darker strip along the case's left edge
     // — the ribbed hinge a jewel case shows side-on — kept unhued so it
     // reads as clear plastic over the booklet rather than as a second
     // sleeve colour.
-    final spineRect = Rect.fromLTWH(bounds.left, bounds.top, spineWidth, bounds.height);
+    final spineRect = Rect.fromLTWH(
+      bounds.left,
+      bounds.top,
+      spineWidth,
+      bounds.height,
+    );
     canvas.drawRect(
       spineRect,
       Paint()
@@ -144,7 +165,11 @@ class CasePainter extends CustomPainter {
       ..color = palette.chromeDark.withValues(alpha: 0.5);
     for (var i = 1; i < 6; i++) {
       final y = bounds.top + bounds.height * i / 6;
-      canvas.drawLine(Offset(spineRect.left, y), Offset(spineRect.right, y), rib);
+      canvas.drawLine(
+        Offset(spineRect.left, y),
+        Offset(spineRect.right, y),
+        rib,
+      );
     }
   }
 
@@ -159,7 +184,12 @@ class CasePainter extends CustomPainter {
       // matches the case it is going on.
       canvas.save();
       canvas.clipRRect(shape);
-      paintImage(canvas: canvas, rect: shape.outerRect, image: cover, fit: BoxFit.cover);
+      paintImage(
+        canvas: canvas,
+        rect: shape.outerRect,
+        image: cover,
+        fit: BoxFit.cover,
+      );
       canvas.restore();
     }
 
