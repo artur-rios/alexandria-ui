@@ -14,6 +14,7 @@ class FailingSettingsStore implements SettingsStore {
     ThemeMode themeMode = ThemeMode.system,
     Locale? locale,
     AlbumAnimationMode albumAnimationMode = AlbumAnimationMode.byYear,
+    bool rechecksAtStartup = true,
   })
     // The fields are private and a named parameter cannot be, so
     // `this._themeMode` is not expressible. Same reason as
@@ -23,11 +24,14 @@ class FailingSettingsStore implements SettingsStore {
       // ignore: prefer_initializing_formals
       _locale = locale,
       // ignore: prefer_initializing_formals
-      _albumAnimationMode = albumAnimationMode;
+      _albumAnimationMode = albumAnimationMode,
+      // ignore: prefer_initializing_formals
+      _rechecksAtStartup = rechecksAtStartup;
 
   final ThemeMode _themeMode;
   final Locale? _locale;
   final AlbumAnimationMode _albumAnimationMode;
+  final bool _rechecksAtStartup;
 
   /// Every write attempted, so a test can assert the store really was asked.
   final List<String> attempted = [];
@@ -56,6 +60,15 @@ class FailingSettingsStore implements SettingsStore {
   @override
   Future<void> setAlbumAnimationMode(AlbumAnimationMode mode) async {
     attempted.add('albumAnimationMode');
+    throw const FileSystemException('the settings file is read-only');
+  }
+
+  @override
+  bool get rechecksAtStartup => _rechecksAtStartup;
+
+  @override
+  Future<void> setRechecksAtStartup(bool value) async {
+    attempted.add('rechecksAtStartup');
     throw const FileSystemException('the settings file is read-only');
   }
 

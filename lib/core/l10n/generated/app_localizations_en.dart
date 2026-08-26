@@ -271,6 +271,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get animationOff => 'Off';
 
   @override
+  String get startupRecheckLabel => 'Re-check the library at startup';
+
+  @override
+  String get startupRecheckDescription =>
+      'Looks for files added, changed, or removed while Alexandria was closed.';
+
+  @override
   String get preferencesUnsaved =>
       'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.';
 

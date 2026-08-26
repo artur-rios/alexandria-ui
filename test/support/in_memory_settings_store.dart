@@ -13,6 +13,7 @@ class InMemorySettingsStore implements SettingsStore {
     ThemeMode themeMode = ThemeMode.system,
     Locale? locale,
     AlbumAnimationMode albumAnimationMode = AlbumAnimationMode.byYear,
+    bool rechecksAtStartup = true,
     Map<String, String>? values,
   })
     // The fields are private and a named parameter cannot be, so `this._themeMode`
@@ -21,11 +22,13 @@ class InMemorySettingsStore implements SettingsStore {
     : _themeMode = themeMode,
        _locale = locale,
        _albumAnimationMode = albumAnimationMode,
+       _rechecksAtStartup = rechecksAtStartup,
        _values = {...?values};
 
   ThemeMode _themeMode;
   Locale? _locale;
   AlbumAnimationMode _albumAnimationMode;
+  bool _rechecksAtStartup;
   final Map<String, String> _values;
 
   @override
@@ -46,6 +49,13 @@ class InMemorySettingsStore implements SettingsStore {
   @override
   Future<void> setAlbumAnimationMode(AlbumAnimationMode mode) async =>
       _albumAnimationMode = mode;
+
+  @override
+  bool get rechecksAtStartup => _rechecksAtStartup;
+
+  @override
+  Future<void> setRechecksAtStartup(bool value) async =>
+      _rechecksAtStartup = value;
 
   @override
   String? getString(String key) => _values[key];

@@ -39,6 +39,13 @@ abstract interface class SettingsStore {
   /// Records [mode] for the next launch.
   Future<void> setAlbumAnimationMode(AlbumAnimationMode mode);
 
+  /// Whether the library is re-checked when a session is established, or
+  /// `true` when the owner has not said (FR-LB-21).
+  bool get rechecksAtStartup;
+
+  /// Records [value] for the next launch.
+  Future<void> setRechecksAtStartup(bool value);
+
   /// Reads an arbitrary string preference.
   ///
   /// Features add their own typed accessors above rather than reaching for this

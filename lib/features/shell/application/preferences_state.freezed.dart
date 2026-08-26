@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PreferencesState {
 
- ThemeMode get themeMode; Locale? get locale; AlbumAnimationMode get albumAnimation; bool get lastChangeUnsaved;
+ ThemeMode get themeMode; Locale? get locale; AlbumAnimationMode get albumAnimation; bool get rechecksAtStartup; bool get lastChangeUnsaved;
 /// Create a copy of PreferencesState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $PreferencesStateCopyWith<PreferencesState> get copyWith => _$PreferencesStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PreferencesState&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.albumAnimation, albumAnimation) || other.albumAnimation == albumAnimation)&&(identical(other.lastChangeUnsaved, lastChangeUnsaved) || other.lastChangeUnsaved == lastChangeUnsaved));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PreferencesState&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.albumAnimation, albumAnimation) || other.albumAnimation == albumAnimation)&&(identical(other.rechecksAtStartup, rechecksAtStartup) || other.rechecksAtStartup == rechecksAtStartup)&&(identical(other.lastChangeUnsaved, lastChangeUnsaved) || other.lastChangeUnsaved == lastChangeUnsaved));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,themeMode,locale,albumAnimation,lastChangeUnsaved);
+int get hashCode => Object.hash(runtimeType,themeMode,locale,albumAnimation,rechecksAtStartup,lastChangeUnsaved);
 
 @override
 String toString() {
-  return 'PreferencesState(themeMode: $themeMode, locale: $locale, albumAnimation: $albumAnimation, lastChangeUnsaved: $lastChangeUnsaved)';
+  return 'PreferencesState(themeMode: $themeMode, locale: $locale, albumAnimation: $albumAnimation, rechecksAtStartup: $rechecksAtStartup, lastChangeUnsaved: $lastChangeUnsaved)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $PreferencesStateCopyWith<$Res>  {
   factory $PreferencesStateCopyWith(PreferencesState value, $Res Function(PreferencesState) _then) = _$PreferencesStateCopyWithImpl;
 @useResult
 $Res call({
- ThemeMode themeMode, Locale? locale, AlbumAnimationMode albumAnimation, bool lastChangeUnsaved
+ ThemeMode themeMode, Locale? locale, AlbumAnimationMode albumAnimation, bool rechecksAtStartup, bool lastChangeUnsaved
 });
 
 
@@ -62,12 +62,13 @@ class _$PreferencesStateCopyWithImpl<$Res>
 
 /// Create a copy of PreferencesState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? locale = freezed,Object? albumAnimation = null,Object? lastChangeUnsaved = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? locale = freezed,Object? albumAnimation = null,Object? rechecksAtStartup = null,Object? lastChangeUnsaved = null,}) {
   return _then(_self.copyWith(
 themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as ThemeMode,locale: freezed == locale ? _self.locale : locale // ignore: cast_nullable_to_non_nullable
 as Locale?,albumAnimation: null == albumAnimation ? _self.albumAnimation : albumAnimation // ignore: cast_nullable_to_non_nullable
-as AlbumAnimationMode,lastChangeUnsaved: null == lastChangeUnsaved ? _self.lastChangeUnsaved : lastChangeUnsaved // ignore: cast_nullable_to_non_nullable
+as AlbumAnimationMode,rechecksAtStartup: null == rechecksAtStartup ? _self.rechecksAtStartup : rechecksAtStartup // ignore: cast_nullable_to_non_nullable
+as bool,lastChangeUnsaved: null == lastChangeUnsaved ? _self.lastChangeUnsaved : lastChangeUnsaved // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -150,10 +151,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ThemeMode themeMode,  Locale? locale,  AlbumAnimationMode albumAnimation,  bool lastChangeUnsaved)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ThemeMode themeMode,  Locale? locale,  AlbumAnimationMode albumAnimation,  bool rechecksAtStartup,  bool lastChangeUnsaved)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PreferencesState() when $default != null:
-return $default(_that.themeMode,_that.locale,_that.albumAnimation,_that.lastChangeUnsaved);case _:
+return $default(_that.themeMode,_that.locale,_that.albumAnimation,_that.rechecksAtStartup,_that.lastChangeUnsaved);case _:
   return orElse();
 
 }
@@ -171,10 +172,10 @@ return $default(_that.themeMode,_that.locale,_that.albumAnimation,_that.lastChan
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ThemeMode themeMode,  Locale? locale,  AlbumAnimationMode albumAnimation,  bool lastChangeUnsaved)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ThemeMode themeMode,  Locale? locale,  AlbumAnimationMode albumAnimation,  bool rechecksAtStartup,  bool lastChangeUnsaved)  $default,) {final _that = this;
 switch (_that) {
 case _PreferencesState():
-return $default(_that.themeMode,_that.locale,_that.albumAnimation,_that.lastChangeUnsaved);}
+return $default(_that.themeMode,_that.locale,_that.albumAnimation,_that.rechecksAtStartup,_that.lastChangeUnsaved);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -188,10 +189,10 @@ return $default(_that.themeMode,_that.locale,_that.albumAnimation,_that.lastChan
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ThemeMode themeMode,  Locale? locale,  AlbumAnimationMode albumAnimation,  bool lastChangeUnsaved)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ThemeMode themeMode,  Locale? locale,  AlbumAnimationMode albumAnimation,  bool rechecksAtStartup,  bool lastChangeUnsaved)?  $default,) {final _that = this;
 switch (_that) {
 case _PreferencesState() when $default != null:
-return $default(_that.themeMode,_that.locale,_that.albumAnimation,_that.lastChangeUnsaved);case _:
+return $default(_that.themeMode,_that.locale,_that.albumAnimation,_that.rechecksAtStartup,_that.lastChangeUnsaved);case _:
   return null;
 
 }
@@ -203,12 +204,13 @@ return $default(_that.themeMode,_that.locale,_that.albumAnimation,_that.lastChan
 
 
 class _PreferencesState implements PreferencesState {
-  const _PreferencesState({this.themeMode = ThemeMode.system, this.locale, this.albumAnimation = AlbumAnimationMode.byYear, this.lastChangeUnsaved = false});
+  const _PreferencesState({this.themeMode = ThemeMode.system, this.locale, this.albumAnimation = AlbumAnimationMode.byYear, this.rechecksAtStartup = true, this.lastChangeUnsaved = false});
   
 
 @override@JsonKey() final  ThemeMode themeMode;
 @override final  Locale? locale;
 @override@JsonKey() final  AlbumAnimationMode albumAnimation;
+@override@JsonKey() final  bool rechecksAtStartup;
 @override@JsonKey() final  bool lastChangeUnsaved;
 
 /// Create a copy of PreferencesState
@@ -221,16 +223,16 @@ _$PreferencesStateCopyWith<_PreferencesState> get copyWith => __$PreferencesStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PreferencesState&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.albumAnimation, albumAnimation) || other.albumAnimation == albumAnimation)&&(identical(other.lastChangeUnsaved, lastChangeUnsaved) || other.lastChangeUnsaved == lastChangeUnsaved));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PreferencesState&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.locale, locale) || other.locale == locale)&&(identical(other.albumAnimation, albumAnimation) || other.albumAnimation == albumAnimation)&&(identical(other.rechecksAtStartup, rechecksAtStartup) || other.rechecksAtStartup == rechecksAtStartup)&&(identical(other.lastChangeUnsaved, lastChangeUnsaved) || other.lastChangeUnsaved == lastChangeUnsaved));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,themeMode,locale,albumAnimation,lastChangeUnsaved);
+int get hashCode => Object.hash(runtimeType,themeMode,locale,albumAnimation,rechecksAtStartup,lastChangeUnsaved);
 
 @override
 String toString() {
-  return 'PreferencesState(themeMode: $themeMode, locale: $locale, albumAnimation: $albumAnimation, lastChangeUnsaved: $lastChangeUnsaved)';
+  return 'PreferencesState(themeMode: $themeMode, locale: $locale, albumAnimation: $albumAnimation, rechecksAtStartup: $rechecksAtStartup, lastChangeUnsaved: $lastChangeUnsaved)';
 }
 
 
@@ -241,7 +243,7 @@ abstract mixin class _$PreferencesStateCopyWith<$Res> implements $PreferencesSta
   factory _$PreferencesStateCopyWith(_PreferencesState value, $Res Function(_PreferencesState) _then) = __$PreferencesStateCopyWithImpl;
 @override @useResult
 $Res call({
- ThemeMode themeMode, Locale? locale, AlbumAnimationMode albumAnimation, bool lastChangeUnsaved
+ ThemeMode themeMode, Locale? locale, AlbumAnimationMode albumAnimation, bool rechecksAtStartup, bool lastChangeUnsaved
 });
 
 
@@ -258,12 +260,13 @@ class __$PreferencesStateCopyWithImpl<$Res>
 
 /// Create a copy of PreferencesState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? locale = freezed,Object? albumAnimation = null,Object? lastChangeUnsaved = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? locale = freezed,Object? albumAnimation = null,Object? rechecksAtStartup = null,Object? lastChangeUnsaved = null,}) {
   return _then(_PreferencesState(
 themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as ThemeMode,locale: freezed == locale ? _self.locale : locale // ignore: cast_nullable_to_non_nullable
 as Locale?,albumAnimation: null == albumAnimation ? _self.albumAnimation : albumAnimation // ignore: cast_nullable_to_non_nullable
-as AlbumAnimationMode,lastChangeUnsaved: null == lastChangeUnsaved ? _self.lastChangeUnsaved : lastChangeUnsaved // ignore: cast_nullable_to_non_nullable
+as AlbumAnimationMode,rechecksAtStartup: null == rechecksAtStartup ? _self.rechecksAtStartup : rechecksAtStartup // ignore: cast_nullable_to_non_nullable
+as bool,lastChangeUnsaved: null == lastChangeUnsaved ? _self.lastChangeUnsaved : lastChangeUnsaved // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

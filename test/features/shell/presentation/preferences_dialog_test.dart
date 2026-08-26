@@ -247,36 +247,35 @@ void main() {
       'GivenTheMinimumWindow_WhenPreferencesOpen_ThenTheLastOptionIsReachable',
       (tester) async {
         // NFR-07: the dialog has to stay usable at the minimum supported
-        // window. Three groups and five animation options is the tallest
-        // this dialog has ever been, so this is the test that would catch
-        // the day scrolling stops being enough.
+        // window. Four groups, with the startup re-check now beneath the
+        // animation options, is the tallest this dialog has ever been, so
+        // this is the test that would catch the day scrolling stops being
+        // enough. The switch, not the last radio option, is the true bottom
+        // of the dialog now.
         await openFromShell(
           tester,
           surfaceSize: Breakpoint.minimumWindowSize,
         );
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
 
         await tester.scrollUntilVisible(
-          find.text(l10n.animationOff),
+          find.byType(SwitchListTile),
           200,
           scrollable: find.descendant(
             of: find.byType(PreferencesDialog),
             matching: find.byType(Scrollable),
           ),
         );
-        expect(find.text(l10n.animationOff), findsOneWidget);
+        expect(find.byType(SwitchListTile), findsOneWidget);
 
-        await tester.tap(find.text(l10n.animationOff));
+        await tester.tap(find.byType(SwitchListTile));
         await tester.pumpAndSettle();
 
         final container = ProviderScope.containerOf(
           tester.element(find.byType(PreferencesDialog)),
         );
         expect(
-          container.read(preferencesControllerProvider).albumAnimation,
-          AlbumAnimationMode.off,
+          container.read(preferencesControllerProvider).rechecksAtStartup,
+          isFalse,
         );
       },
     );
@@ -412,5 +411,71 @@ void main() {
         },
       );
     }
+  });
+
+  group('the startup re-check (FR-LB-21)', () {
+    testWidgets(
+      'GivenPreferences_WhenTheyOpen_ThenTheStartupRecheckIsOfferedAndOn',
+      (tester) async {
+        // On by default: a library that has fallen behind is the normal state
+        // after the application has been closed for a while.
+        await openFromShell(tester);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        expect(find.text(l10n.startupRecheckLabel), findsOneWidget);
+        expect(
+          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          isTrue,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenPreferences_WhenTheRecheckIsTurnedOff_ThenItIsAppliedAndStored',
+      (tester) async {
+        final store = InMemorySettingsStore();
+        await openFromShell(tester, settings: store);
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        // The group sits below the theme, language and animation groups, so
+        // it is off the default surface until scrolled into view.
+        await tester.ensureVisible(find.byType(SwitchListTile));
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(preferencesControllerProvider).rechecksAtStartup,
+          isFalse,
+        );
+        expect(store.rechecksAtStartup, isFalse);
+      },
+    );
+
+    testWidgets(
+      'GivenTheStoreRefusesAWrite_WhenTheRecheckIsTurnedOff_ThenTheOwnerIsTold',
+      (tester) async {
+        // UC-39 AF-02: the choice applies for the session either way; what
+        // the owner must not get is the silent belief that it was remembered.
+        await tester.pumpShellWithFailingSettings();
+        await tester.openSettingsMenuEntry(
+          AppLocalizations.of(
+            tester.element(find.byType(ShellScreen)),
+          ).preferencesLabel,
+        );
+
+        await tester.ensureVisible(find.byType(SwitchListTile));
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+        expect(find.text(l10n.preferencesUnsaved), findsOneWidget);
+      },
+    );
   });
 }

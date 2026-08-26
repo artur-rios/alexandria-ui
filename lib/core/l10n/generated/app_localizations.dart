@@ -560,6 +560,18 @@ abstract class AppLocalizations {
   /// **'Off'**
   String get animationOff;
 
+  /// Preference controlling whether the catalog is re-checked against the disk each time a session is established.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-check the library at startup'**
+  String get startupRecheckLabel;
+
+  /// Explains what the startup re-check preference does, beneath its label in the preferences dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks for files added, changed, or removed while Alexandria was closed.'**
+  String get startupRecheckDescription;
+
   /// UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered.
   ///
   /// In en, this message translates to:

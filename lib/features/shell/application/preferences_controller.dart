@@ -37,6 +37,7 @@ class PreferencesController extends Notifier<PreferencesState> {
       themeMode: settings?.themeMode ?? ThemeMode.system,
       locale: settings?.locale,
       albumAnimation: settings?.albumAnimationMode ?? AlbumAnimationMode.byYear,
+      rechecksAtStartup: settings?.rechecksAtStartup ?? true,
     );
   }
 
@@ -64,6 +65,12 @@ class PreferencesController extends Notifier<PreferencesState> {
   Future<void> setAlbumAnimation(AlbumAnimationMode mode) async {
     state = state.copyWith(albumAnimation: mode, lastChangeUnsaved: false);
     await _persist((settings) => settings.setAlbumAnimationMode(mode));
+  }
+
+  /// Applies [value] now and records it for the next launch (FR-LB-21).
+  Future<void> setRechecksAtStartup(bool value) async {
+    state = state.copyWith(rechecksAtStartup: value, lastChangeUnsaved: false);
+    await _persist((settings) => settings.setRechecksAtStartup(value));
   }
 
   /// Clears the unsaved notice once the owner has seen it.

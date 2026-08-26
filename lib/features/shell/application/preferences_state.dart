@@ -23,6 +23,7 @@ sealed class PreferencesState with _$PreferencesState {
     @Default(ThemeMode.system) ThemeMode themeMode,
     Locale? locale,
     @Default(AlbumAnimationMode.byYear) AlbumAnimationMode albumAnimation,
+    @Default(true) bool rechecksAtStartup,
     @Default(false) bool lastChangeUnsaved,
   }) = _PreferencesState;
 }

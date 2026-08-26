@@ -77,6 +77,8 @@
   "animationTape": "Sempre fita cassete",
   "animationDisc": "Sempre CD",
   "animationOff": "Desligada",
+  "startupRecheckLabel": "Verificar a biblioteca ao iniciar",
+  "startupRecheckDescription": "Procura arquivos adicionados, alterados ou removidos enquanto o Alexandria esteve fechado.",
   "preferencesUnsaved": "Sua escolha foi aplicada, mas não pôde ser salva — ela não será lembrada na próxima vez que o Alexandria iniciar.",
   "preferencesClose": "Concluído",
   "changeCredentialsOpen": "Alterar credenciais…",

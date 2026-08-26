@@ -115,6 +115,16 @@ class PreferencesDialog extends ConsumerWidget {
                   ],
                 ),
               ),
+
+              const SizedBox(height: AppSpacing.md),
+              _GroupLabel(l10n.startupRecheckLabel),
+              SwitchListTile(
+                title: Text(l10n.startupRecheckDescription),
+                value: preferences.rechecksAtStartup,
+                contentPadding: EdgeInsets.zero,
+                onChanged: (value) =>
+                    unawaited(controller.setRechecksAtStartup(value)),
+              ),
             ],
           ),
         ),
