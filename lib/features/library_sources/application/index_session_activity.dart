@@ -61,6 +61,14 @@ class IndexSessionActivity implements SessionActivity {
   /// asks the core what is outstanding, anywhere, so it is asked first: a
   /// fresh read, because the state it was built with may already be stale by
   /// the time a session begins.
+  ///
+  /// `hasWork` counts a *paused* run as outstanding too, not only one still
+  /// running — deliberately. A pause is the owner choosing to hold a scan
+  /// where it is, not abandoning it; starting a second one alongside it
+  /// would be stranger than waiting, and the paused run is not silent about
+  /// it either, since the strip already shows it. Do not narrow this to
+  /// "in flight" — that would fire a re-check every launch until the owner
+  /// resumes or cancels the very run this check is meant to respect.
   @override
   Future<void> begin() async {
     if (!_ref.read(preferencesControllerProvider).rechecksAtStartup) return;

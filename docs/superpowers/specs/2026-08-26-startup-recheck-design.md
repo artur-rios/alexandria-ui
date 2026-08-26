@@ -45,7 +45,7 @@ Three silences, each a decision rather than a failure:
 | --- | --- |
 | The preference is off | The owner said not to. |
 | The catalog holds no files | A refresh walks the paths the catalog already knows (FR-LB-06), so an empty catalog gives it nothing to walk. The test is the file count, not whether a folder has been registered: a source added but never scanned leaves the catalog empty too, and a refresh would still find nothing to compare. |
-| A run is already in flight | The core's runs outlive the application (`continuesInTheCore`), so a scan started before the last close may still be going. It is neither interrupted nor duplicated. |
+| A run is already outstanding | The core's runs outlive the application (`continuesInTheCore`), so a scan started before the last close may still be going — running or paused. A pause is the owner holding it where it is, not abandoning it, and the strip already shows it; starting a second run alongside it would be stranger than waiting. It is neither interrupted nor duplicated. |
 
 Each is silent. None of them is a state an owner needs to be told about, and a
 notice saying "no re-check was needed" is worse than the absence of one.
@@ -120,7 +120,7 @@ when one starts.
 
 - Establishing a session starts a re-check.
 - It does not, when the preference is off; when the catalog is empty; and when
-  a run is already in flight — three separate tests, because they are three
+  a run is already outstanding — three separate tests, because they are three
   separate reasons and a single one would not say which rule failed.
 - The strip shows a startup re-check exactly as it shows a manual one.
 - The preference persists, applies immediately, and raises the unsaved notice
