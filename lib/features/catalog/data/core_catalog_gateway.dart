@@ -372,13 +372,9 @@ class CoreCatalogGateway implements CatalogGateway {
     try {
       final body = jsonDecode(json) as Map<String, dynamic>;
       final encoded = body['bytesBase64'] as String?;
-      final mimeType = body['mimeType'] as String?;
-      if (encoded == null || mimeType == null) return _unreadableThumbnail();
+      if (encoded == null) return _unreadableThumbnail();
 
-      return FileThumbnailOutcome.read(
-        bytes: base64Decode(encoded),
-        mimeType: mimeType,
-      );
+      return FileThumbnailOutcome.read(bytes: base64Decode(encoded));
     } on Object {
       return _unreadableThumbnail();
     }

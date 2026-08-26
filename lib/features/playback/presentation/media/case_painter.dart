@@ -86,7 +86,14 @@ class CasePainter extends CustomPainter {
         _paintJacket(canvas, bounds);
     }
 
-    _paintText(canvas, bounds);
+    // The embedded cover and the designed jacket are alternatives, not a
+    // base plus an overlay (design section 4): the typeset title and artist
+    // exist only because the designed jacket has nothing else on it to say
+    // what it is. A real cover already carries its own lettering, and
+    // `palette.sleeveInk` was picked to read against the *derived* sleeve
+    // hues, not an arbitrary photograph — printing it over a light or busy
+    // cover would as often as not be illegible.
+    if (cover == null) _paintText(canvas, bounds);
   }
 
   void _paintShadow(Canvas canvas, Rect bounds) {

@@ -94,10 +94,14 @@ sealed class FileRenameOutcome with _$FileRenameOutcome {
 @freezed
 sealed class FileThumbnailOutcome with _$FileThumbnailOutcome {
   /// The core answered with the picture.
-  const factory FileThumbnailOutcome.read({
-    required Uint8List bytes,
-    required String mimeType,
-  }) = FileThumbnailRead;
+  ///
+  /// Carries [bytes] alone — the core's own `mimeType` field is dropped
+  /// rather than threaded through: nothing downstream reads it, since
+  /// `ui.instantiateImageCodec` sniffs the format from the bytes
+  /// themselves, and requiring it here would reject an otherwise
+  /// perfectly decodable picture were the core ever to omit it.
+  const factory FileThumbnailOutcome.read({required Uint8List bytes}) =
+      FileThumbnailRead;
 
   /// The core could not answer.
   ///

@@ -50,6 +50,17 @@ import 'album_animation_controller.dart' show AlbumIdentity;
 /// reaches: the session ending, via [forgetSession], called by
 /// `PlaybackSessionActivity.end` exactly as `AlbumAnimationController`'s own
 /// session reset is.
+///
+/// **Known gap**: those three are not exhaustive. Riverpod 3 gives a
+/// `Notifier` no once-only "the provider is truly, finally gone" hook to
+/// release [_current]'s image against — [Ref.onDispose] is unusable for the
+/// reason above, and [Ref.mounted] only guards work already in flight, it
+/// is not itself a callback. So a held image is never released at real
+/// teardown that is not a sign-out: the whole `ProviderContainer` being
+/// disposed (app shutdown, or a test's own `container.dispose()`) leaks
+/// whatever cover was last held. Harmless at real shutdown, where the
+/// process is going away regardless; a real, if bounded (one image),
+/// per-container leak in a test that fetches a cover and never signs out.
 class AlbumCoverController extends Notifier<AlbumCover> {
   AlbumIdentity? _identity;
 

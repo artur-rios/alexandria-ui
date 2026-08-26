@@ -1666,10 +1666,10 @@ return failed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Uint8List bytes,  String mimeType)?  read,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Uint8List bytes)?  read,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case FileThumbnailRead() when read != null:
-return read(_that.bytes,_that.mimeType);case FileThumbnailFailed() when failed != null:
+return read(_that.bytes);case FileThumbnailFailed() when failed != null:
 return failed(_that.failure);case _:
   return orElse();
 
@@ -1688,10 +1688,10 @@ return failed(_that.failure);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Uint8List bytes,  String mimeType)  read,required TResult Function( Failure failure)  failed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Uint8List bytes)  read,required TResult Function( Failure failure)  failed,}) {final _that = this;
 switch (_that) {
 case FileThumbnailRead():
-return read(_that.bytes,_that.mimeType);case FileThumbnailFailed():
+return read(_that.bytes);case FileThumbnailFailed():
 return failed(_that.failure);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -1706,10 +1706,10 @@ return failed(_that.failure);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Uint8List bytes,  String mimeType)?  read,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Uint8List bytes)?  read,TResult? Function( Failure failure)?  failed,}) {final _that = this;
 switch (_that) {
 case FileThumbnailRead() when read != null:
-return read(_that.bytes,_that.mimeType);case FileThumbnailFailed() when failed != null:
+return read(_that.bytes);case FileThumbnailFailed() when failed != null:
 return failed(_that.failure);case _:
   return null;
 
@@ -1722,11 +1722,10 @@ return failed(_that.failure);case _:
 
 
 class FileThumbnailRead implements FileThumbnailOutcome {
-  const FileThumbnailRead({required this.bytes, required this.mimeType});
+  const FileThumbnailRead({required this.bytes});
   
 
  final  Uint8List bytes;
- final  String mimeType;
 
 /// Create a copy of FileThumbnailOutcome
 /// with the given fields replaced by the non-null parameter values.
@@ -1738,16 +1737,16 @@ $FileThumbnailReadCopyWith<FileThumbnailRead> get copyWith => _$FileThumbnailRea
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FileThumbnailRead&&const DeepCollectionEquality().equals(other.bytes, bytes)&&(identical(other.mimeType, mimeType) || other.mimeType == mimeType));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FileThumbnailRead&&const DeepCollectionEquality().equals(other.bytes, bytes));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(bytes),mimeType);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(bytes));
 
 @override
 String toString() {
-  return 'FileThumbnailOutcome.read(bytes: $bytes, mimeType: $mimeType)';
+  return 'FileThumbnailOutcome.read(bytes: $bytes)';
 }
 
 
@@ -1758,7 +1757,7 @@ abstract mixin class $FileThumbnailReadCopyWith<$Res> implements $FileThumbnailO
   factory $FileThumbnailReadCopyWith(FileThumbnailRead value, $Res Function(FileThumbnailRead) _then) = _$FileThumbnailReadCopyWithImpl;
 @useResult
 $Res call({
- Uint8List bytes, String mimeType
+ Uint8List bytes
 });
 
 
@@ -1775,11 +1774,10 @@ class _$FileThumbnailReadCopyWithImpl<$Res>
 
 /// Create a copy of FileThumbnailOutcome
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? bytes = null,Object? mimeType = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? bytes = null,}) {
   return _then(FileThumbnailRead(
 bytes: null == bytes ? _self.bytes : bytes // ignore: cast_nullable_to_non_nullable
-as Uint8List,mimeType: null == mimeType ? _self.mimeType : mimeType // ignore: cast_nullable_to_non_nullable
-as String,
+as Uint8List,
   ));
 }
 

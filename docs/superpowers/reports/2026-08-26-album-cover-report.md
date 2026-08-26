@@ -274,3 +274,83 @@ draw calls as before this task.
   independent `Notifier`s with no natural place to hold one shared copy).
   If a third controller ever needs the same "which album is this" concept,
   it would be worth extracting a shared free function at that point.
+
+## Review follow-up (code review pass)
+
+Six findings came back from review. All addressed:
+
+- **Finding 1 (Important) — text was printed on top of the fetched cover.**
+  `case_painter.dart`'s `paint()` now only calls `_paintText` when
+  `cover == null` — the embedded cover and the designed jacket are
+  alternatives, not a base plus an overlay. Regenerated
+  `goldens/case-vinyl-cover.png` and looked at it: the orange/blue split
+  fills the whole jacket with no text on it; the lit edge and outline are
+  still drawn over it (see below for the command output confirming only
+  this one golden changed).
+- **Finding 2 (Important) — `CoreCatalogGateway.fileThumbnail` had no
+  test.** Added four cases to `test/features/catalog/data/core_catalog_gateway_test.dart`:
+  a good read (asserts the decoded bytes), `PLAYBACK_ERR_INVALID_INPUT`
+  (asserts `InvalidInputFailure`, not merely "failed"), malformed JSON
+  (`bytesBase64` missing), and the call throwing `CoreCallException`.
+  Re-verified the wire key directly against
+  `D:\Repositories\alexandria-api\crates\alexandria-ffi\src\lib.rs`
+  (`alexandria_file_thumbnail`, around line 903): the core serializes
+  `{"uuid":…, "mimeType":…, "bytesBase64":…}` — **`bytesBase64`**, matching
+  what the shipped code already used and what the doc comment on
+  `alexandria_file_thumbnail` in `alexandria_bindings.dart` says, not the
+  `bytes` the original task brief paraphrased it as.
+- **Finding 3 (Important) — the "it paints the cover" test couldn't fail
+  for that reason.** Rewrote
+  `GivenACoverArrives_WhenTheCaseIsRepainted_ThenTheCanvasDrawsTheCoverImage`
+  in `album_stage_test.dart` to use flutter_test's `paints` recording-canvas
+  matcher (`paints..drawImageRect(image: cover)`) instead of reading
+  `painter.cover` — it now fails against a `_paintFace` that ignores
+  `cover`, proving actual painted output rather than field-passing, and
+  runs unconditionally (not gated behind `goldensAreComparable`).
+- **Finding 4 (Minor) — nothing releases the image at real teardown.**
+  Left the behavior as is (Riverpod 3 has no once-only "provider is truly
+  gone" hook for a `Notifier` compatible with also holding state across
+  ordinary rebuilds — see the class doc's own explanation of why
+  `Ref.onDispose` can't be used here) and added a "Known gap" paragraph to
+  `AlbumCoverController`'s class doc naming it explicitly: the whole
+  container going away (app shutdown, or a test's `container.dispose()`)
+  leaks whatever cover was last held. Harmless at real shutdown; a real,
+  bounded (one image) leak in a long-lived test container that never signs
+  out.
+- **Finding 5 (Minor) — `mimeType` was required and never read.** Dropped
+  the field from `FileThumbnailOutcome.read` entirely and from the JSON
+  parse in `core_catalog_gateway.dart`; a picture with no `mimeType` (or any
+  `mimeType`) no longer fails to decode on that account alone —
+  `ui.instantiateImageCodec` sniffs the format from the bytes regardless.
+  Regenerated `catalog_gateway.freezed.dart`.
+- **Finding 6 (Minor) — unused `FakeCoreClient.fileThumbnail` scaffolding.**
+  `thumbnailRequests`, `holdFileThumbnail`/`releaseFileThumbnail` had no
+  callers even after Finding 2's tests (those exercise the gateway
+  directly over a plain response, not a race) — deleted all three, along
+  with the now-unused `dart:async` import. `thumbnailResponse` and
+  `failOnFileThumbnail` stayed, since Finding 2's tests use both.
+
+### Verification
+
+```
+$ flutter analyze
+Analyzing alexandria-ui...
+No issues found! (ran in 95.7s)
+
+$ flutter test
+...
+01:15 +1855: All tests passed!
+```
+
+1855 tests (up from 1851 before this follow-up — the four new
+`fileThumbnail` gateway cases from Finding 2), 0 failing.
+`integration_test` was not run, per instructions.
+
+```
+$ git status --porcelain test/features/playback/presentation/media/goldens/
+ M test/features/playback/presentation/media/goldens/case-vinyl-cover.png
+```
+
+Only the cover golden changed; `case-vinyl.png`/`case-tape.png`/`case-disc.png`
+(the no-cover path) are untouched, confirming Finding 1's fix only affects
+the cover-present branch.

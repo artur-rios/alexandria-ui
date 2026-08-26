@@ -279,8 +279,12 @@ void main() {
     );
 
     testWidgets(
-      'GivenACoverArrives_WhenTheCaseIsRepainted_ThenItPaintsTheCover',
+      'GivenACoverArrives_WhenTheCaseIsRepainted_ThenTheCanvasDrawsTheCoverImage',
       (tester) async {
+        // Asserts real painted output, via `paints`' recording canvas —
+        // not merely that `CasePainter.cover` is set, which would still
+        // pass against a `_paintFace` that ignored the field entirely
+        // (Finding 3).
         await tester.pumpWidget(staged(medium: AlbumMedium.disc, insert: true));
         await tester.pump(const Duration(milliseconds: 1000));
 
@@ -290,18 +294,12 @@ void main() {
           staged(medium: AlbumMedium.disc, insert: true, cover: cover),
         );
 
-        final painter = tester
-            .widgetList<CustomPaint>(
-              find.descendant(
-                of: find.byType(AlbumStage),
-                matching: find.byType(CustomPaint),
-              ),
-            )
-            .map((widget) => widget.painter)
-            .whereType<CasePainter>()
-            .single;
-
-        expect(painter.cover, same(cover));
+        expect(
+          find.byWidgetPredicate(
+            (widget) => widget is CustomPaint && widget.painter is CasePainter,
+          ),
+          paints..drawImageRect(image: cover),
+        );
       },
     );
   });

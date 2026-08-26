@@ -115,7 +115,6 @@ void main() {
       final pictureBytes = await testPictureBytes();
       gateway.thumbnails['kob-1'] = FileThumbnailOutcome.read(
         bytes: pictureBytes,
-        mimeType: 'image/png',
       );
       final container = buildContainer(gateway);
 
@@ -183,7 +182,6 @@ void main() {
       final pictureBytes = await testPictureBytes();
       gateway.thumbnails['kob-1'] = FileThumbnailOutcome.read(
         bytes: pictureBytes,
-        mimeType: 'image/png',
       );
       gateway.holdThumbnail();
       final container = buildContainer(gateway);
@@ -221,7 +219,6 @@ void main() {
       final pictureBytes = await testPictureBytes();
       gateway.thumbnails['kob-1'] = FileThumbnailOutcome.read(
         bytes: pictureBytes,
-        mimeType: 'image/png',
       );
       final container = buildContainer(gateway);
       final audio = container.read(audioPlaybackControllerProvider.notifier);
@@ -247,7 +244,6 @@ void main() {
       final pictureBytes = await testPictureBytes();
       gateway.thumbnails['kob-1'] = FileThumbnailOutcome.read(
         bytes: pictureBytes,
-        mimeType: 'image/png',
       );
       final container = buildContainer(gateway);
       final audio = container.read(audioPlaybackControllerProvider.notifier);
@@ -286,7 +282,6 @@ void main() {
       final pictureBytes = await testPictureBytes();
       gateway.thumbnails['kob-1'] = FileThumbnailOutcome.read(
         bytes: pictureBytes,
-        mimeType: 'image/png',
       );
       // 'bt-1' carries no fixture, so its own fetch answers `InvalidInput`
       // once it is allowed to run.
@@ -330,7 +325,6 @@ void main() {
         final pictureBytes = await testPictureBytes();
         gateway.thumbnails['kob-1'] = FileThumbnailOutcome.read(
           bytes: pictureBytes,
-          mimeType: 'image/png',
         );
         final container = buildContainer(gateway);
 
