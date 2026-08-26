@@ -101,8 +101,10 @@ owner navigating anywhere.
 | `core/settings/settings_store.dart` and its implementations | Read and write the preference. |
 | `shell/application/preferences_state.dart`, `preferences_controller.dart` | Carry and set it. |
 | `shell/presentation/preferences_dialog.dart` | Offers it. |
+| `library_sources/application/index_runs_controller.dart` | `startRefresh` gains `reportRefusals`, suppressing both AF-01's own refusal and a failure the core returns for the start, so a re-check nobody asked for never reaches the screen. |
+| `library_sources/application/index_session_activity.dart` | `begin()` also consults `ActiveRunsController` for a run outstanding from a previous session (FR-LB-19) before ever asking `startRefresh` to start one — `IndexRunsController` is built fresh at sign-in and cannot see that on its own. |
 
-No change to the strip, to the run controllers, or to the gateway.
+No change to the strip or to the gateway.
 
 ## Requirements impact
 
