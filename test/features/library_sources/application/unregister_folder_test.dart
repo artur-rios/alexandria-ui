@@ -41,6 +41,13 @@ void main() {
     );
     addTearDown(container.dispose);
 
+    // Turned off before the session is established: this suite has nothing
+    // to do with a re-check, and `establish`'s own unawaited call to
+    // `begin()` (FR-LB-21) would otherwise start one against a gateway this
+    // suite never set up to expect it.
+    container
+        .read(preferencesControllerProvider.notifier)
+        .setRechecksAtStartup(false);
     container
         .read(sessionControllerProvider.notifier)
         .establish(FakeAuthGateway.defaultSession);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
 import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
@@ -41,6 +43,20 @@ class FakeIndexGateway implements IndexGateway {
   /// How many files [countCatalogedFiles] reports. Negative is "unknown".
   int catalogedFileCount = 120;
 
+  /// How many times [countCatalogedFiles] was asked.
+  ///
+  /// AF-02's own count-before-call ordering means every `startRefresh`
+  /// reaches this whether or not it goes on to call the core, so a test
+  /// that wants proof `startRefresh` was reached at all — not merely that
+  /// the core was not asked to start — asserts on this rather than on
+  /// [refreshStarts].
+  int catalogedFileCountAsked = 0;
+
+  /// When set, [countCatalogedFiles] waits for this to complete before
+  /// answering — a test's hook for pausing `startRefresh` mid-flight, most
+  /// concretely to drive a sign-out while the call is still outstanding.
+  Completer<void>? catalogedFileCountGate;
+
   /// The credentials [startRefresh] was called with, in order.
   final List<String> refreshStarts = [];
 
@@ -63,6 +79,22 @@ class FakeIndexGateway implements IndexGateway {
   /// What [listActiveRuns] answers. Empty by default: no outstanding runs is
   /// the normal case.
   ActiveRunsOutcome activeRunsOutcome = const ActiveRunsOutcome.read(runs: []);
+
+  /// What [listActiveRuns] answers once [startRefresh] has actually been
+  /// called, replacing [activeRunsOutcome] from that point on. Ignored while
+  /// null, which is the default.
+  ///
+  /// Exists for a scenario [activeRunsOutcome] alone cannot express: a test
+  /// proving `IndexSessionActivity.begin()` checks what the core already has
+  /// outstanding (FR-LB-19) before it ever asks `startRefresh` to start one,
+  /// and then wants the run that check just allowed to appear as outstanding
+  /// once it exists. A call count could not stand in for this: this gateway
+  /// also answers `ActiveRunsController`'s own bootstrap read, which the
+  /// controller schedules on its own the moment anything first reads it, so
+  /// how many times `listActiveRuns` has been called is not in a test's
+  /// control. Which of the two outcomes is true, by contrast, is exactly
+  /// what changed — a refresh that has actually started.
+  ActiveRunsOutcome? activeRunsOutcomeOnceRefreshStarts;
 
   /// What [pauseRun] was called with, in order.
   final List<({String runId, String credential})> pauses = [];
@@ -94,7 +126,11 @@ class FakeIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<int> countCatalogedFiles() async => catalogedFileCount;
+  Future<int> countCatalogedFiles() async {
+    catalogedFileCountAsked++;
+    if (catalogedFileCountGate case final gate?) await gate.future;
+    return catalogedFileCount;
+  }
 
   @override
   Future<IndexRunOutcome> readRun({
@@ -137,6 +173,10 @@ class FakeIndexGateway implements IndexGateway {
 
   @override
   Future<ActiveRunsOutcome> listActiveRuns({required String credential}) async {
+    if (refreshStarts.isNotEmpty &&
+        activeRunsOutcomeOnceRefreshStarts != null) {
+      return activeRunsOutcomeOnceRefreshStarts!;
+    }
     return activeRunsOutcome;
   }
 }

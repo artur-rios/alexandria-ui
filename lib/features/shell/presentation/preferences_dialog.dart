@@ -115,6 +115,20 @@ class PreferencesDialog extends ConsumerWidget {
                   ],
                 ),
               ),
+
+              const SizedBox(height: AppSpacing.md),
+              // No `_GroupLabel` here: a group of one control restating its
+              // own name in a label above it would be the same redundancy
+              // this fixes, only moved rather than removed. The switch names
+              // itself.
+              SwitchListTile(
+                title: Text(l10n.startupRecheckLabel),
+                subtitle: Text(l10n.startupRecheckDescription),
+                value: preferences.rechecksAtStartup,
+                contentPadding: EdgeInsets.zero,
+                onChanged: (value) =>
+                    unawaited(controller.setRechecksAtStartup(value)),
+              ),
             ],
           ),
         ),

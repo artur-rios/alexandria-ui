@@ -200,9 +200,18 @@ class IndexRunsController extends Notifier<IndexRunsState> {
   /// AF-01 refuses a second one while a refresh is running, and AF-02 refuses
   /// an empty catalog — there is nothing to re-check, and registering a folder
   /// is what the owner actually needs (UC-05, UC-06).
-  Future<void> startRefresh() async {
+  ///
+  /// [reportRefusals] is false when nobody pressed anything — the startup
+  /// re-check (FR-LB-21). A refusal explains to an owner why the button they
+  /// pressed did nothing; left on screen after a re-check they never asked
+  /// for, it is an answer to a question nobody asked. This covers AF-01's own
+  /// refusal notice and a failure the core returns for the start itself —
+  /// both are equally an answer to a question nobody asked.
+  Future<void> startRefresh({bool reportRefusals = true}) async {
     if (state.isRefreshing) {
-      state = state.copyWith(refreshRefusal: RefreshRefusal.alreadyRunning);
+      if (reportRefusals) {
+        state = state.copyWith(refreshRefusal: RefreshRefusal.alreadyRunning);
+      }
       return;
     }
 
@@ -222,7 +231,7 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     if (cataloged == 0) {
       state = state.copyWith(
         refreshStarting: false,
-        refreshRefusal: RefreshRefusal.catalogEmpty,
+        refreshRefusal: reportRefusals ? RefreshRefusal.catalogEmpty : null,
       );
       return;
     }
@@ -258,7 +267,10 @@ class IndexRunsController extends Notifier<IndexRunsState> {
 
       case IndexStartFailed(:final failure):
         _log.info('refresh refused (${failure.coreStatusCode})');
-        state = state.copyWith(refreshStarting: false, refreshFailure: failure);
+        state = state.copyWith(
+          refreshStarting: false,
+          refreshFailure: reportRefusals ? failure : null,
+        );
     }
   }
 

@@ -32,6 +32,53 @@ class IndexSessionActivity implements SessionActivity {
     // Invalidating disposes the controller, and its `onDispose` stops the
     // poller — which is what has to stop, because every poll carries the
     // credential the next line discards (FR-AU-06).
+    //
+    // Signing out can land here while `begin()`'s own `startRefresh` call is
+    // still awaiting this same gateway — invalidating disposes the very
+    // notifier that call is suspended inside of, and it resumes afterwards
+    // to assign `state` and read `activeRunsControllerProvider`. Verified
+    // safe rather than assumed: `index_session_activity_test.dart`'s
+    // `GivenTheGatewayCallIsStillPending_WhenTheOwnerSignsOutMidFlight_
+    // ThenNothingThrows` drives exactly this race and nothing throws —
+    // Riverpod does not tear the old instance down until something forces a
+    // rebuild by reading the provider again, which neither `startRefresh`'s
+    // resumption nor this method does.
     _ref.invalidate(indexRunsControllerProvider);
+  }
+
+  /// Re-checks the library, once, when a session is established (FR-LB-21).
+  ///
+  /// Two of the three cases where it does nothing — an empty catalog, no
+  /// credential — are already `startRefresh`'s own rules, so they are not
+  /// restated here: one place decides when a refresh may start, and a second
+  /// copy of that decision would be one to keep in step.
+  ///
+  /// The third — a run already outstanding — is not one `startRefresh` can
+  /// see on its own here. `IndexRunsController` is built fresh at sign-in, so
+  /// its `isRefreshing` only knows about a run *this* controller started; a
+  /// scan the core was still doing from a previous session (FR-LB-19) is
+  /// invisible to it. `ActiveRunsController` is the one place that already
+  /// asks the core what is outstanding, anywhere, so it is asked first: a
+  /// fresh read, because the state it was built with may already be stale by
+  /// the time a session begins.
+  ///
+  /// `hasWork` counts a *paused* run as outstanding too, not only one still
+  /// running — deliberately. A pause is the owner choosing to hold a scan
+  /// where it is, not abandoning it; starting a second one alongside it
+  /// would be stranger than waiting, and the paused run is not silent about
+  /// it either, since the strip already shows it. Do not narrow this to
+  /// "in flight" — that would fire a re-check every launch until the owner
+  /// resumes or cancels the very run this check is meant to respect.
+  @override
+  Future<void> begin() async {
+    if (!_ref.read(preferencesControllerProvider).rechecksAtStartup) return;
+
+    final activeRuns = _ref.read(activeRunsControllerProvider.notifier);
+    await activeRuns.refresh();
+    if (_ref.read(activeRunsControllerProvider).hasWork) return;
+
+    await _ref
+        .read(indexRunsControllerProvider.notifier)
+        .startRefresh(reportRefusals: false);
   }
 }

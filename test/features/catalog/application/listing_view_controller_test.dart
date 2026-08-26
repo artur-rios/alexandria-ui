@@ -30,6 +30,12 @@ void main() {
       ],
     );
     await container.read(startupControllerProvider.notifier).start();
+    // Off, so `establish`'s own unawaited call to `begin()` (FR-LB-21) does
+    // not itself start a background refresh this suite has nothing to do
+    // with, racing this container's own teardown.
+    await container
+        .read(preferencesControllerProvider.notifier)
+        .setRechecksAtStartup(false);
     container
         .read(sessionControllerProvider.notifier)
         .establish(FakeAuthGateway.defaultSession);

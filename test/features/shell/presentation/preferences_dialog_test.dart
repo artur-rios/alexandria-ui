@@ -30,8 +30,9 @@ void main() {
       surfaceSize: surfaceSize ?? const Size(1280, 800),
     );
     await tester.openSettingsMenuEntry(
-      AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-          .preferencesLabel,
+      AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      ).preferencesLabel,
     );
   }
 
@@ -185,33 +186,32 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenPreferences_WhenAModeIsChosen_ThenItIsAppliedAndStored',
-      (tester) async {
-        // The controller's own state holds the applied value whether or not
-        // the write reached the store — that is exactly AF-02's "applied but
-        // not saved" case. A test named "...AndStored" has to look at the
-        // store itself, or it would pass unchanged if the write silently
-        // failed.
-        final store = InMemorySettingsStore();
-        await openFromShell(tester, settings: store);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-        final container = ProviderScope.containerOf(
-          tester.element(find.byType(PreferencesDialog)),
-        );
+    testWidgets('GivenPreferences_WhenAModeIsChosen_ThenItIsAppliedAndStored', (
+      tester,
+    ) async {
+      // The controller's own state holds the applied value whether or not
+      // the write reached the store — that is exactly AF-02's "applied but
+      // not saved" case. A test named "...AndStored" has to look at the
+      // store itself, or it would pass unchanged if the write silently
+      // failed.
+      final store = InMemorySettingsStore();
+      await openFromShell(tester, settings: store);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(PreferencesDialog)),
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(PreferencesDialog)),
+      );
 
-        await tester.tap(find.text(l10n.animationVinyl));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.animationVinyl));
+      await tester.pumpAndSettle();
 
-        expect(
-          container.read(preferencesControllerProvider).albumAnimation,
-          AlbumAnimationMode.vinyl,
-        );
-        expect(store.albumAnimationMode, AlbumAnimationMode.vinyl);
-      },
-    );
+      expect(
+        container.read(preferencesControllerProvider).albumAnimation,
+        AlbumAnimationMode.vinyl,
+      );
+      expect(store.albumAnimationMode, AlbumAnimationMode.vinyl);
+    });
 
     testWidgets(
       'GivenTheStoreRefusesAWrite_WhenAModeIsChosen_ThenTheOwnerIsTold',
@@ -221,8 +221,9 @@ void main() {
         // nothing exercised it for the animation setter until now.
         await tester.pumpShellWithFailingSettings();
         await tester.openSettingsMenuEntry(
-          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-              .preferencesLabel,
+          AppLocalizations.of(
+            tester.element(find.byType(ShellScreen)),
+          ).preferencesLabel,
         );
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
@@ -247,36 +248,32 @@ void main() {
       'GivenTheMinimumWindow_WhenPreferencesOpen_ThenTheLastOptionIsReachable',
       (tester) async {
         // NFR-07: the dialog has to stay usable at the minimum supported
-        // window. Three groups and five animation options is the tallest
-        // this dialog has ever been, so this is the test that would catch
-        // the day scrolling stops being enough.
-        await openFromShell(
-          tester,
-          surfaceSize: Breakpoint.minimumWindowSize,
-        );
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
+        // window. Four groups, with the startup re-check now beneath the
+        // animation options, is the tallest this dialog has ever been, so
+        // this is the test that would catch the day scrolling stops being
+        // enough. The switch, not the last radio option, is the true bottom
+        // of the dialog now.
+        await openFromShell(tester, surfaceSize: Breakpoint.minimumWindowSize);
 
         await tester.scrollUntilVisible(
-          find.text(l10n.animationOff),
+          find.byType(SwitchListTile),
           200,
           scrollable: find.descendant(
             of: find.byType(PreferencesDialog),
             matching: find.byType(Scrollable),
           ),
         );
-        expect(find.text(l10n.animationOff), findsOneWidget);
+        expect(find.byType(SwitchListTile), findsOneWidget);
 
-        await tester.tap(find.text(l10n.animationOff));
+        await tester.tap(find.byType(SwitchListTile));
         await tester.pumpAndSettle();
 
         final container = ProviderScope.containerOf(
           tester.element(find.byType(PreferencesDialog)),
         );
         expect(
-          container.read(preferencesControllerProvider).albumAnimation,
-          AlbumAnimationMode.off,
+          container.read(preferencesControllerProvider).rechecksAtStartup,
+          isFalse,
         );
       },
     );
@@ -288,8 +285,9 @@ void main() {
       (tester) async {
         await tester.pumpShellWithFailingSettings();
         await tester.openSettingsMenuEntry(
-          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-              .preferencesLabel,
+          AppLocalizations.of(
+            tester.element(find.byType(ShellScreen)),
+          ).preferencesLabel,
         );
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
@@ -332,8 +330,9 @@ void main() {
         // destination is the state available to prove it on.
         final container = await tester.pumpShell();
         await tester.openSettingsMenuEntry(
-          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-              .preferencesLabel,
+          AppLocalizations.of(
+            tester.element(find.byType(ShellScreen)),
+          ).preferencesLabel,
         );
         final before = container.read(shellControllerProvider);
         final l10n = AppLocalizations.of(
@@ -389,8 +388,9 @@ void main() {
         (tester) async {
           await tester.pumpShell(locale: locale);
           await tester.openSettingsMenuEntry(
-            AppLocalizations.of(tester.element(find.byType(ShellScreen)))
-                .preferencesLabel,
+            AppLocalizations.of(
+              tester.element(find.byType(ShellScreen)),
+            ).preferencesLabel,
           );
           final l10n = AppLocalizations.of(
             tester.element(find.byType(PreferencesDialog)),
@@ -412,5 +412,71 @@ void main() {
         },
       );
     }
+  });
+
+  group('the startup re-check (FR-LB-21)', () {
+    testWidgets(
+      'GivenPreferences_WhenTheyOpen_ThenTheStartupRecheckIsOfferedAndOn',
+      (tester) async {
+        // On by default: a library that has fallen behind is the normal state
+        // after the application has been closed for a while.
+        await openFromShell(tester);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        expect(find.text(l10n.startupRecheckLabel), findsOneWidget);
+        expect(
+          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          isTrue,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenPreferences_WhenTheRecheckIsTurnedOff_ThenItIsAppliedAndStored',
+      (tester) async {
+        final store = InMemorySettingsStore();
+        await openFromShell(tester, settings: store);
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        // The group sits below the theme, language and animation groups, so
+        // it is off the default surface until scrolled into view.
+        await tester.ensureVisible(find.byType(SwitchListTile));
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(preferencesControllerProvider).rechecksAtStartup,
+          isFalse,
+        );
+        expect(store.rechecksAtStartup, isFalse);
+      },
+    );
+
+    testWidgets(
+      'GivenTheStoreRefusesAWrite_WhenTheRecheckIsTurnedOff_ThenTheOwnerIsTold',
+      (tester) async {
+        // UC-39 AF-02: the choice applies for the session either way; what
+        // the owner must not get is the silent belief that it was remembered.
+        await tester.pumpShellWithFailingSettings();
+        await tester.openSettingsMenuEntry(
+          AppLocalizations.of(
+            tester.element(find.byType(ShellScreen)),
+          ).preferencesLabel,
+        );
+
+        await tester.ensureVisible(find.byType(SwitchListTile));
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+        expect(find.text(l10n.preferencesUnsaved), findsOneWidget);
+      },
+    );
   });
 }

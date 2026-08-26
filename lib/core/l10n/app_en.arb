@@ -342,6 +342,14 @@
   "@animationOff": {
     "description": "Animation preference: no animation, and the player never opens itself."
   },
+  "startupRecheckLabel": "Re-check the library at startup",
+  "@startupRecheckLabel": {
+    "description": "Preference controlling whether the catalog is re-checked against the disk each time a session is established."
+  },
+  "startupRecheckDescription": "Looks for files added, changed, or removed while Alexandria was closed.",
+  "@startupRecheckDescription": {
+    "description": "Explains what the startup re-check preference does, beneath its label in the preferences dialog."
+  },
   "preferencesUnsaved": "Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.",
   "@preferencesUnsaved": {
     "description": "UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered."

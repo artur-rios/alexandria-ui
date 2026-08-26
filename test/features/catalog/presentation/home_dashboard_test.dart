@@ -19,6 +19,7 @@ import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
 import '../../../support/fake_reading_list_gateway.dart';
 import '../../../support/fake_watchlist_gateway.dart';
+import '../../../support/in_memory_settings_store.dart';
 import '../../../support/shell_harness.dart';
 
 /// The home dashboard (UC-14, FR-CT-11).
@@ -38,6 +39,14 @@ void main() {
       themeMode: themeMode,
       locale: locale,
       surfaceSize: const Size(1440, 1000),
+      // Off, so `establish`'s own unawaited call to `begin()` (FR-LB-21)
+      // does not itself start a refresh through a gateway a test here
+      // configured for its own scenario, racing the run the test drives.
+      settings: InMemorySettingsStore(
+        themeMode: themeMode,
+        locale: locale,
+        rechecksAtStartup: false,
+      ),
       extraOverrides: <Override>[
         catalogGatewayProvider.overrideWithValue(
           gateway ?? FakeCatalogGateway(listings: listings),

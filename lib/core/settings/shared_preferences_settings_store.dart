@@ -26,6 +26,7 @@ class SharedPreferencesSettingsStore implements SettingsStore {
   static const _themeModeKey = 'settings.themeMode';
   static const _localeKey = 'settings.locale';
   static const _albumAnimationKey = 'settings.albumAnimation';
+  static const _rechecksAtStartupKey = 'settings.rechecksAtStartup';
 
   @override
   ThemeMode get themeMode => switch (_preferences.getString(_themeModeKey)) {
@@ -75,6 +76,16 @@ class SharedPreferencesSettingsStore implements SettingsStore {
   @override
   Future<void> setAlbumAnimationMode(AlbumAnimationMode mode) =>
       _preferences.setString(_albumAnimationKey, mode.name);
+
+  /// Absent reads as on, which is the default the preference ships with: an
+  /// owner who has never opened the dialog gets the re-check.
+  @override
+  bool get rechecksAtStartup =>
+      _preferences.getString(_rechecksAtStartupKey) != 'false';
+
+  @override
+  Future<void> setRechecksAtStartup(bool value) =>
+      _preferences.setString(_rechecksAtStartupKey, value.toString());
 
   @override
   String? getString(String key) => _preferences.getString(key);
