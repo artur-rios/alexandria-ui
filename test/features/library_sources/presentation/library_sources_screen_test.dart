@@ -15,6 +15,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_index_gateway.dart';
 import '../../../support/fake_library_sources.dart';
+import '../../../support/in_memory_settings_store.dart';
 import '../../../support/shell_harness.dart';
 
 /// The library-sources screen (UC-05, FR-LB-01 … FR-LB-04, FR-LB-11).
@@ -46,6 +47,14 @@ void main() {
     await tester.pumpShell(
       locale: locale,
       themeMode: themeMode,
+      // Off, so `establish`'s own unawaited call to `begin()` (FR-LB-21)
+      // does not itself start a refresh through a gateway a test here
+      // configured for its own scenario, racing the scan the test drives.
+      settings: InMemorySettingsStore(
+        themeMode: themeMode,
+        locale: locale,
+        rechecksAtStartup: false,
+      ),
       extraOverrides: <Override>[
         folderPickerProvider.overrideWithValue(picker),
         folderProbeProvider.overrideWithValue(
@@ -136,6 +145,8 @@ void main() {
     }
 
     final container = await tester.pumpShell(
+      // Off, for the same reason as `openScreen` above.
+      settings: InMemorySettingsStore(rechecksAtStartup: false),
       extraOverrides: <Override>[
         librarySourceStoreProvider.overrideWithValue(
           InMemoryLibrarySourceStore(sources),

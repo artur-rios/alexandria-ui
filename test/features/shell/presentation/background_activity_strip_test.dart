@@ -165,6 +165,13 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
+    // Turned off before the session is established: this suite sets up its
+    // own gateway scenarios for the strip to render, and `establish`'s own
+    // unawaited call to `begin()` (FR-LB-21) would otherwise start a refresh
+    // of its own against them.
+    await container
+        .read(preferencesControllerProvider.notifier)
+        .setRechecksAtStartup(false);
     container
         .read(sessionControllerProvider.notifier)
         .establish(FakeAuthGateway.defaultSession);

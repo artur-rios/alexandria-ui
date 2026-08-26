@@ -35,8 +35,29 @@ class IndexSessionActivity implements SessionActivity {
     _ref.invalidate(indexRunsControllerProvider);
   }
 
-  // A no-op for now: Task 3 fills this in with the library re-check
-  // (FR-LB-21). The hook fires here; it just has nothing to do yet.
+  /// Re-checks the library, once, when a session is established (FR-LB-21).
+  ///
+  /// The three cases where it does nothing — a run already outstanding, an
+  /// empty catalog, no credential — are already `startRefresh`'s own rules,
+  /// so they are not restated here: one place decides when a refresh may
+  /// start, and a second copy of that decision would be one to keep in step.
+  /// What this adds is that none of them is announced, because nobody asked.
+  ///
+  /// Also guarded on the core being loaded. `indexRunsControllerProvider`
+  /// reads the core through `indexGatewayProvider` at build time, and that
+  /// provider throws — loudly and by design, since reading it early is a
+  /// programming error it wants surfaced — rather than answer with nothing
+  /// to read from. Production only ever reaches [begin] after startup has
+  /// reached [StartupReady], so this is never what stops it there; it is
+  /// what stops a container that established a session without ever loading
+  /// one, which has nothing here to re-check either.
   @override
-  Future<void> begin() async {}
+  Future<void> begin() async {
+    if (!_ref.read(preferencesControllerProvider).rechecksAtStartup) return;
+    if (_ref.read(startupControllerProvider.notifier).core == null) return;
+
+    await _ref
+        .read(indexRunsControllerProvider.notifier)
+        .startRefresh(reportRefusals: false);
+  }
 }

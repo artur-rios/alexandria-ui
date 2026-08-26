@@ -47,6 +47,13 @@ void main() {
     );
     addTearDown(container.dispose);
 
+    // Turned off before the session is established: this suite exercises
+    // `startRefresh` through explicit calls, and `establish`'s own unawaited
+    // call to `begin()` (FR-LB-21) would otherwise start one of its own and
+    // race the one each test drives.
+    container
+        .read(preferencesControllerProvider.notifier)
+        .setRechecksAtStartup(false);
     container
         .read(sessionControllerProvider.notifier)
         .establish(FakeAuthGateway.defaultSession);
@@ -206,6 +213,31 @@ void main() {
 
       expect(sut.gateway.starts, hasLength(2));
     });
+  });
+
+  group('a refresh started without asking (FR-LB-21)', () {
+    test(
+      'GivenARefusalIsNotReported_WhenARefreshIsRefused_ThenNoMessageIsLeft',
+      () async {
+        // A re-check nobody asked for must not leave an explanation on the
+        // Sources screen for a question the owner never asked. The refusal
+        // still stops the run; it simply is not announced.
+        final sut = build(
+          gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+        );
+        final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+        await controller.startRefresh();
+        expect(sut.gateway.refreshStarts, hasLength(1));
+
+        await controller.startRefresh(reportRefusals: false);
+
+        expect(sut.gateway.refreshStarts, hasLength(1));
+        expect(
+          sut.ref.read(indexRunsControllerProvider).refreshRefusal,
+          isNull,
+        );
+      },
+    );
   });
 
   group('the core refuses the start (AF-02, AF-03)', () {

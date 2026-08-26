@@ -15,6 +15,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_index_gateway.dart';
 import '../../../support/fake_library_sources.dart';
+import '../../../support/in_memory_settings_store.dart';
 import '../../../support/shell_harness.dart';
 
 /// Unregistering a library folder from the screen (UC-08, FR-LB-10), and the
@@ -42,6 +43,14 @@ void main() {
     final container = await tester.pumpShell(
       themeMode: themeMode,
       locale: locale,
+      // Off, so `establish`'s own unawaited call to `begin()` (FR-LB-21)
+      // does not itself start a refresh through a gateway a test here
+      // configured for its own scenario, racing the scan the test drives.
+      settings: InMemorySettingsStore(
+        themeMode: themeMode,
+        locale: locale,
+        rechecksAtStartup: false,
+      ),
       extraOverrides: <Override>[
         librarySourceStoreProvider.overrideWithValue(store),
         indexGatewayProvider.overrideWithValue(gateway ?? FakeIndexGateway()),

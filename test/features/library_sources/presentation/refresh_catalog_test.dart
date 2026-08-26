@@ -14,6 +14,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_index_gateway.dart';
 import '../../../support/fake_library_sources.dart';
+import '../../../support/in_memory_settings_store.dart';
 import '../../../support/shell_harness.dart';
 
 /// Refreshing the catalog from the library-folders screen (UC-07).
@@ -44,6 +45,14 @@ void main() {
     final container = await tester.pumpShell(
       themeMode: themeMode,
       locale: locale,
+      // Off, so `establish`'s own unawaited call to `begin()` (FR-LB-21)
+      // does not itself start a refresh ahead of the one each test drives
+      // through the button, doubling up on the gateway.
+      settings: InMemorySettingsStore(
+        themeMode: themeMode,
+        locale: locale,
+        rechecksAtStartup: false,
+      ),
       extraOverrides: <Override>[
         librarySourceStoreProvider.overrideWithValue(
           InMemoryLibrarySourceStore([

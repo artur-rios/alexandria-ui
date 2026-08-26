@@ -64,6 +64,13 @@ void main() {
     );
     addTearDown(container.dispose);
 
+    // Turned off before the session is established: this suite drives
+    // `startRefresh` explicitly, and `establish`'s own unawaited call to
+    // `begin()` (FR-LB-21) would otherwise start a refresh of its own and
+    // race the one each test drives.
+    container
+        .read(preferencesControllerProvider.notifier)
+        .setRechecksAtStartup(false);
     container
         .read(sessionControllerProvider.notifier)
         .establish(FakeAuthGateway.defaultSession);
