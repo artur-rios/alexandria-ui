@@ -152,7 +152,7 @@ replace the FFI one without touching a screen.
 | FR-LB-03 | The system shall persist the registered library folders locally, so they survive a restart. |
 | FR-LB-04 | The system shall support any number of registered library folders and present their files as one merged catalog. |
 | FR-LB-05 | The system shall start an index run for a chosen library folder and retain the run identifier the core returns. |
-| FR-LB-06 | The system shall start a refresh run covering everything already cataloged, independently of any single folder. |
+| FR-LB-06 | The system shall start a refresh run covering everything already cataloged, independently of any single folder. This also happens when a session is established, subject to FR-LB-21. |
 | FR-LB-07 | The system shall observe a run's progress without blocking the interface, leaving browsing, playback, viewing, and editing available while it runs. |
 | FR-LB-08 | The system shall present the outcome of a finished run — files added, files updated, and files found missing — and shall keep that summary visible until the owner dismisses it. |
 | FR-LB-09 | The system shall prevent a second index run from being started for a library folder while a run for that folder is in flight. |
@@ -167,6 +167,7 @@ replace the FFI one without touching a screen.
 | FR-LB-18 | The system shall allow the owner to choose a run's pace — normal or low — when starting it, and to change that pace on a run already under way by pausing and resuming it at the new pace. A resume for which no pace is named shall keep the pace the run already has. |
 | FR-LB-19 | The system shall offer every run the core reports as outstanding at launch — including one left behind by a previous session — for the owner to resume or cancel, and shall resume none of them by itself. |
 | FR-LB-20 | The system shall continue to follow every other outstanding run when one of them ends, fails to be read, or is abandoned. |
+| FR-LB-21 | The system shall re-check the catalog when a session is established, unless the owner has turned that off, the catalog holds no files, or a run is already outstanding; and shall report such a re-check through the background activity indicator (FR-LB-15) without announcing a refusal the owner did not ask for. |
 
 ### 3.3 Catalog Browsing and Search — `CT`
 
@@ -468,7 +469,7 @@ does not already publish.
 | Login | Authenticate the owner | FR-AU-04, FR-AU-05, FR-AU-07 |
 | Password recovery | Spend a recovery code on a new password | FR-AU-15, FR-AU-16, FR-AU-18 |
 | Home dashboard | Recent items, items in progress, counts, last run outcome | FR-CT-11 |
-| Library sources | Register, scan, refresh, pace, and unregister folders | FR-LB-01 … FR-LB-20 |
+| Library sources | Register, scan, refresh, pace, and unregister folders | FR-LB-01 … FR-LB-21 |
 | Catalog listing | Type-filtered listing in three layouts, with search, filters, and sorting | FR-CT-01 … FR-CT-04, FR-CT-06 … FR-CT-10, FR-CT-12 |
 | File detail | Metadata, path, state, and available actions | FR-CT-05, FR-ME-01, FR-ME-02, FR-ME-04 |
 | Text editor | Markdown and text editing with live preview | FR-ME-06 … FR-ME-10 |
@@ -659,7 +660,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Feature | Requirements |
 | --- | --- |
 | F-01 Authentication and session | FR-AU-01 through FR-AU-19 |
-| F-02 Library sources and indexing | FR-LB-01 through FR-LB-20 |
+| F-02 Library sources and indexing | FR-LB-01 through FR-LB-21 |
 | F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-14 |
 | F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
 | F-05 Media playback | FR-PL-01 through FR-PL-11 |
@@ -674,7 +675,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Domain area | Code | Requirement IDs |
 | --- | --- | --- |
 | Authentication and session | `AU` | FR-AU-01 … FR-AU-19 |
-| Library sources and indexing | `LB` | FR-LB-01 … FR-LB-20 |
+| Library sources and indexing | `LB` | FR-LB-01 … FR-LB-21 |
 | Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-14 |
 | Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
 | Media playback | `PL` | FR-PL-01 … FR-PL-11 |

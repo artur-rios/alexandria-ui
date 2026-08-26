@@ -155,6 +155,12 @@ void main() {
 
       await activityOf(sut.ref).begin();
 
+      // The catalog *was* asked about — proving `begin()` reached
+      // `startRefresh` rather than returning early on its own, the same
+      // proof the empty-catalog test above relies on. Without this, a
+      // `begin()` that does nothing at all would pass every assertion below
+      // just as well as a correct one.
+      expect(sut.gateway.catalogedFileCountAsked, 1);
       // AF-01's own rule: a second refresh is refused while one is running.
       // "Not disturbed" is measured, not assumed: the gateway was not asked
       // again, the run already in flight is still the very same run, and no
