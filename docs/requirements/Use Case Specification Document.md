@@ -352,14 +352,15 @@ graph LR
 | **ID** | UC-07 |
 | **Name** | Refresh the catalog |
 | **Actors** | Owner, Alexandria core, Local filesystem |
-| **Description** | The owner re-checks everything already cataloged, across every registered folder at once. |
+| **Description** | Everything already cataloged is re-checked, across every registered folder at once — either because the owner asked for it, or once, unannounced, when a session is established (FR-LB-21). |
 | **Preconditions** | An active session exists. The catalog is not empty. |
 | **Postconditions** | Every cataloged record is refreshed; changed files are updated and absent files are marked missing. |
-| **Requirements** | FR-LB-06, FR-LB-07, FR-LB-08 |
+| **Requirements** | FR-LB-06, FR-LB-07, FR-LB-08, FR-LB-21 |
 
 **Main Flow**
 
-1. The owner starts a refresh.
+1. The owner starts a refresh, or a session is established with the
+   re-check preference on (FR-LB-21).
 2. The application calls the core's refresh operation and retains the run
    identifier.
 3. The application presents the run as in progress, without blocking the interface.
@@ -371,10 +372,11 @@ graph LR
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | A refresh is already in flight | The application points at the running one rather than starting a second. |
-| AF-02 | The catalog is empty | The application offers to register and index a folder instead (UC-05, UC-06). |
+| AF-01 | A refresh is already in flight | Owner-started: the application points at the running one rather than starting a second. Started at sign-in: the check is silently not repeated — nothing is presented, because nobody asked (FR-LB-21). |
+| AF-02 | The catalog is empty | Owner-started: the application offers to register and index a folder instead (UC-05, UC-06). Started at sign-in: nothing is presented; the offer is what the owner already sees on an empty catalog regardless. |
 | AF-03 | The refresh marks files missing | The outcome links to the missing-files review (UC-37). |
-| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login, whether the refresh was owner-started or begun at sign-in. |
+| AF-05 | The owner has turned the sign-in re-check off, or a run the core already had outstanding covers it (FR-LB-19) | Started at sign-in only: no refresh is started, and nothing is presented. |
 
 ---
 
@@ -1751,7 +1753,7 @@ graph LR
 | UC-04: Change credentials | FR-AU-10, FR-AU-11 |
 | UC-05: Register a library folder | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12 |
 | UC-06: Index a library folder | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09 |
-| UC-07: Refresh the catalog | FR-LB-06, FR-LB-07, FR-LB-08 |
+| UC-07: Refresh the catalog | FR-LB-06, FR-LB-07, FR-LB-08, FR-LB-21 |
 | UC-08: Unregister a library folder | FR-LB-10 |
 | UC-09: Browse the library by type | FR-CT-01, FR-CT-02, FR-CT-10, FR-LB-04 |
 | UC-10: Switch the view layout | FR-CT-03, FR-CT-04 |
