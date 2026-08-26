@@ -62,7 +62,7 @@ void main() {
       () async {
         final sut = build(
           listings: {
-            LibraryType.audio: CatalogListing.loaded(files: [aFile()]),
+            LibraryType.audio: loadedDetails([aFile()]),
           },
         );
         sut.ref
@@ -182,9 +182,9 @@ void main() {
             LibraryType.audio: const CatalogListing.failed(
               failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
             ),
-            LibraryType.image: CatalogListing.loaded(
-              files: [aFile(type: LibraryType.image, name: 'a.png')],
-            ),
+            LibraryType.image: loadedDetails([
+              aFile(type: LibraryType.image, name: 'a.png'),
+            ]),
           },
         );
         sut.ref
@@ -243,12 +243,10 @@ void main() {
         final sut = build(
           watchCounts: true,
           listings: {
-            LibraryType.audio: CatalogListing.loaded(
-              files: [
-                aFile(),
-                aFile(uuid: 'b', name: 'b.flac'),
-              ],
-            ),
+            LibraryType.audio: loadedDetails([
+              aFile(),
+              aFile(uuid: 'b', name: 'b.flac'),
+            ]),
           },
         );
 

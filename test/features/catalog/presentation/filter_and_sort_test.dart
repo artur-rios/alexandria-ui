@@ -36,20 +36,18 @@ void main() {
             listings:
                 listings ??
                 {
-                  LibraryType.video: CatalogListing.loaded(
-                    files: [
-                      aFile(
-                        uuid: '1',
-                        name: 'zebra.mp4',
-                        type: LibraryType.video,
-                      ),
-                      aFile(
-                        uuid: '2',
-                        name: 'apple.mp4',
-                        type: LibraryType.video,
-                      ),
-                    ],
-                  ),
+                  LibraryType.video: loadedDetails([
+                    aFile(
+                      uuid: '1',
+                      name: 'zebra.mp4',
+                      type: LibraryType.video,
+                    ),
+                    aFile(
+                      uuid: '2',
+                      name: 'apple.mp4',
+                      type: LibraryType.video,
+                    ),
+                  ]),
                 },
           ),
         ),
@@ -153,9 +151,7 @@ void main() {
       final container = await openListing(
         tester,
         listings: {
-          LibraryType.video: CatalogListing.loaded(
-            files: [aFile(type: LibraryType.video)],
-          ),
+          LibraryType.video: loadedDetails([aFile(type: LibraryType.video)]),
         },
       );
 
@@ -184,9 +180,7 @@ void main() {
       final container = await openListing(
         tester,
         listings: {
-          LibraryType.video: CatalogListing.loaded(
-            files: [aFile(type: LibraryType.video)],
-          ),
+          LibraryType.video: loadedDetails([aFile(type: LibraryType.video)]),
         },
       );
       await container

@@ -53,9 +53,10 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
 
     switch (listing) {
       // Ordered here rather than by the core, which publishes no sort on a
-      // listing (main flow step 4).
+      // listing (main flow step 4). Only the file is wanted here — the
+      // metadata each row now carries belongs to the callers that read it.
       case CatalogListingLoaded(:final files):
-        return sortFiles(files, view);
+        return sortFiles([for (final row in files) row.file], view);
 
       // AF-04: the core rejected the session. Discarding it returns the owner
       // to login; the failure is still thrown so the listing does not read as

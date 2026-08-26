@@ -41,9 +41,9 @@ void main() {
     // in.
     final gateway = FakeCatalogGateway(
       listings: {
-        LibraryType.video: CatalogListing.loaded(
-          files: [aFile(uuid: uuid, type: LibraryType.video)],
-        ),
+        LibraryType.video: loadedDetails([
+          aFile(uuid: uuid, type: LibraryType.video),
+        ]),
       },
     );
     if (outcome != null) gateway.details[uuid] = outcome;

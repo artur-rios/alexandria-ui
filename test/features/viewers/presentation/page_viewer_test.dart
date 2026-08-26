@@ -43,7 +43,7 @@ void main() {
     );
     final catalog = FakeCatalogGateway(
       listings: {
-        type: CatalogListing.loaded(files: [file]),
+        type: loadedDetails([file]),
       },
     );
     catalog.details[uuid] = FileDetailsOutcome.read(

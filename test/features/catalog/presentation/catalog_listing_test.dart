@@ -61,12 +61,10 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: CatalogListing.loaded(
-            files: [
-              aFile(type: LibraryType.video, name: 'Kind of Blue.mp4'),
-              aFile(uuid: 'b', type: LibraryType.video, name: 'Blue Train.mp4'),
-            ],
-          ),
+          LibraryType.video: loadedDetails([
+            aFile(type: LibraryType.video, name: 'Kind of Blue.mp4'),
+            aFile(uuid: 'b', type: LibraryType.video, name: 'Blue Train.mp4'),
+          ]),
         },
       );
 
@@ -82,16 +80,14 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: CatalogListing.loaded(
-            files: [
-              for (var index = 0; index < 500; index++)
-                aFile(
-                  uuid: '$index',
-                  type: LibraryType.video,
-                  name: 'Clip $index.mp4',
-                ),
-            ],
-          ),
+          LibraryType.video: loadedDetails([
+            for (var index = 0; index < 500; index++)
+              aFile(
+                uuid: '$index',
+                type: LibraryType.video,
+                name: 'Clip $index.mp4',
+              ),
+          ]),
         },
       );
 
@@ -109,14 +105,12 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: CatalogListing.loaded(
-            files: [
-              aFile(
-                type: LibraryType.video,
-                missingAt: DateTime.utc(2026, 8, 19),
-              ),
-            ],
-          ),
+          LibraryType.video: loadedDetails([
+            aFile(
+              type: LibraryType.video,
+              missingAt: DateTime.utc(2026, 8, 19),
+            ),
+          ]),
         },
       );
 
@@ -134,7 +128,7 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.image: CatalogListing.loaded(files: [aFile()]),
+          LibraryType.image: loadedDetails([aFile()]),
         },
       );
 
@@ -193,9 +187,9 @@ void main() {
           LibraryType.video: const CatalogListing.failed(
             failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
           ),
-          LibraryType.image: CatalogListing.loaded(
-            files: [aFile(type: LibraryType.image, name: 'a.png')],
-          ),
+          LibraryType.image: loadedDetails([
+            aFile(type: LibraryType.image, name: 'a.png'),
+          ]),
         },
       );
       expect(find.byType(ShellFailureView), findsOneWidget);
@@ -220,12 +214,10 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: CatalogListing.loaded(
-            files: [
-              aFile(type: LibraryType.video),
-              aFile(uuid: 'b', type: LibraryType.video),
-            ],
-          ),
+          LibraryType.video: loadedDetails([
+            aFile(type: LibraryType.video),
+            aFile(uuid: 'b', type: LibraryType.video),
+          ]),
         },
       );
 
@@ -268,7 +260,7 @@ void main() {
         tester,
         locale: locale,
         listings: {
-          LibraryType.image: CatalogListing.loaded(files: [aFile()]),
+          LibraryType.image: loadedDetails([aFile()]),
         },
       );
 

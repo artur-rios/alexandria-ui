@@ -1724,8 +1724,7 @@ graph LR
 
 **Main Flow**
 
-1. The application reads each audio file's metadata, showing what it has while
-   the rest arrives.
+1. The application reads the audio library in one call, metadata included.
 2. The owner chooses artists, albums, or songs.
 3. The owner drills into an artist and then an album, or straight into an
    album, returning by the breadcrumb.

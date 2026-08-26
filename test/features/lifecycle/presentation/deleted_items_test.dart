@@ -63,14 +63,12 @@ void main() {
     // block — which is where the view is reached from.
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: CatalogListing.loaded(files: [aFile()]),
+        LibraryType.document: loadedDetails([aFile()]),
       },
       deleted:
           deleted ??
           {
-            LibraryType.document: CatalogListing.loaded(
-              files: [recentlyDeleted],
-            ),
+            LibraryType.document: loadedDetails([recentlyDeleted]),
           },
     );
 
@@ -170,7 +168,7 @@ void main() {
         await openDeleted(
           tester,
           deleted: {
-            LibraryType.text: CatalogListing.loaded(files: [longDeleted]),
+            LibraryType.text: loadedDetails([longDeleted]),
           },
         );
 
@@ -213,19 +211,17 @@ void main() {
     ) async {
       final catalog = FakeCatalogGateway(
         listings: {
-          LibraryType.document: CatalogListing.loaded(
-            files: [
-              aFile(
-                uuid: bookUuid,
-                name: 'Solaris.epub',
-                type: LibraryType.document,
-                missingAt: now,
-              ),
-            ],
-          ),
+          LibraryType.document: loadedDetails([
+            aFile(
+              uuid: bookUuid,
+              name: 'Solaris.epub',
+              type: LibraryType.document,
+              missingAt: now,
+            ),
+          ]),
         },
         deleted: {
-          LibraryType.document: CatalogListing.loaded(files: [recentlyDeleted]),
+          LibraryType.document: loadedDetails([recentlyDeleted]),
         },
       );
       final lifecycle = FakeLifecycleGateway();

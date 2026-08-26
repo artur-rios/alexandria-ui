@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../library_sources/application/index_runs_state.dart';
 import '../../library_sources/domain/index_run.dart';
-import '../domain/catalog_file.dart';
+import '../domain/file_details.dart';
 import '../domain/index_run_summary.dart';
 import '../domain/listing_view.dart';
 
@@ -13,7 +13,13 @@ import '../domain/listing_view.dart';
 /// own: the core publishes no "recent files" call, and asking every type again
 /// would be the same work twice. It is a section in its own right, so its
 /// failure is its own and does not take the rest of the dashboard down (AF-03).
-class RecentFilesController extends AsyncNotifier<List<CatalogFile>> {
+///
+/// Published as `List<FileDetails>`, not just the files: each row already
+/// carries the metadata `catalogSearchProvider`'s listing read, and a row
+/// that names an audio file (FR-CT-13) reads it from here rather than
+/// triggering a second, whole-library read to learn what this one already
+/// knew.
+class RecentFilesController extends AsyncNotifier<List<FileDetails>> {
   /// How many files the dashboard shows.
   ///
   /// Enough to be a glance rather than a listing — the listings are one click
@@ -21,18 +27,23 @@ class RecentFilesController extends AsyncNotifier<List<CatalogFile>> {
   static const int limit = 8;
 
   @override
-  Future<List<CatalogFile>> build() async {
+  Future<List<FileDetails>> build() async {
     final index = await ref.watch(catalogSearchProvider.future);
 
     final byNewest = sortFiles(
-      index.files,
+      [for (final row in index.files) row.file],
       const ListingView(
         sortField: SortField.indexed,
         direction: SortDirection.descending,
       ),
     );
 
-    return byNewest.take(limit).toList();
+    // Sorted by file, then mapped back to each file's own row: `sortFiles`
+    // only knows `CatalogFile`, and this is the one place that needs the
+    // metadata alongside the order it gives.
+    final byUuid = {for (final row in index.files) row.file.uuid: row};
+
+    return [for (final file in byNewest.take(limit)) byUuid[file.uuid]!];
   }
 
   /// Loads the catalog again (AF-03's retry).

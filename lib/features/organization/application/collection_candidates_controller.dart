@@ -50,7 +50,7 @@ class CollectionCandidatesController
       if (listing case CatalogListingLoaded(:final files)) {
         candidates.addAll(
           files.map(
-            (file) => CollectionMember(uuid: file.uuid, name: file.name),
+            (row) => CollectionMember(uuid: row.file.uuid, name: row.file.name),
           ),
         );
       }

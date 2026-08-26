@@ -52,7 +52,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.video: CatalogListing.loaded(files: [aVideo().file]),
+        LibraryType.video: loadedDetails([aVideo().file]),
       },
     );
     catalog.details[uuid] = FileDetailsOutcome.read(details: aVideo());

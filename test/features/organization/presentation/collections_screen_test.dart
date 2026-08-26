@@ -4,7 +4,6 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
-import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/organization/domain/collection.dart';
 import 'package:alexandria_ui/features/organization/domain/collection_gateway.dart';
@@ -62,7 +61,7 @@ void main() {
         catalogGatewayProvider.overrideWithValue(
           FakeCatalogGateway(
             listings: {
-              LibraryType.document: CatalogListing.loaded(files: [aFile()]),
+              LibraryType.document: loadedDetails([aFile()]),
             },
           ),
         ),

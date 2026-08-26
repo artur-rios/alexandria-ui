@@ -6,8 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../catalog/domain/catalog_file.dart';
+import '../../catalog/domain/file_details.dart';
 import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/music_metadata.dart';
 import '../../catalog/presentation/file_details_view.dart';
 import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/async_state_view.dart';
@@ -66,20 +67,20 @@ class MissingFilesScreen extends ConsumerWidget {
                 onRetry: ref
                     .read(missingFilesControllerProvider.notifier)
                     .reload,
-                isEmpty: (files) => files.isEmpty,
+                isEmpty: (rows) => rows.isEmpty,
                 // AF-01: nothing is missing, which is a state and not a
                 // failure — and the good outcome besides.
                 emptyBuilder: (context) =>
                     Center(child: Text(l10n.missingFilesNone)),
-                builder: (context, files) => ListView.builder(
-                  itemCount: files.length,
+                builder: (context, rows) => ListView.builder(
+                  itemCount: rows.length,
                   itemBuilder: (context, index) => _MissingTile(
-                    file: files[index],
+                    details: rows[index],
                     // AF-03: a record from a folder the owner has since
                     // unregistered is marked as such — it is missing for a
                     // reason the review can name.
                     fromUnregisteredFolder: !isUnderRegisteredFolder(
-                      files[index].path,
+                      rows[index].file.path,
                       roots,
                     ),
                   ),
@@ -123,26 +124,29 @@ class _RescanButton extends ConsumerWidget {
 /// One missing file, with the path it was last known at (step 3).
 class _MissingTile extends ConsumerWidget {
   const _MissingTile({
-    required this.file,
+    required this.details,
     required this.fromUnregisteredFolder,
   });
 
-  final CatalogFile file;
+  final FileDetails details;
   final bool fromUnregisteredFolder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final file = details.file;
 
-    // FR-CT-13: an audio file is named by its metadata here too, the same
-    // per-file path `catalog_search_view.dart` reads a search result's title
-    // from — never by the file on disk, and never by forcing the whole
-    // library's scan just to name one row of this review.
+    // FR-CT-13: an audio file is named by its metadata here too, read
+    // straight off the row this review already holds — never by the file on
+    // disk, and never by asking the core again for what this listing already
+    // answered.
     final isAudio = file.type == LibraryType.audio;
-    final metadata = isAudio ? ref.watch(audioMetadataProvider(file)).value : null;
     final title = isAudio
-        ? tagOr(metadata?.title, l10n.musicUnknownTitle)
+        ? tagOr(
+            MusicMetadata.fromDetails(details.metadata).title,
+            l10n.musicUnknownTitle,
+          )
         : file.name;
 
     return ListTile(

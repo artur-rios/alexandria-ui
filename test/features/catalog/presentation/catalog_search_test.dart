@@ -67,15 +67,13 @@ void main() {
 
   /// A library with one audio file and one image in it.
   Map<LibraryType, gateway.CatalogListing> aLibrary() => {
-    LibraryType.audio: gateway.CatalogListing.loaded(
-      files: [
-        aFile(name: 'Kind of Blue.flac'),
-        aFile(uuid: 'c', name: 'Giant Steps.flac'),
-      ],
-    ),
-    LibraryType.image: gateway.CatalogListing.loaded(
-      files: [aFile(uuid: 'b', name: 'blue.png', type: LibraryType.image)],
-    ),
+    LibraryType.audio: loadedDetails([
+      aFile(name: 'Kind of Blue.flac'),
+      aFile(uuid: 'c', name: 'Giant Steps.flac'),
+    ]),
+    LibraryType.image: loadedDetails([
+      aFile(uuid: 'b', name: 'blue.png', type: LibraryType.image),
+    ]),
   };
 
   /// Moves to [destination] through the navigation panel.
@@ -419,7 +417,8 @@ void main() {
         await searchFor(
           tester,
           term: 'notes',
-          gateway: FakeCatalogGateway()..addDocument(uuid: '2', name: 'notes.pdf'),
+          gateway: FakeCatalogGateway()
+            ..addDocument(uuid: '2', name: 'notes.pdf'),
         );
 
         // Exact rather than containing: the subtitle shows the file's path,

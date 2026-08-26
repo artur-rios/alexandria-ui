@@ -36,7 +36,7 @@ class DeletedItemsController extends AsyncNotifier<List<DeletedRecord>> {
 
       switch (listing) {
         case CatalogListingLoaded(:final files):
-          records.addAll(files.map(DeletedRecord.ofFile));
+          records.addAll(files.map((row) => DeletedRecord.ofFile(row.file)));
 
         // AF-05: a rejected session returns the owner to login.
         case CatalogListingFailed(failure: final UnauthorizedFailure failure):

@@ -25,29 +25,10 @@ class MusicLibraryView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watched, not read: this is what starts (and keeps alive) the full-
-    // library read behind `musicLibraryProvider`. Its `.future` resolves only
-    // once every file has been read — which is what a track queue is built
-    // from (`AudioPlaybackController._playGrouped`) — so this area must not
-    // wait on it for its own rendering, or the screen would stay blank until
-    // the last file was read. `musicLibraryProgressProvider` is published to
-    // from inside that same read, one file at a time, and is what the rows
-    // and the progress line below are drawn from instead.
+    // Watched, not read: this is what starts (and keeps alive) the library
+    // read behind `musicLibraryProvider`.
     final asyncLibrary = ref.watch(musicLibraryProvider);
-    final progress = ref.watch(musicLibraryProgressProvider);
     final browse = ref.watch(musicBrowseControllerProvider);
-
-    // Until the listing itself has come back, there is no `total` yet to
-    // tell "nothing catalogued" apart from "still finding out" — so the
-    // ordinary loading state covers that gap. Once a file has been read (or
-    // the listing answered empty), `progress` is authoritative even if the
-    // underlying read is still running, or stuck on one file forever (a music
-    // library test represents that with a call that never completes).
-    final gate = switch (asyncLibrary) {
-      AsyncError() => asyncLibrary,
-      AsyncLoading() when progress.total == 0 => asyncLibrary,
-      _ => AsyncData(progress),
-    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -57,32 +38,12 @@ class MusicLibraryView extends ConsumerWidget {
         _Breadcrumb(state: browse),
         Expanded(
           child: AsyncStateView<MusicLibrary>(
-            value: gate,
-            // Both halves of the pair, as `CatalogSessionActivity.end` does:
-            // the progress provider is never awaited on its own, so
-            // invalidating only the complete one would leave it re-serving
-            // the failed run's last snapshot and the area would never show
-            // as loading again.
-            onRetry: () {
-              ref.invalidate(musicLibraryProvider);
-              ref.invalidate(musicLibraryProgressProvider);
-            },
-            isEmpty: (loaded) => loaded.total == 0,
+            value: asyncLibrary,
+            onRetry: () => ref.invalidate(musicLibraryProvider),
+            isEmpty: (loaded) => loaded.entries.isEmpty,
             emptyBuilder: (context) => const _Empty(),
-            builder: (context, loaded) => Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Named rather than shown as a bar: the owner wants to know
-                // this will end and roughly when, which a count says and a
-                // spinner does not.
-                if (!loaded.isComplete)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: _Progress(library: loaded),
-                  ),
-                Expanded(child: _List(state: browse, library: loaded.entries)),
-              ],
-            ),
+            builder: (context, loaded) =>
+                _List(state: browse, library: loaded.entries),
           ),
         ),
       ],
@@ -103,11 +64,10 @@ class _List extends ConsumerWidget {
       entries: tracksOfAlbum(state.album, state.artist, library),
       numbered: true,
     ),
-    MusicBrowseState(view: MusicView.artists, inArtist: true) =>
-      MusicGroupList(
-        groups: albumsOfArtist(state.artist, library),
-        kind: MusicGroupKind.album,
-      ),
+    MusicBrowseState(view: MusicView.artists, inArtist: true) => MusicGroupList(
+      groups: albumsOfArtist(state.artist, library),
+      kind: MusicGroupKind.album,
+    ),
     MusicBrowseState(view: MusicView.artists) => MusicGroupList(
       groups: artistsIn(library),
       kind: MusicGroupKind.artist,
@@ -182,9 +142,7 @@ class _Breadcrumb extends ConsumerWidget {
           for (final (index, (label, onTap)) in crumbs.indexed) ...[
             if (index > 0)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xs,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                 child: Text('›', style: theme.textTheme.bodySmall),
               ),
             // The last crumb is where the owner already is, so it is text
@@ -195,26 +153,6 @@ class _Breadcrumb extends ConsumerWidget {
               TextButton(onPressed: onTap, child: Text(label)),
           ],
         ],
-      ),
-    );
-  }
-}
-
-/// How far the metadata read has got (main flow step 1).
-class _Progress extends StatelessWidget {
-  const _Progress({required this.library});
-
-  final MusicLibrary library;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-
-    return Text(
-      l10n.musicLoading(library.entries.length, library.total),
-      style: theme.textTheme.bodySmall?.copyWith(
-        color: theme.colorScheme.onSurfaceVariant,
       ),
     );
   }

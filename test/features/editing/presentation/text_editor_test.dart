@@ -63,7 +63,7 @@ void main() {
     final loaded = details ?? aNote();
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.text: CatalogListing.loaded(files: [loaded.file]),
+        LibraryType.text: loadedDetails([loaded.file]),
       },
     );
     catalog.details[uuid] = FileDetailsOutcome.read(details: loaded);
@@ -181,7 +181,7 @@ void main() {
       // application's own `FileDetailsView.show` is called.
       final catalog = FakeCatalogGateway(
         listings: {
-          LibraryType.audio: CatalogListing.loaded(files: [aFile()]),
+          LibraryType.audio: loadedDetails([aFile()]),
         },
       );
 

@@ -47,24 +47,24 @@ String musicAlbumOf(MusicEntry entry, AppLocalizations l10n) =>
 ///
 /// Shared by the bar, the skip notice and the full player, so nothing that
 /// names the file currently playing can disagree with what the browsing area
-/// already agreed a track is called, and the file name the owner never wants
-/// to see does not reappear just because the queue was built from a track the
-/// progress read has not caught up to yet.
+/// already agreed a track is called.
 ///
-/// Watches [musicLibraryProvider] as well as the progress it publishes to,
-/// because playback is reachable without ever opening the music area — from
-/// search, from the dashboard, from a file's own details — and nothing else
-/// would otherwise start the read this entry is drawn from.
+/// Watches [musicLibraryProvider], because playback is reachable without ever
+/// opening the music area — from search, from the dashboard, from a file's
+/// own details — and nothing else would otherwise start the read this entry
+/// is drawn from. The library resolves in one call, so there is no partial
+/// state to prefer over it; while it is still loading (or failed), the file
+/// reads as untitled rather than by name, which is what an entry with no
+/// title does too.
 MusicEntry musicEntryForFile(WidgetRef ref, CatalogFile file) {
-  ref.watch(musicLibraryProvider);
-  final progress = ref.watch(musicLibraryProgressProvider);
+  final library = ref.watch(musicLibraryProvider).value;
+  final untitled = MusicEntry(file: file, metadata: const MusicMetadata());
 
-  return progress.entries.firstWhere(
+  if (library == null) return untitled;
+
+  return library.entries.firstWhere(
     (candidate) => candidate.file.uuid == file.uuid,
-    // Not yet read (or read after the caller last rebuilt): reads as
-    // untitled rather than by name, which is what an entry with no title
-    // does too.
-    orElse: () => MusicEntry(file: file, metadata: const MusicMetadata()),
+    orElse: () => untitled,
   );
 }
 

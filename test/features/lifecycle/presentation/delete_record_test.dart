@@ -70,7 +70,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: CatalogListing.loaded(files: [book]),
+        LibraryType.document: loadedDetails([book]),
       },
     );
     catalog.details[bookUuid] = FileDetailsOutcome.read(
@@ -206,14 +206,15 @@ void main() {
           name: 'track-07.flac',
           type: LibraryType.audio,
         );
-        final gateway = FakeCatalogGateway(
-          listings: {LibraryType.audio: CatalogListing.loaded(files: [track])},
-        )..details[audioUuid] = FileDetailsOutcome.read(
-          details: FileDetails(
-            file: track,
-            metadata: const {'title': 'So What'},
-          ),
+        final row = FileDetails(
+          file: track,
+          metadata: const {'title': 'So What'},
         );
+        final gateway = FakeCatalogGateway(
+          listings: {
+            LibraryType.audio: CatalogListing.loaded(files: [row]),
+          },
+        )..details[audioUuid] = FileDetailsOutcome.read(details: row);
 
         await tester.pumpShell(
           surfaceSize: const Size(1440, 1000),
@@ -242,6 +243,53 @@ void main() {
         expect(
           find.text(messages(tester).deleteFileMessage('track-07.flac')),
           findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheAudioListingHasFailed_WhenADeleteIsAsked_ThenTheConfirmationStillOpens',
+      (tester) async {
+        // Regression coverage: the button used to read `musicLibraryProvider`
+        // for the track's title, which throws when the audio listing fails —
+        // and since the button fires `_confirm` unawaited from `onPressed`,
+        // that exception would escape and the dialog would never appear. The
+        // button now reads the `FileDetails` its own detail view already
+        // holds, which this file's own `fileDetails` call answers
+        // independently of the (here, failing) audio listing.
+        const audioUuid = 'a1a2a3a4-5d6e-4f70-8912-a3b4c5d6e7f8';
+        final track = aFile(
+          uuid: audioUuid,
+          name: 'track-07.flac',
+          type: LibraryType.audio,
+        );
+        final row = FileDetails(
+          file: track,
+          metadata: const {'title': 'So What'},
+        );
+        final gateway = FakeCatalogGateway()
+          ..details[audioUuid] = FileDetailsOutcome.read(details: row)
+          ..failListing(type: LibraryType.audio);
+
+        await tester.pumpShell(
+          surfaceSize: const Size(1440, 1000),
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(gateway),
+          ],
+        );
+
+        final element = tester.element(find.byType(ShellScreen));
+        unawaited(
+          FileDetailsView.show(element, element as WidgetRef, audioUuid),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text(messages(tester).deleteFile).last);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(messages(tester).deleteFileMessage('So What')),
+          findsOneWidget,
         );
       },
     );

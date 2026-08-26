@@ -43,17 +43,16 @@ void main() {
   Map<String, Map<String, String>> metadata = {};
 
   FakeCatalogGateway catalogWith(List<CatalogFile> files) {
+    final rows = [
+      for (final file in files)
+        FileDetails(file: file, metadata: metadata[file.uuid] ?? const {}),
+    ];
     final gateway = FakeCatalogGateway(
-      listings: {LibraryType.audio: CatalogListing.loaded(files: files)},
+      listings: {LibraryType.audio: CatalogListing.loaded(files: rows)},
     );
 
-    for (final file in files) {
-      gateway.details[file.uuid] = FileDetailsOutcome.read(
-        details: FileDetails(
-          file: file,
-          metadata: metadata[file.uuid] ?? const {},
-        ),
-      );
+    for (final row in rows) {
+      gateway.details[row.file.uuid] = FileDetailsOutcome.read(details: row);
     }
 
     return gateway;

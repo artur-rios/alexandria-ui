@@ -42,6 +42,7 @@ class StageLayout extends StatelessWidget {
     required this.caseDeparture,
     required this.mediumEmergence,
     required this.travel,
+    this.cover,
     super.key,
   });
 
@@ -86,6 +87,11 @@ class StageLayout extends StatelessWidget {
 
   /// How far the medium has travelled from the case to its seat, 0 to 1.
   final double travel;
+
+  /// The current album's own picture, decoded and ready to paint, or `null`
+  /// to draw the designed jacket (design section 4). Handed straight to
+  /// [CasePainter], which owns the drawing choice this makes.
+  final ui.Image? cover;
 
   /// The medium's scale while still nested in the case (Reference values):
   /// smaller for the cassette, whose case is wider than the record or disc
@@ -208,6 +214,7 @@ class StageLayout extends StatelessWidget {
                     title: title,
                     artist: artist,
                     direction: direction,
+                    cover: cover,
                   ),
                 ),
               ),

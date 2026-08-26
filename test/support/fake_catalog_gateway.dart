@@ -85,21 +85,14 @@ class FakeCatalogGateway implements CatalogGateway {
   /// The lifecycle filter each call was made with (UC-12).
   final List<LifecycleFilter> lifecycles = [];
 
-  /// After this many calls to [fileDetails] have been answered, every call
-  /// after that never completes. `null` means every call answers normally.
+  /// Every call to [listFiles], in order.
   ///
-  /// What a music library test uses to represent metadata that is still
-  /// arriving: the reply is genuinely still in flight, not merely slow, so
-  /// nothing here ever resolves it for the test.
-  int? _holdDetailsAfter;
-
-  /// Held [fileDetails] calls, keyed by uuid, that a test releases by hand.
-  ///
-  /// Unlike [_holdDetailsAfter] — which never completes, standing in for
-  /// metadata that is simply still arriving — this is for a test that needs
-  /// to catch a call mid-flight and then choose what happens next: complete
-  /// it, or leave it hanging while asserting nothing else happened.
-  final Map<String, Completer<FileDetailsOutcome>> _heldDetails = {};
+  /// What the music library's "one call" assertion counts. Counts every
+  /// type asked for, not just audio — meaningful on its own only for a
+  /// fixture that lists one type, such as the music library's. The paired
+  /// `expect(gateway.detailsRequested, isEmpty)` is what actually catches a
+  /// regression to per-file reads.
+  int get listCalls => requested.length;
 
   @override
   Future<CatalogListing> listFiles({
@@ -132,15 +125,6 @@ class FakeCatalogGateway implements CatalogGateway {
     required String credential,
   }) {
     detailsRequested.add(uuid);
-
-    final held = _heldDetails[uuid];
-    if (held != null) return held.future;
-
-    final hold = _holdDetailsAfter;
-    if (hold != null && detailsRequested.length > hold) {
-      // Never completes, on purpose — see [_holdDetailsAfter].
-      return Completer<FileDetailsOutcome>().future;
-    }
 
     return Future.value(
       details[uuid] ??
@@ -180,27 +164,24 @@ class FakeCatalogGateway implements CatalogGateway {
       indexedAt: indexedAt,
       missingAt: missingAt,
     );
+    final row = FileDetails(
+      file: file,
+      metadata: {
+        MusicField.title.wireName: ?title,
+        MusicField.artist.wireName: ?artist,
+        MusicField.album.wireName: ?album,
+        MusicField.year.wireName: ?year?.toString(),
+        MusicField.genre.wireName: ?genre,
+        MusicField.track.wireName: ?track?.toString(),
+      },
+    );
     final existing = listings[LibraryType.audio];
     final files = existing is CatalogListingLoaded
         ? existing.files
-        : const <CatalogFile>[];
-    listings[LibraryType.audio] = CatalogListing.loaded(
-      files: [...files, file],
-    );
+        : const <FileDetails>[];
+    listings[LibraryType.audio] = CatalogListing.loaded(files: [...files, row]);
 
-    details[uuid] = FileDetailsOutcome.read(
-      details: FileDetails(
-        file: file,
-        metadata: {
-          MusicField.title.wireName: ?title,
-          MusicField.artist.wireName: ?artist,
-          MusicField.album.wireName: ?album,
-          MusicField.year.wireName: ?year?.toString(),
-          MusicField.genre.wireName: ?genre,
-          MusicField.track.wireName: ?track?.toString(),
-        },
-      ),
-    );
+    details[uuid] = FileDetailsOutcome.read(details: row);
   }
 
   /// Adds a file of [type] to that type's listing, named by [name] on disk.
@@ -214,34 +195,27 @@ class FakeCatalogGateway implements CatalogGateway {
     LibraryType type = LibraryType.document,
     DateTime? indexedAt,
   }) {
-    final file = aFile(uuid: uuid, name: name, type: type, indexedAt: indexedAt);
+    final file = aFile(
+      uuid: uuid,
+      name: name,
+      type: type,
+      indexedAt: indexedAt,
+    );
     final existing = listings[type];
     final files = existing is CatalogListingLoaded
         ? existing.files
-        : const <CatalogFile>[];
-    listings[type] = CatalogListing.loaded(files: [...files, file]);
+        : const <FileDetails>[];
+    listings[type] = CatalogListing.loaded(
+      files: [
+        ...files,
+        FileDetails(file: file),
+      ],
+    );
   }
 
   /// Adds a document file to the document listing, named by [name] on disk.
   void addDocument({required String uuid, required String name}) =>
       addFile(uuid: uuid, name: name, type: LibraryType.document);
-
-  /// After [count] calls to [fileDetails] have been answered, every call
-  /// after that never completes (see [_holdDetailsAfter]).
-  void holdDetailsAfter(int count) => _holdDetailsAfter = count;
-
-  /// Holds the call for [uuid]'s details in flight until [releaseDetails]
-  /// completes it.
-  void holdDetailsFor(String uuid) =>
-      _heldDetails[uuid] = Completer<FileDetailsOutcome>();
-
-  /// Completes a call held by [holdDetailsFor], answering [uuid]'s own
-  /// details by default.
-  void releaseDetails(String uuid) {
-    _heldDetails.remove(uuid)?.complete(
-      details[uuid] ?? FileDetailsOutcome.read(details: FileDetails(file: aFile(uuid: uuid))),
-    );
-  }
 
   /// Makes [uuid]'s details answer a failure instead of a record.
   void failDetailsFor(String uuid) {
@@ -310,6 +284,46 @@ class FakeCatalogGateway implements CatalogGateway {
 
     return renameOutcomes.removeAt(0);
   }
+
+  /// What [fileThumbnail] answers, keyed by uuid.
+  ///
+  /// A uuid with no entry answers `InvalidInput` — the core's own answer for
+  /// a file with no embedded picture, and the ordinary case a test does not
+  /// have to opt into.
+  final Map<String, FileThumbnailOutcome> thumbnails = {};
+
+  /// Every uuid a thumbnail was asked for, in order.
+  final List<String> thumbnailsRequested = [];
+
+  /// Held open to keep a [fileThumbnail] call in flight, so a test can
+  /// observe the case mid-fetch — in particular, a cover arriving after an
+  /// insertion has already begun (design section 4). Completed by
+  /// [releaseThumbnail].
+  Completer<void>? _thumbnailGate;
+
+  /// Makes the next [fileThumbnail] call hang until [releaseThumbnail].
+  void holdThumbnail() => _thumbnailGate = Completer<void>();
+
+  /// Lets a held [fileThumbnail] call finish.
+  void releaseThumbnail() => _thumbnailGate?.complete();
+
+  @override
+  Future<FileThumbnailOutcome> fileThumbnail({
+    required String uuid,
+    required String credential,
+  }) async {
+    thumbnailsRequested.add(uuid);
+    credentials.add(credential);
+    await _thumbnailGate?.future;
+
+    return thumbnails[uuid] ??
+        const FileThumbnailOutcome.failed(
+          failure: Failure.invalidInput(
+            family: CoreStatusFamily.playback,
+            code: 1,
+          ),
+        );
+  }
 }
 
 /// A file of [type], for a test that needs one in a listing.
@@ -340,4 +354,15 @@ CatalogFile aFile({
   missingAt: missingAt,
   deletedAt: deletedAt,
   isDeleted: isDeleted,
+);
+
+/// A listing of [files], each wrapped as a [FileDetails] row with no
+/// metadata — the shape [CatalogListing.loaded] now carries.
+///
+/// Most fixtures only care about the file half of a row; this is the one
+/// place a bare [CatalogFile] list becomes what the gateway actually answers,
+/// so a test that wants metadata alongside a file builds a [FileDetails]
+/// (or uses [FakeCatalogGateway.addAudio]) instead of reaching in here.
+CatalogListing loadedDetails(List<CatalogFile> files) => CatalogListing.loaded(
+  files: [for (final file in files) FileDetails(file: file)],
 );

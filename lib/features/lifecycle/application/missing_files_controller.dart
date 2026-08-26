@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
-import '../../catalog/domain/catalog_file.dart';
 import '../../catalog/domain/catalog_gateway.dart';
+import '../../catalog/domain/file_details.dart';
 import '../../catalog/domain/library_type.dart';
 
 /// The files the core reports as missing on disk (UC-37 main flow step 2).
@@ -12,16 +12,21 @@ import '../../catalog/domain/library_type.dart';
 /// so this is the active listing of every type filtered to what carries the
 /// marking. The core is what decides which those are — nothing here infers it
 /// from the filesystem (BR-16, FR-LC-08).
-class MissingFilesController extends AsyncNotifier<List<CatalogFile>> {
+///
+/// Published as `List<FileDetails>`, not just the files: each row already
+/// carries the metadata the listing read, and an audio row names itself from
+/// it (FR-CT-13) rather than triggering a second, whole-library read for data
+/// this one already had.
+class MissingFilesController extends AsyncNotifier<List<FileDetails>> {
   @override
-  Future<List<CatalogFile>> build() async {
+  Future<List<FileDetails>> build() async {
     final session = ref.read(sessionControllerProvider.notifier);
     final credential = session.credential;
     // No session, no call (FR-AU-07).
     if (credential == null) return const [];
 
     final catalog = ref.read(catalogGatewayProvider);
-    final missing = <CatalogFile>[];
+    final missing = <FileDetails>[];
 
     for (final type in LibraryType.values) {
       final listing = await catalog.listFiles(
@@ -31,7 +36,7 @@ class MissingFilesController extends AsyncNotifier<List<CatalogFile>> {
 
       switch (listing) {
         case CatalogListingLoaded(:final files):
-          missing.addAll(files.where((file) => file.isMissing));
+          missing.addAll(files.where((row) => row.file.isMissing));
 
         // AF-04: a rejected session returns the owner to login.
         case CatalogListingFailed(failure: final UnauthorizedFailure failure):
@@ -49,8 +54,8 @@ class MissingFilesController extends AsyncNotifier<List<CatalogFile>> {
     // the core answered without a timestamp sorts last: it is the one this
     // cannot place.
     missing.sort((a, b) {
-      final left = a.missingAt;
-      final right = b.missingAt;
+      final left = a.file.missingAt;
+      final right = b.file.missingAt;
       if (left == null) return right == null ? 0 : 1;
       if (right == null) return -1;
 

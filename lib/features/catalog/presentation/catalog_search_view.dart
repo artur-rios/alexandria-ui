@@ -8,9 +8,10 @@ import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/async_state_view.dart';
 import '../application/search_controller.dart';
-import '../domain/catalog_file.dart';
 import '../domain/catalog_search.dart';
+import '../domain/file_details.dart';
 import '../domain/library_type.dart';
+import '../domain/music_metadata.dart';
 
 /// The catalog-wide search field (UC-11 main flow step 1).
 ///
@@ -102,9 +103,9 @@ class _Matches extends StatelessWidget {
 
     // Grouped by type, in the panel's own order so the results read the way
     // the library does.
-    final byType = <LibraryType, List<CatalogFile>>{};
-    for (final file in matches) {
-      byType.putIfAbsent(file.type, () => []).add(file);
+    final byType = <LibraryType, List<FileDetails>>{};
+    for (final details in matches) {
+      byType.putIfAbsent(details.file.type, () => []).add(details);
     }
     final types = [
       for (final type in LibraryType.values)
@@ -137,7 +138,7 @@ class _Matches extends StatelessWidget {
             itemCount: types.length,
             itemBuilder: (context, index) {
               final type = types[index];
-              final files = byType[type]!;
+              final rows = byType[type]!;
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -151,7 +152,8 @@ class _Matches extends StatelessWidget {
                       style: theme.textTheme.labelLarge,
                     ),
                   ),
-                  for (final file in files) _ResultRow(file: file, term: term),
+                  for (final details in rows)
+                    _ResultRow(details: details, term: term),
                 ],
               );
             },
@@ -168,25 +170,26 @@ class _Matches extends StatelessWidget {
 /// area (FR-CT-13): the rule follows the file type, and a result list that
 /// showed names on disk would put back every file name that area removes.
 /// Every other type is named by its file name, which is what it is called.
-class _ResultRow extends ConsumerWidget {
-  const _ResultRow({required this.file, required this.term});
+class _ResultRow extends StatelessWidget {
+  const _ResultRow({required this.details, required this.term});
 
-  final CatalogFile file;
+  final FileDetails details;
   final String term;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    final file = details.file;
     final isAudio = file.type == LibraryType.audio;
     // `tagOr` rather than a fallback written out here: that helper is the one
     // place an absent tag becomes a word, and a second copy of the rule here
-    // is exactly what would let this screen and the music area disagree. No
-    // `MusicEntry` is built to reach it — the fetched metadata's tags are
-    // passed straight through, the same way `MusicEntry` itself does.
+    // is exactly what would let this screen and the music area disagree. The
+    // row's own metadata is read straight off it — the listing carries it
+    // already, so there is no per-file provider to ask.
     final metadata = isAudio
-        ? ref.watch(audioMetadataProvider(file)).value
+        ? MusicMetadata.fromDetails(details.metadata)
         : null;
     final title = isAudio
         ? tagOr(metadata?.title, l10n.musicUnknownTitle)

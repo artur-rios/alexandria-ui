@@ -87,11 +87,16 @@ class FakeCoreClient implements CoreClient {
            filesListResult ??
            (
              status: 0,
+             // Each row is a FileView too, the same shape `fileByUuidResult`
+             // answers: the core's listing route answers this now, not a bare
+             // file record.
              json:
-                 '[{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
+                 '[{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
                  '"name":"Kind of Blue.flac",'
                  '"path":"/home/owner/music/Kind of Blue.flac",'
-                 '"fileType":"audio","state":"active"}]',
+                 '"fileType":"audio","state":"active"},'
+                 '"metadata":{"type":"audio","artist":"Miles Davis",'
+                 '"album":"Kind of Blue","year":1959}}]',
            ),
        indexRefreshStartResult =
            indexRefreshStartResult ??
@@ -723,6 +728,20 @@ class FakeCoreClient implements CoreClient {
   ) async {
     comicPages.add((uuid: uuid, page: page));
     return comicPageResponse;
+  }
+
+  /// What [fileThumbnail] answers (UC-21, FR-PL-07).
+  CoreJsonResponse thumbnailResponse = (status: PLAYBACK_OK, json: null);
+
+  /// Raised by [fileThumbnail] instead of answering, when set.
+  bool failOnFileThumbnail = false;
+
+  @override
+  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async {
+    if (failOnFileThumbnail) {
+      throw const CoreCallException('file thumbnail call failed');
+    }
+    return thumbnailResponse;
   }
 
   /// What [fileReadContent] answers (UC-18).

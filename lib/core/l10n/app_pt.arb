@@ -215,7 +215,6 @@
   "musicUnknownTitle": "Título desconhecido",
   "musicUnknownArtist": "Artista desconhecido",
   "musicUnknownAlbum": "Álbum desconhecido",
-  "musicLoading": "Lendo metadados: {read} de {total}",
   "musicEmpty": "Nenhum arquivo de áudio catalogado ainda.",
   "signOut": "Sair",
   "signOutUnsavedTitle": "Alterações não salvas",

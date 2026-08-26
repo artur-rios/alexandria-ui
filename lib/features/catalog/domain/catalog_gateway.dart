@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
@@ -14,7 +16,12 @@ part 'catalog_gateway.freezed.dart';
 @freezed
 sealed class CatalogListing with _$CatalogListing {
   /// The core answered with [files], which may be empty (AF-01).
-  const factory CatalogListing.loaded({required List<CatalogFile> files}) =
+  ///
+  /// Each row is the same [FileDetails] record the single-file call answers:
+  /// the file, its metadata, and the scalars the core extracted from it. The
+  /// core's listing route answers this shape now, not a bare file — a caller
+  /// that only ever wanted the file reads `.file` off each row.
+  const factory CatalogListing.loaded({required List<FileDetails> files}) =
       CatalogListingLoaded;
 
   /// The core could not answer (AF-02, AF-04).
@@ -82,6 +89,32 @@ sealed class FileRenameOutcome with _$FileRenameOutcome {
       FileRenameFailed;
 }
 
+/// What reading a file's embedded picture produced (UC-21, FR-PL-07,
+/// FR-MP-05).
+@freezed
+sealed class FileThumbnailOutcome with _$FileThumbnailOutcome {
+  /// The core answered with the picture.
+  ///
+  /// Carries [bytes] alone — the core's own `mimeType` field is dropped
+  /// rather than threaded through: nothing downstream reads it, since
+  /// `ui.instantiateImageCodec` sniffs the format from the bytes
+  /// themselves, and requiring it here would reject an otherwise
+  /// perfectly decodable picture were the core ever to omit it.
+  const factory FileThumbnailOutcome.read({required Uint8List bytes}) =
+      FileThumbnailRead;
+
+  /// The core could not answer.
+  ///
+  /// Carries a plain [Failure] rather than distinguishing "no picture
+  /// embedded" from any other reason — a file with none answers
+  /// `InvalidInput`, which is common enough that the caller (Task 4's
+  /// `AlbumCoverController`) treats every member of this variant, whatever
+  /// the code, as "show the designed jacket instead" rather than as
+  /// something worth telling the owner about.
+  const factory FileThumbnailOutcome.failed({required Failure failure}) =
+      FileThumbnailFailed;
+}
+
 /// The application's view of the core's catalog queries (IR-02, NFR-17).
 abstract interface class CatalogGateway {
   /// The files of [type] in [lifecycle], merged across every registered
@@ -135,6 +168,17 @@ abstract interface class CatalogGateway {
   Future<FileRenameOutcome> renameFile({
     required String uuid,
     required String name,
+    required String credential,
+  });
+
+  /// The picture embedded in the file [uuid] identifies, if it carries one
+  /// (FR-PL-07, UC-21).
+  ///
+  /// A file with none answers `InvalidInput` — common, not exceptional — so
+  /// this is not named `thumbnailOrFail`: refusing is as normal an answer as
+  /// reading the bytes.
+  Future<FileThumbnailOutcome> fileThumbnail({
+    required String uuid,
     required String credential,
   });
 }

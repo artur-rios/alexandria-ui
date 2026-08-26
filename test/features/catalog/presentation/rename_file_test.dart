@@ -41,7 +41,7 @@ void main() {
     final loaded = details ?? aTrack();
     final gateway = FakeCatalogGateway(
       listings: {
-        LibraryType.audio: CatalogListing.loaded(files: [loaded.file]),
+        LibraryType.audio: CatalogListing.loaded(files: [loaded]),
       },
     );
     gateway.details[loaded.file.uuid] = FileDetailsOutcome.read(

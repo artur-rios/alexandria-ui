@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -32,6 +33,7 @@ class AlbumStage extends StatefulWidget {
     required this.album,
     this.size = 420,
     this.onInserted,
+    this.cover,
     super.key,
   });
 
@@ -63,6 +65,18 @@ class AlbumStage extends StatefulWidget {
   /// Called once, when the insertion finishes — how the screen knows not to
   /// play another insertion for the next track of the same record.
   final VoidCallback? onInserted;
+
+  /// The current album's own picture, decoded and ready to paint, or `null`
+  /// to draw the designed jacket (design section 4).
+  ///
+  /// A plain data parameter, sourced by the caller from
+  /// `albumCoverControllerProvider` — the same way [title], [artist] and
+  /// [album] already arrive as plain strings rather than this widget
+  /// reading a provider for them itself. Swapping this between frames does
+  /// not touch either [AnimationController] below: [StageLayout] only
+  /// repaints the sleeve with it, which is what keeps a cover arriving
+  /// mid-insertion from restarting anything (design section 4).
+  final ui.Image? cover;
 
   /// How long the insertion takes, start to finish (Reference values).
   static const Duration insertionDuration = Duration(milliseconds: 4400);
@@ -254,6 +268,7 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
             caseDeparture: _hold.value,
             mediumEmergence: _mediumOut.value,
             travel: _travel.value,
+            cover: widget.cover,
           ),
         ),
       ),
