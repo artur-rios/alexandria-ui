@@ -67,6 +67,28 @@ void main() {
     },
   );
 
+  test('GivenAnActivityWhoseBeginFails_WhenASessionIsEstablished_'
+      'ThenTheOtherActivitiesStillBegin', () async {
+    // An unguarded throw from one activity's `begin()` — reading a gateway
+    // or calling a core that is not ready, most concretely — must not
+    // become an unhandled zone error that takes the whole `establish` call
+    // down with it: sign-in has nothing to do with what indexing's
+    // re-check needs to run, and one activity's problem must stay its own.
+    final throwing = FakeSessionActivity(beginThrows: true);
+    final other = FakeSessionActivity();
+    final container = buildTestContainer(
+      overrides: [
+        sessionActivitiesProvider.overrideWithValue([throwing, other]),
+      ],
+    );
+
+    container.read(sessionControllerProvider.notifier).establish(session);
+    await pumpEventQueue();
+
+    expect(throwing.beginCount, 1);
+    expect(other.beginCount, 1);
+  });
+
   test(
     'GivenAnActiveSession_WhenTheCredentialIsRead_ThenItIsTheCoresSessionId',
     () {

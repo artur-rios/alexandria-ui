@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
+import '../../shell/domain/session_activity.dart';
 import '../domain/session.dart';
 import 'session_state.dart';
 
@@ -58,7 +59,23 @@ class SessionController extends Notifier<SessionState> {
       // `begin()` may genuinely go and ask the core, and establishing a
       // session — what the login screen calls on its way to the shell — must
       // not block on that.
-      unawaited(activity.begin());
+      unawaited(_begin(activity));
+    }
+  }
+
+  /// Runs one activity's [SessionActivity.begin], logging rather than
+  /// throwing.
+  ///
+  /// `begin()` can read a gateway and call the core, and either can fail for
+  /// reasons that have nothing to do with signing in — the core not yet being
+  /// loaded, most concretely. Called from an `unawaited` loop in [establish],
+  /// an unguarded throw here becomes an unhandled zone error on every sign-in
+  /// rather than a problem the activity itself owns.
+  Future<void> _begin(SessionActivity activity) async {
+    try {
+      await activity.begin();
+    } on Object catch (error, stackTrace) {
+      _log.warning('session activity failed to begin', error, stackTrace);
     }
   }
 

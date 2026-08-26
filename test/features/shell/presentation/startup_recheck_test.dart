@@ -23,11 +23,15 @@ void main() {
   testWidgets(
     'GivenACatalogThatFellBehind_WhenTheOwnerSignsIn_ThenTheStripShowsARecheck',
     (tester) async {
-      // A run already under way by the time `startRefresh` asks
-      // `listActiveRuns` — determinate, so the bar paints once rather than
-      // animating forever and hanging `signIn`'s own `pumpAndSettle`.
+      // `begin()` checks what the core already has outstanding
+      // (`ActiveRunsController`) before it ever asks `startRefresh` to start
+      // one (FR-LB-19), so `listActiveRuns` must answer "nothing outstanding"
+      // until the refresh this test is about has genuinely started — or the
+      // check itself would refuse to start it. Once it has, determinate, so
+      // the bar paints once rather than animating forever and hanging
+      // `signIn`'s own `pumpAndSettle`.
       final gateway = FakeIndexGateway()
-        ..activeRunsOutcome = const ActiveRunsOutcome.read(
+        ..activeRunsOutcomeOnceRefreshStarts = const ActiveRunsOutcome.read(
           runs: [
             IndexRun(
               runId: '8c2d0e51-77af-4b93-8a10-2f6c4d9b1e37',

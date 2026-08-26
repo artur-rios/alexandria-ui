@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/features/library_sources/application/index_session_activity.dart';
 import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
+import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
+import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -137,40 +141,92 @@ void main() {
     },
   );
 
-  test(
-    'GivenARunAlreadyInFlight_WhenTheSessionBegins_ThenItIsNotDisturbed',
-    () async {
-      final sut = await build(
-        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
-      );
-      await sut.ref.read(indexRunsControllerProvider.notifier).startRefresh();
-      final runningId = sut.ref
-          .read(indexRunsControllerProvider)
-          .refreshRun
-          ?.runId;
-      expect(sut.gateway.refreshStarts, hasLength(1));
-      await sut.ref
-          .read(preferencesControllerProvider.notifier)
-          .setRechecksAtStartup(true);
+  test('GivenARunOutstandingFromThePreviousSession_WhenTheSessionBegins_'
+      'ThenNoSecondRunIsStarted', () async {
+    // The run this test cares about is invisible to `IndexRunsController`
+    // by construction: that controller is built fresh at sign-in, so its
+    // own `isRefreshing` cannot know about a scan the core was still doing
+    // before this session began (FR-LB-19). Nothing here calls
+    // `startRefresh` first — doing so would make this the same case
+    // `index_runs_controller_test`'s AF-01 coverage already proves, and
+    // would pass even if `begin()` never consulted anything at all. What
+    // is outstanding is expressed the only way `begin()` can actually
+    // learn of it: through `listActiveRuns`, the same call
+    // `ActiveRunsController` polls with.
+    final sut = await build(
+      gateway: FakeIndexGateway()
+        ..activeRunsOutcome = const ActiveRunsOutcome.read(
+          runs: [
+            IndexRun(
+              runId: 'a-run-from-before-this-session',
+              root: '',
+              kind: IndexRunKind.refresh,
+              status: IndexRunStatus.running,
+            ),
+          ],
+        ),
+    );
+    await sut.ref
+        .read(preferencesControllerProvider.notifier)
+        .setRechecksAtStartup(true);
 
-      await activityOf(sut.ref).begin();
+    await activityOf(sut.ref).begin();
 
-      // The catalog *was* asked about — proving `begin()` reached
-      // `startRefresh` rather than returning early on its own, the same
-      // proof the empty-catalog test above relies on. Without this, a
-      // `begin()` that does nothing at all would pass every assertion below
-      // just as well as a correct one.
-      expect(sut.gateway.catalogedFileCountAsked, 1);
-      // AF-01's own rule: a second refresh is refused while one is running.
-      // "Not disturbed" is measured, not assumed: the gateway was not asked
-      // again, the run already in flight is still the very same run, and no
-      // refusal was left on state — `begin()` asks `startRefresh` for
-      // `reportRefusals: false`, so AF-01's own refusal notice never reaches
-      // the screen for a re-check nobody asked for.
-      expect(sut.gateway.refreshStarts, hasLength(1));
-      final state = sut.ref.read(indexRunsControllerProvider);
-      expect(state.refreshRun?.runId, runningId);
-      expect(state.refreshRefusal, isNull);
-    },
-  );
+    // `activeRunsControllerProvider` only knows about the outstanding run
+    // once something has actually called `listActiveRuns` and applied the
+    // read — a no-op `begin()` would leave this empty. This is what rules
+    // out a `begin()` that skips starting a refresh for the wrong reason
+    // (never reaching the gateway at all) passing this test for free.
+    expect(sut.ref.read(activeRunsControllerProvider).runs, hasLength(1));
+    // The proof this test exists for: knowing the run is outstanding,
+    // `begin()` never reached `startRefresh` — not even far enough to ask
+    // the catalog count, and certainly not far enough to start a second run
+    // over the one already outstanding.
+    expect(sut.gateway.catalogedFileCountAsked, 0);
+    expect(sut.gateway.refreshStarts, isEmpty);
+    expect(sut.ref.read(indexRunsControllerProvider).refreshRefusal, isNull);
+  });
+
+  test('GivenTheGatewayCallIsStillPending_WhenTheOwnerSignsOutMidFlight_'
+      'ThenNothingThrows', () async {
+    // `begin()`'s own call into `startRefresh` awaits the gateway before it
+    // ever assigns `state` again. `IndexSessionActivity.end()` — what a
+    // sign-out fires — invalidates `indexRunsControllerProvider`, which is
+    // the very notifier `startRefresh` is suspended inside of. Riverpod
+    // disposes a notifier's `Ref` on invalidation, and using a disposed
+    // `Ref` — assigning `state`, or reading another provider through it,
+    // both of which `startRefresh` does after the gateway answers — throws.
+    // This is the scenario the review flagged as unverified: does that
+    // throw actually happen, and if so, does it escape?
+    final gate = Completer<void>();
+    final gateway = FakeIndexGateway()..catalogedFileCountGate = gate;
+    final sut = await build(gateway: gateway);
+    await sut.ref
+        .read(preferencesControllerProvider.notifier)
+        .setRechecksAtStartup(true);
+
+    final beginFuture = activityOf(sut.ref).begin();
+
+    // Give `begin()` a chance to reach the gateway and suspend on the gate
+    // before signing out — otherwise the race this test exists to cover
+    // would not yet have started.
+    await pumpEventQueue();
+    // The proof the race is actually set up: `startRefresh` reached the
+    // gateway and is genuinely suspended on the gate, not finished before
+    // sign-out ever ran.
+    expect(gateway.catalogedFileCountAsked, 1);
+
+    // Signing out while `begin()`'s call is still outstanding.
+    await activityOf(sut.ref).end();
+    gate.complete();
+
+    // Not `expectLater(beginFuture, completes)`: that only proves the
+    // Future resolves, which it would either way — `begin()` is called
+    // directly here, outside `SessionController._begin`'s try/catch, so an
+    // unhandled throw inside `IndexRunsController.startRefresh` after
+    // disposal would surface right here rather than being swallowed
+    // upstream. A caught StateError from using a disposed `Ref` would fail
+    // this await; it does not, which is the proof nothing throws.
+    await beginFuture;
+  });
 }

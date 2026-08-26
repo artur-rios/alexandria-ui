@@ -13,23 +13,13 @@ import '../../../support/test_container.dart';
 void main() {
   const goodPassword = 'a decent long passphrase';
 
-  ProviderContainer containerWith(FakeAuthGateway gateway) {
-    final container = buildTestContainer(
-      overrides: [
-        ...fakeCoreOverrides(),
-        authGatewayProvider.overrideWithValue(gateway),
-      ],
-    );
-    // No startup ever runs over this container, so it is honest about never
-    // having a core to re-check against: a successful registration's own
-    // unawaited call to `begin()` (FR-LB-21) would otherwise reach for one
-    // that was never loaded, over a scenario this suite has nothing to do
-    // with.
-    container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
-    return container;
-  }
+  ProviderContainer containerWith(FakeAuthGateway gateway) =>
+      buildTestContainer(
+        overrides: [
+          ...fakeCoreOverrides(),
+          authGatewayProvider.overrideWithValue(gateway),
+        ],
+      );
 
   SignUpEditing editingState(ProviderContainer container) {
     final state = container.read(signUpControllerProvider);

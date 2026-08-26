@@ -14,6 +14,7 @@ class FakeSessionActivity implements SessionActivity {
     this.holdsUnsavedChanges = false,
     this.continuesInTheCore = false,
     this.onEnd,
+    this.beginThrows = false,
   });
 
   @override
@@ -26,8 +27,17 @@ class FakeSessionActivity implements SessionActivity {
   /// activity was wound down.
   final void Function()? onEnd;
 
+  /// Whether [begin] should throw rather than complete — a stand-in for an
+  /// activity whose `begin()` reads a gateway or calls a core that is not
+  /// ready, so a test can prove that failure stays this activity's own
+  /// problem rather than an unhandled error on every sign-in.
+  final bool beginThrows;
+
   /// How many times [end] was called.
   int endCount = 0;
+
+  /// How many times [begin] was called, whether or not it threw.
+  int beginCount = 0;
 
   @override
   Future<void> end() async {
@@ -36,7 +46,10 @@ class FakeSessionActivity implements SessionActivity {
   }
 
   @override
-  Future<void> begin() async {}
+  Future<void> begin() async {
+    beginCount++;
+    if (beginThrows) throw StateError('begin failed');
+  }
 }
 
 /// A [SessionActivity] that records whether the session was already active

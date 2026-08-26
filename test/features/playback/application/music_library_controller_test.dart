@@ -94,14 +94,6 @@ void main() {
         overrides: [catalogGatewayProvider.overrideWithValue(gateway)],
       );
       addTearDown(container.dispose);
-      // No startup ever runs over this container, so it is honest about
-      // never having a core to re-check against: `establish`'s own
-      // unawaited call to `begin()` (FR-LB-21) would otherwise reach for one
-      // that was never loaded, over a scenario this test has nothing to do
-      // with.
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setRechecksAtStartup(false);
       container
           .read(sessionControllerProvider.notifier)
           .establish(FakeAuthGateway.defaultSession);
