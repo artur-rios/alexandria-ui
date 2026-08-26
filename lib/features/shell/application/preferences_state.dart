@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../playback/domain/album_medium.dart';
+
 part 'preferences_state.freezed.dart';
 
 /// The owner's theme and language, and whether the last change reached the
@@ -20,6 +22,7 @@ sealed class PreferencesState with _$PreferencesState {
   const factory PreferencesState({
     @Default(ThemeMode.system) ThemeMode themeMode,
     Locale? locale,
+    @Default(AlbumAnimationMode.byYear) AlbumAnimationMode albumAnimation,
     @Default(false) bool lastChangeUnsaved,
   }) = _PreferencesState;
 }

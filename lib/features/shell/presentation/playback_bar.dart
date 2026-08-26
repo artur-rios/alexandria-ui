@@ -9,8 +9,9 @@ import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../../playback/application/audio_playback_controller.dart';
 import '../../playback/domain/media_player.dart';
-import '../../playback/presentation/album_player_screen.dart';
+import '../../playback/presentation/album_visor.dart';
 import '../../playback/presentation/music_display_name.dart';
+import '../../playback/presentation/now_playing_screen.dart';
 
 /// The persistent playback bar (FR-UX-01, FR-PL-05).
 ///
@@ -28,8 +29,15 @@ class PlaybackBar extends ConsumerWidget {
   ///
   /// Fixed rather than intrinsic: the content area is laid out above it, and a
   /// bar that changed height as its contents arrived would reflow the listing
-  /// behind it.
-  static const double height = 64;
+  /// behind it. Tall enough for [AlbumVisor]'s own recess plus a sliver of the
+  /// panel around it (Task 8) — without that margin the recess would touch
+  /// the bar's own top and bottom edges, which reads as the bar being cut to
+  /// the icon's size rather than the icon sitting inside the bar.
+  ///
+  /// Derived from [AlbumVisor.defaultSize] (Finding 10) rather than a second,
+  /// hardcoded `64` — a second copy of that number is exactly what let this
+  /// margin drift out of sync with the recess it exists to leave room around.
+  static const double height = AlbumVisor.defaultSize + AppSpacing.sm * 2;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -105,7 +113,7 @@ class _Bar extends ConsumerWidget {
     return Row(
       children: [
         const SizedBox(width: AppSpacing.md),
-        const Icon(Icons.music_note),
+        const AlbumVisor(),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(
@@ -165,7 +173,7 @@ class _Bar extends ConsumerWidget {
         IconButton(
           tooltip: l10n.audioOpenPlayer,
           icon: const Icon(Icons.expand_less),
-          onPressed: () => unawaited(AlbumPlayerScreen.show(context)),
+          onPressed: () => unawaited(NowPlayingScreen.show(context)),
         ),
         const SizedBox(width: AppSpacing.md),
       ],

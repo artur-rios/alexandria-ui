@@ -2,6 +2,7 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/catalog/presentation/music_metadata_form.dart';
+import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -42,6 +43,15 @@ void main() {
         ),
       ],
     );
+    // This file is about the row menu's five actions (UC-46, FR-CT-14), not
+    // about UC-21's animation — `now_playing_screen_test.dart` owns that.
+    // Left at its untouched default, choosing "Play album" or "Play artist"
+    // below would owe an insertion and the shell's own auto-open listener
+    // (Task 7) would push that screen over this one mid-test.
+    await container
+        .read(preferencesControllerProvider.notifier)
+        .setAlbumAnimation(AlbumAnimationMode.off);
+
     container
         .read(shellControllerProvider.notifier)
         .go(ShellDestination.music);

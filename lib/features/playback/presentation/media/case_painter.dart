@@ -1,0 +1,211 @@
+import 'package:flutter/material.dart';
+
+import '../../../../core/theme/album_palette.dart';
+import '../../domain/album_medium.dart';
+
+/// The case the medium comes out of and goes back into (UC-21, FR-PL-07).
+///
+/// One painter for all three shapes rather than three, because the shape is
+/// the only thing that changes by medium — the fill, the lit edge, the drop
+/// shadow and the typeset title and artist are drawn the same way regardless
+/// of which case they sit on.
+class CasePainter extends CustomPainter {
+  /// Creates the painter.
+  const CasePainter({
+    required this.palette,
+    required this.medium,
+    required this.sleeve,
+    required this.title,
+    required this.artist,
+    required this.direction,
+  });
+
+  /// The artwork's colours (FR-UX-07) — used here for the lit edge and the
+  /// drop shadow; the jacket's own face colour is [sleeve].
+  final AlbumPalette palette;
+
+  /// Which case shape to draw.
+  final AlbumMedium medium;
+
+  /// The jacket's face colour, picked by `sleeveIndexFor` from
+  /// [AlbumPalette.sleeveHues].
+  final Color sleeve;
+
+  /// The album title, wrapped over up to two lines.
+  final String title;
+
+  /// The artist, on one line beneath the title.
+  final String artist;
+
+  /// The text direction the title and artist are laid out in, taken from
+  /// the caller rather than assumed, so a right-to-left album title reads
+  /// correctly on the jacket.
+  final TextDirection direction;
+
+  /// The case's own aspect ratio, by medium — a jacket is square, a
+  /// cassette case is taller than it is wide, and a jewel case is a little
+  /// taller than it is wide with room for its spine.
+  static double aspectFor(AlbumMedium medium) => switch (medium) {
+    AlbumMedium.vinyl => 1,
+    AlbumMedium.tape => 0.66,
+    AlbumMedium.disc => 0.90,
+  };
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final margin = w * 0.04;
+    final bounds = Rect.fromLTWH(margin, margin, w - margin * 2, h - margin * 2);
+
+    _paintShadow(canvas, bounds);
+
+    switch (medium) {
+      case AlbumMedium.disc:
+        _paintJewelCase(canvas, bounds);
+      case AlbumMedium.tape:
+        _paintCassetteCase(canvas, bounds);
+      case AlbumMedium.vinyl:
+        _paintJacket(canvas, bounds);
+    }
+
+    _paintText(canvas, bounds);
+  }
+
+  void _paintShadow(Canvas canvas, Rect bounds) {
+    final shadowRect = bounds.shift(Offset(bounds.width * 0.03, bounds.height * 0.04));
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(shadowRect, Radius.circular(bounds.width * 0.02)),
+      Paint()
+        ..color = palette.contactShadow
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, bounds.width * 0.02),
+    );
+  }
+
+  void _paintJacket(Canvas canvas, Rect bounds) {
+    _paintFace(canvas, RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.015)));
+  }
+
+  void _paintCassetteCase(Canvas canvas, Rect bounds) {
+    _paintFace(canvas, RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.03)));
+  }
+
+  void _paintJewelCase(Canvas canvas, Rect bounds) {
+    final spineWidth = bounds.width * 0.10;
+    final caseRect = Rect.fromLTWH(
+      bounds.left + spineWidth,
+      bounds.top,
+      bounds.width - spineWidth,
+      bounds.height,
+    );
+    _paintFace(canvas, RRect.fromRectAndRadius(caseRect, Radius.circular(bounds.width * 0.01)));
+
+    // The hinge spine: a narrower, darker strip along the case's left edge
+    // — the ribbed hinge a jewel case shows side-on — kept unhued so it
+    // reads as clear plastic over the booklet rather than as a second
+    // sleeve colour.
+    final spineRect = Rect.fromLTWH(bounds.left, bounds.top, spineWidth, bounds.height);
+    canvas.drawRect(
+      spineRect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [palette.panelDark, palette.panelEdge, palette.panelDark],
+        ).createShader(spineRect),
+    );
+    final rib = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = spineWidth * 0.06
+      ..color = palette.chromeDark.withValues(alpha: 0.5);
+    for (var i = 1; i < 6; i++) {
+      final y = bounds.top + bounds.height * i / 6;
+      canvas.drawLine(Offset(spineRect.left, y), Offset(spineRect.right, y), rib);
+    }
+  }
+
+  /// The fill, lit top edge and outline shared by every case shape.
+  void _paintFace(Canvas canvas, RRect shape) {
+    canvas.drawRRect(shape, Paint()..color = sleeve);
+
+    canvas.drawRRect(
+      shape,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            palette.sleeveInk.withValues(alpha: 0.16),
+            palette.sleeveInk.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.18],
+        ).createShader(shape.outerRect),
+    );
+
+    canvas.drawRRect(
+      shape,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = shape.width * 0.006
+        ..color = palette.panelEdge.withValues(alpha: 0.7),
+    );
+  }
+
+  void _paintText(Canvas canvas, Rect bounds) {
+    final textLeft = medium == AlbumMedium.disc
+        ? bounds.left + bounds.width * 0.10 + bounds.width * 0.10
+        : bounds.left + bounds.width * 0.10;
+    final textWidth = bounds.right - bounds.width * 0.10 - textLeft;
+    final textTop = bounds.top + bounds.height * 0.60;
+
+    final titlePainter = TextPainter(
+      text: TextSpan(
+        text: title,
+        style: TextStyle(
+          color: palette.sleeveInk,
+          fontSize: bounds.width * 0.09,
+          fontWeight: FontWeight.w600,
+          height: 1.15,
+        ),
+      ),
+      textDirection: direction,
+      textAlign: TextAlign.start,
+      maxLines: 2,
+      ellipsis: '…',
+    )..layout(maxWidth: textWidth);
+    titlePainter.paint(canvas, Offset(textLeft, textTop));
+
+    final ruleY = textTop + titlePainter.height + bounds.height * 0.03;
+    canvas.drawLine(
+      Offset(textLeft, ruleY),
+      Offset(textLeft + textWidth, ruleY),
+      Paint()
+        ..strokeWidth = bounds.height * 0.006
+        ..color = palette.sleeveInk.withValues(alpha: 0.4),
+    );
+
+    final artistPainter = TextPainter(
+      text: TextSpan(
+        text: artist,
+        style: TextStyle(
+          color: palette.sleeveInk.withValues(alpha: 0.85),
+          fontSize: bounds.width * 0.07,
+        ),
+      ),
+      textDirection: direction,
+      textAlign: TextAlign.start,
+      maxLines: 1,
+      ellipsis: '…',
+    )..layout(maxWidth: textWidth);
+    artistPainter.paint(canvas, Offset(textLeft, ruleY + bounds.height * 0.03));
+  }
+
+  @override
+  bool shouldRepaint(CasePainter oldDelegate) =>
+      oldDelegate.palette != palette ||
+      oldDelegate.medium != medium ||
+      oldDelegate.sleeve != sleeve ||
+      oldDelegate.title != title ||
+      oldDelegate.artist != artist ||
+      oldDelegate.direction != direction;
+}

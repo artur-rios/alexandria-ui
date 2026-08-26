@@ -1,13 +1,19 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/core/theme/breakpoints.dart';
 
 import '../../../support/login_harness.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/in_memory_settings_store.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-11, FR-UX-12).
 void main() {
@@ -15,8 +21,14 @@ void main() {
   Future<void> openFromShell(
     WidgetTester tester, {
     ThemeMode? themeMode,
+    SettingsStore? settings,
+    Size? surfaceSize,
   }) async {
-    await tester.pumpShell(themeMode: themeMode ?? ThemeMode.light);
+    await tester.pumpShell(
+      themeMode: themeMode ?? ThemeMode.light,
+      settings: settings,
+      surfaceSize: surfaceSize ?? const Size(1280, 800),
+    );
     await tester.openSettingsMenuEntry(
       AppLocalizations.of(tester.element(find.byType(ShellScreen)))
           .preferencesLabel,
@@ -148,6 +160,124 @@ void main() {
 
         expect(find.text('English'), findsOneWidget);
         expect(find.text('Português (Brasil)'), findsOneWidget);
+      },
+    );
+  });
+
+  group('the album animation (FR-PL-11)', () {
+    testWidgets(
+      'GivenPreferences_WhenTheyOpen_ThenEveryAnimationModeIsOffered',
+      (tester) async {
+        await openFromShell(tester);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        for (final label in [
+          l10n.animationByYear,
+          l10n.animationVinyl,
+          l10n.animationTape,
+          l10n.animationDisc,
+          l10n.animationOff,
+        ]) {
+          expect(find.text(label), findsOneWidget, reason: label);
+        }
+      },
+    );
+
+    testWidgets(
+      'GivenPreferences_WhenAModeIsChosen_ThenItIsAppliedAndStored',
+      (tester) async {
+        // The controller's own state holds the applied value whether or not
+        // the write reached the store — that is exactly AF-02's "applied but
+        // not saved" case. A test named "...AndStored" has to look at the
+        // store itself, or it would pass unchanged if the write silently
+        // failed.
+        final store = InMemorySettingsStore();
+        await openFromShell(tester, settings: store);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        await tester.tap(find.text(l10n.animationVinyl));
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(preferencesControllerProvider).albumAnimation,
+          AlbumAnimationMode.vinyl,
+        );
+        expect(store.albumAnimationMode, AlbumAnimationMode.vinyl);
+      },
+    );
+
+    testWidgets(
+      'GivenTheStoreRefusesAWrite_WhenAModeIsChosen_ThenTheOwnerIsTold',
+      (tester) async {
+        // UC-39 AF-02, for this preference specifically: the theme has such a
+        // test already, and the write-through path is shared code, but
+        // nothing exercised it for the animation setter until now.
+        await tester.pumpShellWithFailingSettings();
+        await tester.openSettingsMenuEntry(
+          AppLocalizations.of(tester.element(find.byType(ShellScreen)))
+              .preferencesLabel,
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        await tester.tap(find.text(l10n.animationVinyl));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.preferencesUnsaved), findsOneWidget);
+        expect(
+          container.read(preferencesControllerProvider).albumAnimation,
+          AlbumAnimationMode.vinyl,
+          reason: 'AF-02: the choice applies for this session either way',
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheMinimumWindow_WhenPreferencesOpen_ThenTheLastOptionIsReachable',
+      (tester) async {
+        // NFR-07: the dialog has to stay usable at the minimum supported
+        // window. Three groups and five animation options is the tallest
+        // this dialog has ever been, so this is the test that would catch
+        // the day scrolling stops being enough.
+        await openFromShell(
+          tester,
+          surfaceSize: Breakpoint.minimumWindowSize,
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        await tester.scrollUntilVisible(
+          find.text(l10n.animationOff),
+          200,
+          scrollable: find.descendant(
+            of: find.byType(PreferencesDialog),
+            matching: find.byType(Scrollable),
+          ),
+        );
+        expect(find.text(l10n.animationOff), findsOneWidget);
+
+        await tester.tap(find.text(l10n.animationOff));
+        await tester.pumpAndSettle();
+
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+        expect(
+          container.read(preferencesControllerProvider).albumAnimation,
+          AlbumAnimationMode.off,
+        );
       },
     );
   });

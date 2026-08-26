@@ -83,10 +83,12 @@ import '../../features/organization/domain/bookmark_gateway.dart';
 import '../../features/organization/domain/collection.dart';
 import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
+import '../../features/playback/application/album_animation_controller.dart';
 import '../../features/playback/application/audio_playback_controller.dart';
 import '../../features/playback/application/audio_playback_session.dart';
 import '../../features/playback/application/music_browse_controller.dart';
 import '../../features/playback/application/music_library_controller.dart';
+import '../../features/playback/application/playback_session_activity.dart';
 import '../../features/playback/application/video_playback_controller.dart';
 import '../../features/playback/application/video_playback_session.dart';
 import '../../features/playback/data/core_playback_source_gateway.dart';
@@ -541,6 +543,13 @@ final audioPlaybackControllerProvider =
       AudioPlaybackController.new,
     );
 
+/// Whether the album animation owes an insertion, and what medium it would
+/// show (UC-21).
+final albumAnimationControllerProvider =
+    NotifierProvider<AlbumAnimationController, AlbumAnimationState>(
+      AlbumAnimationController.new,
+    );
+
 /// The video player (UC-19).
 final videoPlaybackControllerProvider =
     NotifierProvider<VideoPlaybackController, VideoPlaybackState>(
@@ -950,6 +959,10 @@ final sessionActivitiesProvider = Provider<List<SessionActivity>>(
     // UC-18's editor, which is the first thing in the application that can
     // hold something the owner has not saved (UC-03 AF-01).
     EditingSessionActivity(ref),
+    // The album animation's own memory of which record it has already shown
+    // an insertion for (Finding 4) — a trace of this session, not of the
+    // record itself.
+    PlaybackSessionActivity(ref),
   ],
 );
 

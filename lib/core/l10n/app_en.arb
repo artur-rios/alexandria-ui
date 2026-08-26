@@ -318,6 +318,30 @@
   "@preferencesLanguageSystem": {
     "description": "Language option: follow the operating system's language when it is one of the two supported, and English otherwise (UC-39 AF-03)."
   },
+  "animationLabel": "Album animation",
+  "@animationLabel": {
+    "description": "Group label in preferences for the medium the now-playing animation shows."
+  },
+  "animationByYear": "Match the album's year",
+  "@animationByYear": {
+    "description": "Animation preference: the album's release year picks the medium — vinyl, cassette or compact disc."
+  },
+  "animationVinyl": "Always vinyl",
+  "@animationVinyl": {
+    "description": "Animation preference: every album arrives on a record whatever its year."
+  },
+  "animationTape": "Always cassette",
+  "@animationTape": {
+    "description": "Animation preference: every album arrives on a cassette whatever its year."
+  },
+  "animationDisc": "Always compact disc",
+  "@animationDisc": {
+    "description": "Animation preference: every album arrives on a compact disc whatever its year."
+  },
+  "animationOff": "Off",
+  "@animationOff": {
+    "description": "Animation preference: no animation, and the player never opens itself."
+  },
   "preferencesUnsaved": "Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.",
   "@preferencesUnsaved": {
     "description": "UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered."
@@ -1294,6 +1318,10 @@
   "audioOpenPlayer": "Open the player",
   "@audioOpenPlayer": {
     "description": "UC-21 main flow step 2: opens the full player, where the album's medium is shown."
+  },
+  "audioClosePlayer": "Close the player",
+  "@audioClosePlayer": {
+    "description": "UC-21 AF-03: leaves the full player and returns to wherever the owner opened it from, without touching playback."
   },
   "albumMediumVinyl": "A record turning on a turntable",
   "@albumMediumVinyl": {

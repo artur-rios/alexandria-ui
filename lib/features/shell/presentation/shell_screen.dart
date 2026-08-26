@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,6 +12,7 @@ import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
 import '../../organization/presentation/bookmarks_view.dart';
 import '../../playback/presentation/music_library_view.dart';
+import '../../playback/presentation/now_playing_screen.dart';
 import '../domain/shell_destination.dart';
 import 'background_activity_strip.dart';
 import 'playback_bar.dart';
@@ -31,6 +34,54 @@ class ShellScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final destination = ref.watch(shellControllerProvider);
+
+    // UC-21 main flow step 2: the player opens itself the moment something
+    // that owes an insertion starts, from wherever it was started — the
+    // shell is where every path into playback converges, so a listener here
+    // is the one place that covers all of them without any call site having
+    // to remember to open it itself.
+    //
+    // `ref.listen` rather than reading `insertionOwed` in `build` and pushing
+    // from inside it: a route push is a side effect, and Riverpod only calls
+    // a widget's `listen` callback once the state change has actually been
+    // committed — after this build, not during it — which is what lets
+    // `Navigator.of(context).push` run here safely.
+    //
+    // Edge-triggers on `owedIdentity` rather than on the bare `insertionOwed`
+    // boolean (Finding 1). The boolean is a level, cleared only by
+    // `AlbumStage.onInserted` — and a stage closed mid-insertion never calls
+    // it, so the flag can stay stuck `true` across a later album that also
+    // owes one: the boolean is `true` before that album starts and `true`
+    // after, never re-crossing false→true, so a listener keyed on it would
+    // never open the player again for the rest of the session.
+    // `owedIdentity` does not have that failure mode: it is recomputed from
+    // the queue on every rebuild `AlbumAnimationController.build` runs for,
+    // and it changes with *every* record that becomes newly owed — including
+    // one owed right behind an interrupted one — so it edges every time the
+    // record actually playing changes, independent of whether the previous
+    // insertion's stage ever finished, was closed early, or was never shown
+    // at all. Nothing about that depends on this widget, on `NowPlayingScreen`,
+    // or on `AlbumStage`'s lifecycle, so no path that opens or closes the
+    // player early can leave it stuck: the only thing that could is the
+    // controller itself reusing an identity for two different records, which
+    // `_identityOf`'s own contract already rules out.
+    //
+    // No separate AF-02 check here: `AlbumAnimationState.insertionOwed` (and
+    // so `owedIdentity`) is already `null`/`false` for a single track —
+    // `AlbumAnimationController` folds that rule in itself — so the level
+    // this edge-triggers on and the level `NowPlayingScreen` draws a stage
+    // from are the same one, and cannot disagree the way an
+    // independently-checked `showsAlbumAnimation` here once could.
+    //
+    // `NowPlayingScreen.show` is its own guard against stacking a second
+    // route on top of one already open (Finding 3) — every caller, this one
+    // included, goes through it, so there is nothing left to guard here.
+    ref.listen(albumAnimationControllerProvider, (previous, next) {
+      final owed = next.owedIdentity;
+      if (owed != null && owed != previous?.owedIdentity) {
+        unawaited(NowPlayingScreen.show(context));
+      }
+    });
 
     return Scaffold(
       body: Column(

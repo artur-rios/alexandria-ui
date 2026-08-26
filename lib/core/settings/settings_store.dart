@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../features/playback/domain/album_medium.dart';
+
 /// The owner's local preferences (IR-12, FR-UX-12).
 ///
 /// What this holds is owner-facing state changed in the interface: theme,
@@ -29,6 +31,13 @@ abstract interface class SettingsStore {
 
   /// Records the owner's language choice. Applied immediately.
   Future<void> setLocale(Locale? locale);
+
+  /// The animation the owner chose, or [AlbumAnimationMode.byYear] when they
+  /// have not (FR-PL-11).
+  AlbumAnimationMode get albumAnimationMode;
+
+  /// Records [mode] for the next launch.
+  Future<void> setAlbumAnimationMode(AlbumAnimationMode mode);
 
   /// Reads an arbitrary string preference.
   ///

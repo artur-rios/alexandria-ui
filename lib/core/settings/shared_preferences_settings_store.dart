@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/playback/domain/album_medium.dart';
 import 'settings_store.dart';
 
 /// The [SettingsStore] backed by `shared_preferences` (IR-12).
@@ -24,6 +25,7 @@ class SharedPreferencesSettingsStore implements SettingsStore {
 
   static const _themeModeKey = 'settings.themeMode';
   static const _localeKey = 'settings.locale';
+  static const _albumAnimationKey = 'settings.albumAnimation';
 
   @override
   ThemeMode get themeMode => switch (_preferences.getString(_themeModeKey)) {
@@ -64,6 +66,15 @@ class SharedPreferencesSettingsStore implements SettingsStore {
           : '${locale.languageCode}_$countryCode',
     );
   }
+
+  @override
+  AlbumAnimationMode get albumAnimationMode =>
+      AlbumAnimationMode.byName(_preferences.getString(_albumAnimationKey)) ??
+      AlbumAnimationMode.byYear;
+
+  @override
+  Future<void> setAlbumAnimationMode(AlbumAnimationMode mode) =>
+      _preferences.setString(_albumAnimationKey, mode.name);
 
   @override
   String? getString(String key) => _preferences.getString(key);

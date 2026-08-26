@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../playback/domain/album_medium.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
 ///
@@ -82,6 +85,30 @@ class PreferencesDialog extends ConsumerWidget {
                     for (final option in _LanguageOption.values)
                       RadioListTile<String>(
                         value: option.tag,
+                        title: Text(option.label(l10n)),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+              _GroupLabel(l10n.animationLabel),
+              RadioGroup<AlbumAnimationMode>(
+                groupValue: preferences.albumAnimation,
+                // Finding 10: `setAlbumAnimation` returns a `Future<void>`,
+                // and a bare ternary would discard it — `unawaited` says so
+                // on purpose, the same way every other fire-and-forget call
+                // in this application does.
+                onChanged: (mode) => mode == null
+                    ? null
+                    : unawaited(controller.setAlbumAnimation(mode)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final option in _AnimationOption.values)
+                      RadioListTile<AlbumAnimationMode>(
+                        value: option.mode,
                         title: Text(option.label(l10n)),
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -171,6 +198,27 @@ enum _ThemeOption {
     _ThemeOption.system => l10n.preferencesThemeSystem,
     _ThemeOption.light => l10n.preferencesThemeLight,
     _ThemeOption.dark => l10n.preferencesThemeDark,
+  };
+}
+
+/// The album animation choices, in the order they are offered.
+enum _AnimationOption {
+  byYear(AlbumAnimationMode.byYear),
+  vinyl(AlbumAnimationMode.vinyl),
+  tape(AlbumAnimationMode.tape),
+  disc(AlbumAnimationMode.disc),
+  off(AlbumAnimationMode.off);
+
+  const _AnimationOption(this.mode);
+
+  final AlbumAnimationMode mode;
+
+  String label(AppLocalizations l10n) => switch (this) {
+    _AnimationOption.byYear => l10n.animationByYear,
+    _AnimationOption.vinyl => l10n.animationVinyl,
+    _AnimationOption.tape => l10n.animationTape,
+    _AnimationOption.disc => l10n.animationDisc,
+    _AnimationOption.off => l10n.animationOff,
   };
 }
 

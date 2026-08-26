@@ -253,6 +253,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preferencesLanguageSystem => 'Match the system';
 
   @override
+  String get animationLabel => 'Album animation';
+
+  @override
+  String get animationByYear => 'Match the album\'s year';
+
+  @override
+  String get animationVinyl => 'Always vinyl';
+
+  @override
+  String get animationTape => 'Always cassette';
+
+  @override
+  String get animationDisc => 'Always compact disc';
+
+  @override
+  String get animationOff => 'Off';
+
+  @override
   String get preferencesUnsaved =>
       'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.';
 
@@ -977,6 +995,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get audioOpenPlayer => 'Open the player';
+
+  @override
+  String get audioClosePlayer => 'Close the player';
 
   @override
   String get albumMediumVinyl => 'A record turning on a turntable';

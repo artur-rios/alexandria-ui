@@ -524,6 +524,42 @@ abstract class AppLocalizations {
   /// **'Match the system'**
   String get preferencesLanguageSystem;
 
+  /// Group label in preferences for the medium the now-playing animation shows.
+  ///
+  /// In en, this message translates to:
+  /// **'Album animation'**
+  String get animationLabel;
+
+  /// Animation preference: the album's release year picks the medium — vinyl, cassette or compact disc.
+  ///
+  /// In en, this message translates to:
+  /// **'Match the album\'s year'**
+  String get animationByYear;
+
+  /// Animation preference: every album arrives on a record whatever its year.
+  ///
+  /// In en, this message translates to:
+  /// **'Always vinyl'**
+  String get animationVinyl;
+
+  /// Animation preference: every album arrives on a cassette whatever its year.
+  ///
+  /// In en, this message translates to:
+  /// **'Always cassette'**
+  String get animationTape;
+
+  /// Animation preference: every album arrives on a compact disc whatever its year.
+  ///
+  /// In en, this message translates to:
+  /// **'Always compact disc'**
+  String get animationDisc;
+
+  /// Animation preference: no animation, and the player never opens itself.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get animationOff;
+
   /// UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered.
   ///
   /// In en, this message translates to:
@@ -1817,6 +1853,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open the player'**
   String get audioOpenPlayer;
+
+  /// UC-21 AF-03: leaves the full player and returns to wherever the owner opened it from, without touching playback.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the player'**
+  String get audioClosePlayer;
 
   /// UC-21 / FR-PL-07: what the animation is, for a screen reader.
   ///
