@@ -60,9 +60,9 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
   static Future<void> show(BuildContext context) {
     if (_mounted) return Future<void>.value();
 
-    return Navigator.of(
-      context,
-    ).push<void>(MaterialPageRoute(builder: (context) => const NowPlayingScreen()));
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (context) => const NowPlayingScreen()),
+    );
   }
 
   @override
@@ -101,10 +101,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       AlbumCoverDesigned() => null,
     };
 
-    // `AlbumAnimationState.medium` is already `null` for a single track
-    // (AF-02) as well as for the mode being off — `AlbumAnimationController`
-    // folds that rule in itself, so there is no separate queue-kind check
-    // to make here.
+    // `AlbumAnimationState.medium` is already `null` for an empty queue and
+    // for the mode being off — `AlbumAnimationController` folds both rules
+    // in itself, so there is no separate queue-kind check to make here.
     final showsAnimation = animation.medium != null && current != null;
 
     // Reduced motion means `AlbumStage` never calls `onInserted` — it has
@@ -155,8 +154,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             viewport.maxHeight - NowPlayingScreen._reservedForTextAndControls,
           );
           final showsStage =
-              showsAnimation &&
-              stageSize >= NowPlayingScreen._minimumStageSize;
+              showsAnimation && stageSize >= NowPlayingScreen._minimumStageSize;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),

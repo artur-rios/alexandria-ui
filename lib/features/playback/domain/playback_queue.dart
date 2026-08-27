@@ -34,8 +34,9 @@ class PlaybackQueue {
   /// The tracks, in the order they will play.
   final List<CatalogFile> tracks;
 
-  /// What the owner asked for, which is what UC-21 turns on: an album or an
-  /// artist gets the animation, a single track does not (UC-21 AF-02).
+  /// What the owner asked for (UC-20 main flow step 1). The animation no
+  /// longer reads this to decide whether it shows (see [showsAlbumAnimation]):
+  /// a track, an album and an artist all own the same rule now.
   final QueueKind kind;
 
   /// The album or artist name, or `null` — for a single track, where the
@@ -92,11 +93,13 @@ class PlaybackQueue {
     skipped: skipped ?? this.skipped,
   );
 
-  /// Whether this queue is one the animation belongs to (UC-21 AF-02).
+  /// Whether this queue is one the animation belongs to (UC-21 main flow).
   ///
-  /// An album or an artist, not a single track: the animation is a record
-  /// being played, and one track is not a record.
-  bool get showsAlbumAnimation => kind != QueueKind.track && tracks.isNotEmpty;
+  /// Anything with tracks queued: a lone track is a record too — its own
+  /// album and artist, resolved from the music library by
+  /// `AlbumAnimationController` — so the only queue that owes no animation is
+  /// one with nothing in it at all.
+  bool get showsAlbumAnimation => tracks.isNotEmpty;
 
   /// The queue with [file] recorded as unplayable (AF-01, AF-02).
   PlaybackQueue skipping(CatalogFile file) =>

@@ -1321,7 +1321,7 @@
   },
   "audioClosePlayer": "Close the player",
   "@audioClosePlayer": {
-    "description": "UC-21 AF-03: leaves the full player and returns to wherever the owner opened it from, without touching playback."
+    "description": "UC-21 AF-02: leaves the full player and returns to wherever the owner opened it from, without touching playback."
   },
   "albumMediumVinyl": "A record turning on a turntable",
   "@albumMediumVinyl": {

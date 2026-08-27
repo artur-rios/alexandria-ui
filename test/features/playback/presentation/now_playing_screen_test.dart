@@ -29,13 +29,13 @@ import '../../../support/shell_harness.dart';
 /// Renamed from `album_player_screen_test.dart`, Task 7's own file, when
 /// `AlbumPlayerScreen` — a 360-pixel dialog — was replaced wholesale by
 /// `NowPlayingScreen`, a route that fills the window. The groups below cover
-/// what still holds: what this screen does when the queue is a single track
-/// (AF-02), leaving and returning to the player (AF-03), the screen never
-/// leaking a raw file name onto the page (FR-CT-13), that the route really
-/// does fill the window, and the auto-open behaviour Task 7 adds on top of
-/// what `album_animation_test.dart` covered for `AlbumAnimation` itself
-/// (moved to `album_stage_test.dart` in Task 5) and for
-/// `AlbumAnimationController` (covered directly in
+/// what still holds: what this screen does when the queue is a single track,
+/// which is a record too (design §1), leaving and returning to the player
+/// (AF-03), the screen never leaking a raw file name onto the page
+/// (FR-CT-13), that the route really does fill the window, and the auto-open
+/// behaviour Task 7 adds on top of what `album_animation_test.dart` covered
+/// for `AlbumAnimation` itself (moved to `album_stage_test.dart` in Task 5)
+/// and for `AlbumAnimationController` (covered directly in
 /// `album_animation_controller_test.dart`, Task 6).
 ///
 /// `pumpShell` runs with real motion by default — `AlbumStage`'s spin never
@@ -172,9 +172,8 @@ void main() {
     await settle(tester);
   }
 
-  /// Signs in and starts an album of two tracks playing (never a single one,
-  /// so whatever [mode] resolves to actually has a queue eligible to show it
-  /// — AF-02) under [mode] and [reduceMotion].
+  /// Signs in and starts an album of two tracks playing under [mode] and
+  /// [reduceMotion].
   Future<ProviderContainer> playSomething(
     WidgetTester tester, {
     AlbumAnimationMode mode = AlbumAnimationMode.off,
@@ -494,28 +493,37 @@ void main() {
     );
   });
 
-  // AF-02: a single track is not a record.
+  // A track is a record too (design §1): the animation belongs to whatever
+  // is playing, a single track from the Songs list included.
   group('a single track', () {
     testWidgets(
-      'GivenOneTrackPlays_WhenTheFullPlayerOpens_ThenNoMediumIsShown',
+      'GivenOneTrackPlays_WhenItStarts_ThenTheAnimationShowsAndThePlayerOpens',
       (tester) async {
+        // The owner's own report: playing a single track from the Songs
+        // list showed no animation and opened no player. The first play of
+        // any queue owes an insertion (Task 7 step 4's auto-open), and a
+        // track queue is no longer excluded from owing one.
         await play(tester, asTrack: true, mode: AlbumAnimationMode.byYear);
 
-        await openPlayer(tester);
-
-        expect(find.byType(AlbumStage), findsNothing);
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(find.byType(AlbumStage), findsOneWidget);
       },
     );
 
-    testWidgets('GivenOneTrackPlays_WhenTheFullPlayerOpens_ThenItStillPlays', (
-      tester,
-    ) async {
-      await play(tester, asTrack: true, mode: AlbumAnimationMode.byYear);
+    testWidgets(
+      'GivenOneTrackPlays_WhenTheOwnerOpensThePlayerManually_ThenItStillPlays',
+      (tester) async {
+        // The animation turned off, so nothing auto-opens the player and
+        // `openPlayer` below is unambiguous: this is what proves the
+        // transport still works for a lone track regardless of whether the
+        // animation is drawn.
+        await play(tester, asTrack: true, mode: AlbumAnimationMode.off);
 
-      await openPlayer(tester);
+        await openPlayer(tester);
 
-      expect(find.byIcon(Icons.pause_circle), findsOneWidget);
-    });
+        expect(find.byIcon(Icons.pause_circle), findsOneWidget);
+      },
+    );
   });
 
   // AF-03: the owner goes elsewhere.
@@ -803,7 +811,9 @@ void main() {
         // the insertion the way `AlbumStage.onInserted` does when it plays,
         // then leave the player the way AF-03 already does, before the next
         // track of the same record starts.
-        container.read(albumAnimationControllerProvider.notifier).insertionShown();
+        container
+            .read(albumAnimationControllerProvider.notifier)
+            .insertionShown();
         await tester.tap(find.byTooltip(closeLabel(tester)));
         await settle(tester);
 
@@ -823,55 +833,55 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenALoneTrackStarts_WhenItPlays_ThenThePlayerDoesNotOpenItself',
-      (tester) async {
-        // Finding 4: the forward half of the AF-02 guard — a lone track
-        // owes no insertion at all (`AlbumAnimationController` folds AF-02
-        // into `insertionOwed` itself), so nothing here should ever cross
-        // the edge the auto-open listens for.
-        final gateway = FakeCatalogGateway()
-          ..addAudio(
-            uuid: 'loose-1',
-            title: 'Naima',
-            artist: 'John Coltrane',
-            year: 2001,
-          );
-        final container = await tester.pumpShell(
-          extraOverrides: <Override>[
-            catalogGatewayProvider.overrideWithValue(gateway),
-            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
-            playbackSourceGatewayProvider.overrideWithValue(
-              FakePlaybackSourceGateway(),
-            ),
-            playbackPositionsProvider.overrideWithValue(
-              FakePlaybackPositionStore(),
-            ),
-          ],
+    testWidgets('GivenALoneTrackStarts_WhenItPlays_ThenThePlayerOpensItself', (
+      tester,
+    ) async {
+      // A track is a record too (design §1): the shell's auto-open reads
+      // the very same `insertionOwed` edge whichever kind of queue crossed
+      // it, so a lone track's first play opens the player exactly as an
+      // album's or an artist's already does.
+      final gateway = FakeCatalogGateway()
+        ..addAudio(
+          uuid: 'loose-1',
+          title: 'Naima',
+          artist: 'John Coltrane',
+          year: 2001,
         );
-        await container
-            .read(preferencesControllerProvider.notifier)
-            .setAlbumAnimation(AlbumAnimationMode.byYear);
+      final container = await tester.pumpShell(
+        extraOverrides: <Override>[
+          catalogGatewayProvider.overrideWithValue(gateway),
+          audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+          playbackSourceGatewayProvider.overrideWithValue(
+            FakePlaybackSourceGateway(),
+          ),
+          playbackPositionsProvider.overrideWithValue(
+            FakePlaybackPositionStore(),
+          ),
+        ],
+      );
+      await container
+          .read(preferencesControllerProvider.notifier)
+          .setAlbumAnimation(AlbumAnimationMode.byYear);
 
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playTrack(aFile(uuid: 'loose-1'));
-        await settle(tester);
+      await container
+          .read(audioPlaybackControllerProvider.notifier)
+          .playTrack(aFile(uuid: 'loose-1'));
+      await settle(tester);
 
-        expect(find.byType(NowPlayingScreen), findsNothing);
-      },
-    );
+      expect(find.byType(NowPlayingScreen), findsOneWidget);
+    });
 
     testWidgets(
-      'GivenALoneTrackPlayedFirst_WhenAnAlbumIsStarted_ThenThePlayerOpensItself',
+      'GivenALoneTrackPlayedFirst_WhenAnAlbumStarts_ThenThePlayerOpensItselfAgain',
       (tester) async {
-        // Finding 1's recovery case: before the fix, a lone track's owed
-        // insertion never had anything to clear it (nothing shows a stage
-        // for a lone track, so `AlbumStage.onInserted` never fires), so the
-        // flag stuck at `true` and the album below found it already `true`
-        // — never crossing the edge that opens the player. With AF-02 folded
-        // into `insertionOwed` itself, a lone track never owes one to begin
-        // with, so there is nothing left to get stuck.
+        // Before this fix, a lone track never drew a stage at all — nothing
+        // showed one for `QueueKind.track` — so nothing ever called
+        // `insertionShown()` for it, and `insertionOwed` stuck at `true`
+        // through whatever played next (Finding 1's recovery case). Now a
+        // lone track is a record like any other: its own insertion is shown
+        // and acknowledged the ordinary way, closing the player the way
+        // AF-03 already does, so the album that follows crosses a fresh edge
+        // of its own rather than finding the flag already stuck `true`.
         final gateway = FakeCatalogGateway()
           ..addAudio(
             uuid: 'loose-1',
@@ -914,6 +924,18 @@ void main() {
         await container
             .read(audioPlaybackControllerProvider.notifier)
             .playTrack(aFile(uuid: 'loose-1'));
+        await settle(tester);
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+
+        container
+            .read(albumAnimationControllerProvider.notifier)
+            .insertionShown();
+        await tester.tap(find.byTooltip(closeLabel(tester)));
+        // Two runs, as `GivenTheOwnerReopensThePlayer...` above already
+        // documents: one `settle` run is 300ms, exactly the pop route's own
+        // transition duration, and a single run leaves the close too close to
+        // that edge to reliably land after it finishes.
+        await settle(tester);
         await settle(tester);
         expect(find.byType(NowPlayingScreen), findsNothing);
 
