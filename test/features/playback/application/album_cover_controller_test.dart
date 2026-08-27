@@ -156,10 +156,7 @@ void main() {
     () async {
       final gateway = libraryGateway();
       gateway.thumbnails['kob-1'] = const FileThumbnailOutcome.failed(
-        failure: Failure.unexpected(
-          family: CoreStatusFamily.playback,
-          code: 9,
-        ),
+        failure: Failure.unexpected(family: CoreStatusFamily.playback, code: 9),
       );
       final container = buildContainer(gateway);
 
@@ -311,6 +308,86 @@ void main() {
       );
     },
   );
+
+  // Finding 2: `AlbumCoverController` and `AlbumAnimationController` share
+  // `recordOf` so a track queue's identity cannot silently disagree between
+  // them — before the fix, this controller's own `_identityOf` was still
+  // per-uuid for a track queue, so playing a second track of the same album
+  // from the Songs list read as a *different* record and refetched.
+  group('a track queue (Finding 2)', () {
+    test(
+      'GivenATracksCoverIsShown_WhenAnotherTrackOfTheSameAlbumStartsFromTheSongsList_ThenTheGatewayIsNotAskedAgain',
+      () async {
+        final gateway = libraryGateway();
+        final pictureBytes = await testPictureBytes();
+        gateway.thumbnails['kob-1'] = FileThumbnailOutcome.read(
+          bytes: pictureBytes,
+        );
+        final container = buildContainer(gateway);
+        final audio = container.read(audioPlaybackControllerProvider.notifier);
+
+        await audio.playTrack(aFile(uuid: 'kob-1'));
+        // Unlike `playAlbum`, `playTrack` never reads the music library
+        // itself (design §3) — awaited explicitly here so the identity this
+        // controller resolves is the real one from the first build, not a
+        // library-still-loading fallback that would itself change identity,
+        // and so trigger a spurious refetch, the moment the library
+        // resolves behind it. In the running application the Songs list a
+        // track was tapped from cannot be showing without the library
+        // already having loaded, so this is the realistic case.
+        await container.read(musicLibraryProvider.future);
+        await settle(container);
+        expect(gateway.thumbnailsRequested, ['kob-1']);
+        final firstCover = container.read(albumCoverControllerProvider);
+        expect(firstCover, isA<AlbumCoverFetched>());
+
+        // 'kob-2' is the same album's next track, played from the Songs
+        // list rather than as a continuing album queue — `playTrack` builds
+        // an independent single-track queue for it, uuid and all. The two
+        // controllers agreeing that this is still "Kind of Blue" is what
+        // this test actually checks: `kob-2` carries no thumbnail fixture of
+        // its own, so a refetch here would answer `AlbumCoverDesigned`
+        // instead of leaving the held cover alone.
+        await audio.playTrack(aFile(uuid: 'kob-2'));
+        await container.read(musicLibraryProvider.future);
+        await settle(container);
+
+        expect(gateway.thumbnailsRequested, ['kob-1']);
+        expect(container.read(albumCoverControllerProvider), same(firstCover));
+      },
+    );
+
+    test(
+      'GivenATracksCoverIsShown_WhenATrackFromADifferentAlbumStartsFromTheSongsList_ThenTheDesignedJacketShowsAgain',
+      () async {
+        final gateway = libraryGateway();
+        final pictureBytes = await testPictureBytes();
+        gateway.thumbnails['kob-1'] = FileThumbnailOutcome.read(
+          bytes: pictureBytes,
+        );
+        final container = buildContainer(gateway);
+        final audio = container.read(audioPlaybackControllerProvider.notifier);
+
+        await audio.playTrack(aFile(uuid: 'kob-1'));
+        await container.read(musicLibraryProvider.future);
+        await settle(container);
+        expect(
+          container.read(albumCoverControllerProvider),
+          isA<AlbumCoverFetched>(),
+        );
+
+        // 'bt-1' has no thumbnail fixture, so its own fetch answers
+        // `InvalidInput` once it runs — the assertion that matters is the
+        // state right after the record changes, before anything answers.
+        await audio.playTrack(aFile(uuid: 'bt-1'));
+
+        expect(
+          container.read(albumCoverControllerProvider),
+          isA<AlbumCoverDesigned>(),
+        );
+      },
+    );
+  });
 
   group('across a session', () {
     test(

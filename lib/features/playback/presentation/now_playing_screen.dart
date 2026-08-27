@@ -17,7 +17,7 @@ import 'music_display_name.dart';
 /// replaces, drew the animation into a 360-pixel dialog because a dialog was
 /// what UC-21 first asked for, but the insertion and the spin need real room
 /// to read as a case, a medium, and a device rather than a cramped diagram.
-/// Filling the window is what gives them it. Closing the route is how AF-03's
+/// Filling the window is what gives them it. Closing the route is how AF-02's
 /// "navigates to another screen" happens — popping it leaves the queue and
 /// the bar exactly where they were, because neither one lives in this widget.
 class NowPlayingScreen extends ConsumerStatefulWidget {
@@ -60,9 +60,9 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
   static Future<void> show(BuildContext context) {
     if (_mounted) return Future<void>.value();
 
-    return Navigator.of(
-      context,
-    ).push<void>(MaterialPageRoute(builder: (context) => const NowPlayingScreen()));
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute(builder: (context) => const NowPlayingScreen()),
+    );
   }
 
   @override
@@ -101,10 +101,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       AlbumCoverDesigned() => null,
     };
 
-    // `AlbumAnimationState.medium` is already `null` for a single track
-    // (AF-02) as well as for the mode being off — `AlbumAnimationController`
-    // folds that rule in itself, so there is no separate queue-kind check
-    // to make here.
+    // `AlbumAnimationState.medium` is already `null` for an empty queue and
+    // for the mode being off — `AlbumAnimationController` folds both rules
+    // in itself, so there is no separate queue-kind check to make here.
     final showsAnimation = animation.medium != null && current != null;
 
     // Reduced motion means `AlbumStage` never calls `onInserted` — it has
@@ -155,8 +154,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             viewport.maxHeight - NowPlayingScreen._reservedForTextAndControls,
           );
           final showsStage =
-              showsAnimation &&
-              stageSize >= NowPlayingScreen._minimumStageSize;
+              showsAnimation && stageSize >= NowPlayingScreen._minimumStageSize;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -184,7 +182,18 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                       // tag naming a different thing.
                       title: musicAlbumForFile(ref, current, l10n),
                       artist: musicArtistForFile(ref, current, l10n),
-                      album: state.queue.label,
+                      // The queue's own label when it has one (an album or
+                      // an artist queue); otherwise the current track's own
+                      // raw album tag, never the localised "Unknown album"
+                      // `musicAlbumForFile` above answers — that word would
+                      // make the jacket hue depend on the interface
+                      // language, and would give every untagged track the
+                      // same hue as an album genuinely named that word.
+                      // `null` either way is `sleeveIndexFor`'s own "no name
+                      // to derive a hue from" case (Finding 1).
+                      album:
+                          state.queue.label ??
+                          musicEntryForFile(ref, current).album,
                       cover: cover,
                       size: stageSize,
                       onInserted: ref

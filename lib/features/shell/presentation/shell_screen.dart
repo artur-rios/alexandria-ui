@@ -66,12 +66,12 @@ class ShellScreen extends ConsumerWidget {
     // controller itself reusing an identity for two different records, which
     // `_identityOf`'s own contract already rules out.
     //
-    // No separate AF-02 check here: `AlbumAnimationState.insertionOwed` (and
-    // so `owedIdentity`) is already `null`/`false` for a single track —
-    // `AlbumAnimationController` folds that rule in itself — so the level
-    // this edge-triggers on and the level `NowPlayingScreen` draws a stage
-    // from are the same one, and cannot disagree the way an
-    // independently-checked `showsAlbumAnimation` here once could.
+    // No separate queue-kind check here: `owedIdentity` reads the same edge
+    // whichever kind of queue crossed it — a track queue included, since a
+    // track is a record too (design §1) — so the level this edge-triggers
+    // on and the level `NowPlayingScreen` draws a stage from are the same
+    // one, and cannot disagree the way an independently-checked
+    // `showsAlbumAnimation` here once could.
     //
     // `NowPlayingScreen.show` is its own guard against stacking a second
     // route on top of one already open (Finding 3) — every caller, this one

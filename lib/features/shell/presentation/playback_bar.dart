@@ -168,8 +168,9 @@ class _Bar extends ConsumerWidget {
         ),
         // UC-21 main flow step 2: the full player, where the medium is shown.
         // Offered whenever something is playing rather than for albums alone —
-        // the full player is also where a single track's transport is larger,
-        // and AF-02 is about the animation, not about the player.
+        // the full player is also where a single track's transport is
+        // larger, and shows the animation exactly as an album's or an
+        // artist's does (design §1).
         IconButton(
           tooltip: l10n.audioOpenPlayer,
           icon: const Icon(Icons.expand_less),

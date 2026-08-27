@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
+import '../../catalog/domain/catalog_file.dart';
 import '../../catalog/domain/catalog_gateway.dart';
 import '../../catalog/domain/library_type.dart';
 import '../../catalog/domain/music_metadata.dart';
@@ -17,6 +18,19 @@ class MusicLibrary {
 
   /// The tracks, each with its metadata.
   final List<MusicEntry> entries;
+
+  /// [file]'s own entry, or an untitled placeholder when the library holds
+  /// nothing for it — not loaded yet, or the file was never catalogued as
+  /// audio.
+  ///
+  /// The one lookup every reader of a track's metadata shares — the bar, the
+  /// search results and `AlbumAnimationController` alike (UC-20, UC-21,
+  /// FR-CT-13) — so which file a candidate matches is decided in exactly one
+  /// place.
+  MusicEntry entryFor(CatalogFile file) => entries.firstWhere(
+    (candidate) => candidate.file.uuid == file.uuid,
+    orElse: () => MusicEntry(file: file, metadata: const MusicMetadata()),
+  );
 }
 
 /// Every audio file with its metadata (UC-20 main flow step 3, UC-46,

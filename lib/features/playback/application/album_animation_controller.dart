@@ -1,12 +1,77 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
+import '../../catalog/domain/music_metadata.dart';
 import '../domain/album_medium.dart';
+import '../domain/music_grouping.dart';
 import '../domain/playback_queue.dart';
+import 'music_library_controller.dart';
 
 /// What identifies "which record is playing", as `(kind, identity)`
-/// (see [AlbumAnimationController._identityOf]).
+/// (see [recordOf]).
 typedef AlbumIdentity = (Object, String);
+
+/// The record [queue] plays: its identity — what a caller pairs with
+/// [PlaybackQueue.kind] to get an [AlbumIdentity] — and the year that picks
+/// its medium.
+///
+/// Shared by `AlbumAnimationController` and `AlbumCoverController` rather
+/// than duplicated between them, because the two have to agree on when a
+/// track change is still the same record and when it is a new one: if they
+/// disagreed, a cover could swap under a case that never re-inserted, or an
+/// insertion could play under a cover left over from the record before it
+/// (Finding 2). `AlbumCoverController` only ever reads the identity half —
+/// it has no use for a year — but calls this all the same, so there is
+/// exactly one place either fact is computed.
+///
+/// For an album or an artist queue, both come from the queue itself: the
+/// label alone is not enough for the identity, because `albumOf`/`artistOf`
+/// (`music_grouping.dart`) already treat an absent tag as "this file's own
+/// group of one" rather than as a shared value — two different untitled
+/// albums are not the same record, and folding them together here would
+/// silently break that rule for the one consumer that reads `label` as an
+/// identity instead of a display string. Falling back to the first track's
+/// uuid keeps the tracks of one untagged record identified with each other
+/// (the uuid does not change between them) while telling two different
+/// untagged records apart (their first tracks differ).
+///
+/// For a track queue — which carries no label and no year at all — both are
+/// read from [library] instead, off the current track's own album, artist
+/// and year, resolved the same way every other surface resolves a track's
+/// metadata (`MusicLibrary.entryFor`, design §2, §3). A track with no album
+/// tag falls back to its own uuid, the same untagged rule `albumOf` states;
+/// one with an album tag identifies by album and artist together, since two
+/// different artists can name an album the same thing. `library` is `null`
+/// while it has not loaded, or does not hold the track — the fallback entry
+/// that answers then has no album and no year, so the identity falls back to
+/// the uuid and the medium falls back to a disc, exactly as an unknown
+/// record does everywhere else.
+///
+/// Called only once a caller has confirmed [queue] is non-empty, so
+/// `tracks.first` is safe.
+({String identity, int? year}) recordOf(
+  PlaybackQueue queue,
+  MusicLibrary? library,
+) {
+  if (queue.kind != QueueKind.track) {
+    return (identity: queue.label ?? queue.tracks.first.uuid, year: queue.year);
+  }
+
+  final track = queue.tracks.first;
+  final entry =
+      library?.entryFor(track) ??
+      MusicEntry(file: track, metadata: const MusicMetadata());
+  final album = entry.album;
+
+  return (
+    // A plain space between them: it keeps an untagged-artist album from
+    // reading as the same identity as a different, shorter album name that
+    // happens to share a prefix, without needing a character no tag could
+    // ever carry.
+    identity: album == null ? track.uuid : '$album ${entry.artist ?? ''}',
+    year: entry.metadata.year,
+  );
+}
 
 /// What the animation should be showing, and whether it owes an insertion
 /// (UC-21 main flow step 2, FR-PL-07, FR-PL-11).
@@ -19,9 +84,8 @@ class AlbumAnimationState {
   });
 
   /// The medium to draw, or `null` when the owner turned the animation off,
-  /// or when the queue is a single track (UC-21 AF-02) — a lone track is not
-  /// a record, so there is nothing here for the caller to draw or to open a
-  /// player over.
+  /// or the queue is empty — the only queue with nothing here for the caller
+  /// to draw or to open a player over.
   final AlbumMedium? medium;
 
   /// Whether the medium has to be put into its device before it turns.
@@ -53,21 +117,12 @@ class AlbumAnimationState {
 
 /// Whether the medium has to go in again (UC-21 main flow step 2).
 ///
-/// An insertion is owed on the session's first play, and whenever the album or
-/// the artist changes — never between the tracks of one record, which is what
-/// a record already on the platter does not need, and never for a single track
-/// (AF-02), which never owes one at all. The queue's kind and label are what
-/// say which record is playing: two queues with the same pair are the same
-/// record continuing.
-///
-/// AF-02 lives here, not only in whichever widget draws the stage: a single
-/// track queue's `insertionOwed` has to be `false`, permanently, not merely
-/// "owed but not drawn" — the flag is a level, cleared only by
-/// [insertionShown], and a caller that hid the stage without also clearing the
-/// flag would leave it stuck `true` through every track that plays until the
-/// caller happens to draw a stage again. A record played straight after a lone
-/// track would then find the flag already `true` and never see the edge that
-/// says "this became newly owed."
+/// An insertion is owed on the session's first play, and whenever the record
+/// changes — never between the tracks of one record, which is what a record
+/// already on the platter does not need. A record is its album and its
+/// artist, however the queue that plays it was built: an album or an artist
+/// queue carries that label itself, and a track queue's record is resolved
+/// from the current track's own metadata (see [recordOf]).
 class AlbumAnimationController extends Notifier<AlbumAnimationState> {
   /// What the last insertion was shown for, as `(kind, identity)`.
   ///
@@ -85,15 +140,25 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
   AlbumAnimationState build() {
     final queue = ref.watch(audioPlaybackControllerProvider).queue;
     final mode = ref.watch(preferencesControllerProvider).albumAnimation;
-    final medium = mediumFor(mode, queue.year);
 
-    // `showsAlbumAnimation` already requires a non-empty queue, so there is
-    // no separate `queue.isEmpty` check left to make here.
-    if (medium == null || !queue.showsAlbumAnimation) {
+    // The only queue with nothing to show: an empty one. A queue with
+    // tracks in it always names a record, even a single-track one (design
+    // §1), so there is no further kind check to make here.
+    if (!queue.showsAlbumAnimation) {
       return const AlbumAnimationState();
     }
 
-    final identity = _identityOf(queue);
+    final library = queue.kind == QueueKind.track
+        ? ref.watch(musicLibraryProvider).value
+        : null;
+    final record = recordOf(queue, library);
+    final medium = mediumFor(mode, record.year);
+
+    if (medium == null) {
+      return const AlbumAnimationState();
+    }
+
+    final identity = (queue.kind, record.identity);
     final owed = _shownFor != identity;
 
     return AlbumAnimationState(
@@ -112,7 +177,17 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
   /// committed, which is what a state assignment here requires.
   void insertionShown() {
     final queue = ref.read(audioPlaybackControllerProvider).queue;
-    _shownFor = _identityOf(queue);
+    // `!queue.isEmpty` guards the read the same way `build`'s own
+    // `showsAlbumAnimation` check does: an empty queue's `kind` is still
+    // `QueueKind.track` (`PlaybackQueue.empty`'s own definition), and this
+    // is only ever called for a queue an insertion actually played over, so
+    // there is nothing to gain from reading `musicLibraryProvider` — and a
+    // real risk of building it before a session exists to read a credential
+    // from — if that guard were ever skipped.
+    final library = !queue.isEmpty && queue.kind == QueueKind.track
+        ? ref.read(musicLibraryProvider).value
+        : null;
+    _shownFor = (queue.kind, recordOf(queue, library).identity);
     state = AlbumAnimationState(medium: state.medium);
   }
 
@@ -132,19 +207,4 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
     _shownFor = null;
     state = build();
   }
-
-  /// What identifies "which record is playing", as `(kind, identity)`.
-  ///
-  /// The label alone is not enough: `albumOf`/`artistOf`
-  /// (`music_grouping.dart`) already treat an absent tag as "this file's own
-  /// group of one" rather than as a shared value — two different untitled
-  /// albums are not the same record, and folding them together here would
-  /// silently break that rule for the one consumer that reads `label` as an
-  /// identity instead of a display string. Falling back to the first track's
-  /// uuid keeps the tracks of one untagged record identified with each other
-  /// (the uuid does not change between them) while telling two different
-  /// untagged records apart (their first tracks differ). Called only once
-  /// [build] has confirmed the queue is non-empty, so `tracks.first` is safe.
-  AlbumIdentity _identityOf(PlaybackQueue queue) =>
-      (queue.kind, queue.label ?? queue.tracks.first.uuid);
 }

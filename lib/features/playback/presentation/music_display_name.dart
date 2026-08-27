@@ -4,6 +4,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../../catalog/domain/music_metadata.dart';
+import '../application/music_library_controller.dart';
 import '../domain/music_browse.dart';
 import '../domain/music_grouping.dart';
 import '../domain/playback_queue.dart';
@@ -58,14 +59,8 @@ String musicAlbumOf(MusicEntry entry, AppLocalizations l10n) =>
 /// title does too.
 MusicEntry musicEntryForFile(WidgetRef ref, CatalogFile file) {
   final library = ref.watch(musicLibraryProvider).value;
-  final untitled = MusicEntry(file: file, metadata: const MusicMetadata());
 
-  if (library == null) return untitled;
-
-  return library.entries.firstWhere(
-    (candidate) => candidate.file.uuid == file.uuid,
-    orElse: () => untitled,
-  );
+  return (library ?? MusicLibrary.empty).entryFor(file);
 }
 
 /// [file]'s title from its metadata, never its name on disk (FR-CT-13).

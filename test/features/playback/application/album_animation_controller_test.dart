@@ -36,10 +36,10 @@ void main() {
     return container;
   }
 
-  /// A library of one album ("Kind of Blue", two tracks, 1959 — a vinyl-era
-  /// year) by one artist, and a second album ("Blue Train", 1957) by a
-  /// different artist, so a test can move between records without building
-  /// its own fixtures.
+  /// A library of one album ("Kind of Blue", three tracks, 1959 — a
+  /// vinyl-era year) by one artist, and a second album ("Blue Train", 1957)
+  /// by a different artist, so a test can move between records without
+  /// building its own fixtures.
   FakeCatalogGateway libraryGateway() {
     final gateway = FakeCatalogGateway();
     gateway.addAudio(
@@ -57,6 +57,14 @@ void main() {
       artist: 'Miles Davis',
       year: 1959,
       track: 2,
+    );
+    gateway.addAudio(
+      uuid: 'kob-3',
+      title: 'Blue in Green',
+      album: 'Kind of Blue',
+      artist: 'Miles Davis',
+      year: 1959,
+      track: 3,
     );
     gateway.addAudio(
       uuid: 'bt-1',
@@ -102,7 +110,9 @@ void main() {
       final audio = container.read(audioPlaybackControllerProvider.notifier);
 
       await audio.playAlbum(aFile(uuid: 'kob-1'));
-      container.read(albumAnimationControllerProvider.notifier).insertionShown();
+      container
+          .read(albumAnimationControllerProvider.notifier)
+          .insertionShown();
 
       await audio.next();
 
@@ -111,20 +121,24 @@ void main() {
     },
   );
 
-  test('GivenARecordIsPlaying_WhenAnotherAlbumStarts_ThenAnInsertionIsOwed', (
-  ) async {
-    final gateway = libraryGateway();
-    final container = buildContainer(gateway);
-    final audio = container.read(audioPlaybackControllerProvider.notifier);
+  test(
+    'GivenARecordIsPlaying_WhenAnotherAlbumStarts_ThenAnInsertionIsOwed',
+    () async {
+      final gateway = libraryGateway();
+      final container = buildContainer(gateway);
+      final audio = container.read(audioPlaybackControllerProvider.notifier);
 
-    await audio.playAlbum(aFile(uuid: 'kob-1'));
-    container.read(albumAnimationControllerProvider.notifier).insertionShown();
+      await audio.playAlbum(aFile(uuid: 'kob-1'));
+      container
+          .read(albumAnimationControllerProvider.notifier)
+          .insertionShown();
 
-    await audio.playAlbum(aFile(uuid: 'bt-1'));
+      await audio.playAlbum(aFile(uuid: 'bt-1'));
 
-    final state = container.read(albumAnimationControllerProvider);
-    expect(state.insertionOwed, isTrue);
-  });
+      final state = container.read(albumAnimationControllerProvider);
+      expect(state.insertionOwed, isTrue);
+    },
+  );
 
   test(
     'GivenAnUntaggedAlbumIsPlaying_WhenADifferentUntaggedAlbumStarts_ThenAnInsertionIsOwed',
@@ -169,22 +183,30 @@ void main() {
     },
   );
 
-  test('GivenAnInsertionWasShown_WhenItIsAcknowledged_ThenNoneIsOwed', () async {
-    final gateway = libraryGateway();
-    final container = buildContainer(gateway);
+  test(
+    'GivenAnInsertionWasShown_WhenItIsAcknowledged_ThenNoneIsOwed',
+    () async {
+      final gateway = libraryGateway();
+      final container = buildContainer(gateway);
 
-    await container
-        .read(audioPlaybackControllerProvider.notifier)
-        .playAlbum(aFile(uuid: 'kob-1'));
-    expect(container.read(albumAnimationControllerProvider).insertionOwed, isTrue);
+      await container
+          .read(audioPlaybackControllerProvider.notifier)
+          .playAlbum(aFile(uuid: 'kob-1'));
+      expect(
+        container.read(albumAnimationControllerProvider).insertionOwed,
+        isTrue,
+      );
 
-    container.read(albumAnimationControllerProvider.notifier).insertionShown();
+      container
+          .read(albumAnimationControllerProvider.notifier)
+          .insertionShown();
 
-    expect(
-      container.read(albumAnimationControllerProvider).insertionOwed,
-      isFalse,
-    );
-  });
+      expect(
+        container.read(albumAnimationControllerProvider).insertionOwed,
+        isFalse,
+      );
+    },
+  );
 
   test(
     'GivenTheModeIsOff_WhenAnythingPlays_ThenThereIsNoMediumAndNothingIsOwed',
@@ -228,6 +250,173 @@ void main() {
     },
   );
 
+  // A track is a record too (design §1, §2, §3): when the queue names no
+  // record of its own, the identity and the medium resolve from the current
+  // track's own metadata instead.
+  group('a track queue', () {
+    test(
+      'GivenNothingHasPlayed_WhenALoneTrackStarts_ThenAnInsertionIsOwedAndThereIsAMedium',
+      () async {
+        // The owner's own report: playing a single track from the Songs
+        // list showed no animation. `showsAlbumAnimation` no longer excludes
+        // a track queue, so its first play owes an insertion exactly as an
+        // album's or an artist's does.
+        final gateway = libraryGateway();
+        final container = buildContainer(gateway);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playTrack(aFile(uuid: 'kob-1'));
+
+        final state = container.read(albumAnimationControllerProvider);
+        expect(state.insertionOwed, isTrue);
+        expect(state.medium, isNotNull);
+      },
+    );
+
+    test(
+      'GivenATrackOfAnAlbumIsPlaying_WhenTwoMoreTracksOfTheSameAlbumStartFromTheSongsList_ThenNoInsertionIsOwed',
+      () async {
+        // Three tracks of one album, played one after another from the
+        // Songs list rather than as an album queue, insert once: the
+        // identity is the record — the track's own album and artist — not
+        // the queue's uuid-per-track identity `playTrack` builds. Three
+        // rather than two, matching the design's own testing list exactly.
+        final gateway = libraryGateway();
+        final container = buildContainer(gateway);
+        final audio = container.read(audioPlaybackControllerProvider.notifier);
+
+        await audio.playTrack(aFile(uuid: 'kob-1'));
+        await container.read(musicLibraryProvider.future);
+        container
+            .read(albumAnimationControllerProvider.notifier)
+            .insertionShown();
+
+        await audio.playTrack(aFile(uuid: 'kob-2'));
+        await container.read(musicLibraryProvider.future);
+        expect(
+          container.read(albumAnimationControllerProvider).insertionOwed,
+          isFalse,
+        );
+
+        await audio.playTrack(aFile(uuid: 'kob-3'));
+        await container.read(musicLibraryProvider.future);
+
+        final state = container.read(albumAnimationControllerProvider);
+        expect(state.insertionOwed, isFalse);
+      },
+    );
+
+    test(
+      'GivenATrackIsPlaying_WhenATrackFromADifferentAlbumStartsFromTheSongsList_ThenAnInsertionIsOwed',
+      () async {
+        final gateway = libraryGateway();
+        final container = buildContainer(gateway);
+        final audio = container.read(audioPlaybackControllerProvider.notifier);
+
+        await audio.playTrack(aFile(uuid: 'kob-1'));
+        await container.read(musicLibraryProvider.future);
+        container
+            .read(albumAnimationControllerProvider.notifier)
+            .insertionShown();
+
+        await audio.playTrack(aFile(uuid: 'bt-1'));
+        await container.read(musicLibraryProvider.future);
+
+        final state = container.read(albumAnimationControllerProvider);
+        expect(state.insertionOwed, isTrue);
+      },
+    );
+
+    test(
+      'GivenAnUntaggedTrackIsPlaying_WhenADifferentUntaggedTrackStartsFromTheSongsList_ThenAnInsertionIsOwed',
+      () async {
+        // Neither `loose-1` nor `loose-2` carries an album tag, so the
+        // identity falls back to each track's own uuid — the same untagged
+        // rule `albumOf` (`music_grouping.dart`) already states — and two
+        // different untagged tracks are still two different records.
+        final gateway = libraryGateway();
+        final container = buildContainer(gateway);
+        final audio = container.read(audioPlaybackControllerProvider.notifier);
+
+        await audio.playTrack(aFile(uuid: 'loose-1'));
+        await container.read(musicLibraryProvider.future);
+        container
+            .read(albumAnimationControllerProvider.notifier)
+            .insertionShown();
+
+        await audio.playTrack(aFile(uuid: 'loose-2'));
+        await container.read(musicLibraryProvider.future);
+
+        final state = container.read(albumAnimationControllerProvider);
+        expect(state.insertionOwed, isTrue);
+      },
+    );
+
+    test(
+      'GivenATrackHasItsOwnYear_WhenItStartsFromTheSongsList_ThenItsOwnYearPicksTheMedium',
+      () async {
+        // `playTrack` builds a queue with no year of its own (`queue.year`
+        // is `null`), which `mediumFor` would otherwise answer a compact
+        // disc for regardless of era. "Kind of Blue" is a 1959, vinyl-era
+        // record, so a disc here would mean the track's own year was never
+        // consulted.
+        final gateway = libraryGateway();
+        final container = buildContainer(gateway);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playTrack(aFile(uuid: 'kob-1'));
+        await container.read(musicLibraryProvider.future);
+
+        final state = container.read(albumAnimationControllerProvider);
+        expect(state.medium, AlbumMedium.vinyl);
+      },
+    );
+
+    test(
+      'GivenTheLibraryHasNotLoaded_WhenALoneTrackStartsFromTheSongsList_ThenTheAnimationStillShowsWithTheFallbackMedium',
+      () async {
+        // `playTrack` is deliberately left alone: it never reads the music
+        // library at all, which is what keeps a track playable when the
+        // library listing has failed (design §3). Nothing here awaits
+        // `musicLibraryProvider`, so the controller reads it still loading —
+        // the animation still shows, with a compact disc rather than an
+        // error, a reasonable picture of an unknown record.
+        final gateway = libraryGateway();
+        final container = buildContainer(gateway);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playTrack(aFile(uuid: 'kob-1'));
+
+        final state = container.read(albumAnimationControllerProvider);
+        expect(state.insertionOwed, isTrue);
+        expect(state.medium, AlbumMedium.disc);
+      },
+    );
+
+    test(
+      'GivenTheLibraryDoesNotHoldTheTrack_WhenItStartsFromTheSongsList_ThenTheAnimationStillShowsWithTheFallbackMedium',
+      () async {
+        // A file the catalog gateway never listed at all — unlike the
+        // previous test, the library here is fully loaded, and simply has
+        // nothing for this uuid. The same fallback applies either way.
+        final gateway = libraryGateway();
+        final container = buildContainer(gateway);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playTrack(aFile(uuid: 'not-catalogued'));
+        await container.read(musicLibraryProvider.future);
+
+        final state = container.read(albumAnimationControllerProvider);
+        expect(state.insertionOwed, isTrue);
+        expect(state.medium, AlbumMedium.disc);
+      },
+    );
+  });
+
   group('across a session (Finding 4)', () {
     test(
       'GivenAnInsertionWasShown_WhenTheOwnerSignsOutAndBackIn_ThenTheSameAlbumOwesOneAgain',
@@ -244,7 +433,9 @@ void main() {
         await container
             .read(audioPlaybackControllerProvider.notifier)
             .playAlbum(aFile(uuid: 'kob-1'));
-        container.read(albumAnimationControllerProvider.notifier).insertionShown();
+        container
+            .read(albumAnimationControllerProvider.notifier)
+            .insertionShown();
         expect(
           container.read(albumAnimationControllerProvider).insertionOwed,
           isFalse,
