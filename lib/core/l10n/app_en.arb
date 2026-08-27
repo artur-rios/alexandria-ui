@@ -908,6 +908,10 @@
   "@musicMetadataFieldArtist": {
     "description": "Label of the artist field."
   },
+  "musicMetadataFieldAlbumArtist": "Album artist",
+  "@musicMetadataFieldAlbumArtist": {
+    "description": "Label of the album artist field — who the record is by, which the music area groups by (UC-46, FR-CT-13)."
+  },
   "musicMetadataFieldAlbum": "Album",
   "@musicMetadataFieldAlbum": {
     "description": "Label of the album field."

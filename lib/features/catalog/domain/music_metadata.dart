@@ -7,13 +7,17 @@ part 'music_metadata.freezed.dart';
 /// Every field is nullable because the core's own shape is: a metadata patch
 /// is a full replace, so a field left out is written as NULL. That is not an
 /// omission this application has to work around — it is exactly what clearing
-/// a field means, and it is why the form always sends all six.
+/// a field means, and it is why the form always sends every one of them —
+/// including the album artist, which the form did not carry until the music
+/// area began grouping by it: a patch that left it out would clear it on every
+/// unrelated edit.
 @freezed
 abstract class MusicMetadata with _$MusicMetadata {
   /// Creates a metadata record.
   const factory MusicMetadata({
     String? title,
     String? artist,
+    String? albumArtist,
     String? album,
     int? year,
     String? genre,
@@ -31,6 +35,7 @@ abstract class MusicMetadata with _$MusicMetadata {
       MusicMetadata(
         title: metadata[MusicField.title.wireName],
         artist: metadata[MusicField.artist.wireName],
+        albumArtist: metadata[MusicField.albumArtist.wireName],
         album: metadata[MusicField.album.wireName],
         year: int.tryParse(metadata[MusicField.year.wireName] ?? ''),
         genre: metadata[MusicField.genre.wireName],
@@ -46,6 +51,7 @@ abstract class MusicMetadata with _$MusicMetadata {
     'type': 'audio',
     if (title != null) 'title': title,
     if (artist != null) 'artist': artist,
+    if (albumArtist != null) 'albumArtist': albumArtist,
     if (album != null) 'album': album,
     if (year != null) 'year': year,
     if (genre != null) 'genre': genre,
@@ -55,15 +61,21 @@ abstract class MusicMetadata with _$MusicMetadata {
 
 /// One editable field of an audio file's metadata.
 ///
-/// An enum rather than six loose strings because the form, the validation and
-/// the patch all have to agree on the same six names, and the core rejects a
-/// body that invents one.
+/// An enum rather than loose strings because the form, the validation and the
+/// patch all have to agree on the same names, and the core rejects a body that
+/// invents one. Adding a field here is what puts it in the form, in the draft
+/// and in the patch at once.
 enum MusicField {
   /// The track's title.
   title('title'),
 
   /// Who performed it.
   artist('artist'),
+
+  /// Who the record itself is by, which is not always who played the track:
+  /// a guest appearance names the guest, and a compilation names twelve
+  /// performers under one record. What the music area groups by.
+  albumArtist('albumArtist'),
 
   /// The album it belongs to.
   album('album'),
@@ -123,6 +135,7 @@ typedef MusicDraft = Map<MusicField, String>;
 MusicDraft draftFrom(MusicMetadata metadata) => {
   MusicField.title: metadata.title ?? '',
   MusicField.artist: metadata.artist ?? '',
+  MusicField.albumArtist: metadata.albumArtist ?? '',
   MusicField.album: metadata.album ?? '',
   MusicField.year: metadata.year?.toString() ?? '',
   MusicField.genre: metadata.genre ?? '',
@@ -182,6 +195,7 @@ MusicMetadata metadataFrom(MusicDraft draft) {
   return MusicMetadata(
     title: text(MusicField.title),
     artist: text(MusicField.artist),
+    albumArtist: text(MusicField.albumArtist),
     album: text(MusicField.album),
     year: number(MusicField.year),
     genre: text(MusicField.genre),

@@ -26,6 +26,31 @@ void main() {
       });
     });
 
+    test('GivenAnAlbumArtist_WhenPatched_ThenItIsSentByTheCoresOwnName', () {
+      // The core's wire name is camelCase, and a body that invents a name is
+      // refused — so the one place it is spelled out is pinned here.
+      const metadata = MusicMetadata(albumArtist: 'Various Artists');
+
+      expect(metadata.toPatch(), {
+        'type': 'audio',
+        'albumArtist': 'Various Artists',
+      });
+    });
+
+    test('GivenACoresAlbumArtist_WhenRead_ThenItRoundTripsThroughTheDraft', () {
+      // Read, shown in the form, parsed back: the field the patch would
+      // otherwise drop has to survive all three, or an unrelated edit clears
+      // it.
+      final read = MusicMetadata.fromDetails(const {
+        'title': 'One',
+        'artist': 'First Performer',
+        'albumArtist': 'Various Artists',
+      });
+
+      expect(read.albumArtist, 'Various Artists');
+      expect(metadataFrom(draftFrom(read)), read);
+    });
+
     test('GivenAClearedField_WhenPatched_ThenItIsAbsentRatherThanEmpty', () {
       // The core's patch is a full replace: a field the body leaves out is
       // written as NULL. Sending an empty string would store an empty string,

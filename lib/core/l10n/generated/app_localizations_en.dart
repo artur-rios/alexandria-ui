@@ -690,6 +690,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get musicMetadataFieldArtist => 'Artist';
 
   @override
+  String get musicMetadataFieldAlbumArtist => 'Album artist';
+
+  @override
   String get musicMetadataFieldAlbum => 'Album';
 
   @override

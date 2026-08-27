@@ -170,6 +170,7 @@ class _MusicMetadataFormState extends ConsumerState<MusicMetadataForm> {
   String _label(MusicField field, AppLocalizations l10n) => switch (field) {
     MusicField.title => l10n.musicMetadataFieldTitle,
     MusicField.artist => l10n.musicMetadataFieldArtist,
+    MusicField.albumArtist => l10n.musicMetadataFieldAlbumArtist,
     MusicField.album => l10n.musicMetadataFieldAlbum,
     MusicField.year => l10n.musicMetadataFieldYear,
     MusicField.genre => l10n.musicMetadataFieldGenre,

@@ -131,12 +131,99 @@ void main() {
     );
   });
 
-  group('an artist or album row (main flow step 2)', () {
+  group('a track row and the album artist (UC-46)', () {
     testWidgets(
-      'GivenAnArtistRow_WhenItIsTapped_ThenNothingStartsPlaying',
+      'GivenATrackWithAnAlbumArtist_WhenTheSongsRowIsShown_ThenItNamesThePerformer',
       (tester) async {
+        // Who made the record and who played the track are two different
+        // facts. The rows are gathered by the first and still say the second:
+        // a guest appearance shows the guest, which is the point of having
+        // both tags.
         final gateway = FakeCatalogGateway()
-          ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
+          ..addAudio(
+            uuid: 'c1',
+            title: 'One',
+            artist: 'First Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+          );
+        final container = buildContainer(gateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicTrackList(entries: library.entries, numbered: false),
+        );
+
+        expect(find.text('First Performer'), findsOneWidget);
+        expect(find.text('Various Artists'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenACompilation_WhenATrackRowIsTapped_ThenTheWholeRecordIsQueued',
+      (tester) async {
+        // Every track the album listed, including the ones another performer
+        // played: the queue has to contain what the group showed.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'c1',
+            title: 'One',
+            artist: 'First Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'c2',
+            title: 'Two',
+            artist: 'Second Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            track: 2,
+          );
+        final container = buildContainer(gateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicTrackList(entries: library.entries, numbered: true),
+        );
+
+        await tester.tap(find.text('Two'));
+        await tester.pumpAndSettle();
+
+        final state = container.read(audioPlaybackControllerProvider);
+        expect(state.queue.kind, QueueKind.album);
+        expect(state.queue.tracks.map((file) => file.uuid), ['c1', 'c2']);
+      },
+    );
+
+    testWidgets(
+      'GivenACompilation_WhenTheAlbumRowIsShown_ThenItNamesTheAlbumArtist',
+      (tester) async {
+        // The album row's subtitle is whose record it is — and it is also
+        // what the row drills in with, so a compilation opens on the whole
+        // record rather than on one performer's track.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'c1',
+            title: 'One',
+            artist: 'First Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'c2',
+            title: 'Two',
+            artist: 'Second Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            track: 2,
+          );
         final container = buildContainer(gateway);
         final library = await container.read(musicLibraryProvider.future);
 
@@ -144,86 +231,112 @@ void main() {
           tester,
           container,
           MusicGroupList(
-            groups: artistsIn(library.entries),
-            kind: MusicGroupKind.artist,
+            groups: albumsIn(library.entries),
+            kind: MusicGroupKind.album,
           ),
         );
 
-        await tester.tap(find.text('Radiohead'));
+        expect(find.text("Now That's Music"), findsOneWidget);
+        expect(find.text('Various Artists'), findsOneWidget);
+
+        await tester.tap(find.text("Now That's Music"));
         await tester.pumpAndSettle();
 
-        // A tap here drills into the artist's albums (`music_browse.dart`),
-        // which is what the row's own controller reflects; playback itself
-        // must stay untouched — that action lives on the row's context menu,
-        // not on a tap a misaimed click could trigger.
-        final state = container.read(audioPlaybackControllerProvider);
-        expect(state.isActive, isFalse);
         expect(
           container.read(musicBrowseControllerProvider).artist,
-          'Radiohead',
+          'Various Artists',
         );
       },
     );
+  });
 
-    testWidgets(
-      'GivenAnAlbumRow_WhenItIsTapped_ThenNothingStartsPlaying',
-      (tester) async {
-        final gateway = FakeCatalogGateway()
-          ..addAudio(
-            uuid: '1',
-            title: 'Airbag',
-            artist: 'Radiohead',
-            album: 'OK Computer',
-          );
-        final container = buildContainer(gateway);
-        final library = await container.read(musicLibraryProvider.future);
+  group('an artist or album row (main flow step 2)', () {
+    testWidgets('GivenAnArtistRow_WhenItIsTapped_ThenNothingStartsPlaying', (
+      tester,
+    ) async {
+      final gateway = FakeCatalogGateway()
+        ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
+      final container = buildContainer(gateway);
+      final library = await container.read(musicLibraryProvider.future);
 
-        await pumpRows(
-          tester,
-          container,
-          MusicGroupList(
-            groups: albumsIn(library.entries),
-            kind: MusicGroupKind.album,
-          ),
+      await pumpRows(
+        tester,
+        container,
+        MusicGroupList(
+          groups: artistsIn(library.entries),
+          kind: MusicGroupKind.artist,
+        ),
+      );
+
+      await tester.tap(find.text('Radiohead'));
+      await tester.pumpAndSettle();
+
+      // A tap here drills into the artist's albums (`music_browse.dart`),
+      // which is what the row's own controller reflects; playback itself
+      // must stay untouched — that action lives on the row's context menu,
+      // not on a tap a misaimed click could trigger.
+      final state = container.read(audioPlaybackControllerProvider);
+      expect(state.isActive, isFalse);
+      expect(container.read(musicBrowseControllerProvider).artist, 'Radiohead');
+    });
+
+    testWidgets('GivenAnAlbumRow_WhenItIsTapped_ThenNothingStartsPlaying', (
+      tester,
+    ) async {
+      final gateway = FakeCatalogGateway()
+        ..addAudio(
+          uuid: '1',
+          title: 'Airbag',
+          artist: 'Radiohead',
+          album: 'OK Computer',
         );
+      final container = buildContainer(gateway);
+      final library = await container.read(musicLibraryProvider.future);
 
-        await tester.tap(find.text('OK Computer'));
-        await tester.pumpAndSettle();
+      await pumpRows(
+        tester,
+        container,
+        MusicGroupList(
+          groups: albumsIn(library.entries),
+          kind: MusicGroupKind.album,
+        ),
+      );
 
-        final state = container.read(audioPlaybackControllerProvider);
-        expect(state.isActive, isFalse);
-        expect(
-          container.read(musicBrowseControllerProvider).album,
-          'OK Computer',
+      await tester.tap(find.text('OK Computer'));
+      await tester.pumpAndSettle();
+
+      final state = container.read(audioPlaybackControllerProvider);
+      expect(state.isActive, isFalse);
+      expect(
+        container.read(musicBrowseControllerProvider).album,
+        'OK Computer',
+      );
+    });
+
+    testWidgets('GivenAnAlbumRow_WhenShown_ThenItsSubtitleNamesTheArtist', (
+      tester,
+    ) async {
+      final gateway = FakeCatalogGateway()
+        ..addAudio(
+          uuid: '1',
+          title: 'Airbag',
+          artist: 'Radiohead',
+          album: 'OK Computer',
         );
-      },
-    );
+      final container = buildContainer(gateway);
+      final library = await container.read(musicLibraryProvider.future);
 
-    testWidgets(
-      'GivenAnAlbumRow_WhenShown_ThenItsSubtitleNamesTheArtist',
-      (tester) async {
-        final gateway = FakeCatalogGateway()
-          ..addAudio(
-            uuid: '1',
-            title: 'Airbag',
-            artist: 'Radiohead',
-            album: 'OK Computer',
-          );
-        final container = buildContainer(gateway);
-        final library = await container.read(musicLibraryProvider.future);
+      await pumpRows(
+        tester,
+        container,
+        MusicGroupList(
+          groups: albumsIn(library.entries),
+          kind: MusicGroupKind.album,
+        ),
+      );
 
-        await pumpRows(
-          tester,
-          container,
-          MusicGroupList(
-            groups: albumsIn(library.entries),
-            kind: MusicGroupKind.album,
-          ),
-        );
-
-        expect(find.text('OK Computer'), findsOneWidget);
-        expect(find.text('Radiohead'), findsOneWidget);
-      },
-    );
+      expect(find.text('OK Computer'), findsOneWidget);
+      expect(find.text('Radiohead'), findsOneWidget);
+    });
   });
 }

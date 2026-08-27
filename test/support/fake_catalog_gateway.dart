@@ -151,6 +151,7 @@ class FakeCatalogGateway implements CatalogGateway {
     String? name,
     String? title,
     String? artist,
+    String? albumArtist,
     String? album,
     int? year,
     String? genre,
@@ -169,6 +170,7 @@ class FakeCatalogGateway implements CatalogGateway {
       metadata: {
         MusicField.title.wireName: ?title,
         MusicField.artist.wireName: ?artist,
+        MusicField.albumArtist.wireName: ?albumArtist,
         MusicField.album.wireName: ?album,
         MusicField.year.wireName: ?year?.toString(),
         MusicField.genre.wireName: ?genre,

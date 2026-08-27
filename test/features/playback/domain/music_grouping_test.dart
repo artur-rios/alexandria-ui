@@ -7,11 +7,21 @@ import '../../../support/fake_catalog_gateway.dart';
 /// Grouping an audio library into albums and artists (UC-20 main flow step 3,
 /// FR-PL-06).
 void main() {
-  MusicEntry entry(String name, {String? album, String? artist, int? track}) =>
-      MusicEntry(
-        file: aFile(uuid: name, name: name),
-        metadata: MusicMetadata(album: album, artist: artist, track: track),
-      );
+  MusicEntry entry(
+    String name, {
+    String? album,
+    String? artist,
+    String? albumArtist,
+    int? track,
+  }) => MusicEntry(
+    file: aFile(uuid: name, name: name),
+    metadata: MusicMetadata(
+      album: album,
+      artist: artist,
+      albumArtist: albumArtist,
+      track: track,
+    ),
+  );
 
   group('an album', () {
     test('GivenAnAlbum_WhenItIsQueued_ThenItsTracksAreInTrackOrder', () {
@@ -109,6 +119,89 @@ void main() {
       final library = [entry('a.flac', artist: '   '), entry('b.flac')];
 
       expect(artistOf(library.first, library), hasLength(1));
+    });
+  });
+
+  group('the album artist (UC-46)', () {
+    test(
+      'GivenNoAlbumArtistTag_WhenItIsRead_ThenItFallsBackToThePerformer',
+      () {
+        // The fallback most files take: a library tagged before the album
+        // artist existed groups exactly as it did.
+        expect(entry('a.flac', artist: 'Radiohead').albumArtist, 'Radiohead');
+      },
+    );
+
+    test('GivenABlankAlbumArtistTag_WhenItIsRead_ThenItFallsBackToo', () {
+      // A blank tag names nobody, so it is not a value to group by.
+      expect(
+        entry('a.flac', artist: 'Radiohead', albumArtist: '  ').albumArtist,
+        'Radiohead',
+      );
+    });
+
+    test('GivenAnAlbumArtistTag_WhenTheTrackIsRead_ThenItStillNamesItsOwn', () {
+      // The two are different facts, and a track row shows the performer.
+      final track = entry(
+        'a.flac',
+        artist: 'First Performer',
+        albumArtist: 'Various Artists',
+      );
+
+      expect(track.artist, 'First Performer');
+      expect(track.albumArtist, 'Various Artists');
+    });
+
+    test('GivenACompilation_WhenItIsQueued_ThenEveryPerformerIsInIt', () {
+      // Keyed by the performer, pressing play on this album would queue only
+      // the track started from — a subset of what the album listed.
+      final library = [
+        entry(
+          'one.flac',
+          album: "Now That's Music",
+          artist: 'First Performer',
+          albumArtist: 'Various Artists',
+          track: 1,
+        ),
+        entry(
+          'two.flac',
+          album: "Now That's Music",
+          artist: 'Second Performer',
+          albumArtist: 'Various Artists',
+          track: 2,
+        ),
+      ];
+
+      expect(albumOf(library.first, library).map((file) => file.name), [
+        'one.flac',
+        'two.flac',
+      ]);
+    });
+
+    test('GivenAGuestAppearance_WhenTheArtistIsQueued_ThenItIsIncluded', () {
+      // The guest track is on the host's record, so an artist queue built
+      // from the Artists list has to hold it.
+      final library = [
+        entry(
+          'host.flac',
+          album: 'Record',
+          artist: 'Host',
+          albumArtist: 'Host',
+          track: 1,
+        ),
+        entry(
+          'guest.flac',
+          album: 'Record',
+          artist: 'Guest',
+          albumArtist: 'Host',
+          track: 2,
+        ),
+      ];
+
+      expect(artistOf(library.first, library).map((file) => file.name), [
+        'host.flac',
+        'guest.flac',
+      ]);
     });
   });
 }

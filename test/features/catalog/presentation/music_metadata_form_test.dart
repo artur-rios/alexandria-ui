@@ -221,6 +221,112 @@ void main() {
     });
   });
 
+  group('the album artist (UC-46)', () {
+    /// A track whose performer is not who the record is by: a guest on a
+    /// Miles Davis record. The two tags carry different names on purpose, so
+    /// nothing here can pass by reading the wrong one.
+    FileDetails aGuestTrack() => FileDetails(
+      file: aFile(name: 'Kind of Blue.flac'),
+      metadata: const {
+        'title': 'So What',
+        'artist': 'John Coltrane',
+        'albumArtist': 'Miles Davis',
+        'album': 'Kind of Blue',
+        'year': '1959',
+        'genre': 'Jazz',
+        'track': '1',
+      },
+    );
+
+    testWidgets('GivenAnAlbumArtist_WhenTheFormOpens_ThenItShowsTheField', (
+      tester,
+    ) async {
+      await openForm(tester, details: aGuestTrack());
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+
+      Finder inForm(String text) => find.descendant(
+        of: find.byType(MusicMetadataForm),
+        matching: find.text(text),
+      );
+
+      expect(inForm(l10n.musicMetadataFieldAlbumArtist), findsOneWidget);
+      expect(inForm('Miles Davis'), findsOneWidget);
+      // The performer is its own field and keeps its own value.
+      expect(inForm('John Coltrane'), findsOneWidget);
+    });
+
+    testWidgets('GivenAnEditedAlbumArtist_WhenSaved_ThenTheCoreIsSentIt', (
+      tester,
+    ) async {
+      final (_, gateway) = await openForm(tester, details: aGuestTrack());
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+
+      await enter(
+        tester,
+        l10n.musicMetadataFieldAlbumArtist,
+        'Miles Davis Sextet',
+      );
+      await tester.tap(find.text(l10n.musicMetadataSave));
+      await tester.pumpAndSettle();
+
+      expect(gateway.edits.single.metadata.albumArtist, 'Miles Davis Sextet');
+      expect(
+        gateway.edits.single.metadata.toPatch()['albumArtist'],
+        'Miles Davis Sextet',
+      );
+    });
+
+    testWidgets(
+      'GivenABlankedAlbumArtist_WhenSaved_ThenItIsLeftOutOfThePatch',
+      (tester) async {
+        // Clearing it is emptying it, as it is for every other field: the patch
+        // leaves it out and the core writes NULL.
+        final (_, gateway) = await openForm(tester, details: aGuestTrack());
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+
+        await enter(tester, l10n.musicMetadataFieldAlbumArtist, '');
+        await tester.tap(find.text(l10n.musicMetadataSave));
+        await tester.pumpAndSettle();
+
+        expect(gateway.edits.single.metadata.albumArtist, isNull);
+        expect(
+          gateway.edits.single.metadata.toPatch().containsKey('albumArtist'),
+          isFalse,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenOnlyTheTitleEdited_WhenSaved_ThenThePatchStillCarriesIt',
+      (tester) async {
+        // The erasure this field was added to prevent: the patch is a full
+        // replace, so an album artist the body omits is written as NULL and the
+        // track silently moves to another group in the Artists list. Asserted
+        // on the body itself rather than on the record, because the body is
+        // what the core is actually sent.
+        final (_, gateway) = await openForm(tester, details: aGuestTrack());
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+
+        await enter(tester, l10n.musicMetadataFieldTitle, 'Blue in Green');
+        await tester.tap(find.text(l10n.musicMetadataSave));
+        await tester.pumpAndSettle();
+
+        final patch = gateway.edits.single.metadata.toPatch();
+        expect(patch['title'], 'Blue in Green');
+        expect(patch['albumArtist'], 'Miles Davis');
+        expect(patch['artist'], 'John Coltrane');
+      },
+    );
+  });
+
   group('local validation fails (AF-01)', () {
     testWidgets('GivenAYearThatIsNotANumber_WhenSaved_ThenTheCoreIsNotCalled', (
       tester,

@@ -21,18 +21,28 @@ class MusicGroup {
 }
 
 /// Every artist in [library], alphabetically, with the untagged files last.
+///
+/// The album artist, not the track's performer: the list answers "whose
+/// records are these", and a record with guests on it belongs to the artist
+/// who made it rather than to everyone who played on it. A file with no
+/// album-artist tag falls back to its performer, so a library tagged the old
+/// way lists exactly as it did.
 List<MusicGroup> artistsIn(List<MusicEntry> library) =>
-    _groupedBy(library, (entry) => entry.artist);
+    _groupedBy(library, (entry) => entry.albumArtist);
 
 /// Every album in [library], alphabetically, with the untagged files last.
 ///
-/// Keyed by album *and* artist: two different artists can name a record the
-/// same thing, and merging them would show one artist's tracks inside
+/// Keyed by album *and* album artist: two different artists can name a record
+/// the same thing, and merging them would show one artist's tracks inside
 /// another's album — the same rule `albumOf` applies when it builds a queue.
+///
+/// The album artist is also where a compilation stops fragmenting: keyed by
+/// the performer, twelve performers on one record are twelve albums of one
+/// track; keyed by the record's own artist they are one album again.
 List<MusicGroup> albumsIn(List<MusicEntry> library) {
   final byKey = <(String?, String?), List<MusicEntry>>{};
   for (final entry in library) {
-    byKey.putIfAbsent((entry.album, entry.artist), () => []).add(entry);
+    byKey.putIfAbsent((entry.album, entry.albumArtist), () => []).add(entry);
   }
 
   final groups = [
@@ -41,31 +51,35 @@ List<MusicGroup> albumsIn(List<MusicEntry> library) {
   ];
 
   // Artist as the tiebreak: two albums can share a title under different
-  // artists — `albumsIn` keys by `(album, artist)` precisely so they stay
+  // artists — `albumsIn` keys by `(album, albumArtist)` precisely so they stay
   // two groups — and with no tiebreak their relative order was whichever the
   // map happened to iterate them in, which is insertion order and not
   // anything an owner could predict or rely on.
-  return _sortedByName(groups, tiebreak: (group) => group.entries.first.artist);
+  return _sortedByName(
+    groups,
+    tiebreak: (group) => group.entries.first.albumArtist,
+  );
 }
 
-/// [artist]'s albums, alphabetically.
+/// [artist]'s albums, alphabetically, where [artist] is an album artist.
 ///
 /// `null` selects the files that name no artist, which is what drilling into
 /// the untagged group does.
 List<MusicGroup> albumsOfArtist(String? artist, List<MusicEntry> library) =>
     albumsIn([
       for (final entry in library)
-        if (entry.artist == artist) entry,
+        if (entry.albumArtist == artist) entry,
     ]);
 
-/// The tracks of [artist]'s [album], in track order.
+/// The tracks of [artist]'s [album], in track order, where [artist] is the
+/// album's artist — which is what the album row drilled in with.
 List<MusicEntry> tracksOfAlbum(
   String? album,
   String? artist,
   List<MusicEntry> library,
 ) => _inTrackOrder([
   for (final entry in library)
-    if (entry.album == album && entry.artist == artist) entry,
+    if (entry.album == album && entry.albumArtist == artist) entry,
 ]);
 
 /// Every track in [library], by title, with the untitled ones last.
@@ -97,12 +111,13 @@ List<MusicGroup> _groupedBy(
 List<MusicGroup> _sortedByName(
   List<MusicGroup> groups, {
   String? Function(MusicGroup group)? tiebreak,
-}) => [...groups]..sort((a, b) {
-  final byName = _byName(a.name, b.name);
-  if (byName != 0 || tiebreak == null) return byName;
+}) => [...groups]
+  ..sort((a, b) {
+    final byName = _byName(a.name, b.name);
+    if (byName != 0 || tiebreak == null) return byName;
 
-  return _byName(tiebreak(a), tiebreak(b));
-});
+    return _byName(tiebreak(a), tiebreak(b));
+  });
 
 /// Case-insensitively by name, with an absent name last.
 ///

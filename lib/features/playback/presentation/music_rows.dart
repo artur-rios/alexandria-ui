@@ -39,8 +39,13 @@ class MusicGroupList extends ConsumerWidget {
         final group = groups[index];
         // Only an album row needs whose it is — an artist row already is
         // the answer to that question, and does not read this.
+        //
+        // The album's artist, not the first track's performer: it is what
+        // `albumsIn` grouped the record by, so it is what `tracksOfAlbum`
+        // has to be drilled in with — a compilation drilled in by one
+        // performer would open on a record of one track.
         final artist = kind == MusicGroupKind.album
-            ? group.entries.first.artist
+            ? group.entries.first.albumArtist
             : null;
 
         return ListTile(
@@ -113,9 +118,7 @@ class MusicTrackList extends ConsumerWidget {
             // it plays alone, because there is no record around it to
             // continue.
             onTap: () {
-              final player = ref.read(
-                audioPlaybackControllerProvider.notifier,
-              );
+              final player = ref.read(audioPlaybackControllerProvider.notifier);
 
               unawaited(
                 numbered
@@ -170,8 +173,7 @@ class MusicRowMenu extends ConsumerWidget {
         ),
         MenuItemButton(
           leadingIcon: const Icon(Icons.info_outline),
-          onPressed: () =>
-              FileDetailsView.show(context, ref, entry.file.uuid),
+          onPressed: () => FileDetailsView.show(context, ref, entry.file.uuid),
           child: Text(l10n.detailsTitle),
         ),
         MenuItemButton(

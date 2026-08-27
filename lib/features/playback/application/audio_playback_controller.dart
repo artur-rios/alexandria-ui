@@ -287,7 +287,10 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     // renders the label — see `queueLabelOf` in `music_display_name.dart`.
     final label = switch (kind) {
       _GroupKind.album => entry.album,
-      _GroupKind.artist => entry.artist,
+      // The album artist, because `artistOf` above gathered the queue by it:
+      // a label naming the guest performer would title a queue of the host's
+      // whole catalog after one track's guest.
+      _GroupKind.artist => entry.albumArtist,
     };
 
     // Starting where the owner started, not at the top: they picked this
