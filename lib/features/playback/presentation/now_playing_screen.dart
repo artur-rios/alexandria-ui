@@ -181,7 +181,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                       // the current track's title, which is a different
                       // tag naming a different thing.
                       title: musicAlbumForFile(ref, current, l10n),
-                      artist: musicArtistForFile(ref, current, l10n),
+                      // The record's artist, not the current track's
+                      // performer: the case is the record's sleeve, and a
+                      // guest appearance would otherwise re-typeset the case
+                      // mid-album with the guest's name.
+                      artist: musicAlbumArtistForFile(ref, current, l10n),
                       // The queue's own label when it has one (an album or
                       // an artist queue); otherwise the current track's own
                       // raw album tag, never the localised "Unknown album"

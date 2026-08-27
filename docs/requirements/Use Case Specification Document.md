@@ -1718,7 +1718,7 @@ graph LR
 | **ID** | UC-46 |
 | **Name** | Browse the music library |
 | **Actors** | Owner, Alexandria core |
-| **Description** | The owner browses the catalog's audio by artist, album, or song, named by its tags rather than by its files, and plays what they find. |
+| **Description** | The owner browses the catalog's audio by artist, album, or song, named by its tags rather than by its files, and plays what they find. The artist a track is browsed and grouped under is the album's artist — who the record is by — rather than who performed that track, so a record with guests on it is one artist's record and a compilation is one album rather than one album per performer. |
 | **Preconditions** | An active session exists and the catalog holds audio files. |
 | **Postconditions** | The catalog is unchanged; a queue exists when the owner played something. |
 | **Requirements** | FR-CT-13, FR-CT-14 |
@@ -1726,10 +1726,15 @@ graph LR
 **Main Flow**
 
 1. The application reads the audio library in one call, metadata included.
-2. The owner chooses artists, albums, or songs.
+2. The owner chooses artists, albums, or songs. Artists and albums are grouped
+   by the album's artist. Who performed a track is a different fact from whose
+   record it is, so the songs list names the performer of every track, and
+   inside a record it names the performers who are not the record's own
+   artist — which is what tells a compilation's twelve performers apart.
 3. The owner drills into an artist and then an album, or straight into an
    album, returning by the breadcrumb.
-4. The owner plays a track, an album, or an artist.
+4. The owner plays a track, an album, or an artist. An album or artist queue
+   holds every track the group listed, including the ones a guest performed.
 
 **Alternative Flows**
 
@@ -1739,6 +1744,7 @@ graph LR
 | AF-02 | A file's metadata cannot be read | The file joins the library untagged rather than disappearing. |
 | AF-03 | No audio files are catalogued | The application says so. |
 | AF-04 | The audio listing fails outright | The application presents a failure view with a retry, distinct from an empty library. |
+| AF-05 | A file's metadata names no album artist | The file is grouped under its own performer instead, so a library tagged before the album artist existed browses exactly as it did. |
 
 ---
 

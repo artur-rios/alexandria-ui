@@ -1296,6 +1296,12 @@ abstract class AppLocalizations {
   /// **'Artist'**
   String get musicMetadataFieldArtist;
 
+  /// Label of the album artist field — who the record is by, which the music area groups by (UC-46, FR-CT-13).
+  ///
+  /// In en, this message translates to:
+  /// **'Album artist'**
+  String get musicMetadataFieldAlbumArtist;
+
   /// Label of the album field.
   ///
   /// In en, this message translates to:

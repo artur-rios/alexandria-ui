@@ -13,6 +13,7 @@ void main() {
     required String uuid,
     String? title,
     String? artist,
+    String? albumArtist,
     String? album,
     int? track,
   }) => MusicEntry(
@@ -25,6 +26,7 @@ void main() {
     metadata: MusicMetadata(
       title: title,
       artist: artist,
+      albumArtist: albumArtist,
       album: album,
       track: track,
     ),
@@ -79,6 +81,81 @@ void main() {
         'aphex twin',
         'Boards of Canada',
       ]);
+    });
+  });
+
+  group('the album artist (UC-46)', () {
+    /// A compilation: twelve performers, one record. Keyed by the performer
+    /// this is twelve albums of one track and twelve artists; keyed by the
+    /// record's own artist it is one of each.
+    final compilation = [
+      entry(
+        uuid: 'c1',
+        title: 'One',
+        artist: 'First Performer',
+        albumArtist: 'Various Artists',
+        album: "Now That's Music",
+        track: 1,
+      ),
+      entry(
+        uuid: 'c2',
+        title: 'Two',
+        artist: 'Second Performer',
+        albumArtist: 'Various Artists',
+        album: "Now That's Music",
+        track: 2,
+      ),
+    ];
+
+    test(
+      'GivenOneAlbumArtistOverManyPerformers_WhenArtistsAreListed_ThenTheyAreOneGroup',
+      () {
+        final artists = artistsIn(compilation);
+
+        expect([for (final group in artists) group.name], ['Various Artists']);
+        expect(artists.single.entries, hasLength(2));
+      },
+    );
+
+    test(
+      'GivenOneAlbumArtistOverManyPerformers_WhenAlbumsAreListed_ThenTheyAreOneAlbum',
+      () {
+        final albums = albumsIn(compilation);
+
+        expect(albums, hasLength(1));
+        expect(albums.single.entries.map((e) => e.title), ['One', 'Two']);
+      },
+    );
+
+    test(
+      'GivenACompilation_WhenTheArtistIsDrilledInto_ThenTheAlbumIsUnderThem',
+      () {
+        // What the row drills in with is the group's album artist, so this is
+        // the pair the presentation actually passes.
+        final albums = albumsOfArtist('Various Artists', compilation);
+        final tracks = tracksOfAlbum(
+          albums.single.name,
+          albums.single.entries.first.albumArtist,
+          compilation,
+        );
+
+        expect(tracks.map((e) => e.title), ['One', 'Two']);
+      },
+    );
+
+    test('GivenABlankAlbumArtist_WhenArtistsAreListed_ThenItFallsBackToo', () {
+      // A blank tag names nobody, so it is not a group of its own — it takes
+      // the same fallback an absent one does.
+      final artists = artistsIn([
+        entry(uuid: 'b1', artist: 'Radiohead', albumArtist: '   '),
+        ...tagged,
+      ]);
+
+      expect([for (final group in artists) group.name], [
+        'Portishead',
+        'Radiohead',
+      ]);
+      expect(artists.last.entries, hasLength(3));
     });
   });
 

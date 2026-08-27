@@ -40,12 +40,14 @@ typedef AlbumIdentity = (Object, String);
 /// and year, resolved the same way every other surface resolves a track's
 /// metadata (`MusicLibrary.entryFor`, design §2, §3). A track with no album
 /// tag falls back to its own uuid, the same untagged rule `albumOf` states;
-/// one with an album tag identifies by album and artist together, since two
-/// different artists can name an album the same thing. `library` is `null`
-/// while it has not loaded, or does not hold the track — the fallback entry
-/// that answers then has no album and no year, so the identity falls back to
-/// the uuid and the medium falls back to a disc, exactly as an unknown
-/// record does everywhere else.
+/// one with an album tag identifies by album and album artist together, since
+/// two different artists can name an album the same thing — the album artist,
+/// so that two tracks of one compilation are the same record here as they are
+/// in the browsing area rather than two records with two insertions.
+/// `library` is `null` while it has not loaded, or does not hold the track —
+/// the fallback entry that answers then has no album and no year, so the
+/// identity falls back to the uuid and the medium falls back to a disc,
+/// exactly as an unknown record does everywhere else.
 ///
 /// Called only once a caller has confirmed [queue] is non-empty, so
 /// `tracks.first` is safe.
@@ -68,7 +70,7 @@ typedef AlbumIdentity = (Object, String);
     // reading as the same identity as a different, shorter album name that
     // happens to share a prefix, without needing a character no tag could
     // ever carry.
-    identity: album == null ? track.uuid : '$album ${entry.artist ?? ''}',
+    identity: album == null ? track.uuid : '$album ${entry.albumArtist ?? ''}',
     year: entry.metadata.year,
   );
 }

@@ -127,10 +127,21 @@ class _Breadcrumb extends ConsumerWidget {
         l10n.musicBreadcrumbRoot,
         state.inArtist || state.inAlbum ? controller.upToArtists : null,
       ),
-      if (state.inArtist)
+      // The record's artist, on both paths into a record: whose record it is
+      // is a fact about the record, not about how the owner reached it, and
+      // the track rows inside only name a performer where it differs from
+      // this (`music_rows.dart`) — so on the Albums path, where no artist was
+      // ever drilled through, this crumb is the only place an ordinary
+      // record's artist is named at all.
+      if (state.inArtist || state.inAlbum)
         (
           state.artist ?? l10n.musicUnknownArtist,
-          state.inAlbum ? controller.upToArtist : null,
+          // A control only where it leads somewhere the owner has been: the
+          // Artists path came through this artist's own list of albums and
+          // goes back to it. Reached from Albums there is no such list to
+          // return to — inventing one would take the owner somewhere they
+          // never were — so the name is plain text.
+          state.inArtist && state.inAlbum ? controller.upToArtist : null,
         ),
       if (state.inAlbum) (state.album ?? l10n.musicUnknownAlbum, null),
     ];

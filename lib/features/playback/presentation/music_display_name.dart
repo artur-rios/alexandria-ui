@@ -35,6 +35,16 @@ String musicTitleOf(MusicEntry entry, AppLocalizations l10n) =>
 String musicArtistOf(MusicEntry entry, AppLocalizations l10n) =>
     tagOr(entry.metadata.artist, l10n.musicUnknownArtist);
 
+/// The artist the record is by, or the word for a file whose tags carry none.
+///
+/// Not [musicArtistOf]: that names who played the track, which is what a
+/// track row shows; this names whose record it is, which is what the browsing
+/// area groups by and what the case on the stage is typeset with. A file with
+/// no album-artist tag falls back to its performer, as [MusicEntry.albumArtist]
+/// does.
+String musicAlbumArtistOf(MusicEntry entry, AppLocalizations l10n) =>
+    tagOr(entry.albumArtist, l10n.musicUnknownArtist);
+
 /// A track's own album tag, or the word for a file whose tags carry none.
 ///
 /// Not [musicTitleOf]: a track's title is its own name ("So What"), and its
@@ -70,12 +80,13 @@ String musicTitleForFile(
   AppLocalizations l10n,
 ) => musicTitleOf(musicEntryForFile(ref, file), l10n);
 
-/// [file]'s artist from its metadata, never its name on disk (FR-CT-13).
-String musicArtistForFile(
+/// [file]'s album artist from its metadata, never its name on disk
+/// (FR-CT-13).
+String musicAlbumArtistForFile(
   WidgetRef ref,
   CatalogFile file,
   AppLocalizations l10n,
-) => musicArtistOf(musicEntryForFile(ref, file), l10n);
+) => musicAlbumArtistOf(musicEntryForFile(ref, file), l10n);
 
 /// [file]'s own album tag from its metadata, never its name on disk
 /// (FR-CT-13).

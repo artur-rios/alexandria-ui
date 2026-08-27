@@ -39,8 +39,13 @@ class MusicGroupList extends ConsumerWidget {
         final group = groups[index];
         // Only an album row needs whose it is — an artist row already is
         // the answer to that question, and does not read this.
+        //
+        // The album's artist, not the first track's performer: it is what
+        // `albumsIn` grouped the record by, so it is what `tracksOfAlbum`
+        // has to be drilled in with — a compilation drilled in by one
+        // performer would open on a record of one track.
         final artist = kind == MusicGroupKind.album
-            ? group.entries.first.artist
+            ? group.entries.first.albumArtist
             : null;
 
         return ListTile(
@@ -86,6 +91,33 @@ class MusicTrackList extends ConsumerWidget {
   /// other record would say nothing.
   final bool numbered;
 
+  /// The performer to put under a row's title, or `null` for a row that
+  /// names none.
+  ///
+  /// In Songs the performer is always shown: the list spans the library, and
+  /// a title alone does not say whose track it is.
+  ///
+  /// Inside an album it is shown only where it differs from the record's own
+  /// artist — which is what a compilation is: twelve performers under one
+  /// album artist, and the whole point of grouping by the album artist is
+  /// that their names are still worth reading. On an ordinary single-artist
+  /// record the same name under all twelve rows would be noise, so it is left
+  /// off — the record's own artist is named in the breadcrumb above the list
+  /// on both paths into a record (`music_library_view.dart`), so leaving it
+  /// off a row does not take it off the screen. A track whose tags name no
+  /// performer shows nothing rather than "Unknown artist", for the same
+  /// reason: the crumb has already answered whose record this is, and a row
+  /// that only says "unknown" adds nothing to it.
+  String? _performerOf(MusicEntry entry, AppLocalizations l10n) {
+    if (!numbered) return musicArtistOf(entry, l10n);
+
+    final performer = entry.artist;
+
+    return performer == null || performer == entry.albumArtist
+        ? null
+        : performer;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -94,6 +126,7 @@ class MusicTrackList extends ConsumerWidget {
       itemCount: entries.length,
       itemBuilder: (context, index) {
         final entry = entries[index];
+        final performer = _performerOf(entry, l10n);
 
         return MusicRowMenu(
           entry: entry,
@@ -108,14 +141,12 @@ class MusicTrackList extends ConsumerWidget {
                   )
                 : const Icon(Icons.music_note_outlined),
             title: Text(musicTitleOf(entry, l10n)),
-            subtitle: numbered ? null : Text(musicArtistOf(entry, l10n)),
+            subtitle: performer == null ? null : Text(performer),
             // Inside a record, a track plays the record from there; in Songs
             // it plays alone, because there is no record around it to
             // continue.
             onTap: () {
-              final player = ref.read(
-                audioPlaybackControllerProvider.notifier,
-              );
+              final player = ref.read(audioPlaybackControllerProvider.notifier);
 
               unawaited(
                 numbered
@@ -170,8 +201,7 @@ class MusicRowMenu extends ConsumerWidget {
         ),
         MenuItemButton(
           leadingIcon: const Icon(Icons.info_outline),
-          onPressed: () =>
-              FileDetailsView.show(context, ref, entry.file.uuid),
+          onPressed: () => FileDetailsView.show(context, ref, entry.file.uuid),
           child: Text(l10n.detailsTitle),
         ),
         MenuItemButton(

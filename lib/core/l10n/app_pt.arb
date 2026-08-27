@@ -199,6 +199,7 @@
   "musicMetadataTitle": "Metadados da música",
   "musicMetadataFieldTitle": "Título",
   "musicMetadataFieldArtist": "Artista",
+  "musicMetadataFieldAlbumArtist": "Artista do álbum",
   "musicMetadataFieldAlbum": "Álbum",
   "musicMetadataFieldYear": "Ano",
   "musicMetadataFieldGenre": "Gênero",

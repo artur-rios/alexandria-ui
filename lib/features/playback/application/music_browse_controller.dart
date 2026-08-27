@@ -31,7 +31,12 @@ class MusicBrowseState {
   /// The view the segmented control shows.
   final MusicView view;
 
-  /// The artist drilled into, which is `null` for the untagged group.
+  /// The album artist drilled into, which is `null` for the untagged group.
+  ///
+  /// The album's own artist rather than any one track's performer, because
+  /// that is what the artist and album lists are grouped by (UC-46): it is
+  /// the key `albumsOfArtist` and `tracksOfAlbum` are asked with, so a
+  /// compilation opens on the whole record rather than on one performer.
   final String? artist;
 
   /// The album drilled into, which is `null` for the untitled group.

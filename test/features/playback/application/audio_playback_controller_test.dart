@@ -1,6 +1,7 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
+import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -84,6 +85,49 @@ void main() {
       final state = container.read(audioPlaybackControllerProvider);
       expect(state.stage, AudioStage.allFailed);
       expect(state.queue.tracks, isEmpty);
+    },
+  );
+
+  test(
+    'GivenAGuestTrack_WhenTheArtistIsPlayed_ThenTheQueueIsTheAlbumArtists',
+    () async {
+      // The queue is gathered by the album artist (UC-46), so its label has
+      // to name that artist too: labelled with the guest, the bar would
+      // title the host's whole catalog after one track's guest, and the
+      // animation — which reads the label as the record's identity — would
+      // call it a different record.
+      final gateway = FakeCatalogGateway()
+        ..addAudio(
+          uuid: 'host-1',
+          title: 'Opener',
+          artist: 'Host',
+          albumArtist: 'Host',
+          album: 'Record',
+          track: 1,
+        )
+        ..addAudio(
+          uuid: 'guest-1',
+          title: 'The Feature',
+          artist: 'Guest',
+          albumArtist: 'Host',
+          album: 'Record',
+          track: 2,
+        );
+      final container = buildContainer(gateway);
+
+      // Started from the guest's own track, which is where the two tags
+      // disagree.
+      await container
+          .read(audioPlaybackControllerProvider.notifier)
+          .playArtist(aFile(uuid: 'guest-1'));
+
+      final state = container.read(audioPlaybackControllerProvider);
+      expect(state.queue.kind, QueueKind.artist);
+      expect(state.queue.label, 'Host');
+      expect(state.queue.tracks.map((file) => file.uuid), [
+        'host-1',
+        'guest-1',
+      ]);
     },
   );
 }
