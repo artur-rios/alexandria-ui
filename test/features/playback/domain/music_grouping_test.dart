@@ -152,6 +152,29 @@ void main() {
       expect(track.albumArtist, 'Various Artists');
     });
 
+    test(
+      'GivenAnUntaggedArtistsAlbum_WhenItIsQueued_ThenATaggedOnesStaysOut',
+      () {
+        // The list and the queue have to agree: `tracksOfAlbum` shows the
+        // untagged group alone, so pressing play on one of its rows must not
+        // pull in a properly tagged artist's record that happens to share the
+        // title.
+        final library = [
+          entry('anon.flac', album: 'Greatest Hits'),
+          entry('theirs.flac', album: 'Greatest Hits', artist: 'Someone'),
+        ];
+
+        expect(albumOf(library.first, library).map((file) => file.name), [
+          'anon.flac',
+        ]);
+        // And the other way round, which the old permissive arm allowed only
+        // in one direction.
+        expect(albumOf(library.last, library).map((file) => file.name), [
+          'theirs.flac',
+        ]);
+      },
+    );
+
     test('GivenACompilation_WhenItIsQueued_ThenEveryPerformerIsInIt', () {
       // Keyed by the performer, pressing play on this album would queue only
       // the track started from — a subset of what the album listed.

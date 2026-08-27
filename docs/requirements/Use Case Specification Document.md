@@ -1727,8 +1727,10 @@ graph LR
 
 1. The application reads the audio library in one call, metadata included.
 2. The owner chooses artists, albums, or songs. Artists and albums are grouped
-   by the album's artist; a track row still shows the performer of that track,
-   which is a different fact from whose record it is.
+   by the album's artist. Who performed a track is a different fact from whose
+   record it is, so the songs list names the performer of every track, and
+   inside a record it names the performers who are not the record's own
+   artist — which is what tells a compilation's twelve performers apart.
 3. The owner drills into an artist and then an album, or straight into an
    album, returning by the breadcrumb.
 4. The owner plays a track, an album, or an artist. An album or artist queue

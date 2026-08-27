@@ -162,6 +162,117 @@ void main() {
     );
 
     testWidgets(
+      'GivenACompilationsTracks_WhenTheAlbumIsListed_ThenEachRowNamesItsPerformer',
+      (tester) async {
+        // The view this feature exists for: a compilation is one album now,
+        // so the album's own list is the only place its twelve performers
+        // can be read. A row that named nobody would have hidden them.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'c1',
+            title: 'One',
+            artist: 'First Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'c2',
+            title: 'Two',
+            artist: 'Second Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            track: 2,
+          );
+        final container = buildContainer(gateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicTrackList(entries: library.entries, numbered: true),
+        );
+
+        expect(find.text('First Performer'), findsOneWidget);
+        expect(find.text('Second Performer'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenAnOrdinaryAlbum_WhenItIsListed_ThenNoRowRepeatsTheAlbumArtist',
+      (tester) async {
+        // The same name under all twelve rows of a single-artist record is
+        // noise, not information: the record already says whose it is.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'a1',
+            title: 'Airbag',
+            artist: 'Radiohead',
+            albumArtist: 'Radiohead',
+            album: 'OK Computer',
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'a2',
+            title: 'Karma Police',
+            artist: 'Radiohead',
+            albumArtist: 'Radiohead',
+            album: 'OK Computer',
+            track: 2,
+          );
+        final container = buildContainer(gateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicTrackList(entries: library.entries, numbered: true),
+        );
+
+        expect(find.text('Radiohead'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenATrackWithNoPerformer_WhenTheAlbumIsListed_ThenNoUnknownIsShown',
+      (tester) async {
+        // The record's artist is known, so a row with no performer tag has
+        // nothing to add — and "Unknown artist" under a record whose artist
+        // is named would be a contradiction rather than a fact.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'c1',
+            title: 'One',
+            artist: 'First Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'c2',
+            title: 'Two',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            track: 2,
+          );
+        final container = buildContainer(gateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicTrackList(entries: library.entries, numbered: true),
+        );
+
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(MusicTrackList)),
+        );
+        expect(find.text('First Performer'), findsOneWidget);
+        expect(find.text(l10n.musicUnknownArtist), findsNothing);
+      },
+    );
+
+    testWidgets(
       'GivenACompilation_WhenATrackRowIsTapped_ThenTheWholeRecordIsQueued',
       (tester) async {
         // Every track the album listed, including the ones another performer

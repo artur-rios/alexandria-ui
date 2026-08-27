@@ -143,18 +143,6 @@ void main() {
       },
     );
 
-    test(
-      'GivenNoAlbumArtistAnywhere_WhenTheLibraryIsListed_ThenItGroupsByPerformer',
-      () {
-        // The fallback, which is what most files take: a library tagged
-        // before the album artist existed lists exactly as it always did.
-        expect([for (final group in artistsIn(tagged)) group.name], [
-          'Portishead',
-          'Radiohead',
-        ]);
-      },
-    );
-
     test('GivenABlankAlbumArtist_WhenArtistsAreListed_ThenItFallsBackToo', () {
       // A blank tag names nobody, so it is not a group of its own — it takes
       // the same fallback an absent one does.

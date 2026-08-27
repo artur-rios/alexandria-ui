@@ -1180,6 +1180,83 @@ void main() {
       },
     );
   });
+
+  group('the case names the record (UC-46, FR-CT-13)', () {
+    testWidgets(
+      'GivenAGuestTrack_WhenThePlayerIsOpen_ThenTheCaseNamesTheAlbumArtist',
+      (tester) async {
+        // The case is the record's sleeve, so it is typeset with whose record
+        // it is. Typeset with the current track's performer instead, a
+        // compilation would re-letter its own case between two tracks of one
+        // sleeve, and a guest appearance would put the guest's name on the
+        // host's record.
+        final catalog = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'comp-1',
+            title: 'One',
+            artist: 'First Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            year: 1959,
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'comp-2',
+            title: 'Two',
+            artist: 'Second Performer',
+            albumArtist: 'Various Artists',
+            album: "Now That's Music",
+            year: 1959,
+            track: 2,
+          );
+
+        final container = await tester.pumpShell(
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(catalog),
+            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway(),
+            ),
+            playbackPositionsProvider.overrideWithValue(
+              FakePlaybackPositionStore(),
+            ),
+          ],
+        );
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setAlbumAnimation(AlbumAnimationMode.byYear);
+
+        // The second track, whose performer is not the record's artist: it is
+        // where the two tags disagree, so it is the only track that can tell
+        // which of them the case was typeset with.
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playTrack(aFile(uuid: 'comp-2'));
+        await settle(tester);
+
+        // The insertion opens the player itself; where it has not, it is
+        // opened from the bar the way an owner would.
+        if (find.byType(NowPlayingScreen).evaluate().isEmpty) {
+          await tester.tap(find.byIcon(Icons.expand_less));
+          await settle(tester);
+        }
+
+        // Every stage in the tree, not one of them: the pushed route and the
+        // bar's own route beneath it can both be mounted mid-transition, and
+        // a case typeset with the performer on either of them is the defect
+        // this pins.
+        final stages = tester.widgetList<AlbumStage>(find.byType(AlbumStage));
+        expect(stages, isNotEmpty);
+        expect(
+          stages.map((stage) => stage.artist).toSet(),
+          {'Various Artists'},
+        );
+        expect(stages.map((stage) => stage.title).toSet(), {
+          "Now That's Music",
+        });
+      },
+    );
+  });
 }
 
 /// An [AudioPlaybackController] that answers with a fixed state — mirrors
@@ -1193,6 +1270,8 @@ class _FixedAudioPlaybackController extends AudioPlaybackController {
 
   @override
   AudioPlaybackState build() => _state;
+
+
 }
 
 /// An [AlbumAnimationController] that answers with a fixed state — mirrors
@@ -1204,4 +1283,5 @@ class _FixedAlbumAnimationController extends AlbumAnimationController {
 
   @override
   AlbumAnimationState build() => _state;
+
 }

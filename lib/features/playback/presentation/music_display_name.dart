@@ -80,13 +80,6 @@ String musicTitleForFile(
   AppLocalizations l10n,
 ) => musicTitleOf(musicEntryForFile(ref, file), l10n);
 
-/// [file]'s artist from its metadata, never its name on disk (FR-CT-13).
-String musicArtistForFile(
-  WidgetRef ref,
-  CatalogFile file,
-  AppLocalizations l10n,
-) => musicArtistOf(musicEntryForFile(ref, file), l10n);
-
 /// [file]'s album artist from its metadata, never its name on disk
 /// (FR-CT-13).
 String musicAlbumArtistForFile(

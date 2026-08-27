@@ -73,10 +73,14 @@ List<CatalogFile> albumOf(MusicEntry entry, List<MusicEntry> library) {
   final artist = entry.albumArtist;
   final matches = [
     for (final candidate in library)
-      if (candidate.album == album &&
-          // Two different artists can name an album the same thing. Where the
-          // starting track names an artist, the album is that artist's.
-          (artist == null || candidate.albumArtist == artist))
+      // Two different artists can name an album the same thing, so the album
+      // is the pair. Exact equality including the absent case: an album whose
+      // artist no tag names is its own record, and a permissive `null` arm
+      // here would have queued every album of that title — a properly tagged
+      // artist's record included — under a group that listed only the
+      // untagged files. `tracksOfAlbum` has always matched exactly; this is
+      // the same rule, so a queue holds what the group showed.
+      if (candidate.album == album && candidate.albumArtist == artist)
         candidate,
   ];
 

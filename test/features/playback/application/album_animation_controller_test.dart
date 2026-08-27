@@ -466,4 +466,52 @@ void main() {
       },
     );
   });
+
+  test(
+    'GivenACompilationTrackIsPlaying_WhenAnotherOfItsTracksStarts_ThenNoInsertionIsOwed',
+    () async {
+      // Two tracks of one compilation, played one after another from the
+      // Songs list. Identified by the track's own performer they would be
+      // two different records, and the case would come out and go back in
+      // between two tracks of the same sleeve; identified by the album
+      // artist — the same key the browsing area groups them under — they are
+      // the one record they are.
+      final gateway = FakeCatalogGateway()
+        ..addAudio(
+          uuid: 'comp-1',
+          title: 'One',
+          artist: 'First Performer',
+          albumArtist: 'Various Artists',
+          album: "Now That's Music",
+          year: 1959,
+          track: 1,
+        )
+        ..addAudio(
+          uuid: 'comp-2',
+          title: 'Two',
+          artist: 'Second Performer',
+          albumArtist: 'Various Artists',
+          album: "Now That's Music",
+          year: 1959,
+          track: 2,
+        );
+      final container = buildContainer(gateway);
+      final audio = container.read(audioPlaybackControllerProvider.notifier);
+
+      await audio.playTrack(aFile(uuid: 'comp-1'));
+      await container.read(musicLibraryProvider.future);
+      final first = container.read(albumAnimationControllerProvider);
+      expect(first.insertionOwed, isTrue);
+      container
+          .read(albumAnimationControllerProvider.notifier)
+          .insertionShown();
+
+      await audio.playTrack(aFile(uuid: 'comp-2'));
+      await container.read(musicLibraryProvider.future);
+
+      final state = container.read(albumAnimationControllerProvider);
+      expect(state.insertionOwed, isFalse);
+      expect(state.owedIdentity, isNull);
+    },
+  );
 }
