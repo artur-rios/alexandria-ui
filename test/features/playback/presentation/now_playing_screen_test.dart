@@ -31,7 +31,7 @@ import '../../../support/shell_harness.dart';
 /// `NowPlayingScreen`, a route that fills the window. The groups below cover
 /// what still holds: what this screen does when the queue is a single track,
 /// which is a record too (design §1), leaving and returning to the player
-/// (AF-03), the screen never leaking a raw file name onto the page
+/// (AF-02), the screen never leaking a raw file name onto the page
 /// (FR-CT-13), that the route really does fill the window, and the auto-open
 /// behaviour Task 7 adds on top of what `album_animation_test.dart` covered
 /// for `AlbumAnimation` itself (moved to `album_stage_test.dart` in Task 5)
@@ -257,7 +257,7 @@ void main() {
     testWidgets(
       'GivenThePlayerIsOpen_WhenItIsClosed_ThenTheQueueAndTheBarAreUntouched',
       (tester) async {
-        // AF-03: closing the player is not stopping playback.
+        // AF-02: closing the player is not stopping playback.
         final container = await playSomething(tester);
         await tester.tap(find.byIcon(Icons.expand_less));
         await tester.pumpAndSettle();
@@ -526,7 +526,7 @@ void main() {
     );
   });
 
-  // AF-03: the owner goes elsewhere.
+  // AF-02: the owner goes elsewhere.
   group('leaving the player', () {
     testWidgets('GivenTheFullPlayerIsClosed_WhenItIs_ThenPlaybackContinues', (
       tester,
@@ -809,7 +809,7 @@ void main() {
         );
         // The player already auto-opened for the first track. Acknowledge
         // the insertion the way `AlbumStage.onInserted` does when it plays,
-        // then leave the player the way AF-03 already does, before the next
+        // then leave the player the way AF-02 already does, before the next
         // track of the same record starts.
         container
             .read(albumAnimationControllerProvider.notifier)
@@ -880,7 +880,7 @@ void main() {
         // through whatever played next (Finding 1's recovery case). Now a
         // lone track is a record like any other: its own insertion is shown
         // and acknowledged the ordinary way, closing the player the way
-        // AF-03 already does, so the album that follows crosses a fresh edge
+        // AF-02 already does, so the album that follows crosses a fresh edge
         // of its own rather than finding the flag already stuck `true`.
         final gateway = FakeCatalogGateway()
           ..addAudio(

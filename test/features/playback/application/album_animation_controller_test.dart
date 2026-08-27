@@ -36,10 +36,10 @@ void main() {
     return container;
   }
 
-  /// A library of one album ("Kind of Blue", two tracks, 1959 — a vinyl-era
-  /// year) by one artist, and a second album ("Blue Train", 1957) by a
-  /// different artist, so a test can move between records without building
-  /// its own fixtures.
+  /// A library of one album ("Kind of Blue", three tracks, 1959 — a
+  /// vinyl-era year) by one artist, and a second album ("Blue Train", 1957)
+  /// by a different artist, so a test can move between records without
+  /// building its own fixtures.
   FakeCatalogGateway libraryGateway() {
     final gateway = FakeCatalogGateway();
     gateway.addAudio(
@@ -57,6 +57,14 @@ void main() {
       artist: 'Miles Davis',
       year: 1959,
       track: 2,
+    );
+    gateway.addAudio(
+      uuid: 'kob-3',
+      title: 'Blue in Green',
+      album: 'Kind of Blue',
+      artist: 'Miles Davis',
+      year: 1959,
+      track: 3,
     );
     gateway.addAudio(
       uuid: 'bt-1',
@@ -267,12 +275,13 @@ void main() {
     );
 
     test(
-      'GivenATrackOfAnAlbumIsPlaying_WhenAnotherTrackOfTheSameAlbumStartsFromTheSongsList_ThenNoInsertionIsOwed',
+      'GivenATrackOfAnAlbumIsPlaying_WhenTwoMoreTracksOfTheSameAlbumStartFromTheSongsList_ThenNoInsertionIsOwed',
       () async {
         // Three tracks of one album, played one after another from the
-        // Songs list rather than as an album queue, still insert once: the
+        // Songs list rather than as an album queue, insert once: the
         // identity is the record — the track's own album and artist — not
-        // the queue's uuid-per-track identity `playTrack` builds.
+        // the queue's uuid-per-track identity `playTrack` builds. Three
+        // rather than two, matching the design's own testing list exactly.
         final gateway = libraryGateway();
         final container = buildContainer(gateway);
         final audio = container.read(audioPlaybackControllerProvider.notifier);
@@ -284,6 +293,13 @@ void main() {
             .insertionShown();
 
         await audio.playTrack(aFile(uuid: 'kob-2'));
+        await container.read(musicLibraryProvider.future);
+        expect(
+          container.read(albumAnimationControllerProvider).insertionOwed,
+          isFalse,
+        );
+
+        await audio.playTrack(aFile(uuid: 'kob-3'));
         await container.read(musicLibraryProvider.future);
 
         final state = container.read(albumAnimationControllerProvider);

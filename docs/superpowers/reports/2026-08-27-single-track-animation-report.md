@@ -235,3 +235,173 @@ dart format --set-exit-if-changed <every file this change touched>
   string — only the resulting equality/inequality is tested, which is
   the right level, but flagging the choice in case a reviewer wants a
   different join strategy.
+
+## Review round 2: six findings addressed
+
+The coordinator's review found six issues. All six are fixed, verified,
+and covered by tests below.
+
+### Finding 1 (Important) — the sleeve jacket colour
+
+`now_playing_screen.dart`'s `album:` argument to `AlbumStage` (feeds
+`sleeveIndexFor`) now reads:
+
+```dart
+album: state.queue.label ?? musicEntryForFile(ref, current).album,
+```
+
+The queue's own label for an album/artist queue, unchanged; for a track
+queue (where the label is always `null`), the current track's own raw
+`album` tag from `MusicEntry` — never `musicAlbumForFile`'s localised
+"Unknown album" fallback, which would have made the jacket hue depend on
+the interface language and collapsed every untagged track onto the same
+hue as a genuinely-named "Unknown album". `null` either way still reaches
+`sleeveIndexFor`'s own "no name" case. `musicEntryForFile` was already in
+scope via the existing `music_display_name.dart` import.
+
+### Finding 2 (Important) — the two controllers' identities now share one function
+
+`AlbumAnimationController`'s record resolution (`_recordOf`, private) is
+now a top-level function `recordOf(PlaybackQueue queue, MusicLibrary?
+library)` in `album_animation_controller.dart`, returning `({String
+identity, int? year})`. `AlbumCoverController._identityOf` now calls it
+directly (`(queue.kind, recordOf(queue, library).identity)`) instead of
+carrying its own hand-copied `(queue.kind, queue.label ?? tracks.first.uuid)`.
+Both controllers' doc comments were rewritten to say they share this
+function rather than "mirror" or "duplicate" it. `AlbumCoverController.build()`
+now watches `musicLibraryProvider` under the same condition
+`AlbumAnimationController.build()` does.
+
+**A real bug surfaced while wiring this up and fixing it took most of
+this round's time.** My first pass watched `musicLibraryProvider` in
+`AlbumCoverController.build()` whenever `queue.kind == QueueKind.track` —
+but `PlaybackQueue.empty`'s own `kind` is `QueueKind.track` (it has to
+pick something, and `track` is what `PlaybackQueue.empty`'s constructor
+uses). `PlaybackSessionActivity.end()` reads
+`albumCoverControllerProvider.notifier` — which triggers this
+controller's very first `build()` — as part of `SessionController.establish()`'s
+opening "wind down every activity" loop, which runs *before* the session
+is set active. That first build watched `musicLibraryProvider` with
+`credential == null`, permanently caching `MusicLibrary.empty`: nothing
+ever re-triggers `MusicLibraryController.build()` afterward, since
+nothing invalidates it once cached. Two of the `album_animation_controller_test.dart`
+tests I had written in round 1 (`GivenATrackOfAnAlbumIsPlaying_...` and
+`GivenATrackHasItsOwnYear_...`) started failing once `AlbumCoverController`
+started reading the same provider — they had been silently relying on
+being the *first* reader of `musicLibraryProvider` in their container.
+Fixed by checking `!queue.isEmpty` before the library watch/read, in
+*both* `AlbumCoverController.build()` and, defensively,
+`AlbumAnimationController.insertionShown()` (which has the identical
+"empty queue defaults to `QueueKind.track`" hazard, even though nothing
+calls it with an empty queue today). `AlbumAnimationController.build()`
+itself was already safe — `!queue.showsAlbumAnimation` (which is
+`tracks.isEmpty`) returns early before the library watch.
+
+Added a `group('a track queue (Finding 2)', ...)` to
+`album_cover_controller_test.dart` with two tests reproducing the exact
+scenario the finding describes: playing track 2 of an album via
+`playTrack` (not `playAlbum`) does not re-fetch the cover, and playing a
+track of a *different* album does swap it back to the designed jacket.
+Both explicitly `await container.read(musicLibraryProvider.future)`
+after each `playTrack` — matching the realistic case (the Songs list a
+track was tapped from cannot be showing without the library already
+loaded) and avoiding a related but separate race: since `playTrack`
+never awaits the library itself, a `build()` running before it resolves
+computes a uuid-fallback identity that would then change (and spuriously
+re-trigger a fetch) the moment the library actually loads behind it.
+That race is pre-existing to this design (it would equally affect
+`AlbumAnimationController`'s `owedIdentity` for a track queue played
+before the library has loaded even once this session) and is noted here
+rather than fixed, since it requires the library to not already be
+loaded, which cannot happen in practice for a track played from the
+Songs list, search results, or a file's own details.
+
+### Finding 3 (Important) — stale AF-02 reasoning in doc comments
+
+`shell_screen.dart`'s `ref.listen` comment ("No separate AF-02 check
+here...") rewritten to say the auto-open reads the same `owedIdentity`
+edge for every queue kind, track included. `playback_bar.dart`'s comment
+("AF-02 is about the animation, not about the player") rewritten to say
+the full player shows the animation for a lone track exactly as it does
+for an album or an artist.
+
+### Finding 4 (Important) — renumbered alternative-flow ids
+
+Fixed every UC-21-specific reference the finding named:
+`album_stage.dart:141` and `album_visor.dart:59` (reduced motion, now
+AF-03 not AF-04), `now_playing_screen.dart:20` (navigating away, now
+AF-02 not AF-03), and `now_playing_screen_test.dart`'s file header and
+its comments at (now-shifted) lines 34, 260, 529, 812, 883, plus
+`album_stage_test.dart`'s `group('reduced motion (AF-03)', ...)`. Also
+searched the rest of `lib/features/playback` and `lib/features/shell`
+for any other `AF-0[3-5]` that might be UC-21's; every other hit belongs
+to a different use case (UC-19, UC-20, UC-33, UC-38, UC-39) and was left
+alone.
+
+### Finding 5 (Minor) — the NUL byte separator
+
+`recordOf`'s album/artist join is now `'$album ${entry.artist ?? ''}'`
+— joined with a plain ASCII space character, not the NUL-byte escape it
+used before. (Writing the replacement required going through Python
+directly at one point: the Read tool renders a Dart NUL-byte source
+escape visually as an ordinary space, and copying that rendering back
+out via the Edit tool produced a literal NUL byte in the file rather
+than the escape sequence itself — caught because `grep` started
+reporting the file as binary. Worth knowing about if this comes up
+again: never copy a `Read` result that renders as a plain space next to
+a backtick-quoted separator verbatim into a new edit; retype the escape
+by hand instead.)
+
+### Finding 6 (Minor) — three consecutive tracks, not two
+
+`libraryGateway()` in `album_animation_controller_test.dart` now adds a
+third "Kind of Blue" track (`kob-3`, track 3). The renamed test
+`GivenATrackOfAnAlbumIsPlaying_WhenTwoMoreTracksOfTheSameAlbumStartFromTheSongsList_ThenNoInsertionIsOwed`
+plays `kob-1`, `kob-2`, `kob-3` via `playTrack` in sequence, asserting
+`insertionOwed` is `false` after both the second and the third.
+
+## Commands run for round 2 (final)
+
+```
+flutter analyze
+  → No issues found!
+
+dart format --set-exit-if-changed <every file this round touched>
+  → 11 files, 0 changed (clean)
+
+flutter test test/features/playback/application/album_animation_controller_test.dart
+  → 16 tests, all pass
+
+flutter test test/features/playback/application/album_cover_controller_test.dart
+  → 10 tests, all pass (2 new, both for Finding 2)
+
+flutter test test/features/playback test/features/shell
+  → 440 tests, all pass
+
+flutter test
+  → 1879 tests, all pass
+```
+
+Files touched in round 2:
+`lib/features/playback/application/album_animation_controller.dart`,
+`lib/features/playback/application/album_cover_controller.dart`,
+`lib/features/playback/presentation/album_stage.dart`,
+`lib/features/playback/presentation/album_visor.dart`,
+`lib/features/playback/presentation/now_playing_screen.dart`,
+`lib/features/shell/presentation/playback_bar.dart`,
+`lib/features/shell/presentation/shell_screen.dart`,
+`test/features/playback/application/album_animation_controller_test.dart`,
+`test/features/playback/application/album_cover_controller_test.dart`,
+`test/features/playback/presentation/album_stage_test.dart`,
+`test/features/playback/presentation/now_playing_screen_test.dart`.
+
+Two files (`album_visor.dart`, `album_stage_test.dart`) show a larger
+diff than the one-line change I made to each: this environment's
+`dart format` reformats the whole file on any touch, and disagreed with
+how those two files were previously formatted (unrelated to this
+change — likely a `dart_style` version difference). One of those
+reformats also turned a single-line `if` without braces into a
+multi-line one, which `flutter analyze` then flagged
+(`curly_braces_in_flow_control_structures`); fixed by adding braces
+rather than fighting the formatter. Every other file's diff is exactly
+the intended edit, verified with `git diff` per file before finalizing.

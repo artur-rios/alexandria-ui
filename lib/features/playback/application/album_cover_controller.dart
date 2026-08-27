@@ -8,17 +8,19 @@ import '../../../core/di/providers.dart';
 import '../../catalog/domain/catalog_gateway.dart';
 import '../domain/album_cover.dart';
 import '../domain/playback_queue.dart';
-import 'album_animation_controller.dart' show AlbumIdentity;
+import 'album_animation_controller.dart' show AlbumIdentity, recordOf;
+import 'music_library_controller.dart';
 
 /// Fetches and holds the current album's cover (design section 4, UC-21,
 /// FR-PL-07).
 ///
 /// Identifies "the same record" the same way `AlbumAnimationController`
-/// does — [AlbumIdentity], the queue's kind paired with its label or its
-/// first track's uuid — because the two controllers have to agree on when a
-/// track change is still the same album and when it is a new one; if they
-/// disagreed, a cover could swap under a case that never re-inserted, or an
-/// insertion could play under a cover left over from the record before it.
+/// does — [AlbumIdentity], computed by the very same [recordOf] function,
+/// not a second copy of its rule — because the two controllers have to
+/// agree on when a track change is still the same album and when it is a
+/// new one; if they disagreed, a cover could swap under a case that never
+/// re-inserted, or an insertion could play under a cover left over from the
+/// record before it.
 ///
 /// The cover is fetched once per album, for the file the queue was showing
 /// when that album became current, and held — never refetched — for as
@@ -84,7 +86,16 @@ class AlbumCoverController extends Notifier<AlbumCover> {
     ref.keepAlive();
 
     final queue = ref.watch(audioPlaybackControllerProvider).queue;
-    final identity = queue.isEmpty ? null : _identityOf(queue);
+    // `queue.isEmpty` checked before the library watch, not after: an empty
+    // queue's own `kind` is `QueueKind.track` (`PlaybackQueue.empty`'s own
+    // definition), so watching unconditionally on that check alone would
+    // watch `musicLibraryProvider` — and so build it — for every queue,
+    // including the one this controller starts with before any session
+    // exists to read a credential from.
+    final library = !queue.isEmpty && queue.kind == QueueKind.track
+        ? ref.watch(musicLibraryProvider).value
+        : null;
+    final identity = queue.isEmpty ? null : _identityOf(queue, library);
 
     // Rebuilt for a reason that is not a new album — a track change within
     // the same record, or anything else `audioPlaybackControllerProvider`
@@ -190,12 +201,13 @@ class AlbumCoverController extends Notifier<AlbumCover> {
     state = _current;
   }
 
-  /// What identifies "which record is playing" — kept in step with
-  /// `AlbumAnimationController._identityOf`, which this deliberately mirrors
-  /// rather than shares: the two controllers are independent `Notifier`s
-  /// with no common ancestor to hold one copy on, and the identity rule
-  /// itself is small enough that duplicating it here is less risk than
-  /// threading a dependency between two otherwise-unrelated controllers.
-  AlbumIdentity _identityOf(PlaybackQueue queue) =>
-      (queue.kind, queue.label ?? queue.tracks.first.uuid);
+  /// What identifies "which record is playing" — [recordOf], the same
+  /// top-level function `AlbumAnimationController` calls, so the two
+  /// controllers cannot silently drift apart the way two hand-copied
+  /// implementations of the same rule could (Finding 2). `library` is
+  /// watched above only for a track queue, exactly as
+  /// `AlbumAnimationController.build` does, since it is the only kind
+  /// [recordOf] actually reads it for.
+  AlbumIdentity _identityOf(PlaybackQueue queue, MusicLibrary? library) =>
+      (queue.kind, recordOf(queue, library).identity);
 }

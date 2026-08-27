@@ -138,7 +138,7 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
     curve: _Beats.deviceCloses,
   );
 
-  /// AF-04: whether the system asked for less motion.
+  /// AF-03: whether the system asked for less motion.
   ///
   /// Read here rather than in `build`, exactly as `AlbumAnimation` (which
   /// this replaces) already did: it decides whether either ticker runs at
