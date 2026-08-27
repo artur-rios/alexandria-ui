@@ -1247,10 +1247,9 @@ void main() {
         // this pins.
         final stages = tester.widgetList<AlbumStage>(find.byType(AlbumStage));
         expect(stages, isNotEmpty);
-        expect(
-          stages.map((stage) => stage.artist).toSet(),
-          {'Various Artists'},
-        );
+        expect(stages.map((stage) => stage.artist).toSet(), {
+          'Various Artists',
+        });
         expect(stages.map((stage) => stage.title).toSet(), {
           "Now That's Music",
         });
@@ -1270,8 +1269,6 @@ class _FixedAudioPlaybackController extends AudioPlaybackController {
 
   @override
   AudioPlaybackState build() => _state;
-
-
 }
 
 /// An [AlbumAnimationController] that answers with a fixed state — mirrors
@@ -1283,5 +1280,4 @@ class _FixedAlbumAnimationController extends AlbumAnimationController {
 
   @override
   AlbumAnimationState build() => _state;
-
 }

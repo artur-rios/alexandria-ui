@@ -6,6 +6,7 @@ import 'package:alexandria_ui/features/playback/presentation/music_library_view.
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 // Riverpod 3 moved `Override` out of the main export surface; see
@@ -147,6 +148,64 @@ void main() {
         final airbag = tester.getTopLeft(find.textContaining('Airbag')).dy;
         final karma = tester.getTopLeft(find.textContaining('Karma')).dy;
         expect(airbag, lessThan(karma));
+      },
+    );
+
+    testWidgets(
+      'GivenAnAlbumOpenedFromAlbums_WhenItIsShown_ThenTheCrumbNamesItsArtist',
+      (tester) async {
+        // Whose record it is, is a fact about the record rather than about
+        // how it was reached. Reached from Albums no artist was drilled
+        // through, and the rows inside an ordinary single-artist record name
+        // no performer of their own (`music_rows.dart`) — so without this
+        // crumb the artist appears nowhere on the screen.
+        await openMusic(tester, gateway: libraryOfThree());
+        final l10n = localizations(tester);
+
+        await tester.tap(find.text(l10n.musicViewAlbums));
+        await tester.pumpAndSettle();
+        await tester.tap(find.textContaining('OK'));
+        await tester.pumpAndSettle();
+
+        // The track list is open, so the albums list's own row subtitle is
+        // gone: this can only be the crumb.
+        expect(find.textContaining('Airbag'), findsOneWidget);
+        expect(find.text('Radiohead'), findsOneWidget);
+        // Plain text, not a control: no artist's list of albums was visited
+        // on this path, so there is nothing to go back to.
+        expect(
+          find.ancestor(
+            of: find.text('Radiohead'),
+            matching: find.byType(TextButton),
+          ),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenAnAlbumOpenedFromAnArtist_WhenTheArtistCrumbIsTapped_ThenTheirAlbumsReturn',
+      (tester) async {
+        // The other path keeps the control it always had: this crumb was
+        // drilled through, so it leads back to where the owner has been.
+        await openMusic(tester, gateway: libraryOfThree());
+
+        await tester.tap(find.text('Radiohead'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.textContaining('OK'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(
+          find.ancestor(
+            of: find.text('Radiohead'),
+            matching: find.byType(TextButton),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Back on that artist's albums, not at the top of the view.
+        expect(find.textContaining('OK'), findsOneWidget);
+        expect(find.text('Portishead'), findsNothing);
       },
     );
 

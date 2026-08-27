@@ -79,7 +79,10 @@ List<CatalogFile> albumOf(MusicEntry entry, List<MusicEntry> library) {
       // here would have queued every album of that title — a properly tagged
       // artist's record included — under a group that listed only the
       // untagged files. `tracksOfAlbum` has always matched exactly; this is
-      // the same rule, so a queue holds what the group showed.
+      // the same rule, so for a *titled* album a queue holds what the group
+      // showed. The untitled album is the documented exception above: it is
+      // this file's own record of one, where `albumsIn` gathers an artist's
+      // untitled tracks together.
       if (candidate.album == album && candidate.albumArtist == artist)
         candidate,
   ];

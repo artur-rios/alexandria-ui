@@ -102,9 +102,12 @@ class MusicTrackList extends ConsumerWidget {
   /// album artist, and the whole point of grouping by the album artist is
   /// that their names are still worth reading. On an ordinary single-artist
   /// record the same name under all twelve rows would be noise, so it is left
-  /// off. A track whose tags name no performer shows nothing rather than
-  /// "Unknown artist": the record's own artist is already named above the
-  /// list, and this row has nothing to add to it.
+  /// off — the record's own artist is named in the breadcrumb above the list
+  /// on both paths into a record (`music_library_view.dart`), so leaving it
+  /// off a row does not take it off the screen. A track whose tags name no
+  /// performer shows nothing rather than "Unknown artist", for the same
+  /// reason: the crumb has already answered whose record this is, and a row
+  /// that only says "unknown" adds nothing to it.
   String? _performerOf(MusicEntry entry, AppLocalizations l10n) {
     if (!numbered) return musicArtistOf(entry, l10n);
 
