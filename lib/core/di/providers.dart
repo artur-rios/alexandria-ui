@@ -82,6 +82,8 @@ import '../../features/organization/domain/bookmark_gateway.dart';
 import '../../features/organization/domain/collection.dart';
 import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
+import '../../features/playlists/data/core_playlist_gateway.dart';
+import '../../features/playlists/domain/playlist_gateway.dart';
 import '../../features/playback/application/album_animation_controller.dart';
 import '../../features/playback/application/album_cover_controller.dart';
 import '../../features/playback/application/audio_playback_controller.dart';
@@ -866,6 +868,18 @@ final readingListsControllerProvider =
 /// The reading-lists screen's own state (UC-31).
 final readingListsFormProvider =
     NotifierProvider<ReadingListsForm, ReadingListsState>(ReadingListsForm.new);
+
+/// The core's playlist operations (playlists design).
+final playlistGatewayProvider = Provider<PlaylistGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the playlist gateway was read before the core was loaded',
+    );
+  }
+
+  return CorePlaylistGateway(core);
+});
 
 /// The tracked books' and comics' names (UC-32 main flow step 2).
 final trackedReadingItemsProvider =

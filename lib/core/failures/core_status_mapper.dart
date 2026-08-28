@@ -35,6 +35,7 @@ Failure mapCoreStatus(
     CoreStatusFamily.bookmark => _mapBookmark(code),
     CoreStatusFamily.watchlist => _mapWatchlist(code),
     CoreStatusFamily.readingList => _mapReadingList(code),
+    CoreStatusFamily.playlist => _mapPlaylist(code),
     CoreStatusFamily.auth => _mapAuth(code),
     CoreStatusFamily.playback => _mapPlayback(code),
     CoreStatusFamily.run => _mapRun(code),
@@ -254,6 +255,33 @@ Failure _mapReadingList(int code) => switch (code) {
     code: code,
   ),
   _ => Failure.unexpected(family: CoreStatusFamily.readingList, code: code),
+};
+
+// The playlist family follows the same five-plus-other shape as the reading
+// list and watchlist families beside it — confirmed against alexandria-ffi's
+// own `PLAYLIST_ERR_*` constants rather than assumed from the pattern.
+Failure _mapPlaylist(int code) => switch (code) {
+  PLAYLIST_ERR_INVALID_INPUT => Failure.invalidInput(
+    family: CoreStatusFamily.playlist,
+    code: code,
+  ),
+  PLAYLIST_ERR_UNAUTHORIZED => Failure.unauthorized(
+    family: CoreStatusFamily.playlist,
+    code: code,
+  ),
+  PLAYLIST_ERR_NOT_INITIALIZED => Failure.notInitialized(
+    family: CoreStatusFamily.playlist,
+    code: code,
+  ),
+  PLAYLIST_ERR_NOT_FOUND => Failure.notFound(
+    family: CoreStatusFamily.playlist,
+    code: code,
+  ),
+  PLAYLIST_ERR_INVALID_STATE => Failure.invalidState(
+    family: CoreStatusFamily.playlist,
+    code: code,
+  ),
+  _ => Failure.unexpected(family: CoreStatusFamily.playlist, code: code),
 };
 
 // The auth family has no not-found and no disk code, and is the only one with a

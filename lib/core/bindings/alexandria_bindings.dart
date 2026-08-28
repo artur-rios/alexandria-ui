@@ -2303,6 +2303,20 @@ const int PLAYBACK_ERR_UNAUTHORIZED = 2;
 
 const int PLAYBACK_OK = 0;
 
+const int PLAYLIST_ERR_INVALID_INPUT = 1;
+
+const int PLAYLIST_ERR_INVALID_STATE = 5;
+
+const int PLAYLIST_ERR_NOT_FOUND = 4;
+
+const int PLAYLIST_ERR_NOT_INITIALIZED = 3;
+
+const int PLAYLIST_ERR_OTHER = 9;
+
+const int PLAYLIST_ERR_UNAUTHORIZED = 2;
+
+const int PLAYLIST_OK = 0;
+
 /// JSON result for the playback functions. `json` is NULL on error and
 /// `status` carries the mapped code. The caller must free `json` with
 /// `alexandria_free_string`.

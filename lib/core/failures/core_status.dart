@@ -26,6 +26,9 @@ enum CoreStatusFamily {
   /// `alexandria_reading_list_*` — see `READING_LIST_*`.
   readingList,
 
+  /// `alexandria_playlist_*` and `alexandria_playlists_*` — see `PLAYLIST_*`.
+  playlist,
+
   /// `alexandria_auth_local_*` — see `AUTH_*`.
   auth,
 
@@ -60,6 +63,7 @@ enum CoreStatusFamily {
     CoreStatusFamily.bookmark => BOOKMARK_OK,
     CoreStatusFamily.watchlist => WATCHLIST_OK,
     CoreStatusFamily.readingList => READING_LIST_OK,
+    CoreStatusFamily.playlist => PLAYLIST_OK,
     CoreStatusFamily.auth => AUTH_OK,
     CoreStatusFamily.settings => SETTINGS_OK,
     CoreStatusFamily.playback => PLAYBACK_OK,

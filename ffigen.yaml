@@ -57,6 +57,11 @@ macros:
     # The playback family covers the source, thumbnail, and comic-page calls
     # (UC-19, UC-20, UC-23, UC-24). Its own set of codes, as the run family is.
     - "PLAYBACK_.*"
+    # The playlist family (playlists Task 1 … Task 7). Its own set of codes,
+    # numerically identical to READING_LIST_'s and WATCHLIST_'s by the
+    # header's own convention, but a family of its own so the two never
+    # cross-read.
+    - "PLAYLIST_.*"
     # The settings read has its own family too (UC-34's retention window,
     # core UC-47). It carries only OK, unauthorized, not-initialized, and
     # other — reading it through another family's table would be a misread of

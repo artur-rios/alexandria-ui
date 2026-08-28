@@ -6,13 +6,13 @@ import '../../../core/bindings/core_isolate.dart';
 import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
-import '../domain/catalog_file.dart';
 import '../domain/catalog_gateway.dart';
 import '../domain/file_details.dart';
 import '../domain/library_type.dart';
 import '../domain/listing_view.dart';
 import '../domain/music_metadata.dart';
 import '../domain/video_metadata.dart';
+import 'file_view_parser.dart';
 
 /// [CatalogGateway] over the generated bindings (IR-03, UC-09).
 class CoreCatalogGateway implements CatalogGateway {
@@ -145,7 +145,9 @@ class CoreCatalogGateway implements CatalogGateway {
       final body = jsonDecode(json) as Map<String, dynamic>;
 
       return MetadataEditOutcome.saved(
-        metadata: MusicMetadata.fromDetails(_metadataFrom(body['metadata'])),
+        metadata: MusicMetadata.fromDetails(
+          metadataFromFileView(body['metadata']),
+        ),
       );
     } on Object {
       return _unreadableEdit();
@@ -190,7 +192,9 @@ class CoreCatalogGateway implements CatalogGateway {
       final body = jsonDecode(json) as Map<String, dynamic>;
 
       return VideoMetadataEditOutcome.saved(
-        metadata: VideoMetadata.fromDetails(_metadataFrom(body['metadata'])),
+        metadata: VideoMetadata.fromDetails(
+          metadataFromFileView(body['metadata']),
+        ),
       );
     } on Object {
       return _unreadableVideoEdit();
@@ -223,7 +227,7 @@ class CoreCatalogGateway implements CatalogGateway {
     if (json == null) return _unreadableRename();
 
     try {
-      final file = _fileFrom(jsonDecode(json) as Map<String, dynamic>);
+      final file = fileFromFileView(jsonDecode(json) as Map<String, dynamic>);
       if (file == null) return _unreadableRename();
 
       return FileRenameOutcome.renamed(file: file);
@@ -254,24 +258,6 @@ class CoreCatalogGateway implements CatalogGateway {
     ),
   );
 
-  /// The metadata object as labelled fields.
-  ///
-  /// Read generically rather than per subtype: this screen displays what the
-  /// core sent, and a core that grows a field should show it rather than have
-  /// it silently dropped by a model that predates it. The typed shape belongs
-  /// to the use cases that edit metadata (UC-15, UC-16).
-  Map<String, String> _metadataFrom(Object? metadata) {
-    if (metadata is! Map<String, dynamic>) return const {};
-
-    return {
-      for (final entry in metadata.entries)
-        // The tag serde adds to name the variant is not a field the owner
-        // reads: the file's type already says which shape this is.
-        if (entry.key != 'type' && entry.value != null)
-          entry.key: '${entry.value}',
-    };
-  }
-
   FileDetailsOutcome _unreadableDetails() => const FileDetailsOutcome.failed(
     failure: Failure.unexpected(
       family: CoreStatusFamily.file,
@@ -287,12 +273,12 @@ class CoreCatalogGateway implements CatalogGateway {
   /// place that reads it rather than a second copy that could drift from the
   /// first.
   FileDetails? _detailsFrom(Map<String, dynamic> body) {
-    final file = _fileFrom(body['file'] as Map<String, dynamic>);
+    final file = fileFromFileView(body['file'] as Map<String, dynamic>);
     if (file == null) return null;
 
     return FileDetails(
       file: file,
-      metadata: _metadataFrom(body['metadata']),
+      metadata: metadataFromFileView(body['metadata']),
       width: body['width'] as int?,
       height: body['height'] as int?,
       // The core names a comic's page count separately from a document's,
@@ -301,39 +287,6 @@ class CoreCatalogGateway implements CatalogGateway {
       pageCount: body['pageCount'] as int? ?? body['comicPageCount'] as int?,
       durationSeconds: (body['durationSeconds'] as num?)?.toDouble(),
       isDeleted: (body['file'] as Map<String, dynamic>)['state'] == 'deleted',
-    );
-  }
-
-  /// The file [row] describes, or `null` when its type is one this
-  /// application does not know.
-  ///
-  /// Dropping it rather than guessing: a file of an unrecognized type belongs
-  /// in no listing, and a core that grows a type must not make the listing it
-  /// appears in unreadable.
-  CatalogFile? _fileFrom(Map<String, dynamic> row) {
-    final type = LibraryType.fromWire(row['fileType'] as String?);
-    if (type == null) return null;
-
-    final missingAt = row['missingAt'] as String?;
-    final indexedAt = row['indexedAt'] as String?;
-    final deletedAt = row['deletedAt'] as String?;
-
-    return CatalogFile(
-      uuid: row['uuid'] as String,
-      name: row['name'] as String,
-      path: row['path'] as String? ?? '',
-      type: type,
-      contentHash: row['contentHash'] as String? ?? '',
-      // The change signal indexing actually maintains, unlike the hash above.
-      sizeBytes: row['sizeBytes'] as int?,
-      mtime: switch (row['mtime']) {
-        final String raw => DateTime.tryParse(raw),
-        _ => null,
-      },
-      isDeleted: row['state'] == 'deleted',
-      indexedAt: indexedAt == null ? null : DateTime.tryParse(indexedAt),
-      missingAt: missingAt == null ? null : DateTime.tryParse(missingAt),
-      deletedAt: deletedAt == null ? null : DateTime.tryParse(deletedAt),
     );
   }
 
