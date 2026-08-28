@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
+import '../../catalog/domain/library_type.dart';
 import 'index_run.dart';
 import 'run_priority.dart';
 
@@ -59,9 +60,15 @@ abstract interface class IndexGateway {
   ///
   /// Returns as soon as the core has started it; the scan itself runs on the
   /// core's own runtime, which is what leaves the interface free (FR-LB-07).
+  ///
+  /// [types] is what the run records — the folder's scope, chosen when it was
+  /// registered (UC-05). Empty is not "nothing": it is the absent scope the
+  /// core reads as every type, and it reaches the core as an absent argument
+  /// rather than as an empty list of names.
   Future<IndexStartOutcome> startIndex({
     required String root,
     RunPriority? priority,
+    List<LibraryType> types = const [],
     required String credential,
   });
 

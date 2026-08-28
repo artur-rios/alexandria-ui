@@ -85,7 +85,7 @@ FolderRegistrationVerdict verdictFor({
       : FolderRegistrationVerdict.overlaps;
 }
 
-/// The default label for a folder: its own name (main flow step 4).
+/// The default label for a folder: its own name (UC-05 main flow step 5).
 ///
 /// Falls back to the whole path for a drive or filesystem root, which has no
 /// name to take — an empty label would list as a blank row.

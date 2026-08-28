@@ -125,6 +125,7 @@ void main() {
 
         await controller.registerFolder(
           onOverlapConfirmed: (_, _) async => true,
+          onScopeChosen: (_) async => const [],
         );
 
         expect(

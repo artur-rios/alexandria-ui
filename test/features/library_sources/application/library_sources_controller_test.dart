@@ -1,4 +1,5 @@
 import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,11 +46,20 @@ void main() {
     return (ref: container, picker: picker, probe: probe, store: store);
   }
 
-  /// Registers, accepting any overlap warning.
-  Future<void> register(ProviderContainer ref, {bool confirmOverlap = true}) =>
-      ref
-          .read(librarySourcesControllerProvider.notifier)
-          .registerFolder(onOverlapConfirmed: (_, _) async => confirmOverlap);
+  /// Registers, accepting any overlap warning and taking the default scope.
+  ///
+  /// [scope] is what the picker answers: the empty list is every type, and
+  /// `null` is the owner cancelling the picker.
+  Future<void> register(
+    ProviderContainer ref, {
+    bool confirmOverlap = true,
+    List<LibraryType>? scope = const [],
+  }) => ref
+      .read(librarySourcesControllerProvider.notifier)
+      .registerFolder(
+        onOverlapConfirmed: (_, _) async => confirmOverlap,
+        onScopeChosen: (_) async => scope,
+      );
 
   group('the main flow', () {
     test('GivenNothingRegistered_WhenTheScreenOpens_ThenItIsEmpty', () {
@@ -300,6 +310,7 @@ void main() {
               asked = true;
               return true;
             },
+            onScopeChosen: (_) async => const [],
           );
 
       expect(asked, isFalse);
@@ -320,8 +331,12 @@ void main() {
 
       final first = controller.registerFolder(
         onOverlapConfirmed: (_, _) async => true,
+        onScopeChosen: (_) async => const [],
       );
-      await controller.registerFolder(onOverlapConfirmed: (_, _) async => true);
+      await controller.registerFolder(
+        onOverlapConfirmed: (_, _) async => true,
+        onScopeChosen: (_) async => const [],
+      );
       await first;
 
       expect(

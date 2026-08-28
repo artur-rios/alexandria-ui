@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
 import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
@@ -61,8 +62,19 @@ class FakeIndexGateway implements IndexGateway {
   final List<String> refreshStarts = [];
 
   /// What [startIndex] was called with, in order.
-  final List<({String root, RunPriority? priority, String credential})> starts =
-      [];
+  ///
+  /// The scope included: what a run was told to record is the whole of UC-05's
+  /// effect on UC-06, and an empty list here is the absent scope that means
+  /// every type.
+  final List<
+    ({
+      String root,
+      RunPriority? priority,
+      List<LibraryType> types,
+      String credential,
+    })
+  >
+  starts = [];
 
   /// What [readRun] was called with, in order.
   final List<({String runId, String credential})> reads = [];
@@ -110,9 +122,15 @@ class FakeIndexGateway implements IndexGateway {
   Future<IndexStartOutcome> startIndex({
     required String root,
     RunPriority? priority,
+    List<LibraryType> types = const [],
     required String credential,
   }) async {
-    starts.add((root: root, priority: priority, credential: credential));
+    starts.add((
+      root: root,
+      priority: priority,
+      types: types,
+      credential: credential,
+    ));
     return startOutcome;
   }
 

@@ -359,6 +359,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get librarySourcesOverlapConfirm => 'Add it anyway';
 
   @override
+  String get indexScopeTitle => 'What is in this folder?';
+
+  @override
+  String get indexScopeBody =>
+      'Alexandria will catalog only the kinds of file you choose here. A music folder scoped to music keeps its cover art out of your images.';
+
+  @override
+  String get indexScopeAll => 'All supported files';
+
+  @override
+  String get indexScopeConfirm => 'Add the folder';
+
+  @override
+  String get indexScopeEmpty =>
+      'Choose at least one kind of file, or all of them.';
+
+  @override
+  String get librarySourcesScopeUnreadable =>
+      'Covers file types this version does not recognize';
+
+  @override
+  String get librarySourcesStartUnreadableScope =>
+      'This folder is set to cover file types this version does not recognize, so it was not scanned. Remove it and add it again to choose what it covers.';
+
+  @override
+  String get librarySourcesStartNotRegistered =>
+      'This folder is no longer in your library, so it was not scanned.';
+
+  @override
+  String get librarySourcesScopeAll => 'All supported files';
+
+  @override
+  String librarySourcesScopeOnly(String types) {
+    return 'Only $types';
+  }
+
+  @override
+  String get libraryTypeAudio => 'Music';
+
+  @override
+  String get libraryTypeVideo => 'Video';
+
+  @override
+  String get libraryTypeDocument => 'Books';
+
+  @override
+  String get libraryTypeComic => 'Comic books';
+
+  @override
+  String get libraryTypeText => 'Notes';
+
+  @override
+  String get libraryTypeHtml => 'Saved pages';
+
+  @override
+  String get libraryTypeImage => 'Images';
+
+  @override
   String get dismiss => 'Dismiss';
 
   @override

@@ -21,7 +21,11 @@ mixin _$IndexRunsState {
  Map<String, IndexRun> get runs;/// Folders whose start is in flight but which have no run id yet.
  Set<String> get starting;/// Why a start was refused, per folder (AF-02, AF-03).
  Map<String, Failure> get failures;/// The folder a second run was refused for (AF-01), or `null`.
- String? get refusedSecondRunFor;/// Whether a refresh has been asked for but not yet answered (FR-UX-08).
+ String? get refusedSecondRunFor;/// Why a start never reached the core, per folder.
+///
+/// Beside [failures] rather than folded into it: these are this
+/// application's own refusals, and carry no core status code to map from.
+ Map<String, IndexStartRefusal> get startRefusals;/// Whether a refresh has been asked for but not yet answered (FR-UX-08).
  bool get refreshStarting;/// The catalog-wide refresh, in flight or finished (UC-07).
 ///
 /// Its own field rather than an entry in [runs], because a refresh belongs
@@ -40,16 +44,16 @@ $IndexRunsStateCopyWith<IndexRunsState> get copyWith => _$IndexRunsStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is IndexRunsState&&const DeepCollectionEquality().equals(other.runs, runs)&&const DeepCollectionEquality().equals(other.starting, starting)&&const DeepCollectionEquality().equals(other.failures, failures)&&(identical(other.refusedSecondRunFor, refusedSecondRunFor) || other.refusedSecondRunFor == refusedSecondRunFor)&&(identical(other.refreshStarting, refreshStarting) || other.refreshStarting == refreshStarting)&&(identical(other.refreshRun, refreshRun) || other.refreshRun == refreshRun)&&(identical(other.refreshRefusal, refreshRefusal) || other.refreshRefusal == refreshRefusal)&&(identical(other.refreshFailure, refreshFailure) || other.refreshFailure == refreshFailure));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is IndexRunsState&&const DeepCollectionEquality().equals(other.runs, runs)&&const DeepCollectionEquality().equals(other.starting, starting)&&const DeepCollectionEquality().equals(other.failures, failures)&&(identical(other.refusedSecondRunFor, refusedSecondRunFor) || other.refusedSecondRunFor == refusedSecondRunFor)&&const DeepCollectionEquality().equals(other.startRefusals, startRefusals)&&(identical(other.refreshStarting, refreshStarting) || other.refreshStarting == refreshStarting)&&(identical(other.refreshRun, refreshRun) || other.refreshRun == refreshRun)&&(identical(other.refreshRefusal, refreshRefusal) || other.refreshRefusal == refreshRefusal)&&(identical(other.refreshFailure, refreshFailure) || other.refreshFailure == refreshFailure));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(runs),const DeepCollectionEquality().hash(starting),const DeepCollectionEquality().hash(failures),refusedSecondRunFor,refreshStarting,refreshRun,refreshRefusal,refreshFailure);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(runs),const DeepCollectionEquality().hash(starting),const DeepCollectionEquality().hash(failures),refusedSecondRunFor,const DeepCollectionEquality().hash(startRefusals),refreshStarting,refreshRun,refreshRefusal,refreshFailure);
 
 @override
 String toString() {
-  return 'IndexRunsState(runs: $runs, starting: $starting, failures: $failures, refusedSecondRunFor: $refusedSecondRunFor, refreshStarting: $refreshStarting, refreshRun: $refreshRun, refreshRefusal: $refreshRefusal, refreshFailure: $refreshFailure)';
+  return 'IndexRunsState(runs: $runs, starting: $starting, failures: $failures, refusedSecondRunFor: $refusedSecondRunFor, startRefusals: $startRefusals, refreshStarting: $refreshStarting, refreshRun: $refreshRun, refreshRefusal: $refreshRefusal, refreshFailure: $refreshFailure)';
 }
 
 
@@ -60,7 +64,7 @@ abstract mixin class $IndexRunsStateCopyWith<$Res>  {
   factory $IndexRunsStateCopyWith(IndexRunsState value, $Res Function(IndexRunsState) _then) = _$IndexRunsStateCopyWithImpl;
 @useResult
 $Res call({
- Map<String, IndexRun> runs, Set<String> starting, Map<String, Failure> failures, String? refusedSecondRunFor, bool refreshStarting, IndexRun? refreshRun, RefreshRefusal? refreshRefusal, Failure? refreshFailure
+ Map<String, IndexRun> runs, Set<String> starting, Map<String, Failure> failures, String? refusedSecondRunFor, Map<String, IndexStartRefusal> startRefusals, bool refreshStarting, IndexRun? refreshRun, RefreshRefusal? refreshRefusal, Failure? refreshFailure
 });
 
 
@@ -77,13 +81,14 @@ class _$IndexRunsStateCopyWithImpl<$Res>
 
 /// Create a copy of IndexRunsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? runs = null,Object? starting = null,Object? failures = null,Object? refusedSecondRunFor = freezed,Object? refreshStarting = null,Object? refreshRun = freezed,Object? refreshRefusal = freezed,Object? refreshFailure = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? runs = null,Object? starting = null,Object? failures = null,Object? refusedSecondRunFor = freezed,Object? startRefusals = null,Object? refreshStarting = null,Object? refreshRun = freezed,Object? refreshRefusal = freezed,Object? refreshFailure = freezed,}) {
   return _then(_self.copyWith(
 runs: null == runs ? _self.runs : runs // ignore: cast_nullable_to_non_nullable
 as Map<String, IndexRun>,starting: null == starting ? _self.starting : starting // ignore: cast_nullable_to_non_nullable
 as Set<String>,failures: null == failures ? _self.failures : failures // ignore: cast_nullable_to_non_nullable
 as Map<String, Failure>,refusedSecondRunFor: freezed == refusedSecondRunFor ? _self.refusedSecondRunFor : refusedSecondRunFor // ignore: cast_nullable_to_non_nullable
-as String?,refreshStarting: null == refreshStarting ? _self.refreshStarting : refreshStarting // ignore: cast_nullable_to_non_nullable
+as String?,startRefusals: null == startRefusals ? _self.startRefusals : startRefusals // ignore: cast_nullable_to_non_nullable
+as Map<String, IndexStartRefusal>,refreshStarting: null == refreshStarting ? _self.refreshStarting : refreshStarting // ignore: cast_nullable_to_non_nullable
 as bool,refreshRun: freezed == refreshRun ? _self.refreshRun : refreshRun // ignore: cast_nullable_to_non_nullable
 as IndexRun?,refreshRefusal: freezed == refreshRefusal ? _self.refreshRefusal : refreshRefusal // ignore: cast_nullable_to_non_nullable
 as RefreshRefusal?,refreshFailure: freezed == refreshFailure ? _self.refreshFailure : refreshFailure // ignore: cast_nullable_to_non_nullable
@@ -196,10 +201,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, IndexRun> runs,  Set<String> starting,  Map<String, Failure> failures,  String? refusedSecondRunFor,  bool refreshStarting,  IndexRun? refreshRun,  RefreshRefusal? refreshRefusal,  Failure? refreshFailure)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Map<String, IndexRun> runs,  Set<String> starting,  Map<String, Failure> failures,  String? refusedSecondRunFor,  Map<String, IndexStartRefusal> startRefusals,  bool refreshStarting,  IndexRun? refreshRun,  RefreshRefusal? refreshRefusal,  Failure? refreshFailure)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _IndexRunsState() when $default != null:
-return $default(_that.runs,_that.starting,_that.failures,_that.refusedSecondRunFor,_that.refreshStarting,_that.refreshRun,_that.refreshRefusal,_that.refreshFailure);case _:
+return $default(_that.runs,_that.starting,_that.failures,_that.refusedSecondRunFor,_that.startRefusals,_that.refreshStarting,_that.refreshRun,_that.refreshRefusal,_that.refreshFailure);case _:
   return orElse();
 
 }
@@ -217,10 +222,10 @@ return $default(_that.runs,_that.starting,_that.failures,_that.refusedSecondRunF
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, IndexRun> runs,  Set<String> starting,  Map<String, Failure> failures,  String? refusedSecondRunFor,  bool refreshStarting,  IndexRun? refreshRun,  RefreshRefusal? refreshRefusal,  Failure? refreshFailure)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Map<String, IndexRun> runs,  Set<String> starting,  Map<String, Failure> failures,  String? refusedSecondRunFor,  Map<String, IndexStartRefusal> startRefusals,  bool refreshStarting,  IndexRun? refreshRun,  RefreshRefusal? refreshRefusal,  Failure? refreshFailure)  $default,) {final _that = this;
 switch (_that) {
 case _IndexRunsState():
-return $default(_that.runs,_that.starting,_that.failures,_that.refusedSecondRunFor,_that.refreshStarting,_that.refreshRun,_that.refreshRefusal,_that.refreshFailure);case _:
+return $default(_that.runs,_that.starting,_that.failures,_that.refusedSecondRunFor,_that.startRefusals,_that.refreshStarting,_that.refreshRun,_that.refreshRefusal,_that.refreshFailure);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -237,10 +242,10 @@ return $default(_that.runs,_that.starting,_that.failures,_that.refusedSecondRunF
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, IndexRun> runs,  Set<String> starting,  Map<String, Failure> failures,  String? refusedSecondRunFor,  bool refreshStarting,  IndexRun? refreshRun,  RefreshRefusal? refreshRefusal,  Failure? refreshFailure)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Map<String, IndexRun> runs,  Set<String> starting,  Map<String, Failure> failures,  String? refusedSecondRunFor,  Map<String, IndexStartRefusal> startRefusals,  bool refreshStarting,  IndexRun? refreshRun,  RefreshRefusal? refreshRefusal,  Failure? refreshFailure)?  $default,) {final _that = this;
 switch (_that) {
 case _IndexRunsState() when $default != null:
-return $default(_that.runs,_that.starting,_that.failures,_that.refusedSecondRunFor,_that.refreshStarting,_that.refreshRun,_that.refreshRefusal,_that.refreshFailure);case _:
+return $default(_that.runs,_that.starting,_that.failures,_that.refusedSecondRunFor,_that.startRefusals,_that.refreshStarting,_that.refreshRun,_that.refreshRefusal,_that.refreshFailure);case _:
   return null;
 
 }
@@ -252,7 +257,7 @@ return $default(_that.runs,_that.starting,_that.failures,_that.refusedSecondRunF
 
 
 class _IndexRunsState extends IndexRunsState {
-  const _IndexRunsState({final  Map<String, IndexRun> runs = const <String, IndexRun>{}, final  Set<String> starting = const <String>{}, final  Map<String, Failure> failures = const <String, Failure>{}, this.refusedSecondRunFor, this.refreshStarting = false, this.refreshRun, this.refreshRefusal, this.refreshFailure}): _runs = runs,_starting = starting,_failures = failures,super._();
+  const _IndexRunsState({final  Map<String, IndexRun> runs = const <String, IndexRun>{}, final  Set<String> starting = const <String>{}, final  Map<String, Failure> failures = const <String, Failure>{}, this.refusedSecondRunFor, final  Map<String, IndexStartRefusal> startRefusals = const <String, IndexStartRefusal>{}, this.refreshStarting = false, this.refreshRun, this.refreshRefusal, this.refreshFailure}): _runs = runs,_starting = starting,_failures = failures,_startRefusals = startRefusals,super._();
   
 
 /// The run for each folder, in flight or finished.
@@ -290,6 +295,21 @@ class _IndexRunsState extends IndexRunsState {
 
 /// The folder a second run was refused for (AF-01), or `null`.
 @override final  String? refusedSecondRunFor;
+/// Why a start never reached the core, per folder.
+///
+/// Beside [failures] rather than folded into it: these are this
+/// application's own refusals, and carry no core status code to map from.
+ final  Map<String, IndexStartRefusal> _startRefusals;
+/// Why a start never reached the core, per folder.
+///
+/// Beside [failures] rather than folded into it: these are this
+/// application's own refusals, and carry no core status code to map from.
+@override@JsonKey() Map<String, IndexStartRefusal> get startRefusals {
+  if (_startRefusals is EqualUnmodifiableMapView) return _startRefusals;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_startRefusals);
+}
+
 /// Whether a refresh has been asked for but not yet answered (FR-UX-08).
 @override@JsonKey() final  bool refreshStarting;
 /// The catalog-wide refresh, in flight or finished (UC-07).
@@ -313,16 +333,16 @@ _$IndexRunsStateCopyWith<_IndexRunsState> get copyWith => __$IndexRunsStateCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IndexRunsState&&const DeepCollectionEquality().equals(other._runs, _runs)&&const DeepCollectionEquality().equals(other._starting, _starting)&&const DeepCollectionEquality().equals(other._failures, _failures)&&(identical(other.refusedSecondRunFor, refusedSecondRunFor) || other.refusedSecondRunFor == refusedSecondRunFor)&&(identical(other.refreshStarting, refreshStarting) || other.refreshStarting == refreshStarting)&&(identical(other.refreshRun, refreshRun) || other.refreshRun == refreshRun)&&(identical(other.refreshRefusal, refreshRefusal) || other.refreshRefusal == refreshRefusal)&&(identical(other.refreshFailure, refreshFailure) || other.refreshFailure == refreshFailure));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IndexRunsState&&const DeepCollectionEquality().equals(other._runs, _runs)&&const DeepCollectionEquality().equals(other._starting, _starting)&&const DeepCollectionEquality().equals(other._failures, _failures)&&(identical(other.refusedSecondRunFor, refusedSecondRunFor) || other.refusedSecondRunFor == refusedSecondRunFor)&&const DeepCollectionEquality().equals(other._startRefusals, _startRefusals)&&(identical(other.refreshStarting, refreshStarting) || other.refreshStarting == refreshStarting)&&(identical(other.refreshRun, refreshRun) || other.refreshRun == refreshRun)&&(identical(other.refreshRefusal, refreshRefusal) || other.refreshRefusal == refreshRefusal)&&(identical(other.refreshFailure, refreshFailure) || other.refreshFailure == refreshFailure));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_runs),const DeepCollectionEquality().hash(_starting),const DeepCollectionEquality().hash(_failures),refusedSecondRunFor,refreshStarting,refreshRun,refreshRefusal,refreshFailure);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_runs),const DeepCollectionEquality().hash(_starting),const DeepCollectionEquality().hash(_failures),refusedSecondRunFor,const DeepCollectionEquality().hash(_startRefusals),refreshStarting,refreshRun,refreshRefusal,refreshFailure);
 
 @override
 String toString() {
-  return 'IndexRunsState(runs: $runs, starting: $starting, failures: $failures, refusedSecondRunFor: $refusedSecondRunFor, refreshStarting: $refreshStarting, refreshRun: $refreshRun, refreshRefusal: $refreshRefusal, refreshFailure: $refreshFailure)';
+  return 'IndexRunsState(runs: $runs, starting: $starting, failures: $failures, refusedSecondRunFor: $refusedSecondRunFor, startRefusals: $startRefusals, refreshStarting: $refreshStarting, refreshRun: $refreshRun, refreshRefusal: $refreshRefusal, refreshFailure: $refreshFailure)';
 }
 
 
@@ -333,7 +353,7 @@ abstract mixin class _$IndexRunsStateCopyWith<$Res> implements $IndexRunsStateCo
   factory _$IndexRunsStateCopyWith(_IndexRunsState value, $Res Function(_IndexRunsState) _then) = __$IndexRunsStateCopyWithImpl;
 @override @useResult
 $Res call({
- Map<String, IndexRun> runs, Set<String> starting, Map<String, Failure> failures, String? refusedSecondRunFor, bool refreshStarting, IndexRun? refreshRun, RefreshRefusal? refreshRefusal, Failure? refreshFailure
+ Map<String, IndexRun> runs, Set<String> starting, Map<String, Failure> failures, String? refusedSecondRunFor, Map<String, IndexStartRefusal> startRefusals, bool refreshStarting, IndexRun? refreshRun, RefreshRefusal? refreshRefusal, Failure? refreshFailure
 });
 
 
@@ -350,13 +370,14 @@ class __$IndexRunsStateCopyWithImpl<$Res>
 
 /// Create a copy of IndexRunsState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? runs = null,Object? starting = null,Object? failures = null,Object? refusedSecondRunFor = freezed,Object? refreshStarting = null,Object? refreshRun = freezed,Object? refreshRefusal = freezed,Object? refreshFailure = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? runs = null,Object? starting = null,Object? failures = null,Object? refusedSecondRunFor = freezed,Object? startRefusals = null,Object? refreshStarting = null,Object? refreshRun = freezed,Object? refreshRefusal = freezed,Object? refreshFailure = freezed,}) {
   return _then(_IndexRunsState(
 runs: null == runs ? _self._runs : runs // ignore: cast_nullable_to_non_nullable
 as Map<String, IndexRun>,starting: null == starting ? _self._starting : starting // ignore: cast_nullable_to_non_nullable
 as Set<String>,failures: null == failures ? _self._failures : failures // ignore: cast_nullable_to_non_nullable
 as Map<String, Failure>,refusedSecondRunFor: freezed == refusedSecondRunFor ? _self.refusedSecondRunFor : refusedSecondRunFor // ignore: cast_nullable_to_non_nullable
-as String?,refreshStarting: null == refreshStarting ? _self.refreshStarting : refreshStarting // ignore: cast_nullable_to_non_nullable
+as String?,startRefusals: null == startRefusals ? _self._startRefusals : startRefusals // ignore: cast_nullable_to_non_nullable
+as Map<String, IndexStartRefusal>,refreshStarting: null == refreshStarting ? _self.refreshStarting : refreshStarting // ignore: cast_nullable_to_non_nullable
 as bool,refreshRun: freezed == refreshRun ? _self.refreshRun : refreshRun // ignore: cast_nullable_to_non_nullable
 as IndexRun?,refreshRefusal: freezed == refreshRefusal ? _self.refreshRefusal : refreshRefusal // ignore: cast_nullable_to_non_nullable
 as RefreshRefusal?,refreshFailure: freezed == refreshFailure ? _self.refreshFailure : refreshFailure // ignore: cast_nullable_to_non_nullable

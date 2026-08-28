@@ -6,6 +6,7 @@ import '../../../core/bindings/core_isolate.dart';
 import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
+import '../../catalog/domain/library_type.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
 import '../domain/run_priority.dart';
@@ -27,11 +28,20 @@ class CoreIndexGateway implements IndexGateway {
   Future<IndexStartOutcome> startIndex({
     required String root,
     RunPriority? priority,
+    List<LibraryType> types = const [],
     required String credential,
   }) async {
     final CoreRunStart result;
     try {
-      result = await _core.indexStart(root, credential, priority?.wire);
+      result = await _core.indexStart(
+        root,
+        credential,
+        priority?.wire,
+        // Null, never `''`: an absent scope is what the core reads as every
+        // type, and this is the one place the empty list is turned into the
+        // absence rather than into an empty argument.
+        types.isEmpty ? null : types.map((type) => type.wireName).join(','),
+      );
     } on CoreCallException {
       return const IndexStartOutcome.failed(
         failure: Failure.unexpected(

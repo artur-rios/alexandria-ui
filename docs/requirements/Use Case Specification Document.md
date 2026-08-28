@@ -280,9 +280,9 @@ graph LR
 | **ID** | UC-05 |
 | **Name** | Register a library folder |
 | **Actors** | Owner, Local filesystem |
-| **Description** | The owner adds a folder on disk as a source of files to index. Several may be registered. |
+| **Description** | The owner adds a folder on disk as a source of files to index, and says which kinds of file it holds. Several may be registered. |
 | **Preconditions** | An active session exists. |
-| **Postconditions** | The folder is recorded locally and offered for indexing. |
+| **Postconditions** | The folder is recorded locally, with the file types an index of it records, and offered for indexing. |
 | **Requirements** | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11 |
 
 **Main Flow**
@@ -292,10 +292,14 @@ graph LR
 2. The owner opens the platform's native folder picker and chooses a folder.
 3. The application checks that the folder exists, is readable, and is not already
    registered.
-4. The application records the folder locally, with the folder name as its default
-   label.
-5. The application lists it among the registered folders and offers to index it
-   (UC-06).
+4. The application asks which file types an index of the folder records, offering
+   every supported type as the default.
+5. The application records the folder locally, with the folder name as its default
+   label and the chosen types as its scope; choosing every type is recorded as no
+   scope at all, which means every type.
+6. The application lists it among the registered folders, showing what it covers,
+   and offers to index it (UC-06). Every later index of that folder uses the same
+   scope without asking again.
 
 **Alternative Flows**
 
@@ -304,7 +308,8 @@ graph LR
 | AF-01 | The owner cancels the picker | Nothing is registered and the screen is unchanged. |
 | AF-02 | The folder does not exist or cannot be read | The application states which condition failed and registers nothing. |
 | AF-03 | The folder is already registered | The application says so and highlights the existing entry. |
-| AF-04 | The chosen folder contains, or sits inside, an already-registered folder | The application warns that files will be indexed once per overlapping source and lets the owner confirm or cancel. |
+| AF-04 | The chosen folder contains, or sits inside, an already-registered folder | The application warns that files will be indexed once per overlapping source and lets the owner confirm or cancel. The scope is asked after the warning is accepted. |
+| AF-05 | The owner cancels the file-type question | Nothing is registered. A folder recorded with a scope nobody chose is not what was asked for, so the registration is abandoned rather than completed with a default. |
 
 ---
 
@@ -342,6 +347,7 @@ graph LR
 | AF-04 | The run reports files missing on disk | The outcome links to the missing-files review (UC-37). |
 | AF-05 | The application is closed while a run is in flight | The run belongs to the core; its outcome is presented at the next launch. |
 | AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-07 | The folder's recorded file types name nothing this version recognizes, or no registered folder answers the path | The application refuses the run before calling the core, and says which. Neither can be read as a scope, and no scope means every type — so running one would index what the owner narrowed the folder to exclude. |
 
 ---
 

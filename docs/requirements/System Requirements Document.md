@@ -149,7 +149,7 @@ replace the FFI one without touching a screen.
 | --- | --- |
 | FR-LB-01 | The system shall allow the owner to register a library folder chosen through the platform's native folder picker. |
 | FR-LB-02 | The system shall reject a folder that does not exist, cannot be read, or is already registered, stating which condition failed. |
-| FR-LB-03 | The system shall persist the registered library folders locally, so they survive a restart. |
+| FR-LB-03 | The system shall persist the registered library folders locally — each with its label, its run history, and the file types an index of it records — so they survive a restart. A folder with no recorded types covers every supported type. |
 | FR-LB-04 | The system shall support any number of registered library folders and present their files as one merged catalog. |
 | FR-LB-05 | The system shall start an index run for a chosen library folder and retain the run identifier the core returns. |
 | FR-LB-06 | The system shall start a refresh run covering everything already cataloged, independently of any single folder. This also happens when a session is established, subject to FR-LB-21. |

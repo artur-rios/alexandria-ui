@@ -14,6 +14,7 @@ import '../application/library_sources_state.dart';
 import '../domain/folder_registration.dart';
 import '../domain/index_run.dart';
 import '../domain/run_priority.dart';
+import 'index_scope_dialog.dart';
 
 /// The library-sources screen (UC-05, FR-LB-01 … FR-LB-04, FR-LB-11).
 ///
@@ -127,7 +128,8 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
   }
 
   /// Opens the picker, answering AF-04's question through the shell's
-  /// confirmation modal when it is asked.
+  /// confirmation modal when it is asked, and the scope question through the
+  /// dialog that offers the seven types (main flow step 4).
   Future<void> _addFolder(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
 
@@ -145,6 +147,13 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
               message: l10n.librarySourcesOverlapBody(path, existing.label),
               confirmLabel: l10n.librarySourcesOverlapConfirm,
             );
+          },
+          // Asked last, once the folder is accepted: the answer describes what
+          // the folder is for, and every later index of it uses it (UC-05).
+          onScopeChosen: (path) async {
+            if (!context.mounted) return null;
+
+            return IndexScopeDialog.show(context);
           },
         );
 
@@ -200,7 +209,7 @@ class _FirstRunGuidance extends StatelessWidget {
   }
 }
 
-/// The registered folders, each with its run (main flow steps 1, 3 and 5).
+/// The registered folders, each with its run (main flow steps 1, 3 and 6).
 class _SourceList extends ConsumerWidget {
   const _SourceList({required this.state});
 
@@ -227,10 +236,27 @@ class _SourceList extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.folder_outlined),
                 title: Text(source.label),
-                subtitle: Text(
-                  source.path,
-                  style: theme.textTheme.bodySmall,
-                  overflow: TextOverflow.ellipsis,
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      source.path,
+                      style: theme.textTheme.bodySmall,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    // What the folder is for, chosen when it was registered
+                    // (UC-05). Shown on the row because it cannot be changed
+                    // afterwards: an owner who scoped a folder wrongly has to
+                    // be able to see that from the list.
+                    Text(
+                      _scopeOf(source, AppLocalizations.of(context)),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -256,6 +282,24 @@ class _SourceList extends ConsumerWidget {
       },
     );
   }
+}
+
+/// What an index of [source] records, as the row states it (UC-05).
+///
+/// An empty scope reads as every supported file rather than as nothing —
+/// which is what it means, on this side and in the core.
+String _scopeOf(LibrarySource source, AppLocalizations l10n) {
+  // Asked before the emptiness test, because an unreadable scope resolves to
+  // no types and would otherwise read as the widest possible answer — the
+  // opposite of what the owner chose.
+  if (source.scopeIsUnreadable) return l10n.librarySourcesScopeUnreadable;
+
+  final types = source.scopeTypes;
+  if (types.isEmpty) return l10n.librarySourcesScopeAll;
+
+  return l10n.librarySourcesScopeOnly(
+    types.map((type) => libraryTypeLabel(type, l10n)).join(', '),
+  );
 }
 
 /// The controls a folder's row offers, chosen from its own run state
@@ -458,8 +502,18 @@ class _RunReport extends ConsumerWidget {
     final run = runs.runFor(root);
     final failure = runs.failureFor(root);
     final refused = runs.refusedSecondRunFor == root;
+    final startRefusal = runs.startRefusalFor(root);
 
     final message = switch ((run, failure, refused)) {
+      // Refused before the core was called at all: the folder's scope could
+      // not be read, or the folder is not registered any more. First, because
+      // nothing was started — there is no run or failure to report over it.
+      _ when startRefusal != null => switch (startRefusal) {
+        IndexStartRefusal.unreadableScope =>
+          l10n.librarySourcesStartUnreadableScope,
+        IndexStartRefusal.notRegistered =>
+          l10n.librarySourcesStartNotRegistered,
+      },
       // AF-01.
       (_, _, true) => l10n.librarySourcesRunRefused,
       // AF-02 and AF-03: the core refused the start. AF-03's offer to
@@ -478,7 +532,8 @@ class _RunReport extends ConsumerWidget {
     // UC-06 AF-03: a folder the core could not scan is one the owner may want
     // rid of, so the failure carries the offer. Only on a start failure —
     // a finished run says nothing about whether the folder should stay.
-    final offersUnregister = failure != null && !refused;
+    final offersUnregister =
+        failure != null && !refused && startRefusal == null;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(

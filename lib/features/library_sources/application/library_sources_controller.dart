@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../core/di/providers.dart';
+import '../../catalog/domain/library_type.dart';
 import '../domain/folder_picker.dart';
 import '../domain/folder_registration.dart';
 import '../domain/library_source.dart';
@@ -32,7 +33,7 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
   }
 
   /// Opens the picker and registers what the owner chose (main flow steps
-  /// 2–5).
+  /// 2–6).
   ///
   /// [onOverlapConfirmed] is asked only when the chosen folder overlaps one
   /// already registered (AF-04); answering `false` cancels and changes
@@ -47,9 +48,18 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
   /// the caller to guess what had happened from state; the caller needs to
   /// know exactly what was registered so it can start indexing it (UC-06)
   /// without a second, separate click.
+  ///
+  /// [onScopeChosen] asks what the folder is for — which types an index of it
+  /// records. It is asked last, after the folder has been accepted and after
+  /// any overlap has been confirmed: asking earlier would ask about a folder
+  /// that is then refused for not being there. An empty list is every type,
+  /// held the same way the core holds it. `null` is the owner cancelling, and
+  /// it abandons the registration entirely — a folder registered with a scope
+  /// nobody chose is not what was asked for.
   Future<LibrarySource?> registerFolder({
     required Future<bool> Function(String path, LibrarySource existing)
     onOverlapConfirmed,
+    required Future<List<LibraryType>?> Function(String path) onScopeChosen,
   }) async {
     if (state.registering) return null;
 
@@ -100,15 +110,39 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
       }
     }
 
-    return _record(path);
+    final scope = await onScopeChosen(path);
+    // Cancelled: nothing is registered, and no refusal is recorded either —
+    // the owner was asked and did not answer, which is not an error.
+    if (scope == null) {
+      state = state.copyWith(registering: false);
+      return null;
+    }
+
+    return _record(path, scope);
   }
 
-  /// Records [path] and persists the set (main flow steps 4 and 5).
-  Future<LibrarySource> _record(String path) async {
+  /// Records [path] and persists the set (main flow steps 5 and 6).
+  Future<LibrarySource> _record(String path, List<LibraryType> scope) async {
+    // Every type chosen is the same thing as no scope at all, and is stored
+    // as the absence: the core reads them identically, and keeping one
+    // spelling means a folder that covers everything reads the same whether
+    // the owner left the default alone or ticked all seven boxes.
+    //
+    // Held here even though the one caller that exists — IndexScopeDialog —
+    // already collapses it. A guarantee that holds only because every caller
+    // remembers to is not one, and this is what makes "a stored scope is
+    // either absent or a real narrowing" true of the store rather than of one
+    // widget. `index_scope_test` calls this with all seven and asserts what
+    // lands in the store.
+    final scoped = scope.length == LibraryType.values.length
+        ? const <LibraryType>[]
+        : scope;
+
     final source = LibrarySource(
       path: path,
       label: defaultLabelFor(path),
       registeredAt: _now(),
+      scope: [for (final type in scoped) type.wireName],
     );
     final sources = [...state.sources, source];
 

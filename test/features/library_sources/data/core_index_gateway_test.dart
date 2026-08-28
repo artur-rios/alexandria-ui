@@ -1,4 +1,5 @@
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/library_sources/data/core_index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
@@ -104,6 +105,61 @@ void main() {
         expect(fake.indexResumes.single.priority, isNull);
       },
     );
+  });
+
+  group('startIndex carries the scope of the folder (UC-05)', () {
+    test('GivenAScope_WhenAnIndexStarts_ThenTheWireNamesAreSent', () async {
+      final fake = FakeCoreClient();
+      final gateway = CoreIndexGateway(fake);
+
+      await gateway.startIndex(
+        root: 'D:/Music',
+        types: const [LibraryType.audio, LibraryType.image],
+        credential: 't',
+      );
+
+      // The core's own words, comma-separated — not a second vocabulary
+      // mapped onto them (BR-02).
+      expect(fake.indexStarts.single.types, 'audio,image');
+    });
+
+    test(
+      'GivenNoScope_WhenAnIndexStarts_ThenNullReachesTheCoreNotAnEmptyString',
+      () async {
+        // The core documents NULL and "" as the same absence today, but the
+        // two are still different arguments: an absent scope is built as
+        // absent, not as an empty list of names that happens to parse the
+        // same way.
+        final fake = FakeCoreClient();
+        final gateway = CoreIndexGateway(fake);
+
+        await gateway.startIndex(root: 'D:/Music', credential: 't');
+
+        expect(fake.indexStarts.single.types, isNull);
+        expect(fake.indexStarts.single.types, isNot(''));
+      },
+    );
+
+    test('GivenARefresh_WhenItStarts_ThenNoScopeIsSent', () async {
+      // UC-07 walks the catalog rather than the disk, so it revisits what is
+      // already recorded and cannot pull in an excluded type. It reaches the
+      // core through `alexandria_index_refresh_start`, which takes no scope
+      // at all — so the assertion that matters is that a re-check never
+      // reaches the scoped call, where it would have to send *some* scope.
+      final fake = FakeCoreClient();
+      final gateway = CoreIndexGateway(fake);
+
+      await gateway.startRefresh(credential: 't');
+
+      expect(fake.indexRefreshStarts, hasLength(1));
+      expect(
+        fake.indexStarts,
+        isEmpty,
+        reason:
+            'a re-check must not go through the scoped index-start call, '
+            'which would carry a scope — absent or empty — of its own',
+      );
+    });
   });
 
   group('listActiveRuns', () {
