@@ -99,7 +99,9 @@ import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
+import '../../features/playlists/application/playlists_controller.dart';
 import '../../features/playlists/data/core_playlist_gateway.dart';
+import '../../features/playlists/domain/playlist.dart';
 import '../../features/playlists/domain/playlist_gateway.dart';
 import '../../features/shell/domain/session_activity.dart';
 import '../../features/viewers/application/comic_viewer_controller.dart';
@@ -880,6 +882,16 @@ final playlistGatewayProvider = Provider<PlaylistGateway>((ref) {
 
   return CorePlaylistGateway(core);
 });
+
+/// The owner's playlists (playlists design).
+final playlistsControllerProvider =
+    AsyncNotifierProvider<PlaylistsController, List<Playlist>>(
+      PlaylistsController.new,
+    );
+
+/// The playlists screen's own state.
+final playlistsFormProvider =
+    NotifierProvider<PlaylistsForm, PlaylistsState>(PlaylistsForm.new);
 
 /// The tracked books' and comics' names (UC-32 main flow step 2).
 final trackedReadingItemsProvider =

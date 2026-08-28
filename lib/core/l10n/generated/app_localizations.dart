@@ -2466,6 +2466,78 @@ abstract class AppLocalizations {
   /// **'{count} tracked'**
   String readingListItemCount(int count);
 
+  /// Playlists design: the playlists screen heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlists'**
+  String get playlistsTitle;
+
+  /// Opens the playlists screen from the Library menu, beside reading lists.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlists'**
+  String get playlistsOpen;
+
+  /// There are no playlists, which is a state and not a failure — the empty state invites making one.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not made a playlist yet.'**
+  String get playlistsNone;
+
+  /// What the new playlist is called.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist name'**
+  String get playlistNameLabel;
+
+  /// What the playlist is being renamed to.
+  ///
+  /// In en, this message translates to:
+  /// **'New name'**
+  String get playlistRenameLabel;
+
+  /// Sends the new playlist to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get playlistCreate;
+
+  /// Sends the new name to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get playlistRenameSave;
+
+  /// Opens the playlist for renaming.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename this playlist'**
+  String get playlistRename;
+
+  /// Deletes the playlist, after confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this playlist'**
+  String get playlistDelete;
+
+  /// A blank name is marked on the field rather than sent to the core.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the playlist a name.'**
+  String get playlistNameEmpty;
+
+  /// The core has no such playlist any more, so the list is read again.
+  ///
+  /// In en, this message translates to:
+  /// **'That playlist is no longer there.'**
+  String get playlistNotFound;
+
+  /// The confirmation names what goes and what does not: the core deletes the playlist and its entries, never the files (BR-07).
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}? The tracks in it are kept — only the playlist is removed.'**
+  String playlistDeleteMessage(String name);
+
   /// UC-32 main flow step 4: which issue of the series the owner is on.
   ///
   /// In en, this message translates to:

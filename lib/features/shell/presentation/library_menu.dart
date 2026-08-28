@@ -5,6 +5,7 @@ import '../../lifecycle/presentation/deleted_items_screen.dart';
 import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../organization/presentation/collections_screen.dart';
+import '../../playlists/presentation/playlists_screen.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
 import 'menu_entry.dart';
@@ -12,15 +13,16 @@ import 'menu_entry.dart';
 /// The library-wide areas, reached from the menu bar (UC-37 main flow step 1,
 /// FR-UX-01).
 ///
-/// Six screens that belong to no single file type — sources, collections,
-/// watchlists, reading lists, deleted items, and the missing-files review —
-/// and so are not destinations of their own (FR-CT-01). They were reached from
-/// the bottom of the navigation rail, below a divider that was the only thing
-/// saying they were not destinations; a menu bar says it by construction.
+/// Seven screens that belong to no single file type — sources, collections,
+/// watchlists, reading lists, playlists, deleted items, and the missing-files
+/// review — and so are not destinations of their own (FR-CT-01). They were
+/// reached from the bottom of the navigation rail, below a divider that was
+/// the only thing saying they were not destinations; a menu bar says it by
+/// construction.
 ///
-/// Three headings inside, because a menu holding six unrelated screens cannot
-/// be read at a glance without them. The order beneath each runs from filling
-/// the library to reviewing what has left it.
+/// Three headings inside, because a menu holding seven unrelated screens
+/// cannot be read at a glance without them. The order beneath each runs from
+/// filling the library to reviewing what has left it.
 class LibraryMenu extends StatelessWidget {
   /// Creates the menu.
   const LibraryMenu({required this.showsLabel, super.key});
@@ -59,6 +61,11 @@ class LibraryMenu extends StatelessWidget {
           icon: Icons.library_books_outlined,
           label: l10n.readingListsOpen,
           onSelected: () => ReadingListsScreen.show(context),
+        ),
+        MenuEntry(
+          icon: Icons.queue_music_outlined,
+          label: l10n.playlistsOpen,
+          onSelected: () => PlaylistsScreen.show(context),
         ),
         MenuGroupHeading(l10n.libraryToolsGroupReview),
         MenuEntry(

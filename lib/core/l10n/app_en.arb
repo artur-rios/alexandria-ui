@@ -1810,6 +1810,59 @@
       }
     }
   },
+  "playlistsTitle": "Playlists",
+  "@playlistsTitle": {
+    "description": "Playlists design: the playlists screen heading."
+  },
+  "playlistsOpen": "Playlists",
+  "@playlistsOpen": {
+    "description": "Opens the playlists screen from the Library menu, beside reading lists."
+  },
+  "playlistsNone": "You have not made a playlist yet.",
+  "@playlistsNone": {
+    "description": "There are no playlists, which is a state and not a failure — the empty state invites making one."
+  },
+  "playlistNameLabel": "Playlist name",
+  "@playlistNameLabel": {
+    "description": "What the new playlist is called."
+  },
+  "playlistRenameLabel": "New name",
+  "@playlistRenameLabel": {
+    "description": "What the playlist is being renamed to."
+  },
+  "playlistCreate": "Create",
+  "@playlistCreate": {
+    "description": "Sends the new playlist to the core."
+  },
+  "playlistRenameSave": "Rename",
+  "@playlistRenameSave": {
+    "description": "Sends the new name to the core."
+  },
+  "playlistRename": "Rename this playlist",
+  "@playlistRename": {
+    "description": "Opens the playlist for renaming."
+  },
+  "playlistDelete": "Delete this playlist",
+  "@playlistDelete": {
+    "description": "Deletes the playlist, after confirmation."
+  },
+  "playlistNameEmpty": "Give the playlist a name.",
+  "@playlistNameEmpty": {
+    "description": "A blank name is marked on the field rather than sent to the core."
+  },
+  "playlistNotFound": "That playlist is no longer there.",
+  "@playlistNotFound": {
+    "description": "The core has no such playlist any more, so the list is read again."
+  },
+  "playlistDeleteMessage": "Delete {name}? The tracks in it are kept — only the playlist is removed.",
+  "@playlistDeleteMessage": {
+    "description": "The confirmation names what goes and what does not: the core deletes the playlist and its entries, never the files (BR-07).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "readCurrentIssueLabel": "Current issue",
   "@readCurrentIssueLabel": {
     "description": "UC-32 main flow step 4: which issue of the series the owner is on."

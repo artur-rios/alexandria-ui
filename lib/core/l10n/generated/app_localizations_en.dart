@@ -1348,6 +1348,44 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get playlistsTitle => 'Playlists';
+
+  @override
+  String get playlistsOpen => 'Playlists';
+
+  @override
+  String get playlistsNone => 'You have not made a playlist yet.';
+
+  @override
+  String get playlistNameLabel => 'Playlist name';
+
+  @override
+  String get playlistRenameLabel => 'New name';
+
+  @override
+  String get playlistCreate => 'Create';
+
+  @override
+  String get playlistRenameSave => 'Rename';
+
+  @override
+  String get playlistRename => 'Rename this playlist';
+
+  @override
+  String get playlistDelete => 'Delete this playlist';
+
+  @override
+  String get playlistNameEmpty => 'Give the playlist a name.';
+
+  @override
+  String get playlistNotFound => 'That playlist is no longer there.';
+
+  @override
+  String playlistDeleteMessage(String name) {
+    return 'Delete $name? The tracks in it are kept — only the playlist is removed.';
+  }
+
+  @override
   String get readCurrentIssueLabel => 'Current issue';
 
   @override

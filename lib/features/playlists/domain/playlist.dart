@@ -56,3 +56,18 @@ abstract class PlaylistView with _$PlaylistView {
     required List<PlaylistEntry> entries,
   }) = _PlaylistView;
 }
+
+/// Why a playlist name cannot be sent (UC-31 AF-01 equivalent, playlists
+/// design).
+enum PlaylistNameError {
+  /// Blank after trimming.
+  empty,
+}
+
+/// What is wrong with [name], or `null` when it can be sent.
+///
+/// Only the check the core would make anyway, made here so an attempt that
+/// cannot succeed never becomes one. Everything else about the name — length,
+/// stray whitespace, NUL bytes — is the core's verdict alone (BR-02).
+PlaylistNameError? validatePlaylistName(String name) =>
+    name.trim().isEmpty ? PlaylistNameError.empty : null;
