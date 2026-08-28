@@ -2538,6 +2538,18 @@ abstract class AppLocalizations {
   /// **'Delete {name}? The tracks in it are kept — only the playlist is removed.'**
   String playlistDeleteMessage(String name);
 
+  /// Playlists design section 3: the playlist exists but holds no entries, which is a state and not a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'This playlist has no tracks yet.'**
+  String get playlistDetailEmpty;
+
+  /// Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2).
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from playlist'**
+  String get playlistRemoveTrack;
+
   /// UC-32 main flow step 4: which issue of the series the owner is on.
   ///
   /// In en, this message translates to:

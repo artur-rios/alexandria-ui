@@ -1863,6 +1863,14 @@
       }
     }
   },
+  "playlistDetailEmpty": "This playlist has no tracks yet.",
+  "@playlistDetailEmpty": {
+    "description": "Playlists design section 3: the playlist exists but holds no entries, which is a state and not a failure."
+  },
+  "playlistRemoveTrack": "Remove from playlist",
+  "@playlistRemoveTrack": {
+    "description": "Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2)."
+  },
   "readCurrentIssueLabel": "Current issue",
   "@readCurrentIssueLabel": {
     "description": "UC-32 main flow step 4: which issue of the series the owner is on."

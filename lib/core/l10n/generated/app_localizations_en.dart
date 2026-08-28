@@ -1386,6 +1386,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get playlistDetailEmpty => 'This playlist has no tracks yet.';
+
+  @override
+  String get playlistRemoveTrack => 'Remove from playlist';
+
+  @override
   String get readCurrentIssueLabel => 'Current issue';
 
   @override

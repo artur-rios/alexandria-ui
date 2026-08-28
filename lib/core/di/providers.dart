@@ -99,6 +99,7 @@ import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
+import '../../features/playlists/application/playlist_detail_controller.dart';
 import '../../features/playlists/application/playlists_controller.dart';
 import '../../features/playlists/data/core_playlist_gateway.dart';
 import '../../features/playlists/domain/playlist.dart';
@@ -892,6 +893,13 @@ final playlistsControllerProvider =
 /// The playlists screen's own state.
 final playlistsFormProvider =
     NotifierProvider<PlaylistsForm, PlaylistsState>(PlaylistsForm.new);
+
+/// One playlist and its tracks, keyed by playlist uuid (playlists design
+/// section 3).
+final playlistDetailControllerProvider =
+    AsyncNotifierProvider.family<PlaylistDetailController, PlaylistView?, String>(
+      PlaylistDetailController.new,
+    );
 
 /// The tracked books' and comics' names (UC-32 main flow step 2).
 final trackedReadingItemsProvider =

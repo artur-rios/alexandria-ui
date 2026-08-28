@@ -1388,6 +1388,12 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get playlistDetailEmpty => 'Esta playlist ainda não tem faixas.';
+
+  @override
+  String get playlistRemoveTrack => 'Remover da playlist';
+
+  @override
   String get readCurrentIssueLabel => 'Edição atual';
 
   @override
