@@ -514,4 +514,86 @@ void main() {
       expect(state.owedIdentity, isNull);
     },
   );
+
+  test(
+    'GivenAPlaylistIsPlaying_WhenTheNextTrackIsTheSameAlbum_ThenNoInsertionIsOwed',
+    () async {
+      // Design section 6: a playlist queue names no record of its own, so the
+      // record is resolved from the track playing now — and two tracks of one
+      // album are one record inside a playlist exactly as they are inside an
+      // album queue. Were the identity read off the queue instead, it would
+      // be one constant value for the whole playlist and this would pass for
+      // the wrong reason — which is why the crossing test below is its pair.
+      final gateway = libraryGateway();
+      final container = buildContainer(gateway);
+      final audio = container.read(audioPlaybackControllerProvider.notifier);
+
+      await audio.playPlaylist(
+        name: 'Road Trip',
+        tracks: [aFile(uuid: 'kob-1'), aFile(uuid: 'kob-2')],
+      );
+      await container.read(musicLibraryProvider.future);
+      container
+          .read(albumAnimationControllerProvider.notifier)
+          .insertionShown();
+
+      await audio.next();
+      await container.read(musicLibraryProvider.future);
+
+      final state = container.read(albumAnimationControllerProvider);
+      expect(state.insertionOwed, isFalse);
+      expect(state.owedIdentity, isNull);
+    },
+  );
+
+  test(
+    'GivenAPlaylistIsPlaying_WhenTheNextTrackIsAnotherAlbum_ThenAnInsertionIsOwed',
+    () async {
+      // The other half of design section 6: crossing from one album to the
+      // next inside a playlist puts the new record on. A queue-level identity
+      // — the playlist's own name, or its first track's uuid — never changes
+      // between these two tracks, so this is the case that fails unless
+      // `recordOf` reads the current track.
+      final gateway = libraryGateway();
+      final container = buildContainer(gateway);
+      final audio = container.read(audioPlaybackControllerProvider.notifier);
+
+      await audio.playPlaylist(
+        name: 'Road Trip',
+        tracks: [aFile(uuid: 'kob-1'), aFile(uuid: 'bt-1')],
+      );
+      await container.read(musicLibraryProvider.future);
+      container
+          .read(albumAnimationControllerProvider.notifier)
+          .insertionShown();
+
+      await audio.next();
+      await container.read(musicLibraryProvider.future);
+
+      final state = container.read(albumAnimationControllerProvider);
+      expect(state.insertionOwed, isTrue);
+      expect(state.owedIdentity, isNotNull);
+    },
+  );
+
+  test(
+    'GivenAPlaylistOfOneAlbum_WhenItStartsMidRecord_ThenTheMediumIsTheCurrentTracksYear',
+    () async {
+      // The year picks the medium (UC-21, FR-PL-07), and a playlist carries
+      // none of its own — so it is read off whichever track is playing, not
+      // off a queue field that is always null here. Without that, every
+      // playlist would show the medium an unknown year falls back to.
+      final gateway = libraryGateway();
+      final container = buildContainer(gateway);
+
+      await container
+          .read(audioPlaybackControllerProvider.notifier)
+          .playPlaylist(name: 'Road Trip', tracks: [aFile(uuid: 'kob-1')]);
+      await container.read(musicLibraryProvider.future);
+
+      final state = container.read(albumAnimationControllerProvider);
+      // 1959 is a vinyl-era year; an unknown one falls back to a disc.
+      expect(state.medium, AlbumMedium.vinyl);
+    },
+  );
 }

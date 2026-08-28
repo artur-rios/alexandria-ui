@@ -66,8 +66,8 @@ void main() {
     'GivenAFileOfAnUnknownType_WhenTheListingIsRead_ThenItIsDroppedNotFailed',
     () async {
       // A row this application does not recognize is left out of the listing
-      // rather than making the whole listing unreadable (mirrors `_fileFrom`
-      // for a single row).
+      // rather than making the whole listing unreadable (mirrors
+      // `fileFromFileView` for a single row).
       final core = FakeCoreClient(
         filesListResult: (
           status: 0,
@@ -101,7 +101,8 @@ void main() {
         final core = FakeCoreClient()
           ..thumbnailResponse = (
             status: PLAYBACK_OK,
-            json: '{"uuid":"1","mimeType":"image/png","bytesBase64":"aGVsbG8="}',
+            json:
+                '{"uuid":"1","mimeType":"image/png","bytesBase64":"aGVsbG8="}',
           );
         final gateway = CoreCatalogGateway(core);
 
@@ -125,7 +126,10 @@ void main() {
         // rather than exceptional (design section 4) — is `InvalidInput`,
         // not a missing-field payload.
         final core = FakeCoreClient()
-          ..thumbnailResponse = (status: PLAYBACK_ERR_INVALID_INPUT, json: null);
+          ..thumbnailResponse = (
+            status: PLAYBACK_ERR_INVALID_INPUT,
+            json: null,
+          );
         final gateway = CoreCatalogGateway(core);
 
         final outcome = await gateway.fileThumbnail(

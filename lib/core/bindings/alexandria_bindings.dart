@@ -1345,6 +1345,275 @@ class AlexandriaBindings {
         )
       >();
 
+  /// Append tracks to a playlist, in order, at consecutive positions after
+  /// whatever it already holds (Task 4). The whole slice succeeds or none of
+  /// it does.
+  ///
+  /// `uuid` is the playlist's public UUID (NUL-terminated string).
+  /// `json_body` is the JSON body HTTP would send (`fileUuids`). On success
+  /// `json` carries the new `Vec<PlaylistEntry>` — byte-for-byte the same
+  /// shape HTTP returns from `POST /v1/playlists/{uuid}/entries` (parity,
+  /// FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  PlaylistJsonResult alexandria_playlist_add_entries(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> json_body,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_playlist_add_entries(uuid, json_body, token);
+  }
+
+  late final _alexandria_playlist_add_entriesPtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaylistJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_playlist_add_entries');
+  late final _alexandria_playlist_add_entries =
+      _alexandria_playlist_add_entriesPtr
+          .asFunction<
+            PlaylistJsonResult Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+            )
+          >();
+
+  /// Create a named, empty playlist (Task 1).
+  ///
+  /// `json_body` is the JSON body HTTP would send (`name`). The function
+  /// deserializes it, calls the same `CreatePlaylistHandler` the HTTP route
+  /// uses, and on success serializes the returned `Playlist` back to JSON —
+  /// so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
+  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  PlaylistJsonResult alexandria_playlist_create(
+    ffi.Pointer<ffi.Char> json_body,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_playlist_create(json_body, token);
+  }
+
+  late final _alexandria_playlist_createPtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaylistJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_playlist_create');
+  late final _alexandria_playlist_create = _alexandria_playlist_createPtr
+      .asFunction<
+        PlaylistJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
+  /// Delete a playlist, removing its entries; referenced audio files are
+  /// preserved (Task 3).
+  ///
+  /// `uuid` is the playlist's public UUID (NUL-terminated string). On success
+  /// `json` carries the pre-delete `Playlist` — byte-for-byte the same shape
+  /// HTTP returns from `DELETE /v1/playlists/{uuid}` (parity, FR-FC-24 /
+  /// NFR-09). `token` is the bearer auth token.
+  PlaylistJsonResult alexandria_playlist_delete(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_playlist_delete(uuid, token);
+  }
+
+  late final _alexandria_playlist_deletePtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaylistJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_playlist_delete');
+  late final _alexandria_playlist_delete = _alexandria_playlist_deletePtr
+      .asFunction<
+        PlaylistJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
+  /// Move one playlist entry to a new index, renumbering the rest in one
+  /// transaction (Task 5), addressed by its own `entry_uuid` rather than a
+  /// file uuid, since a playlist may hold the same track more than once.
+  ///
+  /// `playlist_uuid` is the playlist's public UUID (NUL-terminated string);
+  /// `entry_uuid` is the entry's own public UUID (NUL-terminated string) —
+  /// the internal rowid is never exposed on this transport (SRD §4.0).
+  /// `json_body` is the JSON body HTTP would send (`toIndex`). On success
+  /// `json` carries the playlist's full new order (`Vec<PlaylistEntry>`) —
+  /// byte-for-byte the same shape HTTP returns from `POST
+  /// /v1/playlists/{uuid}/entries/{entryUuid}/move` (parity, FR-FC-24 /
+  /// NFR-09). `token` is the bearer auth token.
+  PlaylistJsonResult alexandria_playlist_move_entry(
+    ffi.Pointer<ffi.Char> playlist_uuid,
+    ffi.Pointer<ffi.Char> entry_uuid,
+    ffi.Pointer<ffi.Char> json_body,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_playlist_move_entry(
+      playlist_uuid,
+      entry_uuid,
+      json_body,
+      token,
+    );
+  }
+
+  late final _alexandria_playlist_move_entryPtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaylistJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_playlist_move_entry');
+  late final _alexandria_playlist_move_entry =
+      _alexandria_playlist_move_entryPtr
+          .asFunction<
+            PlaylistJsonResult Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+            )
+          >();
+
+  /// Read a playlist back with its tracks, in position order (Task 6).
+  ///
+  /// `uuid` is the playlist's public UUID (NUL-terminated string). On success
+  /// `json` carries a `PlaylistView` — byte-for-byte the same shape HTTP
+  /// returns from `GET /v1/playlists/{uuid}` (parity, FR-FC-24 / NFR-09).
+  /// `token` is the bearer auth token.
+  PlaylistJsonResult alexandria_playlist_read(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_playlist_read(uuid, token);
+  }
+
+  late final _alexandria_playlist_readPtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaylistJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_playlist_read');
+  late final _alexandria_playlist_read = _alexandria_playlist_readPtr
+      .asFunction<
+        PlaylistJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
+  /// Remove one entry from a playlist, addressed by its own `entry_uuid`
+  /// rather than a file uuid, since a playlist may hold the same track more
+  /// than once (Task 4).
+  ///
+  /// `playlist_uuid` is the playlist's public UUID (NUL-terminated string);
+  /// `entry_uuid` is the entry's own public UUID (NUL-terminated string),
+  /// passed directly rather than through a body (there is nothing else to
+  /// carry) -- the internal rowid is never exposed on this transport, matching
+  /// HTTP's `{entryUuid}` path parameter (SRD §4.0). On success `json` is an
+  /// empty JSON object (`"{}"`) — the core handler answers
+  /// `Result<(), DomainError>`, nothing beyond success is available to echo
+  /// back, matching `DELETE /v1/playlists/{uuid}/entries/{entryUuid}`'s
+  /// `200 {}` exactly (parity, FR-FC-24 / NFR-09) rather than inventing an
+  /// FFI-only shape. `token` is the bearer auth token.
+  PlaylistJsonResult alexandria_playlist_remove_entry(
+    ffi.Pointer<ffi.Char> playlist_uuid,
+    ffi.Pointer<ffi.Char> entry_uuid,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_playlist_remove_entry(playlist_uuid, entry_uuid, token);
+  }
+
+  late final _alexandria_playlist_remove_entryPtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaylistJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_playlist_remove_entry');
+  late final _alexandria_playlist_remove_entry =
+      _alexandria_playlist_remove_entryPtr
+          .asFunction<
+            PlaylistJsonResult Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+            )
+          >();
+
+  /// Rename a playlist, leaving its entries and their order untouched
+  /// (Task 2).
+  ///
+  /// `uuid` is the playlist's public UUID (NUL-terminated string).
+  /// `json_body` is the JSON body HTTP would send (`name`). Both surfaces
+  /// call the same `RenamePlaylistHandler` so they stay at parity (FR-FC-24 /
+  /// NFR-09). `token` is the bearer auth token.
+  PlaylistJsonResult alexandria_playlist_rename(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> json_body,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_playlist_rename(uuid, json_body, token);
+  }
+
+  late final _alexandria_playlist_renamePtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaylistJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_playlist_rename');
+  late final _alexandria_playlist_rename = _alexandria_playlist_renamePtr
+      .asFunction<
+        PlaylistJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
+  /// Every persisted playlist, without their tracks (Task 6).
+  ///
+  /// `token` is the bearer auth token. On success `json` carries a
+  /// `Vec<Playlist>` — byte-for-byte the same shape HTTP returns from
+  /// `GET /v1/playlists` (parity, FR-FC-24 / NFR-09).
+  PlaylistJsonResult alexandria_playlists_list(ffi.Pointer<ffi.Char> token) {
+    return _alexandria_playlists_list(token);
+  }
+
+  late final _alexandria_playlists_listPtr =
+      _lookup<
+        ffi.NativeFunction<PlaylistJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_playlists_list');
+  late final _alexandria_playlists_list = _alexandria_playlists_listPtr
+      .asFunction<PlaylistJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
   /// Add a book or comic to a reading list (UC-28 / FR-RL-02, FR-RL-03).
   ///
   /// `uuid` is the reading list's public UUID (NUL-terminated string).
@@ -2034,6 +2303,20 @@ const int PLAYBACK_ERR_UNAUTHORIZED = 2;
 
 const int PLAYBACK_OK = 0;
 
+const int PLAYLIST_ERR_INVALID_INPUT = 1;
+
+const int PLAYLIST_ERR_INVALID_STATE = 5;
+
+const int PLAYLIST_ERR_NOT_FOUND = 4;
+
+const int PLAYLIST_ERR_NOT_INITIALIZED = 3;
+
+const int PLAYLIST_ERR_OTHER = 9;
+
+const int PLAYLIST_ERR_UNAUTHORIZED = 2;
+
+const int PLAYLIST_OK = 0;
+
 /// JSON result for the playback functions. `json` is NULL on error and
 /// `status` carries the mapped code. The caller must free `json` with
 /// `alexandria_free_string`.
@@ -2048,6 +2331,27 @@ final class PlaybackJsonResult extends ffi.Struct {
     required int status,
     required ffi.Pointer<ffi.Char> json,
   }) => $allocator<PlaybackJsonResult>()
+    ..ref.status = status
+    ..ref.json = json;
+}
+
+/// Result of every playlist FFI function. On success `status` is
+/// `PLAYLIST_OK` and `json` is a NUL-terminated JSON string of the response
+/// body — byte-for-byte the same shape HTTP returns from the matching
+/// `/v1/playlists*` route (FR-FC-24 / NFR-09). On failure `json` is NULL
+/// and `status` carries the mapped error code. The caller must free `json`
+/// with `alexandria_free_string`.
+final class PlaylistJsonResult extends ffi.Struct {
+  @ffi.Int()
+  external int status;
+
+  external ffi.Pointer<ffi.Char> json;
+
+  static ffi.Pointer<PlaylistJsonResult> $allocate(
+    ffi.Allocator $allocator, {
+    required int status,
+    required ffi.Pointer<ffi.Char> json,
+  }) => $allocator<PlaylistJsonResult>()
     ..ref.status = status
     ..ref.json = json;
 }

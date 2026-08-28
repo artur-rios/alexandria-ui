@@ -99,6 +99,11 @@ import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
+import '../../features/playlists/application/playlist_detail_controller.dart';
+import '../../features/playlists/application/playlists_controller.dart';
+import '../../features/playlists/data/core_playlist_gateway.dart';
+import '../../features/playlists/domain/playlist.dart';
+import '../../features/playlists/domain/playlist_gateway.dart';
 import '../../features/shell/domain/session_activity.dart';
 import '../../features/viewers/application/comic_viewer_controller.dart';
 import '../../features/viewers/application/document_viewer_controller.dart';
@@ -866,6 +871,35 @@ final readingListsControllerProvider =
 /// The reading-lists screen's own state (UC-31).
 final readingListsFormProvider =
     NotifierProvider<ReadingListsForm, ReadingListsState>(ReadingListsForm.new);
+
+/// The core's playlist operations (playlists design).
+final playlistGatewayProvider = Provider<PlaylistGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the playlist gateway was read before the core was loaded',
+    );
+  }
+
+  return CorePlaylistGateway(core);
+});
+
+/// The owner's playlists (playlists design).
+final playlistsControllerProvider =
+    AsyncNotifierProvider<PlaylistsController, List<Playlist>>(
+      PlaylistsController.new,
+    );
+
+/// The playlists screen's own state.
+final playlistsFormProvider =
+    NotifierProvider<PlaylistsForm, PlaylistsState>(PlaylistsForm.new);
+
+/// One playlist and its tracks, keyed by playlist uuid (playlists design
+/// section 3).
+final playlistDetailControllerProvider =
+    AsyncNotifierProvider.family<PlaylistDetailController, PlaylistView?, String>(
+      PlaylistDetailController.new,
+    );
 
 /// The tracked books' and comics' names (UC-32 main flow step 2).
 final trackedReadingItemsProvider =

@@ -105,6 +105,8 @@ graph LR
         UC30[UC-30: Track watch progress]
         UC31[UC-31: Manage reading lists]
         UC32[UC-32: Track reading progress]
+        UC47[UC-47: Manage a playlist]
+        UC48[UC-48: Play a playlist]
     end
 
     subgraph "Lifecycle (LC)"
@@ -1754,6 +1756,119 @@ graph LR
 
 ---
 
+### UC-47: Manage a playlist
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-47 |
+| **Name** | Manage a playlist |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner creates, renames, and deletes named playlists of their own music, adds tracks to one, removes an entry, and drags the entries into the order they want. |
+| **Preconditions** | An active session exists. |
+| **Postconditions** | The core holds the playlist, its entries, and their order; the audio files themselves are untouched. |
+| **Requirements** | FR-TR-15, FR-TR-16, FR-TR-17, FR-TR-18, FR-TR-19 |
+
+**Main Flow**
+
+1. The owner opens the playlists screen from the Library menu and creates a
+   playlist with a name.
+2. The application validates the name and sends the creation to the core.
+3. The owner adds tracks — one from a track's context menu, a whole album or a
+   whole artist at once, or the track playing now — and the application sends
+   the batch to the core in one call, in the order the surface listed it.
+4. The owner opens a playlist and sees its tracks in the order the core stored
+   them, each named by its metadata.
+5. The owner drags a track to a new place; the application sends the core the
+   entry and its destination index, and presents the order the core answers.
+6. The owner removes an entry; the application sends the core that entry's own
+   identifier.
+7. The owner renames a playlist, or deletes one after a confirmation stating
+   that the tracks are kept.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The name is blank after trimming | The application marks the field and does not call the core. |
+| AF-02 | The track is already in the playlist | It is added again, as a second entry. A playlist may hold the same track more than once, and the application invents no refusal the core does not have. |
+| AF-03 | An entry's file is missing on disk | The entry stays in the list, presented as missing, rather than being hidden or removed. |
+| AF-04 | The core reports the playlist or the entry as not found | The application says so and refreshes the screen. |
+| AF-05 | A drag ends where it began | Nothing is sent to the core. |
+| AF-06 | The core refuses a move | The row returns to where it was and the stored order is presented unchanged. |
+| AF-07 | The owner cancels a deletion | Nothing changes. |
+| AF-08 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+
+> **An entry is addressed by its own identifier**, never by its position and
+> never by the file it points at (main flow steps 5 and 6). A playlist may hold
+> the same track three times, and only the entry's own identifier tells those
+> three apart — which is why removing "that" track is removing that entry.
+>
+> **The core owns the ordering (BR-02).** The application sends "put entry X at
+> index N" and renders what comes back; it never computes positions and never
+> patches the list locally after a move. The index sent is a plain destination
+> index. Flutter's `ReorderableListView` reports an index offset by one for
+> downward moves, and that correction is made in one named place in the
+> application rather than at each call site — a correction applied twice, or
+> not at all, is the most common defect in this widget and is invisible in a
+> test that only drags upward.
+>
+> The core's own half of this is specified as UC-49 in the Alexandria core's
+> use case document, and is not restated here.
+
+---
+
+### UC-48: Play a playlist
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-48 |
+| **Name** | Play a playlist |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner plays a playlist, which becomes the queue and plays in its stored order. |
+| **Preconditions** | An active session exists and the playlist holds at least one track. |
+| **Postconditions** | The playlist is the queue, playing from its first playable track. |
+| **Requirements** | FR-TR-20, FR-PL-05, FR-PL-06, FR-PL-07 |
+
+**Main Flow**
+
+1. The owner presses play on an open playlist.
+2. The application replaces the queue with the playlist's tracks, in the order
+   shown, and starts at the first.
+3. Playback proceeds as UC-20 describes it — the same queue, the same transport,
+   the same resume behaviour — since a playlist is a queue and not a second
+   notion of what is playing.
+4. The album animation resolves the record from the track playing now, so
+   crossing from one album into the next inserts the new medium and moving
+   between two tracks of one album does not (UC-21).
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | An entry's file cannot be opened | It is named and stepped over, and the next track plays. The list continues rather than stopping partway. |
+| AF-02 | No entry in the playlist could be opened | The application reports that nothing was playable, rather than appearing to play silence. |
+| AF-03 | The playlist holds no tracks | No play action is offered; the screen already states that the playlist is empty. |
+| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+
+> **A playlist queue names no record of its own.** It carries the playlist's
+> name for the player to show, and nothing else — no album, no artist, no year.
+> That is what makes the album animation resolve the record from the current
+> track, exactly as it already does for a single track, so the behaviour in main
+> flow step 4 falls out of the rule that is already there rather than being a
+> second rule beside it. A playlist has no cover of its own either: the player
+> shows the cover of the record actually playing.
+>
+> **A missing entry is played at, not filtered out.** Whether a file opens is
+> the core's answer to a resolve, not a flag the application re-decides, so
+> every entry is queued and AF-01 does the stepping over. Filtering on the
+> stored flag would disagree with it in both directions and would cost the owner
+> the report naming which file was skipped.
+>
+> The core's own half of this is specified as UC-50 in the Alexandria core's
+> use case document, and is not restated here.
+
+---
+
 ## 3. Use Case — Requirements Traceability
 
 | Use Case | Requirements |
@@ -1804,6 +1919,8 @@ graph LR
 | UC-44: Pause, resume, or cancel a scan | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
 | UC-45: Pace a scan | FR-LB-16, FR-LB-18 |
 | UC-46: Browse the music library | FR-CT-13, FR-CT-14 |
+| UC-47: Manage a playlist | FR-TR-15, FR-TR-16, FR-TR-17, FR-TR-18, FR-TR-19 |
+| UC-48: Play a playlist | FR-TR-20, FR-PL-05, FR-PL-06, FR-PL-07 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) appears at least

@@ -10,6 +10,7 @@ import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_stage.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
 import 'package:alexandria_ui/features/playback/presentation/now_playing_screen.dart';
+import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -21,6 +22,7 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_media_player.dart';
 import '../../../support/fake_playback.dart';
+import '../../../support/fake_playlist_gateway.dart';
 import '../../../support/shell_harness.dart';
 
 /// The full player's own behaviour, apart from whatever medium `AlbumStage`
@@ -351,6 +353,60 @@ void main() {
 
         expect(labelOf(find.byType(AlbumStage)), expectedLabel);
         expect(labelOf(find.byType(AlbumVisor)), expectedLabel);
+      },
+    );
+  });
+
+  // Task 5 entry point 3: whatever is currently playing.
+  group('adding the current track to a playlist (Task 5)', () {
+    testWidgets(
+      'GivenATrackIsPlaying_WhenAddToPlaylistIsChosen_ThenTheCurrentTrackIsSent',
+      (tester) async {
+        const jazz = Playlist(uuid: 'p-1', name: 'Jazz');
+        final playlistGateway = FakePlaylistGateway(playlists: [jazz]);
+        final catalog = FakeCatalogGateway()
+          ..addAudio(uuid: 'loose-1', title: 'Naima', artist: 'John Coltrane');
+
+        final container = await tester.pumpShell(
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(catalog),
+            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway(),
+            ),
+            playbackPositionsProvider.overrideWithValue(
+              FakePlaybackPositionStore(),
+            ),
+            playlistGatewayProvider.overrideWithValue(playlistGateway),
+          ],
+        );
+        await container
+            .read(preferencesControllerProvider.notifier)
+            .setAlbumAnimation(AlbumAnimationMode.off);
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playTrack(aFile(uuid: 'loose-1'));
+        await tester.pumpAndSettle();
+        await openPlayer(tester);
+
+        await tester.tap(
+          find.descendant(
+            of: find.byType(NowPlayingScreen),
+            matching: find.byIcon(Icons.playlist_add),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Jazz'));
+        await tester.pumpAndSettle();
+
+        // Not a list-literal comparison: `entriesAdded`'s `fileUuids` field
+        // is a `List<String>`, and a record's `==` compares that field by
+        // reference — a fresh list literal on the right would never match
+        // regardless of its contents.
+        expect(playlistGateway.entriesAdded, hasLength(1));
+        expect(playlistGateway.entriesAdded.single.uuid, 'p-1');
+        expect(playlistGateway.entriesAdded.single.fileUuids, ['loose-1']);
       },
     );
   });

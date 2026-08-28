@@ -4,6 +4,8 @@ import 'package:alexandria_ui/features/playback/domain/music_browse.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/playback/presentation/music_display_name.dart';
 import 'package:alexandria_ui/features/playback/presentation/music_rows.dart';
+import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
+import 'package:alexandria_ui/features/playlists/presentation/playlists_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +14,7 @@ import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_media_player.dart';
 import '../../../support/fake_playback.dart';
+import '../../../support/fake_playlist_gateway.dart';
 
 /// The rows the music area lists artists, albums and tracks with (UC-46 main
 /// flow step 2 and 3), and what a tap on one of them does.
@@ -22,7 +25,10 @@ void main() {
   /// A container with a session and every playback dependency faked, so
   /// [AudioPlaybackController] runs for real over [gateway] rather than being
   /// replaced itself — the point is that a tap reaches the real controller.
-  ProviderContainer buildContainer(FakeCatalogGateway gateway) {
+  ProviderContainer buildContainer(
+    FakeCatalogGateway gateway, {
+    FakePlaylistGateway? playlistGateway,
+  }) {
     final container = ProviderContainer(
       overrides: [
         catalogGatewayProvider.overrideWithValue(gateway),
@@ -33,6 +39,8 @@ void main() {
         playbackPositionsProvider.overrideWithValue(
           FakePlaybackPositionStore(),
         ),
+        if (playlistGateway != null)
+          playlistGatewayProvider.overrideWithValue(playlistGateway),
       ],
     );
     addTearDown(container.dispose);
@@ -449,5 +457,246 @@ void main() {
       expect(find.text('OK Computer'), findsOneWidget);
       expect(find.text('Radiohead'), findsOneWidget);
     });
+  });
+
+  // Task 5: adding to a playlist from the two entry points these rows carry —
+  // one track's own context menu, and a whole album at once.
+  group('adding to a playlist (Task 5)', () {
+    const jazz = Playlist(uuid: 'p-1', name: 'Jazz');
+
+    testWidgets(
+      'GivenATracksMenu_WhenAddToPlaylistIsChosen_ThenThatOneFileUuidIsSent',
+      (tester) async {
+        final gateway = FakeCatalogGateway()
+          ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
+        final playlistGateway = FakePlaylistGateway(playlists: [jazz]);
+        final container = buildContainer(gateway, playlistGateway: playlistGateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicTrackList(entries: library.entries, numbered: false),
+        );
+
+        // Opens the row's own context menu (the `more_vert` control), then
+        // its "Add to a playlist" submenu.
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(MusicTrackList)),
+        );
+        await tester.tap(find.text(l10n.playlistAddTo));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Jazz'));
+        await tester.pumpAndSettle();
+
+        // Field-by-field, not a list-literal comparison: a record's `==`
+        // compares a `List<String>` field by reference, so a fresh list
+        // literal would never match regardless of its contents.
+        expect(playlistGateway.entriesAdded, hasLength(1));
+        expect(playlistGateway.entriesAdded.single.uuid, 'p-1');
+        expect(playlistGateway.entriesAdded.single.fileUuids, ['1']);
+      },
+    );
+
+    testWidgets(
+      'GivenAnAlbumRow_WhenAddToPlaylistIsChosen_ThenEveryTrackIsSentInAlbumOrderInOneCall',
+      (tester) async {
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'a2',
+            title: 'Two',
+            artist: 'Artist',
+            album: 'Album',
+            track: 2,
+          )
+          ..addAudio(
+            uuid: 'a1',
+            title: 'One',
+            artist: 'Artist',
+            album: 'Album',
+            track: 1,
+          );
+        final playlistGateway = FakePlaylistGateway(playlists: [jazz]);
+        final container = buildContainer(gateway, playlistGateway: playlistGateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicGroupList(
+            groups: albumsIn(library.entries),
+            kind: MusicGroupKind.album,
+          ),
+        );
+
+        await tester.tap(find.byIcon(Icons.playlist_add));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Jazz'));
+        await tester.pumpAndSettle();
+
+        // One call for the whole album, in track order — not the order the
+        // catalog happened to add the two files in.
+        expect(playlistGateway.entriesAdded, hasLength(1));
+        expect(playlistGateway.entriesAdded.single.uuid, 'p-1');
+        expect(playlistGateway.entriesAdded.single.fileUuids, ['a1', 'a2']);
+      },
+    );
+
+    testWidgets(
+      'GivenAnArtistWithTwoAlbums_WhenAddToPlaylistIsChosen_ThenTracksComeInAlbumThenTrackOrder',
+      (tester) async {
+        // `artistsIn` groups an artist's row with `_inTrackOrder`, which
+        // sorts by track number alone — no album key — so a naive read of
+        // `group.entries` would interleave the two records track-for-track:
+        // Dr. Jackle, So What, Freddie Freeloader, Sid's Ahead. The fix has
+        // to re-sort album by album, matching what "Play artist" queues and
+        // what drilling into the artist's own albums shows.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'dj',
+            title: 'Dr. Jackle',
+            artist: 'Miles Davis',
+            albumArtist: 'Miles Davis',
+            album: 'Someday',
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'sa',
+            title: "Sid's Ahead",
+            artist: 'Miles Davis',
+            albumArtist: 'Miles Davis',
+            album: 'Someday',
+            track: 2,
+          )
+          ..addAudio(
+            uuid: 'sw',
+            title: 'So What',
+            artist: 'Miles Davis',
+            albumArtist: 'Miles Davis',
+            album: 'Kind of Blue',
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'ff',
+            title: 'Freddie Freeloader',
+            artist: 'Miles Davis',
+            albumArtist: 'Miles Davis',
+            album: 'Kind of Blue',
+            track: 2,
+          );
+        final playlistGateway = FakePlaylistGateway(playlists: [jazz]);
+        final container = buildContainer(gateway, playlistGateway: playlistGateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicGroupList(
+            groups: artistsIn(library.entries),
+            kind: MusicGroupKind.artist,
+          ),
+        );
+
+        await tester.tap(find.byIcon(Icons.playlist_add));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Jazz'));
+        await tester.pumpAndSettle();
+
+        expect(playlistGateway.entriesAdded, hasLength(1));
+        expect(playlistGateway.entriesAdded.single.uuid, 'p-1');
+        expect(playlistGateway.entriesAdded.single.fileUuids, [
+          'sw',
+          'ff',
+          'dj',
+          'sa',
+        ]);
+      },
+    );
+
+    testWidgets(
+      'GivenAnUntaggedArtistGroup_WhenAddToPlaylistIsChosen_ThenEveryTrackIsSentInOrder',
+      (tester) async {
+        // The untagged group is exactly where `artistOf`'s own null-artist
+        // early return would bite if a future refactor reached for
+        // `artistOf(group.entries.first, group.entries)` as a shortcut for
+        // `inArtistOrder`: that early return answers just the *first* file
+        // when its seed names no artist, so every other track in the group
+        // would be silently dropped rather than sent. `inArtistOrder` never
+        // seeds from a single entry, so it has no such early return — this
+        // pins all four tracks reaching the core, not one, and (via two
+        // distinct albums) that the order is a real sort rather than
+        // whatever `group.entries` happened to hold.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(uuid: 'b1', title: 'B One', album: 'Album B', track: 1)
+          ..addAudio(uuid: 'b2', title: 'B Two', album: 'Album B', track: 2)
+          ..addAudio(uuid: 'a1', title: 'A One', album: 'Album A', track: 1)
+          ..addAudio(uuid: 'a2', title: 'A Two', album: 'Album A', track: 2);
+        final playlistGateway = FakePlaylistGateway(playlists: [jazz]);
+        final container = buildContainer(gateway, playlistGateway: playlistGateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicGroupList(
+            groups: artistsIn(library.entries),
+            kind: MusicGroupKind.artist,
+          ),
+        );
+
+        await tester.tap(find.byIcon(Icons.playlist_add));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Jazz'));
+        await tester.pumpAndSettle();
+
+        expect(playlistGateway.entriesAdded, hasLength(1));
+        expect(playlistGateway.entriesAdded.single.uuid, 'p-1');
+        expect(playlistGateway.entriesAdded.single.fileUuids, [
+          'a1',
+          'a2',
+          'b1',
+          'b2',
+        ]);
+      },
+    );
+
+    testWidgets(
+      'GivenNoPlaylistsYet_WhenTheTracksMenuIsOpened_ThenItOffersToCreateOneToo',
+      (tester) async {
+        // `AddToPlaylistButton`'s own empty-playlist branch is covered in
+        // `add_to_playlist_button_test.dart`; `addToPlaylistMenu` is a
+        // different widget family (a `SubmenuButton`, not a
+        // `PopupMenuButton`) with its own, separately-built empty branch.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
+        final playlistGateway = FakePlaylistGateway(playlists: const []);
+        final container = buildContainer(gateway, playlistGateway: playlistGateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicTrackList(entries: library.entries, numbered: false),
+        );
+
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(MusicTrackList)),
+        );
+        await tester.tap(find.text(l10n.playlistAddTo));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.playlistAddCreateOne), findsOneWidget);
+
+        await tester.tap(find.text(l10n.playlistAddCreateOne));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(PlaylistsScreen), findsOneWidget);
+        expect(playlistGateway.entriesAdded, isEmpty);
+      },
+    );
   });
 }

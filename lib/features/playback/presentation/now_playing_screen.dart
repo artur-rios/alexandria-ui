@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../domain/album_cover.dart';
 import 'album_stage.dart';
 import 'music_display_name.dart';
@@ -140,6 +141,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       // close control alone.
       appBar: AppBar(
         actions: [
+          // Task 5 entry point 3: whatever is currently playing — nothing
+          // when the queue is empty, since there is then no track to add.
+          if (current != null) AddToPlaylistButton(fileUuids: [current.uuid]),
           IconButton(
             tooltip: l10n.audioClosePlayer,
             icon: const Icon(Icons.close),

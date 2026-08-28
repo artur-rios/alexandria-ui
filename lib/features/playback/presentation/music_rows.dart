@@ -8,6 +8,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/presentation/file_details_view.dart';
 import '../../catalog/presentation/music_metadata_form.dart';
+import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../application/audio_playback_controller.dart';
 import '../domain/music_browse.dart';
 import '../domain/music_grouping.dart';
@@ -60,6 +61,23 @@ class MusicGroupList extends ConsumerWidget {
           subtitle: kind == MusicGroupKind.album
               ? Text(artist ?? l10n.musicUnknownArtist)
               : null,
+          // Task 5 entry point 2: every track the group holds. An album row's
+          // own `group.entries` is already track-ordered (`_inTrackOrder`),
+          // so an album is added in the order the record itself is in. An
+          // artist row's `group.entries` is not: `artistsIn` groups it with
+          // the same `_inTrackOrder`, which sorts by track number alone —
+          // with no album key, so two records interleave track-for-track
+          // rather than playing one after the other. `inArtistOrder` is the
+          // album-then-track sort that matches what "Play artist" queues and
+          // what drilling into the artist's own albums shows.
+          trailing: AddToPlaylistButton(
+            fileUuids: kind == MusicGroupKind.artist
+                ? [for (final file in inArtistOrder(group.entries)) file.uuid]
+                : [for (final entry in group.entries) entry.file.uuid],
+            tooltip: kind == MusicGroupKind.album
+                ? l10n.playlistAddAlbumTo
+                : l10n.playlistAddArtistTo,
+          ),
           // Drilling in rather than playing: playing a whole artist or record
           // is on the submenu, where it is a decision rather than something a
           // mis-aimed click does.
@@ -164,7 +182,7 @@ class MusicTrackList extends ConsumerWidget {
 /// A track's own actions (UC-46, FR-CT-14).
 ///
 /// Right-click is what a desktop owner reaches for, and the button beside the
-/// row is what makes the same five actions reachable without a right mouse
+/// row is what makes the same six actions reachable without a right mouse
 /// button and from the keyboard. Both open the one menu, so there is no second
 /// list of actions to keep in step.
 class MusicRowMenu extends ConsumerWidget {
@@ -199,6 +217,11 @@ class MusicRowMenu extends ConsumerWidget {
               _play(ref, (player) => player.playArtist(entry.file)),
           child: Text(l10n.audioPlayArtist),
         ),
+        // Task 5 entry point 1: the one track this row is, addressed by its
+        // own file uuid — never the album or artist it belongs to. Called
+        // with this row's own `context` and `ref`, not built as a menu-item
+        // widget of its own — see `addToPlaylistMenu`'s own doc.
+        addToPlaylistMenu(context, ref, fileUuids: [entry.file.uuid]),
         MenuItemButton(
           leadingIcon: const Icon(Icons.info_outline),
           onPressed: () => FileDetailsView.show(context, ref, entry.file.uuid),

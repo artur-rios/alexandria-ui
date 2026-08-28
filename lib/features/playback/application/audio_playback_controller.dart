@@ -95,14 +95,15 @@ class AudioPlaybackState {
   );
 }
 
-/// Drives UC-20: listening to a track, an album, or an artist.
+/// What [AudioPlaybackController._playGrouped] gathers a queue for.
 ///
-/// What [AudioPlaybackController._playGrouped] builds a queue for.
+/// Not [QueueKind]: that type also has `track` and `playlist`, and
+/// [_playGrouped] is never called for either — [playTrack] and [playPlaylist]
+/// build their queues directly, from a file and from a curated order
+/// respectively, without gathering anything from the library.
 ///
-/// Not [QueueKind]: that type also has `track`, and [_playGrouped] is never
-/// called for one — [playTrack] builds its own single-track queue directly.
-/// A two-value type here rules that arm out at the call site instead of
-/// leaving a switch case that could never run.
+/// A two-value type rules those arms out at the call site instead of leaving
+/// switch cases that could never run.
 enum _GroupKind {
   /// An album.
   album,
@@ -161,6 +162,47 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   /// Plays everything by [file]'s artist (main flow steps 1 and 3).
   Future<void> playArtist(CatalogFile file) =>
       _playGrouped(file, _GroupKind.artist);
+
+  /// Plays [tracks], in the order given, as the playlist called [name]
+  /// (playlists design section 6).
+  ///
+  /// Not [_playGrouped]: nothing is gathered here. The order *is* the thing
+  /// the owner curated, so it is taken exactly as handed over and the music
+  /// library is never consulted to build the queue — which also means a
+  /// playlist plays even while the library listing is unavailable.
+  ///
+  /// [name] rides along as the queue's label, for the bar to show. It is not
+  /// the record's identity: a playlist names no record of its own, so
+  /// `recordOf` resolves that from whichever track is playing (see
+  /// [PlaybackQueue.namesOwnRecord]).
+  ///
+  /// No year, and no resume offer. A playlist is a sequence, and AF-04 asks
+  /// its question about one file — the same reason an album does not ask it.
+  ///
+  /// Entries whose files are missing are queued like any other: whether a
+  /// file opens is the resolve's answer, and [_openAt] already names and
+  /// steps over the ones that do not (AF-01), ending in AF-03 when none of
+  /// them does. Filtering them out here would be a second opinion about what
+  /// is playable, would disagree with a stale missing flag in both
+  /// directions, and would cost the owner the report naming which file was
+  /// stepped over.
+  Future<void> playPlaylist({
+    required String name,
+    required List<CatalogFile> tracks,
+  }) async {
+    // Nothing was asked to play, which is not AF-03 — there, tracks were
+    // tried and every one failed. Whatever is playing keeps playing, and an
+    // empty queue never reaches `_openAt`, which would otherwise leave the
+    // player parked in `starting` with nothing to open.
+    if (tracks.isEmpty) return;
+
+    await _stopOtherMedia();
+
+    await _playQueue(
+      PlaybackQueue(tracks: tracks, kind: QueueKind.playlist, label: name),
+      at: Duration.zero,
+    );
+  }
 
   /// Answers AF-04 by resuming where playback stopped.
   Future<void> resume() async {

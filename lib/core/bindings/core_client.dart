@@ -443,6 +443,73 @@ abstract interface class CoreClient {
   /// per episode — and UC-29 and UC-30 are what present it.
   Future<CoreJsonResponse> watchlistsList(String jsonFilters, String token);
 
+  /// Creates a named, empty playlist through `alexandria_playlist_create`
+  /// (playlists Task 1).
+  ///
+  /// [jsonBody] is the body the core's matching HTTP route takes — `{"name":…}`.
+  Future<CoreJsonResponse> playlistCreate(String jsonBody, String token);
+
+  /// Renames a playlist through `alexandria_playlist_rename` (playlists
+  /// Task 2). Its entries and their order are untouched.
+  Future<CoreJsonResponse> playlistRename(
+    String uuid,
+    String jsonBody,
+    String token,
+  );
+
+  /// Deletes a playlist through `alexandria_playlist_delete` (playlists
+  /// Task 3).
+  ///
+  /// Its entries go with it; the audio files they point at are preserved.
+  Future<CoreJsonResponse> playlistDelete(String uuid, String token);
+
+  /// Lists every persisted playlist, without their entries, through
+  /// `alexandria_playlists_list` (playlists Task 6). [playlistRead] is what
+  /// reads one playlist's tracks.
+  Future<CoreJsonResponse> playlistsList(String token);
+
+  /// Reads a playlist back with its entries, in position order, through
+  /// `alexandria_playlist_read` (playlists Task 6).
+  Future<CoreJsonResponse> playlistRead(String uuid, String token);
+
+  /// Appends tracks to a playlist through `alexandria_playlist_add_entries`
+  /// (playlists Task 4).
+  ///
+  /// [jsonBody] carries the file uuids, in the order they land at consecutive
+  /// positions after whatever the playlist already holds. The whole slice
+  /// succeeds or none of it does.
+  Future<CoreJsonResponse> playlistAddEntries(
+    String uuid,
+    String jsonBody,
+    String token,
+  );
+
+  /// Removes one entry from a playlist through
+  /// `alexandria_playlist_remove_entry` (playlists Task 4).
+  ///
+  /// [entryUuid] addresses the entry itself, never the file it points at or
+  /// its position: a playlist may hold the same track more than once, which
+  /// is what makes an index or a file uuid ambiguous here.
+  Future<CoreJsonResponse> playlistRemoveEntry(
+    String uuid,
+    String entryUuid,
+    String token,
+  );
+
+  /// Moves one playlist entry to a new position through
+  /// `alexandria_playlist_move_entry` (playlists Task 5), renumbering the
+  /// rest in one transaction.
+  ///
+  /// [entryUuid] addresses the entry the same way [playlistRemoveEntry]'s
+  /// does. [jsonBody] is the body the core's matching HTTP route takes —
+  /// `{"toIndex":…}`.
+  Future<CoreJsonResponse> playlistMoveEntry(
+    String uuid,
+    String entryUuid,
+    String jsonBody,
+    String token,
+  );
+
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
 }
@@ -904,6 +971,72 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async => _reply<CoreJsonResponse>(
     await _isolate.call('watchlistsList', [jsonFilters, token]),
+  );
+
+  @override
+  Future<CoreJsonResponse> playlistCreate(
+    String jsonBody,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('playlistCreate', [jsonBody, token]),
+  );
+
+  @override
+  Future<CoreJsonResponse> playlistRename(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('playlistRename', [uuid, jsonBody, token]),
+  );
+
+  @override
+  Future<CoreJsonResponse> playlistDelete(String uuid, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('playlistDelete', [uuid, token]),
+      );
+
+  @override
+  Future<CoreJsonResponse> playlistsList(String token) async =>
+      _reply<CoreJsonResponse>(await _isolate.call('playlistsList', [token]));
+
+  @override
+  Future<CoreJsonResponse> playlistRead(String uuid, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('playlistRead', [uuid, token]),
+      );
+
+  @override
+  Future<CoreJsonResponse> playlistAddEntries(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('playlistAddEntries', [uuid, jsonBody, token]),
+  );
+
+  @override
+  Future<CoreJsonResponse> playlistRemoveEntry(
+    String uuid,
+    String entryUuid,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('playlistRemoveEntry', [uuid, entryUuid, token]),
+  );
+
+  @override
+  Future<CoreJsonResponse> playlistMoveEntry(
+    String uuid,
+    String entryUuid,
+    String jsonBody,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('playlistMoveEntry', [
+      uuid,
+      entryUuid,
+      jsonBody,
+      token,
+    ]),
   );
 
   @override

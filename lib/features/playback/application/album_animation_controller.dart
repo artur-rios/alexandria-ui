@@ -35,31 +35,46 @@ typedef AlbumIdentity = (Object, String);
 /// (the uuid does not change between them) while telling two different
 /// untagged records apart (their first tracks differ).
 ///
-/// For a track queue — which carries no label and no year at all — both are
-/// read from [library] instead, off the current track's own album, artist
-/// and year, resolved the same way every other surface resolves a track's
-/// metadata (`MusicLibrary.entryFor`, design §2, §3). A track with no album
-/// tag falls back to its own uuid, the same untagged rule `albumOf` states;
-/// one with an album tag identifies by album and album artist together, since
-/// two different artists can name an album the same thing — the album artist,
-/// so that two tracks of one compilation are the same record here as they are
-/// in the browsing area rather than two records with two insertions.
-/// `library` is `null` while it has not loaded, or does not hold the track —
-/// the fallback entry that answers then has no album and no year, so the
-/// identity falls back to the uuid and the medium falls back to a disc,
-/// exactly as an unknown record does everywhere else.
+/// For a queue that names no record of its own — a lone track, or a playlist
+/// (playlists design §6) — both are read from [library] instead, off the
+/// track *playing now*: its own album, artist and year, resolved the same way
+/// every other surface resolves a track's metadata (`MusicLibrary.entryFor`,
+/// design §2, §3). A track with no album tag falls back to its own uuid, the
+/// same untagged rule `albumOf` states; one with an album tag identifies by
+/// album and album artist together, since two different artists can name an
+/// album the same thing — the album artist, so that two tracks of one
+/// compilation are the same record here as they are in the browsing area
+/// rather than two records with two insertions. `library` is `null` while it
+/// has not loaded, or does not hold the track — the fallback entry that
+/// answers then has no album and no year, so the identity falls back to the
+/// uuid and the medium falls back to a disc, exactly as an unknown record
+/// does everywhere else.
 ///
-/// Called only once a caller has confirmed [queue] is non-empty, so
-/// `tracks.first` is safe.
+/// Reading a playlist per track is what makes crossing from one album into
+/// the next inside one insert the new medium, while moving between two tracks
+/// of the same album does not — the behaviour the design asked for, falling
+/// out of the rule already here rather than a second rule beside it. A
+/// playlist's own `label` is its name, for the bar to show, and is
+/// deliberately not read as an identity: one value standing for the whole
+/// playlist would mean no crossing inside it was ever seen.
+///
+/// Called only once a caller has confirmed [queue] is non-empty, so the
+/// `tracks.first` fallback is safe.
 ({String identity, int? year}) recordOf(
   PlaybackQueue queue,
   MusicLibrary? library,
 ) {
-  if (queue.kind != QueueKind.track) {
+  if (queue.namesOwnRecord) {
     return (identity: queue.label ?? queue.tracks.first.uuid, year: queue.year);
   }
 
-  final track = queue.tracks.first;
+  // The track playing now, not `tracks.first`: for a single-track queue they
+  // are the same file, but a playlist's record changes as it plays through,
+  // and reading the first track would pin every one of its records to the
+  // one it opened with. `current` is null only for an index past the end,
+  // which no caller reaches here — the fallback keeps the read total rather
+  // than standing in for a state this is called in.
+  final track = queue.current ?? queue.tracks.first;
   final entry =
       library?.entryFor(track) ??
       MusicEntry(file: track, metadata: const MusicMetadata());
@@ -150,9 +165,11 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
       return const AlbumAnimationState();
     }
 
-    final library = queue.kind == QueueKind.track
-        ? ref.watch(musicLibraryProvider).value
-        : null;
+    // Watched only for a queue whose record is the current track's, which is
+    // the only case [recordOf] reads it for.
+    final library = queue.namesOwnRecord
+        ? null
+        : ref.watch(musicLibraryProvider).value;
     final record = recordOf(queue, library);
     final medium = mediumFor(mode, record.year);
 
@@ -181,12 +198,13 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
     final queue = ref.read(audioPlaybackControllerProvider).queue;
     // `!queue.isEmpty` guards the read the same way `build`'s own
     // `showsAlbumAnimation` check does: an empty queue's `kind` is still
-    // `QueueKind.track` (`PlaybackQueue.empty`'s own definition), and this
-    // is only ever called for a queue an insertion actually played over, so
+    // `QueueKind.track` (`PlaybackQueue.empty`'s own definition), so it names
+    // no record of its own and would otherwise pass the check below. This is
+    // only ever called for a queue an insertion actually played over, so
     // there is nothing to gain from reading `musicLibraryProvider` — and a
     // real risk of building it before a session exists to read a credential
     // from — if that guard were ever skipped.
-    final library = !queue.isEmpty && queue.kind == QueueKind.track
+    final library = !queue.isEmpty && !queue.namesOwnRecord
         ? ref.read(musicLibraryProvider).value
         : null;
     _shownFor = (queue.kind, recordOf(queue, library).identity);

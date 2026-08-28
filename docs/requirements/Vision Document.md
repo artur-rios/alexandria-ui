@@ -153,7 +153,7 @@ the core.
 | F-05 | Media playback | A video player with full screen, seeking, subtitle tracks, and audio tracks; an audio player with a queue, resume points, and the album playback animation. |
 | F-06 | Document, image, and page viewing | Reading PDFs and e-books, reading comic books, viewing images, and viewing saved HTML pages. |
 | F-07 | Collections and bookmarks | Creating, renaming, and deleting collections; adding and removing their members; and managing browser bookmarks within bookmark collections. |
-| F-08 | Watchlists and reading lists | Creating and deleting watchlists and reading lists, adding and removing items, and tracking per-episode and per-issue progress. |
+| F-08 | Watchlists, reading lists, and playlists | Creating and deleting watchlists and reading lists, adding and removing items, and tracking per-episode and per-issue progress; and naming, arranging, and playing playlists of the owner's own music. |
 | F-09 | Safe deletion lifecycle | Soft deletion, a restorable view of deleted items, record purging after retention, the separate explicit purge-on-disk, and a review of files missing from disk. |
 | F-10 | Application shell, theming, and localization | The responsive window shell and navigation, light and dark themes, Brazilian Portuguese and English, and consistent loading and error presentation. |
 

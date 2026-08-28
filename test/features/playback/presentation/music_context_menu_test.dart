@@ -73,17 +73,20 @@ void main() {
   }
 
   testWidgets(
-    'GivenATrackRow_WhenItIsRightClicked_ThenTheMenuOffersItsFiveActions',
+    'GivenATrackRow_WhenItIsRightClicked_ThenTheMenuOffersItsSixActions',
     (tester) async {
       await openSongs(tester);
       final l10n = localizations(tester);
 
       await rightClickRow(tester);
 
+      // Task 5 added the sixth, "Add to a playlist" — the other five are
+      // untouched by it.
       for (final label in [
         l10n.audioPlay,
         l10n.audioPlayAlbum,
         l10n.audioPlayArtist,
+        l10n.playlistAddTo,
         l10n.detailsTitle,
         l10n.detailsEditMetadata,
       ]) {
