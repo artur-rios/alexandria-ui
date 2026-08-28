@@ -1,10 +1,12 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/library_sources/application/active_runs_controller.dart';
+import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
+import 'package:alexandria_ui/features/library_sources/presentation/index_scope_dialog.dart';
 import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -100,6 +102,16 @@ void main() {
     await tester.tap(find.text(l10n.librarySourcesAdd));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
+  }
+
+  /// Answers the scope dialog with what it opens on — every supported file
+  /// (UC-05). Registering does not complete until this is answered.
+  Future<void> acceptScope(WidgetTester tester) async {
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(IndexScopeDialog)),
+    );
+    await tester.tap(find.text(l10n.indexScopeConfirm));
+    await tester.pumpAndSettle();
   }
 
   /// Opens the screen with one registered folder per entry in [runs], each
@@ -299,6 +311,7 @@ void main() {
       await openScreen(tester);
 
       await addFolder(tester);
+      await acceptScope(tester);
 
       expect(find.text('music'), findsOneWidget);
       expect(find.text('/home/owner/music'), findsOneWidget);
@@ -310,6 +323,7 @@ void main() {
       final opened = await openScreen(tester);
 
       await addFolder(tester);
+      await acceptScope(tester);
 
       expect(opened.store.read().single.path, '/home/owner/music');
     });
@@ -428,7 +442,12 @@ void main() {
       );
 
       await tester.tap(find.text(l10n.librarySourcesOverlapConfirm));
-      await tester.pumpAndSettle();
+      // Pumped rather than settled, for the reason `addFolder` is: the
+      // attempt is still in flight — the scope is asked next — and the add
+      // action's spinner keeps animating until it is answered.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await acceptScope(tester);
 
       expect(opened.store.read(), hasLength(2));
       expect(find.text('music'), findsOneWidget);
@@ -462,6 +481,7 @@ void main() {
 
         await openScreen(tester, gateway: gateway);
         await addFolder(tester);
+        await acceptScope(tester);
 
         expect(gateway.starts.single.root, '/home/owner/music');
       },
@@ -514,10 +534,127 @@ void main() {
         final before = activeRuns.refreshCalls;
 
         await addFolder(tester);
+        await acceptScope(tester);
 
         expect(activeRuns.refreshCalls, greaterThan(before));
       },
     );
+  });
+
+  group('what each folder covers is on its row (UC-05)', () {
+    LibrarySource scoped(String path, List<LibraryType> types) => LibrarySource(
+      path: path,
+      label: defaultLabelFor(path),
+      registeredAt: registeredAt,
+      scope: [for (final type in types) type.wireName],
+    );
+
+    testWidgets('GivenAScopedFolder_WhenTheListIsRead_ThenItsScopeIsNamed', (
+      tester,
+    ) async {
+      await openScreen(
+        tester,
+        registered: [
+          scoped('/home/owner/music', const [LibraryType.audio]),
+        ],
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+
+      expect(
+        find.text(l10n.librarySourcesScopeOnly(l10n.libraryTypeAudio)),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'GivenAnUnscopedFolder_WhenTheListIsRead_ThenItCoversEverything',
+      (tester) async {
+        // The absent scope reads as every supported file, not as nothing —
+        // which is what a folder registered before this existed still covers.
+        await openScreen(tester, registered: [source('/home/owner/music')]);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(LibrarySourcesScreen)),
+        );
+
+        expect(find.text(l10n.librarySourcesScopeAll), findsOneWidget);
+      },
+    );
+
+    testWidgets('GivenAScopedFolder_WhenItIsRescanned_ThenItIsNotAskedAgain', (
+      tester,
+    ) async {
+      // The scope belongs to the folder: a later index of it uses the answer
+      // already given rather than interrupting to ask for it a second time.
+      final gateway = FakeIndexGateway();
+      await openScreen(
+        tester,
+        gateway: gateway,
+        registered: [
+          scoped('/home/owner/music', const [LibraryType.audio]),
+        ],
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+
+      await tester.tap(find.text(l10n.librarySourcesRescan));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(IndexScopeDialog), findsNothing);
+      expect(gateway.starts.single.types, [LibraryType.audio]);
+    });
+  });
+
+  group('a scope this version cannot read (UC-05, UC-06)', () {
+    LibrarySource unreadable(String path) => LibrarySource(
+      path: path,
+      label: defaultLabelFor(path),
+      registeredAt: registeredAt,
+      scope: const ['podcast'],
+    );
+
+    testWidgets(
+      'GivenAnUnreadableScope_WhenTheListIsRead_ThenItDoesNotSayAll',
+      (tester) async {
+        // Reading as "All supported files" would state the opposite of what
+        // the owner chose, on the row that is the only place they could catch
+        // it.
+        await openScreen(tester, registered: [unreadable('/home/owner/music')]);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(LibrarySourcesScreen)),
+        );
+
+        expect(find.text(l10n.librarySourcesScopeUnreadable), findsOneWidget);
+        expect(find.text(l10n.librarySourcesScopeAll), findsNothing);
+      },
+    );
+
+    testWidgets('GivenAnUnreadableScope_WhenItIsRescanned_ThenTheOwnerIsTold', (
+      tester,
+    ) async {
+      final gateway = FakeIndexGateway();
+      await openScreen(
+        tester,
+        gateway: gateway,
+        registered: [unreadable('/home/owner/music')],
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+
+      await tester.tap(find.text(l10n.librarySourcesRescan));
+      await tester.pumpAndSettle();
+
+      // Refused visibly and before the core: a folder that silently never
+      // scans is its own defect.
+      expect(gateway.starts, isEmpty);
+      expect(
+        find.text(l10n.librarySourcesStartUnreadableScope),
+        findsOneWidget,
+      );
+    });
   });
 
   group('themes, languages, and the keyboard', () {
@@ -575,6 +712,49 @@ void main() {
           ]) {
             expect(label, isNotEmpty);
             expect(label, isNot(startsWith('librarySources')));
+            expect(find.text(label), findsWidgets);
+          }
+        },
+      );
+
+      // The empty screen above can never reach a folder's own strings, so
+      // the scope lines went unrendered in either language — the gap that
+      // lets a missing pt translation ship as a key. A registered folder is
+      // what puts them on screen.
+      testWidgets(
+        'Given${name}_WhenFoldersAreListed_ThenTheirScopesRenderTranslated',
+        (tester) async {
+          await openScreen(
+            tester,
+            locale: locale,
+            registered: [
+              source('/home/owner/books'),
+              LibrarySource(
+                path: '/home/owner/music',
+                label: 'music',
+                registeredAt: registeredAt,
+                scope: const ['audio'],
+              ),
+              LibrarySource(
+                path: '/home/owner/podcasts',
+                label: 'podcasts',
+                registeredAt: registeredAt,
+                scope: const ['podcast'],
+              ),
+            ],
+          );
+          final l10n = AppLocalizations.of(
+            tester.element(find.byType(LibrarySourcesScreen)),
+          );
+
+          for (final label in [
+            l10n.librarySourcesScopeAll,
+            l10n.librarySourcesScopeOnly(l10n.libraryTypeAudio),
+            l10n.librarySourcesScopeUnreadable,
+          ]) {
+            expect(label, isNotEmpty);
+            expect(label, isNot(startsWith('librarySources')));
+            expect(label, isNot(contains('libraryType')));
             expect(find.text(label), findsWidgets);
           }
         },

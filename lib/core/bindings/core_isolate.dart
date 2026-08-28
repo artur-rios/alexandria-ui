@@ -88,7 +88,7 @@ class CoreIsolate {
       onTimeout: () {
         responses.close();
         isolate.kill(priority: Isolate.immediate);
-        throw CoreCallException(
+        throw const CoreCallException(
           'the core isolate did not start within 10 seconds',
         );
       },
@@ -332,11 +332,11 @@ class CoreIsolate {
         }),
       ),
 
-      // The root, the session token, and an optional priority in, a status
-      // and a run id out. The run id is a fixed-size array inside the struct
-      // rather than an allocation, so it is read straight off and there is
-      // nothing to free on the way back — only the strings passed in, which
-      // the nesting handles (IR-09, NFR-13).
+      // The root, the session token, an optional priority and an optional
+      // scope in, a status and a run id out. The run id is a fixed-size array
+      // inside the struct rather than an allocation, so it is read straight
+      // off and there is nothing to free on the way back — only the strings
+      // passed in, which the nesting handles (IR-09, NFR-13).
       //
       // priority is passed through withNativeString like everything else
       // here — its `String?` parameter already turns null into nullptr — and
@@ -348,13 +348,25 @@ class CoreIsolate {
       // unrecognised value as absent, but that is a coincidence of the
       // core's parsing, not a guarantee — passing "" on purpose for "no
       // priority" would be relying on it.
+      //
+      // types is the run's scope and follows exactly the same reasoning: a
+      // folder with no scope must arrive as a null pointer, not as the string
+      // "null" and not as "". The core documents NULL and "" as the same
+      // absence for this argument, which priority's parsing only happens to
+      // do — but an absent scope is still built as null here, because that is
+      // what "every type" is on both sides of the boundary, and because
+      // anything unrecognised in this argument is INDEX_ERR_INVALID_INPUT
+      // rather than a quiet default.
       'indexStart' => withNativeString(
         arguments.first! as String,
         (root) => withNativeString(arguments[1]! as String, (token) {
           final result = withNativeString(
             arguments[2] as String?,
-            (priority) =>
-                bindings.alexandria_index_start(root, token, priority),
+            (priority) => withNativeString(
+              arguments[3] as String?,
+              (types) =>
+                  bindings.alexandria_index_start(root, token, priority, types),
+            ),
           );
           return (status: result.status, runId: _readRunId(result.run_id));
         }),

@@ -460,6 +460,79 @@
   "@librarySourcesOverlapConfirm": {
     "description": "The confirming action on the overlap warning (UC-05 AF-04)."
   },
+  "indexScopeTitle": "What is in this folder?",
+  "@indexScopeTitle": {
+    "description": "Title of the dialog asking which kinds of file an index of the folder being registered should record (UC-05)."
+  },
+  "indexScopeBody": "Alexandria will catalog only the kinds of file you choose here. A music folder scoped to music keeps its cover art out of your images.",
+  "@indexScopeBody": {
+    "description": "Body of the scope dialog. Names the symptom the choice solves rather than restating the control (UC-05)."
+  },
+  "indexScopeAll": "All supported files",
+  "@indexScopeAll": {
+    "description": "The scope dialog's default: every type the core supports, which is also what a folder registered before this choice existed keeps (UC-05)."
+  },
+  "indexScopeConfirm": "Add the folder",
+  "@indexScopeConfirm": {
+    "description": "The confirming action on the scope dialog. Registering the folder is what it does, so that is what it says (UC-05)."
+  },
+  "indexScopeEmpty": "Choose at least one kind of file, or all of them.",
+  "@indexScopeEmpty": {
+    "description": "Shown when every kind has been unticked. A folder scoped to nothing would record nothing, so the confirming action is unavailable until something is chosen (UC-05)."
+  },
+  "librarySourcesScopeUnreadable": "Covers file types this version does not recognize",
+  "@librarySourcesScopeUnreadable": {
+    "description": "What a registered folder covers when its stored types name nothing this version knows — a record from a newer build, or a type since renamed. Shown on its row instead of a type list, because reading it as 'all supported files' would state the opposite of what the owner chose (UC-05, FR-LB-03)."
+  },
+  "librarySourcesStartUnreadableScope": "This folder is set to cover file types this version does not recognize, so it was not scanned. Remove it and add it again to choose what it covers.",
+  "@librarySourcesStartUnreadableScope": {
+    "description": "UC-06: the run was refused before the core was called, because an unreadable scope would have been sent as no scope at all — which the core reads as every type. Says what to do about it (UC-05, UC-08)."
+  },
+  "librarySourcesStartNotRegistered": "This folder is no longer in your library, so it was not scanned.",
+  "@librarySourcesStartNotRegistered": {
+    "description": "UC-06: the run was refused because no registered folder answers this path — most likely one unregistered while the row was still on screen. Nothing was scanned."
+  },
+  "librarySourcesScopeAll": "All supported files",
+  "@librarySourcesScopeAll": {
+    "description": "What a registered folder with no scope covers, on its row in the list (UC-05, FR-LB-03)."
+  },
+  "librarySourcesScopeOnly": "Only {types}",
+  "@librarySourcesScopeOnly": {
+    "description": "What a scoped folder covers, on its row in the list. {types} is the chosen type names, already joined (UC-05, FR-LB-03).",
+    "placeholders": {
+      "types": {
+        "type": "String"
+      }
+    }
+  },
+  "libraryTypeAudio": "Music",
+  "@libraryTypeAudio": {
+    "description": "The core's `audio` type, named for the owner (FR-CT-02)."
+  },
+  "libraryTypeVideo": "Video",
+  "@libraryTypeVideo": {
+    "description": "The core's `video` type, named for the owner (FR-CT-02)."
+  },
+  "libraryTypeDocument": "Books",
+  "@libraryTypeDocument": {
+    "description": "The core's `document` type, named for the owner (FR-CT-02)."
+  },
+  "libraryTypeComic": "Comic books",
+  "@libraryTypeComic": {
+    "description": "The core's `comic` type, named for the owner (FR-CT-02)."
+  },
+  "libraryTypeText": "Notes",
+  "@libraryTypeText": {
+    "description": "The core's `text` type, named for the owner (FR-CT-02)."
+  },
+  "libraryTypeHtml": "Saved pages",
+  "@libraryTypeHtml": {
+    "description": "The core's `html` type, named for the owner (FR-CT-02)."
+  },
+  "libraryTypeImage": "Images",
+  "@libraryTypeImage": {
+    "description": "The core's `image` type, named for the owner (FR-CT-02)."
+  },
   "dismiss": "Dismiss",
   "@dismiss": {
     "description": "Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action."

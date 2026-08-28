@@ -16,6 +16,29 @@ enum RefreshRefusal {
   catalogEmpty,
 }
 
+/// Why a folder's run was refused before the core was called (UC-06).
+///
+/// Both are the application refusing on its own, which is what separates them
+/// from the [Failure]s in `failures`: nothing was asked of the core, because
+/// what would have been asked could not be trusted. Both are shown on the
+/// folder's own row, because both are about one folder.
+enum IndexStartRefusal {
+  /// The folder's stored scope names no type this version knows.
+  ///
+  /// Refused rather than run, because an unreadable scope resolves to no
+  /// types — and no types is how *every type* is spelled. Starting it would
+  /// index exactly what the owner narrowed the folder to exclude.
+  unreadableScope,
+
+  /// There is no registered folder at this path.
+  ///
+  /// A run needs the folder's scope, and an unregistered path has none to
+  /// read. Treating that absence as "every type" would let a stale path — a
+  /// folder unregistered between the row rendering and the click — start the
+  /// widest possible scan.
+  notRegistered,
+}
+
 /// Every run the application is following, keyed by the folder it scans
 /// (UC-06).
 ///
@@ -42,6 +65,13 @@ abstract class IndexRunsState with _$IndexRunsState {
     /// The folder a second run was refused for (AF-01), or `null`.
     String? refusedSecondRunFor,
 
+    /// Why a start never reached the core, per folder.
+    ///
+    /// Beside [failures] rather than folded into it: these are this
+    /// application's own refusals, and carry no core status code to map from.
+    @Default(<String, IndexStartRefusal>{})
+    Map<String, IndexStartRefusal> startRefusals,
+
     /// Whether a refresh has been asked for but not yet answered (FR-UX-08).
     @Default(false) bool refreshStarting,
 
@@ -66,6 +96,9 @@ abstract class IndexRunsState with _$IndexRunsState {
 
   /// Why [root]'s last start was refused, if it was.
   Failure? failureFor(String root) => failures[root];
+
+  /// Why [root]'s start never reached the core, if it did not.
+  IndexStartRefusal? startRefusalFor(String root) => startRefusals[root];
 
   /// Whether a start for [root] has been sent but not yet answered.
   bool isStarting(String root) => starting.contains(root);
@@ -100,6 +133,7 @@ abstract class IndexRunsState with _$IndexRunsState {
   IndexRunsState starting_(String root) => copyWith(
     starting: {...starting, root},
     failures: {...failures}..remove(root),
+    startRefusals: {...startRefusals}..remove(root),
     refusedSecondRunFor: null,
   );
 
@@ -129,6 +163,16 @@ abstract class IndexRunsState with _$IndexRunsState {
   IndexRunsState refusingSecondRun(String root) =>
       copyWith(refusedSecondRunFor: root);
 
+  /// [root] could not be started at all, for [refusal].
+  ///
+  /// The folder is left with no run rather than an empty one: nothing was
+  /// started, and a row showing a run that never began would be a lie.
+  IndexRunsState refusingStart(String root, IndexStartRefusal refusal) =>
+      copyWith(
+        starting: {...starting}..remove(root),
+        startRefusals: {...startRefusals, root: refusal},
+      );
+
   /// The AF-01 notice has been read.
   IndexRunsState withoutRefusal() => copyWith(refusedSecondRunFor: null);
 
@@ -136,5 +180,6 @@ abstract class IndexRunsState with _$IndexRunsState {
   IndexRunsState dismissed(String root) => copyWith(
     runs: {...runs}..remove(root),
     failures: {...failures}..remove(root),
+    startRefusals: {...startRefusals}..remove(root),
   );
 }

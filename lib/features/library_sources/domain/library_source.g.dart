@@ -16,6 +16,9 @@ _LibrarySource _$LibrarySourceFromJson(Map<String, dynamic> json) =>
       lastRunAt: json['lastRunAt'] == null
           ? null
           : DateTime.parse(json['lastRunAt'] as String),
+      scope:
+          (json['scope'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+          const <String>[],
     );
 
 Map<String, dynamic> _$LibrarySourceToJson(_LibrarySource instance) =>
@@ -26,4 +29,5 @@ Map<String, dynamic> _$LibrarySourceToJson(_LibrarySource instance) =>
       'lastRunId': instance.lastRunId,
       'lastRunOutcome': instance.lastRunOutcome,
       'lastRunAt': instance.lastRunAt?.toIso8601String(),
+      'scope': instance.scope,
     };

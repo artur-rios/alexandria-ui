@@ -261,7 +261,13 @@ class FakeCoreClient implements CoreClient {
   final List<({String filters, String token})> filesListCalls = [];
 
   /// What [indexStart] was called with, in order.
-  final List<({String root, String token, String? priority})> indexStarts = [];
+  ///
+  /// The scope included, and kept as `String?` rather than flattened to a
+  /// list: an absent scope and an empty one are different arguments to the
+  /// core, and a test asserting "no scope was sent" has to be able to tell
+  /// null from `''`.
+  final List<({String root, String token, String? priority, String? types})>
+  indexStarts = [];
 
   /// What [indexRunStatus] was called with, in order.
   final List<({String runId, String token})> indexRunStatusCalls = [];
@@ -364,11 +370,17 @@ class FakeCoreClient implements CoreClient {
     String root,
     String token, [
     String? priority,
+    String? types,
   ]) async {
     if (failOnIndexStart) {
       throw const CoreCallException('index start call failed');
     }
-    indexStarts.add((root: root, token: token, priority: priority));
+    indexStarts.add((
+      root: root,
+      token: token,
+      priority: priority,
+      types: types,
+    ));
     return indexStartResult;
   }
 

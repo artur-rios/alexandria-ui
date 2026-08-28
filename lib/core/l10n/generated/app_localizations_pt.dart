@@ -358,6 +358,64 @@ class AppLocalizationsPt extends AppLocalizations {
   String get librarySourcesOverlapConfirm => 'Adicionar mesmo assim';
 
   @override
+  String get indexScopeTitle => 'O que há nesta pasta?';
+
+  @override
+  String get indexScopeBody =>
+      'O Alexandria vai catalogar apenas os tipos de arquivo que você escolher aqui. Uma pasta de música limitada a música mantém as capas fora das suas imagens.';
+
+  @override
+  String get indexScopeAll => 'Todos os arquivos suportados';
+
+  @override
+  String get indexScopeConfirm => 'Adicionar a pasta';
+
+  @override
+  String get indexScopeEmpty =>
+      'Escolha ao menos um tipo de arquivo, ou todos eles.';
+
+  @override
+  String get librarySourcesScopeUnreadable =>
+      'Abrange tipos de arquivo que esta versão não reconhece';
+
+  @override
+  String get librarySourcesStartUnreadableScope =>
+      'Esta pasta está definida para abranger tipos de arquivo que esta versão não reconhece, então ela não foi analisada. Remova-a e adicione-a novamente para escolher o que ela abrange.';
+
+  @override
+  String get librarySourcesStartNotRegistered =>
+      'Esta pasta não está mais na sua biblioteca, então ela não foi analisada.';
+
+  @override
+  String get librarySourcesScopeAll => 'Todos os arquivos suportados';
+
+  @override
+  String librarySourcesScopeOnly(String types) {
+    return 'Somente $types';
+  }
+
+  @override
+  String get libraryTypeAudio => 'Música';
+
+  @override
+  String get libraryTypeVideo => 'Vídeo';
+
+  @override
+  String get libraryTypeDocument => 'Livros';
+
+  @override
+  String get libraryTypeComic => 'Quadrinhos';
+
+  @override
+  String get libraryTypeText => 'Notas';
+
+  @override
+  String get libraryTypeHtml => 'Páginas salvas';
+
+  @override
+  String get libraryTypeImage => 'Imagens';
+
+  @override
   String get dismiss => 'Dispensar';
 
   @override

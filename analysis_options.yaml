@@ -19,7 +19,15 @@ analyzer:
   exclude:
     # Generated output is not hand-edited and is not held to the project's
     # style rules (IR-03). It is exercised through the code that uses it.
-    - lib/core/bindings/**
+    #
+    # The ffigen output only, not the directory holding it: core_isolate.dart
+    # and its neighbours are hand-written, and they are the code that has to
+    # track the core's FFI signatures. Excluding them hid a genuine arity
+    # error behind a clean `flutter analyze` — the call kept passing three
+    # arguments to a function that had grown a fourth, which is a runtime
+    # access violation rather than anything the analyzer would have to guess
+    # about.
+    - lib/core/bindings/alexandria_bindings.dart
     - lib/core/l10n/generated/**
     - "**/*.freezed.dart"
     - "**/*.g.dart"

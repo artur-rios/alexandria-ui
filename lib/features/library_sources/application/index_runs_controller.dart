@@ -8,6 +8,7 @@ import '../../../core/failures/failure.dart';
 import '../../auth/application/session_controller.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
+import '../domain/library_source.dart';
 import '../domain/library_source_store.dart';
 import '../domain/run_priority.dart';
 import 'index_runs_state.dart';
@@ -59,6 +60,31 @@ class IndexRunsController extends Notifier<IndexRunsState> {
       return;
     }
 
+    // The scope belongs to the folder, not to the run (UC-05): it was chosen
+    // once, when the folder was registered, and every later index of it uses
+    // the same answer without asking again. Read from the store rather than
+    // taken as a parameter, so no caller can start a run that quietly ignores
+    // what the folder is for.
+    //
+    // Both refusals below exist because *no scope* is how "every type" is
+    // spelled on this side and on the core's. Anything that cannot answer
+    // what a folder is for therefore has to refuse, not fall back: falling
+    // back would turn "I do not know" into the widest possible scan, which is
+    // the one outcome this feature exists to prevent. Refused before the
+    // session is even read, because neither has anything to do with the
+    // session and both are true whether or not one exists.
+    final source = _sourceFor(root);
+    if (source == null) {
+      _log.warning('index refused for an unregistered folder: $root');
+      state = state.refusingStart(root, IndexStartRefusal.notRegistered);
+      return;
+    }
+    if (source.scopeIsUnreadable) {
+      _log.warning('index refused, scope unreadable (${source.scope}): $root');
+      state = state.refusingStart(root, IndexStartRefusal.unreadableScope);
+      return;
+    }
+
     final credential = _session.credential;
     if (credential == null) return;
 
@@ -66,6 +92,7 @@ class IndexRunsController extends Notifier<IndexRunsState> {
 
     final outcome = await _gateway.startIndex(
       root: root,
+      types: source.scopeTypes,
       credential: credential,
     );
 
@@ -97,6 +124,14 @@ class IndexRunsController extends Notifier<IndexRunsState> {
       case IndexStartFailed(:final failure):
         _reportStartFailure(root, failure);
     }
+  }
+
+  /// The registered folder at [root], or `null` when there is none.
+  LibrarySource? _sourceFor(String root) {
+    for (final source in _store.read()) {
+      if (source.path == root) return source;
+    }
+    return null;
   }
 
   /// Pauses [root]'s running scan (FR-LB-16 / core FR-FC-32).

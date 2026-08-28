@@ -21,7 +21,17 @@ mixin _$LibrarySource {
  DateTime get registeredAt;/// The identifier of the most recent run over this folder (UC-06).
  String? get lastRunId;/// Whether that run finished or failed (UC-06).
  String? get lastRunOutcome;/// When that run finished (UC-06).
- DateTime? get lastRunAt;
+ DateTime? get lastRunAt;/// What an index of this folder records, by [LibraryType.wireName].
+///
+/// Empty means every type, which is exactly what the core reads an absent
+/// scope as — one meaning held the same way on both sides, so a folder
+/// registered before the scope existed keeps behaving as it did with no
+/// migration.
+///
+/// Wire names rather than the enum, because this is what the core is told
+/// and what a stored record has to still mean after a type is renamed on
+/// this side of the boundary.
+ List<String> get scope;
 /// Create a copy of LibrarySource
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -34,16 +44,16 @@ $LibrarySourceCopyWith<LibrarySource> get copyWith => _$LibrarySourceCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LibrarySource&&(identical(other.path, path) || other.path == path)&&(identical(other.label, label) || other.label == label)&&(identical(other.registeredAt, registeredAt) || other.registeredAt == registeredAt)&&(identical(other.lastRunId, lastRunId) || other.lastRunId == lastRunId)&&(identical(other.lastRunOutcome, lastRunOutcome) || other.lastRunOutcome == lastRunOutcome)&&(identical(other.lastRunAt, lastRunAt) || other.lastRunAt == lastRunAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LibrarySource&&(identical(other.path, path) || other.path == path)&&(identical(other.label, label) || other.label == label)&&(identical(other.registeredAt, registeredAt) || other.registeredAt == registeredAt)&&(identical(other.lastRunId, lastRunId) || other.lastRunId == lastRunId)&&(identical(other.lastRunOutcome, lastRunOutcome) || other.lastRunOutcome == lastRunOutcome)&&(identical(other.lastRunAt, lastRunAt) || other.lastRunAt == lastRunAt)&&const DeepCollectionEquality().equals(other.scope, scope));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,path,label,registeredAt,lastRunId,lastRunOutcome,lastRunAt);
+int get hashCode => Object.hash(runtimeType,path,label,registeredAt,lastRunId,lastRunOutcome,lastRunAt,const DeepCollectionEquality().hash(scope));
 
 @override
 String toString() {
-  return 'LibrarySource(path: $path, label: $label, registeredAt: $registeredAt, lastRunId: $lastRunId, lastRunOutcome: $lastRunOutcome, lastRunAt: $lastRunAt)';
+  return 'LibrarySource(path: $path, label: $label, registeredAt: $registeredAt, lastRunId: $lastRunId, lastRunOutcome: $lastRunOutcome, lastRunAt: $lastRunAt, scope: $scope)';
 }
 
 
@@ -54,7 +64,7 @@ abstract mixin class $LibrarySourceCopyWith<$Res>  {
   factory $LibrarySourceCopyWith(LibrarySource value, $Res Function(LibrarySource) _then) = _$LibrarySourceCopyWithImpl;
 @useResult
 $Res call({
- String path, String label, DateTime registeredAt, String? lastRunId, String? lastRunOutcome, DateTime? lastRunAt
+ String path, String label, DateTime registeredAt, String? lastRunId, String? lastRunOutcome, DateTime? lastRunAt, List<String> scope
 });
 
 
@@ -71,7 +81,7 @@ class _$LibrarySourceCopyWithImpl<$Res>
 
 /// Create a copy of LibrarySource
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? path = null,Object? label = null,Object? registeredAt = null,Object? lastRunId = freezed,Object? lastRunOutcome = freezed,Object? lastRunAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? path = null,Object? label = null,Object? registeredAt = null,Object? lastRunId = freezed,Object? lastRunOutcome = freezed,Object? lastRunAt = freezed,Object? scope = null,}) {
   return _then(_self.copyWith(
 path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
@@ -79,7 +89,8 @@ as String,registeredAt: null == registeredAt ? _self.registeredAt : registeredAt
 as DateTime,lastRunId: freezed == lastRunId ? _self.lastRunId : lastRunId // ignore: cast_nullable_to_non_nullable
 as String?,lastRunOutcome: freezed == lastRunOutcome ? _self.lastRunOutcome : lastRunOutcome // ignore: cast_nullable_to_non_nullable
 as String?,lastRunAt: freezed == lastRunAt ? _self.lastRunAt : lastRunAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 
@@ -164,10 +175,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String path,  String label,  DateTime registeredAt,  String? lastRunId,  String? lastRunOutcome,  DateTime? lastRunAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String path,  String label,  DateTime registeredAt,  String? lastRunId,  String? lastRunOutcome,  DateTime? lastRunAt,  List<String> scope)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LibrarySource() when $default != null:
-return $default(_that.path,_that.label,_that.registeredAt,_that.lastRunId,_that.lastRunOutcome,_that.lastRunAt);case _:
+return $default(_that.path,_that.label,_that.registeredAt,_that.lastRunId,_that.lastRunOutcome,_that.lastRunAt,_that.scope);case _:
   return orElse();
 
 }
@@ -185,10 +196,10 @@ return $default(_that.path,_that.label,_that.registeredAt,_that.lastRunId,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String path,  String label,  DateTime registeredAt,  String? lastRunId,  String? lastRunOutcome,  DateTime? lastRunAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String path,  String label,  DateTime registeredAt,  String? lastRunId,  String? lastRunOutcome,  DateTime? lastRunAt,  List<String> scope)  $default,) {final _that = this;
 switch (_that) {
 case _LibrarySource():
-return $default(_that.path,_that.label,_that.registeredAt,_that.lastRunId,_that.lastRunOutcome,_that.lastRunAt);case _:
+return $default(_that.path,_that.label,_that.registeredAt,_that.lastRunId,_that.lastRunOutcome,_that.lastRunAt,_that.scope);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +216,10 @@ return $default(_that.path,_that.label,_that.registeredAt,_that.lastRunId,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String path,  String label,  DateTime registeredAt,  String? lastRunId,  String? lastRunOutcome,  DateTime? lastRunAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String path,  String label,  DateTime registeredAt,  String? lastRunId,  String? lastRunOutcome,  DateTime? lastRunAt,  List<String> scope)?  $default,) {final _that = this;
 switch (_that) {
 case _LibrarySource() when $default != null:
-return $default(_that.path,_that.label,_that.registeredAt,_that.lastRunId,_that.lastRunOutcome,_that.lastRunAt);case _:
+return $default(_that.path,_that.label,_that.registeredAt,_that.lastRunId,_that.lastRunOutcome,_that.lastRunAt,_that.scope);case _:
   return null;
 
 }
@@ -219,8 +230,8 @@ return $default(_that.path,_that.label,_that.registeredAt,_that.lastRunId,_that.
 /// @nodoc
 @JsonSerializable()
 
-class _LibrarySource implements LibrarySource {
-  const _LibrarySource({required this.path, required this.label, required this.registeredAt, this.lastRunId, this.lastRunOutcome, this.lastRunAt});
+class _LibrarySource extends LibrarySource {
+  const _LibrarySource({required this.path, required this.label, required this.registeredAt, this.lastRunId, this.lastRunOutcome, this.lastRunAt, final  List<String> scope = const <String>[]}): _scope = scope,super._();
   factory _LibrarySource.fromJson(Map<String, dynamic> json) => _$LibrarySourceFromJson(json);
 
 /// The absolute folder path. Also the key.
@@ -235,6 +246,33 @@ class _LibrarySource implements LibrarySource {
 @override final  String? lastRunOutcome;
 /// When that run finished (UC-06).
 @override final  DateTime? lastRunAt;
+/// What an index of this folder records, by [LibraryType.wireName].
+///
+/// Empty means every type, which is exactly what the core reads an absent
+/// scope as — one meaning held the same way on both sides, so a folder
+/// registered before the scope existed keeps behaving as it did with no
+/// migration.
+///
+/// Wire names rather than the enum, because this is what the core is told
+/// and what a stored record has to still mean after a type is renamed on
+/// this side of the boundary.
+ final  List<String> _scope;
+/// What an index of this folder records, by [LibraryType.wireName].
+///
+/// Empty means every type, which is exactly what the core reads an absent
+/// scope as — one meaning held the same way on both sides, so a folder
+/// registered before the scope existed keeps behaving as it did with no
+/// migration.
+///
+/// Wire names rather than the enum, because this is what the core is told
+/// and what a stored record has to still mean after a type is renamed on
+/// this side of the boundary.
+@override@JsonKey() List<String> get scope {
+  if (_scope is EqualUnmodifiableListView) return _scope;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_scope);
+}
+
 
 /// Create a copy of LibrarySource
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +287,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LibrarySource&&(identical(other.path, path) || other.path == path)&&(identical(other.label, label) || other.label == label)&&(identical(other.registeredAt, registeredAt) || other.registeredAt == registeredAt)&&(identical(other.lastRunId, lastRunId) || other.lastRunId == lastRunId)&&(identical(other.lastRunOutcome, lastRunOutcome) || other.lastRunOutcome == lastRunOutcome)&&(identical(other.lastRunAt, lastRunAt) || other.lastRunAt == lastRunAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LibrarySource&&(identical(other.path, path) || other.path == path)&&(identical(other.label, label) || other.label == label)&&(identical(other.registeredAt, registeredAt) || other.registeredAt == registeredAt)&&(identical(other.lastRunId, lastRunId) || other.lastRunId == lastRunId)&&(identical(other.lastRunOutcome, lastRunOutcome) || other.lastRunOutcome == lastRunOutcome)&&(identical(other.lastRunAt, lastRunAt) || other.lastRunAt == lastRunAt)&&const DeepCollectionEquality().equals(other._scope, _scope));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,path,label,registeredAt,lastRunId,lastRunOutcome,lastRunAt);
+int get hashCode => Object.hash(runtimeType,path,label,registeredAt,lastRunId,lastRunOutcome,lastRunAt,const DeepCollectionEquality().hash(_scope));
 
 @override
 String toString() {
-  return 'LibrarySource(path: $path, label: $label, registeredAt: $registeredAt, lastRunId: $lastRunId, lastRunOutcome: $lastRunOutcome, lastRunAt: $lastRunAt)';
+  return 'LibrarySource(path: $path, label: $label, registeredAt: $registeredAt, lastRunId: $lastRunId, lastRunOutcome: $lastRunOutcome, lastRunAt: $lastRunAt, scope: $scope)';
 }
 
 
@@ -269,7 +307,7 @@ abstract mixin class _$LibrarySourceCopyWith<$Res> implements $LibrarySourceCopy
   factory _$LibrarySourceCopyWith(_LibrarySource value, $Res Function(_LibrarySource) _then) = __$LibrarySourceCopyWithImpl;
 @override @useResult
 $Res call({
- String path, String label, DateTime registeredAt, String? lastRunId, String? lastRunOutcome, DateTime? lastRunAt
+ String path, String label, DateTime registeredAt, String? lastRunId, String? lastRunOutcome, DateTime? lastRunAt, List<String> scope
 });
 
 
@@ -286,7 +324,7 @@ class __$LibrarySourceCopyWithImpl<$Res>
 
 /// Create a copy of LibrarySource
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? path = null,Object? label = null,Object? registeredAt = null,Object? lastRunId = freezed,Object? lastRunOutcome = freezed,Object? lastRunAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? path = null,Object? label = null,Object? registeredAt = null,Object? lastRunId = freezed,Object? lastRunOutcome = freezed,Object? lastRunAt = freezed,Object? scope = null,}) {
   return _then(_LibrarySource(
 path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
@@ -294,7 +332,8 @@ as String,registeredAt: null == registeredAt ? _self.registeredAt : registeredAt
 as DateTime,lastRunId: freezed == lastRunId ? _self.lastRunId : lastRunId // ignore: cast_nullable_to_non_nullable
 as String?,lastRunOutcome: freezed == lastRunOutcome ? _self.lastRunOutcome : lastRunOutcome // ignore: cast_nullable_to_non_nullable
 as String?,lastRunAt: freezed == lastRunAt ? _self.lastRunAt : lastRunAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,scope: null == scope ? _self._scope : scope // ignore: cast_nullable_to_non_nullable
+as List<String>,
   ));
 }
 

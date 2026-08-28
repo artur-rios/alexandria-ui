@@ -261,10 +261,11 @@ typedef struct FileMetadataResult {
  * Result of `alexandria_files_list` and `alexandria_file_get_by_uuid` (UC-03).
  * On success `status` is `FILE_OK` and `json` is a NUL-terminated JSON string
  * — byte-for-byte the same shape HTTP returns from `GET /v1/files` (a JSON
- * array of `File` records) or `GET /v1/files/{uuid}` (a `FileView` object),
- * so the FFI and HTTP surfaces agree modulo key ordering (parity, FR-FC-24 /
- * NFR-09). On failure `json` is NULL and `status` carries the mapped error
- * code. The caller must free `json` with `alexandria_free_string`.
+ * array of `FileView` objects, issue #116) or `GET /v1/files/{uuid}` (a
+ * single `FileView` object), so the FFI and HTTP surfaces agree modulo key
+ * ordering (parity, FR-FC-24 / NFR-09). On failure `json` is NULL and
+ * `status` carries the mapped error code. The caller must free `json` with
+ * `alexandria_free_string`.
  */
 typedef struct FileJsonResult {
   int status;
@@ -411,10 +412,18 @@ int alexandria_index_init(const char *db_path);
  * body's spelling exactly — FR-FC-24). NULL or any other string is treated
  * as `"normal"`: a client that cannot spell the value gets the safe default
  * rather than a rejected call.
+ *
+ * `types` is the run's scope: a comma-separated list of the wire names
+ * `FileType` reads back (`"audio,image"`), the same words the HTTP body's
+ * `types` array carries (FR-FC-24). NULL and the empty string are the same
+ * absence and mean every type — see [`parse_scope`] for why an unrecognised
+ * name is `INDEX_ERR_INVALID_INPUT` here where an unrecognised priority is
+ * not.
  */
 struct IndexStartResult alexandria_index_start(const char *root,
                                                const char *token,
-                                               const char *priority);
+                                               const char *priority,
+                                               const char *types);
 
 /**
  * Start an asynchronous re-index/refresh of every cataloged path (UC-02).
@@ -454,9 +463,11 @@ struct FileMetadataResult alexandria_file_edit_metadata(const char *uuid,
  * `json_filters` is a JSON string `{"type":"audio","state":"all"}` (empty
  * string or NULL for defaults). The function deserializes it, calls the same
  * `BrowseFilesHandler` the HTTP route uses, and on success serializes the
- * returned `Vec<File>` back to a JSON array — so the FFI and HTTP surfaces
- * agree byte-for-byte modulo key ordering (parity, FR-FC-24 / NFR-09).
- * `token` is the bearer auth token.
+ * returned `Vec<FileView>` back to a JSON array — each element the same
+ * `{"file": …, "metadata": …, …}` shape `alexandria_file_get_by_uuid`
+ * answers for one file (issue #116) — so the FFI and HTTP surfaces agree
+ * byte-for-byte modulo key ordering (parity, FR-FC-24 / NFR-09). `token` is
+ * the bearer auth token.
  */
 struct FileJsonResult alexandria_files_list(const char *json_filters, const char *token);
 
@@ -1081,7 +1092,9 @@ int alexandria_index_cancel(const char *run_id, const char *token);
  * `alexandria_index_start` spawns its own — the handler is kept free of the
  * runtime so `execute` is always spawned by whichever transport owns one.
  * Which handler gets spawned depends on `RunResumed::kind`: an index run
- * resumes into `index_handler.execute(&root, run_id)`, a refresh into
+ * resumes into `index_handler.execute(&root, run_id, &scope)` — the scope
+ * read back off the run, so a resumed segment covers the file types the run
+ * was started with — a refresh into
  * `refresh_handler.execute(run_id)` (a refresh carries no root — it touches
  * everything cataloged). A resumed index run whose stored `root` is somehow
  * absent — it should never be, every row `RunKind::Index` writes carries one

@@ -710,6 +710,108 @@ abstract class AppLocalizations {
   /// **'Add it anyway'**
   String get librarySourcesOverlapConfirm;
 
+  /// Title of the dialog asking which kinds of file an index of the folder being registered should record (UC-05).
+  ///
+  /// In en, this message translates to:
+  /// **'What is in this folder?'**
+  String get indexScopeTitle;
+
+  /// Body of the scope dialog. Names the symptom the choice solves rather than restating the control (UC-05).
+  ///
+  /// In en, this message translates to:
+  /// **'Alexandria will catalog only the kinds of file you choose here. A music folder scoped to music keeps its cover art out of your images.'**
+  String get indexScopeBody;
+
+  /// The scope dialog's default: every type the core supports, which is also what a folder registered before this choice existed keeps (UC-05).
+  ///
+  /// In en, this message translates to:
+  /// **'All supported files'**
+  String get indexScopeAll;
+
+  /// The confirming action on the scope dialog. Registering the folder is what it does, so that is what it says (UC-05).
+  ///
+  /// In en, this message translates to:
+  /// **'Add the folder'**
+  String get indexScopeConfirm;
+
+  /// Shown when every kind has been unticked. A folder scoped to nothing would record nothing, so the confirming action is unavailable until something is chosen (UC-05).
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one kind of file, or all of them.'**
+  String get indexScopeEmpty;
+
+  /// What a registered folder covers when its stored types name nothing this version knows — a record from a newer build, or a type since renamed. Shown on its row instead of a type list, because reading it as 'all supported files' would state the opposite of what the owner chose (UC-05, FR-LB-03).
+  ///
+  /// In en, this message translates to:
+  /// **'Covers file types this version does not recognize'**
+  String get librarySourcesScopeUnreadable;
+
+  /// UC-06: the run was refused before the core was called, because an unreadable scope would have been sent as no scope at all — which the core reads as every type. Says what to do about it (UC-05, UC-08).
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is set to cover file types this version does not recognize, so it was not scanned. Remove it and add it again to choose what it covers.'**
+  String get librarySourcesStartUnreadableScope;
+
+  /// UC-06: the run was refused because no registered folder answers this path — most likely one unregistered while the row was still on screen. Nothing was scanned.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is no longer in your library, so it was not scanned.'**
+  String get librarySourcesStartNotRegistered;
+
+  /// What a registered folder with no scope covers, on its row in the list (UC-05, FR-LB-03).
+  ///
+  /// In en, this message translates to:
+  /// **'All supported files'**
+  String get librarySourcesScopeAll;
+
+  /// What a scoped folder covers, on its row in the list. {types} is the chosen type names, already joined (UC-05, FR-LB-03).
+  ///
+  /// In en, this message translates to:
+  /// **'Only {types}'**
+  String librarySourcesScopeOnly(String types);
+
+  /// The core's `audio` type, named for the owner (FR-CT-02).
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get libraryTypeAudio;
+
+  /// The core's `video` type, named for the owner (FR-CT-02).
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get libraryTypeVideo;
+
+  /// The core's `document` type, named for the owner (FR-CT-02).
+  ///
+  /// In en, this message translates to:
+  /// **'Books'**
+  String get libraryTypeDocument;
+
+  /// The core's `comic` type, named for the owner (FR-CT-02).
+  ///
+  /// In en, this message translates to:
+  /// **'Comic books'**
+  String get libraryTypeComic;
+
+  /// The core's `text` type, named for the owner (FR-CT-02).
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get libraryTypeText;
+
+  /// The core's `html` type, named for the owner (FR-CT-02).
+  ///
+  /// In en, this message translates to:
+  /// **'Saved pages'**
+  String get libraryTypeHtml;
+
+  /// The core's `image` type, named for the owner (FR-CT-02).
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get libraryTypeImage;
+
   /// Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action.
   ///
   /// In en, this message translates to:
