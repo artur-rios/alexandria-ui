@@ -188,12 +188,22 @@ class CorePlaylistGateway implements PlaylistGateway {
   static Playlist _playlistFrom(Map<String, dynamic> row) =>
       Playlist(uuid: row['uuid'] as String, name: row['name'] as String);
 
-  /// The entry [row] describes, or `null` when its file is one of a type
-  /// this application does not know.
+  /// The entry [row] describes, or `null` when its `file` is missing
+  /// entirely or names a type this application does not know.
   ///
   /// The file and metadata parse from the same `FileView` shape every other
   /// listing answers (`file_view_parser.dart`), rather than a second parser
   /// written for this one caller.
+  ///
+  /// Dropping this one row rather than failing the whole [read] mirrors
+  /// `fileFromFileView`'s own rule for a plain catalog listing: an
+  /// unrecognized type belongs in no listing, and a core that grows a type
+  /// must not make every playlist that happens to hold one of its files
+  /// unreadable. This is deliberately narrower than [missing] — [missing]
+  /// is the core's own verdict on a *known* file that has gone missing on
+  /// disk, and that entry is always kept (playlists design section 5); what
+  /// is dropped here is a row this application cannot parse as a file at
+  /// all, which is a different failure the core has not (yet) named for us.
   static PlaylistEntry? _entryFrom(Map<String, dynamic> row) {
     final fileView = row['file'];
     if (fileView is! Map<String, dynamic>) return null;

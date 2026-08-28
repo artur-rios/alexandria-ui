@@ -142,6 +142,73 @@ void main() {
         expect(result, isA<PlaylistReadFailed>());
       },
     );
+
+    test(
+      'GivenAUuidAndACredential_WhenAPlaylistIsRead_ThenBothReachTheCoreUnchanged',
+      () async {
+        // Pins the uuid a screen reads by, and that the credential is
+        // forwarded rather than dropped: `await _core.playlistRead('',
+        // credential)` — the uuid replaced with an empty string — or the two
+        // arguments swapped, both pass every other test in this file and
+        // only fail this assertion.
+        final core = FakeCoreClient()
+          ..playlistResponse = (
+            status: PLAYLIST_OK,
+            json:
+                '{"playlist":{"uuid":"pl-1","name":"Road trip"},"entries":[]}',
+          );
+        final gateway = CorePlaylistGateway(core);
+
+        await gateway.read(uuid: 'pl-1', credential: 'a-credential');
+
+        expect(core.playlistReadCalls.single.uuid, 'pl-1');
+        expect(core.playlistReadCalls.single.token, 'a-credential');
+      },
+    );
+
+    test(
+      'GivenAnEntryWhoseFileIsNotAnObject_WhenAPlaylistIsRead_ThenItIsDroppedNotFailed',
+      () async {
+        // `_entryFrom` drops a row it cannot parse as a file rather than
+        // failing the whole read (see its doc comment) — the same rule
+        // `fileFromFileView` applies to a plain catalog listing.
+        final core = FakeCoreClient()
+          ..playlistResponse = (
+            status: PLAYLIST_OK,
+            json:
+                '{"playlist":{"uuid":"pl-1","name":"Road trip"},'
+                '"entries":[{"entryUuid":"e-1","position":0,"missing":false,'
+                '"file":"not-an-object"}]}',
+          );
+        final gateway = CorePlaylistGateway(core);
+
+        final result = await gateway.read(uuid: 'pl-1', credential: 'token');
+
+        expect(result, isA<PlaylistReadLoaded>());
+        expect((result as PlaylistReadLoaded).view.entries, isEmpty);
+      },
+    );
+
+    test(
+      'GivenAnEntryOfAnUnknownFileType_WhenAPlaylistIsRead_ThenItIsDroppedNotFailed',
+      () async {
+        final core = FakeCoreClient()
+          ..playlistResponse = (
+            status: PLAYLIST_OK,
+            json:
+                '{"playlist":{"uuid":"pl-1","name":"Road trip"},'
+                '"entries":[{"entryUuid":"e-1","position":0,"missing":false,'
+                '"file":{"file":{"uuid":"f-1","name":"a","path":"/a",'
+                '"fileType":"somethingNew","state":"active"},"metadata":null}}]}',
+          );
+        final gateway = CorePlaylistGateway(core);
+
+        final result = await gateway.read(uuid: 'pl-1', credential: 'token');
+
+        expect(result, isA<PlaylistReadLoaded>());
+        expect((result as PlaylistReadLoaded).view.entries, isEmpty);
+      },
+    );
   });
 
   group('browse', () {
@@ -157,7 +224,7 @@ void main() {
           );
         final gateway = CorePlaylistGateway(core);
 
-        final result = await gateway.browse(credential: 'token');
+        final result = await gateway.browse(credential: 'a-credential');
 
         expect(result, isA<PlaylistBrowseLoaded>());
         final playlists = (result as PlaylistBrowseLoaded).playlists;
@@ -165,6 +232,10 @@ void main() {
           const Playlist(uuid: 'pl-1', name: 'Road trip'),
           const Playlist(uuid: 'pl-2', name: 'Focus'),
         ]);
+        // `playlistsList` takes only the credential — pinning it is what
+        // catches it being dropped or replaced with `''`, which every other
+        // assertion in this test passes regardless of.
+        expect(core.playlistsListCalls.single, 'a-credential');
       },
     );
 
@@ -192,14 +263,15 @@ void main() {
 
         final result = await gateway.create(
           name: 'Road trip',
-          credential: 'token',
+          credential: 'a-credential',
         );
 
         expect(result, isA<PlaylistWriteDone>());
-        expect(
-          core.playlistCreateCalls.single.jsonBody,
-          jsonEncode({'name': 'Road trip'}),
-        );
+        final call = core.playlistCreateCalls.single;
+        expect(call.jsonBody, jsonEncode({'name': 'Road trip'}));
+        // Pins that the credential reaches the core unchanged, on a write as
+        // well as on the read tested above.
+        expect(call.token, 'a-credential');
       },
     );
 
@@ -230,21 +302,6 @@ void main() {
       expect(result, isA<PlaylistWriteDone>());
       expect(core.playlistDeleteCalls.single.uuid, 'pl-1');
     });
-
-    test(
-      // An empty object is the core's success answer for every write here —
-      // it must never be mistaken for a malformed payload.
-      'GivenAnEmptyObjectAnswer_WhenDeletingAPlaylist_ThenItStillCountsAsDone',
-      () async {
-        final core = FakeCoreClient()
-          ..playlistResponse = (status: PLAYLIST_OK, json: '{}');
-        final gateway = CorePlaylistGateway(core);
-
-        final result = await gateway.delete(uuid: 'pl-1', credential: 'token');
-
-        expect(result, isA<PlaylistWriteDone>());
-      },
-    );
 
     test(
       'GivenFileUuids_WhenAddingEntries_ThenTheyAreSentInOrderInOneCall',

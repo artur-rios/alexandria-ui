@@ -888,7 +888,7 @@ class FakeCoreClient implements CoreClient {
 
   /// What every playlist call answers, unless a test wants a failure or a
   /// specific payload instead.
-  CoreJsonResponse playlistResponse = (status: 0, json: '{}');
+  CoreJsonResponse playlistResponse = (status: PLAYLIST_OK, json: '{}');
 
   /// What [playlistCreate] was called with, in order.
   final List<({String jsonBody, String token})> playlistCreateCalls = [];
@@ -950,11 +950,7 @@ class FakeCoreClient implements CoreClient {
     String jsonBody,
     String token,
   ) async {
-    playlistAddEntriesCalls.add((
-      uuid: uuid,
-      jsonBody: jsonBody,
-      token: token,
-    ));
+    playlistAddEntriesCalls.add((uuid: uuid, jsonBody: jsonBody, token: token));
     return playlistResponse;
   }
 
