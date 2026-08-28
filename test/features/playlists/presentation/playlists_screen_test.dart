@@ -16,6 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_playlist_gateway.dart';
 import '../../../support/shell_harness.dart';
 
@@ -281,6 +282,57 @@ void main() {
         expect(
           opened.container.read(sessionControllerProvider),
           isA<SessionAbsent>(),
+        );
+      },
+    );
+  });
+
+  group('a rejected write does not freeze the form', () {
+    testWidgets(
+      'GivenTheCoreRejectsAWrite_WhenTheOwnerSignsBackIn_ThenTheFormStillWorks',
+      (tester) async {
+        // `playlistsFormProvider` is not auto-disposed, so `isWriting`
+        // outlives the dialog and the session. Left set, `create` returns at
+        // its own `state.isWriting` guard and every later create, rename and
+        // delete silently does nothing for the rest of the run — the field
+        // stays disabled and the core is never called again.
+        final opened = await openPlaylists(
+          tester,
+          writeOutcomes: const [
+            PlaylistWrite.failed(
+              failure: Failure.unauthorized(
+                family: CoreStatusFamily.playlist,
+                code: PLAYLIST_ERR_UNAUTHORIZED,
+              ),
+            ),
+          ],
+          openScreen: false,
+        );
+        final form = opened.container.read(playlistsFormProvider.notifier);
+
+        form.editName('Road Trip');
+        await form.create();
+        expect(
+          opened.container.read(sessionControllerProvider),
+          isA<SessionAbsent>(),
+        );
+        expect(
+          opened.container.read(playlistsFormProvider).isWriting,
+          isFalse,
+          reason: 'the form would stay disabled with nothing in flight',
+        );
+
+        // The owner signs back in and tries again.
+        opened.container
+            .read(sessionControllerProvider.notifier)
+            .establish(FakeAuthGateway.defaultSession);
+        form.editName('Second Try');
+        await form.create();
+
+        expect(
+          opened.gateway.created,
+          ['Road Trip', 'Second Try'],
+          reason: 'the second attempt never reached the core',
         );
       },
     );

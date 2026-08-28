@@ -72,6 +72,13 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(readingListsFormProvider);
     _ref.invalidate(trackedReadingItemsProvider);
     _ref.invalidate(readingProgressEditorProvider);
+    // The playlists are the core's too, and the same trace of the session
+    // (UC-47). The form especially: it is not auto-disposed, so its
+    // in-flight flag and whatever the core last refused would otherwise
+    // outlive the owner they belong to.
+    _ref.invalidate(playlistsControllerProvider);
+    _ref.invalidate(playlistsFormProvider);
+    _ref.invalidate(playlistDetailControllerProvider);
     _ref.invalidate(deletionControllerProvider);
     _ref.invalidate(openFileHoldsProvider);
     _ref.invalidate(deletedItemsControllerProvider);
