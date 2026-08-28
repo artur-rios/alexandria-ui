@@ -1,3 +1,12 @@
+// This file was excluded from analysis entirely until the FFI signature
+// change of 2026-08-27, when a whole directory of hand-written code turned
+// out to be unlinted and an arity error against the core survived a clean
+// `flutter analyze`. The exclusion is now the generated bindings only, and
+// this file is analysed like any other — including
+// `cast_nullable_to_non_nullable`, which was written for exactly this
+// boundary and so is the last rule that should be switched off here. Every
+// reply the protocol guarantees goes through [_reply] instead.
+
 import 'core_isolate.dart';
 
 /// The application's view of the Alexandria core.
@@ -96,12 +105,18 @@ abstract interface class CoreClient {
   /// credential. [priority] is `"normal"` or `"low"`; null means the core's
   /// default (`"normal"`) rather than a value this client had to choose.
   ///
+  /// [types] is the run's scope: the `FileType` wire names the run records,
+  /// comma-separated (`"audio,image"`). Null means every type, which is what
+  /// the core reads an absent scope as — so it is passed as null and never as
+  /// `""`, and a name the core does not know is refused rather than ignored.
+  ///
   /// The run id comes back in a fixed-size array inside the result struct
   /// rather than as an allocation, so there is nothing to free on this path.
   Future<CoreRunStart> indexStart(
     String root,
     String token, [
     String? priority,
+    String? types,
   ]);
 
   /// Reads a run's status and outcome through
@@ -443,6 +458,34 @@ typedef CoreRunStart = ({int status, String runId});
 /// native memory (IR-09, NFR-13).
 typedef CoreJsonResponse = ({int status, String? json});
 
+/// [reply] as the shape the call that produced it declares.
+///
+/// An isolate reply crosses the boundary as `Object?`, because the port
+/// carries no type. Every call below then has to say what shape came back,
+/// and this is the one place that says how: the shape is guaranteed by the
+/// isolate protocol — the operation the worker ran decides it — rather than
+/// by the type system, so it is asserted once here instead of at 55 call
+/// sites.
+///
+/// Checked rather than cast. `as T` on a mismatch throws `TypeError`, which
+/// no gateway catches and which therefore takes the application down; a
+/// protocol violation is a bug, but it is not one worth crashing an owner's
+/// session over when every caller already handles [CoreCallException] and
+/// turns it into a readable failure (FR-UX-09).
+///
+/// [T] is bound to [Object], which is what keeps a genuinely nullable reply
+/// out: `version()` answers `String?` — the core reports none when the
+/// library answered nothing — and folding that into this helper would turn a
+/// legitimate null into a thrown protocol violation. It is cast directly at
+/// its own call site, where `as String?` asserts nothing this helper would.
+T _reply<T extends Object>(Object? reply) {
+  if (reply is T) return reply;
+
+  throw CoreCallException(
+    'the core worker answered ${reply.runtimeType} where $T was expected',
+  );
+}
+
 /// The [CoreClient] backed by the real core over FFI.
 class FfiCoreClient implements CoreClient {
   /// Wraps an already-spawned worker.
@@ -463,297 +506,327 @@ class FfiCoreClient implements CoreClient {
 
   @override
   Future<int> healthStatus() async =>
-      await _isolate.call('healthStatus') as int;
+      _reply<int>(await _isolate.call('healthStatus'));
 
   @override
   Future<int> initialize(String databasePath) async =>
-      await _isolate.call('init', [databasePath]) as int;
+      _reply<int>(await _isolate.call('init', [databasePath]));
 
   @override
   Future<CoreJsonResponse> authLocalLogin(String jsonBody) async =>
-      await _isolate.call('authLocalLogin', [jsonBody]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('authLocalLogin', [jsonBody]),
+      );
 
   @override
   Future<CoreJsonResponse> authLocalRegister(String jsonBody) async =>
-      await _isolate.call('authLocalRegister', [jsonBody]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('authLocalRegister', [jsonBody]),
+      );
 
   @override
   Future<CoreJsonResponse> authLocalAccount(String token) async =>
-      await _isolate.call('authLocalAccount', [token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('authLocalAccount', [token]),
+      );
 
   @override
   Future<CoreJsonResponse> authLocalRegenerateRecoveryCodes(
     String token,
-  ) async =>
-      await _isolate.call('authLocalRegenerateRecoveryCodes', [token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('authLocalRegenerateRecoveryCodes', [token]),
+  );
 
   @override
   Future<CoreJsonResponse> authLocalRedeemRecoveryCode(String jsonBody) async =>
-      await _isolate.call('authLocalRedeemRecoveryCode', [jsonBody])
-          as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('authLocalRedeemRecoveryCode', [jsonBody]),
+      );
 
   @override
   Future<CoreJsonResponse> authLocalSetCredentials(
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('authLocalSetCredentials', [jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('authLocalSetCredentials', [jsonBody, token]),
+  );
 
   @override
   Future<CoreRunStart> indexStart(
     String root,
     String token, [
     String? priority,
-  ]) async =>
-      await _isolate.call('indexStart', [root, token, priority])
-          as CoreRunStart;
+    String? types,
+  ]) async => _reply<CoreRunStart>(
+    await _isolate.call('indexStart', [root, token, priority, types]),
+  );
 
   @override
   Future<CoreJsonResponse> indexRunStatus(String runId, String token) async =>
-      await _isolate.call('indexRunStatus', [runId, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('indexRunStatus', [runId, token]),
+      );
 
   @override
   Future<CoreRunStart> indexRefreshStart(
     String token, [
     String? priority,
-  ]) async =>
-      await _isolate.call('indexRefreshStart', [token, priority])
-          as CoreRunStart;
+  ]) async => _reply<CoreRunStart>(
+    await _isolate.call('indexRefreshStart', [token, priority]),
+  );
 
   @override
   Future<int> indexPause(String runId, String token) async =>
-      await _isolate.call('indexPause', [runId, token]) as int;
+      _reply<int>(await _isolate.call('indexPause', [runId, token]));
 
   @override
   Future<int> indexCancel(String runId, String token) async =>
-      await _isolate.call('indexCancel', [runId, token]) as int;
+      _reply<int>(await _isolate.call('indexCancel', [runId, token]));
 
   @override
   Future<CoreRunStart> indexResume(
     String runId,
     String? priority,
     String token,
-  ) async =>
-      await _isolate.call('indexResume', [runId, priority, token])
-          as CoreRunStart;
+  ) async => _reply<CoreRunStart>(
+    await _isolate.call('indexResume', [runId, priority, token]),
+  );
 
   @override
   Future<CoreJsonResponse> indexRunsActive(String token) async =>
-      await _isolate.call('indexRunsActive', [token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(await _isolate.call('indexRunsActive', [token]));
 
   @override
   Future<int> indexCountFiles() async =>
-      await _isolate.call('countFiles') as int;
+      _reply<int>(await _isolate.call('countFiles'));
 
   @override
   Future<CoreJsonResponse> filesList(String jsonFilters, String token) async =>
-      await _isolate.call('filesList', [jsonFilters, token])
-          as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('filesList', [jsonFilters, token]),
+      );
 
   @override
   Future<CoreJsonResponse> fileByUuid(String uuid, String token) async =>
-      await _isolate.call('fileByUuid', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('fileByUuid', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> fileEditMetadata(
     String uuid,
     String jsonPatch,
     String token,
-  ) async =>
-      await _isolate.call('fileEditMetadata', [uuid, jsonPatch, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('fileEditMetadata', [uuid, jsonPatch, token]),
+  );
 
   @override
   Future<CoreJsonResponse> filePlaybackSource(
     String uuid,
     String token,
-  ) async =>
-      await _isolate.call('filePlaybackSource', [uuid, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('filePlaybackSource', [uuid, token]),
+  );
 
   @override
   Future<CoreJsonResponse> comicPage(
     String uuid,
     int page,
     String token,
-  ) async =>
-      await _isolate.call('comicPage', [uuid, page, token]) as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('comicPage', [uuid, page, token]),
+  );
 
   @override
   Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async =>
-      await _isolate.call('fileThumbnail', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('fileThumbnail', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> fileReadContent(String uuid, String token) async =>
-      await _isolate.call('fileReadContent', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('fileReadContent', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> fileEditContent(
     String uuid,
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('fileEditContent', [uuid, jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('fileEditContent', [uuid, jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> fileRename(
     String uuid,
     String name,
     String token,
-  ) async =>
-      await _isolate.call('fileRename', [uuid, name, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('fileRename', [uuid, name, token]),
+  );
 
   @override
   Future<CoreJsonResponse> fileSoftDelete(String uuid, String token) async =>
-      await _isolate.call('fileSoftDelete', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('fileSoftDelete', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> bookmarkSoftDelete(
     String uuid,
     String token,
-  ) async =>
-      await _isolate.call('bookmarkSoftDelete', [uuid, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('bookmarkSoftDelete', [uuid, token]),
+  );
 
   @override
   Future<CoreJsonResponse> fileRestore(String uuid, String token) async =>
-      await _isolate.call('fileRestore', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('fileRestore', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> bookmarkRestore(String uuid, String token) async =>
-      await _isolate.call('bookmarkRestore', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('bookmarkRestore', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> filePurge(String uuid, String token) async =>
-      await _isolate.call('filePurge', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(await _isolate.call('filePurge', [uuid, token]));
 
   @override
   Future<CoreJsonResponse> filePurgeOnDisk(String uuid, String token) async =>
-      await _isolate.call('filePurgeOnDisk', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('filePurgeOnDisk', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> bookmarkPurge(String uuid, String token) async =>
-      await _isolate.call('bookmarkPurge', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('bookmarkPurge', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> settings(String token) async =>
-      await _isolate.call('settings', [token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(await _isolate.call('settings', [token]));
 
   @override
   Future<CoreJsonResponse> collectionsList(
     String jsonFilters,
     String token,
-  ) async =>
-      await _isolate.call('collectionsList', [jsonFilters, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('collectionsList', [jsonFilters, token]),
+  );
 
   @override
   Future<CoreJsonResponse> collectionCreate(
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('collectionCreate', [jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('collectionCreate', [jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> collectionRename(
     String uuid,
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('collectionRename', [uuid, jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('collectionRename', [uuid, jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> collectionDelete(String uuid, String token) async =>
-      await _isolate.call('collectionDelete', [uuid, token])
-          as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('collectionDelete', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> collectionListItems(
     String uuid,
     String token,
-  ) async =>
-      await _isolate.call('collectionListItems', [uuid, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('collectionListItems', [uuid, token]),
+  );
 
   @override
   Future<CoreJsonResponse> collectionAddItems(
     String uuid,
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('collectionAddItems', [uuid, jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('collectionAddItems', [uuid, jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> collectionRemoveItem(
     String uuid,
     String itemUuid,
     String token,
-  ) async =>
-      await _isolate.call('collectionRemoveItem', [uuid, itemUuid, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('collectionRemoveItem', [uuid, itemUuid, token]),
+  );
 
   @override
   Future<CoreJsonResponse> bookmarkCreate(
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('bookmarkCreate', [jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('bookmarkCreate', [jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> bookmarkUpdate(
     String uuid,
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('bookmarkUpdate', [uuid, jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('bookmarkUpdate', [uuid, jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> bookmarksList(
     String jsonFilters,
     String token,
-  ) async =>
-      await _isolate.call('bookmarksList', [jsonFilters, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('bookmarksList', [jsonFilters, token]),
+  );
 
   @override
   Future<CoreJsonResponse> readingListCreate(
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('readingListCreate', [jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('readingListCreate', [jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> readingListDelete(String uuid, String token) async =>
-      await _isolate.call('readingListDelete', [uuid, token])
-          as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('readingListDelete', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> readingListAddItem(
     String uuid,
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('readingListAddItem', [uuid, jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('readingListAddItem', [uuid, jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> readingListRemoveItem(
     String uuid,
     String itemUuid,
     String token,
-  ) async =>
-      await _isolate.call('readingListRemoveItem', [uuid, itemUuid, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('readingListRemoveItem', [uuid, itemUuid, token]),
+  );
 
   @override
   Future<CoreJsonResponse> readingListUpdateProgress(
@@ -761,52 +834,54 @@ class FfiCoreClient implements CoreClient {
     String itemUuid,
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('readingListUpdateProgress', [
-            uuid,
-            itemUuid,
-            jsonBody,
-            token,
-          ])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('readingListUpdateProgress', [
+      uuid,
+      itemUuid,
+      jsonBody,
+      token,
+    ]),
+  );
 
   @override
   Future<CoreJsonResponse> readingListsList(
     String jsonFilters,
     String token,
-  ) async =>
-      await _isolate.call('readingListsList', [jsonFilters, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('readingListsList', [jsonFilters, token]),
+  );
 
   @override
   Future<CoreJsonResponse> watchlistCreate(
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('watchlistCreate', [jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('watchlistCreate', [jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> watchlistDelete(String uuid, String token) async =>
-      await _isolate.call('watchlistDelete', [uuid, token]) as CoreJsonResponse;
+      _reply<CoreJsonResponse>(
+        await _isolate.call('watchlistDelete', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> watchlistAddVideo(
     String uuid,
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('watchlistAddVideo', [uuid, jsonBody, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('watchlistAddVideo', [uuid, jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> watchlistRemoveVideo(
     String uuid,
     String videoUuid,
     String token,
-  ) async =>
-      await _isolate.call('watchlistRemoveVideo', [uuid, videoUuid, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('watchlistRemoveVideo', [uuid, videoUuid, token]),
+  );
 
   @override
   Future<CoreJsonResponse> watchlistUpdateProgress(
@@ -814,22 +889,22 @@ class FfiCoreClient implements CoreClient {
     String videoUuid,
     String jsonBody,
     String token,
-  ) async =>
-      await _isolate.call('watchlistUpdateProgress', [
-            uuid,
-            videoUuid,
-            jsonBody,
-            token,
-          ])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('watchlistUpdateProgress', [
+      uuid,
+      videoUuid,
+      jsonBody,
+      token,
+    ]),
+  );
 
   @override
   Future<CoreJsonResponse> watchlistsList(
     String jsonFilters,
     String token,
-  ) async =>
-      await _isolate.call('watchlistsList', [jsonFilters, token])
-          as CoreJsonResponse;
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('watchlistsList', [jsonFilters, token]),
+  );
 
   @override
   Future<void> dispose() => _isolate.dispose();
