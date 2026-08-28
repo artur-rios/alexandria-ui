@@ -208,6 +208,83 @@ void main() {
   });
 
   group('reordering', () {
+    // The no-op guard lives in the `onReorder` closure itself, at the call
+    // site — `reorderDestinationIndex`'s own tests cannot exercise it. This
+    // reaches the real closure directly, with the exact index pair a
+    // lower-side drop-on-self produces, rather than trying to pin a gesture
+    // to Flutter's internal (and unguaranteed) hit-testing thresholds.
+    testWidgets(
+      'GivenADropThatConvertsToTheSameIndex_WhenOnReorderFires_ThenTheCoreIsNeverCalled',
+      (tester) async {
+        final before = PlaylistView(
+          playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+          entries: [
+            entry(uuid: 'e-1', position: 0, title: 'A'),
+            entry(uuid: 'e-2', position: 1, title: 'B'),
+            entry(uuid: 'e-3', position: 2, title: 'C'),
+            entry(uuid: 'e-4', position: 3, title: 'D'),
+          ],
+        );
+        final gateway = FakePlaylistGateway()
+          ..reads[playlistUuid] = PlaylistRead.loaded(view: before);
+        final opened = await openDetail(
+          tester,
+          view: before,
+          gateway: gateway,
+        );
+
+        final list = tester.widget<ReorderableListView>(
+          find.byType(ReorderableListView),
+        );
+        // (1, 2) is what a lower-side drop-on-self reports: converted via
+        // reorderDestinationIndex, it lands back on index 1 — the entry's
+        // own position.
+        // ignore: deprecated_member_use
+        list.onReorder!(1, 2);
+        await tester.pump();
+
+        expect(opened.gateway.entriesMoved, isEmpty);
+      },
+    );
+
+    // The companion case: a real move through the identical path still
+    // reaches the core, so the pair above proves the guard blocks only the
+    // no-op rather than every reorder.
+    testWidgets(
+      'GivenAGenuineMove_WhenOnReorderFires_ThenTheCoreIsCalled',
+      (tester) async {
+        final before = PlaylistView(
+          playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+          entries: [
+            entry(uuid: 'e-1', position: 0, title: 'A'),
+            entry(uuid: 'e-2', position: 1, title: 'B'),
+            entry(uuid: 'e-3', position: 2, title: 'C'),
+            entry(uuid: 'e-4', position: 3, title: 'D'),
+          ],
+        );
+        final gateway = FakePlaylistGateway()
+          ..reads[playlistUuid] = PlaylistRead.loaded(view: before);
+        final opened = await openDetail(
+          tester,
+          view: before,
+          gateway: gateway,
+        );
+
+        final list = tester.widget<ReorderableListView>(
+          find.byType(ReorderableListView),
+        );
+        // (1, 3) converts to toIndex 2 — a real destination, not the
+        // entry's own index.
+        // ignore: deprecated_member_use
+        list.onReorder!(1, 3);
+        await tester.pumpAndSettle();
+
+        expect(opened.gateway.entriesMoved, [
+          (uuid: playlistUuid, entryUuid: 'e-2', toIndex: 2),
+        ]);
+      },
+    );
+
     // Dragging a track down puts it where it was dropped — the case
     // Flutter's off-by-one breaks: naively passing `newIndex` through would
     // send the core one index too far, and get refused at the boundary.
