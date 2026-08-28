@@ -616,6 +616,53 @@ void main() {
     );
 
     testWidgets(
+      'GivenAnUntaggedArtistGroup_WhenAddToPlaylistIsChosen_ThenEveryTrackIsSentInOrder',
+      (tester) async {
+        // The untagged group is exactly where `artistOf`'s own null-artist
+        // early return would bite if a future refactor reached for
+        // `artistOf(group.entries.first, group.entries)` as a shortcut for
+        // `inArtistOrder`: that early return answers just the *first* file
+        // when its seed names no artist, so every other track in the group
+        // would be silently dropped rather than sent. `inArtistOrder` never
+        // seeds from a single entry, so it has no such early return — this
+        // pins all four tracks reaching the core, not one, and (via two
+        // distinct albums) that the order is a real sort rather than
+        // whatever `group.entries` happened to hold.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(uuid: 'b1', title: 'B One', album: 'Album B', track: 1)
+          ..addAudio(uuid: 'b2', title: 'B Two', album: 'Album B', track: 2)
+          ..addAudio(uuid: 'a1', title: 'A One', album: 'Album A', track: 1)
+          ..addAudio(uuid: 'a2', title: 'A Two', album: 'Album A', track: 2);
+        final playlistGateway = FakePlaylistGateway(playlists: [jazz]);
+        final container = buildContainer(gateway, playlistGateway: playlistGateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicGroupList(
+            groups: artistsIn(library.entries),
+            kind: MusicGroupKind.artist,
+          ),
+        );
+
+        await tester.tap(find.byIcon(Icons.playlist_add));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Jazz'));
+        await tester.pumpAndSettle();
+
+        expect(playlistGateway.entriesAdded, hasLength(1));
+        expect(playlistGateway.entriesAdded.single.uuid, 'p-1');
+        expect(playlistGateway.entriesAdded.single.fileUuids, [
+          'a1',
+          'a2',
+          'b1',
+          'b2',
+        ]);
+      },
+    );
+
+    testWidgets(
       'GivenNoPlaylistsYet_WhenTheTracksMenuIsOpened_ThenItOffersToCreateOneToo',
       (tester) async {
         // `AddToPlaylistButton`'s own empty-playlist branch is covered in
