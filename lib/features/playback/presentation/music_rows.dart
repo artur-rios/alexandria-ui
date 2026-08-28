@@ -61,11 +61,19 @@ class MusicGroupList extends ConsumerWidget {
           subtitle: kind == MusicGroupKind.album
               ? Text(artist ?? l10n.musicUnknownArtist)
               : null,
-          // Task 5 entry point 2: every track the group holds, in the order
-          // it already lists them in (`_inTrackOrder`), so an album is added
-          // in the order the record itself is in.
+          // Task 5 entry point 2: every track the group holds. An album row's
+          // own `group.entries` is already track-ordered (`_inTrackOrder`),
+          // so an album is added in the order the record itself is in. An
+          // artist row's `group.entries` is not: `artistsIn` groups it with
+          // the same `_inTrackOrder`, which sorts by track number alone —
+          // with no album key, so two records interleave track-for-track
+          // rather than playing one after the other. `inArtistOrder` is the
+          // album-then-track sort that matches what "Play artist" queues and
+          // what drilling into the artist's own albums shows.
           trailing: AddToPlaylistButton(
-            fileUuids: [for (final entry in group.entries) entry.file.uuid],
+            fileUuids: kind == MusicGroupKind.artist
+                ? [for (final file in inArtistOrder(group.entries)) file.uuid]
+                : [for (final entry in group.entries) entry.file.uuid],
             tooltip: kind == MusicGroupKind.album
                 ? l10n.playlistAddAlbumTo
                 : l10n.playlistAddArtistTo,
@@ -174,7 +182,7 @@ class MusicTrackList extends ConsumerWidget {
 /// A track's own actions (UC-46, FR-CT-14).
 ///
 /// Right-click is what a desktop owner reaches for, and the button beside the
-/// row is what makes the same five actions reachable without a right mouse
+/// row is what makes the same six actions reachable without a right mouse
 /// button and from the keyboard. Both open the one menu, so there is no second
 /// list of actions to keep in step.
 class MusicRowMenu extends ConsumerWidget {

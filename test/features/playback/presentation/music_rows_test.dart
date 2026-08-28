@@ -5,6 +5,7 @@ import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/playback/presentation/music_display_name.dart';
 import 'package:alexandria_ui/features/playback/presentation/music_rows.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
+import 'package:alexandria_ui/features/playlists/presentation/playlists_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -540,6 +541,114 @@ void main() {
         expect(playlistGateway.entriesAdded, hasLength(1));
         expect(playlistGateway.entriesAdded.single.uuid, 'p-1');
         expect(playlistGateway.entriesAdded.single.fileUuids, ['a1', 'a2']);
+      },
+    );
+
+    testWidgets(
+      'GivenAnArtistWithTwoAlbums_WhenAddToPlaylistIsChosen_ThenTracksComeInAlbumThenTrackOrder',
+      (tester) async {
+        // `artistsIn` groups an artist's row with `_inTrackOrder`, which
+        // sorts by track number alone — no album key — so a naive read of
+        // `group.entries` would interleave the two records track-for-track:
+        // Dr. Jackle, So What, Freddie Freeloader, Sid's Ahead. The fix has
+        // to re-sort album by album, matching what "Play artist" queues and
+        // what drilling into the artist's own albums shows.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'dj',
+            title: 'Dr. Jackle',
+            artist: 'Miles Davis',
+            albumArtist: 'Miles Davis',
+            album: 'Someday',
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'sa',
+            title: "Sid's Ahead",
+            artist: 'Miles Davis',
+            albumArtist: 'Miles Davis',
+            album: 'Someday',
+            track: 2,
+          )
+          ..addAudio(
+            uuid: 'sw',
+            title: 'So What',
+            artist: 'Miles Davis',
+            albumArtist: 'Miles Davis',
+            album: 'Kind of Blue',
+            track: 1,
+          )
+          ..addAudio(
+            uuid: 'ff',
+            title: 'Freddie Freeloader',
+            artist: 'Miles Davis',
+            albumArtist: 'Miles Davis',
+            album: 'Kind of Blue',
+            track: 2,
+          );
+        final playlistGateway = FakePlaylistGateway(playlists: [jazz]);
+        final container = buildContainer(gateway, playlistGateway: playlistGateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicGroupList(
+            groups: artistsIn(library.entries),
+            kind: MusicGroupKind.artist,
+          ),
+        );
+
+        await tester.tap(find.byIcon(Icons.playlist_add));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Jazz'));
+        await tester.pumpAndSettle();
+
+        expect(playlistGateway.entriesAdded, hasLength(1));
+        expect(playlistGateway.entriesAdded.single.uuid, 'p-1');
+        expect(playlistGateway.entriesAdded.single.fileUuids, [
+          'sw',
+          'ff',
+          'dj',
+          'sa',
+        ]);
+      },
+    );
+
+    testWidgets(
+      'GivenNoPlaylistsYet_WhenTheTracksMenuIsOpened_ThenItOffersToCreateOneToo',
+      (tester) async {
+        // `AddToPlaylistButton`'s own empty-playlist branch is covered in
+        // `add_to_playlist_button_test.dart`; `addToPlaylistMenu` is a
+        // different widget family (a `SubmenuButton`, not a
+        // `PopupMenuButton`) with its own, separately-built empty branch.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
+        final playlistGateway = FakePlaylistGateway(playlists: const []);
+        final container = buildContainer(gateway, playlistGateway: playlistGateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicTrackList(entries: library.entries, numbered: false),
+        );
+
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(MusicTrackList)),
+        );
+        await tester.tap(find.text(l10n.playlistAddTo));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.playlistAddCreateOne), findsOneWidget);
+
+        await tester.tap(find.text(l10n.playlistAddCreateOne));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(PlaylistsScreen), findsOneWidget);
+        expect(playlistGateway.entriesAdded, isEmpty);
       },
     );
   });

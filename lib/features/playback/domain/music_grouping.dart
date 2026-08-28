@@ -115,6 +115,29 @@ List<CatalogFile> artistOf(MusicEntry entry, List<MusicEntry> library) {
   return [for (final entry in matches) entry.file];
 }
 
+/// [entries], grouped by album and ordered within each album — the order an
+/// artist's own row bulk-adds its tracks in (Task 5, playlists design entry
+/// point 2).
+///
+/// [artistOf] performs the same album-then-track ordering, but it starts
+/// from a single seed track and a whole library to filter down from, and it
+/// deliberately answers just that one file when the seed names no artist
+/// (`playArtist` from an untagged track has no other artist to gather). That
+/// early return is wrong here: [entries] is already `artistsIn`'s own
+/// untagged-artist row, gathered by [_groupedBy] — every track in it belongs
+/// in the result, not only the first, so this sorts the list it is given
+/// rather than re-deriving one from a single file.
+List<CatalogFile> inArtistOrder(List<MusicEntry> entries) {
+  final ordered = [...entries]..sort((a, b) {
+    final byAlbum = (a.album ?? '').compareTo(b.album ?? '');
+    if (byAlbum != 0) return byAlbum;
+
+    return _trackComparison(a, b);
+  });
+
+  return [for (final entry in ordered) entry.file];
+}
+
 List<CatalogFile> _inTrackOrder(List<MusicEntry> entries) {
   final ordered = [...entries]..sort(_trackComparison);
 

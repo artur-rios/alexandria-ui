@@ -81,6 +81,34 @@ void main() {
         expect(gateway.entriesAdded.single.fileUuids, ['a1', 'a2', 'a3']);
       },
     );
+
+    testWidgets(
+      'GivenTheSameFileTwiceInOneBatch_WhenSent_ThenTheDuplicateReachesTheCoreIntact',
+      (tester) async {
+        // A batch can itself repeat a file — an album's own tags could list
+        // one twice, or a caller could hand this widget the same uuid more
+        // than once. BR-02 says the core owns that decision; a `.toSet()`
+        // slipped into `_addTo` or `PlaylistsForm.addEntries` would silently
+        // take it instead, and every other fixture in this file uses
+        // distinct uuids, so nothing else here would catch that regression.
+        final gateway = FakePlaylistGateway(playlists: [jazz]);
+        final container = buildContainer(gateway);
+
+        await pumpButton(
+          tester,
+          container,
+          const AddToPlaylistButton(fileUuids: ['a1', 'a1', 'a2']),
+        );
+
+        await tester.tap(find.byIcon(Icons.playlist_add));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Jazz'));
+        await tester.pumpAndSettle();
+
+        expect(gateway.entriesAdded, hasLength(1));
+        expect(gateway.entriesAdded.single.fileUuids, ['a1', 'a1', 'a2']);
+      },
+    );
   });
 
   group('a track already in the playlist (BR-02)', () {

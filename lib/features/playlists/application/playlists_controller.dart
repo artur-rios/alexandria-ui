@@ -187,12 +187,18 @@ class PlaylistsForm extends Notifier<PlaylistsState> {
       fileUuids: fileUuids,
       credential: credential,
     ),
+    // Adding entries never changes a playlist's own uuid or name, which is
+    // all `playlistsControllerProvider`'s browse holds — unlike create,
+    // rename, and delete, nothing in that list needs refreshing, so this
+    // skips the round-trip and the rebuild of every row watching it.
+    reloadOnSuccess: false,
   );
 
   /// Runs [call] and turns its answer into what the screen shows.
   Future<void> _call(
-    Future<PlaylistWrite> Function(PlaylistGateway, String credential) call,
-  ) async {
+    Future<PlaylistWrite> Function(PlaylistGateway, String credential) call, {
+    bool reloadOnSuccess = true,
+  }) async {
     final session = ref.read(sessionControllerProvider.notifier);
     final credential = session.credential;
     if (credential == null) return;
@@ -203,8 +209,11 @@ class PlaylistsForm extends Notifier<PlaylistsState> {
 
     switch (outcome) {
       case PlaylistWriteDone():
-        // The screen reads the core again rather than being patched here.
-        await ref.read(playlistsControllerProvider.notifier).reload();
+        // The screen reads the core again rather than being patched here —
+        // for the callers that need it; see `reloadOnSuccess`.
+        if (reloadOnSuccess) {
+          await ref.read(playlistsControllerProvider.notifier).reload();
+        }
         state = const PlaylistsState();
 
       // A rejected session is discarded, which returns the owner to login.
