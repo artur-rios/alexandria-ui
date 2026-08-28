@@ -10,6 +10,10 @@ enum QueueKind {
 
   /// Every track by an artist.
   artist,
+
+  /// A playlist the owner assembled, in the order they arranged it
+  /// (playlists design section 6).
+  playlist,
 }
 
 /// The tracks queued for playback, and where in them playback is
@@ -92,6 +96,31 @@ class PlaybackQueue {
     index: index ?? this.index,
     skipped: skipped ?? this.skipped,
   );
+
+  /// Whether the record playing is the queue's own, rather than the current
+  /// track's (playlists design section 6).
+  ///
+  /// An album or an artist queue *is* a record: it carries the label and the
+  /// year that identify it, every track in it belongs to the same one, and
+  /// `recordOf` reads both straight off this class.
+  ///
+  /// A track queue and a playlist queue are not. A lone track's record is
+  /// whatever that track's own tags say it is, resolved from the music
+  /// library; a playlist's is the same question asked again on every track,
+  /// because a playlist deliberately names no record of its own — which is
+  /// what makes crossing from one album to the next inside one insert the new
+  /// medium while skipping within an album does not. A playlist's [label] is
+  /// its name, for the bar to show; it is never its record's identity.
+  ///
+  /// Named here, once, rather than left as a `kind == QueueKind.track` check
+  /// repeated at each of the four places that ask: `recordOf` and the two
+  /// controllers that call it have to agree on this or a cover swaps under a
+  /// record that never re-inserted, and a fifth kind added later would
+  /// otherwise have to be remembered at every one of them.
+  bool get namesOwnRecord => switch (kind) {
+    QueueKind.album || QueueKind.artist => true,
+    QueueKind.track || QueueKind.playlist => false,
+  };
 
   /// Whether this queue is one the animation belongs to (UC-21 main flow).
   ///

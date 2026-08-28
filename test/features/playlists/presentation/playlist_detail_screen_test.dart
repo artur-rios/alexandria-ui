@@ -6,6 +6,7 @@ import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist_gateway.dart';
+import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/playlists/presentation/playlist_detail_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_media_player.dart';
+import '../../../support/fake_playback.dart';
 import '../../../support/fake_playlist_gateway.dart';
 import '../../../support/shell_harness.dart';
 
@@ -49,6 +52,7 @@ void main() {
     required PlaylistView view,
     FakePlaylistGateway? gateway,
     Locale? locale,
+    List<Override> extraOverrides = const [],
   }) async {
     final theGateway = gateway ?? FakePlaylistGateway();
     theGateway.reads[view.playlist.uuid] = PlaylistRead.loaded(view: view);
@@ -58,6 +62,7 @@ void main() {
       surfaceSize: const Size(1440, 1000),
       extraOverrides: <Override>[
         playlistGatewayProvider.overrideWithValue(theGateway),
+        ...extraOverrides,
       ],
     );
 
@@ -403,6 +408,116 @@ void main() {
         },
       );
     }
+  });
+
+  group('playing', () {
+    /// The playback dependencies faked, so the real
+    /// [AudioPlaybackController] runs behind the screen's play action rather
+    /// than being replaced itself — a test that stubbed the controller could
+    /// not tell whether the screen handed it the right tracks.
+    List<Override> playbackOverrides() => [
+      audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+      playbackSourceGatewayProvider.overrideWithValue(
+        FakePlaybackSourceGateway(),
+      ),
+      playbackPositionsProvider.overrideWithValue(FakePlaybackPositionStore()),
+    ];
+
+    testWidgets(
+      'GivenAPlaylist_WhenPlayIsPressed_ThenItsTracksBecomeTheQueueInOrder',
+      (tester) async {
+        // Design section 6: playing a playlist replaces the queue and plays
+        // in order, and the queue carries the playlist's own name for the bar
+        // to show.
+        final view = PlaylistView(
+          playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+          entries: [
+            entry(uuid: 'e-1', position: 0, fileUuid: 'f-1', title: 'So What'),
+            entry(uuid: 'e-2', position: 1, fileUuid: 'f-2', title: 'Freddie'),
+          ],
+        );
+        final opened = await openDetail(
+          tester,
+          view: view,
+          extraOverrides: playbackOverrides(),
+        );
+
+        await tester.tap(find.byIcon(Icons.play_arrow));
+        // Stepped past with bounded pumps, never `pumpAndSettle`: something
+        // is playing now, so UC-21's album animation is turning and never
+        // settles (see `pumpShell`'s own note on `reduceMotion`).
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        final queue = opened.container
+            .read(audioPlaybackControllerProvider)
+            .queue;
+        expect(queue.kind, QueueKind.playlist);
+        expect(queue.label, 'Jazz');
+        expect(queue.tracks.map((file) => file.uuid), ['f-1', 'f-2']);
+      },
+    );
+
+    testWidgets(
+      'GivenAMissingEntry_WhenPlayIsPressed_ThenItIsStillHandedToThePlayer',
+      (tester) async {
+        // The screen does not filter: whether a file can actually be opened
+        // is the resolve's answer, not a flag this screen re-decides
+        // (design section 5). Skipping happens in the player, which names the
+        // file it stepped over; dropping it here would lose that report and
+        // would silently disagree with a stale missing flag.
+        final view = PlaylistView(
+          playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+          entries: [
+            entry(
+              uuid: 'e-1',
+              position: 0,
+              fileUuid: 'f-gone',
+              title: 'Gone',
+              missing: true,
+            ),
+            entry(uuid: 'e-2', position: 1, fileUuid: 'f-2', title: 'Freddie'),
+          ],
+        );
+        final opened = await openDetail(
+          tester,
+          view: view,
+          extraOverrides: playbackOverrides(),
+        );
+
+        await tester.tap(find.byIcon(Icons.play_arrow));
+        // Stepped past with bounded pumps, never `pumpAndSettle`: something
+        // is playing now, so UC-21's album animation is turning and never
+        // settles (see `pumpShell`'s own note on `reduceMotion`).
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        final queue = opened.container
+            .read(audioPlaybackControllerProvider)
+            .queue;
+        expect(queue.tracks.map((file) => file.uuid), ['f-gone', 'f-2']);
+      },
+    );
+
+    testWidgets(
+      'GivenAnEmptyPlaylist_WhenTheScreenOpens_ThenThereIsNothingToPlay',
+      (tester) async {
+        // Nothing to play is not a failure to report — the empty state
+        // already says the playlist holds no tracks, and an action that could
+        // only do nothing does not belong beside it.
+        const view = PlaylistView(
+          playlist: Playlist(uuid: playlistUuid, name: 'Jazz'),
+          entries: [],
+        );
+        await openDetail(
+          tester,
+          view: view,
+          extraOverrides: playbackOverrides(),
+        );
+
+        expect(find.byIcon(Icons.play_arrow), findsNothing);
+      },
+    );
   });
 }
 

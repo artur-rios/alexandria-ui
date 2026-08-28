@@ -1392,6 +1392,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playlistRemoveTrack => 'Remove from playlist';
 
   @override
+  String get playlistPlay => 'Play this playlist';
+
+  @override
   String get playlistAddTo => 'Add to a playlist';
 
   @override

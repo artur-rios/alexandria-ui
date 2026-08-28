@@ -107,11 +107,19 @@ String musicAlbumForFile(
 /// album or an artist, a `null` [PlaybackQueue.label] means the *tag* is
 /// absent, not the queue itself, so this reads through [tagOr] to the same
 /// rule an absent album or artist tag gets everywhere else.
+///
+/// A playlist's label is not a tag at all — it is the name the owner typed,
+/// which the core refuses to leave blank — so it is shown as it is, with no
+/// Unknown word behind it. `null` there would mean a playlist queue built
+/// without its name, which is a bug rather than a state to word; treated as
+/// "no queue name" for the same reason a track queue is, so the bar omits a
+/// line instead of showing a placeholder.
 String? queueLabelOf(PlaybackQueue queue, AppLocalizations l10n) =>
     switch (queue.kind) {
       QueueKind.track => null,
       QueueKind.album => tagOr(queue.label, l10n.musicUnknownAlbum),
       QueueKind.artist => tagOr(queue.label, l10n.musicUnknownArtist),
+      QueueKind.playlist => trimmedOrNull(queue.label),
     };
 
 /// What a group of tracks is (UC-46 main flow step 2).

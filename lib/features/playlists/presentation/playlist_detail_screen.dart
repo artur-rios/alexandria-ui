@@ -32,18 +32,30 @@ class PlaylistDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final view = ref.watch(playlistDetailControllerProvider(uuid));
+    final loaded = view.value;
 
     return Scaffold(
       appBar: AppBar(
         // Blank while the read is still in flight rather than a placeholder
         // word: the title is the one thing on this screen the core alone
         // knows, and there is nothing truer to show until it answers.
-        title: Text(view.value?.playlist.name ?? ''),
+        title: Text(loaded?.playlist.name ?? ''),
         leading: IconButton(
           icon: const Icon(Icons.close),
           tooltip: l10n.preferencesClose,
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          // Offered only once there is something to play. An empty playlist
+          // is a state the body already words, and an action that could only
+          // do nothing does not belong beside it.
+          if (loaded != null && loaded.entries.isNotEmpty)
+            IconButton(
+              tooltip: l10n.playlistPlay,
+              icon: const Icon(Icons.play_arrow),
+              onPressed: () => unawaited(_play(ref, loaded)),
+            ),
+        ],
       ),
       body: AsyncStateView<PlaylistView?>(
         value: view,
@@ -58,6 +70,21 @@ class PlaylistDetailScreen extends ConsumerWidget {
       ),
     );
   }
+
+  /// Plays [view] in the order it is displayed, which is the order the core
+  /// stored (playlists design sections 3 and 6).
+  ///
+  /// Every entry is handed over, missing ones included: whether a file opens
+  /// is the resolve's answer, and the player names and steps over the ones
+  /// that do not (design section 5). Filtering here would be this screen
+  /// deciding playability from a flag it only renders.
+  Future<void> _play(WidgetRef ref, PlaylistView view) =>
+      ref
+          .read(audioPlaybackControllerProvider.notifier)
+          .playPlaylist(
+            name: view.playlist.name,
+            tracks: [for (final entry in view.entries) entry.file],
+          );
 }
 
 /// The playlist's tracks, in the order the core sent them, reorderable.

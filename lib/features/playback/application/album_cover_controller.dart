@@ -88,11 +88,11 @@ class AlbumCoverController extends Notifier<AlbumCover> {
     final queue = ref.watch(audioPlaybackControllerProvider).queue;
     // `queue.isEmpty` checked before the library watch, not after: an empty
     // queue's own `kind` is `QueueKind.track` (`PlaybackQueue.empty`'s own
-    // definition), so watching unconditionally on that check alone would
-    // watch `musicLibraryProvider` — and so build it — for every queue,
-    // including the one this controller starts with before any session
-    // exists to read a credential from.
-    final library = !queue.isEmpty && queue.kind == QueueKind.track
+    // definition), so it names no record of its own and watching on the
+    // second check alone would watch `musicLibraryProvider` — and so build
+    // it — for every queue, including the one this controller starts with
+    // before any session exists to read a credential from.
+    final library = !queue.isEmpty && !queue.namesOwnRecord
         ? ref.watch(musicLibraryProvider).value
         : null;
     final identity = queue.isEmpty ? null : _identityOf(queue, library);
@@ -205,9 +205,9 @@ class AlbumCoverController extends Notifier<AlbumCover> {
   /// top-level function `AlbumAnimationController` calls, so the two
   /// controllers cannot silently drift apart the way two hand-copied
   /// implementations of the same rule could (Finding 2). `library` is
-  /// watched above only for a track queue, exactly as
-  /// `AlbumAnimationController.build` does, since it is the only kind
-  /// [recordOf] actually reads it for.
+  /// watched above only for a queue that names no record of its own — a lone
+  /// track, or a playlist — exactly as `AlbumAnimationController.build`
+  /// does, since those are the only kinds [recordOf] actually reads it for.
   AlbumIdentity _identityOf(PlaybackQueue queue, MusicLibrary? library) =>
       (queue.kind, recordOf(queue, library).identity);
 }

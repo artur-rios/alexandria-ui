@@ -6,6 +6,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist_gateway.dart';
+import 'package:alexandria_ui/features/playlists/presentation/playlist_detail_screen.dart';
 import 'package:alexandria_ui/features/playlists/presentation/playlists_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
@@ -281,6 +282,27 @@ void main() {
           opened.container.read(sessionControllerProvider),
           isA<SessionAbsent>(),
         );
+      },
+    );
+  });
+
+  group('opening a playlist', () {
+    testWidgets(
+      'GivenAPlaylist_WhenItsRowIsTapped_ThenItsTracksOpen',
+      (tester) async {
+        // The row is the only way into the detail screen, so without this the
+        // tracks, their order and the play action are all unreachable however
+        // well they work.
+        final opened = await openPlaylists(tester);
+        opened.gateway.reads[jazz.uuid] = const PlaylistRead.loaded(
+          view: PlaylistView(playlist: jazz, entries: []),
+        );
+
+        await tester.tap(find.text(jazz.name));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(PlaylistDetailScreen), findsOneWidget);
+        expect(opened.gateway.readsMade, contains(jazz.uuid));
       },
     );
   });

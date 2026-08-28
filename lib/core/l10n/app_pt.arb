@@ -408,6 +408,7 @@
   "playlistDeleteMessage": "Excluir {name}? As faixas nela são mantidas — apenas a playlist é removida.",
   "playlistDetailEmpty": "Esta playlist ainda não tem faixas.",
   "playlistRemoveTrack": "Remover da playlist",
+  "playlistPlay": "Reproduzir esta playlist",
   "playlistAddTo": "Adicionar a uma playlist",
   "playlistAddAlbumTo": "Adicionar álbum a uma playlist",
   "playlistAddArtistTo": "Adicionar artista a uma playlist",

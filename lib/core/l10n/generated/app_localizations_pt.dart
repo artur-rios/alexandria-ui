@@ -1394,6 +1394,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get playlistRemoveTrack => 'Remover da playlist';
 
   @override
+  String get playlistPlay => 'Reproduzir esta playlist';
+
+  @override
   String get playlistAddTo => 'Adicionar a uma playlist';
 
   @override

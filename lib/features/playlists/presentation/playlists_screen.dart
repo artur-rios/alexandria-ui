@@ -11,6 +11,7 @@ import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/playlists_controller.dart';
 import '../domain/playlist.dart';
+import 'playlist_detail_screen.dart';
 
 /// The playlists screen (playlists design).
 ///
@@ -213,6 +214,12 @@ class _PlaylistTile extends ConsumerWidget {
       child: ListTile(
         leading: const Icon(Icons.queue_music_outlined),
         title: Text(playlist.name),
+        // Opening the playlist is what the row itself is for — its tracks,
+        // their order, and the play action all live there. The rename and
+        // delete buttons beside it act on the playlist without opening it,
+        // which is why they are buttons rather than more taps on this row.
+        onTap: () =>
+            unawaited(PlaylistDetailScreen.show(context, playlist.uuid)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

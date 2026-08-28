@@ -2550,6 +2550,12 @@ abstract class AppLocalizations {
   /// **'Remove from playlist'**
   String get playlistRemoveTrack;
 
+  /// Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list.
+  ///
+  /// In en, this message translates to:
+  /// **'Play this playlist'**
+  String get playlistPlay;
+
   /// Task 5 entry points 1 and 3: adds one track — from its own context menu, or from the now-playing screen — to a playlist.
   ///
   /// In en, this message translates to:
