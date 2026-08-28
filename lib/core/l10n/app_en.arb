@@ -1871,6 +1871,22 @@
   "@playlistRemoveTrack": {
     "description": "Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2)."
   },
+  "playlistAddTo": "Add to a playlist",
+  "@playlistAddTo": {
+    "description": "Task 5 entry points 1 and 3: adds one track — from its own context menu, or from the now-playing screen — to a playlist."
+  },
+  "playlistAddAlbumTo": "Add album to a playlist",
+  "@playlistAddAlbumTo": {
+    "description": "Task 5 entry point 2: adds every track of an album to a playlist in one call, in the album's own order."
+  },
+  "playlistAddArtistTo": "Add artist to a playlist",
+  "@playlistAddArtistTo": {
+    "description": "Task 5 entry point 2: adds every track by an artist to a playlist in one call."
+  },
+  "playlistAddCreateOne": "Make a playlist first",
+  "@playlistAddCreateOne": {
+    "description": "Task 5: the one item an add-to-playlist menu offers when the owner has no playlist yet, opening the playlists screen rather than showing an empty menu."
+  },
   "readCurrentIssueLabel": "Current issue",
   "@readCurrentIssueLabel": {
     "description": "UC-32 main flow step 4: which issue of the series the owner is on."

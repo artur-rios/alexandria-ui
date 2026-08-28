@@ -1,3 +1,4 @@
+import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +10,14 @@ import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 
 import 'failing_settings_store.dart';
 import 'fake_auth_gateway.dart';
+import 'fake_playlist_gateway.dart';
 import 'login_harness.dart';
+
+/// Whether [overrides] already replaces [provider], so [pumpShell]'s own
+/// default is skipped rather than colliding with a caller's own — Riverpod
+/// rejects overriding the same provider twice in one container.
+bool _overrides(List<Override> overrides, ProviderBase<Object?> provider) =>
+    overrides.any((override) => override.origin == provider);
 
 /// Drives the shell through the real application root.
 ///
@@ -64,7 +72,19 @@ extension PumpShell on WidgetTester {
       themeMode: themeMode,
       surfaceSize: surfaceSize,
       settings: settings,
-      extraOverrides: extraOverrides,
+      extraOverrides: [
+        // Task 5's add-to-playlist controls are reachable from the music
+        // rows and the now-playing screen, both mounted well beyond the
+        // playlists feature's own tests — so every shell test needs a
+        // playlist gateway that answers cleanly by default, the same way the
+        // catalog and auth gateways already do here. Skipped when a caller's
+        // own `extraOverrides` already replaces it (the playlists tests'
+        // own `FakePlaylistGateway`), since Riverpod rejects overriding the
+        // same provider twice in one container.
+        if (!_overrides(extraOverrides, playlistGatewayProvider))
+          playlistGatewayProvider.overrideWithValue(FakePlaylistGateway()),
+        ...extraOverrides,
+      ],
     );
 
     await signIn();

@@ -1394,6 +1394,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String get playlistRemoveTrack => 'Remover da playlist';
 
   @override
+  String get playlistAddTo => 'Adicionar a uma playlist';
+
+  @override
+  String get playlistAddAlbumTo => 'Adicionar álbum a uma playlist';
+
+  @override
+  String get playlistAddArtistTo => 'Adicionar artista a uma playlist';
+
+  @override
+  String get playlistAddCreateOne => 'Crie uma playlist primeiro';
+
+  @override
   String get readCurrentIssueLabel => 'Edição atual';
 
   @override

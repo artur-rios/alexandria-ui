@@ -8,6 +8,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/presentation/file_details_view.dart';
 import '../../catalog/presentation/music_metadata_form.dart';
+import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../application/audio_playback_controller.dart';
 import '../domain/music_browse.dart';
 import '../domain/music_grouping.dart';
@@ -60,6 +61,15 @@ class MusicGroupList extends ConsumerWidget {
           subtitle: kind == MusicGroupKind.album
               ? Text(artist ?? l10n.musicUnknownArtist)
               : null,
+          // Task 5 entry point 2: every track the group holds, in the order
+          // it already lists them in (`_inTrackOrder`), so an album is added
+          // in the order the record itself is in.
+          trailing: AddToPlaylistButton(
+            fileUuids: [for (final entry in group.entries) entry.file.uuid],
+            tooltip: kind == MusicGroupKind.album
+                ? l10n.playlistAddAlbumTo
+                : l10n.playlistAddArtistTo,
+          ),
           // Drilling in rather than playing: playing a whole artist or record
           // is on the submenu, where it is a decision rather than something a
           // mis-aimed click does.
@@ -199,6 +209,11 @@ class MusicRowMenu extends ConsumerWidget {
               _play(ref, (player) => player.playArtist(entry.file)),
           child: Text(l10n.audioPlayArtist),
         ),
+        // Task 5 entry point 1: the one track this row is, addressed by its
+        // own file uuid — never the album or artist it belongs to. Called
+        // with this row's own `context` and `ref`, not built as a menu-item
+        // widget of its own — see `addToPlaylistMenu`'s own doc.
+        addToPlaylistMenu(context, ref, fileUuids: [entry.file.uuid]),
         MenuItemButton(
           leadingIcon: const Icon(Icons.info_outline),
           onPressed: () => FileDetailsView.show(context, ref, entry.file.uuid),

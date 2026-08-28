@@ -2550,6 +2550,30 @@ abstract class AppLocalizations {
   /// **'Remove from playlist'**
   String get playlistRemoveTrack;
 
+  /// Task 5 entry points 1 and 3: adds one track — from its own context menu, or from the now-playing screen — to a playlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to a playlist'**
+  String get playlistAddTo;
+
+  /// Task 5 entry point 2: adds every track of an album to a playlist in one call, in the album's own order.
+  ///
+  /// In en, this message translates to:
+  /// **'Add album to a playlist'**
+  String get playlistAddAlbumTo;
+
+  /// Task 5 entry point 2: adds every track by an artist to a playlist in one call.
+  ///
+  /// In en, this message translates to:
+  /// **'Add artist to a playlist'**
+  String get playlistAddArtistTo;
+
+  /// Task 5: the one item an add-to-playlist menu offers when the owner has no playlist yet, opening the playlists screen rather than showing an empty menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a playlist first'**
+  String get playlistAddCreateOne;
+
   /// UC-32 main flow step 4: which issue of the series the owner is on.
   ///
   /// In en, this message translates to:

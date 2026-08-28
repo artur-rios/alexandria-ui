@@ -167,6 +167,28 @@ class PlaylistsForm extends Notifier<PlaylistsState> {
     (gateway, credential) => gateway.delete(uuid: uuid, credential: credential),
   );
 
+  /// Adds [fileUuids] to the playlist [playlistUuid] identifies, in one call
+  /// (Task 5; BR-02).
+  ///
+  /// Every track in [fileUuids] is sent, in the order given, with nothing
+  /// filtered or deduped first: a track already in the playlist is added
+  /// again rather than refused, because the core allows duplicates and this
+  /// application does not invent a rule it does not have. One call for the
+  /// whole list is also what keeps "add this album" one transaction rather
+  /// than one request per track, which is the difference between the core
+  /// adding all of them or none and a failure halfway leaving half an album
+  /// added.
+  Future<void> addEntries({
+    required String playlistUuid,
+    required List<String> fileUuids,
+  }) => _call(
+    (gateway, credential) => gateway.addEntries(
+      uuid: playlistUuid,
+      fileUuids: fileUuids,
+      credential: credential,
+    ),
+  );
+
   /// Runs [call] and turns its answer into what the screen shows.
   Future<void> _call(
     Future<PlaylistWrite> Function(PlaylistGateway, String credential) call,
