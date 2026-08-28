@@ -19,10 +19,13 @@ carry the rest.
 | 2 — domain and gateway | complete (`743f987`), reviewed |
 | 3 — the playlists screen | complete (`0eb141e`), reviewed |
 | 4 — detail screen and reordering | complete (`29dd0bd`), reviewed, two fix rounds |
-| 5 — adding tracks | implementation and fix round 1 in (`f8eb29b`); round 2 adds one test for the untagged artist group |
-| 6 — playing a playlist | not started |
-| 7 — the real-core lifecycle test | not started |
-| 8 — requirement documents | not started |
+| 5 — adding tracks | complete (`f8eb29b`, `804357f`), reviewed |
+| 6 — playing a playlist | complete (`c15c201`) |
+| 7 — the real-core lifecycle test | complete (`2b7bb55`), run green on Linux |
+| 8 — requirement documents | complete |
+
+Every task in the plan is now in. What remains before merge is the final
+review, and the two lists at the end of this file are its agenda.
 
 ## Before doing anything on a new machine
 
@@ -31,11 +34,32 @@ The vendored core library is git-ignored (`.gitignore:49`). Rebuild it:
 ```bash
 cd ../alexandria-api && cargo build -p alexandria-ffi --release
 cp target/release/alexandria_ffi.dll ../alexandria-ui/native/windows/
+# on Linux: cp target/release/libalexandria_ffi.so ../alexandria-ui/native/linux/
 ```
 
 The header is committed, so `ffigen` does not need re-running. `flutter pub
 get` first; `flutter analyze` and `flutter test` are the gates for every
 commit, run in the foreground.
+
+**On Linux**, the core needs FFmpeg's development packages and libclang to
+build at all (`libavutil-dev`, `libavformat-dev`, `libavcodec-dev`,
+`libswscale-dev`, `libavfilter-dev`, `libavdevice-dev`, `libclang-dev`), and
+Task 7's integration test additionally needs the Flutter Linux desktop
+toolchain and `libmpv-dev` for `media_kit`, with `xvfb-run` standing in for a
+display:
+
+```bash
+xvfb-run -a bash -c 'flutter test integration_test/playlists/playlist_lifecycle_test.dart -d linux'
+```
+
+**Three golden tests fail on Linux and are not a regression.**
+`case_painter_test.dart`'s three `Given…ThenItMatchesItsGolden` cases differ
+by 1.2-1.9%, over the comparator's 0.5% tolerance. The goldens in the
+repository were rendered on Windows, and `flutter_test_config.dart`'s own
+comment names exactly this: the two platforms do not rasterize text
+identically. They fail the same way on a clean checkout of `804357f`. Do not
+regenerate them from Linux — that would move the goldens away from the
+machine they were made on and hide a real regression later.
 
 ## Rulings that must not be quietly reversed
 

@@ -249,7 +249,7 @@ replace the FFI one without touching a screen.
 | FR-OG-11 | The system shall open a bookmark's URL in the platform's default browser. |
 | FR-OG-12 | The system shall reject a URL that does not parse, and a blank title, before calling the core. |
 
-### 3.8 Watchlists and Reading Lists — `TR`
+### 3.8 Watchlists, Reading Lists, and Playlists — `TR`
 
 | ID | Requirement |
 | --- | --- |
@@ -267,6 +267,12 @@ replace the FFI one without touching a screen.
 | FR-TR-12 | The system shall list reading lists together with each item's read state and progress. |
 | FR-TR-13 | The system shall update an item's read state through the core across the states the core defines. |
 | FR-TR-14 | The system shall record and present per-issue progress for a comic that belongs to a series, and single-item progress for a standalone book. |
+| FR-TR-15 | The system shall create, rename, and delete a named playlist through the core, deleting only after a confirmation stating that the tracks themselves are preserved. |
+| FR-TR-16 | The system shall add audio files to a playlist through the core in one call per batch, in the order the surface listed them, and shall not refuse a track the playlist already holds — a playlist may hold the same track more than once, and each occurrence is an entry of its own. |
+| FR-TR-17 | The system shall address a playlist entry by the entry's own identifier for every removal and every move, never by its position and never by the file it references. |
+| FR-TR-18 | The system shall reorder a playlist by sending the core the entry and its destination index alone, and shall present the order the core returns rather than one it computed itself. |
+| FR-TR-19 | The system shall present a playlist's tracks in the order the core stored them, named by their metadata rather than by their file names (FR-CT-13), and shall keep an entry whose file is missing in the list, presented as missing. |
+| FR-TR-20 | The system shall play a playlist as a queue in its stored order, stepping over the tracks it cannot open and naming each one it stepped over, and shall report that nothing was playable when none of them could be opened. |
 
 ### 3.9 Deletion Lifecycle — `LC`
 
@@ -483,6 +489,7 @@ does not already publish.
 | Bookmarks | Create, update, list, and open bookmarks | FR-OG-08 … FR-OG-12 |
 | Watchlists | Lists, membership, and watch progress | FR-TR-01 … FR-TR-07 |
 | Reading lists | Lists, membership, and read progress | FR-TR-08 … FR-TR-14 |
+| Playlists | Named, ordered lists of audio, their entries, and playing one | FR-TR-15 … FR-TR-20 |
 | Deleted items | Restore and purge, with retention shown | FR-LC-02 … FR-LC-07 |
 | Missing files | Review and re-scan | FR-LC-08 |
 | Preferences | Theme, language, and credential change | FR-AU-10, FR-UX-04, FR-UX-05, FR-UX-12 |
@@ -506,6 +513,7 @@ Calls are grouped by the gateway that owns them.
 | Bookmarks | `alexandria_bookmark_create`, `_update`, `alexandria_bookmarks_list`, `_soft_delete`, `_restore`, `_purge` | FR-OG-08 … FR-OG-10, FR-LC-01, FR-LC-04, FR-LC-05 |
 | Watchlists | `alexandria_watchlist_create`, `_add_video`, `alexandria_watchlists_list`, `_update_progress`, `_remove_video`, `_delete` | FR-TR-01 … FR-TR-07 |
 | Reading lists | `alexandria_reading_list_create`, `_add_item`, `alexandria_reading_lists_list`, `_update_progress`, `_remove_item`, `_delete` | FR-TR-08 … FR-TR-14 |
+| Playlists | `alexandria_playlist_create`, `_rename`, `_delete`, `alexandria_playlists_list`, `alexandria_playlist_read`, `_add_entries`, `_remove_entry`, `_move_entry` | FR-TR-15 … FR-TR-20 |
 | Memory | `alexandria_free_string` | NFR-13 |
 
 ### 5.3 Filesystem Surface
@@ -666,7 +674,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | F-05 Media playback | FR-PL-01 through FR-PL-11 |
 | F-06 Document, image, and page viewing | FR-VW-01 through FR-VW-08 |
 | F-07 Collections and bookmarks | FR-OG-01 through FR-OG-12 |
-| F-08 Watchlists and reading lists | FR-TR-01 through FR-TR-14 |
+| F-08 Watchlists, reading lists, and playlists | FR-TR-01 through FR-TR-20 |
 | F-09 Safe deletion lifecycle | FR-LC-01 through FR-LC-09 |
 | F-10 Application shell, theming, and localization | FR-UX-01 through FR-UX-12 |
 
@@ -681,7 +689,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Media playback | `PL` | FR-PL-01 … FR-PL-11 |
 | Document, image, and page viewing | `VW` | FR-VW-01 … FR-VW-08 |
 | Collections and bookmarks | `OG` | FR-OG-01 … FR-OG-12 |
-| Watchlists and reading lists | `TR` | FR-TR-01 … FR-TR-14 |
+| Watchlists, reading lists, and playlists | `TR` | FR-TR-01 … FR-TR-20 |
 | Deletion lifecycle | `LC` | FR-LC-01 … FR-LC-09 |
 | Application shell, theming, and localization | `UX` | FR-UX-01 … FR-UX-12 |
 
