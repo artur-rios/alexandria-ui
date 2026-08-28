@@ -12,7 +12,7 @@ import '../domain/playlist.dart';
 
 /// One playlist, its tracks, and their order (playlists design).
 ///
-/// A dialog over whatever reached it, the same shape [PlaylistsScreen] uses:
+/// A dialog over whatever reached it, the same shape `PlaylistsScreen` uses:
 /// opened on a uuid, read afresh from the core rather than trusting a copy
 /// the caller already had.
 class PlaylistDetailScreen extends ConsumerWidget {
@@ -77,21 +77,28 @@ class _EntryList extends ConsumerWidget {
 
     return ReorderableListView.builder(
       itemCount: entries.length,
-      // `onReorder`, not the newer `onReorderItem`: the newer callback already
-      // pre-adjusts `newIndex` (it applies exactly the `newIndex -= 1`
-      // correction below internally), which would silently double-correct
-      // through [reorderDestinationIndex] and land a downward drag one short.
-      // Staying on the raw, undoctored index is what keeps the conversion the
-      // single place this is handled, exactly as the design requires — hence
-      // the deliberate `ignore` rather than migrating off it.
+      // Deliberately still `onReorder`, not the newer `onReorderItem`: the
+      // newer callback pre-applies exactly the `newIndex -= 1` correction
+      // `reorderDestinationIndex` makes below, internally. Migrating to it is
+      // a real, available option — but it would mean *deleting*
+      // `reorderDestinationIndex` along with the switch, not adding it on
+      // top of an already-corrected index. This module keeps the conversion
+      // written out and named on purpose, so it stays visible and directly
+      // testable rather than folded into the widget's own behaviour.
       // ignore: deprecated_member_use
       onReorder: (oldIndex, newIndex) {
-        final entry = entries[oldIndex];
         final toIndex = reorderDestinationIndex(
           oldIndex: oldIndex,
           newIndex: newIndex,
         );
+        // A drop back onto the span it started in is a no-op the raw index
+        // arithmetic does not see as one — e.g. dragging index 1 down to
+        // between 1 and 2 reports `newIndex: 2`, which converts to `1`, the
+        // same as `oldIndex`. Sending that to the core would be a real
+        // `moveEntry` and a full reload for a drag that changed nothing.
+        if (toIndex == oldIndex) return;
 
+        final entry = entries[oldIndex];
         unawaited(
           ref
               .read(playlistDetailControllerProvider(playlistUuid).notifier)

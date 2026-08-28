@@ -20,6 +20,14 @@ class FakePlaylistGateway implements PlaylistGateway {
   /// What [read] answers, by uuid.
   final Map<String, PlaylistRead> reads = {};
 
+  /// Every uuid a read was actually made for, in order.
+  ///
+  /// [reads] is the stub *input* a test seeds before calling `read`; it says
+  /// nothing about whether the gateway was ever asked. This is the record of
+  /// what [read] was actually called with, which is what a "the core is
+  /// never called" assertion has to check.
+  final List<String> readsMade = [];
+
   /// What the next write answers, in order.
   ///
   /// A list rather than one outcome, so a test can have the core refuse once
@@ -52,14 +60,17 @@ class FakePlaylistGateway implements PlaylistGateway {
   Future<PlaylistRead> read({
     required String uuid,
     required String credential,
-  }) async =>
-      reads[uuid] ??
-      const PlaylistRead.failed(
-        failure: Failure.notFound(
-          family: CoreStatusFamily.playlist,
-          code: PLAYLIST_ERR_NOT_FOUND,
-        ),
-      );
+  }) async {
+    readsMade.add(uuid);
+
+    return reads[uuid] ??
+        const PlaylistRead.failed(
+          failure: Failure.notFound(
+            family: CoreStatusFamily.playlist,
+            code: PLAYLIST_ERR_NOT_FOUND,
+          ),
+        );
+  }
 
   @override
   Future<PlaylistWrite> create({

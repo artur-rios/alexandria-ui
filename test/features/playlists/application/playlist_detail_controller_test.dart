@@ -87,7 +87,27 @@ void main() {
           .read(playlistDetailControllerProvider(playlistUuid).future);
 
       expect(read, isNull);
-      expect(sut.gateway.reads, isEmpty);
+      expect(sut.gateway.readsMade, isEmpty);
+    });
+
+    test('GivenNoSession_WhenAnEntryIsRemoved_ThenTheCoreIsNeverCalled', () async {
+      final sut = build(signedIn: false);
+
+      await sut.ref
+          .read(playlistDetailControllerProvider(playlistUuid).notifier)
+          .removeEntry('e-1');
+
+      expect(sut.gateway.entriesRemoved, isEmpty);
+    });
+
+    test('GivenNoSession_WhenAnEntryIsMoved_ThenTheCoreIsNeverCalled', () async {
+      final sut = build(signedIn: false);
+
+      await sut.ref
+          .read(playlistDetailControllerProvider(playlistUuid).notifier)
+          .moveEntry(entryUuid: 'e-1', toIndex: 0);
+
+      expect(sut.gateway.entriesMoved, isEmpty);
     });
 
     test('GivenAMissingEntry_WhenRead_ThenItIsKeptRatherThanDropped', () async {
@@ -171,6 +191,19 @@ void main() {
       },
     );
 
+    // What the screen's no-op guard exists for: crossing the midpoint of the
+    // very next item fires `onReorder(oldIndex, oldIndex + 1)` even though
+    // nothing about the stored order would actually change — converted, the
+    // destination is the entry's own current index.
+    test(
+      'GivenADropJustPastTheNextItem_WhenConverted_ThenTheResultEqualsOldIndex',
+      () {
+        final toIndex = reorderDestinationIndex(oldIndex: 1, newIndex: 2);
+
+        expect(toIndex, 1);
+      },
+    );
+
     // The screen shows the core's returned order after a move, not a locally
     // computed one — the fake's answer deliberately differs from what naive
     // local arithmetic (moving 'e-1' to index 3) would produce.
@@ -234,6 +267,36 @@ void main() {
         await sut.ref
             .read(playlistDetailControllerProvider(playlistUuid).notifier)
             .reload();
+
+        expect(sut.ref.read(sessionControllerProvider), isA<SessionAbsent>());
+      },
+    );
+
+    // Covers `_afterWrite`'s `UnauthorizedFailure` branch: without this, a
+    // controller that quietly dropped that branch's `invalidate` call would
+    // still pass every other test in this file.
+    test(
+      'GivenTheCoreRejectsTheSessionOnAWrite_WhenAnEntryIsRemoved_ThenTheOwnerSignsOut',
+      () async {
+        final view = PlaylistView(
+          playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+          entries: [entry(uuid: 'e-1', position: 0, title: 'So What')],
+        );
+        final sut = build(view: view);
+        await sut.ref
+            .read(playlistDetailControllerProvider(playlistUuid).future);
+        sut.gateway.writeOutcomes.add(
+          const PlaylistWrite.failed(
+            failure: Failure.unauthorized(
+              family: CoreStatusFamily.playlist,
+              code: PLAYLIST_ERR_UNAUTHORIZED,
+            ),
+          ),
+        );
+
+        await sut.ref
+            .read(playlistDetailControllerProvider(playlistUuid).notifier)
+            .removeEntry('e-1');
 
         expect(sut.ref.read(sessionControllerProvider), isA<SessionAbsent>());
       },

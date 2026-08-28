@@ -5,7 +5,7 @@ import '../../../core/failures/failure.dart';
 import '../domain/playlist.dart';
 import '../domain/playlist_gateway.dart';
 
-/// The destination [ReorderableListView.onReorder] hands the core, from the
+/// The destination `ReorderableListView.onReorder` hands the core, from the
 /// indices Flutter hands the callback (playlists design section 3).
 ///
 /// Flutter's own contract for `onReorder`: `newIndex` is computed as if the
@@ -28,11 +28,22 @@ int reorderDestinationIndex({required int oldIndex, required int newIndex}) =>
 /// One playlist and its tracks, in the order the core sent them (playlists
 /// design sections 3 and 4).
 ///
-/// A [PlaylistView], not a nullable pair of playlist-and-entries: the state is
-/// `null` only while there is nothing to show — no session yet — and every
-/// other outcome, including the playlist being gone, is a [Failure] the
-/// screen's `AsyncStateView` already knows how to render (mirrors
-/// `FileDetailsController`).
+/// Mirrors `PlaylistsController`, not `FileDetailsController`: state is
+/// `null` both for "no session yet" (FR-AU-07) *and* for a session the core
+/// rejects, exactly as `PlaylistsController.build` answers `const []` for
+/// both. `FileDetailsController` is a different precedent — it *throws* on a
+/// rejected session instead, precisely so the detail view does not read as a
+/// record with nothing in it.
+///
+/// The consequence carried over from `PlaylistsScreen` along with the
+/// pattern: `PlaylistDetailScreen` is a `showDialog` route, which survives
+/// `MaterialApp.home` swapping to the login screen. On a rejected session the
+/// owner is left looking at a fullscreen dialog with a blank title and a
+/// blank body, floating silently above the login screen underneath, until
+/// they dismiss it themselves. Known and not fixed here — diverging this
+/// screen from `PlaylistsScreen`'s identical exposure would leave one
+/// screen's wart worse-explained than the other's; both are to be settled
+/// together.
 class PlaylistDetailController extends AsyncNotifier<PlaylistView?> {
   /// Creates the controller for the playlist [uuid] identifies.
   PlaylistDetailController(this.uuid);
