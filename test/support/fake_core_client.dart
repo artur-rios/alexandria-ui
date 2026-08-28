@@ -885,4 +885,118 @@ class FakeCoreClient implements CoreClient {
     String jsonFilters,
     String token,
   ) async => watchlists;
+
+  /// What every playlist call answers, unless a test wants a failure or a
+  /// specific payload instead.
+  CoreJsonResponse playlistResponse = (status: 0, json: '{}');
+
+  /// What [playlistCreate] was called with, in order.
+  final List<({String jsonBody, String token})> playlistCreateCalls = [];
+
+  @override
+  Future<CoreJsonResponse> playlistCreate(String jsonBody, String token) async {
+    playlistCreateCalls.add((jsonBody: jsonBody, token: token));
+    return playlistResponse;
+  }
+
+  /// What [playlistRename] was called with, in order.
+  final List<({String uuid, String jsonBody, String token})>
+  playlistRenameCalls = [];
+
+  @override
+  Future<CoreJsonResponse> playlistRename(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async {
+    playlistRenameCalls.add((uuid: uuid, jsonBody: jsonBody, token: token));
+    return playlistResponse;
+  }
+
+  /// What [playlistDelete] was called with, in order.
+  final List<({String uuid, String token})> playlistDeleteCalls = [];
+
+  @override
+  Future<CoreJsonResponse> playlistDelete(String uuid, String token) async {
+    playlistDeleteCalls.add((uuid: uuid, token: token));
+    return playlistResponse;
+  }
+
+  /// What [playlistsList] was called with, in order.
+  final List<String> playlistsListCalls = [];
+
+  @override
+  Future<CoreJsonResponse> playlistsList(String token) async {
+    playlistsListCalls.add(token);
+    return playlistResponse;
+  }
+
+  /// What [playlistRead] was called with, in order.
+  final List<({String uuid, String token})> playlistReadCalls = [];
+
+  @override
+  Future<CoreJsonResponse> playlistRead(String uuid, String token) async {
+    playlistReadCalls.add((uuid: uuid, token: token));
+    return playlistResponse;
+  }
+
+  /// What [playlistAddEntries] was called with, in order.
+  final List<({String uuid, String jsonBody, String token})>
+  playlistAddEntriesCalls = [];
+
+  @override
+  Future<CoreJsonResponse> playlistAddEntries(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async {
+    playlistAddEntriesCalls.add((
+      uuid: uuid,
+      jsonBody: jsonBody,
+      token: token,
+    ));
+    return playlistResponse;
+  }
+
+  /// What [playlistRemoveEntry] was called with, in order.
+  ///
+  /// Kept as `entryUuid` rather than folded into a file uuid or an index: the
+  /// entry is what the core addresses, and a playlist may hold the same track
+  /// more than once.
+  final List<({String uuid, String entryUuid, String token})>
+  playlistRemoveEntryCalls = [];
+
+  @override
+  Future<CoreJsonResponse> playlistRemoveEntry(
+    String uuid,
+    String entryUuid,
+    String token,
+  ) async {
+    playlistRemoveEntryCalls.add((
+      uuid: uuid,
+      entryUuid: entryUuid,
+      token: token,
+    ));
+    return playlistResponse;
+  }
+
+  /// What [playlistMoveEntry] was called with, in order.
+  final List<({String uuid, String entryUuid, String jsonBody, String token})>
+  playlistMoveEntryCalls = [];
+
+  @override
+  Future<CoreJsonResponse> playlistMoveEntry(
+    String uuid,
+    String entryUuid,
+    String jsonBody,
+    String token,
+  ) async {
+    playlistMoveEntryCalls.add((
+      uuid: uuid,
+      entryUuid: entryUuid,
+      jsonBody: jsonBody,
+      token: token,
+    ));
+    return playlistResponse;
+  }
 }

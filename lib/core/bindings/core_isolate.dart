@@ -976,6 +976,132 @@ class CoreIsolate {
         }),
       ),
 
+      'playlistCreate' => withNativeString(
+        arguments.first! as String,
+        (body) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_playlist_create(body, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'playlistRename' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (body) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_playlist_rename(
+              uuid,
+              body,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      'playlistDelete' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_playlist_delete(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'playlistsList' => withNativeString(arguments.first! as String, (
+        token,
+      ) {
+        final result = bindings.alexandria_playlists_list(token);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'playlistRead' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_playlist_read(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'playlistAddEntries' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (body) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_playlist_add_entries(
+              uuid,
+              body,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      // entryUuid addresses the entry itself, never a file uuid and never a
+      // position: a playlist may hold the same track more than once, which
+      // is what makes either of those ambiguous (playlists Task 4).
+      'playlistRemoveEntry' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (entryUuid) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_playlist_remove_entry(
+              uuid,
+              entryUuid,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      // Four strings, so four nestings: each pointer stays alive for the
+      // whole call and is freed on the way out, in the order it was taken.
+      // entryUuid addresses the entry the same way playlistRemoveEntry's does
+      // (playlists Task 5).
+      'playlistMoveEntry' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (entryUuid) => withNativeString(
+            arguments[2]! as String,
+            (body) => withNativeString(arguments[3]! as String, (token) {
+              final result = bindings.alexandria_playlist_move_entry(
+                uuid,
+                entryUuid,
+                body,
+                token,
+              );
+              return (
+                status: result.status,
+                json: strings.consume(result.json, (json) => json),
+              );
+            }),
+          ),
+        ),
+      ),
+
       _ => throw CoreCallException('unknown core operation "$operation"'),
     };
   }
