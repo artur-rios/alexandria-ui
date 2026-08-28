@@ -262,9 +262,11 @@ Every test above runs against a fake this application also wrote, so none of the
 
 - [ ] **Step 1: Write the test**
 
-One lifecycle, against a real core over the real FFI: create a playlist; add four tracks; move the last to the front; remove what is then the second; read it back and assert the exact remaining order and that positions are `0,1,2`. Then add the same track twice and assert two entries come back with different uuids.
+One lifecycle, against a real core over the real FFI: create a playlist; add four tracks; move the last to the front; remove what is then the second; read it back and assert the exact remaining order and that positions are `0,1,2`. Then add the same track twice and assert two entries come back with different uuids. Finally **rename the playlist and assert the new name comes back, then delete it and assert it is gone from the list**.
 
 This is the one test that would catch a wire-name disagreement, an argument in the wrong position, or an entry-uuid contract drift — each of which succeeds silently against a fake.
+
+**Every one of the eight calls must appear in this test, and that is not decoration.** `core_isolate.dart`'s switch cases map `arguments[n]` onto positional native parameters, and nothing in the unit suite can reach that mapping — it needs a loaded native library. Several of these calls take two or three consecutive `String` parameters, so a transposition inside a `case` compiles cleanly, passes every unit test, and fails only at runtime. This test is the sole automated cover for that layer. A lifecycle that skips `rename`, `delete` or `list` leaves those calls' argument order checked by nothing.
 
 - [ ] **Step 2: Verify it fails for the right reason**
 
