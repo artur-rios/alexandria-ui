@@ -144,6 +144,27 @@
 #define READING_LIST_ERR_OTHER 9
 
 /**
+ * FFI status codes returned by playlist operations (Tasks 1-6).
+ * Deliberately separate from `READING_LIST_*` / `WATCHLIST_*` — per the
+ * convention above — so playlist use cases can grow their own set without
+ * colliding; `PLAYLIST_OK == READING_LIST_OK == WATCHLIST_OK == 0` by
+ * convention.
+ */
+#define PLAYLIST_OK 0
+
+#define PLAYLIST_ERR_INVALID_INPUT 1
+
+#define PLAYLIST_ERR_UNAUTHORIZED 2
+
+#define PLAYLIST_ERR_NOT_INITIALIZED 3
+
+#define PLAYLIST_ERR_NOT_FOUND 4
+
+#define PLAYLIST_ERR_INVALID_STATE 5
+
+#define PLAYLIST_ERR_OTHER 9
+
+/**
  * FFI status codes returned by local-auth operations (UC-34/UC-35).
  * Deliberately separate from the other `*_OK == 0` families — per the
  * convention above — so local-auth use cases can grow their own set
@@ -333,6 +354,19 @@ typedef struct ReadingListJsonResult {
   int status;
   char *json;
 } ReadingListJsonResult;
+
+/**
+ * Result of every playlist FFI function. On success `status` is
+ * `PLAYLIST_OK` and `json` is a NUL-terminated JSON string of the response
+ * body — byte-for-byte the same shape HTTP returns from the matching
+ * `/v1/playlists*` route (FR-FC-24 / NFR-09). On failure `json` is NULL
+ * and `status` carries the mapped error code. The caller must free `json`
+ * with `alexandria_free_string`.
+ */
+typedef struct PlaylistJsonResult {
+  int status;
+  char *json;
+} PlaylistJsonResult;
 
 /**
  * Result of `alexandria_auth_local_login` / `alexandria_auth_local_set_credentials`
@@ -947,6 +981,114 @@ struct ReadingListJsonResult alexandria_reading_list_remove_item(const char *rea
  * FR-FC-24 / NFR-09). `token` is the bearer auth token.
  */
 struct ReadingListJsonResult alexandria_reading_list_delete(const char *uuid, const char *token);
+
+/**
+ * Create a named, empty playlist (Task 1).
+ *
+ * `json_body` is the JSON body HTTP would send (`name`). The function
+ * deserializes it, calls the same `CreatePlaylistHandler` the HTTP route
+ * uses, and on success serializes the returned `Playlist` back to JSON —
+ * so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
+ * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ */
+struct PlaylistJsonResult alexandria_playlist_create(const char *json_body, const char *token);
+
+/**
+ * Rename a playlist, leaving its entries and their order untouched
+ * (Task 2).
+ *
+ * `uuid` is the playlist's public UUID (NUL-terminated string).
+ * `json_body` is the JSON body HTTP would send (`name`). Both surfaces
+ * call the same `RenamePlaylistHandler` so they stay at parity (FR-FC-24 /
+ * NFR-09). `token` is the bearer auth token.
+ */
+struct PlaylistJsonResult alexandria_playlist_rename(const char *uuid,
+                                                     const char *json_body,
+                                                     const char *token);
+
+/**
+ * Delete a playlist, removing its entries; referenced audio files are
+ * preserved (Task 3).
+ *
+ * `uuid` is the playlist's public UUID (NUL-terminated string). On success
+ * `json` carries the pre-delete `Playlist` — byte-for-byte the same shape
+ * HTTP returns from `DELETE /v1/playlists/{uuid}` (parity, FR-FC-24 /
+ * NFR-09). `token` is the bearer auth token.
+ */
+struct PlaylistJsonResult alexandria_playlist_delete(const char *uuid, const char *token);
+
+/**
+ * Every persisted playlist, without their tracks (Task 6).
+ *
+ * `token` is the bearer auth token. On success `json` carries a
+ * `Vec<Playlist>` — byte-for-byte the same shape HTTP returns from
+ * `GET /v1/playlists` (parity, FR-FC-24 / NFR-09).
+ */
+struct PlaylistJsonResult alexandria_playlists_list(const char *token);
+
+/**
+ * Read a playlist back with its tracks, in position order (Task 6).
+ *
+ * `uuid` is the playlist's public UUID (NUL-terminated string). On success
+ * `json` carries a `PlaylistView` — byte-for-byte the same shape HTTP
+ * returns from `GET /v1/playlists/{uuid}` (parity, FR-FC-24 / NFR-09).
+ * `token` is the bearer auth token.
+ */
+struct PlaylistJsonResult alexandria_playlist_read(const char *uuid, const char *token);
+
+/**
+ * Append tracks to a playlist, in order, at consecutive positions after
+ * whatever it already holds (Task 4). The whole slice succeeds or none of
+ * it does.
+ *
+ * `uuid` is the playlist's public UUID (NUL-terminated string).
+ * `json_body` is the JSON body HTTP would send (`fileUuids`). On success
+ * `json` carries the new `Vec<PlaylistEntry>` — byte-for-byte the same
+ * shape HTTP returns from `POST /v1/playlists/{uuid}/entries` (parity,
+ * FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ */
+struct PlaylistJsonResult alexandria_playlist_add_entries(const char *uuid,
+                                                          const char *json_body,
+                                                          const char *token);
+
+/**
+ * Remove one entry from a playlist, addressed by its own `entry_uuid`
+ * rather than a file uuid, since a playlist may hold the same track more
+ * than once (Task 4).
+ *
+ * `playlist_uuid` is the playlist's public UUID (NUL-terminated string);
+ * `entry_uuid` is the entry's own public UUID (NUL-terminated string),
+ * passed directly rather than through a body (there is nothing else to
+ * carry) -- the internal rowid is never exposed on this transport, matching
+ * HTTP's `{entryUuid}` path parameter (SRD §4.0). On success `json` is an
+ * empty JSON object (`"{}"`) — the core handler answers
+ * `Result<(), DomainError>`, nothing beyond success is available to echo
+ * back, matching `DELETE /v1/playlists/{uuid}/entries/{entryUuid}`'s
+ * `200 {}` exactly (parity, FR-FC-24 / NFR-09) rather than inventing an
+ * FFI-only shape. `token` is the bearer auth token.
+ */
+struct PlaylistJsonResult alexandria_playlist_remove_entry(const char *playlist_uuid,
+                                                           const char *entry_uuid,
+                                                           const char *token);
+
+/**
+ * Move one playlist entry to a new index, renumbering the rest in one
+ * transaction (Task 5), addressed by its own `entry_uuid` rather than a
+ * file uuid, since a playlist may hold the same track more than once.
+ *
+ * `playlist_uuid` is the playlist's public UUID (NUL-terminated string);
+ * `entry_uuid` is the entry's own public UUID (NUL-terminated string) —
+ * the internal rowid is never exposed on this transport (SRD §4.0).
+ * `json_body` is the JSON body HTTP would send (`toIndex`). On success
+ * `json` carries the playlist's full new order (`Vec<PlaylistEntry>`) —
+ * byte-for-byte the same shape HTTP returns from `POST
+ * /v1/playlists/{uuid}/entries/{entryUuid}/move` (parity, FR-FC-24 /
+ * NFR-09). `token` is the bearer auth token.
+ */
+struct PlaylistJsonResult alexandria_playlist_move_entry(const char *playlist_uuid,
+                                                         const char *entry_uuid,
+                                                         const char *json_body,
+                                                         const char *token);
 
 /**
  * Local login (UC-34 / FR-AU-04): verify email + password and create a
