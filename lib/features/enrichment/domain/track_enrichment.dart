@@ -80,5 +80,13 @@ abstract class EnrichmentReport with _$EnrichmentReport {
     @Default(0) int rejected,
     @Default(0) int failed,
     @Default(0) int skipped,
+
+    /// How many files still have something outstanding once this run
+    /// finished.
+    ///
+    /// What makes a batched sweep showable: a caller asking for a few at a
+    /// time has no other way to know whether it is near the end or nowhere
+    /// near it. Zero is how it knows to stop asking.
+    @Default(0) int remaining,
   }) = _EnrichmentReport;
 }

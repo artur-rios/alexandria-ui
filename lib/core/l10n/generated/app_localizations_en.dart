@@ -1392,6 +1392,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playlistRemoveTrack => 'Remove from playlist';
 
   @override
+  String get enrichmentSweepOpen => 'Find music info';
+
+  @override
+  String get enrichmentSweepTitle => 'Find music info';
+
+  @override
+  String get enrichmentSweepExplanation =>
+      'Looks up artist photography and lyrics for your music from MusicBrainz, Wikimedia Commons and LRCLIB. Nothing about you is sent — only an artist name, a track title, an album name and a duration. It is slow on purpose: those services allow one request a second, so a large library takes hours. You can stop at any time and pick up where you left off.';
+
+  @override
+  String get enrichmentSweepStart => 'Start';
+
+  @override
+  String get enrichmentSweepStop => 'Stop';
+
+  @override
+  String enrichmentSweepProgress(int considered, int remaining) {
+    return '$considered looked up, $remaining to go';
+  }
+
+  @override
+  String enrichmentSweepFinished(int found, int considered) {
+    return 'Finished. Found something for $found of $considered.';
+  }
+
+  @override
+  String enrichmentSweepStopped(int considered) {
+    return 'Stopped. $considered looked up so far — starting again picks up from here.';
+  }
+
+  @override
+  String get enrichmentSweepFailed => 'The lookup could not continue.';
+
+  @override
   String get enrichmentLyricsTitle => 'Lyrics';
 
   @override

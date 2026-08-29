@@ -892,7 +892,13 @@ $TrackLyricsCopyWith<$Res>? get lyrics {
 /// @nodoc
 mixin _$EnrichmentReport {
 
- int get considered; int get found; int get notFound; int get rejected; int get failed; int get skipped;
+ int get considered; int get found; int get notFound; int get rejected; int get failed; int get skipped;/// How many files still have something outstanding once this run
+/// finished.
+///
+/// What makes a batched sweep showable: a caller asking for a few at a
+/// time has no other way to know whether it is near the end or nowhere
+/// near it. Zero is how it knows to stop asking.
+ int get remaining;
 /// Create a copy of EnrichmentReport
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -903,16 +909,16 @@ $EnrichmentReportCopyWith<EnrichmentReport> get copyWith => _$EnrichmentReportCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EnrichmentReport&&(identical(other.considered, considered) || other.considered == considered)&&(identical(other.found, found) || other.found == found)&&(identical(other.notFound, notFound) || other.notFound == notFound)&&(identical(other.rejected, rejected) || other.rejected == rejected)&&(identical(other.failed, failed) || other.failed == failed)&&(identical(other.skipped, skipped) || other.skipped == skipped));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EnrichmentReport&&(identical(other.considered, considered) || other.considered == considered)&&(identical(other.found, found) || other.found == found)&&(identical(other.notFound, notFound) || other.notFound == notFound)&&(identical(other.rejected, rejected) || other.rejected == rejected)&&(identical(other.failed, failed) || other.failed == failed)&&(identical(other.skipped, skipped) || other.skipped == skipped)&&(identical(other.remaining, remaining) || other.remaining == remaining));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,considered,found,notFound,rejected,failed,skipped);
+int get hashCode => Object.hash(runtimeType,considered,found,notFound,rejected,failed,skipped,remaining);
 
 @override
 String toString() {
-  return 'EnrichmentReport(considered: $considered, found: $found, notFound: $notFound, rejected: $rejected, failed: $failed, skipped: $skipped)';
+  return 'EnrichmentReport(considered: $considered, found: $found, notFound: $notFound, rejected: $rejected, failed: $failed, skipped: $skipped, remaining: $remaining)';
 }
 
 
@@ -923,7 +929,7 @@ abstract mixin class $EnrichmentReportCopyWith<$Res>  {
   factory $EnrichmentReportCopyWith(EnrichmentReport value, $Res Function(EnrichmentReport) _then) = _$EnrichmentReportCopyWithImpl;
 @useResult
 $Res call({
- int considered, int found, int notFound, int rejected, int failed, int skipped
+ int considered, int found, int notFound, int rejected, int failed, int skipped, int remaining
 });
 
 
@@ -940,7 +946,7 @@ class _$EnrichmentReportCopyWithImpl<$Res>
 
 /// Create a copy of EnrichmentReport
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? considered = null,Object? found = null,Object? notFound = null,Object? rejected = null,Object? failed = null,Object? skipped = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? considered = null,Object? found = null,Object? notFound = null,Object? rejected = null,Object? failed = null,Object? skipped = null,Object? remaining = null,}) {
   return _then(_self.copyWith(
 considered: null == considered ? _self.considered : considered // ignore: cast_nullable_to_non_nullable
 as int,found: null == found ? _self.found : found // ignore: cast_nullable_to_non_nullable
@@ -948,6 +954,7 @@ as int,notFound: null == notFound ? _self.notFound : notFound // ignore: cast_nu
 as int,rejected: null == rejected ? _self.rejected : rejected // ignore: cast_nullable_to_non_nullable
 as int,failed: null == failed ? _self.failed : failed // ignore: cast_nullable_to_non_nullable
 as int,skipped: null == skipped ? _self.skipped : skipped // ignore: cast_nullable_to_non_nullable
+as int,remaining: null == remaining ? _self.remaining : remaining // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -1033,10 +1040,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int considered,  int found,  int notFound,  int rejected,  int failed,  int skipped)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int considered,  int found,  int notFound,  int rejected,  int failed,  int skipped,  int remaining)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EnrichmentReport() when $default != null:
-return $default(_that.considered,_that.found,_that.notFound,_that.rejected,_that.failed,_that.skipped);case _:
+return $default(_that.considered,_that.found,_that.notFound,_that.rejected,_that.failed,_that.skipped,_that.remaining);case _:
   return orElse();
 
 }
@@ -1054,10 +1061,10 @@ return $default(_that.considered,_that.found,_that.notFound,_that.rejected,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int considered,  int found,  int notFound,  int rejected,  int failed,  int skipped)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int considered,  int found,  int notFound,  int rejected,  int failed,  int skipped,  int remaining)  $default,) {final _that = this;
 switch (_that) {
 case _EnrichmentReport():
-return $default(_that.considered,_that.found,_that.notFound,_that.rejected,_that.failed,_that.skipped);case _:
+return $default(_that.considered,_that.found,_that.notFound,_that.rejected,_that.failed,_that.skipped,_that.remaining);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1074,10 +1081,10 @@ return $default(_that.considered,_that.found,_that.notFound,_that.rejected,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int considered,  int found,  int notFound,  int rejected,  int failed,  int skipped)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int considered,  int found,  int notFound,  int rejected,  int failed,  int skipped,  int remaining)?  $default,) {final _that = this;
 switch (_that) {
 case _EnrichmentReport() when $default != null:
-return $default(_that.considered,_that.found,_that.notFound,_that.rejected,_that.failed,_that.skipped);case _:
+return $default(_that.considered,_that.found,_that.notFound,_that.rejected,_that.failed,_that.skipped,_that.remaining);case _:
   return null;
 
 }
@@ -1089,7 +1096,7 @@ return $default(_that.considered,_that.found,_that.notFound,_that.rejected,_that
 
 
 class _EnrichmentReport implements EnrichmentReport {
-  const _EnrichmentReport({this.considered = 0, this.found = 0, this.notFound = 0, this.rejected = 0, this.failed = 0, this.skipped = 0});
+  const _EnrichmentReport({this.considered = 0, this.found = 0, this.notFound = 0, this.rejected = 0, this.failed = 0, this.skipped = 0, this.remaining = 0});
   
 
 @override@JsonKey() final  int considered;
@@ -1098,6 +1105,13 @@ class _EnrichmentReport implements EnrichmentReport {
 @override@JsonKey() final  int rejected;
 @override@JsonKey() final  int failed;
 @override@JsonKey() final  int skipped;
+/// How many files still have something outstanding once this run
+/// finished.
+///
+/// What makes a batched sweep showable: a caller asking for a few at a
+/// time has no other way to know whether it is near the end or nowhere
+/// near it. Zero is how it knows to stop asking.
+@override@JsonKey() final  int remaining;
 
 /// Create a copy of EnrichmentReport
 /// with the given fields replaced by the non-null parameter values.
@@ -1109,16 +1123,16 @@ _$EnrichmentReportCopyWith<_EnrichmentReport> get copyWith => __$EnrichmentRepor
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EnrichmentReport&&(identical(other.considered, considered) || other.considered == considered)&&(identical(other.found, found) || other.found == found)&&(identical(other.notFound, notFound) || other.notFound == notFound)&&(identical(other.rejected, rejected) || other.rejected == rejected)&&(identical(other.failed, failed) || other.failed == failed)&&(identical(other.skipped, skipped) || other.skipped == skipped));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EnrichmentReport&&(identical(other.considered, considered) || other.considered == considered)&&(identical(other.found, found) || other.found == found)&&(identical(other.notFound, notFound) || other.notFound == notFound)&&(identical(other.rejected, rejected) || other.rejected == rejected)&&(identical(other.failed, failed) || other.failed == failed)&&(identical(other.skipped, skipped) || other.skipped == skipped)&&(identical(other.remaining, remaining) || other.remaining == remaining));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,considered,found,notFound,rejected,failed,skipped);
+int get hashCode => Object.hash(runtimeType,considered,found,notFound,rejected,failed,skipped,remaining);
 
 @override
 String toString() {
-  return 'EnrichmentReport(considered: $considered, found: $found, notFound: $notFound, rejected: $rejected, failed: $failed, skipped: $skipped)';
+  return 'EnrichmentReport(considered: $considered, found: $found, notFound: $notFound, rejected: $rejected, failed: $failed, skipped: $skipped, remaining: $remaining)';
 }
 
 
@@ -1129,7 +1143,7 @@ abstract mixin class _$EnrichmentReportCopyWith<$Res> implements $EnrichmentRepo
   factory _$EnrichmentReportCopyWith(_EnrichmentReport value, $Res Function(_EnrichmentReport) _then) = __$EnrichmentReportCopyWithImpl;
 @override @useResult
 $Res call({
- int considered, int found, int notFound, int rejected, int failed, int skipped
+ int considered, int found, int notFound, int rejected, int failed, int skipped, int remaining
 });
 
 
@@ -1146,7 +1160,7 @@ class __$EnrichmentReportCopyWithImpl<$Res>
 
 /// Create a copy of EnrichmentReport
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? considered = null,Object? found = null,Object? notFound = null,Object? rejected = null,Object? failed = null,Object? skipped = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? considered = null,Object? found = null,Object? notFound = null,Object? rejected = null,Object? failed = null,Object? skipped = null,Object? remaining = null,}) {
   return _then(_EnrichmentReport(
 considered: null == considered ? _self.considered : considered // ignore: cast_nullable_to_non_nullable
 as int,found: null == found ? _self.found : found // ignore: cast_nullable_to_non_nullable
@@ -1154,6 +1168,7 @@ as int,notFound: null == notFound ? _self.notFound : notFound // ignore: cast_nu
 as int,rejected: null == rejected ? _self.rejected : rejected // ignore: cast_nullable_to_non_nullable
 as int,failed: null == failed ? _self.failed : failed // ignore: cast_nullable_to_non_nullable
 as int,skipped: null == skipped ? _self.skipped : skipped // ignore: cast_nullable_to_non_nullable
+as int,remaining: null == remaining ? _self.remaining : remaining // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
