@@ -189,13 +189,16 @@ jobs:
       # platform, and no developer machine here runs Windows. The comparator
       # writes variants rather than base files off Linux, so this cannot
       # overwrite the reference.
+      # `always()`: the step above has just failed, because the variants
+      # this produces are the thing that would have made it pass. Without it
+      # the generation never runs and there is nothing to download.
       - name: Generate this platform's golden variants
-        if: matrix.platform == 'windows'
+        if: always() && matrix.platform == 'windows'
         run: flutter test --update-goldens
         continue-on-error: true
 
       - uses: actions/upload-artifact@v4
-        if: matrix.platform == 'windows'
+        if: always() && matrix.platform == 'windows'
         with:
           name: windows-goldens
           path: |
