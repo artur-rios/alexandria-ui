@@ -130,9 +130,13 @@ flutter test
   HTML rendering happen client-side from the on-disk bytes. Concrete packages are
   selected in Phase 2.
 
-No network services, no payments, no identity provider, no message broker, and no
-object storage are involved. E-mail is involved only indirectly: the core sends
-confirmation and recovery messages, and the app never touches a mail transport.
+No payments, no identity provider, no message broker, and no object storage are
+involved, and this application makes no network call of its own. The only
+network service reached anywhere in the product is outbound and belongs to the
+core: music enrichment looks artist photography and lyrics up from MusicBrainz,
+Wikidata/Wikimedia Commons and LRCLIB, and is off unless the operator turns it
+on. E-mail is involved only indirectly: the core sends confirmation and recovery
+messages, and the app never touches a mail transport.
 
 ## Deployment
 

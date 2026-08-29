@@ -266,8 +266,16 @@ graph TD
 - **Two platforms, one codebase.** Windows and Ubuntu are both first-class; a
   feature that works on only one is not done. The supported targets are recorded
   in the [Technology Stack Document](Technology%20Stack%20Document.md).
-- **In-process, offline, single-user.** No server, no network calls, no
-  synchronization, no second user.
+- **In-process, offline by default, single-user.** No server, no
+  synchronization, no second user, and no network call this application
+  makes at all. The one exception is outbound and lives in the core: music
+  enrichment (artist photography and lyrics) may look those up from three
+  public services, and is **off unless the operator turns it on**. Nothing
+  about the owner is sent — the queries carry an artist name, a track title,
+  an album name and a duration — and everything fetched is cached, so a
+  lookup happens once per artist and once per recording rather than once per
+  play. This interface holds no HTTP client and contacts no third party; it
+  reads what the core cached, over the FFI, as it reads everything else.
 - **The disk is the owner's.** The application writes exactly two kinds of thing:
   text-file content the owner saved, and its own local settings. Nothing else it
   does modifies the filesystem, and only an explicit confirmed purge-on-disk
