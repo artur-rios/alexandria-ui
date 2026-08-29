@@ -216,6 +216,16 @@ Golden files are used for the key screens in both themes. They are regenerated
 deliberately and reviewed in the pull request like any other change — a golden
 updated without being looked at is worse than no golden.
 
+**They are compared on Linux only**, which is what CI runs them on. Goldens
+that draw text are pictures of one renderer: two operating systems do not
+rasterize the same glyph outlines identically, and measurement on both CI legs
+puts that disagreement at 3.1-4.7% of the image — against a tolerance of 0.5%,
+which is deliberately far too small to hide a control that moved. Pinning the
+typeface fixed the larger, layout half of the problem and could not fix this
+half. So one platform is canonical rather than the tolerance being widened to
+the point where these files stop catching anything. A developer on Windows runs
+every other test; regenerating goldens there produces files CI then rejects.
+
 ### 7.2 Integration tests
 
 One integration test drives a whole use case through the real Alexandria core over

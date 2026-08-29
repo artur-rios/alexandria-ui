@@ -115,4 +115,28 @@ class _TolerantGoldenComparator extends LocalFileComparator {
 ///
 /// Kept beside the comparator so the two are read together, and used by the
 /// golden suites rather than duplicated in each.
-bool get goldensAreComparable => Platform.isWindows || Platform.isLinux;
+///
+/// **Linux only, and that is a conclusion rather than a preference.** These
+/// goldens draw text, and text is the one thing two operating systems will
+/// not rasterize identically — different hinting, different subpixel
+/// positioning, different antialiasing of the same outlines.
+///
+/// Pinning the typeface (`pubspec.yaml`'s `fonts:` block) fixed the half of
+/// this that *was* fixable: the layout. Before it, the sleeve was set in a
+/// different face on each platform and the same string wrapped at a
+/// different point. After it, both platforms lay the same glyphs out in the
+/// same places — and still disagree, by 3.1-4.7% of the image, because they
+/// paint those glyphs differently. Measured on CI, both legs, after the pin.
+///
+/// So a golden holding text is a picture of one renderer, and comparing it
+/// against another renderer's output is a test of the operating system. The
+/// choices were a tolerance wide enough to swallow that — which is wide
+/// enough to swallow a moved control, the one thing these exist to catch —
+/// or one canonical platform. This is the second.
+///
+/// Linux because that is what CI compares on, so the goldens are checked on
+/// every push rather than on whichever machine a developer happens to use.
+/// A Windows developer runs every other test in the suite; the goldens are
+/// verified for them by CI, and `flutter test --update-goldens` on Windows
+/// would produce files that CI then rejects.
+bool get goldensAreComparable => Platform.isLinux;
