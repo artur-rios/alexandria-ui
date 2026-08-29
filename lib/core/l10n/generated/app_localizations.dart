@@ -2550,6 +2550,60 @@ abstract class AppLocalizations {
   /// **'Remove from playlist'**
   String get playlistRemoveTrack;
 
+  /// Library menu entry opening the library-wide lookup screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Find music info'**
+  String get enrichmentSweepOpen;
+
+  /// Title of the library-wide lookup screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Find music info'**
+  String get enrichmentSweepTitle;
+
+  /// Says what the lookup does, what leaves the machine, why it is slow, and that stopping is safe. Shown before it starts, because this is the one thing in the application that reaches the network and the owner should be choosing it knowingly.
+  ///
+  /// In en, this message translates to:
+  /// **'Looks up artist photography and lyrics for your music from MusicBrainz, Wikimedia Commons and LRCLIB. Nothing about you is sent — only an artist name, a track title, an album name and a duration. It is slow on purpose: those services allow one request a second, so a large library takes hours. You can stop at any time and pick up where you left off.'**
+  String get enrichmentSweepExplanation;
+
+  /// Begins the library-wide lookup.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get enrichmentSweepStart;
+
+  /// Stops the library-wide lookup after the batch in flight. What was done is kept.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get enrichmentSweepStop;
+
+  /// Progress of the library-wide lookup, counted rather than a bare spinner: an operation measured in hours needs a denominator.
+  ///
+  /// In en, this message translates to:
+  /// **'{considered} looked up, {remaining} to go'**
+  String enrichmentSweepProgress(int considered, int remaining);
+
+  /// The lookup reached the end of the library.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished. Found something for {found} of {considered}.'**
+  String enrichmentSweepFinished(int found, int considered);
+
+  /// The owner stopped it. Says that the work is kept, because otherwise stopping looks like it wasted everything.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped. {considered} looked up so far — starting again picks up from here.'**
+  String enrichmentSweepStopped(int considered);
+
+  /// A batch failed for a reason not worth retrying. What was already done is kept.
+  ///
+  /// In en, this message translates to:
+  /// **'The lookup could not continue.'**
+  String get enrichmentSweepFailed;
+
   /// Music enrichment design: heading over the words of the track playing now, shown only when the core has some cached.
   ///
   /// In en, this message translates to:

@@ -95,6 +95,7 @@ class CoreEnrichmentGateway implements EnrichmentGateway {
           rejected: count('rejected'),
           failed: count('failed'),
           skipped: count('skipped'),
+          remaining: count('remaining'),
         ),
       );
     } on Object {
@@ -110,7 +111,10 @@ class CoreEnrichmentGateway implements EnrichmentGateway {
   String _scopeBody(EnrichmentScope scope) => switch (scope) {
     EnrichmentScopeFile(:final fileUuid) => jsonEncode({'fileUuid': fileUuid}),
     EnrichmentScopeArtist(:final name) => jsonEncode({'artist': name}),
-    EnrichmentScopePending() => '',
+    // The whole sweep sends an empty body, which is what the core reads an
+    // absent one as; a bounded one has to say how far.
+    EnrichmentScopePending(:final limit) =>
+      limit == null ? '' : jsonEncode({'limit': limit}),
   };
 
   /// The stored image, or `null` when there is none to show.

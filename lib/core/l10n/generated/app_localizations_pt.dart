@@ -1394,6 +1394,40 @@ class AppLocalizationsPt extends AppLocalizations {
   String get playlistRemoveTrack => 'Remover da playlist';
 
   @override
+  String get enrichmentSweepOpen => 'Buscar informações musicais';
+
+  @override
+  String get enrichmentSweepTitle => 'Buscar informações musicais';
+
+  @override
+  String get enrichmentSweepExplanation =>
+      'Busca fotografias de artistas e letras para suas músicas no MusicBrainz, no Wikimedia Commons e no LRCLIB. Nada sobre você é enviado — apenas nome do artista, título da faixa, nome do álbum e duração. É lento de propósito: esses serviços permitem uma requisição por segundo, então uma biblioteca grande leva horas. Você pode parar quando quiser e continuar de onde parou.';
+
+  @override
+  String get enrichmentSweepStart => 'Iniciar';
+
+  @override
+  String get enrichmentSweepStop => 'Parar';
+
+  @override
+  String enrichmentSweepProgress(int considered, int remaining) {
+    return '$considered buscadas, $remaining restantes';
+  }
+
+  @override
+  String enrichmentSweepFinished(int found, int considered) {
+    return 'Concluído. Encontrou algo para $found de $considered.';
+  }
+
+  @override
+  String enrichmentSweepStopped(int considered) {
+    return 'Parado. $considered buscadas até aqui — recomeçar continua deste ponto.';
+  }
+
+  @override
+  String get enrichmentSweepFailed => 'A busca não pôde continuar.';
+
+  @override
   String get enrichmentLyricsTitle => 'Letra';
 
   @override

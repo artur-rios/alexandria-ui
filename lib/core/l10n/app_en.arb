@@ -1871,6 +1871,45 @@
   "@playlistRemoveTrack": {
     "description": "Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2)."
   },
+  "enrichmentSweepOpen": "Find music info",
+  "@enrichmentSweepOpen": {
+    "description": "Library menu entry opening the library-wide lookup screen."
+  },
+  "enrichmentSweepTitle": "Find music info",
+  "@enrichmentSweepTitle": {
+    "description": "Title of the library-wide lookup screen."
+  },
+  "enrichmentSweepExplanation": "Looks up artist photography and lyrics for your music from MusicBrainz, Wikimedia Commons and LRCLIB. Nothing about you is sent — only an artist name, a track title, an album name and a duration. It is slow on purpose: those services allow one request a second, so a large library takes hours. You can stop at any time and pick up where you left off.",
+  "@enrichmentSweepExplanation": {
+    "description": "Says what the lookup does, what leaves the machine, why it is slow, and that stopping is safe. Shown before it starts, because this is the one thing in the application that reaches the network and the owner should be choosing it knowingly."
+  },
+  "enrichmentSweepStart": "Start",
+  "@enrichmentSweepStart": {
+    "description": "Begins the library-wide lookup."
+  },
+  "enrichmentSweepStop": "Stop",
+  "@enrichmentSweepStop": {
+    "description": "Stops the library-wide lookup after the batch in flight. What was done is kept."
+  },
+  "enrichmentSweepProgress": "{considered} looked up, {remaining} to go",
+  "@enrichmentSweepProgress": {
+    "description": "Progress of the library-wide lookup, counted rather than a bare spinner: an operation measured in hours needs a denominator.",
+    "placeholders": { "considered": { "type": "int" }, "remaining": { "type": "int" } }
+  },
+  "enrichmentSweepFinished": "Finished. Found something for {found} of {considered}.",
+  "@enrichmentSweepFinished": {
+    "description": "The lookup reached the end of the library.",
+    "placeholders": { "found": { "type": "int" }, "considered": { "type": "int" } }
+  },
+  "enrichmentSweepStopped": "Stopped. {considered} looked up so far — starting again picks up from here.",
+  "@enrichmentSweepStopped": {
+    "description": "The owner stopped it. Says that the work is kept, because otherwise stopping looks like it wasted everything.",
+    "placeholders": { "considered": { "type": "int" } }
+  },
+  "enrichmentSweepFailed": "The lookup could not continue.",
+  "@enrichmentSweepFailed": {
+    "description": "A batch failed for a reason not worth retrying. What was already done is kept."
+  },
   "enrichmentLyricsTitle": "Lyrics",
   "@enrichmentLyricsTitle": {
     "description": "Music enrichment design: heading over the words of the track playing now, shown only when the core has some cached."

@@ -46,8 +46,13 @@ sealed class EnrichmentScope {
   /// One artist, and the lyrics of every track of theirs. Minutes.
   const factory EnrichmentScope.artist(String name) = EnrichmentScopeArtist;
 
-  /// Everything not yet looked up. Hours, on a real library.
-  const factory EnrichmentScope.pending() = EnrichmentScopePending;
+  /// Everything not yet looked up, at most [limit] of it.
+  ///
+  /// Hours on a real library, which is why a surface asks for a batch at a
+  /// time: each call is short and complete, so progress is visible and
+  /// stopping is simply not asking for the next one. `null` is the whole
+  /// sweep, which no interface should ask for.
+  const factory EnrichmentScope.pending({int? limit}) = EnrichmentScopePending;
 }
 
 /// One file's scope.
@@ -68,10 +73,13 @@ class EnrichmentScopeArtist extends EnrichmentScope {
   final String name;
 }
 
-/// The sweep.
+/// The sweep, bounded or whole.
 class EnrichmentScopePending extends EnrichmentScope {
   /// Creates the scope.
-  const EnrichmentScopePending();
+  const EnrichmentScopePending({this.limit});
+
+  /// How many items this call should do, or `null` for all of them.
+  final int? limit;
 }
 
 /// The core's music enrichment operations (music enrichment design).
