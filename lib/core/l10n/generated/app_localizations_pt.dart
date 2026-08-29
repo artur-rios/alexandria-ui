@@ -1394,6 +1394,32 @@ class AppLocalizationsPt extends AppLocalizations {
   String get playlistRemoveTrack => 'Remover da playlist';
 
   @override
+  String get enrichmentLyricsTitle => 'Letra';
+
+  @override
+  String enrichmentLyricsSource(String source) {
+    return 'Letra de $source';
+  }
+
+  @override
+  String enrichmentImageCredit(String source) {
+    return 'Fotografia: $source';
+  }
+
+  @override
+  String get enrichmentFindForTrack => 'Buscar letra e imagens';
+
+  @override
+  String get enrichmentLookingUp => 'Buscando…';
+
+  @override
+  String get enrichmentNothingFound => 'Nada encontrado para esta faixa.';
+
+  @override
+  String get enrichmentUnavailable =>
+      'A busca de informações musicais está desativada nesta instalação.';
+
+  @override
   String get playlistPlay => 'Reproduzir esta playlist';
 
   @override

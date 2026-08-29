@@ -62,6 +62,11 @@ macros:
     # header's own convention, but a family of its own so the two never
     # cross-read.
     - "PLAYLIST_.*"
+    # Music enrichment. Its own family, and the only one carrying a code for
+    # "this installation has not configured the feature" — mapped to a
+    # configuration failure rather than an invalid input, because the caller
+    # did nothing wrong.
+    - "ENRICHMENT_.*"
     # The settings read has its own family too (UC-34's retention window,
     # core UC-47). It carries only OK, unauthorized, not-initialized, and
     # other — reading it through another family's table would be a misread of

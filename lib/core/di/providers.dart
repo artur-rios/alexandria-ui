@@ -101,6 +101,11 @@ import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/playlists/application/playlist_detail_controller.dart';
 import '../../features/playlists/application/playlists_controller.dart';
+import '../../features/enrichment/application/enrichment_run_controller.dart';
+import '../../features/enrichment/application/track_enrichment_controller.dart';
+import '../../features/enrichment/domain/track_enrichment.dart';
+import '../../features/enrichment/data/core_enrichment_gateway.dart';
+import '../../features/enrichment/domain/enrichment_gateway.dart';
 import '../../features/playlists/data/core_playlist_gateway.dart';
 import '../../features/playlists/domain/playlist.dart';
 import '../../features/playlists/domain/playlist_gateway.dart';
@@ -888,6 +893,38 @@ final playlistGatewayProvider = Provider<PlaylistGateway>((ref) {
 final playlistsControllerProvider =
     AsyncNotifierProvider<PlaylistsController, List<Playlist>>(
       PlaylistsController.new,
+    );
+
+/// The core's music enrichment operations (music enrichment design).
+final enrichmentGatewayProvider = Provider<EnrichmentGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError(
+      'the enrichment gateway was read before the core was loaded',
+    );
+  }
+
+  return CoreEnrichmentGateway(core);
+});
+
+/// What enrichment holds for one track, keyed by track and artist (music
+/// enrichment design).
+///
+/// Auto-disposed, which a family is not by default: a player moves through a
+/// queue, and without it an entry for every track ever played is held for
+/// the life of the container and never read again — so a track enriched
+/// after it was first shown would never pick that up.
+final trackEnrichmentControllerProvider =
+    AsyncNotifierProvider.family<
+      TrackEnrichmentController,
+      TrackEnrichment,
+      TrackEnrichmentKey
+    >(TrackEnrichmentController.new, isAutoDispose: true);
+
+/// A lookup the owner asked for, and what it concluded.
+final enrichmentRunControllerProvider =
+    NotifierProvider<EnrichmentRunController, EnrichmentRunState>(
+      EnrichmentRunController.new,
     );
 
 /// The playlists screen's own state.

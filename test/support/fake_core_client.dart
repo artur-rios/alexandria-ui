@@ -940,6 +940,36 @@ class FakeCoreClient implements CoreClient {
     return playlistResponse;
   }
 
+  /// What the two enrichment calls answer, and what they were called with.
+  ///
+  /// The recorded arguments are the assertion that matters for
+  /// `enrichmentReadTrack`: it takes three consecutive strings, so a
+  /// transposition compiles and misbehaves silently.
+  CoreJsonResponse enrichmentResponse = (status: ENRICHMENT_OK, json: '{}');
+
+  /// Every enrichment run asked for, in order.
+  final List<({String scopeJson, String token})> enrichmentRunCalls = [];
+
+  /// Every track read asked for, in order.
+  final List<({String uuid, String artist, String token})>
+  enrichmentReadCalls = [];
+
+  @override
+  Future<CoreJsonResponse> enrichmentRun(String scopeJson, String token) async {
+    enrichmentRunCalls.add((scopeJson: scopeJson, token: token));
+    return enrichmentResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> enrichmentReadTrack(
+    String uuid,
+    String artist,
+    String token,
+  ) async {
+    enrichmentReadCalls.add((uuid: uuid, artist: artist, token: token));
+    return enrichmentResponse;
+  }
+
   /// What [playlistAddEntries] was called with, in order.
   final List<({String uuid, String jsonBody, String token})>
   playlistAddEntriesCalls = [];

@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../enrichment/presentation/enrich_track_button.dart';
+import '../../enrichment/presentation/track_enrichment_panel.dart';
 import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../domain/album_cover.dart';
 import 'album_stage.dart';
@@ -143,7 +145,17 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         actions: [
           // Task 5 entry point 3: whatever is currently playing — nothing
           // when the queue is empty, since there is then no track to add.
-          if (current != null) AddToPlaylistButton(fileUuids: [current.uuid]),
+          if (current != null) ...[
+            // Scoped to this track on purpose. A few seconds, where the
+            // whole library is hours at MusicBrainz's one-request-per-second
+            // limit — an action that long needs a screen to report progress
+            // and be cancelled from, not a button on the player.
+            EnrichTrackButton(
+              fileUuid: current.uuid,
+              artistName: musicEntryForFile(ref, current).albumArtist,
+            ),
+            AddToPlaylistButton(fileUuids: [current.uuid]),
+          ],
           IconButton(
             tooltip: l10n.audioClosePlayer,
             icon: const Icon(Icons.close),
@@ -270,6 +282,25 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                       ),
                     ],
                   ),
+
+                  // Below the transport, deliberately. Whatever the core
+                  // cached about this track is worth reading while it plays,
+                  // but it is not what this screen is for — the controls do
+                  // not move down the page to make room for a photograph,
+                  // and the panel renders nothing at all when there is
+                  // nothing to show, which is most of a real library.
+                  if (current != null)
+                    TrackEnrichmentPanel(
+                      fileUuid: current.uuid,
+                      // The album artist, which is whose record this is and
+                      // therefore whose photograph belongs against it —
+                      // not the track's performer, which would put a guest's
+                      // face on the host's album. The raw tag, never the
+                      // localised "Unknown artist": that word is not
+                      // anybody's name, and looking it up would ask the core
+                      // for a photograph of a phrase.
+                      artistName: musicEntryForFile(ref, current).albumArtist,
+                    ),
                 ],
               ),
             ),

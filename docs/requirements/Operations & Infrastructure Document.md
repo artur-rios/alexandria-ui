@@ -190,7 +190,10 @@ the application forwards to the core and never stores.
 ## 4. Logging & Monitoring
 
 There is no aggregator and no telemetry: this is a local application, and nothing
-it records leaves the machine.
+it records leaves the machine. That is unchanged by music enrichment, which is
+outbound only and carries no log, no counter, and nothing identifying the owner
+or their library — an artist name, a track title, an album name and a duration,
+and only while the operator has it switched on.
 
 | Concern | Approach |
 | --- | --- |

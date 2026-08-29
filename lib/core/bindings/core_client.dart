@@ -472,6 +472,33 @@ abstract interface class CoreClient {
   /// `alexandria_playlist_read` (playlists Task 6).
   Future<CoreJsonResponse> playlistRead(String uuid, String token);
 
+  /// Runs music enrichment through `alexandria_enrichment_run` (music
+  /// enrichment design).
+  ///
+  /// [scopeJson] names what to enrich — an empty string sweeps everything
+  /// not yet looked up, `{"fileUuid":…}` scopes it to one track,
+  /// `{"artist":…}` to one artist.
+  ///
+  /// **The one call in this application that reaches the network**, and the
+  /// only one that is slow by design: MusicBrainz is rate-limited to one
+  /// request per second, so a sweep over a large library runs for hours.
+  /// Every other call here returns in milliseconds; this one must never be
+  /// awaited anywhere a frame is waiting on it.
+  Future<CoreJsonResponse> enrichmentRun(String scopeJson, String token);
+
+  /// Reads what enrichment stored for one track through
+  /// `alexandria_enrichment_read_track`.
+  ///
+  /// [artist] is whose image to read — the caller is already showing the
+  /// track and holding its tags, so passing the name costs nothing where
+  /// resolving it again would be a second lookup. Makes no network call and
+  /// works whether or not enrichment is switched on.
+  Future<CoreJsonResponse> enrichmentReadTrack(
+    String uuid,
+    String artist,
+    String token,
+  );
+
   /// Appends tracks to a playlist through `alexandria_playlist_add_entries`
   /// (playlists Task 4).
   ///
@@ -1005,6 +1032,21 @@ class FfiCoreClient implements CoreClient {
       _reply<CoreJsonResponse>(
         await _isolate.call('playlistRead', [uuid, token]),
       );
+
+  @override
+  Future<CoreJsonResponse> enrichmentRun(String scopeJson, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('enrichmentRun', [scopeJson, token]),
+      );
+
+  @override
+  Future<CoreJsonResponse> enrichmentReadTrack(
+    String uuid,
+    String artist,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('enrichmentReadTrack', [uuid, artist, token]),
+  );
 
   @override
   Future<CoreJsonResponse> playlistAddEntries(

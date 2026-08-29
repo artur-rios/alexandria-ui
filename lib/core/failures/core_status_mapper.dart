@@ -36,6 +36,7 @@ Failure mapCoreStatus(
     CoreStatusFamily.watchlist => _mapWatchlist(code),
     CoreStatusFamily.readingList => _mapReadingList(code),
     CoreStatusFamily.playlist => _mapPlaylist(code),
+    CoreStatusFamily.enrichment => _mapEnrichment(code),
     CoreStatusFamily.auth => _mapAuth(code),
     CoreStatusFamily.playback => _mapPlayback(code),
     CoreStatusFamily.run => _mapRun(code),
@@ -282,6 +283,37 @@ Failure _mapPlaylist(int code) => switch (code) {
     code: code,
   ),
   _ => Failure.unexpected(family: CoreStatusFamily.playlist, code: code),
+};
+
+// The enrichment family carries one code the others do not:
+// ENRICHMENT_ERR_UNAVAILABLE, which is not something the caller did. The
+// request was well formed and this installation simply has enrichment
+// switched off, or on with no MusicBrainz contact configured. It maps to
+// `configuration` rather than `invalidState` so a surface can tell the owner
+// their administrator has not set this up, instead of implying they asked
+// for something wrong.
+Failure _mapEnrichment(int code) => switch (code) {
+  ENRICHMENT_ERR_INVALID_INPUT => Failure.invalidInput(
+    family: CoreStatusFamily.enrichment,
+    code: code,
+  ),
+  ENRICHMENT_ERR_UNAUTHORIZED => Failure.unauthorized(
+    family: CoreStatusFamily.enrichment,
+    code: code,
+  ),
+  ENRICHMENT_ERR_NOT_INITIALIZED => Failure.notInitialized(
+    family: CoreStatusFamily.enrichment,
+    code: code,
+  ),
+  ENRICHMENT_ERR_NOT_FOUND => Failure.notFound(
+    family: CoreStatusFamily.enrichment,
+    code: code,
+  ),
+  ENRICHMENT_ERR_UNAVAILABLE => Failure.configuration(
+    family: CoreStatusFamily.enrichment,
+    code: code,
+  ),
+  _ => Failure.unexpected(family: CoreStatusFamily.enrichment, code: code),
 };
 
 // The auth family has no not-found and no disk code, and is the only one with a
