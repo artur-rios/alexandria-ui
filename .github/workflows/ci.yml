@@ -146,8 +146,25 @@ jobs:
         run: dart run custom_lint
 
   test:
-    name: Unit and widget tests
-    runs-on: ubuntu-latest
+    # Both platforms, and the goldens are why. `case_painter.dart` typesets
+    # the sleeve, and text is the one thing a renderer does differently on
+    # each operating system — a golden made on one and only ever checked on
+    # the other is a golden nobody is checking. That is not hypothetical
+    # here: this suite was red on Linux for three days while passing on the
+    # machine the goldens came from, because nothing ran it on both.
+    #
+    # Running it twice costs a few minutes; the alternative costs a
+    # regression that only one developer's machine can see.
+    name: Unit and widget tests (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: ubuntu-latest
+            platform: linux
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -169,10 +186,21 @@ jobs:
 
       # IR-02: proven against the fixture package, so what runs here is the
       # plugin itself rather than a reimplementation of its logic.
+      #
+      # Linux only. It exercises the analyzer plugin, which has no
+      # platform-dependent behaviour to catch, and running it on both would
+      # be paying twice for one answer — where the suite above genuinely
+      # answers differently per platform, which is the whole reason this job
+      # is a matrix.
       - name: Layering rules against the fixtures
+        if: matrix.platform == 'linux'
         run: flutter test analysis_test --timeout 5x
 
+      # One coverage report, from one platform. Two runners uploading under
+      # the same artifact name collide, and a second measurement of the same
+      # lines answers nothing new.
       - uses: actions/upload-artifact@v4
+        if: matrix.platform == 'linux'
         with:
           name: coverage
           path: coverage/lcov.info
