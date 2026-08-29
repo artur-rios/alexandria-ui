@@ -87,8 +87,57 @@ class _TolerantGoldenComparator extends LocalFileComparator {
   /// to hide a control that moved or a color that changed.
   static const double _tolerance = 0.005;
 
+  /// The golden to compare against on this platform.
+  ///
+  /// A file named `case-vinyl.windows.png` beside `case-vinyl.png` is used
+  /// in its place when this is Windows. Most goldens need no such variant —
+  /// a painted shape rasterizes the same everywhere within tolerance — so
+  /// the base file stays the single reference for all of them, and a variant
+  /// exists only where two platforms genuinely disagree.
+  ///
+  /// Which is text. Two operating systems do not paint identical glyph
+  /// outlines identically: hinting, subpixel positioning and antialiasing
+  /// all differ, measured at 3.1-4.7% of the image on the sleeve goldens
+  /// after the typeface itself was pinned. A variant is how both platforms
+  /// get a real check instead of one of them getting none.
+  Uri _forThisPlatform(Uri golden) {
+    final variant = _platformVariant(golden);
+    if (variant == null) return golden;
+
+    return File.fromUri(basedir.resolveUri(variant)).existsSync()
+        ? variant
+        : golden;
+  }
+
+  /// `goldens/case-vinyl.png` → `goldens/case-vinyl.windows.png`, or `null`
+  /// on the platform whose renderer the base files hold.
+  Uri? _platformVariant(Uri golden) {
+    if (Platform.isLinux) return null;
+
+    final path = golden.toString();
+    final dot = path.lastIndexOf('.');
+    if (dot < 0) return null;
+
+    final suffix = Platform.isWindows ? 'windows' : Platform.operatingSystem;
+
+    return Uri.parse('${path.substring(0, dot)}.$suffix${path.substring(dot)}');
+  }
+
+  /// Writes a regenerated golden to whichever file this platform is the
+  /// reference for.
+  ///
+  /// Linux writes the base file; anything else writes its own variant, so
+  /// `--update-goldens` on Windows cannot overwrite the reference Linux
+  /// compares against — which is exactly how one platform's rasterization
+  /// would otherwise be committed as everyone's.
+  @override
+  Future<void> update(Uri golden, Uint8List imageBytes) =>
+      super.update(_platformVariant(golden) ?? golden, imageBytes);
+
   @override
   Future<bool> compare(Uint8List imageBytes, Uri golden) async {
+    golden = _forThisPlatform(golden);
+
     final result = await GoldenFileComparator.compareLists(
       imageBytes,
       await getGoldenBytes(golden),
@@ -134,9 +183,7 @@ class _TolerantGoldenComparator extends LocalFileComparator {
 /// enough to swallow a moved control, the one thing these exist to catch —
 /// or one canonical platform. This is the second.
 ///
-/// Linux because that is what CI compares on, so the goldens are checked on
-/// every push rather than on whichever machine a developer happens to use.
-/// A Windows developer runs every other test in the suite; the goldens are
-/// verified for them by CI, and `flutter test --update-goldens` on Windows
-/// would produce files that CI then rejects.
-bool get goldensAreComparable => Platform.isLinux;
+/// Both, now that each platform has its own reference where the two
+/// genuinely differ (see `_forThisPlatform`). A golden nobody compares on
+/// the platform they develop on is a golden that only CI can defend.
+bool get goldensAreComparable => Platform.isWindows || Platform.isLinux;
