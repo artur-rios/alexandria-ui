@@ -248,6 +248,35 @@
 #define RUN_ERR_OTHER 9
 
 /**
+ * FFI status codes returned by music enrichment (music enrichment design).
+ * Its own set, per the convention above, so it can grow without colliding;
+ * `ENRICHMENT_OK == PLAYLIST_OK == 0`.
+ */
+#define ENRICHMENT_OK 0
+
+#define ENRICHMENT_ERR_INVALID_INPUT 1
+
+#define ENRICHMENT_ERR_UNAUTHORIZED 2
+
+#define ENRICHMENT_ERR_NOT_INITIALIZED 3
+
+#define ENRICHMENT_ERR_NOT_FOUND 4
+
+/**
+ * Enrichment is switched off, or is on with no contact configured.
+ *
+ * Its own code rather than folded into `INVALID_INPUT`, because it is not
+ * something the *caller* did: the request was well formed and the
+ * installation is not configured for it. A client that can tell the two
+ * apart says "your administrator has not enabled this" instead of marking
+ * the owner's input wrong. `alexandria_settings_json` reports the same
+ * fact up front, so a client need never discover it by being refused.
+ */
+#define ENRICHMENT_ERR_UNAVAILABLE 5
+
+#define ENRICHMENT_ERR_OTHER 9
+
+/**
  * Result of starting an index run. `run_id` is a NUL-terminated UUID string
  * on success (empty on failure).
  *
@@ -417,6 +446,18 @@ typedef struct RunJsonResult {
   int status;
   char *json;
 } RunJsonResult;
+
+/**
+ * Result of every enrichment FFI function. On success `status` is
+ * `ENRICHMENT_OK` and `json` is a NUL-terminated JSON string of the
+ * response body — byte-for-byte the same shape HTTP returns from the
+ * matching `/v1/enrichment*` route (FR-FC-24 / NFR-09). On failure `json`
+ * is NULL. The caller must free `json` with `alexandria_free_string`.
+ */
+typedef struct EnrichmentJsonResult {
+  int status;
+  char *json;
+} EnrichmentJsonResult;
 
 const char *alexandria_version(void);
 
@@ -1288,3 +1329,39 @@ struct RunJsonResult alexandria_index_runs_active_json(const char *token);
  * `unsafe` because that obligation is the caller's and cannot be checked here.
  */
 void alexandria_free_string(char *ptr);
+
+/**
+ * Run music enrichment (music enrichment design).
+ *
+ * `scope_json` is the JSON body `POST /v1/enrichment/runs` takes, and NULL
+ * or an empty string means the same thing an absent body does there: sweep
+ * everything not yet looked up. `{"fileUuid":"…"}` scopes it to one track,
+ * `{"artist":"…"}` to one artist. `token` is the bearer auth token.
+ *
+ * **This call reaches the network** — the only FFI function in this library
+ * that does — and it is slow by design: MusicBrainz is rate-limited to one
+ * request per second and a sweep over a large library will take hours. A
+ * caller must run it off whatever thread its interface draws on, and should
+ * expect to show progress from the returned counts rather than a spinner.
+ *
+ * A run that reached nothing still succeeds: a service being down or having
+ * no answer is counted in the report, not raised.
+ */
+struct EnrichmentJsonResult alexandria_enrichment_run(const char *scope_json, const char *token);
+
+/**
+ * Read what enrichment has stored for one track.
+ *
+ * `uuid` is the file's public UUID. `artist` is whose image to read — the
+ * caller is a player already showing the track, so it is holding the tags
+ * and passing the name costs nothing, where resolving it here would be a
+ * second query for a fact it has. NULL means "no image wanted".
+ *
+ * Unlike the run above this makes **no network call** and works whether or
+ * not enrichment is switched on: reading what was already cached is a plain
+ * database read, so an owner who enabled it, ran it once and turned it off
+ * keeps what they fetched.
+ */
+struct EnrichmentJsonResult alexandria_enrichment_read_track(const char *uuid,
+                                                             const char *artist,
+                                                             const char *token);

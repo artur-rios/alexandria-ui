@@ -1871,6 +1871,36 @@
   "@playlistRemoveTrack": {
     "description": "Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2)."
   },
+  "enrichmentLyricsTitle": "Lyrics",
+  "@enrichmentLyricsTitle": {
+    "description": "Music enrichment design: heading over the words of the track playing now, shown only when the core has some cached."
+  },
+  "enrichmentLyricsSource": "Lyrics from {source}",
+  "@enrichmentLyricsSource": {
+    "description": "Attribution under the lyrics, naming the service that supplied them. Shown because the words are somebody's, not this application's.",
+    "placeholders": { "source": { "type": "String" } }
+  },
+  "enrichmentImageCredit": "Photograph: {source}",
+  "@enrichmentImageCredit": {
+    "description": "Attribution under an artist photograph. Wikimedia Commons licences require credit, so an image is shown with its source or not at all.",
+    "placeholders": { "source": { "type": "String" } }
+  },
+  "enrichmentFindForTrack": "Find lyrics and artwork",
+  "@enrichmentFindForTrack": {
+    "description": "Looks up the track playing now. Scoped to one track because that takes seconds, where a whole library takes hours at MusicBrainz's one-request-per-second limit."
+  },
+  "enrichmentLookingUp": "Looking up…",
+  "@enrichmentLookingUp": {
+    "description": "Shown while an enrichment lookup is in flight. It reaches the network, so it is not instant."
+  },
+  "enrichmentNothingFound": "Nothing found for this track.",
+  "@enrichmentNothingFound": {
+    "description": "The services answered and had nothing. An answer, not a failure — and not retried."
+  },
+  "enrichmentUnavailable": "Music lookup is switched off for this installation.",
+  "@enrichmentUnavailable": {
+    "description": "Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not the owner's mistake, so it is worded as a fact about the installation rather than as an error."
+  },
   "playlistPlay": "Play this playlist",
   "@playlistPlay": {
     "description": "Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list."

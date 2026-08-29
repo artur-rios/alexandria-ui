@@ -2550,6 +2550,48 @@ abstract class AppLocalizations {
   /// **'Remove from playlist'**
   String get playlistRemoveTrack;
 
+  /// Music enrichment design: heading over the words of the track playing now, shown only when the core has some cached.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics'**
+  String get enrichmentLyricsTitle;
+
+  /// Attribution under the lyrics, naming the service that supplied them. Shown because the words are somebody's, not this application's.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics from {source}'**
+  String enrichmentLyricsSource(String source);
+
+  /// Attribution under an artist photograph. Wikimedia Commons licences require credit, so an image is shown with its source or not at all.
+  ///
+  /// In en, this message translates to:
+  /// **'Photograph: {source}'**
+  String enrichmentImageCredit(String source);
+
+  /// Looks up the track playing now. Scoped to one track because that takes seconds, where a whole library takes hours at MusicBrainz's one-request-per-second limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Find lyrics and artwork'**
+  String get enrichmentFindForTrack;
+
+  /// Shown while an enrichment lookup is in flight. It reaches the network, so it is not instant.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking up…'**
+  String get enrichmentLookingUp;
+
+  /// The services answered and had nothing. An answer, not a failure — and not retried.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found for this track.'**
+  String get enrichmentNothingFound;
+
+  /// Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not the owner's mistake, so it is worded as a fact about the installation rather than as an error.
+  ///
+  /// In en, this message translates to:
+  /// **'Music lookup is switched off for this installation.'**
+  String get enrichmentUnavailable;
+
   /// Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list.
   ///
   /// In en, this message translates to:

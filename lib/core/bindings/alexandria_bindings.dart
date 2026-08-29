@@ -635,6 +635,84 @@ class AlexandriaBindings {
         )
       >();
 
+  /// Read what enrichment has stored for one track.
+  ///
+  /// `uuid` is the file's public UUID. `artist` is whose image to read — the
+  /// caller is a player already showing the track, so it is holding the tags
+  /// and passing the name costs nothing, where resolving it here would be a
+  /// second query for a fact it has. NULL means "no image wanted".
+  ///
+  /// Unlike the run above this makes **no network call** and works whether or
+  /// not enrichment is switched on: reading what was already cached is a plain
+  /// database read, so an owner who enabled it, ran it once and turned it off
+  /// keeps what they fetched.
+  EnrichmentJsonResult alexandria_enrichment_read_track(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> artist,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_enrichment_read_track(uuid, artist, token);
+  }
+
+  late final _alexandria_enrichment_read_trackPtr =
+      _lookup<
+        ffi.NativeFunction<
+          EnrichmentJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_enrichment_read_track');
+  late final _alexandria_enrichment_read_track =
+      _alexandria_enrichment_read_trackPtr
+          .asFunction<
+            EnrichmentJsonResult Function(
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+            )
+          >();
+
+  /// Run music enrichment (music enrichment design).
+  ///
+  /// `scope_json` is the JSON body `POST /v1/enrichment/runs` takes, and NULL
+  /// or an empty string means the same thing an absent body does there: sweep
+  /// everything not yet looked up. `{"fileUuid":"…"}` scopes it to one track,
+  /// `{"artist":"…"}` to one artist. `token` is the bearer auth token.
+  ///
+  /// **This call reaches the network** — the only FFI function in this library
+  /// that does — and it is slow by design: MusicBrainz is rate-limited to one
+  /// request per second and a sweep over a large library will take hours. A
+  /// caller must run it off whatever thread its interface draws on, and should
+  /// expect to show progress from the returned counts rather than a spinner.
+  ///
+  /// A run that reached nothing still succeeds: a service being down or having
+  /// no answer is counted in the report, not raised.
+  EnrichmentJsonResult alexandria_enrichment_run(
+    ffi.Pointer<ffi.Char> scope_json,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_enrichment_run(scope_json, token);
+  }
+
+  late final _alexandria_enrichment_runPtr =
+      _lookup<
+        ffi.NativeFunction<
+          EnrichmentJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_enrichment_run');
+  late final _alexandria_enrichment_run = _alexandria_enrichment_runPtr
+      .asFunction<
+        EnrichmentJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
   /// Write edited content back to a TextFile on disk (UC-33 / FR-TX-02,
   /// FR-TX-03).
   ///
@@ -2192,6 +2270,40 @@ final class CollectionJsonResult extends ffi.Struct {
     required int status,
     required ffi.Pointer<ffi.Char> json,
   }) => $allocator<CollectionJsonResult>()
+    ..ref.status = status
+    ..ref.json = json;
+}
+
+const int ENRICHMENT_ERR_INVALID_INPUT = 1;
+
+const int ENRICHMENT_ERR_NOT_FOUND = 4;
+
+const int ENRICHMENT_ERR_NOT_INITIALIZED = 3;
+
+const int ENRICHMENT_ERR_OTHER = 9;
+
+const int ENRICHMENT_ERR_UNAUTHORIZED = 2;
+
+const int ENRICHMENT_ERR_UNAVAILABLE = 5;
+
+const int ENRICHMENT_OK = 0;
+
+/// Result of every enrichment FFI function. On success `status` is
+/// `ENRICHMENT_OK` and `json` is a NUL-terminated JSON string of the
+/// response body — byte-for-byte the same shape HTTP returns from the
+/// matching `/v1/enrichment*` route (FR-FC-24 / NFR-09). On failure `json`
+/// is NULL. The caller must free `json` with `alexandria_free_string`.
+final class EnrichmentJsonResult extends ffi.Struct {
+  @ffi.Int()
+  external int status;
+
+  external ffi.Pointer<ffi.Char> json;
+
+  static ffi.Pointer<EnrichmentJsonResult> $allocate(
+    ffi.Allocator $allocator, {
+    required int status,
+    required ffi.Pointer<ffi.Char> json,
+  }) => $allocator<EnrichmentJsonResult>()
     ..ref.status = status
     ..ref.json = json;
 }

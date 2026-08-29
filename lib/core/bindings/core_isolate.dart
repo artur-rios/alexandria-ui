@@ -1037,6 +1037,39 @@ class CoreIsolate {
         }),
       ),
 
+      // The two enrichment calls. Their argument order is the thing this
+      // mapping can get wrong silently — `enrichmentReadTrack` takes three
+      // consecutive strings — which is why the integration suite exercises
+      // both against a loaded library rather than a fake.
+      'enrichmentRun' => withNativeString(
+        arguments.first! as String,
+        (scopeJson) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_enrichment_run(scopeJson, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'enrichmentReadTrack' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (artist) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_enrichment_read_track(
+              uuid,
+              artist,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
       'playlistAddEntries' => withNativeString(
         arguments.first! as String,
         (uuid) => withNativeString(
