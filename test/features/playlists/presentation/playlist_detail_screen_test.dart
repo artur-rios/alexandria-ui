@@ -410,6 +410,60 @@ void main() {
     }
   });
 
+  group('reopening a playlist', () {
+    testWidgets(
+      'GivenAPlaylistChangedElsewhere_WhenItIsReopened_ThenTheCoreIsReadAgain',
+      (tester) async {
+        // The screen promises the playlist is read afresh on open. A family
+        // provider is not auto-disposed by default, so without that the
+        // first read is cached for the life of the container: a track added
+        // from the music area — where `addEntries` deliberately skips
+        // reloading this provider — would never appear here, however many
+        // times the owner reopened the playlist.
+        final view = PlaylistView(
+          playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+          entries: [entry(uuid: 'e-1', position: 0, title: 'So What')],
+        );
+        final opened = await openDetail(tester, view: view);
+        expect(find.text('So What'), findsOneWidget);
+
+        await tester.tap(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.byIcon(Icons.close),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // A track is added from somewhere else entirely.
+        opened.gateway.reads[playlistUuid] = PlaylistRead.loaded(
+          view: PlaylistView(
+            playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+            entries: [
+              entry(uuid: 'e-1', position: 0, title: 'So What'),
+              entry(uuid: 'e-2', position: 1, title: 'Blue in Green'),
+            ],
+          ),
+        );
+
+        unawaited(
+          PlaylistDetailScreen.show(
+            tester.element(find.byType(ShellScreen)),
+            playlistUuid,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Blue in Green'),
+          findsOneWidget,
+          reason: 'the reopened screen served a cached copy',
+        );
+        expect(opened.gateway.readsMade, [playlistUuid, playlistUuid]);
+      },
+    );
+  });
+
   group('playing', () {
     /// The playback dependencies faked, so the real
     /// [AudioPlaybackController] runs behind the screen's play action rather

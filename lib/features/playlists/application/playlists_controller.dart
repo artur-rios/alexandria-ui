@@ -217,7 +217,17 @@ class PlaylistsForm extends Notifier<PlaylistsState> {
         state = const PlaylistsState();
 
       // A rejected session is discarded, which returns the owner to login.
+      //
+      // `isWriting` is cleared first, and that is not housekeeping. This
+      // provider is not auto-disposed, so the flag outlives both the dialog
+      // and the session: left `true`, it survives the owner signing back in,
+      // `create` and `renameSubmitted` keep returning at their own
+      // `state.isWriting` guard, and every later create, rename and delete
+      // silently does nothing for the rest of the run. Every other arm of
+      // this switch already clears it; this one is the only path that leaves
+      // the form permanently frozen.
       case PlaylistWriteFailed(failure: final UnauthorizedFailure failure):
+        state = state.copyWith(isWriting: false, renaming: state.renaming);
         session.invalidate(failure);
 
       // The playlist is gone, so the screen says so and reads the core again.

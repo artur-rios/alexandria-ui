@@ -896,9 +896,21 @@ final playlistsFormProvider =
 
 /// One playlist and its tracks, keyed by playlist uuid (playlists design
 /// section 3).
+///
+/// Auto-disposed, which a family is not by default (`isAutoDispose` defaults
+/// to `false` in `AsyncNotifierProviderFamilyBuilder.call`). Without it the
+/// entry for every playlist ever opened is cached for the life of the
+/// container and never read again: reopening a playlist would show whatever
+/// it held the first time, so a track added from the music area — where
+/// `PlaylistsForm.addEntries` deliberately does not reload this provider —
+/// would never appear, and a rename would leave the old title in the app
+/// bar. That is also what `PlaylistDetailScreen`'s own doc promises: opened
+/// on a uuid, read afresh from the core rather than trusting a copy the
+/// caller already had.
 final playlistDetailControllerProvider =
     AsyncNotifierProvider.family<PlaylistDetailController, PlaylistView?, String>(
       PlaylistDetailController.new,
+      isAutoDispose: true,
     );
 
 /// The tracked books' and comics' names (UC-32 main flow step 2).
