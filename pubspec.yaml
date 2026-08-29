@@ -132,6 +132,40 @@ flutter:
   uses-material-design: true
   generate: true
 
+  # The typeface the album case is typeset in (UC-21). Bundled rather than
+  # left to the host, for two reasons that turn out to be the same reason.
+  #
+  # The case is a *designed* object — a title and an artist set on a sleeve —
+  # and a `TextStyle` naming no family takes whatever the operating system
+  # offers, so the same record was typeset in a different face on Windows
+  # than on Linux. Pinning it is what makes the drawing look the way it was
+  # drawn to look, on both targets.
+  #
+  # And it is what makes the goldens comparable at all. Measured: with the
+  # host's font the glyph boxes land one pixel wider on Linux than in the
+  # committed goldens, which across text that wide is 1.2-2.3% of the image
+  # against a 0.5% tolerance sized for a rounded corner. That is why CI had
+  # been red on every Linux run while passing on the machine the goldens were
+  # made on.
+  #
+  # The files are Roboto — Material's own default, so this pins what most
+  # platforms were already choosing rather than restyling anything. Apache
+  # 2.0; the licence ships beside the files.
+  #
+  # The FAMILY NAME is deliberately not "Roboto". Material's default
+  # typography asks for Roboto by name, so a bundled family called that is
+  # picked up by every widget in the application — measured: it moved 14
+  # unrelated screen goldens, some by 7% of the image. Naming it for the one
+  # thing that wants it keeps the pin to the sleeve, where the problem was.
+  fonts:
+    - family: AlexandriaSleeve
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
+
 # IR-16: the MSIX package. Produced unsigned — code signing needs a certificate
 # the project does not hold, deferred in Operations & Infrastructure §7.2.
 msix_config:

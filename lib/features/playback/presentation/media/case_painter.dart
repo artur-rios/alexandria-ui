@@ -5,6 +5,22 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/album_palette.dart';
 import '../../domain/album_medium.dart';
 
+
+/// The face the sleeve is typeset in, bundled with the application
+/// (`pubspec.yaml`'s `fonts:` block).
+///
+/// Every `TextStyle` on the case names it. A `TextPainter` does not inherit
+/// from a `Theme` — it carries the style it is given — so leaving the family
+/// null does not fall back to the application's typeface, it falls back to
+/// the host's, which is a different face on each platform and is what made
+/// these goldens fail on Linux while passing on the machine that made them.
+///
+/// The name is this application's, not the typeface's: the files are Roboto,
+/// but a bundled family actually *called* Roboto is what Material's default
+/// typography resolves to, so it would restyle every screen in the
+/// application rather than this one drawing.
+const String _sleeveFontFamily = 'AlexandriaSleeve';
+
 /// The case the medium comes out of and goes back into (UC-21, FR-PL-07).
 ///
 /// One painter for all three shapes rather than three, because the shape is
@@ -197,6 +213,12 @@ class CasePainter extends CustomPainter {
       text: TextSpan(
         text: title,
         style: TextStyle(
+          // Named, not inherited. A `TextPainter` builds its own style, so
+          // a null family here is not "the app's font" — it is whatever the
+          // host offers, which typeset this sleeve in a different face on
+          // Windows than on Linux and made the goldens un-comparable
+          // between them. See the `fonts:` block in `pubspec.yaml`.
+          fontFamily: _sleeveFontFamily,
           color: palette.sleeveInk,
           fontSize: bounds.width * 0.09,
           fontWeight: FontWeight.w600,
@@ -223,6 +245,7 @@ class CasePainter extends CustomPainter {
       text: TextSpan(
         text: artist,
         style: TextStyle(
+          fontFamily: _sleeveFontFamily,
           color: palette.sleeveInk.withValues(alpha: 0.85),
           fontSize: bounds.width * 0.07,
         ),
