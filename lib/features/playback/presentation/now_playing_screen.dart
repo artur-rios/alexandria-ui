@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../enrichment/presentation/enrich_track_button.dart';
 import '../../enrichment/presentation/track_enrichment_panel.dart';
 import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../domain/album_cover.dart';
@@ -144,7 +145,17 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         actions: [
           // Task 5 entry point 3: whatever is currently playing — nothing
           // when the queue is empty, since there is then no track to add.
-          if (current != null) AddToPlaylistButton(fileUuids: [current.uuid]),
+          if (current != null) ...[
+            // Scoped to this track on purpose. A few seconds, where the
+            // whole library is hours at MusicBrainz's one-request-per-second
+            // limit — an action that long needs a screen to report progress
+            // and be cancelled from, not a button on the player.
+            EnrichTrackButton(
+              fileUuid: current.uuid,
+              artistName: musicEntryForFile(ref, current).albumArtist,
+            ),
+            AddToPlaylistButton(fileUuids: [current.uuid]),
+          ],
           IconButton(
             tooltip: l10n.audioClosePlayer,
             icon: const Icon(Icons.close),

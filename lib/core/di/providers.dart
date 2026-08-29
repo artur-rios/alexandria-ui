@@ -101,6 +101,7 @@ import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/playlists/application/playlist_detail_controller.dart';
 import '../../features/playlists/application/playlists_controller.dart';
+import '../../features/enrichment/application/enrichment_run_controller.dart';
 import '../../features/enrichment/application/track_enrichment_controller.dart';
 import '../../features/enrichment/domain/track_enrichment.dart';
 import '../../features/enrichment/data/core_enrichment_gateway.dart';
@@ -919,6 +920,12 @@ final trackEnrichmentControllerProvider =
       TrackEnrichment,
       TrackEnrichmentKey
     >(TrackEnrichmentController.new, isAutoDispose: true);
+
+/// A lookup the owner asked for, and what it concluded.
+final enrichmentRunControllerProvider =
+    NotifierProvider<EnrichmentRunController, EnrichmentRunState>(
+      EnrichmentRunController.new,
+    );
 
 /// The playlists screen's own state.
 final playlistsFormProvider =
