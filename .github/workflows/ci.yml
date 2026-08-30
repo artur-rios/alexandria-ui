@@ -53,7 +53,7 @@ env:
   # The first core carrying libraries, which is what the Libraries screen
   # calls. The pin and the vendored header move together — the drift check
   # below is exactly the guard against them moving apart.
-  CORE_REF: 97e5318d85b0ea6d22f58d17f4807e4c996e0b71
+  CORE_REF: 776d7a7bae50cceea6ab484820876987775848ad
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned
