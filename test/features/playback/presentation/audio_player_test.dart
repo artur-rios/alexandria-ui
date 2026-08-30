@@ -6,7 +6,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
@@ -48,7 +48,7 @@ void main() {
         FileDetails(file: file, metadata: metadata[file.uuid] ?? const {}),
     ];
     final gateway = FakeCatalogGateway(
-      listings: {LibraryType.audio: CatalogListing.loaded(files: rows)},
+      listings: {FileType.audio: CatalogListing.loaded(files: rows)},
     );
 
     for (final row in rows) {

@@ -7,7 +7,7 @@ import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
 import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/catalog/data/core_catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/enrichment/data/core_enrichment_gateway.dart';
 import 'package:alexandria_ui/features/enrichment/domain/enrichment_gateway.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -100,7 +100,7 @@ void main() {
 
     final listing = await CoreCatalogGateway(
       client,
-    ).listFiles(type: LibraryType.audio, credential: credential);
+    ).listFiles(type: FileType.audio, credential: credential);
     expect(listing, isA<CatalogListingLoaded>());
 
     return (listing as CatalogListingLoaded).files.single.file.uuid;

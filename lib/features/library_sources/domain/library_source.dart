@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 
 part 'library_source.freezed.dart';
 part 'library_source.g.dart';
@@ -36,7 +36,7 @@ abstract class LibrarySource with _$LibrarySource {
     /// When that run finished (UC-06).
     DateTime? lastRunAt,
 
-    /// What an index of this folder records, by [LibraryType.wireName].
+    /// What an index of this folder records, by [FileType.wireName].
     ///
     /// Empty means every type, which is exactly what the core reads an absent
     /// scope as — one meaning held the same way on both sides, so a folder
@@ -56,14 +56,14 @@ abstract class LibrarySource with _$LibrarySource {
   /// [scope] as types, dropping any name this application does not know.
   ///
   /// Dropped rather than defaulted, on the same reasoning as
-  /// [LibraryType.fromWire]: an unknown name is not any particular type, and
+  /// [FileType.fromWire]: an unknown name is not any particular type, and
   /// guessing one would scope a run to something nobody chose.
   ///
   /// Read this with [scopeIsUnreadable]. On its own it cannot be trusted to
   /// mean "every type" when it is empty, because a stored scope of nothing but
   /// unknown names drops to empty too.
-  List<LibraryType> get scopeTypes => [
-    for (final name in scope) ?LibraryType.fromWire(name),
+  List<FileType> get scopeTypes => [
+    for (final name in scope) ?FileType.fromWire(name),
   ];
 
   /// Whether [scope] names something, but nothing this application knows.

@@ -7,7 +7,7 @@ import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_file.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../domain/text_content_gateway.dart';
 
 /// [TextContentGateway] over the core's content calls (UC-18).
@@ -81,7 +81,7 @@ class CoreTextContentGateway implements TextContentGateway {
 
     try {
       final row = jsonDecode(json) as Map<String, dynamic>;
-      final type = LibraryType.fromWire(row['fileType'] as String?);
+      final type = FileType.fromWire(row['fileType'] as String?);
       if (type == null) return _unwritable();
 
       final indexedAt = row['indexedAt'] as String?;

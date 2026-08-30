@@ -8,7 +8,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
@@ -35,7 +35,7 @@ void main() {
   final video = aFile(
     uuid: videoUuid,
     name: 'Stalker.mkv',
-    type: LibraryType.video,
+    type: FileType.video,
   );
 
   /// Signs in, opens the videos area, and opens the watchlists screen.
@@ -52,7 +52,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.video: loadedDetails([video]),
+        FileType.video: loadedDetails([video]),
       },
     );
     catalog.details[videoUuid] = FileDetailsOutcome.read(
@@ -177,7 +177,7 @@ void main() {
         // way the application's own `FileDetailsView.show` is called.
         final catalog = FakeCatalogGateway(
           listings: {
-            LibraryType.audio: loadedDetails([aFile()]),
+            FileType.audio: loadedDetails([aFile()]),
           },
         );
 

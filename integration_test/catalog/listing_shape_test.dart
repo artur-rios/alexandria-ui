@@ -6,7 +6,7 @@ import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
 import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/catalog/data/core_catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -107,7 +107,7 @@ void main() {
       await indexAndSettle(client, credential, catalog.libraryDirectory.path);
 
       final listing = await CoreCatalogGateway(client).listFiles(
-        type: LibraryType.text,
+        type: FileType.text,
         credential: credential,
       );
 
@@ -135,14 +135,14 @@ void main() {
       await indexAndSettle(client, credential, catalog.libraryDirectory.path);
 
       final listing = await CoreCatalogGateway(client).listFiles(
-        type: LibraryType.text,
+        type: FileType.text,
         credential: credential,
       );
 
       final row = (listing as CatalogListingLoaded).files.single;
       expect(row.file.name, 'note.md');
       expect(row.file.path, contains('note.md'));
-      expect(row.file.type, LibraryType.text);
+      expect(row.file.type, FileType.text);
     },
   );
 }

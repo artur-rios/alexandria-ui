@@ -4,7 +4,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/catalog_file.dart';
 import '../domain/catalog_gateway.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 import '../domain/listing_view.dart';
 
 /// The files of the type the owner has selected (UC-09, FR-CT-02).
@@ -21,7 +21,7 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
   @override
   Future<List<CatalogFile>> build() {
     final destination = ref.watch(shellControllerProvider);
-    final type = libraryTypeFor(destination);
+    final type = fileTypeFor(destination);
 
     // Watched, so changing a filter or a sort reloads the listing without
     // anything having to remember to ask for it (UC-12 main flow steps 2
@@ -33,7 +33,7 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
     return _load(type, view);
   }
 
-  Future<List<CatalogFile>> _load(LibraryType? type, ListingView view) async {
+  Future<List<CatalogFile>> _load(FileType? type, ListingView view) async {
     // Home is the dashboard (UC-14) and bookmarks are not files (UC-28), so
     // there is nothing for this to fetch.
     if (type == null) return const [];
@@ -85,7 +85,7 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
 
   /// Loads the current type again (UC-09 AF-02's retry).
   Future<void> reload() async {
-    final type = libraryTypeFor(ref.read(shellControllerProvider));
+    final type = fileTypeFor(ref.read(shellControllerProvider));
     final view = type == null
         ? ListingView.initial
         : ref.read(listingViewControllerProvider).forType(type);
@@ -100,17 +100,17 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
 /// One query per type, because the core publishes no count call — the count is
 /// the length of the listing it would return. Kept apart from the listing so
 /// the panel's numbers do not disappear while a listing reloads.
-class TypeCountsController extends AsyncNotifier<Map<LibraryType, int>> {
+class TypeCountsController extends AsyncNotifier<Map<FileType, int>> {
   @override
-  Future<Map<LibraryType, int>> build() async {
+  Future<Map<FileType, int>> build() async {
     final session = ref.read(sessionControllerProvider.notifier);
     final credential = session.credential;
     if (credential == null) return const {};
 
     final gateway = ref.read(catalogGatewayProvider);
-    final counts = <LibraryType, int>{};
+    final counts = <FileType, int>{};
 
-    for (final type in LibraryType.values) {
+    for (final type in FileType.values) {
       final listing = await gateway.listFiles(
         type: type,
         credential: credential,

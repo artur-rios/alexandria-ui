@@ -6,7 +6,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/file_hold.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/purge_on_disk_section.dart';
@@ -49,7 +49,7 @@ void main() {
     uuid: bookUuid,
     name: 'Solaris.epub',
     path: path,
-    type: LibraryType.document,
+    type: FileType.document,
   );
 
   /// Signs in and opens the book's detail view (main flow step 1).
@@ -63,7 +63,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: loadedDetails([book]),
+        FileType.document: loadedDetails([book]),
       },
     );
     catalog.details[bookUuid] = FileDetailsOutcome.read(

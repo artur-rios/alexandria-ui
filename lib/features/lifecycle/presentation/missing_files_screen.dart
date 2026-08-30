@@ -7,7 +7,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/file_details.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../../catalog/domain/music_metadata.dart';
 import '../../catalog/presentation/file_details_view.dart';
 import '../../playback/presentation/music_display_name.dart' show tagOr;
@@ -141,7 +141,7 @@ class _MissingTile extends ConsumerWidget {
     // straight off the row this review already holds — never by the file on
     // disk, and never by asking the core again for what this listing already
     // answered.
-    final isAudio = file.type == LibraryType.audio;
+    final isAudio = file.type == FileType.audio;
     final title = isAudio
         ? tagOr(
             MusicMetadata.fromDetails(details.metadata).title,

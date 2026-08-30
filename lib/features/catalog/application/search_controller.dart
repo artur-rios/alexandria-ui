@@ -4,7 +4,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/catalog_gateway.dart';
 import '../domain/file_details.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 
 /// What the owner has typed (UC-11 main flow step 1).
 ///
@@ -41,7 +41,7 @@ class CatalogSearchController extends AsyncNotifier<CatalogSearchIndex> {
     final files = <FileDetails>[];
     var complete = true;
 
-    for (final type in LibraryType.values) {
+    for (final type in FileType.values) {
       final listing = await gateway.listFiles(
         type: type,
         credential: credential,

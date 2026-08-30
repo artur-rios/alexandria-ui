@@ -2,7 +2,7 @@ import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/catalog/data/core_catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_core_client.dart';
@@ -30,7 +30,7 @@ void main() {
       final gateway = CoreCatalogGateway(core);
 
       final listing = await gateway.listFiles(
-        type: LibraryType.audio,
+        type: FileType.audio,
         credential: 'token',
       );
 
@@ -54,7 +54,7 @@ void main() {
       final gateway = CoreCatalogGateway(core);
 
       final listing = await gateway.listFiles(
-        type: LibraryType.audio,
+        type: FileType.audio,
         credential: 'token',
       );
 
@@ -80,7 +80,7 @@ void main() {
       final gateway = CoreCatalogGateway(core);
 
       final listing = await gateway.listFiles(
-        type: LibraryType.audio,
+        type: FileType.audio,
         credential: 'token',
       );
 

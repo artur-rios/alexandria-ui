@@ -2,7 +2,7 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -43,11 +43,11 @@ void main() {
       uuid: uuid,
       name: 'Watchmen 01.cbz',
       path: '/home/owner/comics/Watchmen 01.cbz',
-      type: LibraryType.comic,
+      type: FileType.comic,
     );
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.comic: loadedDetails([file]),
+        FileType.comic: loadedDetails([file]),
       },
     );
     catalog.details[uuid] = FileDetailsOutcome.read(

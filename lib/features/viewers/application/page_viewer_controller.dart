@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../domain/file_viewer.dart';
 import '../domain/page_content.dart';
 
@@ -74,7 +74,7 @@ class PageViewerController extends Notifier<PageViewerState> {
 
     final outcome = await ref
         .read(pageGatewayProvider)
-        .read(target.path, isMarkdown: target.type == LibraryType.text);
+        .read(target.path, isMarkdown: target.type == FileType.text);
 
     switch (outcome) {
       case PageRead(:final content):

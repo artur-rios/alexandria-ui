@@ -32,7 +32,7 @@ class DiskFolderProbe implements FolderProbe {
       // owner may well be about to fill it.
       return true;
     } on FileSystemException catch (error) {
-      _log.info('library folder is not readable: $path', error);
+      _log.info('source folder is not readable: $path', error);
       return false;
     }
   }

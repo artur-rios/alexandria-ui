@@ -8,7 +8,7 @@ import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/catalog_gateway.dart';
 import '../domain/file_details.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 import '../domain/listing_view.dart';
 import '../domain/music_metadata.dart';
 import '../domain/video_metadata.dart';
@@ -23,7 +23,7 @@ class CoreCatalogGateway implements CatalogGateway {
 
   @override
   Future<CatalogListing> listFiles({
-    required LibraryType type,
+    required FileType type,
     required String credential,
     LifecycleFilter lifecycle = LifecycleFilter.active,
   }) async {

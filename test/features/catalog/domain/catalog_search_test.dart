@@ -1,6 +1,6 @@
 import 'package:alexandria_ui/features/catalog/domain/catalog_search.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
@@ -138,7 +138,7 @@ void main() {
         file: aFile(uuid: '3', name: 'Giant Steps.flac'),
       ),
       FileDetails(
-        file: aFile(uuid: '4', name: 'blue.png', type: LibraryType.image),
+        file: aFile(uuid: '4', name: 'blue.png', type: FileType.image),
       ),
     ];
 
@@ -152,7 +152,7 @@ void main() {
       // Across every type at once: the image matches on the same footing.
       expect(
         searchResults(files, 'blue').map((details) => details.file.type),
-        contains(LibraryType.image),
+        contains(FileType.image),
       );
     });
 

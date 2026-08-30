@@ -5,7 +5,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/deleted_items_screen.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
@@ -30,14 +30,14 @@ void main() {
   final recentlyDeleted = aFile(
     uuid: bookUuid,
     name: 'Solaris.epub',
-    type: LibraryType.document,
+    type: FileType.document,
     deletedAt: now.subtract(const Duration(days: 4)),
   );
 
   final longDeleted = aFile(
     uuid: 'e1a2b3c4-5d6e-4f70-8912-a3b4c5d6e7f8',
     name: 'Old notes.md',
-    type: LibraryType.text,
+    type: FileType.text,
     deletedAt: now.subtract(const Duration(days: 31)),
   );
 
@@ -53,7 +53,7 @@ void main() {
   Future<({ProviderContainer container, FakeLifecycleGateway lifecycle})>
   openDeleted(
     WidgetTester tester, {
-    Map<LibraryType, CatalogListing>? deleted,
+    Map<FileType, CatalogListing>? deleted,
     List<Bookmark> bookmarks = const [],
     List<LifecycleWrite> outcomes = const [],
     Locale? locale,
@@ -63,12 +63,12 @@ void main() {
     // block — which is where the view is reached from.
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: loadedDetails([aFile()]),
+        FileType.document: loadedDetails([aFile()]),
       },
       deleted:
           deleted ??
           {
-            LibraryType.document: loadedDetails([recentlyDeleted]),
+            FileType.document: loadedDetails([recentlyDeleted]),
           },
     );
 
@@ -168,7 +168,7 @@ void main() {
         await openDeleted(
           tester,
           deleted: {
-            LibraryType.text: loadedDetails([longDeleted]),
+            FileType.text: loadedDetails([longDeleted]),
           },
         );
 
@@ -211,17 +211,17 @@ void main() {
     ) async {
       final catalog = FakeCatalogGateway(
         listings: {
-          LibraryType.document: loadedDetails([
+          FileType.document: loadedDetails([
             aFile(
               uuid: bookUuid,
               name: 'Solaris.epub',
-              type: LibraryType.document,
+              type: FileType.document,
               missingAt: now,
             ),
           ]),
         },
         deleted: {
-          LibraryType.document: loadedDetails([recentlyDeleted]),
+          FileType.document: loadedDetails([recentlyDeleted]),
         },
       );
       final lifecycle = FakeLifecycleGateway();

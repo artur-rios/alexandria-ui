@@ -4,7 +4,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/playlists/application/playlist_detail_controller.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
@@ -21,7 +21,7 @@ void main() {
   const playlistUuid = 'pl-1';
 
   CatalogFile file(String uuid, {String name = 'track.flac'}) =>
-      CatalogFile(uuid: uuid, name: name, path: '/music/$name', type: LibraryType.audio);
+      CatalogFile(uuid: uuid, name: name, path: '/music/$name', type: FileType.audio);
 
   PlaylistEntry entry({
     required String uuid,

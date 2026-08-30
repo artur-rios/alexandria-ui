@@ -5,7 +5,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
@@ -31,7 +31,7 @@ void main() {
   final elapsed = aFile(
     uuid: fileUuid,
     name: 'Old notes.md',
-    type: LibraryType.text,
+    type: FileType.text,
     isDeleted: true,
     deletedAt: now.subtract(const Duration(days: 31)),
   );
@@ -40,7 +40,7 @@ void main() {
   final recent = aFile(
     uuid: fileUuid,
     name: 'Old notes.md',
-    type: LibraryType.text,
+    type: FileType.text,
     isDeleted: true,
     deletedAt: now.subtract(const Duration(days: 4)),
   );
@@ -49,7 +49,7 @@ void main() {
   final notDeleted = aFile(
     uuid: fileUuid,
     name: 'Old notes.md',
-    type: LibraryType.text,
+    type: FileType.text,
     deletedAt: now.subtract(const Duration(days: 31)),
   );
 
@@ -73,10 +73,10 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: loadedDetails([aFile()]),
+        FileType.document: loadedDetails([aFile()]),
       },
       deleted: {
-        if (file != null) LibraryType.text: loadedDetails([file]),
+        if (file != null) FileType.text: loadedDetails([file]),
       },
     );
 

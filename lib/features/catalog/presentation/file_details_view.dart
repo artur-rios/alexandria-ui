@@ -10,7 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/file_details.dart';
 import '../domain/file_size.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 import 'music_metadata_form.dart';
 import '../../editing/presentation/text_editor_screen.dart';
 import '../../playback/application/audio_playback_controller.dart';
@@ -169,7 +169,7 @@ class _Details extends ConsumerWidget {
               //
               // AF-03 disables each of them for a record whose file the last
               // scan could not find — there is nothing to decode.
-              if (details.file.type == LibraryType.video && !details.isDeleted)
+              if (details.file.type == FileType.video && !details.isDeleted)
                 FilledButton.icon(
                   onPressed: details.canReachTheFile
                       ? () => VideoPlayerScreen.show(context, ref, details.file)
@@ -182,7 +182,7 @@ class _Details extends ConsumerWidget {
               // The three are offered together because they are one decision —
               // what to put in the queue — and the owner is looking at the
               // track that answers it.
-              if (details.file.type == LibraryType.audio &&
+              if (details.file.type == FileType.audio &&
                   !details.isDeleted) ...[
                 FilledButton.icon(
                   onPressed: details.canReachTheFile
@@ -250,7 +250,7 @@ class _Details extends ConsumerWidget {
               // the core will read and write content for; every other type's
               // content is bytes this application does not edit (BR-06,
               // BR-09). AF-03: the editor reads the file's content.
-              if (details.file.type == LibraryType.text && !details.isDeleted)
+              if (details.file.type == FileType.text && !details.isDeleted)
                 OutlinedButton.icon(
                   onPressed: details.canReachTheFile
                       ? () => TextEditorScreen.show(context, ref, details.file)
@@ -263,10 +263,10 @@ class _Details extends ConsumerWidget {
               // can be tracked from its own detail view. Each is offered for
               // its own types and for nothing else, which is what those use
               // cases' AF-02 asks for.
-              if (details.file.type == LibraryType.video && !details.isDeleted)
+              if (details.file.type == FileType.video && !details.isDeleted)
                 AddToWatchlistButton(file: details.file),
-              if ((details.file.type == LibraryType.document ||
-                      details.file.type == LibraryType.comic) &&
+              if ((details.file.type == FileType.document ||
+                      details.file.type == FileType.comic) &&
                   !details.isDeleted)
                 AddToReadingListButton(file: details.file),
 
@@ -526,14 +526,14 @@ typedef OpenMetadataForm =
 /// Resolved by lookup rather than by a chain of type conditionals in the
 /// layout: a type either has a form or it does not, and the answer belongs in
 /// one place (IR-02's registration rule).
-OpenMetadataForm? _metadataFormFor(LibraryType type) => switch (type) {
-  LibraryType.audio => MusicMetadataForm.show,
-  LibraryType.video => VideoMetadataForm.show,
-  LibraryType.document ||
-  LibraryType.comic ||
-  LibraryType.text ||
-  LibraryType.html ||
-  LibraryType.image => null,
+OpenMetadataForm? _metadataFormFor(FileType type) => switch (type) {
+  FileType.audio => MusicMetadataForm.show,
+  FileType.video => VideoMetadataForm.show,
+  FileType.document ||
+  FileType.comic ||
+  FileType.text ||
+  FileType.html ||
+  FileType.image => null,
 };
 
 /// What AF-01 shows: the record is gone, so the listing is refreshed and the

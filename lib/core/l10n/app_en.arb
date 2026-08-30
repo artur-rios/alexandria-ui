@@ -505,32 +505,32 @@
       }
     }
   },
-  "libraryTypeAudio": "Music",
-  "@libraryTypeAudio": {
+  "fileTypeAudio": "Music",
+  "@fileTypeAudio": {
     "description": "The core's `audio` type, named for the owner (FR-CT-02)."
   },
-  "libraryTypeVideo": "Video",
-  "@libraryTypeVideo": {
+  "fileTypeVideo": "Video",
+  "@fileTypeVideo": {
     "description": "The core's `video` type, named for the owner (FR-CT-02)."
   },
-  "libraryTypeDocument": "Books",
-  "@libraryTypeDocument": {
+  "fileTypeDocument": "Books",
+  "@fileTypeDocument": {
     "description": "The core's `document` type, named for the owner (FR-CT-02)."
   },
-  "libraryTypeComic": "Comic books",
-  "@libraryTypeComic": {
+  "fileTypeComic": "Comic books",
+  "@fileTypeComic": {
     "description": "The core's `comic` type, named for the owner (FR-CT-02)."
   },
-  "libraryTypeText": "Notes",
-  "@libraryTypeText": {
+  "fileTypeText": "Notes",
+  "@fileTypeText": {
     "description": "The core's `text` type, named for the owner (FR-CT-02)."
   },
-  "libraryTypeHtml": "Saved pages",
-  "@libraryTypeHtml": {
+  "fileTypeHtml": "Saved pages",
+  "@fileTypeHtml": {
     "description": "The core's `html` type, named for the owner (FR-CT-02)."
   },
-  "libraryTypeImage": "Images",
-  "@libraryTypeImage": {
+  "fileTypeImage": "Images",
+  "@fileTypeImage": {
     "description": "The core's `image` type, named for the owner (FR-CT-02)."
   },
   "dismiss": "Dismiss",

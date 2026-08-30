@@ -5,7 +5,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -64,17 +64,17 @@ void main() {
     final series = aFile(
       uuid: seriesUuid,
       name: 'Twin Peaks.mkv',
-      type: LibraryType.video,
+      type: FileType.video,
     );
     final movie = aFile(
       uuid: movieUuid,
       name: 'Stalker.mkv',
-      type: LibraryType.video,
+      type: FileType.video,
     );
 
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.video: loadedDetails([series, movie]),
+        FileType.video: loadedDetails([series, movie]),
       },
     );
     catalog.details[seriesUuid] = FileDetailsOutcome.read(

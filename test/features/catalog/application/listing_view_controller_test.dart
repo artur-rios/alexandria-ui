@@ -4,7 +4,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/features/catalog/application/listing_view_controller.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,8 +19,8 @@ import '../../../support/test_container.dart';
 void main() {
   Future<({ProviderContainer ref, FakeCatalogGateway gateway})> started({
     SettingsStore? settings,
-    Map<LibraryType, CatalogListing>? listings,
-    Map<LibraryType, CatalogListing>? deleted,
+    Map<FileType, CatalogListing>? listings,
+    Map<FileType, CatalogListing>? deleted,
   }) async {
     final gateway = FakeCatalogGateway(listings: listings, deleted: deleted);
     final container = buildTestContainer(
@@ -58,7 +58,7 @@ void main() {
         await sut.ref
             .read(listingViewControllerProvider.notifier)
             .apply(
-              LibraryType.audio,
+              FileType.audio,
               const ListingView(lifecycle: LifecycleFilter.deleted),
             );
         await pumpEventQueue();
@@ -72,7 +72,7 @@ void main() {
       () async {
         final sut = await started(
           listings: {
-            LibraryType.audio: loadedDetails([
+            FileType.audio: loadedDetails([
               aFile(uuid: '1', name: 'zebra.flac'),
               aFile(uuid: '2', name: 'apple.flac'),
             ]),
@@ -89,7 +89,7 @@ void main() {
         await sut.ref
             .read(listingViewControllerProvider.notifier)
             .apply(
-              LibraryType.audio,
+              FileType.audio,
               const ListingView(direction: SortDirection.descending),
             );
         await pumpEventQueue();
@@ -105,18 +105,18 @@ void main() {
         final controller = sut.ref.read(listingViewControllerProvider.notifier);
 
         await controller.apply(
-          LibraryType.audio,
+          FileType.audio,
           const ListingView(sortField: SortField.indexed),
         );
         await controller.apply(
-          LibraryType.image,
+          FileType.image,
           const ListingView(lifecycle: LifecycleFilter.all),
         );
 
         final state = sut.ref.read(listingViewControllerProvider);
-        expect(state.forType(LibraryType.audio).sortField, SortField.indexed);
-        expect(state.forType(LibraryType.image).lifecycle, LifecycleFilter.all);
-        expect(state.forType(LibraryType.text), ListingView.initial);
+        expect(state.forType(FileType.audio).sortField, SortField.indexed);
+        expect(state.forType(FileType.image).lifecycle, LifecycleFilter.all);
+        expect(state.forType(FileType.text), ListingView.initial);
       },
     );
   });
@@ -129,7 +129,7 @@ void main() {
       await sut.ref
           .read(listingViewControllerProvider.notifier)
           .apply(
-            LibraryType.audio,
+            FileType.audio,
             const ListingView(sortField: SortField.indexed),
           );
 
@@ -154,7 +154,7 @@ void main() {
 
         final view = sut.ref
             .read(listingViewControllerProvider)
-            .forType(LibraryType.audio);
+            .forType(FileType.audio);
         expect(view.lifecycle, LifecycleFilter.all);
         expect(view.sortField, SortField.indexed);
         expect(view.direction, SortDirection.descending);
@@ -173,7 +173,7 @@ void main() {
         expect(
           sut.ref
               .read(listingViewControllerProvider)
-              .forType(LibraryType.audio),
+              .forType(FileType.audio),
           ListingView.initial,
         );
       },
@@ -187,16 +187,16 @@ void main() {
         final sut = await started();
         final controller = sut.ref.read(listingViewControllerProvider.notifier);
         await controller.apply(
-          LibraryType.audio,
+          FileType.audio,
           const ListingView(lifecycle: LifecycleFilter.deleted),
         );
 
-        await controller.clearFilters(LibraryType.audio);
+        await controller.clearFilters(FileType.audio);
 
         expect(
           sut.ref
               .read(listingViewControllerProvider)
-              .forType(LibraryType.audio)
+              .forType(FileType.audio)
               .lifecycle,
           LifecycleFilter.active,
         );
@@ -211,19 +211,19 @@ void main() {
         final sut = await started();
         final controller = sut.ref.read(listingViewControllerProvider.notifier);
         await controller.apply(
-          LibraryType.audio,
+          FileType.audio,
           const ListingView(
             lifecycle: LifecycleFilter.deleted,
             sortField: SortField.indexed,
           ),
         );
 
-        await controller.clearFilters(LibraryType.audio);
+        await controller.clearFilters(FileType.audio);
 
         expect(
           sut.ref
               .read(listingViewControllerProvider)
-              .forType(LibraryType.audio)
+              .forType(FileType.audio)
               .sortField,
           SortField.indexed,
         );
@@ -239,10 +239,10 @@ void main() {
         // listing works, and it is the change that the core rejects.
         final sut = await started(
           listings: {
-            LibraryType.audio: loadedDetails([aFile()]),
+            FileType.audio: loadedDetails([aFile()]),
           },
           deleted: {
-            LibraryType.audio: const CatalogListing.failed(
+            FileType.audio: const CatalogListing.failed(
               failure: Failure.invalidInput(
                 family: CoreStatusFamily.file,
                 code: 1,
@@ -258,14 +258,14 @@ void main() {
         await sut.ref
             .read(listingViewControllerProvider.notifier)
             .apply(
-              LibraryType.audio,
+              FileType.audio,
               const ListingView(lifecycle: LifecycleFilter.deleted),
             );
         await pumpEventQueue();
 
         final state = sut.ref.read(listingViewControllerProvider);
         expect(
-          state.forType(LibraryType.audio).lifecycle,
+          state.forType(FileType.audio).lifecycle,
           LifecycleFilter.active,
         );
         expect(state.rejection, isA<InvalidInputFailure>());
@@ -278,7 +278,7 @@ void main() {
         final sut = await started();
         final controller = sut.ref.read(listingViewControllerProvider.notifier);
         await controller.revert(
-          LibraryType.audio,
+          FileType.audio,
           const Failure.invalidInput(family: CoreStatusFamily.file, code: 1),
         );
 

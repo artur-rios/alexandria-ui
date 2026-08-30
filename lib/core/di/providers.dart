@@ -46,7 +46,7 @@ import '../../features/catalog/application/search_controller.dart';
 import '../../features/catalog/application/catalog_session_activity.dart';
 import '../../features/catalog/data/core_catalog_gateway.dart';
 import '../../features/catalog/domain/catalog_file.dart';
-import '../../features/catalog/domain/library_type.dart';
+import '../../features/catalog/domain/file_type.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
 import '../../features/catalog/domain/file_name.dart';
@@ -292,7 +292,7 @@ final folderProbeProvider = Provider<FolderProbe>(
   (ref) => const DiskFolderProbe(),
 );
 
-/// Where the registered library folders are kept (FR-LB-03).
+/// Where the registered source folders are kept (FR-LB-03).
 ///
 /// Reads the settings store the startup sequence loaded, so it is only usable
 /// once startup has reached ready — which is when the shell, and so the
@@ -308,7 +308,7 @@ final librarySourceStoreProvider = Provider<LibrarySourceStore>((ref) {
   return SettingsLibrarySourceStore(settings);
 });
 
-/// The registered library folders and the screen that manages them (UC-05).
+/// The registered source folders and the screen that manages them (UC-05).
 final librarySourcesControllerProvider =
     NotifierProvider<LibrarySourcesController, LibrarySourcesState>(
       LibrarySourcesController.new,
@@ -367,7 +367,7 @@ final listingControllerProvider =
 
 /// Every type's item count, for the navigation panel (FR-CT-01).
 final typeCountsControllerProvider =
-    AsyncNotifierProvider<TypeCountsController, Map<LibraryType, int>>(
+    AsyncNotifierProvider<TypeCountsController, Map<FileType, int>>(
       TypeCountsController.new,
     );
 
@@ -571,13 +571,13 @@ final fileRenameControllerProvider =
 /// been built, and FR-VW-08 is what the detail view shows for them.
 final viewerRegistryProvider = Provider<ViewerRegistry>(
   (ref) => const ViewerRegistry({
-    LibraryType.document: ViewerKind.document,
-    LibraryType.comic: ViewerKind.comic,
-    LibraryType.image: ViewerKind.image,
-    LibraryType.html: ViewerKind.page,
+    FileType.document: ViewerKind.document,
+    FileType.comic: ViewerKind.comic,
+    FileType.image: ViewerKind.image,
+    FileType.html: ViewerKind.page,
     // A text file has two ways to open: rendered here (UC-25) and edited in
     // UC-18's editor, which the detail view offers beside this one.
-    LibraryType.text: ViewerKind.page,
+    FileType.text: ViewerKind.page,
   }),
 );
 

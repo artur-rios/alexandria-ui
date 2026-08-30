@@ -5,7 +5,7 @@ import '../../features/playback/domain/album_medium.dart';
 /// The owner's local preferences (IR-12, FR-UX-12).
 ///
 /// What this holds is owner-facing state changed in the interface: theme,
-/// language, layout, sort and filter defaults, registered library folders,
+/// language, layout, sort and filter defaults, registered source folders,
 /// playback resume points, and window geometry.
 ///
 /// What it never holds is a credential or any catalog data. The salted password

@@ -5,7 +5,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
 import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
@@ -17,20 +17,20 @@ import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 class FakeCatalogGateway implements CatalogGateway {
   /// Creates a gateway whose types are empty unless a test fills them.
   FakeCatalogGateway({
-    Map<LibraryType, CatalogListing>? listings,
-    Map<LibraryType, CatalogListing>? deleted,
+    Map<FileType, CatalogListing>? listings,
+    Map<FileType, CatalogListing>? deleted,
   }) : listings = {...?listings},
        deleted = {...?deleted};
 
   /// What each type answers for active records. A type with no entry answers
   /// an empty listing.
-  final Map<LibraryType, CatalogListing> listings;
+  final Map<FileType, CatalogListing> listings;
 
   /// What each type answers for deleted records.
   ///
   /// Empty by default, which is what a library nobody has deleted from holds —
   /// and what makes UC-12 AF-01 reachable by filtering to it.
-  final Map<LibraryType, CatalogListing> deleted;
+  final Map<FileType, CatalogListing> deleted;
 
   /// What [fileDetails] answers, keyed by uuid.
   ///
@@ -77,7 +77,7 @@ class FakeCatalogGateway implements CatalogGateway {
   ///
   /// Empty is the assertion that matters when there is no session: no catalog
   /// call is made without one (FR-AU-07).
-  final List<LibraryType> requested = [];
+  final List<FileType> requested = [];
 
   /// The credentials each call was made with.
   final List<String> credentials = [];
@@ -96,7 +96,7 @@ class FakeCatalogGateway implements CatalogGateway {
 
   @override
   Future<CatalogListing> listFiles({
-    required LibraryType type,
+    required FileType type,
     required String credential,
     LifecycleFilter lifecycle = LifecycleFilter.active,
   }) async {
@@ -177,11 +177,11 @@ class FakeCatalogGateway implements CatalogGateway {
         MusicField.track.wireName: ?track?.toString(),
       },
     );
-    final existing = listings[LibraryType.audio];
+    final existing = listings[FileType.audio];
     final files = existing is CatalogListingLoaded
         ? existing.files
         : const <FileDetails>[];
-    listings[LibraryType.audio] = CatalogListing.loaded(files: [...files, row]);
+    listings[FileType.audio] = CatalogListing.loaded(files: [...files, row]);
 
     details[uuid] = FileDetailsOutcome.read(details: row);
   }
@@ -194,7 +194,7 @@ class FakeCatalogGateway implements CatalogGateway {
   void addFile({
     required String uuid,
     required String name,
-    LibraryType type = LibraryType.document,
+    FileType type = FileType.document,
     DateTime? indexedAt,
   }) {
     final file = aFile(
@@ -217,7 +217,7 @@ class FakeCatalogGateway implements CatalogGateway {
 
   /// Adds a document file to the document listing, named by [name] on disk.
   void addDocument({required String uuid, required String name}) =>
-      addFile(uuid: uuid, name: name, type: LibraryType.document);
+      addFile(uuid: uuid, name: name, type: FileType.document);
 
   /// Makes [uuid]'s details answer a failure instead of a record.
   void failDetailsFor(String uuid) {
@@ -227,7 +227,7 @@ class FakeCatalogGateway implements CatalogGateway {
   }
 
   /// Makes [type]'s listing answer a failure instead of files.
-  void failListing({LibraryType type = LibraryType.audio}) {
+  void failListing({FileType type = FileType.audio}) {
     listings[type] = const CatalogListing.failed(
       failure: Failure.notFound(family: CoreStatusFamily.file, code: 4),
     );
@@ -333,7 +333,7 @@ CatalogFile aFile({
   String uuid = '6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f',
   String name = 'Kind of Blue.flac',
   String? path,
-  LibraryType type = LibraryType.audio,
+  FileType type = FileType.audio,
   String contentHash = 'a-content-hash',
   int? sizeBytes,
   DateTime? mtime,

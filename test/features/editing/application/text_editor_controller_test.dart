@@ -5,7 +5,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_stamp.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/editing/application/text_editor_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -206,7 +206,7 @@ class EditorHarness {
           file: aFile(
             uuid: uuid,
             name: 'Notes.md',
-            type: LibraryType.text,
+            type: FileType.text,
             contentHash: '',
             sizeBytes: stamp.sizeBytes,
             mtime: stamp.mtime,

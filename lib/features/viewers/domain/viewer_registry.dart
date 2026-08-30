@@ -1,4 +1,4 @@
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 
 /// The viewers, keyed by the type each presents (FR-VW-01).
 ///
@@ -16,13 +16,13 @@ class ViewerRegistry {
   /// An empty registry, which presents nothing (FR-VW-08's answer).
   static const ViewerRegistry empty = ViewerRegistry({});
 
-  final Map<LibraryType, ViewerKind> _viewers;
+  final Map<FileType, ViewerKind> _viewers;
 
   /// The viewer registered for [type], or `null` when there is none.
-  ViewerKind? viewerFor(LibraryType type) => _viewers[type];
+  ViewerKind? viewerFor(FileType type) => _viewers[type];
 
   /// Whether [type] has a viewer at all.
-  bool canPresent(LibraryType type) => _viewers.containsKey(type);
+  bool canPresent(FileType type) => _viewers.containsKey(type);
 }
 
 /// The viewers this application registers.

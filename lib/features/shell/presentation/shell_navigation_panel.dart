@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/breakpoints.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../domain/shell_destination.dart';
 
 /// The navigation panel (FR-UX-01, FR-UX-02).
@@ -73,11 +73,11 @@ class ShellNavigationPanel extends ConsumerWidget {
                   NavigationRailDestination(
                     icon: _CountedIcon(
                       icon: destination.icon,
-                      count: counts?[libraryTypeFor(destination)],
+                      count: counts?[fileTypeFor(destination)],
                     ),
                     selectedIcon: _CountedIcon(
                       icon: destination.selectedIcon,
-                      count: counts?[libraryTypeFor(destination)],
+                      count: counts?[fileTypeFor(destination)],
                     ),
                     label: Text(destination.label(l10n)),
                   ),

@@ -641,19 +641,19 @@ abstract class AppLocalizations {
   /// The action in preferences that opens the library-folders screen (UC-05).
   ///
   /// In en, this message translates to:
-  /// **'Library folders'**
+  /// **'Source folders'**
   String get librarySourcesOpen;
 
   /// Title of the library-folders screen (UC-05).
   ///
   /// In en, this message translates to:
-  /// **'Library folders'**
+  /// **'Source folders'**
   String get librarySourcesTitle;
 
   /// Heading of the first-run guidance shown whenever no folder is registered (FR-LB-11, UC-05 main flow step 1).
   ///
   /// In en, this message translates to:
-  /// **'No library folders yet'**
+  /// **'No source folders yet'**
   String get librarySourcesEmptyTitle;
 
   /// Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06).
@@ -665,7 +665,7 @@ abstract class AppLocalizations {
   /// Closes the full-screen library-folders dialog. Its own word rather than the generic Cancel, which a folder's own row now uses for abandoning a run — the two must never read as the same action.
   ///
   /// In en, this message translates to:
-  /// **'Close the library folders'**
+  /// **'Close the source folders'**
   String get librarySourcesClose;
 
   /// The action that opens the platform's native folder picker (FR-LB-01).
@@ -774,43 +774,43 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Music'**
-  String get libraryTypeAudio;
+  String get fileTypeAudio;
 
   /// The core's `video` type, named for the owner (FR-CT-02).
   ///
   /// In en, this message translates to:
   /// **'Video'**
-  String get libraryTypeVideo;
+  String get fileTypeVideo;
 
   /// The core's `document` type, named for the owner (FR-CT-02).
   ///
   /// In en, this message translates to:
   /// **'Books'**
-  String get libraryTypeDocument;
+  String get fileTypeDocument;
 
   /// The core's `comic` type, named for the owner (FR-CT-02).
   ///
   /// In en, this message translates to:
   /// **'Comic books'**
-  String get libraryTypeComic;
+  String get fileTypeComic;
 
   /// The core's `text` type, named for the owner (FR-CT-02).
   ///
   /// In en, this message translates to:
   /// **'Notes'**
-  String get libraryTypeText;
+  String get fileTypeText;
 
   /// The core's `html` type, named for the owner (FR-CT-02).
   ///
   /// In en, this message translates to:
   /// **'Saved pages'**
-  String get libraryTypeHtml;
+  String get fileTypeHtml;
 
   /// The core's `image` type, named for the owner (FR-CT-02).
   ///
   /// In en, this message translates to:
   /// **'Images'**
-  String get libraryTypeImage;
+  String get fileTypeImage;
 
   /// Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action.
   ///
@@ -872,7 +872,7 @@ abstract class AppLocalizations {
   /// **'This folder could not be scanned.'**
   String get librarySourcesStartFailed;
 
-  /// The action that unregisters a library folder (UC-08 main flow step 1).
+  /// The action that unregisters a source folder (UC-08 main flow step 1).
   ///
   /// In en, this message translates to:
   /// **'Remove'**
@@ -881,7 +881,7 @@ abstract class AppLocalizations {
   /// Title of the unregister confirmation (UC-08 main flow step 2).
   ///
   /// In en, this message translates to:
-  /// **'Remove {label} from your library folders?'**
+  /// **'Remove {label} from your source folders?'**
   String librarySourcesUnregisterTitle(String label);
 
   /// Body of the unregister confirmation. FR-LB-10 requires it state that catalog records and on-disk files are left untouched (BR-12).
@@ -999,7 +999,7 @@ abstract class AppLocalizations {
   /// The action on the empty state that opens the library-folders screen (UC-05).
   ///
   /// In en, this message translates to:
-  /// **'Library folders'**
+  /// **'Source folders'**
   String get catalogEmptyAddFolder;
 
   /// Marks a file the last refresh could not find on disk. The record is still active; reviewing them is UC-37.

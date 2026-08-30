@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/playback/application/music_library_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -64,7 +64,7 @@ void main() {
       // has. It lands in the untagged group rather than vanishing.
       final gateway = FakeCatalogGateway(
         listings: {
-          LibraryType.audio: loadedDetails([aFile(uuid: '1', name: 'a.flac')]),
+          FileType.audio: loadedDetails([aFile(uuid: '1', name: 'a.flac')]),
         },
       );
       final container = testContainer(gateway: gateway);

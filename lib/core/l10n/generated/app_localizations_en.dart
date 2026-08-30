@@ -315,20 +315,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'The change was refused, and your e-mail and password are unchanged.';
 
   @override
-  String get librarySourcesOpen => 'Library folders';
+  String get librarySourcesOpen => 'Source folders';
 
   @override
-  String get librarySourcesTitle => 'Library folders';
+  String get librarySourcesTitle => 'Source folders';
 
   @override
-  String get librarySourcesEmptyTitle => 'No library folders yet';
+  String get librarySourcesEmptyTitle => 'No source folders yet';
 
   @override
   String get librarySourcesEmptyBody =>
       'Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.';
 
   @override
-  String get librarySourcesClose => 'Close the library folders';
+  String get librarySourcesClose => 'Close the source folders';
 
   @override
   String get librarySourcesAdd => 'Add a folder';
@@ -396,25 +396,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get libraryTypeAudio => 'Music';
+  String get fileTypeAudio => 'Music';
 
   @override
-  String get libraryTypeVideo => 'Video';
+  String get fileTypeVideo => 'Video';
 
   @override
-  String get libraryTypeDocument => 'Books';
+  String get fileTypeDocument => 'Books';
 
   @override
-  String get libraryTypeComic => 'Comic books';
+  String get fileTypeComic => 'Comic books';
 
   @override
-  String get libraryTypeText => 'Notes';
+  String get fileTypeText => 'Notes';
 
   @override
-  String get libraryTypeHtml => 'Saved pages';
+  String get fileTypeHtml => 'Saved pages';
 
   @override
-  String get libraryTypeImage => 'Images';
+  String get fileTypeImage => 'Images';
 
   @override
   String get dismiss => 'Dismiss';
@@ -457,7 +457,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String librarySourcesUnregisterTitle(String label) {
-    return 'Remove $label from your library folders?';
+    return 'Remove $label from your source folders?';
   }
 
   @override
@@ -528,7 +528,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your library is empty. Add a folder and index it, and what is inside will appear here.';
 
   @override
-  String get catalogEmptyAddFolder => 'Library folders';
+  String get catalogEmptyAddFolder => 'Source folders';
 
   @override
   String get catalogFileMissing => 'Missing from disk';

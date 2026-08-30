@@ -1,5 +1,5 @@
 import '../../catalog/domain/catalog_file.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../../organization/domain/bookmark.dart';
 import 'retention.dart';
 
@@ -68,7 +68,7 @@ class DeletedRecord {
   final bool isDeleted;
 
   /// The file's type, and `null` for a bookmark.
-  final LibraryType? type;
+  final FileType? type;
 
   /// Where this record stands in its retention window, as of [now].
   /// Where this record stands, as of [now], against a window of [days].

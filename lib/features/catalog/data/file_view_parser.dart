@@ -1,5 +1,5 @@
 import '../domain/catalog_file.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 
 /// The `File` object [row] describes, or `null` when its type is one this
 /// application does not know.
@@ -13,7 +13,7 @@ import '../domain/library_type.dart';
 /// unrecognized type belongs in no listing, and a core that grows a type must
 /// not make the listing it appears in unreadable.
 CatalogFile? fileFromFileView(Map<String, dynamic> row) {
-  final type = LibraryType.fromWire(row['fileType'] as String?);
+  final type = FileType.fromWire(row['fileType'] as String?);
   if (type == null) return null;
 
   final missingAt = row['missingAt'] as String?;

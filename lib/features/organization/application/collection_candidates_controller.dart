@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../catalog/domain/catalog_gateway.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../domain/collection.dart';
 import '../domain/bookmark_gateway.dart';
 import '../domain/collection_gateway.dart';
@@ -39,7 +39,7 @@ class CollectionCandidatesController
     final catalog = ref.read(catalogGatewayProvider);
     final candidates = <CollectionMember>[];
 
-    for (final type in LibraryType.values) {
+    for (final type in FileType.values) {
       final listing = await catalog.listFiles(
         type: type,
         credential: credential,

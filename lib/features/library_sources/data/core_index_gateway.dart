@@ -6,7 +6,7 @@ import '../../../core/bindings/core_isolate.dart';
 import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
 import '../domain/run_priority.dart';
@@ -28,7 +28,7 @@ class CoreIndexGateway implements IndexGateway {
   Future<IndexStartOutcome> startIndex({
     required String root,
     RunPriority? priority,
-    List<LibraryType> types = const [],
+    List<FileType> types = const [],
     required String credential,
   }) async {
     final CoreRunStart result;

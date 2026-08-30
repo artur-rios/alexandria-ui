@@ -5,7 +5,7 @@ import '../../shell/domain/shell_destination.dart';
 /// Seven, which is the core's own `FileType` and not a reinterpretation of it.
 /// The navigation panel's entries map onto these; where the two disagree, the
 /// core wins, because classifying a file is domain work the core owns (BR-02).
-enum LibraryType {
+enum FileType {
   /// `audio` — the panel's music.
   audio('audio'),
 
@@ -32,7 +32,7 @@ enum LibraryType {
   /// `image` — still images.
   image('image');
 
-  const LibraryType(this.wireName);
+  const FileType(this.wireName);
 
   /// The string the core uses in a filter and returns on a file.
   final String wireName;
@@ -43,8 +43,8 @@ enum LibraryType {
   /// `null` rather than a fallback: a file of an unknown type belongs in no
   /// listing, and putting it in an arbitrary one would be worse than leaving
   /// it out until the type is supported.
-  static LibraryType? fromWire(String? wireName) {
-    for (final type in LibraryType.values) {
+  static FileType? fromWire(String? wireName) {
+    for (final type in FileType.values) {
       if (type.wireName == wireName) return type;
     }
     return null;
@@ -56,14 +56,14 @@ enum LibraryType {
 /// [ShellDestination.home] is the dashboard (UC-14) and
 /// [ShellDestination.bookmarks] is not a file listing at all — bookmarks are a
 /// separate entity with their own core call, which UC-28 owns.
-LibraryType? libraryTypeFor(ShellDestination destination) =>
+FileType? fileTypeFor(ShellDestination destination) =>
     switch (destination) {
-      ShellDestination.music => LibraryType.audio,
-      ShellDestination.videos => LibraryType.video,
-      ShellDestination.books => LibraryType.document,
-      ShellDestination.comicBooks => LibraryType.comic,
-      ShellDestination.notes => LibraryType.text,
-      ShellDestination.pages => LibraryType.html,
-      ShellDestination.images => LibraryType.image,
+      ShellDestination.music => FileType.audio,
+      ShellDestination.videos => FileType.video,
+      ShellDestination.books => FileType.document,
+      ShellDestination.comicBooks => FileType.comic,
+      ShellDestination.notes => FileType.text,
+      ShellDestination.pages => FileType.html,
+      ShellDestination.images => FileType.image,
       ShellDestination.home || ShellDestination.bookmarks => null,
     };

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
 import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
@@ -70,7 +70,7 @@ class FakeIndexGateway implements IndexGateway {
     ({
       String root,
       RunPriority? priority,
-      List<LibraryType> types,
+      List<FileType> types,
       String credential,
     })
   >
@@ -122,7 +122,7 @@ class FakeIndexGateway implements IndexGateway {
   Future<IndexStartOutcome> startIndex({
     required String root,
     RunPriority? priority,
-    List<LibraryType> types = const [],
+    List<FileType> types = const [],
     required String credential,
   }) async {
     starts.add((

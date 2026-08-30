@@ -7,7 +7,7 @@ import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/lifecycle/application/missing_files_controller.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
@@ -32,14 +32,14 @@ void main() {
     uuid: 'a0000000-0000-4000-8000-000000000001',
     name: 'Here.epub',
     path: '/home/owner/books/Here.epub',
-    type: LibraryType.document,
+    type: FileType.document,
   );
 
   final missing = aFile(
     uuid: missingUuid,
     name: 'Gone.epub',
     path: '/home/owner/books/Gone.epub',
-    type: LibraryType.document,
+    type: FileType.document,
     missingAt: missingAt,
   );
 
@@ -47,7 +47,7 @@ void main() {
     uuid: 'a0000000-0000-4000-8000-000000000002',
     name: 'Elsewhere.epub',
     path: '/media/usb/Elsewhere.epub',
-    type: LibraryType.document,
+    type: FileType.document,
     missingAt: missingAt,
   );
 
@@ -67,7 +67,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: loadedDetails([present, ...files]),
+        FileType.document: loadedDetails([present, ...files]),
       },
     );
     for (final file in [present, missing, fromUnregistered]) {
@@ -156,7 +156,7 @@ void main() {
             title: 'So What',
             missingAt: missingAt,
           )
-          ..listings[LibraryType.document] = loadedDetails([present]);
+          ..listings[FileType.document] = loadedDetails([present]);
         for (final file in [present]) {
           catalog.details[file.uuid] = FileDetailsOutcome.read(
             details: FileDetails(file: file, metadata: const {}),
@@ -256,7 +256,7 @@ void main() {
       (tester) async {
         final catalog = FakeCatalogGateway(
           listings: {
-            for (final type in LibraryType.values)
+            for (final type in FileType.values)
               type: const CatalogListing.failed(
                 failure: Failure.unauthorized(
                   family: CoreStatusFamily.file,

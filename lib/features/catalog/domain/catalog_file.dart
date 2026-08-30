@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'file_stamp.dart';
-import 'library_type.dart';
+import 'file_type.dart';
 
 part 'catalog_file.freezed.dart';
 
@@ -25,7 +25,7 @@ abstract class CatalogFile with _$CatalogFile {
     required String path,
 
     /// What the core classified it as.
-    required LibraryType type,
+    required FileType type,
 
     /// The core's hash of the file's contents.
     ///

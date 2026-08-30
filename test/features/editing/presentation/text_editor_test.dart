@@ -8,7 +8,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/editing/domain/text_content_gateway.dart';
 import 'package:alexandria_ui/features/editing/presentation/text_editor_screen.dart';
@@ -38,7 +38,7 @@ void main() {
         file: aFile(
           uuid: uuid,
           name: 'Notes.md',
-          type: LibraryType.text,
+          type: FileType.text,
           contentHash: '',
           sizeBytes: sizeBytes,
           mtime: DateTime.utc(2026, 8, 23, 9),
@@ -63,7 +63,7 @@ void main() {
     final loaded = details ?? aNote();
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.text: loadedDetails([loaded.file]),
+        FileType.text: loadedDetails([loaded.file]),
       },
     );
     catalog.details[uuid] = FileDetailsOutcome.read(details: loaded);
@@ -181,7 +181,7 @@ void main() {
       // application's own `FileDetailsView.show` is called.
       final catalog = FakeCatalogGateway(
         listings: {
-          LibraryType.audio: loadedDetails([aFile()]),
+          FileType.audio: loadedDetails([aFile()]),
         },
       );
 

@@ -18,7 +18,7 @@ mixin _$CatalogFile {
  String get uuid;/// The file name on disk.
  String get name;/// The absolute on-disk path.
  String get path;/// What the core classified it as.
- LibraryType get type;/// The core's hash of the file's contents.
+ FileType get type;/// The core's hash of the file's contents.
 ///
 /// Read-only, and empty for most records: indexing no longer computes one,
 /// so only a file this application has written since carries a hash. What
@@ -80,7 +80,7 @@ abstract mixin class $CatalogFileCopyWith<$Res>  {
   factory $CatalogFileCopyWith(CatalogFile value, $Res Function(CatalogFile) _then) = _$CatalogFileCopyWithImpl;
 @useResult
 $Res call({
- String uuid, String name, String path, LibraryType type, String contentHash, int? sizeBytes, DateTime? mtime, DateTime? indexedAt, bool isDeleted, DateTime? deletedAt, DateTime? missingAt
+ String uuid, String name, String path, FileType type, String contentHash, int? sizeBytes, DateTime? mtime, DateTime? indexedAt, bool isDeleted, DateTime? deletedAt, DateTime? missingAt
 });
 
 
@@ -103,7 +103,7 @@ uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as LibraryType,contentHash: null == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
+as FileType,contentHash: null == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
 as String,sizeBytes: freezed == sizeBytes ? _self.sizeBytes : sizeBytes // ignore: cast_nullable_to_non_nullable
 as int?,mtime: freezed == mtime ? _self.mtime : mtime // ignore: cast_nullable_to_non_nullable
 as DateTime?,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
@@ -195,7 +195,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  int? sizeBytes,  DateTime? mtime,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  FileType type,  String contentHash,  int? sizeBytes,  DateTime? mtime,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CatalogFile() when $default != null:
 return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.sizeBytes,_that.mtime,_that.indexedAt,_that.isDeleted,_that.deletedAt,_that.missingAt);case _:
@@ -216,7 +216,7 @@ return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  int? sizeBytes,  DateTime? mtime,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String name,  String path,  FileType type,  String contentHash,  int? sizeBytes,  DateTime? mtime,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)  $default,) {final _that = this;
 switch (_that) {
 case _CatalogFile():
 return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.sizeBytes,_that.mtime,_that.indexedAt,_that.isDeleted,_that.deletedAt,_that.missingAt);case _:
@@ -236,7 +236,7 @@ return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String name,  String path,  LibraryType type,  String contentHash,  int? sizeBytes,  DateTime? mtime,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String name,  String path,  FileType type,  String contentHash,  int? sizeBytes,  DateTime? mtime,  DateTime? indexedAt,  bool isDeleted,  DateTime? deletedAt,  DateTime? missingAt)?  $default,) {final _that = this;
 switch (_that) {
 case _CatalogFile() when $default != null:
 return $default(_that.uuid,_that.name,_that.path,_that.type,_that.contentHash,_that.sizeBytes,_that.mtime,_that.indexedAt,_that.isDeleted,_that.deletedAt,_that.missingAt);case _:
@@ -261,7 +261,7 @@ class _CatalogFile extends CatalogFile {
 /// The absolute on-disk path.
 @override final  String path;
 /// What the core classified it as.
-@override final  LibraryType type;
+@override final  FileType type;
 /// The core's hash of the file's contents.
 ///
 /// Read-only, and empty for most records: indexing no longer computes one,
@@ -331,7 +331,7 @@ abstract mixin class _$CatalogFileCopyWith<$Res> implements $CatalogFileCopyWith
   factory _$CatalogFileCopyWith(_CatalogFile value, $Res Function(_CatalogFile) _then) = __$CatalogFileCopyWithImpl;
 @override @useResult
 $Res call({
- String uuid, String name, String path, LibraryType type, String contentHash, int? sizeBytes, DateTime? mtime, DateTime? indexedAt, bool isDeleted, DateTime? deletedAt, DateTime? missingAt
+ String uuid, String name, String path, FileType type, String contentHash, int? sizeBytes, DateTime? mtime, DateTime? indexedAt, bool isDeleted, DateTime? deletedAt, DateTime? missingAt
 });
 
 
@@ -354,7 +354,7 @@ uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
-as LibraryType,contentHash: null == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
+as FileType,contentHash: null == contentHash ? _self.contentHash : contentHash // ignore: cast_nullable_to_non_nullable
 as String,sizeBytes: freezed == sizeBytes ? _self.sizeBytes : sizeBytes // ignore: cast_nullable_to_non_nullable
 as int?,mtime: freezed == mtime ? _self.mtime : mtime // ignore: cast_nullable_to_non_nullable
 as DateTime?,indexedAt: freezed == indexedAt ? _self.indexedAt : indexedAt // ignore: cast_nullable_to_non_nullable
