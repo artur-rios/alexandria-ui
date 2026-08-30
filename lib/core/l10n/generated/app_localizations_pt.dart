@@ -1394,6 +1394,43 @@ class AppLocalizationsPt extends AppLocalizations {
   String get playlistRemoveTrack => 'Remover da playlist';
 
   @override
+  String get librariesOpen => 'Bibliotecas';
+
+  @override
+  String get librariesTitle => 'Bibliotecas';
+
+  @override
+  String get librariesNone => 'Você ainda não criou uma biblioteca.';
+
+  @override
+  String get librariesExplanation =>
+      'Uma biblioteca mantém os arquivos de uma pasta juntos e em suas pastas — um curso, com a gravação e os materiais de cada aula lado a lado. Seus arquivos aparecem aqui em vez de nos painéis por tipo, para não soterrar o resto. A busca continua encontrando-os.';
+
+  @override
+  String get libraryNameLabel => 'Nome da biblioteca';
+
+  @override
+  String get libraryAdd => 'Adicionar uma biblioteca';
+
+  @override
+  String get libraryRemove => 'Remover esta biblioteca';
+
+  @override
+  String libraryRemoveMessage(String name) {
+    return 'Remover $name? Os arquivos voltam para os painéis por tipo — nada no disco é tocado e nada é excluído.';
+  }
+
+  @override
+  String get libraryEmptyFolder => 'Nada nesta pasta.';
+
+  @override
+  String get libraryUp => 'Subir uma pasta';
+
+  @override
+  String get libraryOverlaps =>
+      'Essa pasta já está dentro de outra biblioteca.';
+
+  @override
   String get enrichmentSweepOpen => 'Buscar informações musicais';
 
   @override

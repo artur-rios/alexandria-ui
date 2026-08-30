@@ -6,6 +6,7 @@ import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../organization/presentation/collections_screen.dart';
 import '../../enrichment/presentation/enrichment_sweep_screen.dart';
+import '../../libraries/presentation/library_tree_screen.dart';
 import '../../playlists/presentation/playlists_screen.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
@@ -62,6 +63,11 @@ class LibraryMenu extends StatelessWidget {
           icon: Icons.library_books_outlined,
           label: l10n.readingListsOpen,
           onSelected: () => ReadingListsScreen.show(context),
+        ),
+        MenuEntry(
+          icon: Icons.folder_special_outlined,
+          label: l10n.librariesOpen,
+          onSelected: () => LibrariesScreen.show(context),
         ),
         MenuEntry(
           icon: Icons.queue_music_outlined,

@@ -1037,6 +1037,57 @@ class CoreIsolate {
         }),
       ),
 
+      // The library calls. `libraryBrowse` takes three consecutive strings,
+      // which is the mapping a transposition breaks silently — the uuid
+      // would be read as a folder path and answer nothing.
+      'libraryRegister' => withNativeString(
+        arguments.first! as String,
+        (jsonBody) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_library_register(jsonBody, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'librariesList' => withNativeString(arguments.first! as String, (token) {
+        final result = bindings.alexandria_libraries_list(token);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'libraryBrowse' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(
+          arguments[1]! as String,
+          (path) => withNativeString(arguments[2]! as String, (token) {
+            final result = bindings.alexandria_library_browse(
+              uuid,
+              path,
+              token,
+            );
+            return (
+              status: result.status,
+              json: strings.consume(result.json, (json) => json),
+            );
+          }),
+        ),
+      ),
+
+      'libraryRemove' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_library_remove(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       // The two enrichment calls. Their argument order is the thing this
       // mapping can get wrong silently — `enrichmentReadTrack` takes three
       // consecutive strings — which is why the integration suite exercises

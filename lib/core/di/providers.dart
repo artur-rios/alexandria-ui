@@ -106,6 +106,10 @@ import '../../features/enrichment/application/enrichment_sweep_controller.dart';
 import '../../features/enrichment/application/track_enrichment_controller.dart';
 import '../../features/enrichment/domain/track_enrichment.dart';
 import '../../features/enrichment/data/core_enrichment_gateway.dart';
+import '../../features/libraries/application/libraries_controller.dart';
+import '../../features/libraries/data/core_library_gateway.dart';
+import '../../features/libraries/domain/library.dart';
+import '../../features/libraries/domain/library_gateway.dart';
 import '../../features/enrichment/domain/enrichment_gateway.dart';
 import '../../features/playlists/data/core_playlist_gateway.dart';
 import '../../features/playlists/domain/playlist.dart';
@@ -921,6 +925,35 @@ final trackEnrichmentControllerProvider =
       TrackEnrichment,
       TrackEnrichmentKey
     >(TrackEnrichmentController.new, isAutoDispose: true);
+
+/// The core's library operations (libraries design).
+final libraryGatewayProvider = Provider<LibraryGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError('the library gateway was read before the core was loaded');
+  }
+
+  return CoreLibraryGateway(core);
+});
+
+/// The registered libraries.
+final librariesControllerProvider =
+    AsyncNotifierProvider<LibrariesController, List<Library>>(
+      LibrariesController.new,
+    );
+
+/// One level of one library's tree, keyed by library and folder.
+///
+/// Auto-disposed, which a family is not by default: browsing a course walks
+/// through many folders, and an entry for every one ever opened would be
+/// held for the life of the container and never read again — so a folder
+/// whose contents changed would keep showing what it held the first time.
+final libraryTreeControllerProvider =
+    AsyncNotifierProvider.family<
+      LibraryTreeController,
+      LibraryListing?,
+      LibraryLocation
+    >(LibraryTreeController.new, isAutoDispose: true);
 
 /// A library-wide lookup, walked a batch at a time.
 final enrichmentSweepControllerProvider =

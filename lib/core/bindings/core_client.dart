@@ -472,6 +472,34 @@ abstract interface class CoreClient {
   /// `alexandria_playlist_read` (playlists Task 6).
   Future<CoreJsonResponse> playlistRead(String uuid, String token);
 
+  /// Treats a folder as a library through `alexandria_library_register`
+  /// (libraries design).
+  ///
+  /// [jsonBody] carries the `name` and `rootPath`. Whatever is already
+  /// indexed beneath the folder is claimed by the same call.
+  Future<CoreJsonResponse> libraryRegister(String jsonBody, String token);
+
+  /// Every registered library, through `alexandria_libraries_list`.
+  Future<CoreJsonResponse> librariesList(String token);
+
+  /// One level of a library's tree, through `alexandria_library_browse`.
+  ///
+  /// [path] is the folder to list, relative to the library's root; empty is
+  /// the top. One level rather than the whole tree — a course with two
+  /// hundred classes is a large document to build so the owner can look at
+  /// the six things in one folder.
+  Future<CoreJsonResponse> libraryBrowse(
+    String uuid,
+    String path,
+    String token,
+  );
+
+  /// Stops treating a folder as a library, through
+  /// `alexandria_library_remove`.
+  ///
+  /// The files are kept and return to the type panels.
+  Future<CoreJsonResponse> libraryRemove(String uuid, String token);
+
   /// Runs music enrichment through `alexandria_enrichment_run` (music
   /// enrichment design).
   ///
@@ -1031,6 +1059,31 @@ class FfiCoreClient implements CoreClient {
   Future<CoreJsonResponse> playlistRead(String uuid, String token) async =>
       _reply<CoreJsonResponse>(
         await _isolate.call('playlistRead', [uuid, token]),
+      );
+
+  @override
+  Future<CoreJsonResponse> libraryRegister(String jsonBody, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('libraryRegister', [jsonBody, token]),
+      );
+
+  @override
+  Future<CoreJsonResponse> librariesList(String token) async =>
+      _reply<CoreJsonResponse>(await _isolate.call('librariesList', [token]));
+
+  @override
+  Future<CoreJsonResponse> libraryBrowse(
+    String uuid,
+    String path,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('libraryBrowse', [uuid, path, token]),
+  );
+
+  @override
+  Future<CoreJsonResponse> libraryRemove(String uuid, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('libraryRemove', [uuid, token]),
       );
 
   @override

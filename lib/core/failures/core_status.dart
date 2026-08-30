@@ -32,6 +32,9 @@ enum CoreStatusFamily {
   /// `alexandria_enrichment_*` — see `ENRICHMENT_*` in the core's header.
   enrichment,
 
+  /// `alexandria_library_*` and `alexandria_libraries_*` — see `LIBRARY_*`.
+  library,
+
   /// `alexandria_auth_local_*` — see `AUTH_*`.
   auth,
 
@@ -68,6 +71,7 @@ enum CoreStatusFamily {
     CoreStatusFamily.readingList => READING_LIST_OK,
     CoreStatusFamily.playlist => PLAYLIST_OK,
     CoreStatusFamily.enrichment => ENRICHMENT_OK,
+    CoreStatusFamily.library => LIBRARY_OK,
     CoreStatusFamily.auth => AUTH_OK,
     CoreStatusFamily.settings => SETTINGS_OK,
     CoreStatusFamily.playback => PLAYBACK_OK,

@@ -641,19 +641,19 @@ abstract class AppLocalizations {
   /// The action in preferences that opens the library-folders screen (UC-05).
   ///
   /// In en, this message translates to:
-  /// **'Source folders'**
+  /// **'Library folders'**
   String get librarySourcesOpen;
 
   /// Title of the library-folders screen (UC-05).
   ///
   /// In en, this message translates to:
-  /// **'Source folders'**
+  /// **'Library folders'**
   String get librarySourcesTitle;
 
   /// Heading of the first-run guidance shown whenever no folder is registered (FR-LB-11, UC-05 main flow step 1).
   ///
   /// In en, this message translates to:
-  /// **'No source folders yet'**
+  /// **'No library folders yet'**
   String get librarySourcesEmptyTitle;
 
   /// Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06).
@@ -665,7 +665,7 @@ abstract class AppLocalizations {
   /// Closes the full-screen library-folders dialog. Its own word rather than the generic Cancel, which a folder's own row now uses for abandoning a run — the two must never read as the same action.
   ///
   /// In en, this message translates to:
-  /// **'Close the source folders'**
+  /// **'Close the library folders'**
   String get librarySourcesClose;
 
   /// The action that opens the platform's native folder picker (FR-LB-01).
@@ -872,7 +872,7 @@ abstract class AppLocalizations {
   /// **'This folder could not be scanned.'**
   String get librarySourcesStartFailed;
 
-  /// The action that unregisters a source folder (UC-08 main flow step 1).
+  /// The action that unregisters a library folder (UC-08 main flow step 1).
   ///
   /// In en, this message translates to:
   /// **'Remove'**
@@ -881,7 +881,7 @@ abstract class AppLocalizations {
   /// Title of the unregister confirmation (UC-08 main flow step 2).
   ///
   /// In en, this message translates to:
-  /// **'Remove {label} from your source folders?'**
+  /// **'Remove {label} from your library folders?'**
   String librarySourcesUnregisterTitle(String label);
 
   /// Body of the unregister confirmation. FR-LB-10 requires it state that catalog records and on-disk files are left untouched (BR-12).
@@ -999,7 +999,7 @@ abstract class AppLocalizations {
   /// The action on the empty state that opens the library-folders screen (UC-05).
   ///
   /// In en, this message translates to:
-  /// **'Source folders'**
+  /// **'Library folders'**
   String get catalogEmptyAddFolder;
 
   /// Marks a file the last refresh could not find on disk. The record is still active; reviewing them is UC-37.
@@ -2549,6 +2549,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove from playlist'**
   String get playlistRemoveTrack;
+
+  /// Library menu entry opening the list of registered libraries.
+  ///
+  /// In en, this message translates to:
+  /// **'Libraries'**
+  String get librariesOpen;
+
+  /// Title of the screen listing registered libraries.
+  ///
+  /// In en, this message translates to:
+  /// **'Libraries'**
+  String get librariesTitle;
+
+  /// Libraries design: no folder has been marked as a library. A state, not a failure.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not made a library yet.'**
+  String get librariesNone;
+
+  /// Says what a library does and, crucially, what it hides: marking a folder empties part of a type panel and that is not visible until afterwards.
+  ///
+  /// In en, this message translates to:
+  /// **'A library keeps a folder\'s files together and in their folders — a course, with each class\'s recording and handouts side by side. Its files are shown here instead of in the type panels, so they do not bury everything else. Search still finds them.'**
+  String get librariesExplanation;
+
+  /// The owner's name for the library, which is not the folder's name.
+  ///
+  /// In en, this message translates to:
+  /// **'Library name'**
+  String get libraryNameLabel;
+
+  /// Opens the folder picker to mark a folder as a library.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a library'**
+  String get libraryAdd;
+
+  /// Stops treating the folder as a library.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this library'**
+  String get libraryRemove;
+
+  /// The confirmation. Says the files come back, because removing must not read as discarding them.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}? Its files go back to the type panels — nothing on disk is touched and nothing is deleted.'**
+  String libraryRemoveMessage(String name);
+
+  /// A folder with no files and no subfolders indexed under it.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in this folder.'**
+  String get libraryEmptyFolder;
+
+  /// Goes to the folder containing the one being shown.
+  ///
+  /// In en, this message translates to:
+  /// **'Up one folder'**
+  String get libraryUp;
+
+  /// Libraries design section 5: a file in two libraries means two answers to where it appears. Worded as a fact about the folder rather than as a mistake the owner made.
+  ///
+  /// In en, this message translates to:
+  /// **'That folder is already inside another library.'**
+  String get libraryOverlaps;
 
   /// Library menu entry opening the library-wide lookup screen.
   ///

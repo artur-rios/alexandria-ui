@@ -11,6 +11,7 @@ import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 import 'failing_settings_store.dart';
 import 'fake_auth_gateway.dart';
 import 'fake_enrichment_gateway.dart';
+import 'fake_library_gateway.dart';
 import 'fake_playlist_gateway.dart';
 import 'login_harness.dart';
 
@@ -91,6 +92,10 @@ extension PumpShell on WidgetTester {
         // about something else should see.
         if (!_overrides(extraOverrides, enrichmentGatewayProvider))
           enrichmentGatewayProvider.overrideWithValue(FakeEnrichmentGateway()),
+        // The Library menu builds its entries whether or not a test opens
+        // them, and the real gateway throws when read before a core exists.
+        if (!_overrides(extraOverrides, libraryGatewayProvider))
+          libraryGatewayProvider.overrideWithValue(FakeLibraryGateway()),
         ...extraOverrides,
       ],
     );

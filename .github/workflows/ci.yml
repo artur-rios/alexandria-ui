@@ -50,12 +50,10 @@ env:
   # codes UC-40, UC-41 and UC-42 are specified against since the core dropped
   # e-mail confirmation and password reset on 2026-08-18.
   CORE_REPOSITORY: artur-rios/alexandria-api
-  # alexandria-api#128's merge commit: the first core whose sweep can be
-  # walked in batches, which is what the enrichment screen calls. The pin and
-  # the vendored header move together — the drift check below is exactly the
-  # guard against them moving apart. No header change this time: the batch
-  # size rides in the scope JSON, so the C signatures are untouched.
-  CORE_REF: f84eceefd798b431e78a543abfbacc0ef0923d77
+  # The first core carrying libraries, which is what the Libraries screen
+  # calls. The pin and the vendored header move together — the drift check
+  # below is exactly the guard against them moving apart.
+  CORE_REF: 97e5318d85b0ea6d22f58d17f4807e4c996e0b71
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned

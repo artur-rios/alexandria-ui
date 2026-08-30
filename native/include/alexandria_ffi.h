@@ -277,6 +277,32 @@
 #define ENRICHMENT_ERR_OTHER 9
 
 /**
+ * FFI status codes returned by library operations (libraries design). Its
+ * own set, per the convention above; `LIBRARY_OK == PLAYLIST_OK == 0`.
+ */
+#define LIBRARY_OK 0
+
+#define LIBRARY_ERR_INVALID_INPUT 1
+
+#define LIBRARY_ERR_UNAUTHORIZED 2
+
+#define LIBRARY_ERR_NOT_INITIALIZED 3
+
+#define LIBRARY_ERR_NOT_FOUND 4
+
+/**
+ * The folder overlaps a library that already exists.
+ *
+ * Its own code rather than an invalid input: the request was well formed
+ * and the folder is a real one — what is wrong is the catalog's current
+ * state, and a client that can tell the two apart says "that folder is
+ * already inside another library" instead of "that is not a folder".
+ */
+#define LIBRARY_ERR_CONFLICT 6
+
+#define LIBRARY_ERR_OTHER 9
+
+/**
  * Result of starting an index run. `run_id` is a NUL-terminated UUID string
  * on success (empty on failure).
  *
@@ -458,6 +484,17 @@ typedef struct EnrichmentJsonResult {
   int status;
   char *json;
 } EnrichmentJsonResult;
+
+/**
+ * Result of every library FFI function. On success `status` is `LIBRARY_OK`
+ * and `json` is a NUL-terminated JSON string of the same body HTTP returns
+ * from the matching `/v1/libraries*` route (FR-FC-24 / NFR-09). The caller
+ * must free `json` with `alexandria_free_string`.
+ */
+typedef struct LibraryJsonResult {
+  int status;
+  char *json;
+} LibraryJsonResult;
 
 const char *alexandria_version(void);
 
@@ -1365,3 +1402,38 @@ struct EnrichmentJsonResult alexandria_enrichment_run(const char *scope_json, co
 struct EnrichmentJsonResult alexandria_enrichment_read_track(const char *uuid,
                                                              const char *artist,
                                                              const char *token);
+
+/**
+ * Treat a folder as a library (libraries design).
+ *
+ * `json_body` is the JSON body `POST /v1/libraries` takes (`name`,
+ * `rootPath`). Whatever is already indexed beneath the folder is claimed by
+ * this call. Answers `LIBRARY_ERR_CONFLICT` when the folder overlaps an
+ * existing library.
+ */
+struct LibraryJsonResult alexandria_library_register(const char *json_body, const char *token);
+
+/**
+ * Every registered library.
+ */
+struct LibraryJsonResult alexandria_libraries_list(const char *token);
+
+/**
+ * One level of a library's tree.
+ *
+ * `path` is the folder to list, relative to the library's root; NULL or an
+ * empty string is the top. One level rather than the whole tree — see the
+ * matching HTTP route.
+ */
+struct LibraryJsonResult alexandria_library_browse(const char *uuid,
+                                                   const char *path,
+                                                   const char *token);
+
+/**
+ * Stop treating a folder as a library.
+ *
+ * The files are kept and return to the type panels. On success `json`
+ * carries an empty object rather than NULL, so a caller can tell success
+ * from the failure codes without a special case.
+ */
+struct LibraryJsonResult alexandria_library_remove(const char *uuid, const char *token);
