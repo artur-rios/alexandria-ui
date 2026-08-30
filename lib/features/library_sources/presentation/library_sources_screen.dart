@@ -14,6 +14,7 @@ import '../application/library_sources_state.dart';
 import '../domain/folder_registration.dart';
 import '../domain/index_run.dart';
 import '../domain/run_priority.dart';
+import '../../libraries/presentation/library_name_dialog.dart';
 import 'index_scope_dialog.dart';
 
 /// The library-sources screen (UC-05, FR-LB-01 … FR-LB-04, FR-LB-11).
@@ -256,6 +257,19 @@ class _SourceList extends ConsumerWidget {
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
+                    // Said on the row because marking is invisible from
+                    // anywhere else: a library's files are missing from the
+                    // type panels, and this is what explains where they went.
+                    if (source.isLibrary)
+                      Text(
+                        AppLocalizations.of(
+                          context,
+                        ).librarySourcesIsLibrary(source.libraryName!),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                   ],
                 ),
                 trailing: Row(
@@ -270,6 +284,10 @@ class _SourceList extends ConsumerWidget {
                       root: source.path,
                       runs: runs,
                     ),
+                    if (!source.isLibrary) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      _MarkAsLibraryAction(source: source),
+                    ],
                     const SizedBox(width: AppSpacing.sm),
                     _UnregisterAction(source: source),
                   ],
@@ -716,6 +734,50 @@ class _RefusalNotice extends ConsumerWidget {
 }
 
 /// The control that unregisters a folder (UC-08 main flow step 1).
+/// Marks an already-registered folder as a library.
+///
+/// Offered only on folders that are not libraries yet. The reverse lives on
+/// the Libraries screen, beside the library itself: a library can outlive the
+/// source folder it was made from, and unmarking has to stay reachable when
+/// no row here names it any more.
+class _MarkAsLibraryAction extends ConsumerWidget {
+  const _MarkAsLibraryAction({required this.source});
+
+  final LibrarySource source;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
+    return IconButton(
+      tooltip: l10n.librarySourcesMarkAsLibrary,
+      icon: const Icon(Icons.folder_special_outlined),
+      onPressed: () => _mark(context, ref),
+    );
+  }
+
+  Future<void> _mark(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final name = await askForLibraryName(context, suggestion: source.label);
+    if (name == null || !context.mounted) return;
+
+    final failure = await ref
+        .read(librarySourcesControllerProvider.notifier)
+        .markAsLibrary(path: source.path, name: name);
+    if (failure == null || !context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          failure is ConflictFailure
+              ? l10n.libraryOverlaps
+              : failure.localizedMessage(l10n),
+        ),
+      ),
+    );
+  }
+}
+
 class _UnregisterAction extends ConsumerWidget {
   const _UnregisterAction({required this.source});
 

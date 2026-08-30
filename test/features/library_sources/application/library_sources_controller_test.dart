@@ -58,7 +58,8 @@ void main() {
       .read(librarySourcesControllerProvider.notifier)
       .registerFolder(
         onOverlapConfirmed: (_, _) async => confirmOverlap,
-        onScopeChosen: (_) async => scope,
+        onScopeChosen: (_) async =>
+            scope == null ? null : (types: scope, libraryName: null),
       );
 
   group('the main flow', () {
@@ -310,7 +311,8 @@ void main() {
               asked = true;
               return true;
             },
-            onScopeChosen: (_) async => const [],
+            onScopeChosen: (_) async =>
+              (types: const <FileType>[], libraryName: null),
           );
 
       expect(asked, isFalse);
@@ -331,11 +333,13 @@ void main() {
 
       final first = controller.registerFolder(
         onOverlapConfirmed: (_, _) async => true,
-        onScopeChosen: (_) async => const [],
+        onScopeChosen: (_) async =>
+              (types: const <FileType>[], libraryName: null),
       );
       await controller.registerFolder(
         onOverlapConfirmed: (_, _) async => true,
-        onScopeChosen: (_) async => const [],
+        onScopeChosen: (_) async =>
+              (types: const <FileType>[], libraryName: null),
       );
       await first;
 

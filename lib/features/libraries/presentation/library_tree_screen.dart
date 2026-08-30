@@ -5,8 +5,6 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/presentation/file_details_view.dart';
-import '../../../core/failures/failure.dart';
-import '../../../core/failures/failure_messages.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../domain/library.dart';
@@ -137,13 +135,6 @@ class LibrariesScreen extends ConsumerWidget {
           tooltip: l10n.preferencesClose,
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          IconButton(
-            tooltip: l10n.libraryAdd,
-            icon: const Icon(Icons.create_new_folder_outlined),
-            onPressed: () => _add(context, ref),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -162,6 +153,10 @@ class LibrariesScreen extends ConsumerWidget {
                 value: libraries,
                 onRetry: ref.read(librariesControllerProvider.notifier).reload,
                 isEmpty: (libraries) => libraries.isEmpty,
+                // Says where libraries come from, because there is nothing
+                // to press here: a folder becomes a library on the sources
+                // screen, where its scope is chosen, and an empty list with
+                // no explanation reads as a broken screen.
                 emptyBuilder: (context) =>
                     Center(child: Text(l10n.librariesNone)),
                 builder: (context, libraries) => ListView.builder(
@@ -193,67 +188,6 @@ class LibrariesScreen extends ConsumerWidget {
     );
   }
 
-  /// Picks a folder, names it, and registers it.
-  Future<void> _add(BuildContext context, WidgetRef ref) async {
-    final l10n = AppLocalizations.of(context);
-    final path = await ref.read(folderPickerProvider).pickFolder();
-    if (path == null || !context.mounted) return;
-
-    final name = await _askForName(context, path);
-    if (name == null || !context.mounted) return;
-
-    final failure = await ref
-        .read(librariesControllerProvider.notifier)
-        .register(name: name, rootPath: path);
-    if (failure == null || !context.mounted) return;
-
-    // A conflict is the one refusal worth its own sentence: "that folder is
-    // already inside another library" is something the owner can act on,
-    // where the generic message would leave them guessing which folder.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          failure is ConflictFailure
-              ? l10n.libraryOverlaps
-              : failure.localizedMessage(l10n),
-        ),
-      ),
-    );
-  }
-
-  /// The owner's name for the library, defaulting to the folder's own.
-  Future<String?> _askForName(BuildContext context, String path) {
-    final l10n = AppLocalizations.of(context);
-    final suggestion = path.split(RegExp(r'[/\\]')).where((p) => p.isNotEmpty);
-    final controller = TextEditingController(
-      text: suggestion.isEmpty ? '' : suggestion.last,
-    );
-
-    return showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.libraryAdd),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(labelText: l10n.libraryNameLabel),
-          onSubmitted: (value) => Navigator.of(context).pop(value.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop(controller.text.trim()),
-            child: Text(l10n.libraryAdd),
-          ),
-        ],
-      ),
-    ).then((value) => (value == null || value.isEmpty) ? null : value);
-  }
-
   Future<void> _remove(
     BuildContext context,
     WidgetRef ref,
@@ -272,5 +206,14 @@ class LibrariesScreen extends ConsumerWidget {
     if (!confirmed) return;
 
     await ref.read(librariesControllerProvider.notifier).remove(library.uuid);
+
+    // The folder's own row stops claiming to be a library. Kept in step here
+    // rather than by the sources controller watching the core, because the
+    // two records answer different questions — the core owns what a library
+    // is, the store owns what the owner chose about a folder — and only this
+    // action changes both at once.
+    await ref
+        .read(librarySourcesControllerProvider.notifier)
+        .clearLibraryMark(library.rootPath);
   }
 }

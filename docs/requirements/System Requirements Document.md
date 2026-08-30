@@ -168,17 +168,18 @@ replace the FFI one without touching a screen.
 | FR-LB-19 | The system shall offer every run the core reports as outstanding at launch — including one left behind by a previous session — for the owner to resume or cancel, and shall resume none of them by itself. |
 | FR-LB-20 | The system shall continue to follow every other outstanding run when one of them ends, fails to be read, or is abandoned. |
 | FR-LB-21 | The system shall re-check the catalog when a session is established, unless the owner has turned that off, the catalog holds no files, or a run is already outstanding; and shall report such a re-check through the background activity indicator (FR-LB-15) without announcing a refusal the owner did not ask for. |
+| FR-LB-22 | The system shall let the owner mark a registered source folder as a library, named, either when the folder is registered or afterwards, and shall unmark it on request. A folder is marked at most once: what a library is, is the core's record, and the application's own record of the folder only reflects it. |
 
 ### 3.3 Catalog Browsing and Search — `CT`
 
 | ID | Requirement |
 | --- | --- |
-| FR-CT-01 | The system shall present a navigation panel listing every file type in the library — music, videos, books, comic books, notes and text files, HTML pages, and images — plus bookmarks, with the count of items in each. Corrected in UC-09: this originally listed movies and series separately, but the core classifies a file as `video` and carries no subtype, so the two would be the same query returning the same rows. That distinction is a watchlist's (UC-29), not the catalog's. Bookmarks are not files and are listed through their own core call (UC-28). |
+| FR-CT-01 | The system shall present a navigation panel listing every file type in the library — music, videos, books, comic books, notes and text files, HTML pages, and images — plus bookmarks, with the count of items in each. Corrected in UC-09: this originally listed movies and series separately, but the core classifies a file as `video` and carries no subtype, so the two would be the same query returning the same rows. That distinction is a watchlist's (UC-29), not the catalog's. Bookmarks are not files and are listed through their own core call (UC-28). Files belonging to a library are excluded from both the listings and the counts (FR-CT-16). |
 | FR-CT-02 | The system shall list the files of a selected type, retrieved from the core. |
 | FR-CT-03 | The system shall offer three view layouts — list, list with details, and grid — and switch between them on request, for every file type but audio, whose presentation is its own (FR-CT-13). |
 | FR-CT-04 | The system shall remember the chosen layout per file type across restarts. |
 | FR-CT-05 | The system shall present a detail view for a single file showing its type-specific metadata, its path, and its lifecycle state. |
-| FR-CT-06 | The system shall search the catalog by file name and by type-specific metadata, and present matches across every type. |
+| FR-CT-06 | The system shall search the catalog by file name and by type-specific metadata, and present matches across every type, including files that belong to a library (FR-CT-16). Deliberately: a library keeps its files out of the type panels so they do not bury the rest, and a search that also hid them would mean the owner could no longer find a file they know they have. |
 | FR-CT-07 | The system shall filter the listed items by type, lifecycle state, containing collection, and the type-specific attributes the core exposes, for every file type but audio, whose presentation is its own (FR-CT-13) and whose deleted records are reached through the deleted-items review (UC-34) like every other type's. |
 | FR-CT-08 | The system shall sort the listed items by name, by date, and by the type-specific attributes the core exposes. |
 | FR-CT-09 | The system shall present an empty-result state that is visually distinct from a loading state and from an error state. |
@@ -187,6 +188,8 @@ replace the FFI one without touching a screen.
 | FR-CT-12 | The system shall open the viewer or player registered for a file's type from any listing or from the detail view. |
 | FR-CT-13 | The system shall present a track by its metadata — artist, album, or title — everywhere it is presented as music: the music browsing area, catalog-wide search results, the playback surfaces (the bar, the full player, and skip notices), and the home dashboard's recent list. The file's own name is shown deliberately in the file's own detail view, under its own label, and in the rename dialog, where it is what is being renamed. The deleted-items review and a collection's membership list are unaffected: both read records that may carry no file type, which this decision needs to tell a track from any other file. |
 | FR-CT-14 | The system shall offer, for each file in the music area, a context menu carrying the file's playback actions, its details, and its metadata editor. |
+| FR-CT-15 | The system shall present a library's files in their folders on disk, one level at a time, from a screen listing every library. A library exists so that a folder whose structure *is* its meaning — a course, with each class's recording and handouts side by side — keeps that structure; a flat listing of its files answers a question nobody asked of it. |
+| FR-CT-16 | The system shall exclude a library's files from the type-panel listings and their counts (FR-CT-01, FR-CT-02) and from the home dashboard (FR-CT-11). This is the whole point of marking a folder: three hundred class handouts otherwise bury every other document the owner has. Search (FR-CT-06), the deleted-items review (FR-LC-03), watchlists and reading lists (FR-TR-01 … FR-TR-14), and collections (FR-OG-01 … FR-OG-07) continue to reach them — a library narrows where files are *listed*, never what can be *found* or tracked, and a later reader must not "fix" that apparent inconsistency by widening the exclusion. |
 
 ### 3.4 Metadata and Content Editing — `ME`
 
@@ -475,8 +478,9 @@ does not already publish.
 | Login | Authenticate the owner | FR-AU-04, FR-AU-05, FR-AU-07 |
 | Password recovery | Spend a recovery code on a new password | FR-AU-15, FR-AU-16, FR-AU-18 |
 | Home dashboard | Recent items, items in progress, counts, last run outcome | FR-CT-11 |
-| Library sources | Register, scan, refresh, pace, and unregister folders | FR-LB-01 … FR-LB-21 |
-| Catalog listing | Type-filtered listing in three layouts, with search, filters, and sorting | FR-CT-01 … FR-CT-04, FR-CT-06 … FR-CT-10, FR-CT-12 |
+| Library sources | Register, scan, refresh, pace, unregister, and mark folders as libraries | FR-LB-01 … FR-LB-22 |
+| Catalog listing | Type-filtered listing in three layouts, with search, filters, and sorting | FR-CT-01 … FR-CT-04, FR-CT-06 … FR-CT-10, FR-CT-12, FR-CT-16 |
+| Libraries | Every library, and one library's folders a level at a time | FR-CT-15, FR-CT-16, FR-LB-22 |
 | File detail | Metadata, path, state, and available actions | FR-CT-05, FR-ME-01, FR-ME-02, FR-ME-04 |
 | Text editor | Markdown and text editing with live preview | FR-ME-06 … FR-ME-10 |
 | Video player | Playback with subtitle and audio tracks | FR-PL-01 … FR-PL-04, FR-PL-08 … FR-PL-10 |
@@ -668,8 +672,8 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Feature | Requirements |
 | --- | --- |
 | F-01 Authentication and session | FR-AU-01 through FR-AU-19 |
-| F-02 Library sources and indexing | FR-LB-01 through FR-LB-21 |
-| F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-14 |
+| F-02 Library sources and indexing | FR-LB-01 through FR-LB-22 |
+| F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-16 |
 | F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
 | F-05 Media playback | FR-PL-01 through FR-PL-11 |
 | F-06 Document, image, and page viewing | FR-VW-01 through FR-VW-08 |
@@ -683,8 +687,8 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Domain area | Code | Requirement IDs |
 | --- | --- | --- |
 | Authentication and session | `AU` | FR-AU-01 … FR-AU-19 |
-| Library sources and indexing | `LB` | FR-LB-01 … FR-LB-21 |
-| Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-14 |
+| Library sources and indexing | `LB` | FR-LB-01 … FR-LB-22 |
+| Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-16 |
 | Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
 | Media playback | `PL` | FR-PL-01 … FR-PL-11 |
 | Document, image, and page viewing | `VW` | FR-VW-01 … FR-VW-08 |

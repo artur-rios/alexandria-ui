@@ -2,11 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../core/di/providers.dart';
+import '../../../core/failures/failure.dart';
 import '../../catalog/domain/file_type.dart';
 import '../domain/folder_picker.dart';
 import '../domain/folder_registration.dart';
 import '../domain/library_source.dart';
 import '../domain/library_source_store.dart';
+import '../presentation/index_scope_dialog.dart';
 import 'library_sources_state.dart';
 
 /// Drives UC-05: registering a folder on disk as a source of files to index.
@@ -59,7 +61,7 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
   Future<LibrarySource?> registerFolder({
     required Future<bool> Function(String path, LibrarySource existing)
     onOverlapConfirmed,
-    required Future<List<FileType>?> Function(String path) onScopeChosen,
+    required Future<FolderPurpose?> Function(String path) onScopeChosen,
   }) async {
     if (state.registering) return null;
 
@@ -110,19 +112,23 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
       }
     }
 
-    final scope = await onScopeChosen(path);
+    final purpose = await onScopeChosen(path);
     // Cancelled: nothing is registered, and no refusal is recorded either —
     // the owner was asked and did not answer, which is not an error.
-    if (scope == null) {
+    if (purpose == null) {
       state = state.copyWith(registering: false);
       return null;
     }
 
-    return _record(path, scope);
+    return _record(path, purpose.types, purpose.libraryName);
   }
 
   /// Records [path] and persists the set (main flow steps 5 and 6).
-  Future<LibrarySource> _record(String path, List<FileType> scope) async {
+  Future<LibrarySource> _record(
+    String path,
+    List<FileType> scope,
+    String? libraryName,
+  ) async {
     // Every type chosen is the same thing as no scope at all, and is stored
     // as the absence: the core reads them identically, and keeping one
     // spelling means a folder that covers everything reads the same whether
@@ -138,11 +144,24 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
         ? const <FileType>[]
         : scope;
 
+    // The core is asked before the store is written: a row badged as a
+    // library whose files are still in the type panels claims something that
+    // is not true, and the core is the one that decides.
+    //
+    // A refusal here — the folder sitting inside a library the core already
+    // has — registers the folder as an ordinary source rather than failing
+    // the whole registration. The owner asked for two things and gets the one
+    // that was available, which is better than losing both; the folder is
+    // still indexable, and the row's mark action offers the other half again.
+    final marked =
+        libraryName != null && await _tellCoreAboutLibrary(path, libraryName);
+
     final source = LibrarySource(
       path: path,
       label: defaultLabelFor(path),
       registeredAt: _now(),
       scope: [for (final type in scoped) type.wireName],
+      libraryName: marked ? libraryName : null,
     );
     final sources = [...state.sources, source];
 
@@ -152,6 +171,77 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
     state = state.copyWith(sources: sources, registering: false);
 
     return source;
+  }
+
+  /// Asks the core to treat [path] as a library called [name]; whether it did.
+  ///
+  /// Logged rather than surfaced on this path. The registration it is part of
+  /// succeeded and the folder is usable; what did not happen is the grouping,
+  /// and the row not being badged is the visible half of that.
+  Future<bool> _tellCoreAboutLibrary(String path, String name) async {
+    final failure = await ref
+        .read(librariesControllerProvider.notifier)
+        .register(name: name, rootPath: path);
+    if (failure == null) return true;
+
+    _log.warning('folder registered but not marked as a library: $failure');
+
+    return false;
+  }
+
+  /// Marks an already-registered folder as a library called [name].
+  ///
+  /// The other way in. Registration asks at the moment the folder is picked,
+  /// which is the right time for a folder the owner is adding now — but a
+  /// course that has been indexed for a year was registered before this
+  /// question existed, and re-registering it to answer would mean
+  /// un-registering it first.
+  ///
+  /// Returns the refusal to show, or `null` when it worked. The store is
+  /// written only after the core has agreed: a row badged as a library whose
+  /// files are still in the type panels is worse than one that never claimed
+  /// to be.
+  Future<Failure?> markAsLibrary({
+    required String path,
+    required String name,
+  }) async {
+    final failure = await ref
+        .read(librariesControllerProvider.notifier)
+        .register(name: name, rootPath: path);
+    if (failure != null) return failure;
+
+    await _rewrite(path, (source) => source.copyWith(libraryName: name));
+    _log.info('source folder marked as a library: $path');
+
+    return null;
+  }
+
+  /// Forgets that [path] was a library, after the core has stopped treating
+  /// it as one.
+  ///
+  /// Called by the screen that removes the library rather than removing it
+  /// here, because a library can outlive its source folder — un-registering a
+  /// source leaves the catalog alone (BR-12), and the files it grouped stay
+  /// grouped. So the core's list is the authority on what a library is, and
+  /// this only keeps the folder's row from claiming otherwise.
+  Future<void> clearLibraryMark(String path) async {
+    if (!state.sources.any((source) => source.path == path)) return;
+
+    await _rewrite(path, (source) => source.copyWith(libraryName: null));
+  }
+
+  /// Replaces the source at [path] with [change] applied, and persists.
+  Future<void> _rewrite(
+    String path,
+    LibrarySource Function(LibrarySource source) change,
+  ) async {
+    final sources = [
+      for (final source in state.sources)
+        if (source.path == path) change(source) else source,
+    ];
+
+    await _store.write(sources);
+    state = state.copyWith(sources: sources);
   }
 
   /// Removes [path] from the registered sources (UC-08 main flow step 4,

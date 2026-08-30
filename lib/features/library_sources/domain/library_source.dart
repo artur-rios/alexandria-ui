@@ -47,11 +47,27 @@ abstract class LibrarySource with _$LibrarySource {
     /// and what a stored record has to still mean after a type is renamed on
     /// this side of the boundary.
     @Default(<String>[]) List<String> scope,
+
+    /// The owner's name for this folder as a library, or `null` when it is
+    /// an ordinary source folder (libraries design).
+    ///
+    /// The name rather than a flag: a library has to be called something,
+    /// and a separate `isLibrary` boolean beside a nullable name would make
+    /// "marked but unnamed" expressible when it is not a state that exists.
+    ///
+    /// Kept here as well as in the core because this is where the owner
+    /// decides it — the core is told, and answers the library back with its
+    /// own uuid, but the *decision* belongs to the folder registration the
+    /// same way its scope does.
+    String? libraryName,
   }) = _LibrarySource;
 
   /// Reads a source from the local settings store.
   factory LibrarySource.fromJson(Map<String, dynamic> json) =>
       _$LibrarySourceFromJson(json);
+
+  /// Whether this folder is browsed as a library rather than by type.
+  bool get isLibrary => libraryName != null;
 
   /// [scope] as types, dropping any name this application does not know.
   ///

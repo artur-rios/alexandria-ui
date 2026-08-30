@@ -1,4 +1,5 @@
 import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,7 +126,8 @@ void main() {
 
         await controller.registerFolder(
           onOverlapConfirmed: (_, _) async => true,
-          onScopeChosen: (_) async => const [],
+          onScopeChosen: (_) async =>
+              (types: const <FileType>[], libraryName: null),
         );
 
         expect(
