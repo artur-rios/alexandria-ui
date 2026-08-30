@@ -21,7 +21,8 @@ class SearchTermController extends Notifier<String> {
   void clear() => state = '';
 }
 
-/// Every file the catalog holds, across every type (UC-11).
+/// Every file the catalog holds, across every type (UC-11), libraries
+/// included.
 ///
 /// Loaded once and matched in memory, which is what main flow step 2 asks
 /// for — it matches "for the loaded catalog", not through a query the core
@@ -45,6 +46,12 @@ class CatalogSearchController extends AsyncNotifier<CatalogSearchIndex> {
       final listing = await gateway.listFiles(
         type: type,
         credential: credential,
+        // Reaching into libraries: someone typing the name of a lecture
+        // recording has to find it. A library keeps its files out of the
+        // type panels so they do not bury everything else, and that was
+        // read as keeping them out of the catalog — which made a marked
+        // folder's contents unfindable (FR-CT-06, FR-CT-16).
+        includeLibraries: true,
       );
 
       switch (listing) {

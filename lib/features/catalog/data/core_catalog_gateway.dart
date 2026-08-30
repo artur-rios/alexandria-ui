@@ -26,6 +26,7 @@ class CoreCatalogGateway implements CatalogGateway {
     required FileType type,
     required String credential,
     LifecycleFilter lifecycle = LifecycleFilter.active,
+    bool includeLibraries = false,
   }) async {
     final CoreJsonResponse response;
     try {
@@ -33,7 +34,14 @@ class CoreCatalogGateway implements CatalogGateway {
         // The filter the core's own HTTP route takes. The state is always
         // stated rather than left to the core's default: a default that
         // changed would silently start listing deleted records.
-        jsonEncode({'type': type.wireName, 'state': lifecycle.wireName}),
+        jsonEncode({
+          'type': type.wireName,
+          'state': lifecycle.wireName,
+          // Sent only when it is true: absent is the core's default and the
+          // narrower answer, so a filter that never mentions it behaves as
+          // this call always has.
+          if (includeLibraries) 'includeLibraries': true,
+        }),
         credential,
       );
     } on CoreCallException {
@@ -278,6 +286,7 @@ class CoreCatalogGateway implements CatalogGateway {
 
     return FileDetails(
       file: file,
+      libraryUuid: body['libraryUuid'] as String?,
       metadata: metadataFromFileView(body['metadata']),
       width: body['width'] as int?,
       height: body['height'] as int?,

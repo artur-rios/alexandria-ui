@@ -32,6 +32,11 @@ class DeletedItemsController extends AsyncNotifier<List<DeletedRecord>> {
         type: type,
         credential: credential,
         lifecycle: LifecycleFilter.deleted,
+        // Reaching into libraries, or a deleted file that belonged to one
+        // could be reached from nowhere at all: not its type panel, not this
+        // review, and not its own library, which lists only active files.
+        // That was the owner's data with no way back (FR-CT-16, FR-LC-03).
+        includeLibraries: true,
       );
 
       switch (listing) {

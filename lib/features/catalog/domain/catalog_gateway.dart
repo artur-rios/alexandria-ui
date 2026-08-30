@@ -123,10 +123,21 @@ abstract interface class CatalogGateway {
   /// [lifecycle] is the one filter the core applies itself; everything else
   /// UC-12 offers is applied to what it returns. Defaults to active records,
   /// which is what a listing opens on.
+  /// [includeLibraries] reaches into libraries, whose files a type listing
+  /// otherwise excludes (libraries design, core FR-FC-38).
+  ///
+  /// Off by default, because the type panels are what this call is normally
+  /// for and a course leaking into them is the defect marking the folder was
+  /// meant to prevent. The two callers that pass it are the ones that are
+  /// not browsing by type: search, which must find a lecture recording the
+  /// owner remembers by name, and the deleted-items review, which must be
+  /// able to offer one back — a deleted library file appears in no panel and
+  /// not in its library either, which lists only active files.
   Future<CatalogListing> listFiles({
     required FileType type,
     required String credential,
     LifecycleFilter lifecycle = LifecycleFilter.active,
+    bool includeLibraries = false,
   });
 
   /// One file, with everything the core knows about it (FR-CT-05, UC-13).

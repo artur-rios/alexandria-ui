@@ -15,7 +15,19 @@ T _$identity<T>(T value) => value;
 mixin _$FileDetails {
 
 /// The file itself, as a listing would show it.
- CatalogFile get file;/// The type-specific metadata, as labelled fields.
+ CatalogFile get file;/// The library this file belongs to, or `null` when it belongs to none
+/// (libraries design, core FR-FC-38).
+///
+/// The uuid rather than the name, which is what the core answers: a
+/// listing that repeated the name would go stale the moment a library
+/// was renamed. The name is looked up from the libraries list where a
+/// screen needs to show it.
+///
+/// What it is for: a listing that reached into libraries has to be able
+/// to tell which rows it reached. The dashboard reads the same index the
+/// search does, and owes the owner a view without a course's files in
+/// it.
+ String? get libraryUuid;/// The type-specific metadata, as labelled fields.
 ///
 /// A map rather than a union per type, because this screen only reads it.
 /// Editing is UC-15's and UC-16's, and they are the use cases that should
@@ -37,16 +49,16 @@ $FileDetailsCopyWith<FileDetails> get copyWith => _$FileDetailsCopyWithImpl<File
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FileDetails&&(identical(other.file, file) || other.file == file)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.pageCount, pageCount) || other.pageCount == pageCount)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FileDetails&&(identical(other.file, file) || other.file == file)&&(identical(other.libraryUuid, libraryUuid) || other.libraryUuid == libraryUuid)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.pageCount, pageCount) || other.pageCount == pageCount)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,file,const DeepCollectionEquality().hash(metadata),width,height,pageCount,durationSeconds,isDeleted);
+int get hashCode => Object.hash(runtimeType,file,libraryUuid,const DeepCollectionEquality().hash(metadata),width,height,pageCount,durationSeconds,isDeleted);
 
 @override
 String toString() {
-  return 'FileDetails(file: $file, metadata: $metadata, width: $width, height: $height, pageCount: $pageCount, durationSeconds: $durationSeconds, isDeleted: $isDeleted)';
+  return 'FileDetails(file: $file, libraryUuid: $libraryUuid, metadata: $metadata, width: $width, height: $height, pageCount: $pageCount, durationSeconds: $durationSeconds, isDeleted: $isDeleted)';
 }
 
 
@@ -57,7 +69,7 @@ abstract mixin class $FileDetailsCopyWith<$Res>  {
   factory $FileDetailsCopyWith(FileDetails value, $Res Function(FileDetails) _then) = _$FileDetailsCopyWithImpl;
 @useResult
 $Res call({
- CatalogFile file, Map<String, String> metadata, int? width, int? height, int? pageCount, double? durationSeconds, bool isDeleted
+ CatalogFile file, String? libraryUuid, Map<String, String> metadata, int? width, int? height, int? pageCount, double? durationSeconds, bool isDeleted
 });
 
 
@@ -74,10 +86,11 @@ class _$FileDetailsCopyWithImpl<$Res>
 
 /// Create a copy of FileDetails
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? file = null,Object? metadata = null,Object? width = freezed,Object? height = freezed,Object? pageCount = freezed,Object? durationSeconds = freezed,Object? isDeleted = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? file = null,Object? libraryUuid = freezed,Object? metadata = null,Object? width = freezed,Object? height = freezed,Object? pageCount = freezed,Object? durationSeconds = freezed,Object? isDeleted = null,}) {
   return _then(_self.copyWith(
 file: null == file ? _self.file : file // ignore: cast_nullable_to_non_nullable
-as CatalogFile,metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+as CatalogFile,libraryUuid: freezed == libraryUuid ? _self.libraryUuid : libraryUuid // ignore: cast_nullable_to_non_nullable
+as String?,metadata: null == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
 as Map<String, String>,width: freezed == width ? _self.width : width // ignore: cast_nullable_to_non_nullable
 as int?,height: freezed == height ? _self.height : height // ignore: cast_nullable_to_non_nullable
 as int?,pageCount: freezed == pageCount ? _self.pageCount : pageCount // ignore: cast_nullable_to_non_nullable
@@ -177,10 +190,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( CatalogFile file,  Map<String, String> metadata,  int? width,  int? height,  int? pageCount,  double? durationSeconds,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( CatalogFile file,  String? libraryUuid,  Map<String, String> metadata,  int? width,  int? height,  int? pageCount,  double? durationSeconds,  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FileDetails() when $default != null:
-return $default(_that.file,_that.metadata,_that.width,_that.height,_that.pageCount,_that.durationSeconds,_that.isDeleted);case _:
+return $default(_that.file,_that.libraryUuid,_that.metadata,_that.width,_that.height,_that.pageCount,_that.durationSeconds,_that.isDeleted);case _:
   return orElse();
 
 }
@@ -198,10 +211,10 @@ return $default(_that.file,_that.metadata,_that.width,_that.height,_that.pageCou
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( CatalogFile file,  Map<String, String> metadata,  int? width,  int? height,  int? pageCount,  double? durationSeconds,  bool isDeleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( CatalogFile file,  String? libraryUuid,  Map<String, String> metadata,  int? width,  int? height,  int? pageCount,  double? durationSeconds,  bool isDeleted)  $default,) {final _that = this;
 switch (_that) {
 case _FileDetails():
-return $default(_that.file,_that.metadata,_that.width,_that.height,_that.pageCount,_that.durationSeconds,_that.isDeleted);case _:
+return $default(_that.file,_that.libraryUuid,_that.metadata,_that.width,_that.height,_that.pageCount,_that.durationSeconds,_that.isDeleted);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -218,10 +231,10 @@ return $default(_that.file,_that.metadata,_that.width,_that.height,_that.pageCou
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( CatalogFile file,  Map<String, String> metadata,  int? width,  int? height,  int? pageCount,  double? durationSeconds,  bool isDeleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( CatalogFile file,  String? libraryUuid,  Map<String, String> metadata,  int? width,  int? height,  int? pageCount,  double? durationSeconds,  bool isDeleted)?  $default,) {final _that = this;
 switch (_that) {
 case _FileDetails() when $default != null:
-return $default(_that.file,_that.metadata,_that.width,_that.height,_that.pageCount,_that.durationSeconds,_that.isDeleted);case _:
+return $default(_that.file,_that.libraryUuid,_that.metadata,_that.width,_that.height,_that.pageCount,_that.durationSeconds,_that.isDeleted);case _:
   return null;
 
 }
@@ -233,11 +246,24 @@ return $default(_that.file,_that.metadata,_that.width,_that.height,_that.pageCou
 
 
 class _FileDetails extends FileDetails {
-  const _FileDetails({required this.file, final  Map<String, String> metadata = const <String, String>{}, this.width, this.height, this.pageCount, this.durationSeconds, this.isDeleted = false}): _metadata = metadata,super._();
+  const _FileDetails({required this.file, this.libraryUuid, final  Map<String, String> metadata = const <String, String>{}, this.width, this.height, this.pageCount, this.durationSeconds, this.isDeleted = false}): _metadata = metadata,super._();
   
 
 /// The file itself, as a listing would show it.
 @override final  CatalogFile file;
+/// The library this file belongs to, or `null` when it belongs to none
+/// (libraries design, core FR-FC-38).
+///
+/// The uuid rather than the name, which is what the core answers: a
+/// listing that repeated the name would go stale the moment a library
+/// was renamed. The name is looked up from the libraries list where a
+/// screen needs to show it.
+///
+/// What it is for: a listing that reached into libraries has to be able
+/// to tell which rows it reached. The dashboard reads the same index the
+/// search does, and owes the owner a view without a course's files in
+/// it.
+@override final  String? libraryUuid;
 /// The type-specific metadata, as labelled fields.
 ///
 /// A map rather than a union per type, because this screen only reads it.
@@ -278,16 +304,16 @@ _$FileDetailsCopyWith<_FileDetails> get copyWith => __$FileDetailsCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FileDetails&&(identical(other.file, file) || other.file == file)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.pageCount, pageCount) || other.pageCount == pageCount)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FileDetails&&(identical(other.file, file) || other.file == file)&&(identical(other.libraryUuid, libraryUuid) || other.libraryUuid == libraryUuid)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.pageCount, pageCount) || other.pageCount == pageCount)&&(identical(other.durationSeconds, durationSeconds) || other.durationSeconds == durationSeconds)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,file,const DeepCollectionEquality().hash(_metadata),width,height,pageCount,durationSeconds,isDeleted);
+int get hashCode => Object.hash(runtimeType,file,libraryUuid,const DeepCollectionEquality().hash(_metadata),width,height,pageCount,durationSeconds,isDeleted);
 
 @override
 String toString() {
-  return 'FileDetails(file: $file, metadata: $metadata, width: $width, height: $height, pageCount: $pageCount, durationSeconds: $durationSeconds, isDeleted: $isDeleted)';
+  return 'FileDetails(file: $file, libraryUuid: $libraryUuid, metadata: $metadata, width: $width, height: $height, pageCount: $pageCount, durationSeconds: $durationSeconds, isDeleted: $isDeleted)';
 }
 
 
@@ -298,7 +324,7 @@ abstract mixin class _$FileDetailsCopyWith<$Res> implements $FileDetailsCopyWith
   factory _$FileDetailsCopyWith(_FileDetails value, $Res Function(_FileDetails) _then) = __$FileDetailsCopyWithImpl;
 @override @useResult
 $Res call({
- CatalogFile file, Map<String, String> metadata, int? width, int? height, int? pageCount, double? durationSeconds, bool isDeleted
+ CatalogFile file, String? libraryUuid, Map<String, String> metadata, int? width, int? height, int? pageCount, double? durationSeconds, bool isDeleted
 });
 
 
@@ -315,10 +341,11 @@ class __$FileDetailsCopyWithImpl<$Res>
 
 /// Create a copy of FileDetails
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? file = null,Object? metadata = null,Object? width = freezed,Object? height = freezed,Object? pageCount = freezed,Object? durationSeconds = freezed,Object? isDeleted = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? file = null,Object? libraryUuid = freezed,Object? metadata = null,Object? width = freezed,Object? height = freezed,Object? pageCount = freezed,Object? durationSeconds = freezed,Object? isDeleted = null,}) {
   return _then(_FileDetails(
 file: null == file ? _self.file : file // ignore: cast_nullable_to_non_nullable
-as CatalogFile,metadata: null == metadata ? _self._metadata : metadata // ignore: cast_nullable_to_non_nullable
+as CatalogFile,libraryUuid: freezed == libraryUuid ? _self.libraryUuid : libraryUuid // ignore: cast_nullable_to_non_nullable
+as String?,metadata: null == metadata ? _self._metadata : metadata // ignore: cast_nullable_to_non_nullable
 as Map<String, String>,width: freezed == width ? _self.width : width // ignore: cast_nullable_to_non_nullable
 as int?,height: freezed == height ? _self.height : height // ignore: cast_nullable_to_non_nullable
 as int?,pageCount: freezed == pageCount ? _self.pageCount : pageCount // ignore: cast_nullable_to_non_nullable

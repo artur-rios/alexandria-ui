@@ -1050,7 +1050,10 @@ class AlexandriaBindings {
   /// List/query files filtered by type and lifecycle state (UC-03 / FR-FC-12).
   ///
   /// `json_filters` is a JSON string `{"type":"audio","state":"all"}` (empty
-  /// string or NULL for defaults). The function deserializes it, calls the same
+  /// string or NULL for defaults). `{"includeLibraries":true}` reaches into
+  /// libraries, which is what a caller's search and deleted-items review need
+  /// (libraries design / FR-FC-38); without it a library's files are absent,
+  /// as they are from the type panels. The function deserializes it, calls the same
   /// `BrowseFilesHandler` the HTTP route uses, and on success serializes the
   /// returned `Vec<FileView>` back to a JSON array — each element the same
   /// `{"file": …, "metadata": …, …}` shape `alexandria_file_get_by_uuid`

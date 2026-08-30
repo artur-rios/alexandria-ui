@@ -8,7 +8,10 @@ import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/catalog/data/core_catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
 import 'package:alexandria_ui/features/libraries/data/core_library_gateway.dart';
+import 'package:alexandria_ui/features/lifecycle/data/core_lifecycle_gateway.dart';
+import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -311,6 +314,97 @@ void main() {
       (refused as LibraryWriteFailed).failure,
       isA<ConflictFailure>(),
       reason: 'the overlap did not reach the application as a conflict',
+    );
+  });
+
+  CoreLibraryGateway libraryGatewayOf(CoreClient client) =>
+      CoreLibraryGateway(client);
+
+  test('GivenALibraryFile_WhenTheCatalogIsSearched_ThenTheRealCoreAnswersIt', () async {
+    // The claim the requirements make and the code did not keep: a library
+    // narrows where a file is *listed*, never what can be *found*. Asserted
+    // against the real core because the exclusion lives in its query, and
+    // both halves are here — reaching in finds the file, and the ordinary
+    // listing still does not.
+    final (client, credential) = await signedInCore();
+    catalog.addFixture('class-01/lecture.md', '# a lecture');
+    await indexAndSettle(client, credential, 1);
+
+    final libraries = CoreLibraryGateway(client);
+    await libraries.register(
+      name: 'Course',
+      rootPath: catalog.libraryDirectory.path,
+      credential: credential,
+    );
+
+    final gateway = CoreCatalogGateway(client);
+    final panel = await gateway.listFiles(
+      type: FileType.text,
+      credential: credential,
+    );
+    expect(
+      (panel as CatalogListingLoaded).files,
+      isEmpty,
+      reason: 'the type panel listed a library file',
+    );
+
+    final everywhere = await gateway.listFiles(
+      type: FileType.text,
+      credential: credential,
+      includeLibraries: true,
+    );
+    final found = (everywhere as CatalogListingLoaded).files;
+
+    expect(
+      found.map((row) => row.file.name),
+      ['lecture.md'],
+      reason: 'a library file could not be found at all, so search cannot',
+    );
+    expect(
+      found.single.libraryUuid,
+      isNotNull,
+      reason: 'the row did not say it belongs to a library, which is what '
+          'the dashboard needs in order to leave it out',
+    );
+  });
+
+  test('GivenADeletedLibraryFile_WhenTheReviewReadsTheCore_ThenItIsThere', () async {
+    // The worse half: a deleted library file appears in no type panel, and
+    // not in its own library either — `list_in_library` answers only active
+    // files. Without this it could be restored from nowhere.
+    final (client, credential) = await signedInCore();
+    catalog.addFixture('class-01/lecture.md', '# a lecture');
+    await indexAndSettle(client, credential, 1);
+
+    final gateway = CoreCatalogGateway(client);
+    final listed = await gateway.listFiles(
+      type: FileType.text,
+      credential: credential,
+    );
+    final uuid = (listed as CatalogListingLoaded).files.single.file.uuid;
+
+    await libraryGatewayOf(client).register(
+      name: 'Course',
+      rootPath: catalog.libraryDirectory.path,
+      credential: credential,
+    );
+    final deleted = await CoreLifecycleGateway(client).softDeleteFile(
+      uuid: uuid,
+      credential: credential,
+    );
+    expect(deleted, isA<LifecycleWriteDone>());
+
+    final review = await gateway.listFiles(
+      type: FileType.text,
+      credential: credential,
+      lifecycle: LifecycleFilter.deleted,
+      includeLibraries: true,
+    );
+
+    expect(
+      (review as CatalogListingLoaded).files.map((row) => row.file.uuid),
+      [uuid],
+      reason: 'the owner could not have got this file back',
     );
   });
 }

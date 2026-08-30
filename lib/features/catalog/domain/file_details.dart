@@ -17,6 +17,20 @@ abstract class FileDetails with _$FileDetails {
     /// The file itself, as a listing would show it.
     required CatalogFile file,
 
+    /// The library this file belongs to, or `null` when it belongs to none
+    /// (libraries design, core FR-FC-38).
+    ///
+    /// The uuid rather than the name, which is what the core answers: a
+    /// listing that repeated the name would go stale the moment a library
+    /// was renamed. The name is looked up from the libraries list where a
+    /// screen needs to show it.
+    ///
+    /// What it is for: a listing that reached into libraries has to be able
+    /// to tell which rows it reached. The dashboard reads the same index the
+    /// search does, and owes the owner a view without a course's files in
+    /// it.
+    String? libraryUuid,
+
     /// The type-specific metadata, as labelled fields.
     ///
     /// A map rather than a union per type, because this screen only reads it.
