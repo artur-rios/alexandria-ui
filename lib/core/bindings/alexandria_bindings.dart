@@ -1423,6 +1423,103 @@ class AlexandriaBindings {
         )
       >();
 
+  /// Every registered library.
+  LibraryJsonResult alexandria_libraries_list(ffi.Pointer<ffi.Char> token) {
+    return _alexandria_libraries_list(token);
+  }
+
+  late final _alexandria_libraries_listPtr =
+      _lookup<
+        ffi.NativeFunction<LibraryJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_libraries_list');
+  late final _alexandria_libraries_list = _alexandria_libraries_listPtr
+      .asFunction<LibraryJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
+  /// One level of a library's tree.
+  ///
+  /// `path` is the folder to list, relative to the library's root; NULL or an
+  /// empty string is the top. One level rather than the whole tree — see the
+  /// matching HTTP route.
+  LibraryJsonResult alexandria_library_browse(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> path,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_library_browse(uuid, path, token);
+  }
+
+  late final _alexandria_library_browsePtr =
+      _lookup<
+        ffi.NativeFunction<
+          LibraryJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_library_browse');
+  late final _alexandria_library_browse = _alexandria_library_browsePtr
+      .asFunction<
+        LibraryJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
+  /// Treat a folder as a library (libraries design).
+  ///
+  /// `json_body` is the JSON body `POST /v1/libraries` takes (`name`,
+  /// `rootPath`). Whatever is already indexed beneath the folder is claimed by
+  /// this call. Answers `LIBRARY_ERR_CONFLICT` when the folder overlaps an
+  /// existing library.
+  LibraryJsonResult alexandria_library_register(
+    ffi.Pointer<ffi.Char> json_body,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_library_register(json_body, token);
+  }
+
+  late final _alexandria_library_registerPtr =
+      _lookup<
+        ffi.NativeFunction<
+          LibraryJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_library_register');
+  late final _alexandria_library_register = _alexandria_library_registerPtr
+      .asFunction<
+        LibraryJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+      >();
+
+  /// Stop treating a folder as a library.
+  ///
+  /// The files are kept and return to the type panels. On success `json`
+  /// carries an empty object rather than NULL, so a caller can tell success
+  /// from the failure codes without a special case.
+  LibraryJsonResult alexandria_library_remove(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_library_remove(uuid, token);
+  }
+
+  late final _alexandria_library_removePtr =
+      _lookup<
+        ffi.NativeFunction<
+          LibraryJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_library_remove');
+  late final _alexandria_library_remove = _alexandria_library_removePtr
+      .asFunction<
+        LibraryJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+      >();
+
   /// Append tracks to a playlist, in order, at consecutive positions after
   /// whatever it already holds (Task 4). The whole slice succeeds or none of
   /// it does.
@@ -2397,6 +2494,39 @@ final class IndexStartResult extends ffi.Struct {
 
   @ffi.Array.multi([37])
   external ffi.Array<ffi.Char> run_id;
+}
+
+const int LIBRARY_ERR_CONFLICT = 6;
+
+const int LIBRARY_ERR_INVALID_INPUT = 1;
+
+const int LIBRARY_ERR_NOT_FOUND = 4;
+
+const int LIBRARY_ERR_NOT_INITIALIZED = 3;
+
+const int LIBRARY_ERR_OTHER = 9;
+
+const int LIBRARY_ERR_UNAUTHORIZED = 2;
+
+const int LIBRARY_OK = 0;
+
+/// Result of every library FFI function. On success `status` is `LIBRARY_OK`
+/// and `json` is a NUL-terminated JSON string of the same body HTTP returns
+/// from the matching `/v1/libraries*` route (FR-FC-24 / NFR-09). The caller
+/// must free `json` with `alexandria_free_string`.
+final class LibraryJsonResult extends ffi.Struct {
+  @ffi.Int()
+  external int status;
+
+  external ffi.Pointer<ffi.Char> json;
+
+  static ffi.Pointer<LibraryJsonResult> $allocate(
+    ffi.Allocator $allocator, {
+    required int status,
+    required ffi.Pointer<ffi.Char> json,
+  }) => $allocator<LibraryJsonResult>()
+    ..ref.status = status
+    ..ref.json = json;
 }
 
 const int PLAYBACK_ERR_DISK = 6;

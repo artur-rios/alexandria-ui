@@ -67,6 +67,10 @@ macros:
     # configuration failure rather than an invalid input, because the caller
     # did nothing wrong.
     - "ENRICHMENT_.*"
+    # Libraries. Its own family, carrying a conflict code the others lack —
+    # a folder overlapping an existing library is the catalog's state being
+    # wrong, not the caller's request.
+    - "LIBRARY_.*"
     # The settings read has its own family too (UC-34's retention window,
     # core UC-47). It carries only OK, unauthorized, not-initialized, and
     # other — reading it through another family's table would be a misread of

@@ -1871,6 +1871,51 @@
   "@playlistRemoveTrack": {
     "description": "Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2)."
   },
+  "librariesOpen": "Libraries",
+  "@librariesOpen": {
+    "description": "Library menu entry opening the list of registered libraries."
+  },
+  "librariesTitle": "Libraries",
+  "@librariesTitle": {
+    "description": "Title of the screen listing registered libraries."
+  },
+  "librariesNone": "You have not made a library yet.",
+  "@librariesNone": {
+    "description": "Libraries design: no folder has been marked as a library. A state, not a failure."
+  },
+  "librariesExplanation": "A library keeps a folder's files together and in their folders — a course, with each class's recording and handouts side by side. Its files are shown here instead of in the type panels, so they do not bury everything else. Search still finds them.",
+  "@librariesExplanation": {
+    "description": "Says what a library does and, crucially, what it hides: marking a folder empties part of a type panel and that is not visible until afterwards."
+  },
+  "libraryNameLabel": "Library name",
+  "@libraryNameLabel": {
+    "description": "The owner's name for the library, which is not the folder's name."
+  },
+  "libraryAdd": "Add a library",
+  "@libraryAdd": {
+    "description": "Opens the folder picker to mark a folder as a library."
+  },
+  "libraryRemove": "Remove this library",
+  "@libraryRemove": {
+    "description": "Stops treating the folder as a library."
+  },
+  "libraryRemoveMessage": "Remove {name}? Its files go back to the type panels — nothing on disk is touched and nothing is deleted.",
+  "@libraryRemoveMessage": {
+    "description": "The confirmation. Says the files come back, because removing must not read as discarding them.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "libraryEmptyFolder": "Nothing in this folder.",
+  "@libraryEmptyFolder": {
+    "description": "A folder with no files and no subfolders indexed under it."
+  },
+  "libraryUp": "Up one folder",
+  "@libraryUp": {
+    "description": "Goes to the folder containing the one being shown."
+  },
+  "libraryOverlaps": "That folder is already inside another library.",
+  "@libraryOverlaps": {
+    "description": "Libraries design section 5: a file in two libraries means two answers to where it appears. Worded as a fact about the folder rather than as a mistake the owner made."
+  },
   "enrichmentSweepOpen": "Find music info",
   "@enrichmentSweepOpen": {
     "description": "Library menu entry opening the library-wide lookup screen."

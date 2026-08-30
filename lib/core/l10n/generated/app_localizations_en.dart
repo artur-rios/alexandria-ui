@@ -315,20 +315,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'The change was refused, and your e-mail and password are unchanged.';
 
   @override
-  String get librarySourcesOpen => 'Source folders';
+  String get librarySourcesOpen => 'Library folders';
 
   @override
-  String get librarySourcesTitle => 'Source folders';
+  String get librarySourcesTitle => 'Library folders';
 
   @override
-  String get librarySourcesEmptyTitle => 'No source folders yet';
+  String get librarySourcesEmptyTitle => 'No library folders yet';
 
   @override
   String get librarySourcesEmptyBody =>
       'Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.';
 
   @override
-  String get librarySourcesClose => 'Close the source folders';
+  String get librarySourcesClose => 'Close the library folders';
 
   @override
   String get librarySourcesAdd => 'Add a folder';
@@ -457,7 +457,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String librarySourcesUnregisterTitle(String label) {
-    return 'Remove $label from your source folders?';
+    return 'Remove $label from your library folders?';
   }
 
   @override
@@ -528,7 +528,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your library is empty. Add a folder and index it, and what is inside will appear here.';
 
   @override
-  String get catalogEmptyAddFolder => 'Source folders';
+  String get catalogEmptyAddFolder => 'Library folders';
 
   @override
   String get catalogFileMissing => 'Missing from disk';
@@ -1390,6 +1390,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playlistRemoveTrack => 'Remove from playlist';
+
+  @override
+  String get librariesOpen => 'Libraries';
+
+  @override
+  String get librariesTitle => 'Libraries';
+
+  @override
+  String get librariesNone => 'You have not made a library yet.';
+
+  @override
+  String get librariesExplanation =>
+      'A library keeps a folder\'s files together and in their folders — a course, with each class\'s recording and handouts side by side. Its files are shown here instead of in the type panels, so they do not bury everything else. Search still finds them.';
+
+  @override
+  String get libraryNameLabel => 'Library name';
+
+  @override
+  String get libraryAdd => 'Add a library';
+
+  @override
+  String get libraryRemove => 'Remove this library';
+
+  @override
+  String libraryRemoveMessage(String name) {
+    return 'Remove $name? Its files go back to the type panels — nothing on disk is touched and nothing is deleted.';
+  }
+
+  @override
+  String get libraryEmptyFolder => 'Nothing in this folder.';
+
+  @override
+  String get libraryUp => 'Up one folder';
+
+  @override
+  String get libraryOverlaps =>
+      'That folder is already inside another library.';
 
   @override
   String get enrichmentSweepOpen => 'Find music info';

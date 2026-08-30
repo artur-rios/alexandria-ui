@@ -37,6 +37,7 @@ Failure mapCoreStatus(
     CoreStatusFamily.readingList => _mapReadingList(code),
     CoreStatusFamily.playlist => _mapPlaylist(code),
     CoreStatusFamily.enrichment => _mapEnrichment(code),
+    CoreStatusFamily.library => _mapLibrary(code),
     CoreStatusFamily.auth => _mapAuth(code),
     CoreStatusFamily.playback => _mapPlayback(code),
     CoreStatusFamily.run => _mapRun(code),
@@ -314,6 +315,37 @@ Failure _mapEnrichment(int code) => switch (code) {
     code: code,
   ),
   _ => Failure.unexpected(family: CoreStatusFamily.enrichment, code: code),
+};
+
+// The library family carries one code the others do not:
+// LIBRARY_ERR_CONFLICT, for a folder that overlaps a library already
+// registered. Mapped to `conflict` rather than `invalidInput` because the
+// request was well formed and the folder is a real one — what is wrong is
+// the catalog's current state, and a surface that can tell those apart says
+// "that folder is already inside Photography" rather than "that is not a
+// folder".
+Failure _mapLibrary(int code) => switch (code) {
+  LIBRARY_ERR_INVALID_INPUT => Failure.invalidInput(
+    family: CoreStatusFamily.library,
+    code: code,
+  ),
+  LIBRARY_ERR_UNAUTHORIZED => Failure.unauthorized(
+    family: CoreStatusFamily.library,
+    code: code,
+  ),
+  LIBRARY_ERR_NOT_INITIALIZED => Failure.notInitialized(
+    family: CoreStatusFamily.library,
+    code: code,
+  ),
+  LIBRARY_ERR_NOT_FOUND => Failure.notFound(
+    family: CoreStatusFamily.library,
+    code: code,
+  ),
+  LIBRARY_ERR_CONFLICT => Failure.conflict(
+    family: CoreStatusFamily.library,
+    code: code,
+  ),
+  _ => Failure.unexpected(family: CoreStatusFamily.library, code: code),
 };
 
 // The auth family has no not-found and no disk code, and is the only one with a

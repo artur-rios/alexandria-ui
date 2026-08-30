@@ -940,6 +940,51 @@ class FakeCoreClient implements CoreClient {
     return playlistResponse;
   }
 
+  /// What every library call answers, and what they were called with.
+  ///
+  /// The recorded arguments are the assertion that matters for
+  /// `libraryBrowse`: it takes three consecutive strings, so a transposition
+  /// compiles and answers an empty folder rather than failing.
+  CoreJsonResponse libraryResponse = (status: LIBRARY_OK, json: '[]');
+
+  /// Every library registration asked for, in order.
+  final List<({String jsonBody, String token})> libraryRegisterCalls = [];
+
+  /// Every tree read asked for, in order.
+  final List<({String uuid, String path, String token})> libraryBrowseCalls =
+      [];
+
+  /// Every library removal asked for, in order.
+  final List<({String uuid, String token})> libraryRemoveCalls = [];
+
+  @override
+  Future<CoreJsonResponse> libraryRegister(
+    String jsonBody,
+    String token,
+  ) async {
+    libraryRegisterCalls.add((jsonBody: jsonBody, token: token));
+    return libraryResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> librariesList(String token) async => libraryResponse;
+
+  @override
+  Future<CoreJsonResponse> libraryBrowse(
+    String uuid,
+    String path,
+    String token,
+  ) async {
+    libraryBrowseCalls.add((uuid: uuid, path: path, token: token));
+    return libraryResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> libraryRemove(String uuid, String token) async {
+    libraryRemoveCalls.add((uuid: uuid, token: token));
+    return libraryResponse;
+  }
+
   /// What the two enrichment calls answer, and what they were called with.
   ///
   /// The recorded arguments are the assertion that matters for
