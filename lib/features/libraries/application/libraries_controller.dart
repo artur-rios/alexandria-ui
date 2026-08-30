@@ -64,6 +64,37 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     }
   }
 
+  /// Points the library at [rootPath], the folder it moved to.
+  ///
+  /// Answers the refusal rather than throwing it, like [register]: the
+  /// destination overlapping another library, or the catalog already holding
+  /// files there, is a sentence to show beside the folder the owner just
+  /// picked — not a failure state for the screen.
+  Future<Failure?> move({
+    required String uuid,
+    required String rootPath,
+  }) async {
+    final credential = ref.read(sessionControllerProvider.notifier).credential;
+    if (credential == null) return null;
+
+    final outcome = await ref
+        .read(libraryGatewayProvider)
+        .move(uuid: uuid, rootPath: rootPath, credential: credential);
+
+    switch (outcome) {
+      case LibraryWriteDone():
+        await reload();
+        return null;
+
+      case LibraryWriteFailed(failure: final UnauthorizedFailure failure):
+        ref.read(sessionControllerProvider.notifier).invalidate(failure);
+        return null;
+
+      case LibraryWriteFailed(:final failure):
+        return failure;
+    }
+  }
+
   /// Treats [rootPath] as a library called [name].
   ///
   /// Answers the refusal rather than throwing it: registering is something

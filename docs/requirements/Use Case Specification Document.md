@@ -1890,10 +1890,10 @@ graph LR
 | **ID** | UC-49 |
 | **Name** | Browse a library |
 | **Actors** | Owner, Alexandria core |
-| **Description** | The owner opens a library and walks its folders as they are on disk, opening files from them. |
+| **Description** | The owner opens a library, walks its folders as they are on disk, opens files from them, and corrects where the library is when its folder moves. |
 | **Preconditions** | An active session exists and at least one folder has been marked as a library (UC-05). |
 | **Postconditions** | None. Browsing changes nothing. |
-| **Requirements** | FR-CT-15, FR-CT-16, FR-LB-22 |
+| **Requirements** | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
 
 **Main Flow**
 
@@ -1913,6 +1913,9 @@ graph LR
 | AF-01 | No folder has been marked as a library | The screen says so and says where a library is made — on the source-folders screen — because there is nothing to press here. |
 | AF-02 | A folder in the library holds nothing the core catalogued | It is shown as an empty folder rather than hidden. A folder whose files were all scoped out of the index (UC-05) still exists on disk, and hiding it would misdescribe the structure the library exists to preserve. |
 | AF-03 | The library no longer exists — it was unmarked from another window | The screen states that it could not be read and offers to retry, which re-reads the list. |
+| AF-06 | The library's folder moved on disk | The owner picks where it is now. The library's files move with it and keep their identity, and the folder's own registration follows, so the next scan walks the folder that is there. Nothing is re-indexed: these are the same files. |
+| AF-07 | The folder picked already overlaps another library, or the catalog already holds files there | The application says which of the two it is, in those terms, and nothing moves — neither the library nor the source folder. |
+| AF-08 | The folder picked is already registered as a different source folder | The library still moves; the source registrations are left alone, because collapsing two into one would silently drop the other's scope. The owner can see both rows and fix it. |
 | AF-04 | The owner unmarks the library | After confirming, the core stops treating the folder as one and its files return to the type panels; nothing on disk and nothing in the catalog is touched. The folder's own row, if it is still registered as a source, stops calling itself a library. |
 | AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
 
@@ -1922,6 +1925,13 @@ graph LR
 > place to answer the same question — and would let a folder become a library
 > without ever being registered as a source, which is to say without ever being
 > indexed.
+>
+> **A moved folder is corrected, not re-indexed.** Re-walking the new
+> location would mint new records for the same files and leave the old ones to
+> be found missing — taking with them every reference a watchlist, a reading
+> position, or a collection holds. So the root and the paths beneath it are
+> corrected together, which is the core's own guarantee (FR-FC-41), and this
+> screen's part is to ask which folder and to keep the registration in step.
 >
 > **Unmarking lives here rather than on the folder's row**, because a library
 > outlives the registration it came from: un-registering a source folder leaves
@@ -1990,7 +2000,7 @@ graph LR
 | UC-46: Browse the music library | FR-CT-13, FR-CT-14 |
 | UC-47: Manage a playlist | FR-TR-15, FR-TR-16, FR-TR-17, FR-TR-18, FR-TR-19 |
 | UC-48: Play a playlist | FR-TR-20, FR-PL-05, FR-PL-06, FR-PL-07 |
-| UC-49: Browse a library | FR-CT-15, FR-CT-16, FR-LB-22 |
+| UC-49: Browse a library | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) appears at least

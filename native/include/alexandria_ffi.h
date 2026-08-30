@@ -1414,6 +1414,19 @@ struct EnrichmentJsonResult alexandria_enrichment_read_track(const char *uuid,
 struct LibraryJsonResult alexandria_library_register(const char *json_body, const char *token);
 
 /**
+ * Point a library at the folder it moved to (libraries design).
+ *
+ * `json_body` is the JSON body `PATCH /v1/libraries/{uuid}` takes
+ * (`rootPath`). The library's files move with it, keeping their uuids and
+ * everything that points at them. Answers `LIBRARY_ERR_CONFLICT` when the
+ * destination overlaps another library, or when the catalog already holds
+ * files there.
+ */
+struct LibraryJsonResult alexandria_library_move(const char *uuid,
+                                                 const char *json_body,
+                                                 const char *token);
+
+/**
  * Every registered library.
  */
 struct LibraryJsonResult alexandria_libraries_list(const char *token);

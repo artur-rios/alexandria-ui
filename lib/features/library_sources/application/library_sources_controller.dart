@@ -230,6 +230,32 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
     await _rewrite(path, (source) => source.copyWith(libraryName: null));
   }
 
+  /// Follows a library's folder to where it moved.
+  ///
+  /// The registration is keyed by path, so a library that moved leaves the
+  /// source folder pointing at somewhere that is no longer there — and the
+  /// next scan of it would walk a missing folder. Called by the screen that
+  /// moves the library, for the same reason [clearLibraryMark] is: the core
+  /// owns what a library is, and this keeps the folder's own record from
+  /// contradicting it.
+  ///
+  /// Does nothing when [from] is not registered — a library can outlive its
+  /// source folder — or when [to] already is, which would collapse two
+  /// registrations into one and silently drop the other's scope.
+  Future<void> followLibraryMove({
+    required String from,
+    required String to,
+  }) async {
+    if (!state.sources.any((source) => source.path == from)) return;
+    if (state.sources.any((source) => source.path == to)) {
+      _log.warning('library moved to a folder already registered: $to');
+      return;
+    }
+
+    await _rewrite(from, (source) => source.copyWith(path: to));
+    _log.info('source folder followed its library: $from -> $to');
+  }
+
   /// Replaces the source at [path] with [change] applied, and persists.
   Future<void> _rewrite(
     String path,

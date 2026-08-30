@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
+import '../../../core/failures/failure.dart';
+import '../../../core/failures/failure_messages.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/presentation/file_details_view.dart';
@@ -171,10 +173,20 @@ class LibrariesScreen extends ConsumerWidget {
                         subtitle: Text(library.rootPath),
                         onTap: () =>
                             LibraryTreeScreen.show(context, library.uuid),
-                        trailing: IconButton(
-                          tooltip: l10n.libraryRemove,
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: () => _remove(context, ref, library),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              tooltip: l10n.libraryMove,
+                              icon: const Icon(Icons.drive_file_move_outlined),
+                              onPressed: () => _move(context, ref, library),
+                            ),
+                            IconButton(
+                              tooltip: l10n.libraryRemove,
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => _remove(context, ref, library),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -186,6 +198,46 @@ class LibrariesScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Points [library] at the folder it moved to.
+  ///
+  /// A folder picker rather than a text field: the owner is naming somewhere
+  /// that exists, and typing a path is how you get a library pointed at a
+  /// folder that is one character wrong.
+  Future<void> _move(
+    BuildContext context,
+    WidgetRef ref,
+    Library library,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final from = library.rootPath;
+    final to = await ref.read(folderPickerProvider).pickFolder();
+    if (to == null || !context.mounted) return;
+
+    final failure = await ref
+        .read(librariesControllerProvider.notifier)
+        .move(uuid: library.uuid, rootPath: to);
+
+    if (failure != null) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            failure is ConflictFailure
+                ? l10n.libraryMoveConflict
+                : failure.localizedMessage(l10n),
+          ),
+        ),
+      );
+      return;
+    }
+
+    // The folder's registration follows, or the next scan of it walks a
+    // folder that is no longer there.
+    await ref
+        .read(librarySourcesControllerProvider.notifier)
+        .followLibraryMove(from: from, to: to);
   }
 
   Future<void> _remove(

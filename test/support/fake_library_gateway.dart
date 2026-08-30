@@ -1,3 +1,5 @@
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 
@@ -29,6 +31,9 @@ class FakeLibraryGateway implements LibraryGateway {
 
   /// Every library removed, in order.
   final List<String> removed = [];
+
+  /// Every move asked for, in order.
+  final List<({String uuid, String rootPath})> moved = [];
 
   @override
   Future<LibraryBrowse> browse({required String credential}) async =>
@@ -68,6 +73,30 @@ class FakeLibraryGateway implements LibraryGateway {
     libraries.add(
       Library(uuid: 'lib-${libraries.length + 1}', name: name, rootPath: rootPath),
     );
+    return const LibraryWrite.done();
+  }
+
+  @override
+  Future<LibraryWrite> move({
+    required String uuid,
+    required String rootPath,
+    required String credential,
+  }) async {
+    moved.add((uuid: uuid, rootPath: rootPath));
+    if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
+
+    final at = libraries.indexWhere((library) => library.uuid == uuid);
+    if (at < 0) {
+      return const LibraryWrite.failed(
+        failure: Failure.notFound(family: CoreStatusFamily.library, code: 4),
+      );
+    }
+    libraries[at] = Library(
+      uuid: uuid,
+      name: libraries[at].name,
+      rootPath: rootPath,
+    );
+
     return const LibraryWrite.done();
   }
 

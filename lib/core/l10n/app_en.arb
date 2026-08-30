@@ -1888,6 +1888,14 @@
   "@librarySourcesMarkAsLibrary": {
     "description": "Libraries design: marks a folder registered before the question was asked, without re-registering it."
   },
+  "libraryMove": "The folder moved",
+  "@libraryMove": {
+    "description": "Libraries design FR-FC-41: corrects a library's root after its folder moved on disk, taking its files with it."
+  },
+  "libraryMoveConflict": "That folder cannot hold this library: it overlaps another one, or the catalog already has files there.",
+  "@libraryMoveConflict": {
+    "description": "The two conflicts a move answers, said in the terms the owner can act on rather than as a generic refusal."
+  },
   "librariesOpen": "Libraries",
   "@librariesOpen": {
     "description": "Library menu entry opening the list of registered libraries."

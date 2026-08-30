@@ -221,4 +221,96 @@ void main() {
       reason: 'removing a library lost its files',
     );
   });
+
+  test('GivenAMovedFolder_WhenTheRootIsCorrected_ThenTheSameRecordsFollow', () async {
+    // What pins `libraryMove`'s three consecutive strings: transposed, the
+    // JSON body is read as the uuid and nothing moves. And what no fake can
+    // show — that the core rewrites the stored paths, so the library is
+    // browsable at its new root without a re-index.
+    final (client, credential) = await signedInCore();
+    catalog.addFixture('class-01/lecture.md', '# a lecture');
+    await indexAndSettle(client, credential, 1);
+
+    final libraries = CoreLibraryGateway(client);
+    await libraries.register(
+      name: 'Course',
+      rootPath: catalog.libraryDirectory.path,
+      credential: credential,
+    );
+    final browsed = await libraries.browse(credential: credential);
+    final library = (browsed as LibraryBrowseLoaded).libraries.single;
+
+    final before = await libraries.read(
+      uuid: library.uuid,
+      path: 'class-01',
+      credential: credential,
+    );
+    final was = (before as LibraryReadLoaded).listing.files.single.file.uuid;
+
+    // A folder that need not exist: the record is being corrected, and the
+    // walk is what answers whether the path is there.
+    final moved = await libraries.move(
+      uuid: library.uuid,
+      rootPath: '${catalog.libraryDirectory.path}-moved',
+      credential: credential,
+    );
+    expect(moved, isA<LibraryWriteDone>());
+
+    final after = await libraries.read(
+      uuid: library.uuid,
+      path: 'class-01',
+      credential: credential,
+    );
+    final listing = (after as LibraryReadLoaded).listing;
+
+    expect(
+      listing.library.rootPath,
+      '${catalog.libraryDirectory.path}-moved',
+      reason: 'the library did not move',
+    );
+    expect(
+      listing.files.single.file.uuid,
+      was,
+      reason: 'the move replaced the record instead of correcting it — every '
+          'watchlist place and reading position pointing at it is now dead',
+    );
+  });
+
+  test('GivenAnOccupiedFolder_WhenALibraryMovesOnto_ThenTheCoreRefusesIt', () async {
+    // The conflict the screen has its own sentence for. Asserted against the
+    // real core because the status has to survive the crossing to be the one
+    // the application shows.
+    final (client, credential) = await signedInCore();
+    catalog.addFixture('class-01/lecture.md', '# a lecture');
+    await indexAndSettle(client, credential, 1);
+
+    final libraries = CoreLibraryGateway(client);
+    await libraries.register(
+      name: 'Course',
+      rootPath: catalog.libraryDirectory.path,
+      credential: credential,
+    );
+    await libraries.register(
+      name: 'Photos',
+      rootPath: '${catalog.libraryDirectory.path}-photos',
+      credential: credential,
+    );
+    final browsed = await libraries.browse(credential: credential);
+    final course = (browsed as LibraryBrowseLoaded).libraries.firstWhere(
+      (library) => library.name == 'Course',
+    );
+
+    final refused = await libraries.move(
+      uuid: course.uuid,
+      rootPath: '${catalog.libraryDirectory.path}-photos/2024',
+      credential: credential,
+    );
+
+    expect(refused, isA<LibraryWriteFailed>());
+    expect(
+      (refused as LibraryWriteFailed).failure,
+      isA<ConflictFailure>(),
+      reason: 'the overlap did not reach the application as a conflict',
+    );
+  });
 }

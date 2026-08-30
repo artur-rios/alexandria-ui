@@ -957,6 +957,14 @@ class FakeCoreClient implements CoreClient {
   /// Every library removal asked for, in order.
   final List<({String uuid, String token})> libraryRemoveCalls = [];
 
+  /// Every library move asked for, in order.
+  ///
+  /// Recorded like `libraryBrowse` above and for the same reason: three
+  /// consecutive strings, so a transposition compiles and moves a library to
+  /// a path spelled as a JSON body.
+  final List<({String uuid, String jsonBody, String token})> libraryMoveCalls =
+      [];
+
   @override
   Future<CoreJsonResponse> libraryRegister(
     String jsonBody,
@@ -976,6 +984,16 @@ class FakeCoreClient implements CoreClient {
     String token,
   ) async {
     libraryBrowseCalls.add((uuid: uuid, path: path, token: token));
+    return libraryResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> libraryMove(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async {
+    libraryMoveCalls.add((uuid: uuid, jsonBody: jsonBody, token: token));
     return libraryResponse;
   }
 

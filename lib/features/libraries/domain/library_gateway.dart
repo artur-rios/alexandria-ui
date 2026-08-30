@@ -70,6 +70,19 @@ abstract interface class LibraryGateway {
     required String credential,
   });
 
+  /// Points [uuid] at [rootPath], the folder it moved to.
+  ///
+  /// A correction rather than a re-index: the files the library holds move
+  /// with it and keep their uuids, so everything that points at them — a
+  /// watchlist place, a reading position, a collection — still does. Walking
+  /// the new location instead would mint new records and leave these to be
+  /// found missing.
+  Future<LibraryWrite> move({
+    required String uuid,
+    required String rootPath,
+    required String credential,
+  });
+
   /// Stops treating a folder as a library.
   ///
   /// The files are kept and return to the type panels. Marking a folder

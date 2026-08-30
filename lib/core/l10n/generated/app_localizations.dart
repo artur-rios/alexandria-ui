@@ -2574,6 +2574,18 @@ abstract class AppLocalizations {
   /// **'Mark as a library'**
   String get librarySourcesMarkAsLibrary;
 
+  /// Libraries design FR-FC-41: corrects a library's root after its folder moved on disk, taking its files with it.
+  ///
+  /// In en, this message translates to:
+  /// **'The folder moved'**
+  String get libraryMove;
+
+  /// The two conflicts a move answers, said in the terms the owner can act on rather than as a generic refusal.
+  ///
+  /// In en, this message translates to:
+  /// **'That folder cannot hold this library: it overlaps another one, or the catalog already has files there.'**
+  String get libraryMoveConflict;
+
   /// Library menu entry opening the list of registered libraries.
   ///
   /// In en, this message translates to:

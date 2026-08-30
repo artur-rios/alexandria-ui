@@ -115,6 +115,19 @@ class CoreLibraryGateway implements LibraryGateway {
   );
 
   @override
+  Future<LibraryWrite> move({
+    required String uuid,
+    required String rootPath,
+    required String credential,
+  }) => _write(
+    () => _core.libraryMove(
+      uuid,
+      jsonEncode({'rootPath': rootPath}),
+      credential,
+    ),
+  );
+
+  @override
   Future<LibraryWrite> remove({
     required String uuid,
     required String credential,

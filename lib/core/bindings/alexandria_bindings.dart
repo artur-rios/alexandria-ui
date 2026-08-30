@@ -1467,6 +1467,40 @@ class AlexandriaBindings {
         )
       >();
 
+  /// Point a library at the folder it moved to (libraries design).
+  ///
+  /// `json_body` is the JSON body `PATCH /v1/libraries/{uuid}` takes
+  /// (`rootPath`). The library's files move with it, keeping their uuids and
+  /// everything that points at them. Answers `LIBRARY_ERR_CONFLICT` when the
+  /// destination overlaps another library, or when the catalog already holds
+  /// files there.
+  LibraryJsonResult alexandria_library_move(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> json_body,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_library_move(uuid, json_body, token);
+  }
+
+  late final _alexandria_library_movePtr =
+      _lookup<
+        ffi.NativeFunction<
+          LibraryJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_library_move');
+  late final _alexandria_library_move = _alexandria_library_movePtr
+      .asFunction<
+        LibraryJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
   /// Treat a folder as a library (libraries design).
   ///
   /// `json_body` is the JSON body `POST /v1/libraries` takes (`name`,

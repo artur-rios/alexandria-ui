@@ -494,6 +494,18 @@ abstract interface class CoreClient {
     String token,
   );
 
+  /// Points a library at the folder it moved to, through
+  /// `alexandria_library_move` (libraries design).
+  ///
+  /// [jsonBody] carries the new `rootPath`. The files the library holds move
+  /// with it and keep their uuids, which is what makes this a correction
+  /// rather than a re-index.
+  Future<CoreJsonResponse> libraryMove(
+    String uuid,
+    String jsonBody,
+    String token,
+  );
+
   /// Stops treating a folder as a library, through
   /// `alexandria_library_remove`.
   ///
@@ -1078,6 +1090,15 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async => _reply<CoreJsonResponse>(
     await _isolate.call('libraryBrowse', [uuid, path, token]),
+  );
+
+  @override
+  Future<CoreJsonResponse> libraryMove(
+    String uuid,
+    String jsonBody,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('libraryMove', [uuid, jsonBody, token]),
   );
 
   @override

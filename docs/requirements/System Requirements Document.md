@@ -190,6 +190,7 @@ replace the FFI one without touching a screen.
 | FR-CT-14 | The system shall offer, for each file in the music area, a context menu carrying the file's playback actions, its details, and its metadata editor. |
 | FR-CT-15 | The system shall present a library's files in their folders on disk, one level at a time, from a screen listing every library. A library exists so that a folder whose structure *is* its meaning — a course, with each class's recording and handouts side by side — keeps that structure; a flat listing of its files answers a question nobody asked of it. |
 | FR-CT-16 | The system shall exclude a library's files from the type-panel listings and their counts (FR-CT-01, FR-CT-02) and from the home dashboard (FR-CT-11). This is the whole point of marking a folder: three hundred class handouts otherwise bury every other document the owner has. Search (FR-CT-06), the deleted-items review (FR-LC-03), watchlists and reading lists (FR-TR-01 … FR-TR-14), and collections (FR-OG-01 … FR-OG-07) continue to reach them — a library narrows where files are *listed*, never what can be *found* or tracked, and a later reader must not "fix" that apparent inconsistency by widening the exclusion. |
+| FR-CT-17 | The system shall let the owner correct a library's folder after it moves on disk, by picking the folder it moved to. The library's files move with it and keep their identity (core FR-FC-41), so nothing that references them is lost; the registered source folder the library was made from follows the same move, or its next scan would walk a folder that is no longer there. A destination that overlaps another library, or that the catalog already holds files for, is refused in those terms rather than generically. |
 
 ### 3.4 Metadata and Content Editing — `ME`
 
@@ -480,7 +481,7 @@ does not already publish.
 | Home dashboard | Recent items, items in progress, counts, last run outcome | FR-CT-11 |
 | Library sources | Register, scan, refresh, pace, unregister, and mark folders as libraries | FR-LB-01 … FR-LB-22 |
 | Catalog listing | Type-filtered listing in three layouts, with search, filters, and sorting | FR-CT-01 … FR-CT-04, FR-CT-06 … FR-CT-10, FR-CT-12, FR-CT-16 |
-| Libraries | Every library, and one library's folders a level at a time | FR-CT-15, FR-CT-16, FR-LB-22 |
+| Libraries | Every library, and one library's folders a level at a time | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
 | File detail | Metadata, path, state, and available actions | FR-CT-05, FR-ME-01, FR-ME-02, FR-ME-04 |
 | Text editor | Markdown and text editing with live preview | FR-ME-06 … FR-ME-10 |
 | Video player | Playback with subtitle and audio tracks | FR-PL-01 … FR-PL-04, FR-PL-08 … FR-PL-10 |
@@ -673,7 +674,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | --- | --- |
 | F-01 Authentication and session | FR-AU-01 through FR-AU-19 |
 | F-02 Library sources and indexing | FR-LB-01 through FR-LB-22 |
-| F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-16 |
+| F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-17 |
 | F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
 | F-05 Media playback | FR-PL-01 through FR-PL-11 |
 | F-06 Document, image, and page viewing | FR-VW-01 through FR-VW-08 |
@@ -688,7 +689,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | --- | --- | --- |
 | Authentication and session | `AU` | FR-AU-01 … FR-AU-19 |
 | Library sources and indexing | `LB` | FR-LB-01 … FR-LB-22 |
-| Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-16 |
+| Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-17 |
 | Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
 | Media playback | `PL` | FR-PL-01 … FR-PL-11 |
 | Document, image, and page viewing | `VW` | FR-VW-01 … FR-VW-08 |

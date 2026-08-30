@@ -1410,6 +1410,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get librarySourcesMarkAsLibrary => 'Marcar como biblioteca';
 
   @override
+  String get libraryMove => 'A pasta foi movida';
+
+  @override
+  String get libraryMoveConflict =>
+      'Essa pasta não pode conter esta biblioteca: ela se sobrepõe a outra, ou o catálogo já tem arquivos ali.';
+
+  @override
   String get librariesOpen => 'Bibliotecas';
 
   @override

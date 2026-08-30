@@ -1407,6 +1407,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get librarySourcesMarkAsLibrary => 'Mark as a library';
 
   @override
+  String get libraryMove => 'The folder moved';
+
+  @override
+  String get libraryMoveConflict =>
+      'That folder cannot hold this library: it overlaps another one, or the catalog already has files there.';
+
+  @override
   String get librariesOpen => 'Libraries';
 
   @override
