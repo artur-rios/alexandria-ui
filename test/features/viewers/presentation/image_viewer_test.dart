@@ -3,7 +3,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -22,13 +22,13 @@ void main() {
     uuid: 'img-1',
     name: 'Beach.jpg',
     path: '/home/owner/images/Beach.jpg',
-    type: LibraryType.image,
+    type: FileType.image,
   );
   final second = aFile(
     uuid: 'img-2',
     name: 'Forest.jpg',
     path: '/home/owner/images/Forest.jpg',
-    type: LibraryType.image,
+    type: FileType.image,
   );
 
   /// Signs in, opens the image listing, and opens [file].
@@ -45,7 +45,7 @@ void main() {
     final target = file ?? first;
 
     final catalog = FakeCatalogGateway(
-      listings: {LibraryType.image: loadedDetails(files)},
+      listings: {FileType.image: loadedDetails(files)},
     );
     for (final entry in files) {
       catalog.details[entry.uuid] = FileDetailsOutcome.read(

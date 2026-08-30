@@ -6,7 +6,7 @@ import '../../../core/failures/failure_messages.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/file_details.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../../catalog/domain/music_metadata.dart';
 import '../../organization/domain/bookmark.dart';
 import '../../playback/presentation/music_display_name.dart' show tagOr;
@@ -49,7 +49,7 @@ class DeleteFileButton extends ConsumerWidget {
     // detail view already on screen. `musicLibraryProvider` would throw when
     // the audio listing fails or the session is rejected, which would leave
     // this button dead on a press; reading straight off `details` cannot.
-    final name = file.type == LibraryType.audio
+    final name = file.type == FileType.audio
         ? tagOr(
             MusicMetadata.fromDetails(details.metadata).title,
             l10n.musicUnknownTitle,

@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../core/di/providers.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../domain/folder_picker.dart';
 import '../domain/folder_registration.dart';
 import '../domain/library_source.dart';
@@ -59,7 +59,7 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
   Future<LibrarySource?> registerFolder({
     required Future<bool> Function(String path, LibrarySource existing)
     onOverlapConfirmed,
-    required Future<List<LibraryType>?> Function(String path) onScopeChosen,
+    required Future<List<FileType>?> Function(String path) onScopeChosen,
   }) async {
     if (state.registering) return null;
 
@@ -90,7 +90,7 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
     );
 
     if (refuses(verdict)) {
-      _log.info('library folder refused (${verdict.name}): $path');
+      _log.info('source folder refused (${verdict.name}): $path');
       state = state.copyWith(
         registering: false,
         refusal: verdict,
@@ -122,7 +122,7 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
   }
 
   /// Records [path] and persists the set (main flow steps 5 and 6).
-  Future<LibrarySource> _record(String path, List<LibraryType> scope) async {
+  Future<LibrarySource> _record(String path, List<FileType> scope) async {
     // Every type chosen is the same thing as no scope at all, and is stored
     // as the absence: the core reads them identically, and keeping one
     // spelling means a folder that covers everything reads the same whether
@@ -134,8 +134,8 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
     // either absent or a real narrowing" true of the store rather than of one
     // widget. `index_scope_test` calls this with all seven and asserts what
     // lands in the store.
-    final scoped = scope.length == LibraryType.values.length
-        ? const <LibraryType>[]
+    final scoped = scope.length == FileType.values.length
+        ? const <FileType>[]
         : scope;
 
     final source = LibrarySource(
@@ -147,7 +147,7 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
     final sources = [...state.sources, source];
 
     await _store.write(sources);
-    _log.info('library folder registered: $path');
+    _log.info('source folder registered: $path');
 
     state = state.copyWith(sources: sources, registering: false);
 
@@ -179,7 +179,7 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
     ];
 
     await _store.write(sources);
-    _log.info('library folder unregistered: $path');
+    _log.info('source folder unregistered: $path');
 
     // AF-03 needs nothing of its own: removing the last folder empties the
     // list, and an empty list is already what puts the first-run guidance back

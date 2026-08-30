@@ -6,7 +6,7 @@ import '../../../core/settings/settings_store.dart';
 import '../domain/library_source.dart';
 import '../domain/library_source_store.dart';
 
-/// The registered library folders, in the local settings store
+/// The registered source folders, in the local settings store
 /// (FR-LB-03, System Requirements §4.11).
 ///
 /// A list under one key rather than a key per folder: the whole set is read at
@@ -43,7 +43,7 @@ class SettingsLibrarySourceStore implements LibrarySourceStore {
       // Broad by intent: a malformed document surfaces as FormatException and
       // a wrongly-typed field as TypeError, and either way there is nothing
       // here to restore.
-      _log.warning('the registered library folders could not be read', error);
+      _log.warning('the registered source folders could not be read', error);
       return const [];
     }
   }

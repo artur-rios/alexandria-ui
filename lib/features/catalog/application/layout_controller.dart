@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/settings/settings_store.dart';
 import '../../../core/startup/startup_state.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 import '../domain/view_layout.dart';
 
 /// The layout chosen for each file type (UC-10, FR-CT-03, FR-CT-04).
@@ -35,15 +35,15 @@ class LayoutController extends Notifier<LayoutState> {
   SettingsStore? get _settings =>
       ref.read(startupControllerProvider.notifier).settings;
 
-  Map<LibraryType, ViewLayout> _read() {
+  Map<FileType, ViewLayout> _read() {
     final stored = _settings?.getString(settingsKey);
     if (stored == null) return const {};
 
     try {
       final decoded = jsonDecode(stored) as Map<String, dynamic>;
-      final byType = <LibraryType, ViewLayout>{};
+      final byType = <FileType, ViewLayout>{};
       for (final entry in decoded.entries) {
-        final type = LibraryType.fromWire(entry.key);
+        final type = FileType.fromWire(entry.key);
         final layout = ViewLayout.byName(entry.value as String?);
         // A type or a layout this application does not know is skipped rather
         // than defaulted: the entry was written by some other version, and
@@ -60,7 +60,7 @@ class LayoutController extends Notifier<LayoutState> {
   }
 
   /// Applies [layout] to [type] and records it (main flow steps 1–3).
-  Future<void> choose(LibraryType type, ViewLayout layout) async {
+  Future<void> choose(FileType type, ViewLayout layout) async {
     final byType = {...state.byType, type: layout};
     state = state.copyWith(byType: byType, lastChangeUnsaved: false);
 
@@ -99,7 +99,7 @@ class LayoutState {
   const LayoutState({this.byType = const {}, this.lastChangeUnsaved = false});
 
   /// The layout chosen per type. A type with no entry uses [defaultLayout].
-  final Map<LibraryType, ViewLayout> byType;
+  final Map<FileType, ViewLayout> byType;
 
   /// Whether the last choice applied but could not be stored (AF-02).
   final bool lastChangeUnsaved;
@@ -111,11 +111,11 @@ class LayoutState {
   static const ViewLayout defaultLayout = ViewLayout.list;
 
   /// The layout [type] was chosen to be drawn in.
-  ViewLayout chosenFor(LibraryType type) => byType[type] ?? defaultLayout;
+  ViewLayout chosenFor(FileType type) => byType[type] ?? defaultLayout;
 
   /// A copy with the given changes.
   LayoutState copyWith({
-    Map<LibraryType, ViewLayout>? byType,
+    Map<FileType, ViewLayout>? byType,
     bool? lastChangeUnsaved,
   }) => LayoutState(
     byType: byType ?? this.byType,

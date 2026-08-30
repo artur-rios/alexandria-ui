@@ -4,7 +4,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../../catalog/domain/catalog_gateway.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../../catalog/domain/music_metadata.dart';
 import '../domain/music_grouping.dart';
 
@@ -48,7 +48,7 @@ class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
 
     final gateway = ref.read(catalogGatewayProvider);
     final listing = await gateway.listFiles(
-      type: LibraryType.audio,
+      type: FileType.audio,
       credential: credential,
     );
 

@@ -3,7 +3,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/auth/presentation/auth_notice.dart';
 import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/shell/domain/session_activity.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
@@ -116,7 +116,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final readWhileSignedIn = gateway.requested
-            .where((type) => type == LibraryType.audio)
+            .where((type) => type == FileType.audio)
             .length;
         expect(readWhileSignedIn, greaterThan(0));
 
@@ -131,7 +131,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          gateway.requested.where((type) => type == LibraryType.audio).length,
+          gateway.requested.where((type) => type == FileType.audio).length,
           greaterThan(readWhileSignedIn),
         );
       },

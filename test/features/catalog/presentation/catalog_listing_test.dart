@@ -3,7 +3,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 // Prefixed: the widget and the domain's listing union share a name, and this
 // test speaks about both.
 import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
@@ -28,7 +28,7 @@ void main() {
   /// Signs in and selects [destination].
   Future<ProviderContainer> openListing(
     WidgetTester tester, {
-    Map<LibraryType, CatalogListing>? listings,
+    Map<FileType, CatalogListing>? listings,
     ShellDestination destination = ShellDestination.videos,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
@@ -61,9 +61,9 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: loadedDetails([
-            aFile(type: LibraryType.video, name: 'Kind of Blue.mp4'),
-            aFile(uuid: 'b', type: LibraryType.video, name: 'Blue Train.mp4'),
+          FileType.video: loadedDetails([
+            aFile(type: FileType.video, name: 'Kind of Blue.mp4'),
+            aFile(uuid: 'b', type: FileType.video, name: 'Blue Train.mp4'),
           ]),
         },
       );
@@ -80,11 +80,11 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: loadedDetails([
+          FileType.video: loadedDetails([
             for (var index = 0; index < 500; index++)
               aFile(
                 uuid: '$index',
-                type: LibraryType.video,
+                type: FileType.video,
                 name: 'Clip $index.mp4',
               ),
           ]),
@@ -105,9 +105,9 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: loadedDetails([
+          FileType.video: loadedDetails([
             aFile(
-              type: LibraryType.video,
+              type: FileType.video,
               missingAt: DateTime.utc(2026, 8, 19),
             ),
           ]),
@@ -128,7 +128,7 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.image: loadedDetails([aFile()]),
+          FileType.image: loadedDetails([aFile()]),
         },
       );
 
@@ -164,7 +164,7 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: const CatalogListing.failed(
+          FileType.video: const CatalogListing.failed(
             failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
           ),
         },
@@ -184,11 +184,11 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: const CatalogListing.failed(
+          FileType.video: const CatalogListing.failed(
             failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
           ),
-          LibraryType.image: loadedDetails([
-            aFile(type: LibraryType.image, name: 'a.png'),
+          FileType.image: loadedDetails([
+            aFile(type: FileType.image, name: 'a.png'),
           ]),
         },
       );
@@ -214,9 +214,9 @@ void main() {
       await openListing(
         tester,
         listings: {
-          LibraryType.video: loadedDetails([
-            aFile(type: LibraryType.video),
-            aFile(uuid: 'b', type: LibraryType.video),
+          FileType.video: loadedDetails([
+            aFile(type: FileType.video),
+            aFile(uuid: 'b', type: FileType.video),
           ]),
         },
       );
@@ -260,7 +260,7 @@ void main() {
         tester,
         locale: locale,
         listings: {
-          LibraryType.image: loadedDetails([aFile()]),
+          FileType.image: loadedDetails([aFile()]),
         },
       );
 

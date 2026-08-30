@@ -3,7 +3,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -22,7 +22,7 @@ void main() {
   /// stands in for it now that music has its own browsing area, UC-46).
   Future<ProviderContainer> openListing(
     WidgetTester tester, {
-    Map<LibraryType, CatalogListing>? listings,
+    Map<FileType, CatalogListing>? listings,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
   }) async {
@@ -36,16 +36,16 @@ void main() {
             listings:
                 listings ??
                 {
-                  LibraryType.video: loadedDetails([
+                  FileType.video: loadedDetails([
                     aFile(
                       uuid: '1',
                       name: 'zebra.mp4',
-                      type: LibraryType.video,
+                      type: FileType.video,
                     ),
                     aFile(
                       uuid: '2',
                       name: 'apple.mp4',
-                      type: LibraryType.video,
+                      type: FileType.video,
                     ),
                   ]),
                 },
@@ -137,7 +137,7 @@ void main() {
       expect(
         container
             .read(listingViewControllerProvider)
-            .forType(LibraryType.video)
+            .forType(FileType.video)
             .lifecycle,
         LifecycleFilter.deleted,
       );
@@ -151,7 +151,7 @@ void main() {
       final container = await openListing(
         tester,
         listings: {
-          LibraryType.video: loadedDetails([aFile(type: LibraryType.video)]),
+          FileType.video: loadedDetails([aFile(type: FileType.video)]),
         },
       );
 
@@ -159,7 +159,7 @@ void main() {
       await container
           .read(listingViewControllerProvider.notifier)
           .apply(
-            LibraryType.video,
+            FileType.video,
             const ListingView(lifecycle: LifecycleFilter.deleted),
           );
       await tester.pumpAndSettle();
@@ -180,13 +180,13 @@ void main() {
       final container = await openListing(
         tester,
         listings: {
-          LibraryType.video: loadedDetails([aFile(type: LibraryType.video)]),
+          FileType.video: loadedDetails([aFile(type: FileType.video)]),
         },
       );
       await container
           .read(listingViewControllerProvider.notifier)
           .apply(
-            LibraryType.video,
+            FileType.video,
             const ListingView(lifecycle: LifecycleFilter.deleted),
           );
       await tester.pumpAndSettle();
@@ -208,7 +208,7 @@ void main() {
       final container = await openListing(
         tester,
         listings: {
-          LibraryType.video: const CatalogListing.failed(
+          FileType.video: const CatalogListing.failed(
             failure: Failure.invalidInput(
               family: CoreStatusFamily.file,
               code: 1,
@@ -220,7 +220,7 @@ void main() {
       await container
           .read(listingViewControllerProvider.notifier)
           .apply(
-            LibraryType.video,
+            FileType.video,
             const ListingView(lifecycle: LifecycleFilter.all),
           );
       await tester.pumpAndSettle();

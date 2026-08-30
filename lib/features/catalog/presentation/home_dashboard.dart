@@ -11,7 +11,7 @@ import '../domain/file_details.dart';
 import '../domain/music_metadata.dart';
 import '../application/dashboard_controller.dart';
 import '../application/in_progress.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 import 'catalog_search_view.dart';
 import 'file_details_view.dart';
 
@@ -44,7 +44,7 @@ class HomeDashboard extends ConsumerWidget {
     // core outage would otherwise tell the owner.
     final catalogEmpty = counts.maybeWhen(
       data: (byType) =>
-          byType.length == LibraryType.values.length &&
+          byType.length == FileType.values.length &&
           byType.values.every((count) => count == 0),
       orElse: () => false,
     );
@@ -91,7 +91,7 @@ class _RecentSection extends ConsumerWidget {
               // `catalogSearchProvider`'s own listing read carried it, so
               // naming it here asks nothing further of the core. Every other
               // type is still called by its own name.
-              final title = file.type == LibraryType.audio
+              final title = file.type == FileType.audio
                   ? tagOr(
                       MusicMetadata.fromDetails(details.metadata).title,
                       l10n.musicUnknownTitle,
@@ -199,14 +199,14 @@ class _CountsSection extends ConsumerWidget {
 
     return _Section(
       title: l10n.dashboardCounts,
-      child: AsyncStateView<Map<LibraryType, int>>(
+      child: AsyncStateView<Map<FileType, int>>(
         value: ref.watch(typeCountsControllerProvider),
         onRetry: () => ref.read(typeCountsControllerProvider.notifier).reload(),
         builder: (context, counts) => Wrap(
           spacing: AppSpacing.md,
           runSpacing: AppSpacing.sm,
           children: [
-            for (final type in LibraryType.values)
+            for (final type in FileType.values)
               if (counts[type] case final count?)
                 Chip(
                   label: Text('${type.label(l10n)}  $count'),

@@ -1,5 +1,5 @@
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/library_sources/data/core_index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
@@ -114,7 +114,7 @@ void main() {
 
       await gateway.startIndex(
         root: 'D:/Music',
-        types: const [LibraryType.audio, LibraryType.image],
+        types: const [FileType.audio, FileType.image],
         credential: 't',
       );
 

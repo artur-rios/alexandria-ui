@@ -395,25 +395,25 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get libraryTypeAudio => 'Música';
+  String get fileTypeAudio => 'Música';
 
   @override
-  String get libraryTypeVideo => 'Vídeo';
+  String get fileTypeVideo => 'Vídeo';
 
   @override
-  String get libraryTypeDocument => 'Livros';
+  String get fileTypeDocument => 'Livros';
 
   @override
-  String get libraryTypeComic => 'Quadrinhos';
+  String get fileTypeComic => 'Quadrinhos';
 
   @override
-  String get libraryTypeText => 'Notas';
+  String get fileTypeText => 'Notas';
 
   @override
-  String get libraryTypeHtml => 'Páginas salvas';
+  String get fileTypeHtml => 'Páginas salvas';
 
   @override
-  String get libraryTypeImage => 'Imagens';
+  String get fileTypeImage => 'Imagens';
 
   @override
   String get dismiss => 'Dispensar';

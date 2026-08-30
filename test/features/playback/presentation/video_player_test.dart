@@ -2,7 +2,7 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_position_store.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_session.dart';
@@ -26,7 +26,7 @@ void main() {
   final now = DateTime.utc(2026, 8, 19, 12);
 
   FileDetails aVideo({bool isDeleted = false}) => FileDetails(
-    file: aFile(uuid: uuid, name: 'Stalker.mkv', type: LibraryType.video),
+    file: aFile(uuid: uuid, name: 'Stalker.mkv', type: FileType.video),
     metadata: const {},
     isDeleted: isDeleted,
   );
@@ -52,7 +52,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.video: loadedDetails([aVideo().file]),
+        FileType.video: loadedDetails([aVideo().file]),
       },
     );
     catalog.details[uuid] = FileDetailsOutcome.read(details: aVideo());

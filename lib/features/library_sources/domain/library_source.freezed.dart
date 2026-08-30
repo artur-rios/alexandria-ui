@@ -21,7 +21,7 @@ mixin _$LibrarySource {
  DateTime get registeredAt;/// The identifier of the most recent run over this folder (UC-06).
  String? get lastRunId;/// Whether that run finished or failed (UC-06).
  String? get lastRunOutcome;/// When that run finished (UC-06).
- DateTime? get lastRunAt;/// What an index of this folder records, by [LibraryType.wireName].
+ DateTime? get lastRunAt;/// What an index of this folder records, by [FileType.wireName].
 ///
 /// Empty means every type, which is exactly what the core reads an absent
 /// scope as — one meaning held the same way on both sides, so a folder
@@ -246,7 +246,7 @@ class _LibrarySource extends LibrarySource {
 @override final  String? lastRunOutcome;
 /// When that run finished (UC-06).
 @override final  DateTime? lastRunAt;
-/// What an index of this folder records, by [LibraryType.wireName].
+/// What an index of this folder records, by [FileType.wireName].
 ///
 /// Empty means every type, which is exactly what the core reads an absent
 /// scope as — one meaning held the same way on both sides, so a folder
@@ -257,7 +257,7 @@ class _LibrarySource extends LibrarySource {
 /// and what a stored record has to still mean after a type is renamed on
 /// this side of the boundary.
  final  List<String> _scope;
-/// What an index of this folder records, by [LibraryType.wireName].
+/// What an index of this folder records, by [FileType.wireName].
 ///
 /// Empty means every type, which is exactly what the core reads an absent
 /// scope as — one meaning held the same way on both sides, so a folder

@@ -8,7 +8,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/file_hold.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
@@ -50,7 +50,7 @@ void main() {
   final book = aFile(
     uuid: bookUuid,
     name: 'Solaris.epub',
-    type: LibraryType.document,
+    type: FileType.document,
   );
 
   const bookmark = Bookmark(
@@ -70,7 +70,7 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: loadedDetails([book]),
+        FileType.document: loadedDetails([book]),
       },
     );
     catalog.details[bookUuid] = FileDetailsOutcome.read(
@@ -204,7 +204,7 @@ void main() {
         final track = aFile(
           uuid: audioUuid,
           name: 'track-07.flac',
-          type: LibraryType.audio,
+          type: FileType.audio,
         );
         final row = FileDetails(
           file: track,
@@ -212,7 +212,7 @@ void main() {
         );
         final gateway = FakeCatalogGateway(
           listings: {
-            LibraryType.audio: CatalogListing.loaded(files: [row]),
+            FileType.audio: CatalogListing.loaded(files: [row]),
           },
         )..details[audioUuid] = FileDetailsOutcome.read(details: row);
 
@@ -261,7 +261,7 @@ void main() {
         final track = aFile(
           uuid: audioUuid,
           name: 'track-07.flac',
-          type: LibraryType.audio,
+          type: FileType.audio,
         );
         final row = FileDetails(
           file: track,
@@ -269,7 +269,7 @@ void main() {
         );
         final gateway = FakeCatalogGateway()
           ..details[audioUuid] = FileDetailsOutcome.read(details: row)
-          ..failListing(type: LibraryType.audio);
+          ..failListing(type: FileType.audio);
 
         await tester.pumpShell(
           surfaceSize: const Size(1440, 1000),

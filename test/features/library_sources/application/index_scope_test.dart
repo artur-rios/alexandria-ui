@@ -1,6 +1,6 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/features/library_sources/application/index_runs_state.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
@@ -74,7 +74,7 @@ void main() {
   /// scope question with [scope]. `null` is the owner cancelling it.
   Future<LibrarySource?> register(
     ProviderContainer ref, {
-    List<LibraryType>? scope = const [],
+    List<FileType>? scope = const [],
   }) => ref
       .read(librarySourcesControllerProvider.notifier)
       .registerFolder(
@@ -116,7 +116,7 @@ void main() {
         final gateway = _ScanningGateway();
         final sut = build(gateway: gateway);
 
-        await register(sut.ref, scope: const [LibraryType.audio]);
+        await register(sut.ref, scope: const [FileType.audio]);
         await sut.ref
             .read(indexRunsControllerProvider.notifier)
             .startIndex(music);
@@ -140,14 +140,14 @@ void main() {
         // and no argument carried between the two.
         final store = InMemoryLibrarySourceStore();
         final first = build(store: store);
-        await register(first.ref, scope: const [LibraryType.document]);
+        await register(first.ref, scope: const [FileType.document]);
 
         final second = build(store: store);
         await second.ref
             .read(indexRunsControllerProvider.notifier)
             .startIndex(music);
 
-        expect(second.gateway.starts.single.types, [LibraryType.document]);
+        expect(second.gateway.starts.single.types, [FileType.document]);
       },
     );
 
@@ -247,7 +247,7 @@ void main() {
             .read(indexRunsControllerProvider.notifier)
             .startIndex(music);
 
-        expect(sut.gateway.starts.single.types, [LibraryType.audio]);
+        expect(sut.gateway.starts.single.types, [FileType.audio]);
       },
     );
 
@@ -283,7 +283,7 @@ void main() {
         // real narrowing, whoever calls it.
         final sut = build();
 
-        await register(sut.ref, scope: LibraryType.values);
+        await register(sut.ref, scope: FileType.values);
 
         expect(sut.store.read().single.scope, isEmpty);
       },
@@ -375,7 +375,7 @@ void main() {
         // re-check routed through it would carry some folder's scope, which is
         // neither the absent scope the core wants nor an empty one.
         final sut = build();
-        await register(sut.ref, scope: const [LibraryType.audio]);
+        await register(sut.ref, scope: const [FileType.audio]);
 
         await sut.ref.read(indexRunsControllerProvider.notifier).startRefresh();
 
@@ -401,10 +401,10 @@ void main() {
 /// scope arrived here intact. Whether the core agrees about what those names
 /// mean is integration_test/catalog/index_scope_test.dart's question.
 class _ScanningGateway extends FakeIndexGateway {
-  static const _folder = <String, LibraryType>{
-    'Kind of Blue.flac': LibraryType.audio,
-    'So What.flac': LibraryType.audio,
-    'cover.jpg': LibraryType.image,
+  static const _folder = <String, FileType>{
+    'Kind of Blue.flac': FileType.audio,
+    'So What.flac': FileType.audio,
+    'cover.jpg': FileType.image,
   };
 
   /// The files the last run recorded.
@@ -414,7 +414,7 @@ class _ScanningGateway extends FakeIndexGateway {
   Future<IndexStartOutcome> startIndex({
     required String root,
     RunPriority? priority,
-    List<LibraryType> types = const [],
+    List<FileType> types = const [],
     required String credential,
   }) {
     cataloged = [

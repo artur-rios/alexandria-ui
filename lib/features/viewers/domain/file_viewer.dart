@@ -1,4 +1,4 @@
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 
 /// What a viewer needs to know about the file it is presenting.
 ///
@@ -23,7 +23,7 @@ class ViewerTarget {
   final String path;
 
   /// What the core classified it as.
-  final LibraryType type;
+  final FileType type;
 }
 
 /// Why a viewer could not present a file (FR-VW-08).

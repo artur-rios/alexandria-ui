@@ -6,7 +6,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -46,12 +46,12 @@ void main() {
   final book = aFile(
     uuid: bookUuid,
     name: 'Solaris.epub',
-    type: LibraryType.document,
+    type: FileType.document,
   );
   final comic = aFile(
     uuid: comicUuid,
     name: 'Sandman.cbz',
-    type: LibraryType.comic,
+    type: FileType.comic,
   );
 
   /// Signs in and opens the reading-lists screen with [items] in one list.
@@ -67,8 +67,8 @@ void main() {
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
-        LibraryType.document: loadedDetails([book]),
-        LibraryType.comic: loadedDetails([comic]),
+        FileType.document: loadedDetails([book]),
+        FileType.comic: loadedDetails([comic]),
       },
     );
     for (final file in [book, comic]) {

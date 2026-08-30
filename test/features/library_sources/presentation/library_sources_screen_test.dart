@@ -1,7 +1,7 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/library_sources/application/active_runs_controller.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
@@ -542,7 +542,7 @@ void main() {
   });
 
   group('what each folder covers is on its row (UC-05)', () {
-    LibrarySource scoped(String path, List<LibraryType> types) => LibrarySource(
+    LibrarySource scoped(String path, List<FileType> types) => LibrarySource(
       path: path,
       label: defaultLabelFor(path),
       registeredAt: registeredAt,
@@ -555,7 +555,7 @@ void main() {
       await openScreen(
         tester,
         registered: [
-          scoped('/home/owner/music', const [LibraryType.audio]),
+          scoped('/home/owner/music', const [FileType.audio]),
         ],
       );
       final l10n = AppLocalizations.of(
@@ -563,7 +563,7 @@ void main() {
       );
 
       expect(
-        find.text(l10n.librarySourcesScopeOnly(l10n.libraryTypeAudio)),
+        find.text(l10n.librarySourcesScopeOnly(l10n.fileTypeAudio)),
         findsOneWidget,
       );
     });
@@ -592,7 +592,7 @@ void main() {
         tester,
         gateway: gateway,
         registered: [
-          scoped('/home/owner/music', const [LibraryType.audio]),
+          scoped('/home/owner/music', const [FileType.audio]),
         ],
       );
       final l10n = AppLocalizations.of(
@@ -603,7 +603,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(IndexScopeDialog), findsNothing);
-      expect(gateway.starts.single.types, [LibraryType.audio]);
+      expect(gateway.starts.single.types, [FileType.audio]);
     });
   });
 
@@ -749,12 +749,12 @@ void main() {
 
           for (final label in [
             l10n.librarySourcesScopeAll,
-            l10n.librarySourcesScopeOnly(l10n.libraryTypeAudio),
+            l10n.librarySourcesScopeOnly(l10n.fileTypeAudio),
             l10n.librarySourcesScopeUnreadable,
           ]) {
             expect(label, isNotEmpty);
             expect(label, isNot(startsWith('librarySources')));
-            expect(label, isNot(contains('libraryType')));
+            expect(label, isNot(contains('fileType')));
             expect(find.text(label), findsWidgets);
           }
         },

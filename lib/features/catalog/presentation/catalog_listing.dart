@@ -9,7 +9,7 @@ import '../../shell/presentation/async_state_view.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
 import '../domain/catalog_file.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 import '../domain/listing_view.dart';
 import 'file_details_view.dart';
 import '../domain/view_layout.dart';
@@ -26,7 +26,7 @@ class CatalogListing extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final listing = ref.watch(listingControllerProvider);
-    final type = libraryTypeFor(ref.watch(shellControllerProvider));
+    final type = fileTypeFor(ref.watch(shellControllerProvider));
 
     // UC-10 AF-01 is about whether the layout fits *where it is drawn*. The
     // window is wider than the listing by the navigation panel, the divider,
@@ -39,7 +39,7 @@ class CatalogListing extends ConsumerWidget {
           // UC-29 main flow step 1: watchlists are about videos, so the videos
           // area is where they are reached from. They are not a file type, so
           // they are not a destination of their own (FR-CT-01).
-          if (type == LibraryType.video)
+          if (type == FileType.video)
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
@@ -50,7 +50,7 @@ class CatalogListing extends ConsumerWidget {
             ),
           // UC-31 main flow step 1: reading lists hold books and comics, so
           // both areas reach them.
-          if (type == LibraryType.document || type == LibraryType.comic)
+          if (type == FileType.document || type == FileType.comic)
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
@@ -86,7 +86,7 @@ class CatalogListing extends ConsumerWidget {
 class _LayoutBar extends ConsumerWidget {
   const _LayoutBar({required this.type, required this.width});
 
-  final LibraryType type;
+  final FileType type;
 
   /// The listing's own width, which is what a layout has to fit into.
   final double width;
@@ -181,7 +181,7 @@ class _LaidOutFiles extends ConsumerWidget {
   });
 
   final List<CatalogFile> files;
-  final LibraryType type;
+  final FileType type;
 
   /// The listing's own width, measured by the enclosing layout builder.
   final double width;
@@ -366,7 +366,7 @@ class _EmptyListing extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    final type = libraryTypeFor(ref.watch(shellControllerProvider));
+    final type = fileTypeFor(ref.watch(shellControllerProvider));
     final filtered =
         type != null &&
         ref.watch(listingViewControllerProvider).forType(type).isFiltered;
@@ -380,7 +380,7 @@ class _EmptyListing extends ConsumerWidget {
     // guessing.
     final catalogEmpty = counts.maybeWhen(
       data: (byType) =>
-          byType.length == LibraryType.values.length &&
+          byType.length == FileType.values.length &&
           byType.values.every((count) => count == 0),
       orElse: () => false,
     );
@@ -415,7 +415,7 @@ class _EmptyListing extends ConsumerWidget {
               const SizedBox(height: AppSpacing.lg),
               FilledButton.icon(
                 onPressed: () {
-                  final type = libraryTypeFor(
+                  final type = fileTypeFor(
                     ref.read(shellControllerProvider),
                   );
                   if (type != null) {
@@ -454,7 +454,7 @@ class _FilterControls extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final type = libraryTypeFor(ref.watch(shellControllerProvider));
+    final type = fileTypeFor(ref.watch(shellControllerProvider));
     if (type == null) return const SizedBox.shrink();
 
     final view = ref.watch(listingViewControllerProvider).forType(type);

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_gateway.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import '../../catalog/domain/listing_view.dart';
 import '../../organization/domain/bookmark_gateway.dart';
 import '../domain/deleted_record.dart';
@@ -27,7 +27,7 @@ class DeletedItemsController extends AsyncNotifier<List<DeletedRecord>> {
     final catalog = ref.read(catalogGatewayProvider);
     final records = <DeletedRecord>[];
 
-    for (final type in LibraryType.values) {
+    for (final type in FileType.values) {
       final listing = await catalog.listFiles(
         type: type,
         credential: credential,

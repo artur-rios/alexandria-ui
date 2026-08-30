@@ -3,7 +3,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +14,7 @@ import '../../../support/fake_catalog_gateway.dart';
 /// Listing the selected type's files (UC-09, FR-CT-02, FR-LB-04).
 void main() {
   ({ProviderContainer ref, FakeCatalogGateway gateway}) build({
-    Map<LibraryType, CatalogListing>? listings,
+    Map<FileType, CatalogListing>? listings,
     bool signedIn = true,
     bool watchCounts = false,
   }) {
@@ -53,7 +53,7 @@ void main() {
 
         await sut.ref.read(listingControllerProvider.future);
 
-        expect(sut.gateway.requested, contains(LibraryType.audio));
+        expect(sut.gateway.requested, contains(FileType.audio));
       },
     );
 
@@ -62,7 +62,7 @@ void main() {
       () async {
         final sut = build(
           listings: {
-            LibraryType.audio: loadedDetails([aFile()]),
+            FileType.audio: loadedDetails([aFile()]),
           },
         );
         sut.ref
@@ -88,7 +88,7 @@ void main() {
 
         await sut.ref.read(listingControllerProvider.future);
 
-        expect(sut.gateway.requested, contains(LibraryType.video));
+        expect(sut.gateway.requested, contains(FileType.video));
       },
     );
 
@@ -155,7 +155,7 @@ void main() {
         const failure = Failure.disk(family: CoreStatusFamily.file, code: 6);
         final sut = build(
           listings: {
-            LibraryType.audio: const CatalogListing.failed(failure: failure),
+            FileType.audio: const CatalogListing.failed(failure: failure),
           },
         );
         sut.ref
@@ -179,11 +179,11 @@ void main() {
         // One type failing must not take the others down with it.
         final sut = build(
           listings: {
-            LibraryType.audio: const CatalogListing.failed(
+            FileType.audio: const CatalogListing.failed(
               failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
             ),
-            LibraryType.image: loadedDetails([
-              aFile(type: LibraryType.image, name: 'a.png'),
+            FileType.image: loadedDetails([
+              aFile(type: FileType.image, name: 'a.png'),
             ]),
           },
         );
@@ -212,7 +212,7 @@ void main() {
         );
         final sut = build(
           listings: {
-            LibraryType.audio: const CatalogListing.failed(failure: failure),
+            FileType.audio: const CatalogListing.failed(failure: failure),
           },
         );
         sut.ref
@@ -233,8 +233,8 @@ void main() {
 
       final counts = await sut.ref.read(typeCountsControllerProvider.future);
 
-      expect(sut.gateway.requested.toSet(), LibraryType.values.toSet());
-      expect(counts.length, LibraryType.values.length);
+      expect(sut.gateway.requested.toSet(), FileType.values.toSet());
+      expect(counts.length, FileType.values.length);
     });
 
     test(
@@ -243,7 +243,7 @@ void main() {
         final sut = build(
           watchCounts: true,
           listings: {
-            LibraryType.audio: loadedDetails([
+            FileType.audio: loadedDetails([
               aFile(),
               aFile(uuid: 'b', name: 'b.flac'),
             ]),
@@ -252,7 +252,7 @@ void main() {
 
         final counts = await sut.ref.read(typeCountsControllerProvider.future);
 
-        expect(counts[LibraryType.audio], 2);
+        expect(counts[FileType.audio], 2);
       },
     );
 
@@ -263,7 +263,7 @@ void main() {
         final sut = build(
           watchCounts: true,
           listings: {
-            LibraryType.audio: const CatalogListing.failed(
+            FileType.audio: const CatalogListing.failed(
               failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
             ),
           },
@@ -271,8 +271,8 @@ void main() {
 
         final counts = await sut.ref.read(typeCountsControllerProvider.future);
 
-        expect(counts.containsKey(LibraryType.audio), isFalse);
-        expect(counts[LibraryType.image], 0);
+        expect(counts.containsKey(FileType.audio), isFalse);
+        expect(counts[FileType.image], 0);
       },
     );
   });

@@ -5,7 +5,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
@@ -41,8 +41,8 @@ void main() {
     // in.
     final gateway = FakeCatalogGateway(
       listings: {
-        LibraryType.video: loadedDetails([
-          aFile(uuid: uuid, type: LibraryType.video),
+        FileType.video: loadedDetails([
+          aFile(uuid: uuid, type: FileType.video),
         ]),
       },
     );
@@ -88,7 +88,7 @@ void main() {
       details: FileDetails(
         file: aFile(
           uuid: uuid,
-          type: LibraryType.video,
+          type: FileType.video,
           name: name,
           sizeBytes: sizeBytes,
           mtime: mtime,
@@ -127,7 +127,7 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, type: LibraryType.video),
+            file: aFile(uuid: uuid, type: FileType.video),
             metadata: const {'artist': 'Miles Davis'},
           ),
         ),
@@ -149,7 +149,7 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, type: LibraryType.video),
+            file: aFile(uuid: uuid, type: FileType.video),
             durationSeconds: 545,
           ),
         ),
@@ -198,7 +198,7 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, type: LibraryType.video),
+            file: aFile(uuid: uuid, type: FileType.video),
             isDeleted: true,
           ),
         ),
@@ -220,7 +220,7 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, type: LibraryType.video),
+            file: aFile(uuid: uuid, type: FileType.video),
             isDeleted: true,
           ),
         ),
@@ -240,7 +240,7 @@ void main() {
           tester,
           outcome: FileDetailsOutcome.read(
             details: FileDetails(
-              file: aFile(uuid: uuid, type: LibraryType.video),
+              file: aFile(uuid: uuid, type: FileType.video),
               isDeleted: true,
             ),
           ),
@@ -265,7 +265,7 @@ void main() {
           tester,
           outcome: FileDetailsOutcome.read(
             details: FileDetails(
-              file: aFile(uuid: uuid, type: LibraryType.video),
+              file: aFile(uuid: uuid, type: FileType.video),
               isDeleted: true,
             ),
           ),
@@ -291,7 +291,7 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, type: LibraryType.video),
+            file: aFile(uuid: uuid, type: FileType.video),
           ),
         ),
       );
@@ -316,7 +316,7 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, type: LibraryType.video),
+            file: aFile(uuid: uuid, type: FileType.video),
           ),
         ),
       );
@@ -340,7 +340,7 @@ void main() {
         details: FileDetails(
           file: aFile(
             uuid: uuid,
-            type: LibraryType.video,
+            type: FileType.video,
             missingAt: DateTime.utc(2026, 8, 19),
           ),
         ),
@@ -416,7 +416,7 @@ void main() {
           details: FileDetails(
             file: aFile(
               uuid: uuid,
-              type: LibraryType.video,
+              type: FileType.video,
               missingAt: DateTime.utc(2026, 8, 19),
             ),
           ),
@@ -442,7 +442,7 @@ void main() {
           details: FileDetails(
             file: aFile(
               uuid: uuid,
-              type: LibraryType.video,
+              type: FileType.video,
               missingAt: DateTime.utc(2026, 8, 19),
             ),
             isDeleted: true,

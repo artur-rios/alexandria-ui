@@ -2,7 +2,7 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/viewers/domain/document_gateway.dart';
 import 'package:alexandria_ui/features/viewers/domain/viewer_registry.dart';
 import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
@@ -28,7 +28,7 @@ void main() {
       uuid: uuid,
       name: 'Solaris.epub',
       path: '/home/owner/books/Solaris.epub',
-      type: LibraryType.document,
+      type: FileType.document,
     ),
     metadata: const {},
     isDeleted: isDeleted,
@@ -41,7 +41,7 @@ void main() {
     FakeReadingPositionStore? positions,
     ViewerRegistry? registry,
     ShellDestination destination = ShellDestination.books,
-    LibraryType type = LibraryType.document,
+    FileType type = FileType.document,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
     bool openIt = true,

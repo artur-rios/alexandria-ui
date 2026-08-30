@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 
 /// What [type] is called, for an owner rather than for the core (FR-CT-02).
 ///
-/// Here rather than on [LibraryType] itself: the enum is the core's
+/// Here rather than on [FileType] itself: the enum is the core's
 /// vocabulary and the domain layer does not localize (BR-02, IR-11).
-String libraryTypeLabel(LibraryType type, AppLocalizations l10n) =>
+String fileTypeLabel(FileType type, AppLocalizations l10n) =>
     switch (type) {
-      LibraryType.audio => l10n.libraryTypeAudio,
-      LibraryType.video => l10n.libraryTypeVideo,
-      LibraryType.document => l10n.libraryTypeDocument,
-      LibraryType.comic => l10n.libraryTypeComic,
-      LibraryType.text => l10n.libraryTypeText,
-      LibraryType.html => l10n.libraryTypeHtml,
-      LibraryType.image => l10n.libraryTypeImage,
+      FileType.audio => l10n.fileTypeAudio,
+      FileType.video => l10n.fileTypeVideo,
+      FileType.document => l10n.fileTypeDocument,
+      FileType.comic => l10n.fileTypeComic,
+      FileType.text => l10n.fileTypeText,
+      FileType.html => l10n.fileTypeHtml,
+      FileType.image => l10n.fileTypeImage,
     };
 
 /// Asks what a folder is for — which types an index of it records (UC-05).
@@ -35,8 +35,8 @@ class IndexScopeDialog extends StatefulWidget {
   /// rather than a second spelling of the same answer. `null` is the owner
   /// cancelling, in every way of declining including the escape key, so a
   /// dismissal cannot be mistaken for a choice.
-  static Future<List<LibraryType>?> show(BuildContext context) =>
-      showDialog<List<LibraryType>>(
+  static Future<List<FileType>?> show(BuildContext context) =>
+      showDialog<List<FileType>>(
         context: context,
         builder: (context) => const IndexScopeDialog(),
       );
@@ -47,9 +47,9 @@ class IndexScopeDialog extends StatefulWidget {
 
 class _IndexScopeDialogState extends State<IndexScopeDialog> {
   /// The types currently ticked. All of them to begin with.
-  final Set<LibraryType> _chosen = {...LibraryType.values};
+  final Set<FileType> _chosen = {...FileType.values};
 
-  bool get _isEverything => _chosen.length == LibraryType.values.length;
+  bool get _isEverything => _chosen.length == FileType.values.length;
 
   @override
   Widget build(BuildContext context) {
@@ -82,18 +82,18 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
               onChanged: (_) => setState(() {
                 final everything = _isEverything;
                 _chosen.clear();
-                if (!everything) _chosen.addAll(LibraryType.values);
+                if (!everything) _chosen.addAll(FileType.values);
               }),
               title: Text(l10n.indexScopeAll),
             ),
             const Divider(),
-            for (final type in LibraryType.values)
+            for (final type in FileType.values)
               CheckboxListTile(
                 value: _chosen.contains(type),
                 onChanged: (checked) => setState(() {
                   checked ?? false ? _chosen.add(type) : _chosen.remove(type);
                 }),
-                title: Text(libraryTypeLabel(type, l10n)),
+                title: Text(fileTypeLabel(type, l10n)),
               ),
             if (_chosen.isEmpty) ...[
               const SizedBox(height: AppSpacing.sm),
@@ -123,9 +123,9 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
                   // Everything is the absent scope, not a list of seven: one
                   // spelling on both sides of the boundary.
                   _isEverything
-                      ? const <LibraryType>[]
+                      ? const <FileType>[]
                       : [
-                          for (final type in LibraryType.values)
+                          for (final type in FileType.values)
                             if (_chosen.contains(type)) type,
                         ],
                 ),

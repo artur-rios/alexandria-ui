@@ -6,7 +6,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 import 'package:alexandria_ui/features/catalog/presentation/video_metadata_form.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
@@ -30,7 +30,7 @@ void main() {
     MediaKind kind = MediaKind.movie,
     bool isDeleted = false,
   }) => FileDetails(
-    file: aFile(uuid: uuid, name: 'Stalker.mkv', type: LibraryType.video),
+    file: aFile(uuid: uuid, name: 'Stalker.mkv', type: FileType.video),
     metadata: {
       'title': 'Stalker',
       'year': '1979',
@@ -53,7 +53,7 @@ void main() {
     final loaded = details ?? aVideo();
     final gateway = FakeCatalogGateway(
       listings: {
-        LibraryType.video: loadedDetails([loaded.file]),
+        FileType.video: loadedDetails([loaded.file]),
       },
     );
     gateway.details[loaded.file.uuid] = FileDetailsOutcome.read(
@@ -247,7 +247,7 @@ void main() {
         // the action is not offered for one.
         final gateway = FakeCatalogGateway(
           listings: {
-            LibraryType.video: loadedDetails([aVideo().file]),
+            FileType.video: loadedDetails([aVideo().file]),
           },
         );
         gateway.details[uuid] = FileDetailsOutcome.read(

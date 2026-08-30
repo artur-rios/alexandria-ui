@@ -6,7 +6,7 @@ import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
 import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/catalog/data/core_catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -106,7 +106,7 @@ void main() {
   Future<List<String>> namesOf(
     CoreClient client,
     String credential,
-    LibraryType type,
+    FileType type,
   ) async {
     final listing = await CoreCatalogGateway(
       client,
@@ -132,14 +132,14 @@ void main() {
         client,
         credential,
         catalog.libraryDirectory.path,
-        LibraryType.text.wireName,
+        FileType.text.wireName,
       );
 
-      expect(await namesOf(client, credential, LibraryType.text), [
+      expect(await namesOf(client, credential, FileType.text), [
         'note.md',
       ], reason: 'the scoped type should have been cataloged');
       expect(
-        await namesOf(client, credential, LibraryType.html),
+        await namesOf(client, credential, FileType.html),
         isEmpty,
         reason:
             'the core cataloged a type the run was scoped away from — the '
@@ -164,7 +164,7 @@ void main() {
       null,
     );
 
-    expect(await namesOf(client, credential, LibraryType.text), ['note.md']);
-    expect(await namesOf(client, credential, LibraryType.html), ['page.html']);
+    expect(await namesOf(client, credential, FileType.text), ['note.md']);
+    expect(await namesOf(client, credential, FileType.html), ['page.html']);
   });
 }

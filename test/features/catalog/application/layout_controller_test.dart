@@ -1,7 +1,7 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/features/catalog/application/layout_controller.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,7 +30,7 @@ void main() {
       final ref = await started();
 
       expect(
-        ref.read(layoutControllerProvider).chosenFor(LibraryType.audio),
+        ref.read(layoutControllerProvider).chosenFor(FileType.audio),
         ViewLayout.list,
       );
     });
@@ -40,10 +40,10 @@ void main() {
 
       await ref
           .read(layoutControllerProvider.notifier)
-          .choose(LibraryType.image, ViewLayout.grid);
+          .choose(FileType.image, ViewLayout.grid);
 
       expect(
-        ref.read(layoutControllerProvider).chosenFor(LibraryType.image),
+        ref.read(layoutControllerProvider).chosenFor(FileType.image),
         ViewLayout.grid,
       );
     });
@@ -56,13 +56,13 @@ void main() {
         final ref = await started();
         final controller = ref.read(layoutControllerProvider.notifier);
 
-        await controller.choose(LibraryType.image, ViewLayout.grid);
-        await controller.choose(LibraryType.text, ViewLayout.detailedList);
+        await controller.choose(FileType.image, ViewLayout.grid);
+        await controller.choose(FileType.text, ViewLayout.detailedList);
 
         final layouts = ref.read(layoutControllerProvider);
-        expect(layouts.chosenFor(LibraryType.image), ViewLayout.grid);
-        expect(layouts.chosenFor(LibraryType.text), ViewLayout.detailedList);
-        expect(layouts.chosenFor(LibraryType.audio), ViewLayout.list);
+        expect(layouts.chosenFor(FileType.image), ViewLayout.grid);
+        expect(layouts.chosenFor(FileType.text), ViewLayout.detailedList);
+        expect(layouts.chosenFor(FileType.audio), ViewLayout.list);
       },
     );
   });
@@ -74,7 +74,7 @@ void main() {
 
       await ref
           .read(layoutControllerProvider.notifier)
-          .choose(LibraryType.image, ViewLayout.grid);
+          .choose(FileType.image, ViewLayout.grid);
 
       expect(settings.entries[LayoutController.settingsKey], contains('grid'));
     });
@@ -91,8 +91,8 @@ void main() {
         );
 
         final layouts = ref.read(layoutControllerProvider);
-        expect(layouts.chosenFor(LibraryType.image), ViewLayout.grid);
-        expect(layouts.chosenFor(LibraryType.text), ViewLayout.list);
+        expect(layouts.chosenFor(FileType.image), ViewLayout.grid);
+        expect(layouts.chosenFor(FileType.text), ViewLayout.list);
       },
     );
 
@@ -107,7 +107,7 @@ void main() {
         );
 
         expect(
-          ref.read(layoutControllerProvider).chosenFor(LibraryType.image),
+          ref.read(layoutControllerProvider).chosenFor(FileType.image),
           ViewLayout.list,
         );
       },
@@ -126,8 +126,8 @@ void main() {
       );
 
       final layouts = ref.read(layoutControllerProvider);
-      expect(layouts.chosenFor(LibraryType.image), ViewLayout.list);
-      expect(layouts.chosenFor(LibraryType.text), ViewLayout.grid);
+      expect(layouts.chosenFor(FileType.image), ViewLayout.list);
+      expect(layouts.chosenFor(FileType.text), ViewLayout.grid);
     });
   });
 
@@ -139,10 +139,10 @@ void main() {
 
         await ref
             .read(layoutControllerProvider.notifier)
-            .choose(LibraryType.image, ViewLayout.grid);
+            .choose(FileType.image, ViewLayout.grid);
 
         expect(
-          ref.read(layoutControllerProvider).chosenFor(LibraryType.image),
+          ref.read(layoutControllerProvider).chosenFor(FileType.image),
           ViewLayout.grid,
         );
       },
@@ -153,7 +153,7 @@ void main() {
 
       await ref
           .read(layoutControllerProvider.notifier)
-          .choose(LibraryType.image, ViewLayout.grid);
+          .choose(FileType.image, ViewLayout.grid);
 
       expect(ref.read(layoutControllerProvider).lastChangeUnsaved, isTrue);
     });
@@ -165,7 +165,7 @@ void main() {
 
         await ref
             .read(layoutControllerProvider.notifier)
-            .choose(LibraryType.image, ViewLayout.grid);
+            .choose(FileType.image, ViewLayout.grid);
 
         expect(ref.read(layoutControllerProvider).lastChangeUnsaved, isFalse);
       },

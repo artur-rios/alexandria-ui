@@ -1,5 +1,5 @@
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/playback/domain/music_browse.dart';
 import 'package:alexandria_ui/features/playback/domain/music_grouping.dart';
@@ -21,7 +21,7 @@ void main() {
       uuid: uuid,
       name: 'zzz-$uuid.flac',
       path: 'C:/library/zzz-$uuid.flac',
-      type: LibraryType.audio,
+      type: FileType.audio,
     ),
     metadata: MusicMetadata(
       title: title,

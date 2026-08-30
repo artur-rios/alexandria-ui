@@ -5,7 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../core/failures/failure.dart';
 import 'catalog_file.dart';
 import 'file_details.dart';
-import 'library_type.dart';
+import 'file_type.dart';
 import 'listing_view.dart';
 import 'music_metadata.dart';
 import 'video_metadata.dart';
@@ -124,7 +124,7 @@ abstract interface class CatalogGateway {
   /// UC-12 offers is applied to what it returns. Defaults to active records,
   /// which is what a listing opens on.
   Future<CatalogListing> listFiles({
-    required LibraryType type,
+    required FileType type,
     required String credential,
     LifecycleFilter lifecycle = LifecycleFilter.active,
   });

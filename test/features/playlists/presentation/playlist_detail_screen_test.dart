@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist_gateway.dart';
@@ -30,7 +30,7 @@ void main() {
   const playlistUuid = 'pl-1';
 
   CatalogFile file(String uuid) =>
-      CatalogFile(uuid: uuid, name: '$uuid.flac', path: '/music/$uuid.flac', type: LibraryType.audio);
+      CatalogFile(uuid: uuid, name: '$uuid.flac', path: '/music/$uuid.flac', type: FileType.audio);
 
   PlaylistEntry entry({
     required String uuid,

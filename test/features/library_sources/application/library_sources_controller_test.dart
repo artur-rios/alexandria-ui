@@ -1,5 +1,5 @@
 import 'package:alexandria_ui/core/di/providers.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,7 +53,7 @@ void main() {
   Future<void> register(
     ProviderContainer ref, {
     bool confirmOverlap = true,
-    List<LibraryType>? scope = const [],
+    List<FileType>? scope = const [],
   }) => ref
       .read(librarySourcesControllerProvider.notifier)
       .registerFolder(

@@ -7,7 +7,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../../../core/settings/settings_store.dart';
 import '../../../core/startup/startup_state.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 import '../domain/listing_view.dart';
 
 /// The filters and sort chosen for each file type (UC-12, FR-CT-07, FR-CT-08).
@@ -36,16 +36,16 @@ class ListingViewController extends Notifier<ListingViewState> {
   SettingsStore? get _settings =>
       ref.read(startupControllerProvider.notifier).settings;
 
-  Map<LibraryType, ListingView> _read() {
+  Map<FileType, ListingView> _read() {
     final stored = _settings?.getString(settingsKey);
     if (stored == null) return const {};
 
     try {
       final decoded = jsonDecode(stored) as Map<String, dynamic>;
-      final byType = <LibraryType, ListingView>{};
+      final byType = <FileType, ListingView>{};
 
       for (final entry in decoded.entries) {
-        final type = LibraryType.fromWire(entry.key);
+        final type = FileType.fromWire(entry.key);
         if (type == null) continue;
 
         byType[type] = ListingView.fromJson(
@@ -61,7 +61,7 @@ class ListingViewController extends Notifier<ListingViewState> {
   }
 
   /// Applies [view] to [type] and records it (main flow step 5).
-  Future<void> apply(LibraryType type, ListingView view) async {
+  Future<void> apply(FileType type, ListingView view) async {
     final previous = state.forType(type);
     state = state.copyWith(
       byType: {...state.byType, type: view},
@@ -78,7 +78,7 @@ class ListingViewController extends Notifier<ListingViewState> {
   ///
   /// The sort is deliberately left alone: it orders without hiding anything,
   /// so clearing the filters is not a reason to also un-order the listing.
-  Future<void> clearFilters(LibraryType type) async {
+  Future<void> clearFilters(FileType type) async {
     final view = state.forType(type);
     state = state.copyWith(
       byType: {
@@ -93,7 +93,7 @@ class ListingViewController extends Notifier<ListingViewState> {
 
   /// Reverts [type] to the view that was showing before the last change, and
   /// reports why (AF-04).
-  Future<void> revert(LibraryType type, Failure reason) async {
+  Future<void> revert(FileType type, Failure reason) async {
     final previous = _previousByType[type] ?? ListingView.initial;
 
     // Already reverted and already reported: doing it again would change the
@@ -117,7 +117,7 @@ class ListingViewController extends Notifier<ListingViewState> {
     state = state.copyWith(rejection: null);
   }
 
-  final Map<LibraryType, ListingView> _previousByType = {};
+  final Map<FileType, ListingView> _previousByType = {};
 
   Future<void> _persist() async {
     final settings = _settings;
@@ -145,20 +145,20 @@ class ListingViewState {
   const ListingViewState({this.byType = const {}, this.rejection});
 
   /// The view chosen per type. A type with no entry uses [ListingView.initial].
-  final Map<LibraryType, ListingView> byType;
+  final Map<FileType, ListingView> byType;
 
   /// Why the core refused the last filter, or `null` (AF-04).
   final Failure? rejection;
 
   /// The view [type] is listed with.
-  ListingView forType(LibraryType type) => byType[type] ?? ListingView.initial;
+  ListingView forType(FileType type) => byType[type] ?? ListingView.initial;
 
   /// A copy with the given changes.
   ///
   /// [rejection] is cleared by passing `null` explicitly, which a plain
   /// `??` would make impossible.
   ListingViewState copyWith({
-    Map<LibraryType, ListingView>? byType,
+    Map<FileType, ListingView>? byType,
     Failure? rejection,
   }) => ListingViewState(byType: byType ?? this.byType, rejection: rejection);
 }

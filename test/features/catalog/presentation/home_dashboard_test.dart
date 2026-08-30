@@ -3,7 +3,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/catalog/presentation/home_dashboard.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
@@ -29,7 +29,7 @@ void main() {
   /// Signs in, which lands on the dashboard.
   Future<ProviderContainer> openDashboard(
     WidgetTester tester, {
-    Map<LibraryType, CatalogListing>? listings,
+    Map<FileType, CatalogListing>? listings,
     FakeCatalogGateway? gateway,
     FakeIndexGateway? indexGateway,
     Locale? locale,
@@ -88,24 +88,24 @@ void main() {
   /// stocked catalog, and a document is named by its file name with no
   /// metadata detour — audio's own naming (FR-CT-13) gets its own fixtures
   /// further down, where the distinction is the point.
-  Map<LibraryType, CatalogListing> aLibrary() => {
-    LibraryType.document: loadedDetails([
+  Map<FileType, CatalogListing> aLibrary() => {
+    FileType.document: loadedDetails([
       aFile(
         uuid: '1',
         name: 'oldest.pdf',
-        type: LibraryType.document,
+        type: FileType.document,
         indexedAt: DateTime.utc(2026, 1),
       ),
       aFile(
         uuid: '2',
         name: 'newest.pdf',
-        type: LibraryType.document,
+        type: FileType.document,
         indexedAt: DateTime.utc(2026, 3),
       ),
       aFile(
         uuid: '3',
         name: 'middle.pdf',
-        type: LibraryType.document,
+        type: FileType.document,
         indexedAt: DateTime.utc(2026, 2),
       ),
     ]),
@@ -226,7 +226,7 @@ void main() {
           ..addFile(
             uuid: '2',
             name: 'itinerary.pdf',
-            type: LibraryType.document,
+            type: FileType.document,
           );
 
         await openDashboard(tester, gateway: gateway);
@@ -268,7 +268,7 @@ void main() {
           gateway.addFile(
             uuid: 'doc-$i',
             name: 'doc-$i.pdf',
-            type: LibraryType.document,
+            type: FileType.document,
             indexedAt: DateTime.utc(2026, 1, 5),
           );
         }
@@ -438,11 +438,11 @@ void main() {
         await openDashboard(
           tester,
           listings: {
-            LibraryType.audio: const CatalogListing.failed(
+            FileType.audio: const CatalogListing.failed(
               failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
             ),
-            LibraryType.image: loadedDetails([
-              aFile(uuid: 'i', name: 'a.png', type: LibraryType.image),
+            FileType.image: loadedDetails([
+              aFile(uuid: 'i', name: 'a.png', type: FileType.image),
             ]),
           },
         );
@@ -540,11 +540,11 @@ void main() {
     await openDashboard(
       tester,
       listings: {
-        LibraryType.audio: const CatalogListing.failed(
+        FileType.audio: const CatalogListing.failed(
           failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
         ),
-        LibraryType.image: loadedDetails([
-          aFile(uuid: 'i', name: 'a.png', type: LibraryType.image),
+        FileType.image: loadedDetails([
+          aFile(uuid: 'i', name: 'a.png', type: FileType.image),
         ]),
       },
     );

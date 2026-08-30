@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/library_sources/presentation/index_scope_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,12 +13,12 @@ void main() {
   ///
   /// The answers are read through a holder rather than awaited inline,
   /// because the assertions run while the dialog is still on screen.
-  Future<List<List<LibraryType>?>> open(
+  Future<List<List<FileType>?>> open(
     WidgetTester tester, {
     Locale? locale,
     Size size = const Size(1024, 640),
   }) async {
-    final answers = <List<LibraryType>?>[];
+    final answers = <List<FileType>?>[];
     late BuildContext captured;
 
     // NFR-07: the interface must be usable at 1024x640, which is the size
@@ -65,9 +65,9 @@ void main() {
 
     // Seven, which is the core's own FileType — not three buckets that
     // cannot express "books but not images".
-    for (final type in LibraryType.values) {
+    for (final type in FileType.values) {
       expect(
-        find.text(libraryTypeLabel(type, l10n)),
+        find.text(fileTypeLabel(type, l10n)),
         findsOneWidget,
         reason: '${type.wireName} must be offerable on its own',
       );
@@ -110,12 +110,12 @@ void main() {
       // Clear everything through the "all" row, then tick the one type.
       await tester.tap(find.text(l10n.indexScopeAll));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(l10n.libraryTypeAudio));
+      await tester.tap(find.text(l10n.fileTypeAudio));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.indexScopeConfirm));
       await tester.pumpAndSettle();
 
-      expect(answers.single, [LibraryType.audio]);
+      expect(answers.single, [FileType.audio]);
     },
   );
 
@@ -163,7 +163,7 @@ void main() {
       await open(tester, locale: locale);
 
       expect(find.textContaining('indexScope'), findsNothing);
-      expect(find.textContaining('libraryType'), findsNothing);
+      expect(find.textContaining('fileType'), findsNothing);
     });
   }
 }

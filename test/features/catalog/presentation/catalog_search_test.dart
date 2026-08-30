@@ -5,7 +5,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart'
     as gateway
     show CatalogListing;
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
     show CatalogListing;
@@ -26,7 +26,7 @@ void main() {
   /// Signs in with [listings] bound.
   Future<ProviderContainer> openShell(
     WidgetTester tester, {
-    Map<LibraryType, gateway.CatalogListing>? listings,
+    Map<FileType, gateway.CatalogListing>? listings,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
   }) => tester.pumpShell(
@@ -66,13 +66,13 @@ void main() {
   }
 
   /// A library with one audio file and one image in it.
-  Map<LibraryType, gateway.CatalogListing> aLibrary() => {
-    LibraryType.audio: loadedDetails([
+  Map<FileType, gateway.CatalogListing> aLibrary() => {
+    FileType.audio: loadedDetails([
       aFile(name: 'Kind of Blue.flac'),
       aFile(uuid: 'c', name: 'Giant Steps.flac'),
     ]),
-    LibraryType.image: loadedDetails([
-      aFile(uuid: 'b', name: 'blue.png', type: LibraryType.image),
+    FileType.image: loadedDetails([
+      aFile(uuid: 'b', name: 'blue.png', type: FileType.image),
     ]),
   };
 
@@ -270,7 +270,7 @@ void main() {
         tester,
         listings: {
           ...aLibrary(),
-          LibraryType.text: const gateway.CatalogListing.failed(
+          FileType.text: const gateway.CatalogListing.failed(
             failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
           ),
         },

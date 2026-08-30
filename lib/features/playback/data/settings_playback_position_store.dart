@@ -9,7 +9,7 @@ import '../domain/playback_position_store.dart';
 /// System Requirements §4.10 and §4.11).
 ///
 /// One key holding a map from file uuid to position, for the same reason the
-/// library folders are one key: the whole set is small, is read at once, and a
+/// source folders are one key: the whole set is small, is read at once, and a
 /// key per file would need its own index to enumerate.
 class SettingsPlaybackPositionStore implements PlaybackPositionStore {
   /// Creates a store over [_settings], reading what is already there.

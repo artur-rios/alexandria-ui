@@ -158,7 +158,7 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
         );
 
     // Registering a folder is a request to have it in the library, and a
-    // library folder that is not indexed is not in the library yet. Chained
+    // source folder that is not indexed is not in the library yet. Chained
     // here rather than inside either controller so registration and runs
     // stay separately testable.
     if (registered == null) return;
@@ -298,7 +298,7 @@ String _scopeOf(LibrarySource source, AppLocalizations l10n) {
   if (types.isEmpty) return l10n.librarySourcesScopeAll;
 
   return l10n.librarySourcesScopeOnly(
-    types.map((type) => libraryTypeLabel(type, l10n)).join(', '),
+    types.map((type) => fileTypeLabel(type, l10n)).join(', '),
   );
 }
 

@@ -1,6 +1,6 @@
 import 'library_source.dart';
 
-/// Where the registered library folders are kept (FR-LB-03).
+/// Where the registered source folders are kept (FR-LB-03).
 ///
 /// Declared here so the application layer depends on this rather than on the
 /// settings store and its JSON, which is data-layer work. The implementation

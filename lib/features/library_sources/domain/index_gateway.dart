@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 import 'index_run.dart';
 import 'run_priority.dart';
 
@@ -68,7 +68,7 @@ abstract interface class IndexGateway {
   Future<IndexStartOutcome> startIndex({
     required String root,
     RunPriority? priority,
-    List<LibraryType> types = const [],
+    List<FileType> types = const [],
     required String credential,
   });
 

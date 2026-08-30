@@ -4,7 +4,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_gateway.dart';
 import '../../catalog/domain/file_details.dart';
-import '../../catalog/domain/library_type.dart';
+import '../../catalog/domain/file_type.dart';
 
 /// The files the core reports as missing on disk (UC-37 main flow step 2).
 ///
@@ -28,7 +28,7 @@ class MissingFilesController extends AsyncNotifier<List<FileDetails>> {
     final catalog = ref.read(catalogGatewayProvider);
     final missing = <FileDetails>[];
 
-    for (final type in LibraryType.values) {
+    for (final type in FileType.values) {
       final listing = await catalog.listFiles(
         type: type,
         credential: credential,

@@ -10,7 +10,7 @@ import '../../shell/presentation/async_state_view.dart';
 import '../application/search_controller.dart';
 import '../domain/catalog_search.dart';
 import '../domain/file_details.dart';
-import '../domain/library_type.dart';
+import '../domain/file_type.dart';
 import '../domain/music_metadata.dart';
 
 /// The catalog-wide search field (UC-11 main flow step 1).
@@ -103,12 +103,12 @@ class _Matches extends StatelessWidget {
 
     // Grouped by type, in the panel's own order so the results read the way
     // the library does.
-    final byType = <LibraryType, List<FileDetails>>{};
+    final byType = <FileType, List<FileDetails>>{};
     for (final details in matches) {
       byType.putIfAbsent(details.file.type, () => []).add(details);
     }
     final types = [
-      for (final type in LibraryType.values)
+      for (final type in FileType.values)
         if (byType.containsKey(type)) type,
     ];
 
@@ -182,7 +182,7 @@ class _ResultRow extends StatelessWidget {
     final theme = Theme.of(context);
 
     final file = details.file;
-    final isAudio = file.type == LibraryType.audio;
+    final isAudio = file.type == FileType.audio;
     // `tagOr` rather than a fallback written out here: that helper is the one
     // place an absent tag becomes a word, and a second copy of the rule here
     // is exactly what would let this screen and the music area disagree. The
@@ -349,15 +349,15 @@ class _NothingCatalogued extends StatelessWidget {
 /// What each type is called, for the search's group headings.
 ///
 /// The panel's own words, so a result group and its destination read the same.
-extension LibraryTypeLabel on LibraryType {
+extension FileTypeLabel on FileType {
   /// The localized name of this type.
   String label(AppLocalizations l10n) => switch (this) {
-    LibraryType.audio => l10n.destinationMusic,
-    LibraryType.video => l10n.destinationVideos,
-    LibraryType.document => l10n.destinationBooks,
-    LibraryType.comic => l10n.destinationComicBooks,
-    LibraryType.text => l10n.destinationNotes,
-    LibraryType.html => l10n.destinationPages,
-    LibraryType.image => l10n.destinationImages,
+    FileType.audio => l10n.destinationMusic,
+    FileType.video => l10n.destinationVideos,
+    FileType.document => l10n.destinationBooks,
+    FileType.comic => l10n.destinationComicBooks,
+    FileType.text => l10n.destinationNotes,
+    FileType.html => l10n.destinationPages,
+    FileType.image => l10n.destinationImages,
   };
 }

@@ -2,7 +2,7 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/editing/presentation/text_editor_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -28,7 +28,7 @@ void main() {
   Future<({ProviderContainer container, FakePageGateway pages})> open(
     WidgetTester tester, {
     PageOutcome? outcome,
-    LibraryType type = LibraryType.html,
+    FileType type = FileType.html,
     ShellDestination destination = ShellDestination.pages,
     String name = 'Article.html',
     Locale? locale,
@@ -123,7 +123,7 @@ void main() {
     ) async {
       await open(
         tester,
-        type: LibraryType.text,
+        type: FileType.text,
         destination: ShellDestination.notes,
         name: 'Notes.md',
         outcome: FakePageGateway.markdown,
@@ -141,7 +141,7 @@ void main() {
     ) async {
       await open(
         tester,
-        type: LibraryType.text,
+        type: FileType.text,
         destination: ShellDestination.notes,
         name: 'Notes.md',
         outcome: FakePageGateway.markdown,
@@ -155,7 +155,7 @@ void main() {
     ) async {
       await open(
         tester,
-        type: LibraryType.text,
+        type: FileType.text,
         destination: ShellDestination.notes,
         name: 'Notes.md',
         outcome: FakePageGateway.markdown,

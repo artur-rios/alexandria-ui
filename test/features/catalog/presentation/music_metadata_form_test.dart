@@ -6,7 +6,7 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
-import 'package:alexandria_ui/features/catalog/domain/library_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/catalog/presentation/music_metadata_form.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -46,7 +46,7 @@ void main() {
     final loaded = details ?? aTrack();
     final gateway = FakeCatalogGateway(
       listings: {
-        LibraryType.audio: CatalogListing.loaded(files: [loaded]),
+        FileType.audio: CatalogListing.loaded(files: [loaded]),
       },
     );
     gateway.details[loaded.file.uuid] = FileDetailsOutcome.read(
@@ -535,7 +535,7 @@ void main() {
         final deleted = aTrack(isDeleted: true);
         final gateway = FakeCatalogGateway(
           listings: {
-            LibraryType.audio: CatalogListing.loaded(files: [deleted]),
+            FileType.audio: CatalogListing.loaded(files: [deleted]),
           },
         );
         gateway.details[deleted.file.uuid] = FileDetailsOutcome.read(
