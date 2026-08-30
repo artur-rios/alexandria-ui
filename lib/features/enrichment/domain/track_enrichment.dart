@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'synced_lyrics.dart';
+
 part 'track_enrichment.freezed.dart';
 
 /// A photograph of an artist, fetched and cached by the core (music
@@ -36,10 +38,12 @@ abstract class TrackLyrics with _$TrackLyrics {
     /// them has to agree about what a line is.
     required List<String> lines,
 
-    /// The LRC-format text with timestamps, when the provider had it. Not
-    /// yet rendered — kept because dropping it at the boundary would mean
-    /// re-fetching every track to get it back.
-    String? synced,
+    /// The timed lines, when the provider had them.
+    ///
+    /// Parsed at the boundary like [lines], so nothing rendering them has to
+    /// know what LRC is — and so a malformed document costs one track its
+    /// timing rather than throwing inside a widget mid-frame.
+    SyncedLyrics? synced,
 
     /// Which service answered, for attribution.
     String? source,
