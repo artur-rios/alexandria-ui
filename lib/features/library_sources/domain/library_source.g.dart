@@ -19,6 +19,7 @@ _LibrarySource _$LibrarySourceFromJson(Map<String, dynamic> json) =>
       scope:
           (json['scope'] as List<dynamic>?)?.map((e) => e as String).toList() ??
           const <String>[],
+      libraryName: json['libraryName'] as String?,
     );
 
 Map<String, dynamic> _$LibrarySourceToJson(_LibrarySource instance) =>
@@ -30,4 +31,5 @@ Map<String, dynamic> _$LibrarySourceToJson(_LibrarySource instance) =>
       'lastRunOutcome': instance.lastRunOutcome,
       'lastRunAt': instance.lastRunAt?.toIso8601String(),
       'scope': instance.scope,
+      'libraryName': instance.libraryName,
     };

@@ -282,10 +282,10 @@ graph LR
 | **ID** | UC-05 |
 | **Name** | Register a library folder |
 | **Actors** | Owner, Local filesystem |
-| **Description** | The owner adds a folder on disk as a source of files to index, and says which kinds of file it holds. Several may be registered. |
+| **Description** | The owner adds a folder on disk as a source of files to index, says which kinds of file it holds, and says whether it is a library. Several may be registered. |
 | **Preconditions** | An active session exists. |
-| **Postconditions** | The folder is recorded locally, with the file types an index of it records, and offered for indexing. |
-| **Requirements** | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11 |
+| **Postconditions** | The folder is recorded locally, with the file types an index of it records and any library it was marked as, and offered for indexing. |
+| **Requirements** | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-22 |
 
 **Main Flow**
 
@@ -295,10 +295,14 @@ graph LR
 3. The application checks that the folder exists, is readable, and is not already
    registered.
 4. The application asks which file types an index of the folder records, offering
-   every supported type as the default.
+   every supported type as the default, and — in the same question — whether the
+   folder is a library and what to call it. Not a library is the default.
 5. The application records the folder locally, with the folder name as its default
    label and the chosen types as its scope; choosing every type is recorded as no
-   scope at all, which means every type.
+   scope at all, which means every type. A folder marked as a library is recorded
+   as one only after the core has accepted it (FR-LB-22), so a folder the
+   application shows as a library is one whose files really are out of the type
+   panels.
 6. The application lists it among the registered folders, showing what it covers,
    and offers to index it (UC-06). Every later index of that folder uses the same
    scope without asking again.
@@ -312,6 +316,18 @@ graph LR
 | AF-03 | The folder is already registered | The application says so and highlights the existing entry. |
 | AF-04 | The chosen folder contains, or sits inside, an already-registered folder | The application warns that files will be indexed once per overlapping source and lets the owner confirm or cancel. The scope is asked after the warning is accepted. |
 | AF-05 | The owner cancels the file-type question | Nothing is registered. A folder recorded with a scope nobody chose is not what was asked for, so the registration is abandoned rather than completed with a default. |
+| AF-06 | The folder is marked as a library but left unnamed | The answer cannot be given: a library is addressed by its name, and marked-but-unnamed is not a state the application can record. |
+| AF-07 | The core refuses the library — the folder sits inside one it already holds | The folder is registered as an ordinary source folder and is indexable; only the marking did not happen. The owner asked for two things and gets the one that was available, and the folder's row offers the marking again. |
+
+> **The library question is asked with the scope, not after it.** "Which types"
+> and "is this a library" are one question — what is this folder — and asking
+> them in two modal steps would make registering a course two decisions where
+> the owner made one.
+>
+> **A folder registered before this question existed is not stranded.** Its row
+> offers to mark it, which is the same operation reached at a different moment;
+> re-registering it to answer would mean un-registering it first (UC-08) and
+> starting over.
 
 ---
 
@@ -1867,6 +1883,59 @@ graph LR
 > The core's own half of this is specified as UC-50 in the Alexandria core's
 > use case document, and is not restated here.
 
+### UC-49: Browse a library
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-49 |
+| **Name** | Browse a library |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner opens a library and walks its folders as they are on disk, opening files from them. |
+| **Preconditions** | An active session exists and at least one folder has been marked as a library (UC-05). |
+| **Postconditions** | None. Browsing changes nothing. |
+| **Requirements** | FR-CT-15, FR-CT-16, FR-LB-22 |
+
+**Main Flow**
+
+1. The owner opens the Libraries screen from the shell, which lists every
+   library by name with the folder it stands for.
+2. The owner opens one. The application asks the core for what sits directly
+   inside the library's root — the folders at that level, and the files.
+3. The owner opens a folder. The application asks for that level and shows it,
+   keeping a way back up to the level above.
+4. The owner opens a file. It opens in the viewer or player registered for its
+   type, exactly as it would from a catalog listing (FR-CT-12).
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | No folder has been marked as a library | The screen says so and says where a library is made — on the source-folders screen — because there is nothing to press here. |
+| AF-02 | A folder in the library holds nothing the core catalogued | It is shown as an empty folder rather than hidden. A folder whose files were all scoped out of the index (UC-05) still exists on disk, and hiding it would misdescribe the structure the library exists to preserve. |
+| AF-03 | The library no longer exists — it was unmarked from another window | The screen states that it could not be read and offers to retry, which re-reads the list. |
+| AF-04 | The owner unmarks the library | After confirming, the core stops treating the folder as one and its files return to the type panels; nothing on disk and nothing in the catalog is touched. The folder's own row, if it is still registered as a source, stops calling itself a library. |
+| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+
+> **The Libraries screen browses; it does not register.** A library is made by
+> marking a source folder (UC-05), which is where a folder's scope is chosen and
+> where indexing is started, so a second way in from here would be a second
+> place to answer the same question — and would let a folder become a library
+> without ever being registered as a source, which is to say without ever being
+> indexed.
+>
+> **Unmarking lives here rather than on the folder's row**, because a library
+> outlives the registration it came from: un-registering a source folder leaves
+> the catalog alone (UC-08, BR-12), so its files stay grouped and this screen
+> stays the one place every library can be reached.
+>
+> **A library narrows where files are listed, never what can be found.** Search
+> (UC-11), the deleted-items review (UC-34), watchlists and reading lists
+> (UC-29 … UC-32), and collections (UC-26, UC-27) all continue to reach a
+> library's files. That is deliberate and is stated in FR-CT-16 so that a later
+> reader does not resolve the apparent inconsistency by hiding them everywhere.
+
+---
+
 ---
 
 ## 3. Use Case — Requirements Traceability
@@ -1877,13 +1946,13 @@ graph LR
 | UC-02: Log in | FR-AU-04, FR-AU-05, FR-AU-06, FR-AU-07, FR-AU-08, FR-AU-11 |
 | UC-03: Sign out | FR-AU-09 |
 | UC-04: Change credentials | FR-AU-10, FR-AU-11 |
-| UC-05: Register a library folder | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12 |
+| UC-05: Register a library folder | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12, FR-LB-22 |
 | UC-06: Index a library folder | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09 |
 | UC-07: Refresh the catalog | FR-LB-06, FR-LB-07, FR-LB-08, FR-LB-21 |
 | UC-08: Unregister a library folder | FR-LB-10 |
-| UC-09: Browse the library by type | FR-CT-01, FR-CT-02, FR-CT-10, FR-LB-04 |
+| UC-09: Browse the library by type | FR-CT-01, FR-CT-02, FR-CT-10, FR-CT-16, FR-LB-04 |
 | UC-10: Switch the view layout | FR-CT-03, FR-CT-04 |
-| UC-11: Search the catalog | FR-CT-06, FR-CT-09 |
+| UC-11: Search the catalog | FR-CT-06, FR-CT-09, FR-CT-16 |
 | UC-12: Filter and sort a listing | FR-CT-07, FR-CT-08 |
 | UC-13: View a file's details | FR-CT-05, FR-CT-12 |
 | UC-14: View the home dashboard | FR-CT-11 |
@@ -1921,6 +1990,7 @@ graph LR
 | UC-46: Browse the music library | FR-CT-13, FR-CT-14 |
 | UC-47: Manage a playlist | FR-TR-15, FR-TR-16, FR-TR-17, FR-TR-18, FR-TR-19 |
 | UC-48: Play a playlist | FR-TR-20, FR-PL-05, FR-PL-06, FR-PL-07 |
+| UC-49: Browse a library | FR-CT-15, FR-CT-16, FR-LB-22 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) appears at least

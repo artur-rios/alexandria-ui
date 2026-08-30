@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_index_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/fake_library_sources.dart';
 import '../../../support/in_memory_settings_store.dart';
 import '../../../support/shell_harness.dart';
@@ -760,6 +761,86 @@ void main() {
         },
       );
     }
+  });
+
+  group('a folder that is a library', () {
+    /// A source folder already marked as [name].
+    LibrarySource marked(String path, String name) => LibrarySource(
+      path: path,
+      label: defaultLabelFor(path),
+      registeredAt: registeredAt,
+      libraryName: name,
+    );
+
+    testWidgets('GivenAMarkedFolder_WhenItIsListed_ThenItsRowSaysSo', (
+      tester,
+    ) async {
+      // Marking is invisible from anywhere else on this screen: the row looks
+      // the same, and the files it removed from the type panels are missing
+      // without explanation. This badge is the explanation.
+      await openScreen(
+        tester,
+        registered: [marked('/home/owner/courses/rust', 'Rust course')],
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+
+      expect(
+        find.text(l10n.librarySourcesIsLibrary('Rust course')),
+        findsOneWidget,
+      );
+      expect(
+        find.byTooltip(l10n.librarySourcesMarkAsLibrary),
+        findsNothing,
+        reason: 'a folder that is already a library cannot be marked again',
+      );
+    });
+
+    testWidgets(
+      'GivenAnUnmarkedFolder_WhenItIsMarked_ThenTheCoreIsToldAndTheRowSaysSo',
+      (tester) async {
+        // The way in for a folder registered before the question existed.
+        final libraries = FakeLibraryGateway();
+        await openScreen(
+          tester,
+          registered: [source('/home/owner/courses/rust')],
+          extraOverrides: [
+            libraryGatewayProvider.overrideWithValue(libraries),
+          ],
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(LibrarySourcesScreen)),
+        );
+
+        await tester.tap(find.byTooltip(l10n.librarySourcesMarkAsLibrary));
+        await tester.pumpAndSettle();
+        // Scoped to the dialog: the shell behind it has a search field, and
+        // an unscoped finder matches both.
+        await tester.enterText(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.byType(TextField),
+          ),
+          'Rust course',
+        );
+        await tester.tap(
+          find.descendant(
+            of: find.byType(FilledButton),
+            matching: find.text(l10n.libraryAdd),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(libraries.registered, [
+          (name: 'Rust course', rootPath: '/home/owner/courses/rust'),
+        ]);
+        expect(
+          find.text(l10n.librarySourcesIsLibrary('Rust course')),
+          findsOneWidget,
+        );
+      },
+    );
   });
 }
 

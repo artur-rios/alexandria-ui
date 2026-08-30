@@ -19,7 +19,16 @@ String fileTypeLabel(FileType type, AppLocalizations l10n) =>
       FileType.image => l10n.fileTypeImage,
     };
 
-/// Asks what a folder is for — which types an index of it records (UC-05).
+/// What the owner said a folder is for: which types an index of it records,
+/// and whether it is browsed as a library.
+///
+/// One record rather than two return values, because it is one answer to one
+/// dialog — and a caller that received them separately could act on half of
+/// it.
+typedef FolderPurpose = ({List<FileType> types, String? libraryName});
+
+/// Asks what a folder is for — which types an index of it records (UC-05),
+/// and whether it is browsed as a library (libraries design).
 ///
 /// The seven the core classifies into, not three buckets: "books but not
 /// images" is exactly the answer the owner needs, because a folder of ebooks
@@ -29,14 +38,21 @@ class IndexScopeDialog extends StatefulWidget {
   /// Creates the dialog.
   const IndexScopeDialog({super.key});
 
+  /// What the owner said this folder is for.
+  ///
+  /// One answer rather than two dialogs in a row: "which types" and "is this
+  /// a library" are both the same question — what is this folder — and
+  /// asking them separately would make registering a course two modal steps
+  /// for one decision.
+  ///
   /// Asks over [context] and resolves to the chosen types.
   ///
   /// An empty list is every type — the absence the core reads the same way,
   /// rather than a second spelling of the same answer. `null` is the owner
   /// cancelling, in every way of declining including the escape key, so a
   /// dismissal cannot be mistaken for a choice.
-  static Future<List<FileType>?> show(BuildContext context) =>
-      showDialog<List<FileType>>(
+  static Future<FolderPurpose?> show(BuildContext context) =>
+      showDialog<FolderPurpose>(
         context: context,
         builder: (context) => const IndexScopeDialog(),
       );
@@ -49,7 +65,26 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
   /// The types currently ticked. All of them to begin with.
   final Set<FileType> _chosen = {...FileType.values};
 
+  /// Whether this folder is to be browsed as a library.
+  bool _asLibrary = false;
+
+  final TextEditingController _libraryName = TextEditingController();
+
   bool get _isEverything => _chosen.length == FileType.values.length;
+
+  /// Whether the answer can be given as it stands.
+  ///
+  /// A library has to be called something: marked but unnamed is not a state
+  /// the store can hold, so it is refused by the button being unavailable
+  /// rather than accepted and then explained.
+  bool get _isAnswerable =>
+      _chosen.isNotEmpty && (!_asLibrary || _libraryName.text.trim().isNotEmpty);
+
+  @override
+  void dispose() {
+    _libraryName.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +139,32 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
                 ),
               ),
             ],
+
+            const Divider(),
+            // Asked here rather than in a screen of its own, because it is
+            // the same question as the types above: what is this folder. A
+            // course is not "some video and some documents" — it is one
+            // thing, and saying so is what keeps its classes together.
+            CheckboxListTile(
+              value: _asLibrary,
+              onChanged: (checked) =>
+                  setState(() => _asLibrary = checked ?? false),
+              title: Text(l10n.indexScopeAsLibrary),
+              subtitle: Text(l10n.indexScopeAsLibraryBody),
+            ),
+            if (_asLibrary)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                ),
+                child: TextField(
+                  controller: _libraryName,
+                  decoration: InputDecoration(
+                    labelText: l10n.libraryNameLabel,
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
           ],
         ),
       ),
@@ -117,17 +178,22 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
           // A folder scoped to nothing would record nothing, which is not an
           // answer any owner means to give — so it is refused by being
           // unavailable rather than accepted and then explained.
-          onPressed: _chosen.isEmpty
+          onPressed: !_isAnswerable
               ? null
               : () => Navigator.of(context).pop(
-                  // Everything is the absent scope, not a list of seven: one
-                  // spelling on both sides of the boundary.
-                  _isEverything
-                      ? const <FileType>[]
-                      : [
-                          for (final type in FileType.values)
-                            if (_chosen.contains(type)) type,
-                        ],
+                  (
+                    // Everything is the absent scope, not a list of seven:
+                    // one spelling on both sides of the boundary.
+                    types: _isEverything
+                        ? const <FileType>[]
+                        : [
+                            for (final type in FileType.values)
+                              if (_chosen.contains(type)) type,
+                          ],
+                    libraryName: _asLibrary
+                        ? _libraryName.text.trim()
+                        : null,
+                  ),
                 ),
           child: Text(l10n.indexScopeConfirm),
         ),

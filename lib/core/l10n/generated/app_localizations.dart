@@ -2550,6 +2550,30 @@ abstract class AppLocalizations {
   /// **'Remove from playlist'**
   String get playlistRemoveTrack;
 
+  /// Libraries design: marks a source folder as a library at registration, which is the same question as the type scope above — what is this folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this folder together as a library'**
+  String get indexScopeAsLibrary;
+
+  /// Says what marking hides, at the moment of marking — it empties part of a type panel and that is not visible until afterwards.
+  ///
+  /// In en, this message translates to:
+  /// **'Its files are browsed in their folders here instead of appearing in the type panels. Search still finds them.'**
+  String get indexScopeAsLibraryBody;
+
+  /// Libraries design: badges a source folder whose files are browsed as a library instead of appearing in the type panels.
+  ///
+  /// In en, this message translates to:
+  /// **'Library: {name}'**
+  String librarySourcesIsLibrary(String name);
+
+  /// Libraries design: marks a folder registered before the question was asked, without re-registering it.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as a library'**
+  String get librarySourcesMarkAsLibrary;
+
   /// Library menu entry opening the list of registered libraries.
   ///
   /// In en, this message translates to:
@@ -2565,7 +2589,7 @@ abstract class AppLocalizations {
   /// Libraries design: no folder has been marked as a library. A state, not a failure.
   ///
   /// In en, this message translates to:
-  /// **'You have not made a library yet.'**
+  /// **'You have not made a library yet. Mark a registered folder as a library on the Source folders screen.'**
   String get librariesNone;
 
   /// Says what a library does and, crucially, what it hides: marking a folder empties part of a type panel and that is not visible until afterwards.

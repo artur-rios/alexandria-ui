@@ -1394,13 +1394,30 @@ class AppLocalizationsPt extends AppLocalizations {
   String get playlistRemoveTrack => 'Remover da playlist';
 
   @override
+  String get indexScopeAsLibrary =>
+      'Manter esta pasta junta como uma biblioteca';
+
+  @override
+  String get indexScopeAsLibraryBody =>
+      'Seus arquivos são navegados em suas pastas aqui, em vez de aparecerem nos painéis por tipo. A busca continua encontrando-os.';
+
+  @override
+  String librarySourcesIsLibrary(String name) {
+    return 'Biblioteca: $name';
+  }
+
+  @override
+  String get librarySourcesMarkAsLibrary => 'Marcar como biblioteca';
+
+  @override
   String get librariesOpen => 'Bibliotecas';
 
   @override
   String get librariesTitle => 'Bibliotecas';
 
   @override
-  String get librariesNone => 'Você ainda não criou uma biblioteca.';
+  String get librariesNone =>
+      'Você ainda não criou uma biblioteca. Marque uma pasta registrada como biblioteca na tela de pastas de origem.';
 
   @override
   String get librariesExplanation =>

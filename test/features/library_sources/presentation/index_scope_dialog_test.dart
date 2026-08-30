@@ -13,12 +13,12 @@ void main() {
   ///
   /// The answers are read through a holder rather than awaited inline,
   /// because the assertions run while the dialog is still on screen.
-  Future<List<List<FileType>?>> open(
+  Future<List<FolderPurpose?>> open(
     WidgetTester tester, {
     Locale? locale,
     Size size = const Size(1024, 640),
   }) async {
-    final answers = <List<FileType>?>[];
+    final answers = <FolderPurpose?>[];
     late BuildContext captured;
 
     // NFR-07: the interface must be usable at 1024x640, which is the size
@@ -54,6 +54,18 @@ void main() {
     return answers;
   }
 
+  /// Whether the checkbox row titled [label] is ticked.
+  bool tickOf(WidgetTester tester, String label) =>
+      tester
+          .widget<CheckboxListTile>(
+            find.ancestor(
+              of: find.text(label),
+              matching: find.byType(CheckboxListTile),
+            ),
+          )
+          .value ??
+      false;
+
   AppLocalizations l10nOf(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(IndexScopeDialog)));
 
@@ -79,10 +91,74 @@ void main() {
     (tester) async {
       await open(tester);
 
-      final boxes = tester.widgetList<CheckboxListTile>(
-        find.byType(CheckboxListTile),
+      final l10n = l10nOf(tester);
+
+      expect(tickOf(tester, l10n.indexScopeAll), isTrue);
+      for (final type in FileType.values) {
+        expect(
+          tickOf(tester, fileTypeLabel(type, l10n)),
+          isTrue,
+          reason: '${type.wireName} must start ticked',
+        );
+      }
+
+      // The one box that starts off, and the only one whose default changes
+      // what a folder *is* rather than how much of it is read. A folder
+      // registered without being asked is an ordinary source folder, so the
+      // owner who clicks straight through gets what they got before this
+      // question existed.
+      expect(tickOf(tester, l10n.indexScopeAsLibrary), isFalse);
+    },
+  );
+
+  testWidgets(
+    'GivenTheLibraryBoxIsTicked_WhenItIsConfirmed_ThenTheNameComesBack',
+    (tester) async {
+      final answers = await open(tester);
+      final l10n = l10nOf(tester);
+
+      // Scrolled to first: at 1024x640 the library row sits below the fold
+      // of a dialog NFR-07 already makes scrollable, and a tap that lands on
+      // nothing would read as the box refusing to tick.
+      await tester.ensureVisible(find.text(l10n.indexScopeAsLibrary));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.indexScopeAsLibrary));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Rust course');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.indexScopeConfirm));
+      await tester.pumpAndSettle();
+
+      expect(answers.single?.libraryName, 'Rust course');
+    },
+  );
+
+  testWidgets(
+    'GivenTheLibraryBoxIsTickedAndUnnamed_WhenItIsRead_ThenItCannotBeConfirmed',
+    (tester) async {
+      // A library has to be called something. Left answerable, the folder
+      // would be marked under a name nobody chose — and the core keys the
+      // grouping by that name.
+      await open(tester);
+      final l10n = l10nOf(tester);
+
+      // Scrolled to first: at 1024x640 the library row sits below the fold
+      // of a dialog NFR-07 already makes scrollable, and a tap that lands on
+      // nothing would read as the box refusing to tick.
+      await tester.ensureVisible(find.text(l10n.indexScopeAsLibrary));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.indexScopeAsLibrary));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '   ');
+      await tester.pumpAndSettle();
+
+      final confirm = tester.widget<FilledButton>(
+        find.ancestor(
+          of: find.text(l10n.indexScopeConfirm),
+          matching: find.byType(FilledButton),
+        ),
       );
-      expect(boxes.every((box) => box.value ?? false), isTrue);
+      expect(confirm.onPressed, isNull);
     },
   );
 
@@ -98,7 +174,7 @@ void main() {
     // Empty, not all seven listed: the absence is what the core reads as
     // every type, and one spelling means a folder that covers everything
     // reads the same however the owner got there.
-    expect(answers.single, isEmpty);
+    expect(answers.single?.types, isEmpty);
   });
 
   testWidgets(
@@ -115,7 +191,7 @@ void main() {
       await tester.tap(find.text(l10n.indexScopeConfirm));
       await tester.pumpAndSettle();
 
-      expect(answers.single, [FileType.audio]);
+      expect(answers.single?.types, [FileType.audio]);
     },
   );
 

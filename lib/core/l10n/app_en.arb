@@ -1871,6 +1871,23 @@
   "@playlistRemoveTrack": {
     "description": "Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2)."
   },
+  "indexScopeAsLibrary": "Keep this folder together as a library",
+  "@indexScopeAsLibrary": {
+    "description": "Libraries design: marks a source folder as a library at registration, which is the same question as the type scope above — what is this folder."
+  },
+  "indexScopeAsLibraryBody": "Its files are browsed in their folders here instead of appearing in the type panels. Search still finds them.",
+  "@indexScopeAsLibraryBody": {
+    "description": "Says what marking hides, at the moment of marking — it empties part of a type panel and that is not visible until afterwards."
+  },
+  "librarySourcesIsLibrary": "Library: {name}",
+  "@librarySourcesIsLibrary": {
+    "description": "Libraries design: badges a source folder whose files are browsed as a library instead of appearing in the type panels.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "librarySourcesMarkAsLibrary": "Mark as a library",
+  "@librarySourcesMarkAsLibrary": {
+    "description": "Libraries design: marks a folder registered before the question was asked, without re-registering it."
+  },
   "librariesOpen": "Libraries",
   "@librariesOpen": {
     "description": "Library menu entry opening the list of registered libraries."
@@ -1879,7 +1896,7 @@
   "@librariesTitle": {
     "description": "Title of the screen listing registered libraries."
   },
-  "librariesNone": "You have not made a library yet.",
+  "librariesNone": "You have not made a library yet. Mark a registered folder as a library on the Source folders screen.",
   "@librariesNone": {
     "description": "Libraries design: no folder has been marked as a library. A state, not a failure."
   },

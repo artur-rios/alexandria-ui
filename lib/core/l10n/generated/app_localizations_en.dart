@@ -1392,13 +1392,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playlistRemoveTrack => 'Remove from playlist';
 
   @override
+  String get indexScopeAsLibrary => 'Keep this folder together as a library';
+
+  @override
+  String get indexScopeAsLibraryBody =>
+      'Its files are browsed in their folders here instead of appearing in the type panels. Search still finds them.';
+
+  @override
+  String librarySourcesIsLibrary(String name) {
+    return 'Library: $name';
+  }
+
+  @override
+  String get librarySourcesMarkAsLibrary => 'Mark as a library';
+
+  @override
   String get librariesOpen => 'Libraries';
 
   @override
   String get librariesTitle => 'Libraries';
 
   @override
-  String get librariesNone => 'You have not made a library yet.';
+  String get librariesNone =>
+      'You have not made a library yet. Mark a registered folder as a library on the Source folders screen.';
 
   @override
   String get librariesExplanation =>
