@@ -299,10 +299,12 @@ mixin _$TrackLyrics {
 ///
 /// Split here rather than in the presentation layer so nothing rendering
 /// them has to agree about what a line is.
- List<String> get lines;/// The LRC-format text with timestamps, when the provider had it. Not
-/// yet rendered — kept because dropping it at the boundary would mean
-/// re-fetching every track to get it back.
- String? get synced;/// Which service answered, for attribution.
+ List<String> get lines;/// The timed lines, when the provider had them.
+///
+/// Parsed at the boundary like [lines], so nothing rendering them has to
+/// know what LRC is — and so a malformed document costs one track its
+/// timing rather than throwing inside a widget mid-frame.
+ SyncedLyrics? get synced;/// Which service answered, for attribution.
  String? get source;
 /// Create a copy of TrackLyrics
 /// with the given fields replaced by the non-null parameter values.
@@ -334,7 +336,7 @@ abstract mixin class $TrackLyricsCopyWith<$Res>  {
   factory $TrackLyricsCopyWith(TrackLyrics value, $Res Function(TrackLyrics) _then) = _$TrackLyricsCopyWithImpl;
 @useResult
 $Res call({
- List<String> lines, String? synced, String? source
+ List<String> lines, SyncedLyrics? synced, String? source
 });
 
 
@@ -355,7 +357,7 @@ class _$TrackLyricsCopyWithImpl<$Res>
   return _then(_self.copyWith(
 lines: null == lines ? _self.lines : lines // ignore: cast_nullable_to_non_nullable
 as List<String>,synced: freezed == synced ? _self.synced : synced // ignore: cast_nullable_to_non_nullable
-as String?,source: freezed == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as SyncedLyrics?,source: freezed == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -441,7 +443,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> lines,  String? synced,  String? source)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<String> lines,  SyncedLyrics? synced,  String? source)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TrackLyrics() when $default != null:
 return $default(_that.lines,_that.synced,_that.source);case _:
@@ -462,7 +464,7 @@ return $default(_that.lines,_that.synced,_that.source);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> lines,  String? synced,  String? source)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<String> lines,  SyncedLyrics? synced,  String? source)  $default,) {final _that = this;
 switch (_that) {
 case _TrackLyrics():
 return $default(_that.lines,_that.synced,_that.source);case _:
@@ -482,7 +484,7 @@ return $default(_that.lines,_that.synced,_that.source);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> lines,  String? synced,  String? source)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<String> lines,  SyncedLyrics? synced,  String? source)?  $default,) {final _that = this;
 switch (_that) {
 case _TrackLyrics() when $default != null:
 return $default(_that.lines,_that.synced,_that.source);case _:
@@ -515,10 +517,12 @@ class _TrackLyrics implements TrackLyrics {
   return EqualUnmodifiableListView(_lines);
 }
 
-/// The LRC-format text with timestamps, when the provider had it. Not
-/// yet rendered — kept because dropping it at the boundary would mean
-/// re-fetching every track to get it back.
-@override final  String? synced;
+/// The timed lines, when the provider had them.
+///
+/// Parsed at the boundary like [lines], so nothing rendering them has to
+/// know what LRC is — and so a malformed document costs one track its
+/// timing rather than throwing inside a widget mid-frame.
+@override final  SyncedLyrics? synced;
 /// Which service answered, for attribution.
 @override final  String? source;
 
@@ -552,7 +556,7 @@ abstract mixin class _$TrackLyricsCopyWith<$Res> implements $TrackLyricsCopyWith
   factory _$TrackLyricsCopyWith(_TrackLyrics value, $Res Function(_TrackLyrics) _then) = __$TrackLyricsCopyWithImpl;
 @override @useResult
 $Res call({
- List<String> lines, String? synced, String? source
+ List<String> lines, SyncedLyrics? synced, String? source
 });
 
 
@@ -573,7 +577,7 @@ class __$TrackLyricsCopyWithImpl<$Res>
   return _then(_TrackLyrics(
 lines: null == lines ? _self._lines : lines // ignore: cast_nullable_to_non_nullable
 as List<String>,synced: freezed == synced ? _self.synced : synced // ignore: cast_nullable_to_non_nullable
-as String?,source: freezed == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
+as SyncedLyrics?,source: freezed == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

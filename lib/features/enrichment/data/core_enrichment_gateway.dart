@@ -7,6 +7,7 @@ import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/enrichment_gateway.dart';
+import '../domain/synced_lyrics.dart';
 import '../domain/track_enrichment.dart';
 
 /// [EnrichmentGateway] over the core's enrichment calls (music enrichment
@@ -143,7 +144,7 @@ class CoreEnrichmentGateway implements EnrichmentGateway {
     if (value is! Map<String, dynamic>) return null;
 
     final plain = value['plain'] as String?;
-    final synced = value['synced'] as String?;
+    final synced = _syncedFrom(value['synced'] as String?);
     if ((plain == null || plain.trim().isEmpty) && synced == null) return null;
 
     return TrackLyrics(
@@ -156,6 +157,20 @@ class CoreEnrichmentGateway implements EnrichmentGateway {
       synced: synced,
       source: value['source'] as String?,
     );
+  }
+
+  /// The timed lines an LRC document carries, or `null` when it has none.
+  ///
+  /// A document that parses to nothing is treated as absent rather than as
+  /// empty timing: the panel would otherwise show a lyrics view with no
+  /// lines in it, which reads as a defect rather than as a track whose
+  /// timing nobody has contributed.
+  SyncedLyrics? _syncedFrom(String? document) {
+    if (document == null || document.trim().isEmpty) return null;
+
+    final lines = parseLrc(document);
+
+    return lines.isEmpty ? null : SyncedLyrics(lines);
   }
 
   TrackEnrichmentRead _unreadableRead() => const TrackEnrichmentRead.failed(

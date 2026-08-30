@@ -7,6 +7,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../domain/track_enrichment.dart';
+import 'synced_lyrics_view.dart';
 
 /// The artist photograph and lyrics for the track playing now (music
 /// enrichment design).
@@ -124,13 +125,25 @@ class _Lyrics extends StatelessWidget {
       children: [
         Text(l10n.enrichmentLyricsTitle, style: theme.textTheme.titleMedium),
         const SizedBox(height: AppSpacing.sm),
-        // Selectable, because the obvious thing to do with a line of lyrics
-        // is copy it.
-        SelectableText(
-          lyrics.lines.join('\n'),
-          style: theme.textTheme.bodyMedium,
-          textAlign: TextAlign.center,
-        ),
+        // Timed lines when the provider had them, the plain block when it
+        // did not. Plenty of tracks have only the words, and a view that
+        // required timing would show them nothing.
+        if (lyrics.synced case final synced?)
+          ConstrainedBox(
+            // Bounded because this sits inside the now-playing screen's own
+            // scroll view: an unbounded ListView there has no height to lay
+            // itself out in.
+            constraints: const BoxConstraints(maxHeight: 320),
+            child: SyncedLyricsView(lyrics: synced),
+          )
+        else
+          // Selectable, because the obvious thing to do with a line of
+          // lyrics is copy it.
+          SelectableText(
+            lyrics.lines.join('\n'),
+            style: theme.textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
         if (lyrics.source != null) ...[
           const SizedBox(height: AppSpacing.sm),
           Text(
