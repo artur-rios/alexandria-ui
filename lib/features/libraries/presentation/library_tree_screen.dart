@@ -257,7 +257,22 @@ class LibrariesScreen extends ConsumerWidget {
     );
     if (!confirmed) return;
 
-    await ref.read(librariesControllerProvider.notifier).remove(library.uuid);
+    final failure = await ref
+        .read(librariesControllerProvider.notifier)
+        .remove(library.uuid);
+
+    // Surfaced and stopped here, as `_move` above does with its own refusal.
+    // The two records this method changes have to move together: clearing
+    // the mark after a removal the core refused leaves the folder's row
+    // saying it is no longer a library while the core still has it
+    // registered, and nothing on screen says the removal did not happen.
+    if (failure != null) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(failure.localizedMessage(l10n))),
+      );
+      return;
+    }
 
     // The folder's own row stops claiming to be a library. Kept in step here
     // rather than by the sources controller watching the core, because the

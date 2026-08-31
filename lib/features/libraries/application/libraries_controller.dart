@@ -1,9 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/bindings/alexandria_bindings.dart';
 import '../../../core/di/providers.dart';
+import '../../../core/failures/core_status.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/library.dart';
 import '../domain/library_gateway.dart';
+
+/// What a write answers when there is no session to make it with.
+///
+/// Returned rather than `null`, because `null` is this file's word for "it
+/// worked". A caller that could not tell the two apart ran its follow-up —
+/// clearing a folder's library mark, following a move — as though the write
+/// had happened, leaving the local store describing a core that never
+/// changed. No call was made, so the code is the library family's own
+/// unauthorized rather than anything the core said.
+const Failure _noSession = Failure.unauthorized(
+  family: CoreStatusFamily.library,
+  code: LIBRARY_ERR_UNAUTHORIZED,
+);
 
 /// The registered libraries (libraries design).
 class LibrariesController extends AsyncNotifier<List<Library>> {
@@ -44,7 +59,8 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
   /// are exactly the ones the type panels were not showing.
   Future<Failure?> remove(String uuid) async {
     final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return null;
+    // No session, no call (FR-AU-07) — and the caller is told so.
+    if (credential == null) return _noSession;
 
     final outcome = await ref
         .read(libraryGatewayProvider)
@@ -55,9 +71,11 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
         await reload();
         return null;
 
+      // The owner goes back to login, and the caller still learns the write
+      // did not happen — its follow-up must not run either way.
       case LibraryWriteFailed(failure: final UnauthorizedFailure failure):
         ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return null;
+        return failure;
 
       case LibraryWriteFailed(:final failure):
         return failure;
@@ -75,7 +93,8 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     required String rootPath,
   }) async {
     final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return null;
+    // No session, no call (FR-AU-07) — and the caller is told so.
+    if (credential == null) return _noSession;
 
     final outcome = await ref
         .read(libraryGatewayProvider)
@@ -86,9 +105,11 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
         await reload();
         return null;
 
+      // The owner goes back to login, and the caller still learns the write
+      // did not happen — its follow-up must not run either way.
       case LibraryWriteFailed(failure: final UnauthorizedFailure failure):
         ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return null;
+        return failure;
 
       case LibraryWriteFailed(:final failure):
         return failure;
@@ -106,7 +127,8 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     required String rootPath,
   }) async {
     final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return null;
+    // No session, no call (FR-AU-07) — and the caller is told so.
+    if (credential == null) return _noSession;
 
     final outcome = await ref
         .read(libraryGatewayProvider)
@@ -117,9 +139,11 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
         await reload();
         return null;
 
+      // The owner goes back to login, and the caller still learns the write
+      // did not happen — its follow-up must not run either way.
       case LibraryWriteFailed(failure: final UnauthorizedFailure failure):
         ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return null;
+        return failure;
 
       case LibraryWriteFailed(:final failure):
         return failure;
