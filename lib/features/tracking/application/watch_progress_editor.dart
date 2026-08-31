@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
-import '../domain/episode_progress.dart';
+import '../domain/counted_progress.dart';
 import '../domain/watchlist.dart';
 import '../domain/watchlist_gateway.dart';
 
@@ -13,7 +13,7 @@ class WatchProgressEditorState {
     this.watchlistUuid,
     this.videoUuid,
     this.state = WatchState.pending,
-    this.episodes = const EpisodeDraft(),
+    this.episodes = const CountedProgressDraft(),
     this.currentError,
     this.totalError,
     this.rejection,
@@ -33,13 +33,13 @@ class WatchProgressEditorState {
   final WatchState state;
 
   /// What they have typed into the episode fields.
-  final EpisodeDraft episodes;
+  final CountedProgressDraft episodes;
 
   /// What local validation refused (AF-02).
-  final EpisodeError? currentError;
+  final CountedProgressError? currentError;
 
   /// And for the total.
-  final EpisodeError? totalError;
+  final CountedProgressError? totalError;
 
   /// What the core refused (AF-03, AF-04).
   final Failure? rejection;
@@ -63,9 +63,9 @@ class WatchProgressEditorState {
     String? watchlistUuid,
     String? videoUuid,
     WatchState? state,
-    EpisodeDraft? episodes,
-    EpisodeError? currentError,
-    EpisodeError? totalError,
+    CountedProgressDraft? episodes,
+    CountedProgressError? currentError,
+    CountedProgressError? totalError,
     Failure? rejection,
     bool? isSaving,
   }) => WatchProgressEditorState(
@@ -90,7 +90,7 @@ class WatchProgressEditor extends Notifier<WatchProgressEditorState> {
     watchlistUuid: progress.watchlistUuid,
     videoUuid: progress.videoUuid,
     state: progress.state,
-    episodes: EpisodeDraft(
+    episodes: CountedProgressDraft(
       current: progress.currentEpisode?.toString() ?? '',
       total: progress.totalEpisodes?.toString() ?? '',
     ),
@@ -126,8 +126,8 @@ class WatchProgressEditor extends Notifier<WatchProgressEditorState> {
 
     // AF-02: marked, and the core is not called.
     if (countsEpisodes) {
-      final currentError = validateCurrentEpisode(state.episodes);
-      final totalError = validateTotalEpisodes(state.episodes);
+      final currentError = validateCurrentCount(state.episodes);
+      final totalError = validateTotalCount(state.episodes);
       if (currentError != null || totalError != null) {
         state = state.copyWith(
           currentError: currentError,
@@ -153,8 +153,8 @@ class WatchProgressEditor extends Notifier<WatchProgressEditorState> {
           videoUuid: state.videoUuid!,
           state: state.state,
           credential: credential,
-          currentEpisode: countsEpisodes ? state.episodes.currentEpisode : null,
-          totalEpisodes: countsEpisodes ? state.episodes.totalEpisodes : null,
+          currentEpisode: countsEpisodes ? state.episodes.currentValue : null,
+          totalEpisodes: countsEpisodes ? state.episodes.totalValue : null,
         );
 
     switch (outcome) {

@@ -10,7 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/reading_lists_controller.dart';
-import '../domain/issue_progress.dart';
+import '../domain/counted_progress.dart';
 import '../domain/reading_list.dart';
 
 /// The reading-lists screen (UC-31, FR-TR-08 … FR-TR-11).
@@ -442,11 +442,11 @@ class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
     );
   }
 
-  String? _messageFor(IssueError? error, AppLocalizations l10n) =>
+  String? _messageFor(CountedProgressError? error, AppLocalizations l10n) =>
       switch (error) {
         null => null,
-        IssueError.notANumber => l10n.readIssueNotANumber,
-        IssueError.notPositive => l10n.readIssueNotPositive,
-        IssueError.beyondTotal => l10n.readIssueBeyondTotal,
+        CountedProgressError.notANumber => l10n.readIssueNotANumber,
+        CountedProgressError.notPositive => l10n.readIssueNotPositive,
+        CountedProgressError.beyondTotal => l10n.readIssueBeyondTotal,
       };
 }

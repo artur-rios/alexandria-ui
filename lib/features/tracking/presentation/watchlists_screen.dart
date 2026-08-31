@@ -10,7 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/watchlists_controller.dart';
-import '../domain/episode_progress.dart';
+import '../domain/counted_progress.dart';
 import '../domain/watchlist.dart';
 
 /// The watchlists screen (UC-29, FR-TR-01 … FR-TR-04).
@@ -433,11 +433,11 @@ class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
     );
   }
 
-  String? _messageFor(EpisodeError? error, AppLocalizations l10n) =>
+  String? _messageFor(CountedProgressError? error, AppLocalizations l10n) =>
       switch (error) {
         null => null,
-        EpisodeError.notANumber => l10n.watchEpisodeNotANumber,
-        EpisodeError.notPositive => l10n.watchEpisodeNotPositive,
-        EpisodeError.beyondTotal => l10n.watchEpisodeBeyondTotal,
+        CountedProgressError.notANumber => l10n.watchEpisodeNotANumber,
+        CountedProgressError.notPositive => l10n.watchEpisodeNotPositive,
+        CountedProgressError.beyondTotal => l10n.watchEpisodeBeyondTotal,
       };
 }

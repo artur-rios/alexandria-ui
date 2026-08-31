@@ -1,50 +1,59 @@
-import 'package:alexandria_ui/features/tracking/domain/episode_progress.dart';
+import 'package:alexandria_ui/features/tracking/domain/counted_progress.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Whether an episode number can be sent to the core (UC-30 AF-02).
+/// Whether a position in a numbered sequence can be sent to the core
+/// (UC-30 AF-02 for episodes, UC-32 AF-02 for issues — one rule, tested
+/// once, since the two are now one implementation).
 void main() {
-  group('the current episode', () {
+  group('the current position', () {
     test('GivenAnEpisode_WhenItIsValidated_ThenItIsAccepted', () {
-      expect(validateCurrentEpisode(const EpisodeDraft(current: '4')), isNull);
+      expect(
+        validateCurrentCount(const CountedProgressDraft(current: '4')),
+        isNull,
+      );
     });
 
     // An empty field is how the owner says they have not started, and the core
     // stores nothing for it.
     test('GivenNothing_WhenItIsValidated_ThenItIsAccepted', () {
-      expect(validateCurrentEpisode(const EpisodeDraft()), isNull);
+      expect(validateCurrentCount(const CountedProgressDraft()), isNull);
     });
 
     test('GivenWordsInsteadOfANumber_WhenValidated_ThenItIsRefused', () {
       expect(
-        validateCurrentEpisode(const EpisodeDraft(current: 'four')),
-        EpisodeError.notANumber,
+        validateCurrentCount(const CountedProgressDraft(current: 'four')),
+        CountedProgressError.notANumber,
       );
     });
 
     test('GivenZero_WhenItIsValidated_ThenItIsRefused', () {
       expect(
-        validateCurrentEpisode(const EpisodeDraft(current: '0')),
-        EpisodeError.notPositive,
+        validateCurrentCount(const CountedProgressDraft(current: '0')),
+        CountedProgressError.notPositive,
       );
     });
 
     test('GivenANegativeEpisode_WhenItIsValidated_ThenItIsRefused', () {
       expect(
-        validateCurrentEpisode(const EpisodeDraft(current: '-2')),
-        EpisodeError.notPositive,
+        validateCurrentCount(const CountedProgressDraft(current: '-2')),
+        CountedProgressError.notPositive,
       );
     });
 
     test('GivenAnEpisodePastTheTotal_WhenValidated_ThenItIsRefused', () {
       expect(
-        validateCurrentEpisode(const EpisodeDraft(current: '13', total: '12')),
-        EpisodeError.beyondTotal,
+        validateCurrentCount(
+          const CountedProgressDraft(current: '13', total: '12'),
+        ),
+        CountedProgressError.beyondTotal,
       );
     });
 
     test('GivenTheLastEpisode_WhenItIsValidated_ThenItIsAccepted', () {
       expect(
-        validateCurrentEpisode(const EpisodeDraft(current: '12', total: '12')),
+        validateCurrentCount(
+          const CountedProgressDraft(current: '12', total: '12'),
+        ),
         isNull,
       );
     });
@@ -52,7 +61,7 @@ void main() {
     // With no total there is nothing to be past.
     test('GivenNoTotal_WhenAHighEpisodeIsValidated_ThenItIsAccepted', () {
       expect(
-        validateCurrentEpisode(const EpisodeDraft(current: '900')),
+        validateCurrentCount(const CountedProgressDraft(current: '900')),
         isNull,
       );
     });
@@ -60,41 +69,44 @@ void main() {
 
   group('the total', () {
     test('GivenATotal_WhenItIsValidated_ThenItIsAccepted', () {
-      expect(validateTotalEpisodes(const EpisodeDraft(total: '12')), isNull);
+      expect(
+        validateTotalCount(const CountedProgressDraft(total: '12')),
+        isNull,
+      );
     });
 
     test('GivenNothing_WhenItIsValidated_ThenItIsAccepted', () {
-      expect(validateTotalEpisodes(const EpisodeDraft()), isNull);
+      expect(validateTotalCount(const CountedProgressDraft()), isNull);
     });
 
     test('GivenWordsInsteadOfANumber_WhenValidated_ThenItIsRefused', () {
       expect(
-        validateTotalEpisodes(const EpisodeDraft(total: 'twelve')),
-        EpisodeError.notANumber,
+        validateTotalCount(const CountedProgressDraft(total: 'twelve')),
+        CountedProgressError.notANumber,
       );
     });
 
     test('GivenZero_WhenItIsValidated_ThenItIsRefused', () {
       expect(
-        validateTotalEpisodes(const EpisodeDraft(total: '0')),
-        EpisodeError.notPositive,
+        validateTotalCount(const CountedProgressDraft(total: '0')),
+        CountedProgressError.notPositive,
       );
     });
   });
 
   group('what would be sent', () {
     test('GivenFilledFields_WhenTheyAreRead_ThenTheyAreNumbers', () {
-      const draft = EpisodeDraft(current: '3', total: '12');
+      const draft = CountedProgressDraft(current: '3', total: '12');
 
-      expect(draft.currentEpisode, 3);
-      expect(draft.totalEpisodes, 12);
+      expect(draft.currentValue, 3);
+      expect(draft.totalValue, 12);
     });
 
     test('GivenEmptyFields_WhenTheyAreRead_ThenThereIsNothingToSend', () {
-      const draft = EpisodeDraft();
+      const draft = CountedProgressDraft();
 
-      expect(draft.currentEpisode, isNull);
-      expect(draft.totalEpisodes, isNull);
+      expect(draft.currentValue, isNull);
+      expect(draft.totalValue, isNull);
     });
   });
 }

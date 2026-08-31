@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
-import '../domain/issue_progress.dart';
+import '../domain/counted_progress.dart';
 import '../domain/reading_list.dart';
 import '../domain/reading_list_gateway.dart';
 
@@ -13,7 +13,7 @@ class ReadingProgressEditorState {
     this.readingListUuid,
     this.itemUuid,
     this.state = ReadingState.pending,
-    this.issues = const IssueDraft(),
+    this.issues = const CountedProgressDraft(),
     this.currentError,
     this.totalError,
     this.rejection,
@@ -33,13 +33,13 @@ class ReadingProgressEditorState {
   final ReadingState state;
 
   /// What they have typed into the issue fields.
-  final IssueDraft issues;
+  final CountedProgressDraft issues;
 
   /// What local validation refused (AF-02).
-  final IssueError? currentError;
+  final CountedProgressError? currentError;
 
   /// And for the total.
-  final IssueError? totalError;
+  final CountedProgressError? totalError;
 
   /// What the core refused (AF-03, AF-04).
   final Failure? rejection;
@@ -63,9 +63,9 @@ class ReadingProgressEditorState {
     String? readingListUuid,
     String? itemUuid,
     ReadingState? state,
-    IssueDraft? issues,
-    IssueError? currentError,
-    IssueError? totalError,
+    CountedProgressDraft? issues,
+    CountedProgressError? currentError,
+    CountedProgressError? totalError,
     Failure? rejection,
     bool? isSaving,
   }) => ReadingProgressEditorState(
@@ -90,7 +90,7 @@ class ReadingProgressEditor extends Notifier<ReadingProgressEditorState> {
     readingListUuid: progress.readingListUuid,
     itemUuid: progress.itemUuid,
     state: progress.state,
-    issues: IssueDraft(
+    issues: CountedProgressDraft(
       current: progress.currentIssue?.toString() ?? '',
       total: progress.totalIssues?.toString() ?? '',
     ),
@@ -126,8 +126,8 @@ class ReadingProgressEditor extends Notifier<ReadingProgressEditorState> {
 
     // AF-02: marked, and the core is not called.
     if (countsIssues) {
-      final currentError = validateCurrentIssue(state.issues);
-      final totalError = validateTotalIssues(state.issues);
+      final currentError = validateCurrentCount(state.issues);
+      final totalError = validateTotalCount(state.issues);
       if (currentError != null || totalError != null) {
         state = state.copyWith(
           currentError: currentError,
@@ -153,8 +153,8 @@ class ReadingProgressEditor extends Notifier<ReadingProgressEditorState> {
           itemUuid: state.itemUuid!,
           state: state.state,
           credential: credential,
-          currentIssue: countsIssues ? state.issues.currentIssue : null,
-          totalIssues: countsIssues ? state.issues.totalIssues : null,
+          currentIssue: countsIssues ? state.issues.currentValue : null,
+          totalIssues: countsIssues ? state.issues.totalValue : null,
         );
 
     switch (outcome) {
