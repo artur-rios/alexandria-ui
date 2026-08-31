@@ -87,12 +87,18 @@ class RecoveryCodesSection extends ConsumerWidget {
     );
     if (!confirmed) return;
 
-    await ref
+    final replaced = await ref
         .read(regenerateRecoveryCodesControllerProvider.notifier)
         .regenerate();
 
     // Step 4 shows the new set in place of the catalog, so the preferences
     // dialog over it has to go — otherwise the codes are behind it.
-    if (navigator.canPop()) navigator.pop();
+    //
+    // Only when there is a set to show. AF-02 is the core refusing, and the
+    // sentence saying so is rendered by this very section: closing on a
+    // refusal took the message away with it and left the owner in the
+    // catalog, with codes that still work and nothing to say they had not
+    // been replaced.
+    if (replaced && navigator.canPop()) navigator.pop();
   }
 }

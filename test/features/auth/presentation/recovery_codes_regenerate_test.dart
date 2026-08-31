@@ -158,12 +158,13 @@ void main() {
       );
 
       await regenerate(tester);
-      // The credentials dialog closes on the way through, so the notice is
-      // read from the section when it is opened again.
-      await tester.openSettingsMenuEntry(
-        messages(tester).changeCredentialsOpen,
-      );
 
+      // Read where it was raised, without reopening anything. The dialog used
+      // to close on the way through whether or not a set had been replaced,
+      // which took the notice — rendered by the very section being closed —
+      // away with it: the owner landed back in the catalog with codes that
+      // still worked and nothing saying so. It closes now only when there is
+      // a new set to show.
       expect(find.byType(RecoveryCodesScreen), findsNothing);
       expect(find.text(messages(tester).failureInvalidInput), findsOneWidget);
     });

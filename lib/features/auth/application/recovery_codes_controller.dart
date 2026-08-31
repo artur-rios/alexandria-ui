@@ -72,10 +72,17 @@ class RegenerateRecoveryCodesController extends Notifier<RegenerateRefusal?> {
   ///
   /// The confirmation is the screen's: it has to state that every existing
   /// code stops working before this is reached (`FR-AU-17`, BR-07).
-  Future<void> regenerate() async {
+  ///
+  /// Answers whether the set was actually replaced. The screen closes itself
+  /// on the way to showing the new codes, and it may only do that when there
+  /// are new codes to show: closing on a refusal took away the one widget
+  /// that renders the refusal, so the owner was returned to the catalog with
+  /// no new codes, no explanation, and no sign that their existing ones still
+  /// work.
+  Future<bool> regenerate() async {
     final session = ref.read(sessionControllerProvider.notifier);
     final credential = session.credential;
-    if (credential == null) return;
+    if (credential == null) return false;
 
     final outcome = await ref
         .read(authGatewayProvider)
@@ -89,15 +96,21 @@ class RegenerateRecoveryCodesController extends Notifier<RegenerateRefusal?> {
         // them.
         session.presentRecoveryCodes(recoveryCodes);
         await ref.read(accountControllerProvider.notifier).reload();
+        return true;
 
       // AF-04: the session is discarded, which returns the owner to login.
       case FailedRegenerateOutcome(failure: final UnauthorizedFailure failure):
         session.invalidate(failure);
+        // The previous attempt's refusal, if there was one, is not about this
+        // one — and the owner is on their way to the login screen.
+        state = null;
+        return false;
 
       // AF-02: the core refused and replaced nothing, so the existing codes
       // keep working and the screen says why.
       case FailedRegenerateOutcome(:final failure):
         state = RegenerateRefusal(failure: failure);
+        return false;
     }
   }
 }
