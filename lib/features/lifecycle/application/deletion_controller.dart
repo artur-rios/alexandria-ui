@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
+import '../../catalog/application/catalog_projections.dart';
 import '../domain/file_hold.dart';
 import '../domain/lifecycle_gateway.dart';
 
@@ -65,16 +66,11 @@ class DeletionController extends Notifier<DeletionState> {
     await _delete(
       (gateway, credential) =>
           gateway.softDeleteFile(uuid: uuid, credential: credential),
-      onDone: () {
-        // FR-LC-09: every listing, count, and detail view reads the core
-        // again, so the record leaves the default listings without a manual
-        // refresh.
-        ref.invalidate(listingControllerProvider);
-        ref.invalidate(typeCountsControllerProvider);
-        ref.invalidate(recentFilesProvider);
-        ref.invalidate(catalogSearchProvider);
-        ref.invalidate(fileDetailsControllerProvider);
-      },
+      // FR-LC-09: every listing, count, and detail view reads the core
+      // again, so the record leaves the default listings without a manual
+      // refresh — the music area included, or a deleted track stays playable
+      // from there and reports itself as skipped when it is tried.
+      onDone: () => invalidateCatalogProjections(ref),
     );
   }
 

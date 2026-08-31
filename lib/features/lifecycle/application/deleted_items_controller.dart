@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
+import '../../catalog/application/catalog_projections.dart';
 import '../../catalog/domain/catalog_gateway.dart';
 import '../../catalog/domain/file_type.dart';
 import '../../catalog/domain/listing_view.dart';
@@ -184,13 +185,12 @@ class RestoreController
   }
 
   Future<void> _refresh() async {
-    ref.invalidate(listingControllerProvider);
-    // The details view offers the restore too (UC-13 AF-02), and a record that
-    // came back has to stop reading as deleted in the dialog that restored it.
-    ref.invalidate(fileDetailsControllerProvider);
-    ref.invalidate(typeCountsControllerProvider);
-    ref.invalidate(recentFilesProvider);
-    ref.invalidate(catalogSearchProvider);
+    // The details view offers the restore too (UC-13 AF-02), and a record
+    // that came back has to stop reading as deleted in the dialog that
+    // restored it — which the shared set covers, along with the music area a
+    // restored track has to reappear in.
+    invalidateCatalogProjections(ref);
+    // A restore can bring back a bookmark record as well as a file.
     ref.invalidate(bookmarksControllerProvider);
 
     await ref.read(deletedItemsControllerProvider.notifier).reload();

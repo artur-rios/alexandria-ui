@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
+import '../../catalog/application/catalog_projections.dart';
 import '../domain/deleted_record.dart';
 import '../domain/lifecycle_gateway.dart';
 
@@ -130,14 +131,18 @@ class PurgeController extends Notifier<PurgeState> {
   /// names the exact path and says the deletion cannot be undone. AF-05 —
   /// whatever has the file open — is let go of here, before the call.
   Future<void> purgeOnDisk(String uuid) async {
+    // The session first, then the holds. Releasing them first shut whatever
+    // had the file open — a viewer, the player — for a purge that then never
+    // happened, so the owner lost what they were reading and nothing was
+    // deleted.
+    final session = ref.read(sessionControllerProvider.notifier);
+    final credential = session.credential;
+    if (credential == null) return;
+
     for (final hold
         in ref.read(deletionControllerProvider.notifier).holdsOn(uuid)) {
       await hold.release();
     }
-
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return;
 
     final outcome = await ref
         .read(lifecycleGatewayProvider)
@@ -180,10 +185,9 @@ class PurgeController extends Notifier<PurgeState> {
   Future<void> _refresh(String uuid) async {
     await ref.read(playbackPositionsProvider).forget(uuid);
 
-    ref.invalidate(listingControllerProvider);
-    ref.invalidate(typeCountsControllerProvider);
-    ref.invalidate(recentFilesProvider);
-    ref.invalidate(catalogSearchProvider);
+    invalidateCatalogProjections(ref);
+    // A purge can take a bookmark record as well as a file, so this one is
+    // added to the shared set rather than folded into it.
     ref.invalidate(bookmarksControllerProvider);
 
     await ref.read(deletedItemsControllerProvider.notifier).reload();
