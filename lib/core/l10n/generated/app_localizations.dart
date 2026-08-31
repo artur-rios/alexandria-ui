@@ -2616,6 +2616,12 @@ abstract class AppLocalizations {
   /// **'This scan read every file it found.'**
   String get runFailuresNone;
 
+  /// Core FR-FC-42: the core bounds how many paths one run records, and keeps counting past the bound. Shown when the list is shorter than the tally, so the two disagreeing reads as the rule it is rather than as a missing file.
+  ///
+  /// In en, this message translates to:
+  /// **'Naming the first {shown} of {total}. A scan records only so many paths; the count is the whole tally.'**
+  String runFailuresTruncated(int shown, int total);
+
   /// Opens the list from the run report that names the count.
   ///
   /// In en, this message translates to:

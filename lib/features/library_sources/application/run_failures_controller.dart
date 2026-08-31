@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/bindings/alexandria_bindings.dart';
 import '../../../core/di/providers.dart';
+import '../../../core/failures/core_status.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
@@ -20,8 +22,16 @@ class RunFailuresController extends AsyncNotifier<List<RunFailure>> {
   Future<List<RunFailure>> build() async {
     final session = ref.read(sessionControllerProvider.notifier);
     final credential = session.credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
+    // No session, no call (FR-AU-07) — and thrown rather than answered as an
+    // empty list, for the same reason the failed read below is. An empty
+    // list on this screen reads as "this scan read every file it found",
+    // which is a claim about the catalog, and one nobody made.
+    if (credential == null) {
+      throw const Failure.unauthorized(
+        family: CoreStatusFamily.run,
+        code: RUN_ERR_UNAUTHORIZED,
+      );
+    }
 
     final outcome = await ref
         .read(indexGatewayProvider)

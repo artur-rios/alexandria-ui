@@ -1432,6 +1432,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get runFailuresNone => 'This scan read every file it found.';
 
   @override
+  String runFailuresTruncated(int shown, int total) {
+    return 'Naming the first $shown of $total. A scan records only so many paths; the count is the whole tally.';
+  }
+
+  @override
   String get runFailuresOpen => 'Show which files';
 
   @override

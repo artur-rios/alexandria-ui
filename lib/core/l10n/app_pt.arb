@@ -419,6 +419,7 @@
   "runFailuresTitle": "Arquivos que não puderam ser lidos",
   "runFailuresExplanation": "Uma varredura não conseguiu ler estes arquivos, então eles não estão na sua biblioteca. Nada foi alterado ou excluído — varrer a pasta novamente tenta de novo.",
   "runFailuresNone": "Esta varredura leu todos os arquivos que encontrou.",
+  "runFailuresTruncated": "Mostrando os primeiros {shown} de {total}. Uma varredura registra apenas um número limitado de caminhos; a contagem é o total.",
   "runFailuresOpen": "Ver quais arquivos",
   "librariesOpen": "Bibliotecas",
   "librariesTitle": "Bibliotecas",

@@ -128,6 +128,59 @@ void main() {
     expect(gateway.failuresRequested, [runId]);
   });
 
+  testWidgets('GivenTheCoreRecordedFewerThanItCounted_WhenTheListIsOpened_ThenTheGapIsNamed', (
+    tester,
+  ) async {
+    // The core bounds how many paths one run records and keeps counting past
+    // the bound, so the list is allowed to be shorter than the tally. Said
+    // out loud, or the owner reads a report of four dropped files, counts two
+    // in the list, and has no way to tell a limit from a lost file.
+    await openScreen(
+      tester,
+      failed: 4,
+      failures: const RunFailuresOutcome.read(
+        failures: [
+          RunFailure(path: '/home/owner/music/one.mp3', reason: 'permission denied'),
+          RunFailure(path: '/home/owner/music/two.mp3', reason: 'permission denied'),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text(messages(tester).runFailuresOpen));
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(RunFailuresScreen)),
+    );
+    expect(find.text(l10n.runFailuresTruncated(2, 4)), findsOneWidget);
+  });
+
+  testWidgets('GivenEveryDroppedFileIsNamed_WhenTheListIsOpened_ThenNoGapIsClaimed', (
+    tester,
+  ) async {
+    // The half that makes the test above mean something. Saying "the first 2
+    // of 2" on a complete list would train the owner to skip the line on the
+    // one occasion it matters.
+    await openScreen(
+      tester,
+      failed: 2,
+      failures: const RunFailuresOutcome.read(
+        failures: [
+          RunFailure(path: '/home/owner/music/one.mp3', reason: 'permission denied'),
+          RunFailure(path: '/home/owner/music/two.mp3', reason: 'permission denied'),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text(messages(tester).runFailuresOpen));
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(RunFailuresScreen)),
+    );
+    expect(find.text(l10n.runFailuresTruncated(2, 2)), findsNothing);
+  });
+
   testWidgets('GivenTheCoreCannotAnswer_WhenTheListIsOpened_ThenItSaysSoNotEmpty', (
     tester,
   ) async {

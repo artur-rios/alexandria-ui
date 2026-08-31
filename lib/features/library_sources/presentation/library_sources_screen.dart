@@ -608,7 +608,13 @@ class _RunReport extends ConsumerWidget {
           // log file (core FR-FC-42).
           if (dropped > 0 && run?.runId != null)
             TextButton(
-              onPressed: () => RunFailuresScreen.show(context, run!.runId),
+              onPressed: () => RunFailuresScreen.show(
+                context,
+                run!.runId,
+                // The tally, so the screen can say so when the core recorded
+                // fewer paths than it counted.
+                reportedCount: dropped,
+              ),
               child: Text(l10n.runFailuresOpen),
             ),
           if (offersUnregister)

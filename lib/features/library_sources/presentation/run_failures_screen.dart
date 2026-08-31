@@ -20,18 +20,39 @@ import '../domain/index_run.dart';
 /// the core's own words.
 class RunFailuresScreen extends ConsumerWidget {
   /// Creates the screen.
-  const RunFailuresScreen({required this.runId, super.key});
+  const RunFailuresScreen({
+    required this.runId,
+    required this.reportedCount,
+    super.key,
+  });
 
   /// The run whose failures are shown.
   final String runId;
 
+  /// How many files the run's own tally says it could not read.
+  ///
+  /// Carried in from the row that offered this screen, because the core
+  /// answers the two separately and on purpose: it records at most a bounded
+  /// number of paths per run and the tally keeps counting past the bound, so
+  /// a scan that dropped four hundred files names two hundred of them. The
+  /// list alone would then quietly contradict the sentence the owner just
+  /// read, and the missing half would look like a bug rather than a limit.
+  final int reportedCount;
+
   /// Presents the failures of [runId] over [context].
-  static Future<void> show(BuildContext context, String runId) =>
-      showDialog<void>(
-        context: context,
-        builder: (context) =>
-            Dialog.fullscreen(child: RunFailuresScreen(runId: runId)),
-      );
+  ///
+  /// [reportedCount] is the run's `failed` tally — the number the row this
+  /// was opened from displays.
+  static Future<void> show(
+    BuildContext context,
+    String runId, {
+    required int reportedCount,
+  }) => showDialog<void>(
+    context: context,
+    builder: (context) => Dialog.fullscreen(
+      child: RunFailuresScreen(runId: runId, reportedCount: reportedCount),
+    ),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,38 +88,69 @@ class RunFailuresScreen extends ConsumerWidget {
                 // was pruned, or a count that came from a different run.
                 emptyBuilder: (context) =>
                     Center(child: Text(l10n.runFailuresNone)),
-                builder: (context, rows) => ListView.builder(
-                  itemCount: rows.length,
-                  itemBuilder: (context, index) {
-                    final failure = rows[index];
-
-                    return ListTile(
-                      leading: Icon(
-                        Icons.description_outlined,
-                        color: theme.colorScheme.error,
+                builder: (context, rows) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Only when the two actually disagree. Saying "the first
+                    // 3 of 3" on every clean list would train the owner to
+                    // skip the line on the one occasion it matters.
+                    if (rows.length < reportedCount) ...[
+                      Text(
+                        l10n.runFailuresTruncated(rows.length, reportedCount),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                      // Selectable, because the next thing the owner does
-                      // with a path is paste it somewhere.
-                      title: SelectableText(
-                        failure.path,
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      subtitle: failure.reason.isEmpty
-                          ? null
-                          : Text(
-                              failure.reason,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                    );
-                  },
+                      const SizedBox(height: AppSpacing.md),
+                    ],
+                    Expanded(child: _FailureList(rows: rows)),
+                  ],
                 ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The rows themselves, so the truncation notice above them stays readable.
+class _FailureList extends StatelessWidget {
+  const _FailureList({required this.rows});
+
+  final List<RunFailure> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return ListView.builder(
+      itemCount: rows.length,
+      itemBuilder: (context, index) {
+        final failure = rows[index];
+
+        return ListTile(
+          leading: Icon(
+            Icons.description_outlined,
+            color: theme.colorScheme.error,
+          ),
+          // Selectable, because the next thing the owner does with a path is
+          // paste it somewhere.
+          title: SelectableText(
+            failure.path,
+            style: theme.textTheme.bodyMedium,
+          ),
+          subtitle: failure.reason.isEmpty
+              ? null
+              : Text(
+                  failure.reason,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+        );
+      },
     );
   }
 }

@@ -1436,6 +1436,11 @@ class AppLocalizationsPt extends AppLocalizations {
       'Esta varredura leu todos os arquivos que encontrou.';
 
   @override
+  String runFailuresTruncated(int shown, int total) {
+    return 'Mostrando os primeiros $shown de $total. Uma varredura registra apenas um número limitado de caminhos; a contagem é o total.';
+  }
+
+  @override
   String get runFailuresOpen => 'Ver quais arquivos';
 
   @override
