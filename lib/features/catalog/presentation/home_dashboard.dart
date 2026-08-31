@@ -37,11 +37,11 @@ class HomeDashboard extends ConsumerWidget {
     // AF-01: nothing is cataloged, so the whole dashboard is the first-run
     // guidance — four empty sections would be four ways of saying the same
     // thing. Every type has to have actually been counted before this reads
-    // as empty: `TypeCountsController` leaves a type out of the map rather
-    // than counting it as zero when its listing fails, so a map shorter than
-    // every type means "some of this could not be read", not "there is
-    // nothing here" — vacuously true on an empty map is exactly the lie a
-    // core outage would otherwise tell the owner.
+    // as empty: `TypeCountsController` answers no counts at all rather than
+    // zeroes when its listing fails, so a map shorter than every type means
+    // "this could not be read", not "there is nothing here" — vacuously true
+    // on an empty map is exactly the lie a core outage would otherwise tell
+    // the owner.
     final catalogEmpty = counts.maybeWhen(
       data: (byType) =>
           byType.length == FileType.values.length &&

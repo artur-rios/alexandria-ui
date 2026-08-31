@@ -97,9 +97,15 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
 
 /// Every type's item count, for the navigation panel (FR-CT-01).
 ///
-/// One query per type, because the core publishes no count call — the count is
-/// the length of the listing it would return. Kept apart from the listing so
-/// the panel's numbers do not disappear while a listing reloads.
+/// The core publishes no count call, so the count is still the length of the
+/// listing it would return — but one listing, not one per type. Asking per
+/// type meant serializing the whole catalog out of the core, across the FFI
+/// boundary and through a JSON decode once for every type in the panel, and
+/// again after every scan, purge and restore. The one call omits the type
+/// filter, which the core reads as every type, and the tally is done here.
+///
+/// Kept apart from the listing so the panel's numbers do not disappear while
+/// a listing reloads.
 class TypeCountsController extends AsyncNotifier<Map<FileType, int>> {
   @override
   Future<Map<FileType, int>> build() async {
@@ -107,24 +113,43 @@ class TypeCountsController extends AsyncNotifier<Map<FileType, int>> {
     final credential = session.credential;
     if (credential == null) return const {};
 
-    final gateway = ref.read(catalogGatewayProvider);
-    final counts = <FileType, int>{};
+    final listing = await ref
+        .read(catalogGatewayProvider)
+        .listFiles(credential: credential);
 
-    for (final type in FileType.values) {
-      final listing = await gateway.listFiles(
-        type: type,
-        credential: credential,
-      );
+    switch (listing) {
+      // Every type starts at zero and is counted up, so a type with no files
+      // is a real zero rather than a gap. The distinction the panel draws is
+      // between a zero and *no number at all*, and no number is what a
+      // failure below produces.
+      case CatalogListingLoaded(:final files):
+        final counts = <FileType, int>{
+          for (final type in FileType.values) type: 0,
+        };
+        for (final row in files) {
+          counts[row.file.type] = (counts[row.file.type] ?? 0) + 1;
+        }
+        return counts;
 
-      // A type that fails is left out rather than counted as zero: a zero the
-      // owner reads as "nothing here" would be a lie about a query that never
-      // answered. The panel shows no number for it.
-      if (listing case CatalogListingLoaded(:final files)) {
-        counts[type] = files.length;
-      }
+      // The core rejected the session, as in [ListingController]: discarding
+      // it returns the owner to login, and the failure is still thrown so the
+      // panel does not read as an empty catalog on the way out.
+      case CatalogListingFailed(failure: final UnauthorizedFailure failure):
+        session.invalidate(failure);
+        throw failure;
+
+      // Thrown rather than answered as an empty map, so the dashboard's
+      // counts section renders its failure and the retry beside it — which
+      // was unreachable while this returned. A zero the owner reads as
+      // "nothing here" would be a lie about a query that never answered, and
+      // an empty map is that lie told for every type at once.
+      //
+      // One call means this is all-or-nothing where it used to be able to
+      // lose a single type. That is the honest shape: one call is all there
+      // is to fail.
+      case CatalogListingFailed(:final failure):
+        throw failure;
     }
-
-    return counts;
   }
 
   /// Counts every type again — after an index run, for instance.

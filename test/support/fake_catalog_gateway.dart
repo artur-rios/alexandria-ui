@@ -73,11 +73,12 @@ class FakeCatalogGateway implements CatalogGateway {
   /// Empty is the assertion AF-01 and AF-04 need: neither calls the core.
   final List<({String uuid, String name})> renames = [];
 
-  /// Every type asked for, in order.
+  /// Every type asked for, in order. `null` is a call that asked for every
+  /// type at once, which is how the counts panel reads.
   ///
   /// Empty is the assertion that matters when there is no session: no catalog
   /// call is made without one (FR-AU-07).
-  final List<FileType> requested = [];
+  final List<FileType?> requested = [];
 
   /// The credentials each call was made with.
   final List<String> credentials = [];
@@ -92,7 +93,8 @@ class FakeCatalogGateway implements CatalogGateway {
   /// shows it.
   final List<bool> libraryReaches = [];
 
-  /// Every call to [listFiles], in order.
+  /// Every call to [listFiles], in order. `null` is a call that asked for
+  /// every type at once.
   ///
   /// What the music library's "one call" assertion counts. Counts every
   /// type asked for, not just audio — meaningful on its own only for a
@@ -103,8 +105,8 @@ class FakeCatalogGateway implements CatalogGateway {
 
   @override
   Future<CatalogListing> listFiles({
-    required FileType type,
     required String credential,
+    FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
     bool includeLibraries = false,
   }) async {
@@ -113,20 +115,45 @@ class FakeCatalogGateway implements CatalogGateway {
     lifecycles.add(lifecycle);
     libraryReaches.add(includeLibraries);
 
-    return switch (lifecycle) {
-      LifecycleFilter.active =>
-        listings[type] ?? const CatalogListing.loaded(files: []),
-      LifecycleFilter.deleted =>
-        deleted[type] ?? const CatalogListing.loaded(files: []),
-      // Both together, which is what the core would answer.
-      LifecycleFilter.all => switch ((listings[type], deleted[type])) {
-        (final CatalogListingLoaded active, final CatalogListingLoaded gone) =>
-          CatalogListing.loaded(files: [...active.files, ...gone.files]),
-        (final CatalogListing only?, _) => only,
-        _ => const CatalogListing.loaded(files: []),
-      },
-    };
+    // No type is every type, as the core reads it — so the fake answers the
+    // union of what it holds rather than a single bucket. The counts panel
+    // asks this way, and a fake that answered nothing would let it pass
+    // while showing the owner an empty catalog.
+    if (type == null) {
+      final files = <FileDetails>[];
+      for (final each in FileType.values) {
+        switch (_for(each, lifecycle)) {
+          case CatalogListingLoaded(files: final rows):
+            files.addAll(rows);
+          // One type the core could not answer fails the whole call: there
+          // is only one call, so there is no partial listing to report.
+          case final CatalogListingFailed failed:
+            return failed;
+        }
+      }
+      return CatalogListing.loaded(files: files);
+    }
+
+    return _for(type, lifecycle);
   }
+
+  CatalogListing _for(FileType type, LifecycleFilter lifecycle) =>
+      switch (lifecycle) {
+        LifecycleFilter.active =>
+          listings[type] ?? const CatalogListing.loaded(files: []),
+        LifecycleFilter.deleted =>
+          deleted[type] ?? const CatalogListing.loaded(files: []),
+        // Both together, which is what the core would answer.
+        LifecycleFilter.all => switch ((listings[type], deleted[type])) {
+          (
+            final CatalogListingLoaded active,
+            final CatalogListingLoaded gone,
+          ) =>
+            CatalogListing.loaded(files: [...active.files, ...gone.files]),
+          (final CatalogListing only?, _) => only,
+          _ => const CatalogListing.loaded(files: []),
+        },
+      };
 
   @override
   Future<FileDetailsOutcome> fileDetails({

@@ -23,8 +23,8 @@ class CoreCatalogGateway implements CatalogGateway {
 
   @override
   Future<CatalogListing> listFiles({
-    required FileType type,
     required String credential,
+    FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
     bool includeLibraries = false,
   }) async {
@@ -35,7 +35,10 @@ class CoreCatalogGateway implements CatalogGateway {
         // stated rather than left to the core's default: a default that
         // changed would silently start listing deleted records.
         jsonEncode({
-          'type': type.wireName,
+          // Omitted rather than sent empty when there is no type: an absent
+          // filter is what the core reads as every type, and an empty string
+          // is a type name it does not have.
+          if (type != null) 'type': type.wireName,
           'state': lifecycle.wireName,
           // Sent only when it is true: absent is the core's default and the
           // narrower answer, so a filter that never mentions it behaves as

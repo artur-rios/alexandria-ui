@@ -133,9 +133,16 @@ abstract interface class CatalogGateway {
   /// owner remembers by name, and the deleted-items review, which must be
   /// able to offer one back — a deleted library file appears in no panel and
   /// not in its library either, which lists only active files.
+  ///
+  /// [type] is optional, and omitting it lists every type in one call. That
+  /// is what the navigation panel's counts want: they used to ask once per
+  /// type and take the length of each answer, which serialized the whole
+  /// catalog out of the core, across the FFI boundary and through a JSON
+  /// decode once for every type on screen — and again after each scan,
+  /// purge, and restore.
   Future<CatalogListing> listFiles({
-    required FileType type,
     required String credential,
+    FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
     bool includeLibraries = false,
   });

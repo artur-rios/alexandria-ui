@@ -228,14 +228,20 @@ void main() {
   });
 
   group('the panel counts (FR-CT-01)', () {
-    test('GivenEveryType_WhenTheCountsLoad_ThenEachIsAskedFor', () async {
-      final sut = build(watchCounts: true);
+    test(
+      'GivenEveryType_WhenTheCountsLoad_ThenOneListingAnswersThemAll',
+      () async {
+        // One call with no type filter, not one call per type. Asking per
+        // type serialized the whole catalog out of the core once for every
+        // type in the panel, and again after every scan, purge and restore.
+        final sut = build(watchCounts: true);
 
-      final counts = await sut.ref.read(typeCountsControllerProvider.future);
+        final counts = await sut.ref.read(typeCountsControllerProvider.future);
 
-      expect(sut.gateway.requested.toSet(), FileType.values.toSet());
-      expect(counts.length, FileType.values.length);
-    });
+        expect(sut.gateway.requested, [null]);
+        expect(counts.length, FileType.values.length);
+      },
+    );
 
     test(
       'GivenATypeWithFiles_WhenTheCountsLoad_ThenItsCountIsItsLength',
@@ -257,9 +263,11 @@ void main() {
     );
 
     test(
-      'GivenATypeThatFails_WhenTheCountsLoad_ThenItHasNoCountNotZero',
+      'GivenTheCountsCannotBeRead_WhenTheyLoad_ThenItFailsRatherThanReadsZero',
       () async {
-        // A zero would read as "nothing here" about a query that never answered.
+        // A zero would read as "nothing here" about a query that never
+        // answered, and an empty map is that lie told for every type at once.
+        // The failure state is what puts the retry on screen.
         final sut = build(
           watchCounts: true,
           listings: {
@@ -269,10 +277,39 @@ void main() {
           },
         );
 
+        await pumpEventQueue();
+
+        final counts = sut.ref.read(typeCountsControllerProvider);
+        expect(counts.hasError, isTrue);
+        expect(counts.error, isA<DiskFailure>());
+      },
+    );
+
+    test(
+      'GivenSeveralTypesWithFiles_WhenTheCountsLoad_ThenEachIsTalliedApart',
+      () async {
+        // The tally moved out of the core and into the controller, so the
+        // split between types is now this code's job rather than the
+        // filter's — and getting it wrong would put every file under one
+        // heading.
+        final sut = build(
+          watchCounts: true,
+          listings: {
+            FileType.audio: loadedDetails([
+              aFile(),
+              aFile(uuid: 'b', name: 'b.flac'),
+            ]),
+            FileType.image: loadedDetails([
+              aFile(uuid: 'c', name: 'c.png', type: FileType.image),
+            ]),
+          },
+        );
+
         final counts = await sut.ref.read(typeCountsControllerProvider.future);
 
-        expect(counts.containsKey(FileType.audio), isFalse);
-        expect(counts[FileType.image], 0);
+        expect(counts[FileType.audio], 2);
+        expect(counts[FileType.image], 1);
+        expect(counts[FileType.video], 0);
       },
     );
   });

@@ -98,10 +98,9 @@ Failure _mapIndex(int code) => switch (code) {
     family: CoreStatusFamily.indexing,
     code: code,
   ),
-  INDEX_ERR_OTHER => Failure.unexpected(
-    family: CoreStatusFamily.indexing,
-    code: code,
-  ),
+  // `INDEX_ERR_OTHER` needs no arm of its own: it maps to the same
+  // unexpected failure the default below produces, and spelling it out
+  // twice invited the reading that the two differ.
   _ => Failure.unexpected(family: CoreStatusFamily.indexing, code: code),
 };
 

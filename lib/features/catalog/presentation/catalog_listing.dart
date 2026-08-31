@@ -373,9 +373,9 @@ class _EmptyListing extends ConsumerWidget {
 
     final counts = ref.watch(typeCountsControllerProvider);
     // Every type has to have actually been counted before this reads as
-    // empty — a map shorter than every type means some listing failed rather
+    // empty — a map shorter than every type means the listing failed rather
     // than answered zero (see `TypeCountsController`), and unknown counts
-    // (loading, or every type failed) are not an empty catalog either:
+    // (loading, or the read failing) are not an empty catalog either:
     // offering the first-run guidance because a query failed would be
     // guessing.
     final catalogEmpty = counts.maybeWhen(
