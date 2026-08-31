@@ -54,6 +54,21 @@ in the delivery flow is defined in the
 | Theme and layout appearance of a key screen | Widget (golden) | `test/<feature>/presentation/goldens/` |
 | Localization completeness | Unit | `test/l10n/` |
 | A whole use case end to end | Integration | `integration_test/<feature>/` |
+| A rule that has to hold across the layers at once | Integration, driving the widget tree | `integration_test/<feature>/` |
+
+**When the layers each behave and the feature does not.** Most integration
+tests here drive a gateway over the real core, because that is where the
+generated bindings and the status codes are. That leaves one gap they cannot
+see: a rule the requirements state about the *application* — "a library's files
+stay findable" — can be false while the core answers correctly, the controller
+asks correctly for what it was told to ask, and the widget renders correctly
+what it is given. Nothing is wrong at any layer; what is wrong is that one of
+them asks for the wrong thing. That is what
+`integration_test/catalog/library_search_flow_test.dart` exists to catch, and
+it does it by starting the real application — the real startup sequence, the
+real shell, the real search field — over a throwaway catalog, and typing.
+Reserve this shape for rules that genuinely span the layers: it is the slowest
+test in the suite and the one most able to fail for reasons of its own.
 
 **What deliberately gets no tests.** Generated files — the `ffigen` bindings, the
 `freezed` and `json_serializable` output, and the localization delegates — are not
