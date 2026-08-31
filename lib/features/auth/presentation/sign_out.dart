@@ -12,9 +12,12 @@ import '../../shell/presentation/confirmation_dialog.dart';
 /// cancelling — cancelling is how the owner goes back and saves first, which
 /// is the option AF-01 requires.
 ///
-/// Nothing is popped afterwards. Signing out replaces the shell with the login
-/// screen at the root, and a pop here would be dismissing a route that the
-/// session change has already taken away.
+/// Nothing is popped here, but not because there is nothing to pop. Signing
+/// out replaces what `MaterialApp.home` resolves to, and that is only the
+/// first route — every dialog the owner has open is a route above it and
+/// stays exactly where it is. `SessionRouteGuard` closes them, on the session
+/// ending rather than on this particular way of ending it, so a session the
+/// core rejects clears the screen the same way signing out does.
 Future<void> confirmAndSignOut(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
   final controller = ref.read(signOutControllerProvider);

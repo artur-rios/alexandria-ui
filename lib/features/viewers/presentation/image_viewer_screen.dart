@@ -26,14 +26,17 @@ class ImageViewerScreen extends ConsumerStatefulWidget {
     CatalogFile file,
     List<CatalogFile> listing,
   ) {
-    ref.read(imageViewerControllerProvider.notifier).open(file, listing);
+    // Taken once, and used for both ends. A dialog can be closed *for* the
+    // owner — `SessionRouteGuard` does it when a session ends — and by then
+    // the widget that lent this `ref` has gone with the shell, which makes
+    // reading through it an error rather than a cleanup.
+    final viewer = ref.read(imageViewerControllerProvider.notifier);
+    viewer.open(file, listing);
 
     return showDialog<void>(
       context: context,
       builder: (context) => const Dialog.fullscreen(child: ImageViewerScreen()),
-    ).whenComplete(
-      () => ref.read(imageViewerControllerProvider.notifier).close(),
-    );
+    ).whenComplete(viewer.close);
   }
 
   @override

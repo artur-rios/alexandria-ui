@@ -24,26 +24,28 @@ class ComicViewerScreen extends ConsumerWidget {
     WidgetRef ref,
     CatalogFile file,
   ) {
+    // Taken once, and used for both ends. A dialog can be closed *for* the
+    // owner — `SessionRouteGuard` does it when a session ends — and by then
+    // the widget that lent this `ref` has gone with the shell, which makes
+    // reading through it an error rather than a cleanup.
+    final viewer = ref.read(comicViewerControllerProvider.notifier);
+
     unawaited(
-      ref
-          .read(comicViewerControllerProvider.notifier)
-          .open(
-            ViewerTarget(
-              uuid: file.uuid,
-              name: file.name,
-              path: file.path,
-              type: file.type,
-            ),
-          ),
+      viewer.open(
+        ViewerTarget(
+          uuid: file.uuid,
+          name: file.name,
+          path: file.path,
+          type: file.type,
+        ),
+      ),
     );
 
+    // Step 5: nothing was extracted, and nothing is left behind.
     return showDialog<void>(
       context: context,
       builder: (context) => const Dialog.fullscreen(child: ComicViewerScreen()),
-    ).whenComplete(
-      // Step 5: nothing was extracted, and nothing is left behind.
-      () => ref.read(comicViewerControllerProvider.notifier).close(),
-    );
+    ).whenComplete(viewer.close);
   }
 
   @override

@@ -42,12 +42,17 @@ class FileDetailsView extends ConsumerWidget {
 
   /// Presents the details for [uuid].
   static Future<void> show(BuildContext context, WidgetRef ref, String uuid) {
-    ref.read(openFileProvider.notifier).open(uuid);
+    // Taken once, and used for both ends. A dialog can be closed *for* the
+    // owner — `SessionRouteGuard` does it when a session ends — and by then
+    // the widget that lent this `ref` has gone with the shell, which makes
+    // reading through it an error rather than a cleanup.
+    final openFile = ref.read(openFileProvider.notifier);
+    openFile.open(uuid);
 
     return showDialog<void>(
       context: context,
       builder: (context) => const FileDetailsView(),
-    ).whenComplete(() => ref.read(openFileProvider.notifier).close());
+    ).whenComplete(openFile.close);
   }
 
   @override

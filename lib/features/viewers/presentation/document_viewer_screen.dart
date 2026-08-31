@@ -28,27 +28,29 @@ class DocumentViewerScreen extends ConsumerWidget {
     WidgetRef ref,
     CatalogFile file,
   ) {
+    // Taken once, and used for both ends. A dialog can be closed *for* the
+    // owner — `SessionRouteGuard` does it when a session ends — and by then
+    // the widget that lent this `ref` has gone with the shell, which makes
+    // reading through it an error rather than a cleanup.
+    final viewer = ref.read(documentViewerControllerProvider.notifier);
+
     unawaited(
-      ref
-          .read(documentViewerControllerProvider.notifier)
-          .open(
-            ViewerTarget(
-              uuid: file.uuid,
-              name: file.name,
-              path: file.path,
-              type: file.type,
-            ),
-          ),
+      viewer.open(
+        ViewerTarget(
+          uuid: file.uuid,
+          name: file.name,
+          path: file.path,
+          type: file.type,
+        ),
+      ),
     );
 
+    // Step 6: nothing is retained once the viewer closes (FR-VW-07).
     return showDialog<void>(
       context: context,
       builder: (context) =>
           const Dialog.fullscreen(child: DocumentViewerScreen()),
-    ).whenComplete(
-      // Step 6: nothing is retained once the viewer closes (FR-VW-07).
-      () => ref.read(documentViewerControllerProvider.notifier).close(),
-    );
+    ).whenComplete(viewer.close);
   }
 
   @override

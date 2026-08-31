@@ -11,6 +11,7 @@ import 'features/auth/application/auth_entry_controller.dart';
 import 'features/auth/application/session_state.dart';
 import 'features/auth/presentation/recovery_codes_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'features/auth/presentation/session_route_guard.dart';
 import 'features/auth/presentation/sign_up_screen.dart';
 import 'features/shell/presentation/shell_screen.dart';
 
@@ -54,37 +55,43 @@ class AlexandriaApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
-      home: switch (startup) {
-        StartupIdle() || StartupRunning() => const StartupProgressScreen(),
-        StartupFailed(:final failure) => CoreUnavailableScreen(
-          failure: failure,
-        ),
-        // Startup ends where authentication begins: whether an account
-        // exists, and whether its owner has stored the recovery codes, are
-        // answered by signing in (UC-02) and by UC-40, not by the foundation.
-        StartupReady() => switch (ref.watch(sessionControllerProvider)) {
-          // FR-AU-07: no session, so no catalog call. Which of the two
-          // authentication screens depends on whether the core already holds
-          // an account (FR-AU-01, UC-01 main flow step 1).
-          SessionAbsent() => switch (ref.watch(authEntryProvider)) {
-            AuthEntry.resolving => const StartupProgressScreen(),
-            AuthEntry.signUp => const SignUpScreen(),
-            AuthEntry.login => const LoginScreen(),
-          },
-
-          // UC-40 / FR-AU-12: a new account's recovery codes stand between
-          // sign-up and the library, once. `null` is every other session —
-          // an empty list is an account the core issued none for, which is
-          // AF-03 and still worth stopping for.
-          SessionActive(:final recoveryCodes?) => RecoveryCodesScreen(
-            codes: recoveryCodes,
+      // Wrapped rather than switched on here: what it does is close the
+      // routes stacked *above* `home` when a session ends, which is not
+      // something changing `home` does by itself (BR-05).
+      home: SessionRouteGuard(
+        child: switch (startup) {
+          StartupIdle() || StartupRunning() => const StartupProgressScreen(),
+          StartupFailed(:final failure) => CoreUnavailableScreen(
+            failure: failure,
           ),
+          // Startup ends where authentication begins: whether an account
+          // exists, and whether its owner has stored the recovery codes, are
+          // answered by signing in (UC-02) and by UC-40, not by the
+          // foundation.
+          StartupReady() => switch (ref.watch(sessionControllerProvider)) {
+            // FR-AU-07: no session, so no catalog call. Which of the two
+            // authentication screens depends on whether the core already
+            // holds an account (FR-AU-01, UC-01 main flow step 1).
+            SessionAbsent() => switch (ref.watch(authEntryProvider)) {
+              AuthEntry.resolving => const StartupProgressScreen(),
+              AuthEntry.signUp => const SignUpScreen(),
+              AuthEntry.login => const LoginScreen(),
+            },
 
-          // The shell (UC-38). Everything the owner actually does is inside
-          // it, which is why this switch stops here.
-          SessionActive() => const ShellScreen(),
+            // UC-40 / FR-AU-12: a new account's recovery codes stand between
+            // sign-up and the library, once. `null` is every other session —
+            // an empty list is an account the core issued none for, which is
+            // AF-03 and still worth stopping for.
+            SessionActive(:final recoveryCodes?) => RecoveryCodesScreen(
+              codes: recoveryCodes,
+            ),
+
+            // The shell (UC-38). Everything the owner actually does is inside
+            // it, which is why this switch stops here.
+            SessionActive() => const ShellScreen(),
+          },
         },
-      },
+      ),
     );
   }
 }

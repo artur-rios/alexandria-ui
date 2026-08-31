@@ -38,12 +38,15 @@ int reorderDestinationIndex({required int oldIndex, required int newIndex}) =>
 /// The consequence carried over from `PlaylistsScreen` along with the
 /// pattern: `PlaylistDetailScreen` is a `showDialog` route, which survives
 /// `MaterialApp.home` swapping to the login screen. On a rejected session the
-/// owner is left looking at a fullscreen dialog with a blank title and a
+/// owner was left looking at a fullscreen dialog with a blank title and a
 /// blank body, floating silently above the login screen underneath, until
-/// they dismiss it themselves. Known and not fixed here — diverging this
-/// screen from `PlaylistsScreen`'s identical exposure would leave one
-/// screen's wart worse-explained than the other's; both are to be settled
-/// together.
+/// they dismissed it themselves.
+///
+/// Settled where it said it should be — together, and for every screen with
+/// the same exposure rather than this one: `SessionRouteGuard` closes the
+/// routes above `home` when a session ends. What is left here is the state
+/// shape itself, which stays as it is because `PlaylistsController` answers
+/// the same way and the two are read together.
 class PlaylistDetailController extends AsyncNotifier<PlaylistView?> {
   /// Creates the controller for the playlist [uuid] identifies.
   PlaylistDetailController(this.uuid);

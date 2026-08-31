@@ -28,25 +28,27 @@ class PageViewerScreen extends ConsumerWidget {
     WidgetRef ref,
     CatalogFile file,
   ) {
+    // Taken once, and used for both ends. A dialog can be closed *for* the
+    // owner — `SessionRouteGuard` does it when a session ends — and by then
+    // the widget that lent this `ref` has gone with the shell, which makes
+    // reading through it an error rather than a cleanup.
+    final viewer = ref.read(pageViewerControllerProvider.notifier);
+
     unawaited(
-      ref
-          .read(pageViewerControllerProvider.notifier)
-          .open(
-            ViewerTarget(
-              uuid: file.uuid,
-              name: file.name,
-              path: file.path,
-              type: file.type,
-            ),
-          ),
+      viewer.open(
+        ViewerTarget(
+          uuid: file.uuid,
+          name: file.name,
+          path: file.path,
+          type: file.type,
+        ),
+      ),
     );
 
     return showDialog<void>(
       context: context,
       builder: (context) => const Dialog.fullscreen(child: PageViewerScreen()),
-    ).whenComplete(
-      () => ref.read(pageViewerControllerProvider.notifier).close(),
-    );
+    ).whenComplete(viewer.close);
   }
 
   @override
