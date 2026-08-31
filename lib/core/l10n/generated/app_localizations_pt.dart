@@ -431,7 +431,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String librarySourcesRunFailedCount(int failed) {
-    return '$failed arquivos não puderam ser lidos.';
+    return '$failed arquivos não puderam ser lidos e não estão na sua biblioteca. Uma nova varredura tenta novamente.';
   }
 
   @override

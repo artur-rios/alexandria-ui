@@ -560,7 +560,7 @@
       }
     }
   },
-  "librarySourcesRunFailedCount": "{failed} files could not be read.",
+  "librarySourcesRunFailedCount": "{failed} files could not be read, and are not in your library. Re-scanning tries them again.",
   "@librarySourcesRunFailedCount": {
     "description": "Appended to a run's outcome when the core reports files it failed on.",
     "placeholders": {

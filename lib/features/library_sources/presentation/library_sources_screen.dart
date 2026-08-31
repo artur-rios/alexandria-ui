@@ -547,6 +547,27 @@ class _RunReport extends ConsumerWidget {
 
     if (message == null) return const SizedBox.shrink();
 
+    // A finished run that could not record some of its files. Told apart from
+    // every other report here because it is the only one that says the
+    // catalog is quietly incomplete: the folder is registered, the scan says
+    // it finished, and some of what is on disk is simply not in the library.
+    // Left as a clause on a neutral summary line, that reads as a statistic
+    // rather than as something to act on — and the owner would have no reason
+    // to look for the files that are missing.
+    //
+    // Marked rather than given a control of its own. The way out is a
+    // re-scan, and this row already offers exactly that button for a settled
+    // run; a second copy inside the report would be two ways to press one
+    // button, which is the objection that keeps the refresh notice plain too.
+    // The sentence names the remedy, and the control beside it is the
+    // remedy.
+    final dropped = switch (run) {
+      final IndexRun finished
+          when !finished.isInFlight && (finished.counts?.failed ?? 0) > 0 =>
+        finished.counts!.failed,
+      _ => 0,
+    };
+
     // UC-06 AF-03: a folder the core could not scan is one the owner may want
     // rid of, so the failure carries the offer. Only on a start failure —
     // a finished run says nothing about whether the folder should stay.
@@ -562,7 +583,24 @@ class _RunReport extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: Text(message, style: theme.textTheme.bodySmall)),
+          if (dropped > 0) ...[
+            Icon(
+              Icons.warning_amber_outlined,
+              size: 18,
+              color: theme.colorScheme.error,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+          ],
+          Expanded(
+            child: Text(
+              message,
+              style: dropped > 0
+                  ? theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    )
+                  : theme.textTheme.bodySmall,
+            ),
+          ),
           if (offersUnregister)
             TextButton(
               onPressed: () => _confirmUnregister(context, ref, root),
@@ -614,6 +652,9 @@ class _RunReport extends ConsumerWidget {
 
     if (counts == null || counts.failed == 0) return summary;
 
+    // Says what it means for the library rather than only how many: files
+    // that are on disk and not in the catalog will not appear anywhere until
+    // a run records them.
     return '$summary ${l10n.librarySourcesRunFailedCount(counts.failed)}';
   }
 }
@@ -933,6 +974,18 @@ class _RefreshReport extends ConsumerWidget {
       counts.markedMissing,
     );
 
-    return summary;
+    // A refresh reports failures too, and this said nothing about them: a run
+    // that could not re-read some records answered a clean summary, and the
+    // state those records carry — present, or missing — is whatever the last
+    // successful run left there. The same sentence the folder rows use, for
+    // the same reason: a count the owner never sees is a count that may as
+    // well not be kept.
+    //
+    // No action beside it, unlike a folder's own report. The control that
+    // starts another refresh is on this same screen and already named; a
+    // second copy inside the notice would be two ways to press one button.
+    if (counts.failed == 0) return summary;
+
+    return '$summary ${l10n.librarySourcesRunFailedCount(counts.failed)}';
   }
 }

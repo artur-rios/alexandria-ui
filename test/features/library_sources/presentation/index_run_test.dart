@@ -342,4 +342,88 @@ void main() {
       );
     }
   });
+  group('a run that could not record everything', () {
+    // The one report that says the catalog is quietly incomplete: the folder
+    // is registered, the scan says it finished, and some of what is on disk
+    // is not in the library. Under write contention the core drops a file or
+    // two and counts them in `failed` — honestly, and until now almost
+    // invisibly.
+    Future<FakeIndexGateway> openWithFailures(
+      WidgetTester tester, {
+      int failed = 2,
+    }) async {
+      final gateway = FakeIndexGateway()
+        ..readOutcomes = [
+          finishedRun(
+            counts: IndexRunCounts(scanned: 40, indexed: 38, failed: failed),
+          ),
+        ];
+
+      await openScreen(
+        tester,
+        gateway: gateway,
+        registered: [source(lastRunId: 'a-recorded-run')],
+      );
+
+      return gateway;
+    }
+
+    AppLocalizations messages(WidgetTester tester) => AppLocalizations.of(
+      tester.element(find.byType(LibrarySourcesScreen)),
+    );
+
+    testWidgets('GivenARunDroppedFiles_WhenItIsReported_ThenItSaysSo', (
+      tester,
+    ) async {
+      await openWithFailures(tester);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining(
+          messages(tester).librarySourcesRunFailedCount(2),
+          findRichText: true,
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('GivenARunDroppedFiles_WhenItIsReported_ThenItReadsAsAProblem', (
+      tester,
+    ) async {
+      // Styling asserted because it is the whole difference between a
+      // statistic and something to act on: this sentence sat in the same
+      // neutral grey as "40 scanned, 38 indexed".
+      await openWithFailures(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.warning_amber_outlined), findsOneWidget);
+    });
+
+    testWidgets('GivenARunDroppedFiles_WhenItIsReported_ThenTheRowStillOffersARescan', (
+      tester,
+    ) async {
+      // The remedy the sentence names. Not a control of its own inside the
+      // report — the row already carries Rescan for a settled run, and a
+      // second copy would be two ways to press one button.
+      final gateway = await openWithFailures(tester);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(messages(tester).librarySourcesRescan));
+      await tester.pumpAndSettle();
+
+      expect(gateway.starts, isNotEmpty);
+    });
+
+    testWidgets('GivenARunDroppedNothing_WhenItIsReported_ThenNothingWarns', (
+      tester,
+    ) async {
+      // The half that makes the others mean something: a clean run must not
+      // wear a warning.
+      await openWithFailures(tester, failed: 0);
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.warning_amber_outlined), findsNothing);
+    });
+  });
+
 }

@@ -123,7 +123,7 @@
   "librarySourcesRescan": "Reanalisar",
   "librarySourcesIndexing": "Analisando…",
   "librarySourcesRunComplete": "{scanned} arquivos analisados, {indexed} catalogados, {skipped} ignorados.",
-  "librarySourcesRunFailedCount": "{failed} arquivos não puderam ser lidos.",
+  "librarySourcesRunFailedCount": "{failed} arquivos não puderam ser lidos e não estão na sua biblioteca. Uma nova varredura tenta novamente.",
   "librarySourcesRunFailed": "A análise não foi concluída.",
   "librarySourcesRunCancelled": "A análise foi cancelada.",
   "librarySourcesRunPaused": "A análise está pausada. Ela pode ser retomada de onde parou.",

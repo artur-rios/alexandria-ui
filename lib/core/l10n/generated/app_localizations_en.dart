@@ -432,7 +432,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String librarySourcesRunFailedCount(int failed) {
-    return '$failed files could not be read.';
+    return '$failed files could not be read, and are not in your library. Re-scanning tries them again.';
   }
 
   @override

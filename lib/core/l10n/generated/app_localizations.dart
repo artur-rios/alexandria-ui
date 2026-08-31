@@ -839,7 +839,7 @@ abstract class AppLocalizations {
   /// Appended to a run's outcome when the core reports files it failed on.
   ///
   /// In en, this message translates to:
-  /// **'{failed} files could not be read.'**
+  /// **'{failed} files could not be read, and are not in your library. Re-scanning tries them again.'**
   String librarySourcesRunFailedCount(int failed);
 
   /// UC-06: the core reports the run as failed.

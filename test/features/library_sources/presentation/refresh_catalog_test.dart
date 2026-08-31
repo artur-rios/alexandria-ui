@@ -22,7 +22,8 @@ void main() {
   const root = '/home/owner/music';
   final now = DateTime.utc(2026, 8, 19, 12);
 
-  IndexRunOutcome refreshed({int missing = 0}) => IndexRunOutcome.read(
+  IndexRunOutcome refreshed({int missing = 0, int failed = 0}) =>
+      IndexRunOutcome.read(
     run: IndexRun(
       runId: '8c2d0e51-77af-4b93-8a10-2f6c4d9b1e37',
       root: '',
@@ -32,6 +33,7 @@ void main() {
         refreshed: 9,
         unchanged: 110,
         markedMissing: missing,
+        failed: failed,
       ),
     ),
   );
@@ -304,4 +306,45 @@ void main() {
       );
     }
   });
+  testWidgets('GivenARefreshCouldNotReadSomeFiles_WhenItFinishes_ThenItSaysSo', (
+    tester,
+  ) async {
+    // This report dropped `failed` on the floor: a refresh that could not
+    // re-read some records answered a clean summary, so the state those
+    // records carry — present, or missing — was whatever the last successful
+    // run left there, and nothing said so.
+    final gateway = FakeIndexGateway()
+      ..readOutcomes = [refreshed(failed: 3)];
+    await openScreen(tester, gateway: gateway);
+
+    await pressRefresh(tester);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(LibrarySourcesScreen)),
+    );
+    expect(
+      find.textContaining(l10n.librarySourcesRunFailedCount(3)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('GivenARefreshReadEverything_WhenItFinishes_ThenNothingIsSaid', (
+    tester,
+  ) async {
+    // The half that makes the test above mean something: a clean refresh must
+    // not report a failure it did not have.
+    final gateway = FakeIndexGateway()..readOutcomes = [refreshed()];
+    await openScreen(tester, gateway: gateway);
+
+    await pressRefresh(tester);
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(LibrarySourcesScreen)),
+    );
+    expect(
+      find.textContaining(l10n.librarySourcesRunFailedCount(0)),
+      findsNothing,
+    );
+  });
+
 }

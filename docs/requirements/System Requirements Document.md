@@ -154,7 +154,7 @@ replace the FFI one without touching a screen.
 | FR-LB-05 | The system shall start an index run for a chosen library folder and retain the run identifier the core returns. |
 | FR-LB-06 | The system shall start a refresh run covering everything already cataloged, independently of any single folder. This also happens when a session is established, subject to FR-LB-21. |
 | FR-LB-07 | The system shall observe a run's progress without blocking the interface, leaving browsing, playback, viewing, and editing available while it runs. |
-| FR-LB-08 | The system shall present the outcome of a finished run — files added, files updated, and files found missing — and shall keep that summary visible until the owner dismisses it. |
+| FR-LB-08 | The system shall present the outcome of a finished run — files added, files updated, and files found missing — and shall keep that summary visible until the owner dismisses it. A run that could not record some of the files it walked shall say so, for a scan and for a re-check alike, and shall say it as a problem rather than as one more statistic: those files are on disk and absent from the library, and nothing else in the application will ever mention them. The remedy is another run, which the folder's own row already offers. |
 | FR-LB-09 | The system shall prevent a second index run from being started for a library folder while a run for that folder is in flight. |
 | FR-LB-10 | The system shall allow the owner to unregister a library folder after a confirmation stating that catalog records and on-disk files are left untouched. |
 | FR-LB-11 | The system shall present first-run guidance directing the owner to register a library folder whenever no folder is registered. |
