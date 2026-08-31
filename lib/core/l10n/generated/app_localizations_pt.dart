@@ -1417,6 +1417,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'Essa pasta não pode conter esta biblioteca: ela se sobrepõe a outra, ou o catálogo já tem arquivos ali.';
 
   @override
+  String searchInLibrary(String name) {
+    return 'Em $name';
+  }
+
+  @override
+  String get searchInALibrary => 'Em uma biblioteca';
+
+  @override
   String get librariesOpen => 'Bibliotecas';
 
   @override

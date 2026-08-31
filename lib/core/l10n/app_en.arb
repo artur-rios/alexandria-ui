@@ -1896,6 +1896,15 @@
   "@libraryMoveConflict": {
     "description": "The two conflicts a move answers, said in the terms the owner can act on rather than as a generic refusal."
   },
+  "searchInLibrary": "In {name}",
+  "@searchInLibrary": {
+    "description": "Libraries design: marks a search hit that lives in a library, which is why it is absent from the panel for its type.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "searchInALibrary": "In a library",
+  "@searchInALibrary": {
+    "description": "The same, before the list of libraries has been read — the part that explains the missing panel entry does not need the name."
+  },
   "librariesOpen": "Libraries",
   "@librariesOpen": {
     "description": "Library menu entry opening the list of registered libraries."

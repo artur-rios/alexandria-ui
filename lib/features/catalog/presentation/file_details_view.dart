@@ -14,6 +14,7 @@ import '../domain/file_type.dart';
 import 'music_metadata_form.dart';
 import '../../editing/presentation/text_editor_screen.dart';
 import '../../playback/application/audio_playback_controller.dart';
+import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../../viewers/domain/viewer_registry.dart';
 import '../../viewers/presentation/comic_viewer_screen.dart';
 import '../../viewers/presentation/document_viewer_screen.dart';
@@ -265,6 +266,14 @@ class _Details extends ConsumerWidget {
               // cases' AF-02 asks for.
               if (details.file.type == FileType.video && !details.isDeleted)
                 AddToWatchlistButton(file: details.file),
+              // The same for a track (UC-47). Offered here as well as in the
+              // music area because that area lists no library's audio — it
+              // is a type panel, and marking a folder takes its files out of
+              // those. Without this, a track inside a library could reach a
+              // playlist only by being played first, while a video or a book
+              // in the same folder could be tracked from this very view.
+              if (details.file.type == FileType.audio && !details.isDeleted)
+                AddToPlaylistButton(fileUuids: [details.file.uuid]),
               if ((details.file.type == FileType.document ||
                       details.file.type == FileType.comic) &&
                   !details.isDeleted)

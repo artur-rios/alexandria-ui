@@ -170,14 +170,14 @@ class _Matches extends StatelessWidget {
 /// area (FR-CT-13): the rule follows the file type, and a result list that
 /// showed names on disk would put back every file name that area removes.
 /// Every other type is named by its file name, which is what it is called.
-class _ResultRow extends StatelessWidget {
+class _ResultRow extends ConsumerWidget {
   const _ResultRow({required this.details, required this.term});
 
   final FileDetails details;
   final String term;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
@@ -208,6 +208,13 @@ class _ResultRow extends StatelessWidget {
       // removed from the title back in the subtitle. Every other type is
       // named by its file name already, so its path is no more revealing than
       // the title above it.
+      // Says where a hit lives when it lives in a library. Without it the
+      // row is a puzzle: the owner finds the file here and then cannot find
+      // it in the panel for its type, because a library's files are shown in
+      // their folders instead (FR-CT-16).
+      trailing: details.libraryUuid == null
+          ? null
+          : _LibraryTag(uuid: details.libraryUuid!),
       subtitle: isAudio
           ? Text(
               tagOr(metadata?.artist, l10n.musicUnknownArtist),
@@ -219,6 +226,36 @@ class _ResultRow extends StatelessWidget {
               style: theme.textTheme.bodySmall,
               overflow: TextOverflow.ellipsis,
             ),
+    );
+  }
+}
+
+/// Names the library a result belongs to.
+///
+/// The name is looked up rather than carried on the row: the core answers
+/// membership as a uuid, deliberately, so a listing does not go stale the
+/// moment a library is renamed. Until the list of libraries has been read
+/// this says only that the file is in one, which is the part that explains
+/// the panel it is missing from.
+class _LibraryTag extends ConsumerWidget {
+  const _LibraryTag({required this.uuid});
+
+  final String uuid;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final libraries = ref.watch(librariesControllerProvider).value ?? const [];
+    final named = libraries.where((library) => library.uuid == uuid).firstOrNull;
+
+    return Chip(
+      avatar: const Icon(Icons.folder_special_outlined, size: 16),
+      label: Text(
+        named == null ? l10n.searchInALibrary : l10n.searchInLibrary(named.name),
+        style: theme.textTheme.labelSmall,
+      ),
+      visualDensity: VisualDensity.compact,
     );
   }
 }

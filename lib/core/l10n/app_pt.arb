@@ -414,6 +414,8 @@
   "librarySourcesMarkAsLibrary": "Marcar como biblioteca",
   "libraryMove": "A pasta foi movida",
   "libraryMoveConflict": "Essa pasta não pode conter esta biblioteca: ela se sobrepõe a outra, ou o catálogo já tem arquivos ali.",
+  "searchInLibrary": "Em {name}",
+  "searchInALibrary": "Em uma biblioteca",
   "librariesOpen": "Bibliotecas",
   "librariesTitle": "Bibliotecas",
   "librariesNone": "Você ainda não criou uma biblioteca. Marque uma pasta registrada como biblioteca na tela de pastas de origem.",

@@ -579,4 +579,67 @@ void main() {
       );
     }
   });
+  group('adding a track to a playlist', () {
+    // The music area is a type panel, so it lists no library's audio. Without
+    // this control a track inside a library could reach a playlist only by
+    // being played first — while a video or a book in the same folder can be
+    // tracked from this very view.
+    testWidgets('GivenAnAudioFile_WhenItsDetailsOpen_ThenItCanJoinAPlaylist', (
+      tester,
+    ) async {
+      await openDetails(
+        tester,
+        outcome: FileDetailsOutcome.read(
+          details: FileDetails(
+            file: aFile(uuid: uuid, type: FileType.audio),
+            libraryUuid: 'lib-1',
+          ),
+        ),
+      );
+
+      expect(
+        find.byTooltip(localizations(tester).playlistAddTo),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('GivenAVideo_WhenItsDetailsOpen_ThenNoPlaylistActionIsOffered', (
+      tester,
+    ) async {
+      // Offered for its own type and nothing else, like the two tracking
+      // controls beside it: a playlist holds audio.
+      //
+      // The outcome is spelled out because the fake gateway answers
+      // `aFile(uuid)` when a test does not, and that helper defaults to
+      // audio — so `openDetails(tester)` alone would show an audio dialog
+      // and pass this for the wrong reason.
+      await openDetails(
+        tester,
+        outcome: FileDetailsOutcome.read(
+          details: FileDetails(file: aFile(uuid: uuid, type: FileType.video)),
+        ),
+      );
+
+      expect(find.byTooltip(localizations(tester).playlistAddTo), findsNothing);
+    });
+
+    testWidgets('GivenADeletedTrack_WhenItsDetailsOpen_ThenItCannotJoinOne', (
+      tester,
+    ) async {
+      // A deleted record is not a track to queue; the same rule the tracking
+      // controls and the delete action already follow.
+      await openDetails(
+        tester,
+        outcome: FileDetailsOutcome.read(
+          details: FileDetails(
+            file: aFile(uuid: uuid, type: FileType.audio, isDeleted: true),
+            isDeleted: true,
+          ),
+        ),
+      );
+
+      expect(find.byTooltip(localizations(tester).playlistAddTo), findsNothing);
+    });
+  });
+
 }

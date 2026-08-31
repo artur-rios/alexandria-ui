@@ -2586,6 +2586,18 @@ abstract class AppLocalizations {
   /// **'That folder cannot hold this library: it overlaps another one, or the catalog already has files there.'**
   String get libraryMoveConflict;
 
+  /// Libraries design: marks a search hit that lives in a library, which is why it is absent from the panel for its type.
+  ///
+  /// In en, this message translates to:
+  /// **'In {name}'**
+  String searchInLibrary(String name);
+
+  /// The same, before the list of libraries has been read — the part that explains the missing panel entry does not need the name.
+  ///
+  /// In en, this message translates to:
+  /// **'In a library'**
+  String get searchInALibrary;
+
   /// Library menu entry opening the list of registered libraries.
   ///
   /// In en, this message translates to:

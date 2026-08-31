@@ -1962,9 +1962,9 @@ graph LR
 | UC-08: Unregister a library folder | FR-LB-10 |
 | UC-09: Browse the library by type | FR-CT-01, FR-CT-02, FR-CT-10, FR-CT-16, FR-LB-04 |
 | UC-10: Switch the view layout | FR-CT-03, FR-CT-04 |
-| UC-11: Search the catalog | FR-CT-06, FR-CT-09, FR-CT-16 |
+| UC-11: Search the catalog | FR-CT-06, FR-CT-09, FR-CT-16, FR-CT-17 |
 | UC-12: Filter and sort a listing | FR-CT-07, FR-CT-08 |
-| UC-13: View a file's details | FR-CT-05, FR-CT-12 |
+| UC-13: View a file's details | FR-CT-05, FR-CT-12, FR-CT-18 |
 | UC-14: View the home dashboard | FR-CT-11 |
 | UC-15: Edit music metadata | FR-ME-01, FR-ME-03, FR-ME-05 |
 | UC-16: Edit video metadata | FR-ME-02, FR-ME-03, FR-ME-05 |

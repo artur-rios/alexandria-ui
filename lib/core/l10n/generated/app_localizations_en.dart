@@ -1414,6 +1414,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'That folder cannot hold this library: it overlaps another one, or the catalog already has files there.';
 
   @override
+  String searchInLibrary(String name) {
+    return 'In $name';
+  }
+
+  @override
+  String get searchInALibrary => 'In a library';
+
+  @override
   String get librariesOpen => 'Libraries';
 
   @override

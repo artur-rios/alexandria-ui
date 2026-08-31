@@ -5,7 +5,9 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart'
     as gateway
     show CatalogListing;
+import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
     show CatalogListing;
@@ -19,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/shell_harness.dart';
 
 /// Searching the catalog (UC-11, FR-CT-06, FR-CT-09).
@@ -464,4 +467,78 @@ void main() {
       );
     }
   });
+  group('a hit that lives in a library', () {
+    // A library keeps its files out of the type panels, so a result found
+    // here and then missing from its panel reads as a bug. The row says why
+    // (FR-CT-16).
+    Future<void> searchInLibrary(
+      WidgetTester tester, {
+      String? libraryUuid = 'lib-1',
+      List<Library> libraries = const [
+        Library(uuid: 'lib-1', name: 'Rust course', rootPath: '/courses/rust'),
+      ],
+    }) async {
+      // Named `catalog` rather than `gateway`: this file imports the domain
+      // listing under that prefix, and a local of the same name hides it.
+      final catalog = FakeCatalogGateway(
+        listings: {
+          FileType.document: gateway.CatalogListing.loaded(
+            files: [
+              FileDetails(
+                file: aFile(name: 'lecture-01.pdf'),
+                libraryUuid: libraryUuid,
+              ),
+            ],
+          ),
+        },
+      );
+
+      await tester.pumpShell(
+        extraOverrides: [
+          catalogGatewayProvider.overrideWithValue(catalog),
+          libraryGatewayProvider.overrideWithValue(
+            FakeLibraryGateway(libraries: libraries),
+          ),
+        ],
+      );
+      await search(tester, 'lecture');
+    }
+
+    testWidgets('GivenAHitInALibrary_WhenItIsListed_ThenItNamesTheLibrary', (
+      tester,
+    ) async {
+      await searchInLibrary(tester);
+
+      expect(
+        find.text(localizations(tester).searchInLibrary('Rust course')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('GivenAHitOutsideEveryLibrary_WhenItIsListed_ThenItIsNotTagged', (
+      tester,
+    ) async {
+      // The half that makes the test above mean something: a row that tagged
+      // everything would pass it.
+      await searchInLibrary(tester, libraryUuid: null);
+
+      expect(find.byType(Chip), findsNothing);
+    });
+
+    testWidgets(
+      'GivenTheLibrariesAreNotReadYet_WhenAHitIsListed_ThenItStillSaysItIsInOne',
+      (tester) async {
+        // The name is looked up, not carried on the row — so the tag has to
+        // work before the lookup answers. Saying "in a library" is the part
+        // that explains the panel the file is missing from.
+        await searchInLibrary(tester, libraries: const []);
+
+        expect(
+          find.text(localizations(tester).searchInALibrary),
+          findsOneWidget,
+        );
+      },
+    );
+  });
+
 }
