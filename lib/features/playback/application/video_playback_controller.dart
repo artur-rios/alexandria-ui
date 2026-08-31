@@ -111,6 +111,27 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
   static const Duration positionWriteInterval = Duration(seconds: 5);
 
   StreamSubscription<PlaybackStatus>? _statuses;
+
+  /// Whether this file has played through to its end.
+  ///
+  /// The engine announces the end once rather than holding the flag up — a
+  /// latched one had the audio queue advancing twice — so the fact that it
+  /// happened is kept here instead. Without it, a position tick arriving
+  /// after the end would write a resume position back at the very end of the
+  /// file, and the next opening would resume there rather than at the start.
+  ///
+  /// Cleared by anything that means playback is somewhere other than the end:
+  /// opening a file, and seeking.
+  bool _reachedEnd = false;
+
+  /// Which run of [_start] is the current one.
+  ///
+  /// [_start] writes the state, awaits a source resolve and the engine, then
+  /// writes it again — so a close, or a second file opened while the first is
+  /// still resolving, was overwritten by whatever the older run did when it
+  /// came back. The newest ask is the one the owner means; older runs give
+  /// way.
+  int _startGeneration = 0;
   DateTime _lastWrite = DateTime.fromMillisecondsSinceEpoch(0);
 
   MediaPlayer get _player => ref.read(videoPlayerProvider);
@@ -193,12 +214,15 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
       final position => position,
     };
 
+    _reachedEnd = false;
     await _player.seek(bounded);
   }
 
   /// Moves playback to [position] (FR-PL-02).
   Future<void> seekTo(Duration position) async {
     if (state.stage != VideoStage.playing) return;
+
+    _reachedEnd = false;
     await _player.seek(position);
   }
 
@@ -217,6 +241,10 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
   /// Stops and closes the player (main flow step 7).
   Future<void> close() async {
     await _recordPosition(force: true);
+    // Any open still in flight gives way, or it would come back from its
+    // await and set the player playing again after it had been closed.
+    _startGeneration++;
+
     // Not awaited: cancelling a subscription resolves on a later turn of the
     // loop, and stopping the engine has no reason to wait for it.
     unawaited(_statuses?.cancel());
@@ -233,14 +261,24 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
 
   /// Resolves the file and opens it at [at] (main flow step 3).
   Future<void> _start(CatalogFile file, {required Duration at}) async {
+    final generation = ++_startGeneration;
+
+    _reachedEnd = false;
     state = VideoPlaybackState(file: file, stage: VideoStage.opening);
 
     final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return;
+    // No session, so nothing can be opened — and the player is closed rather
+    // than left in `opening`, which is a spinner with nothing behind it.
+    if (credential == null) {
+      state = const VideoPlaybackState();
+      return;
+    }
 
     final outcome = await ref
         .read(playbackSourceGatewayProvider)
         .resolve(uuid: file.uuid, credential: credential);
+
+    if (generation != _startGeneration) return;
 
     switch (outcome) {
       case PlaybackSourceResolved(:final source):
@@ -293,7 +331,14 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
 
       // Step 7: reaching the end leaves no position to resume from, and
       // stopping short of it leaves one.
-      if (status.hasEnded) {
+      //
+      // Latched, because the end is announced once: the ticks that follow it
+      // would otherwise fall to the other branch and write back the position
+      // this one just forgot — at the very end of the file, which is the
+      // worst place to resume from.
+      if (status.hasEnded) _reachedEnd = true;
+
+      if (_reachedEnd) {
         unawaited(_forgetPosition());
       } else {
         unawaited(_recordPosition());

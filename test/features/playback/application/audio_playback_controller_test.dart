@@ -1,5 +1,4 @@
 import 'package:alexandria_ui/core/di/providers.dart';
-import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -75,7 +74,6 @@ void main() {
       // here would say something untrue, and the bar would show a second,
       // contradictory "Skipped" banner alongside "nothing playable".
       expect(state.lastSkipped, isNull);
-      expect(state.lastSkipReason, isA<Failure>());
     },
   );
 

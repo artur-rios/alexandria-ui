@@ -29,8 +29,18 @@ class MediaKitPlayer implements MediaPlayer {
           ),
         );
       }),
+      // Announced once, and not kept. `hasEnded` says "this track just
+      // finished", and every other listener here re-emits `_status` — so
+      // latching it meant every position tick after the end carried it too.
+      // The audio controller advances its queue on that flag, so a second
+      // carrier arriving while it was still opening the next track advanced
+      // it a second time and the queue jumped a track.
+      //
+      // media_kit also reports `false` here when a new file starts; that is
+      // the flag being cleared, which `open` below does anyway, and it is
+      // not an event anything acts on.
       _player.stream.completed.listen((completed) {
-        _update(_status.copyWith(hasEnded: completed));
+        if (completed) _announce(_status.copyWith(hasEnded: true));
       }),
       _player.stream.tracks.listen((tracks) {
         _update(
@@ -63,7 +73,12 @@ class MediaKitPlayer implements MediaPlayer {
       // throwing from `open`, which is why AF-02 is a status rather than an
       // exception (FR-PL-10).
       _player.stream.error.listen((_) {
-        _update(_status.copyWith(failedToDecode: true, isPlaying: false));
+        // Not playing any more is state; failing to decode is an event, and
+        // is announced rather than kept for the reason `hasEnded` is — the
+        // audio controller steps over a failed track, and a latched flag
+        // made it step over several.
+        _update(_status.copyWith(isPlaying: false));
+        _announce(_status.copyWith(failedToDecode: true));
       }),
     ]);
   }
@@ -161,8 +176,20 @@ class MediaKitPlayer implements MediaPlayer {
     await _player.dispose();
   }
 
+  /// Records [status] as the engine's condition, and sends it.
   void _update(PlaybackStatus status) {
     _status = status;
+    _announce(status);
+  }
+
+  /// Sends [status] to whoever is listening.
+  ///
+  /// Called directly — rather than through [_update] — for the flags that
+  /// describe a moment rather than a condition, so `_status` is left as it
+  /// was and the next ordinary update does not carry them along. It is also
+  /// why [currentStatus], read right after `open`, describes the file now
+  /// playing rather than the end of the one before it.
+  void _announce(PlaybackStatus status) {
     if (!_statuses.isClosed) _statuses.add(status);
   }
 }

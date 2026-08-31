@@ -41,7 +41,6 @@ class AudioPlaybackState {
     this.status = const PlaybackStatus(),
     this.resumeFrom,
     this.lastSkipped,
-    this.lastSkipReason,
   });
 
   /// What is queued and where playback is in it.
@@ -62,9 +61,6 @@ class AudioPlaybackState {
   /// owner nothing about which of their files to go and look at.
   final CatalogFile? lastSkipped;
 
-  /// Why it was skipped.
-  final Failure? lastSkipReason;
-
   /// The track playing now, or `null`.
   CatalogFile? get current => queue.current;
 
@@ -84,14 +80,12 @@ class AudioPlaybackState {
     PlaybackStatus? status,
     Duration? resumeFrom,
     CatalogFile? lastSkipped,
-    Failure? lastSkipReason,
   }) => AudioPlaybackState(
     queue: queue ?? this.queue,
     stage: stage ?? this.stage,
     status: status ?? this.status,
     resumeFrom: resumeFrom,
     lastSkipped: lastSkipped,
-    lastSkipReason: lastSkipReason,
   );
 }
 
@@ -121,6 +115,18 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
   StreamSubscription<PlaybackStatus>? _statuses;
   DateTime _lastWrite = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// Which run of [_openAt] is the current one.
+  ///
+  /// Every call takes the next number and abandons itself the moment a later
+  /// call takes one, which settles two things at once. Two opens can overlap
+  /// — [_openAt] awaits a source resolve and the engine, and the queue index
+  /// is written before either — so the end of a track landing while the owner
+  /// presses next, or next pressed twice, had both runs stepping the same
+  /// queue and the player jumping a track. And when the overlap is deliberate
+  /// — a new album started while a track is still opening — the newest ask is
+  /// the one the owner means, so it is the older run that gives way.
+  int _openGeneration = 0;
 
   MediaPlayer get _player => ref.read(audioPlayerProvider);
   PlaybackPositionStore get _positions => ref.read(playbackPositionsProvider);
@@ -249,6 +255,12 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
   /// Stops and clears the queue (main flow step 7).
   Future<void> stop() async {
+    // Any open still in flight gives way, as it does to a newer one. Without
+    // this it would come back from its await after the queue was cleared and
+    // set the player playing again — a stop the owner asked for, undone a
+    // moment later by work that was already running.
+    _openGeneration++;
+
     await _recordPosition(force: true);
     unawaited(_statuses?.cancel());
     _statuses = null;
@@ -287,7 +299,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     final List<MusicEntry> library;
     try {
       library = (await ref.read(musicLibraryProvider.future)).entries;
-    } on Object catch (error) {
+    } on Object {
       // AF-03: the catalog itself could not be asked, so no album or artist
       // grouping is knowable — there is nothing this can queue. Reported
       // through the same stage the bar already renders as "nothing in the
@@ -304,10 +316,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
       // for a track _openAt actually tried and actually failed; this is a
       // different failure; and it shows a second, contradictory banner
       // ("Skipped … it could not be played") stacked on this one otherwise.
-      state = AudioPlaybackState(
-        stage: AudioStage.allFailed,
-        lastSkipReason: error is Failure ? error : null,
-      );
+      state = const AudioPlaybackState(stage: AudioStage.allFailed);
       return;
     }
 
@@ -379,38 +388,56 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   /// cannot open, named and stepped over — and AF-03 is what happens when that
   /// movement runs out of queue.
   Future<void> _openAt(int index, {Duration at = Duration.zero}) async {
+    final generation = ++_openGeneration;
+
     var queue = state.queue.copyWith(index: index);
     final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return;
+    // No session, so nothing can be opened — and the player is cleared rather
+    // than left in `starting`, which is a spinner with nothing behind it for
+    // the rest of the session. The same answer the rejected-session arm below
+    // gives, because it is the same situation reached a moment earlier.
+    if (credential == null) {
+      state = const AudioPlaybackState();
+      return;
+    }
 
     // Carried across the loop rather than read back out of the state: every
     // step of it replaces the state, and the owner is owed the name of the
     // file that was skipped even once the queue has moved past it.
     var skipped = state.lastSkipped;
-    var skipReason = state.lastSkipReason;
 
     while (queue.current != null) {
+      if (generation != _openGeneration) return;
+
       final file = queue.current!;
       state = state.copyWith(
         queue: queue,
         stage: AudioStage.starting,
         lastSkipped: skipped,
-        lastSkipReason: skipReason,
       );
 
       final outcome = await ref
           .read(playbackSourceGatewayProvider)
           .resolve(uuid: file.uuid, credential: credential);
 
+      if (generation != _openGeneration) return;
+
       switch (outcome) {
         case PlaybackSourceResolved(:final source):
-          await _player.open(source.path, startAt: at);
+          // [at] belongs to the track that was asked for, not to whichever
+          // one the queue reached after stepping over the ones that would not
+          // open: a resume offer is about one file, and carrying its offset
+          // onto a different track would start that one part-way through for
+          // no reason the owner could see.
+          await _player.open(
+            source.path,
+            startAt: queue.index == index ? at : Duration.zero,
+          );
           state = state.copyWith(
             queue: queue,
             stage: AudioStage.playing,
             status: _player.currentStatus,
             lastSkipped: skipped,
-            lastSkipReason: skipReason,
           );
           return;
 
@@ -421,15 +448,15 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
           return;
 
         // AF-01 and AF-02: named, stepped over, and the queue carries on.
-        case PlaybackSourceFailed(:final failure):
+        //
+        // The failure itself is not kept. Why a track would not open is the
+        // same answer for every skip the queue makes, so the bar names the
+        // file and says no more — see `_SkipNotice` in `playback_bar.dart`,
+        // which is where that decision is recorded.
+        case PlaybackSourceFailed():
           queue = queue.skipping(file);
           skipped = file;
-          skipReason = failure;
-          state = state.copyWith(
-            queue: queue,
-            lastSkipped: skipped,
-            lastSkipReason: skipReason,
-          );
+          state = state.copyWith(queue: queue, lastSkipped: skipped);
 
           if (!queue.hasNext) {
             // AF-03: nothing in the selection could be played. The queue is
@@ -437,7 +464,6 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
             state = AudioPlaybackState(
               stage: AudioStage.allFailed,
               lastSkipped: skipped,
-              lastSkipReason: skipReason,
             );
             return;
           }
@@ -473,13 +499,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
         return;
       }
 
-      final skipped = state.lastSkipped;
-      final skipReason = state.lastSkipReason;
-      state = state.copyWith(
-        status: status,
-        lastSkipped: skipped,
-        lastSkipReason: skipReason,
-      );
+      state = state.copyWith(status: status, lastSkipped: state.lastSkipped);
 
       if (status.hasEnded) {
         // Step 7: a track played through leaves no position, and the queue
