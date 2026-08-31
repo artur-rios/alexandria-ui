@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../../auth/application/session_controller.dart';
+import '../../catalog/application/catalog_projections.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
 import '../domain/run_estimate.dart';
@@ -36,6 +37,15 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   late Duration _pollInterval;
 
   Timer? _poller;
+
+  /// Whether a [refresh] is in flight.
+  ///
+  /// A tick landing on top of one still reading is dropped, for the reason
+  /// [IndexRunsController] drops its own: core calls are made one at a time
+  /// on a single worker isolate, so a read slower than the poll interval left
+  /// `Timer.periodic` stacking rounds onto a queue that only grew. What the
+  /// skipped tick would have read, the next one reads.
+  bool _refreshing = false;
 
   @override
   ActiveRunsState build() {
@@ -77,7 +87,19 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   Future<void> refresh() async {
     final credential = _session.credential;
     if (credential == null) return;
+    if (_refreshing) return;
+    _refreshing = true;
 
+    try {
+      await _read(credential);
+    } finally {
+      // In a `finally`, so a read that threw does not leave the flag set and
+      // the poller silently dead for the rest of the session.
+      _refreshing = false;
+    }
+  }
+
+  Future<void> _read(String credential) async {
     final outcome = await _gateway.listActiveRuns(credential: credential);
 
     switch (outcome) {
@@ -325,14 +347,7 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   /// editors — is left alone. An owner mid-search or mid-edit when a scan
   /// completes underneath them must not have that thrown away.
   void _invalidateCatalogProjections() {
-    ref.invalidate(listingControllerProvider);
-    ref.invalidate(typeCountsControllerProvider);
-    ref.invalidate(recentFilesProvider);
-    ref.invalidate(catalogSearchProvider);
-    ref.invalidate(fileDetailsControllerProvider);
-    // The bug this exists to fix: with nothing invalidating it, the music
-    // area kept showing whatever it first resolved for the whole session.
-    ref.invalidate(musicLibraryProvider);
+    invalidateCatalogProjections(ref);
   }
 
   void _schedulePolling() {

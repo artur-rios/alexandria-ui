@@ -29,6 +29,18 @@ class IndexRunsController extends Notifier<IndexRunsState> {
 
   Timer? _poller;
 
+  /// Whether a [refresh] is in flight.
+  ///
+  /// A tick that lands while the last one is still reading is dropped rather
+  /// than queued. Every core call goes through one worker isolate and is made
+  /// one at a time, so a sweep across several folders on a slow disk can
+  /// outlast the poll interval — and `Timer.periodic` does not wait. Left
+  /// unguarded, each tick queued another round of reads onto a worker already
+  /// behind, and the queue only ever grew. Dropping is right rather than
+  /// merely cheap: this reads the current state of a run, so the reading the
+  /// skipped tick would have taken is one the next tick takes instead.
+  bool _refreshing = false;
+
   @override
   IndexRunsState build() {
     _gateway = ref.read(indexGatewayProvider);
@@ -349,12 +361,21 @@ class IndexRunsController extends Notifier<IndexRunsState> {
   /// Public so a test can advance the observation without waiting on a timer,
   /// and so the screen can ask for a fresh reading when it opens.
   Future<void> refresh() async {
-    for (final root in state.pollableRoots) {
-      await _poll(root);
-    }
-    if (state.isRefreshing) await _pollRefresh();
+    if (_refreshing) return;
+    _refreshing = true;
 
-    _stopPollingIfIdle();
+    try {
+      for (final root in state.pollableRoots) {
+        await _poll(root);
+      }
+      if (state.isRefreshing) await _pollRefresh();
+
+      _stopPollingIfIdle();
+    } finally {
+      // In a `finally`, so a read that threw does not leave the flag set and
+      // the poller silently dead for the rest of the session.
+      _refreshing = false;
+    }
   }
 
   /// Picks up runs the core is still doing, or finished while the application
