@@ -43,12 +43,24 @@ class CoreIsolate {
     this._isolate,
     this._requests,
     this._responses,
+    this._lifecycle,
     this.libraryPath,
   );
 
   final Isolate _isolate;
   final SendPort _requests;
   final ReceivePort _responses;
+
+  /// Carries the worker's uncaught errors and its exit (IR-09).
+  ///
+  /// Without it a worker that died took every outstanding call with it: the
+  /// completers in [_pending] were settled only by a response, and a dead
+  /// isolate sends none. Nothing here times out — a scan of a large folder
+  /// legitimately takes minutes, so a deadline short enough to catch a dead
+  /// worker would cancel real work — which left the interface waiting on a
+  /// future that could never complete, showing a spinner for the rest of the
+  /// session.
+  final ReceivePort _lifecycle;
 
   /// The shared library this isolate loaded.
   final String libraryPath;
@@ -63,6 +75,7 @@ class CoreIsolate {
   /// step 1 can report the path it tried.
   static Future<CoreIsolate> spawn(String libraryPath) async {
     final responses = ReceivePort();
+    final lifecycle = ReceivePort();
     final ready = Completer<SendPort>();
 
     final isolate = await Isolate.spawn(
@@ -70,23 +83,65 @@ class CoreIsolate {
       (responses.sendPort, libraryPath),
       errorsAreFatal: false,
       debugName: 'alexandria-core',
+      // One port for both, told apart by what arrives on it: an uncaught
+      // error as `[error, stackTrace]`, the isolate ending as `null`. They
+      // are separate events here because `errorsAreFatal: false` makes them
+      // separate — a worker that throws where nothing catches it keeps
+      // running, so an error is not an exit and must not be treated as one.
+      //
+      // Registered at spawn rather than afterwards, so there is no window in
+      // which the worker can die unobserved.
+      onError: lifecycle.sendPort,
+      onExit: lifecycle.sendPort,
     );
 
     late final CoreIsolate client;
+    var started = false;
+
     responses.listen((message) {
       if (message is SendPort) {
         ready.complete(message);
         return;
       }
-      if (message is ({int id, Object? value, String? error})) {
+      // `started` rather than a `late` read: a response arriving before the
+      // field is assigned would throw a LateInitializationError inside a
+      // listener, where nothing catches it.
+      if (started && message is ({int id, Object? value, String? error})) {
         client._settle(message);
       }
+    });
+
+    lifecycle.listen((message) {
+      // Two different events on one port, and they mean different things.
+      //
+      // A `List` is `onError`: `[error, stackTrace]`. Because the worker is
+      // spawned with `errorsAreFatal: false`, it is still alive and will
+      // still serve the next request — what it will not do is answer the one
+      // it was on when it threw, and there is no id in the report to say
+      // which. So every call in flight is failed and the worker is kept.
+      //
+      // `null` is `onExit`: the isolate has ended, for any reason. Nothing
+      // more will ever arrive on either port, so this one shuts down.
+      final failed = message is List;
+      final reason = failed && message.isNotEmpty
+          ? 'the Alexandria core isolate failed: ${message.first}'
+          : 'the Alexandria core isolate stopped';
+
+      if (!started) {
+        responses.close();
+        lifecycle.close();
+        if (!ready.isCompleted) ready.completeError(CoreCallException(reason));
+        return;
+      }
+
+      failed ? client._failPending(reason) : client._abandon(reason);
     });
 
     final requests = await ready.future.timeout(
       const Duration(seconds: 10),
       onTimeout: () {
         responses.close();
+        lifecycle.close();
         isolate.kill(priority: Isolate.immediate);
         throw const CoreCallException(
           'the core isolate did not start within 10 seconds',
@@ -94,7 +149,14 @@ class CoreIsolate {
       },
     );
 
-    client = CoreIsolate._(isolate, requests, responses, libraryPath);
+    client = CoreIsolate._(
+      isolate,
+      requests,
+      responses,
+      lifecycle,
+      libraryPath,
+    );
+    started = true;
 
     // The worker reports a load failure as its first response rather than
     // throwing across the port, so the path is available to the caller.
@@ -105,6 +167,44 @@ class CoreIsolate {
     }
 
     return client;
+  }
+
+  /// Fails every call in flight, leaving the worker to carry on.
+  ///
+  /// For an uncaught error: the worker survives it, but the request it was
+  /// serving is never answered and the report does not say which one that
+  /// was. Failing all of them is broader than the damage and is the only
+  /// honest option — a caller told its call failed can make it again, where a
+  /// caller left waiting waits forever.
+  ///
+  /// A late response for one of these settles nothing: [_settle] drops an id
+  /// it no longer holds.
+  void _failPending(String reason) {
+    if (_closed) return;
+
+    for (final completer in _pending.values) {
+      if (!completer.isCompleted) {
+        completer.completeError(CoreCallException(reason));
+      }
+    }
+    _pending.clear();
+  }
+
+  /// Fails every outstanding call because the worker is gone for good.
+  ///
+  /// The same teardown [dispose] performs, reached the other way round: there
+  /// the caller shuts the worker down, here the worker went by itself. Either
+  /// way nothing more will arrive, so the ports close and no later call is
+  /// accepted — a `call` after this throws immediately rather than waiting on
+  /// an isolate that is not there.
+  void _abandon(String reason) {
+    if (_closed) return;
+
+    _failPending(reason);
+    _closed = true;
+
+    _responses.close();
+    _lifecycle.close();
   }
 
   void _settle(({int id, Object? value, String? error}) message) {
@@ -148,6 +248,7 @@ class CoreIsolate {
     _pending.clear();
 
     _responses.close();
+    _lifecycle.close();
     _isolate.kill(priority: Isolate.immediate);
   }
 

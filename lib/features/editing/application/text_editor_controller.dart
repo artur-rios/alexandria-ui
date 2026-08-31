@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/bindings/alexandria_bindings.dart';
 import '../../../core/di/providers.dart';
+import '../../../core/failures/core_status.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_gateway.dart';
 import '../../catalog/domain/file_stamp.dart';
@@ -152,7 +154,19 @@ class TextEditorController extends Notifier<TextEditorState> {
     state = TextEditorState(uuid: uuid, name: name, stage: EditorStage.loading);
 
     final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return;
+    // No session, no call (FR-AU-07) — reported as a failed load rather than
+    // returned on, which left the editor showing a spinner over a file it was
+    // never going to read.
+    if (credential == null) {
+      state = state.copyWith(
+        stage: EditorStage.loadFailed,
+        failure: const Failure.unauthorized(
+          family: CoreStatusFamily.file,
+          code: FILE_ERR_UNAUTHORIZED,
+        ),
+      );
+      return;
+    }
 
     final outcome = await ref
         .read(textContentGatewayProvider)
