@@ -89,11 +89,18 @@ class DocumentViewerController extends Notifier<DocumentViewerState> {
       // Step 5: the owner picks up where they left off, which is what makes a
       // long document worth opening twice (FR-VW-02).
       case DocumentIsPdf() || DocumentIsBook():
+        final remembered =
+            ref.read(readingPositionsProvider).positionFor(target.uuid) ?? 0;
+
         state = state.copyWith(
           stage: DocumentStage.open,
           document: outcome,
-          position:
-              ref.read(readingPositionsProvider).positionFor(target.uuid) ?? 0,
+          // Bounded here as well as in [goTo]. A remembered position outlives
+          // the file it was taken in: an e-book replaced by a shorter edition
+          // reopened past its last chapter, `currentChapter` answered `null`,
+          // and the viewer showed nothing at all — with no way back, because
+          // the position was never one the owner had navigated to.
+          position: _boundedIn(remembered, _chaptersOf(outcome)),
         );
     }
   }
@@ -125,12 +132,24 @@ class DocumentViewerController extends Notifier<DocumentViewerState> {
   ///
   /// A PDF's page count is the renderer's, so only a book can be bounded here;
   /// the floor applies to both.
-  int _bounded(int position) {
-    if (position < 0) return 0;
+  int _bounded(int position) => _boundedIn(position, state.chapters);
 
-    final chapters = state.chapters;
+  /// [_bounded] against a chapter list given rather than read from the state.
+  ///
+  /// Which is what [open] needs: it is bounding a position for a document it
+  /// is in the middle of putting *into* the state, so `state.chapters` still
+  /// describes whatever was open before it.
+  static int _boundedIn(int position, List<DocumentChapter> chapters) {
+    if (position < 0) return 0;
     if (chapters.isEmpty) return position;
 
     return position >= chapters.length ? chapters.length - 1 : position;
   }
+
+  /// The chapters [outcome] carries, or none for anything that is not a book.
+  static List<DocumentChapter> _chaptersOf(DocumentOutcome outcome) =>
+      switch (outcome) {
+        DocumentIsBook(:final chapters) => chapters,
+        _ => const [],
+      };
 }

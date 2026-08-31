@@ -158,7 +158,23 @@ class ComicViewerController extends Notifier<ComicViewerState> {
   Future<void> _read(int page, {required bool forward}) async {
     final target = state.target;
     final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (target == null || credential == null) return;
+    // No session, no call (FR-AU-07) — said rather than returned on, which
+    // left the viewer showing a spinner over an archive it was never going to
+    // read.
+    if (target == null || credential == null) {
+      state = state.copyWith(
+        stage: ComicStage.failed,
+        failure: ViewerFailure.unreadable,
+      );
+      return;
+    }
+
+    // The page on screen now, kept because every turn of the loop below
+    // replaces it: `copyWith` clears the bytes whenever they are not passed,
+    // which is what a loading state wants and what the exhausted-run exit at
+    // the bottom does not.
+    final heldPage = state.page;
+    final heldBytes = state.bytes;
 
     var wanted = page;
     var skipped = state.skipped;
@@ -203,8 +219,28 @@ class ComicViewerController extends Notifier<ComicViewerState> {
       }
     }
 
-    // Every page in the direction of travel was a gap. The last good page is
-    // still on screen, and the marks say what happened.
-    state = state.copyWith(stage: ComicStage.open, skipped: skipped);
+    // Every page in the direction of travel was a gap.
+    //
+    // The last good page goes back on screen, with its own number: this used
+    // to leave the stage open with no bytes and the number of a page that
+    // never decoded, which the reader renders as an empty frame — a blank
+    // window with working controls and nothing to say why.
+    if (heldBytes == null) {
+      // There was no good page to go back to: this run started from an
+      // archive nothing had been read from yet, so every page in it is a gap.
+      state = state.copyWith(
+        stage: ComicStage.failed,
+        failure: ViewerFailure.unreadable,
+        skipped: skipped,
+      );
+      return;
+    }
+
+    state = state.copyWith(
+      stage: ComicStage.open,
+      page: heldPage,
+      bytes: heldBytes,
+      skipped: skipped,
+    );
   }
 }

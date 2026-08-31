@@ -303,6 +303,32 @@ void main() {
       );
     });
 
+    // Running out of archive mid-gap: the page on screen has to stay on
+    // screen.
+    testWidgets(
+        'GivenEveryPageAheadIsBad_WhenPagingOn_ThenTheLastGoodOneStays', (
+      tester,
+    ) async {
+      // The viewer used to end this run holding the stage open with no image
+      // and the number of a page that never decoded — a blank frame with
+      // working controls and nothing to say why.
+      final comics = FakeComicGateway()..undecodable.addAll([2, 3]);
+      final opened = await open(tester, comics: comics);
+
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+
+      expect(opened.comics.requested, [1, 2, 3]);
+      expect(find.text(messages(tester).comicPageOf(1, 3)), findsOneWidget);
+      // The image itself, because the number alone was right in one of the
+      // ways this was broken and the frame was still empty.
+      expect(find.byType(Image), findsWidgets);
+      expect(
+        find.text(messages(tester).comicPagesSkipped('2, 3')),
+        findsOneWidget,
+      );
+    });
+
     // Paging backwards over a gap steps backwards, not forwards.
     testWidgets('GivenABadPage_WhenPagingBack_ThenItStepsBackPastIt', (
       tester,
