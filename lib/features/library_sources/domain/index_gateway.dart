@@ -30,6 +30,19 @@ sealed class IndexRunOutcome with _$IndexRunOutcome {
       IndexRunFailed;
 }
 
+/// What a read of a run's failures produced.
+@freezed
+sealed class RunFailuresOutcome with _$RunFailuresOutcome {
+  /// The core answered, possibly with nothing.
+  const factory RunFailuresOutcome.read({
+    required List<RunFailure> failures,
+  }) = RunFailuresRead;
+
+  /// The core could not answer.
+  const factory RunFailuresOutcome.failed({required Failure failure}) =
+      RunFailuresFailed;
+}
+
 /// What a pause or cancel produced.
 ///
 /// No payload on success: the run's new state is read back through the
@@ -90,6 +103,17 @@ abstract interface class IndexGateway {
 
   /// Reads a run's status and outcome (FR-LB-07, FR-LB-08).
   Future<IndexRunOutcome> readRun({
+    required String runId,
+    required String credential,
+  });
+
+  /// The files [runId] could not record, oldest first (core FR-FC-42).
+  ///
+  /// Read on demand — when the owner asks which files — rather than carried
+  /// on every status poll. An empty list is a run that failed on nothing;
+  /// a failure to read is its own outcome, because "could not ask" and
+  /// "nothing to show" are answers the owner would act on differently.
+  Future<RunFailuresOutcome> readFailures({
     required String runId,
     required String credential,
   });

@@ -2598,6 +2598,30 @@ abstract class AppLocalizations {
   /// **'In a library'**
   String get searchInALibrary;
 
+  /// Core FR-FC-42: the files one run gave up on, named — the other half of the count on the folder's row.
+  ///
+  /// In en, this message translates to:
+  /// **'Files that could not be read'**
+  String get runFailuresTitle;
+
+  /// Says what the list means before the list: not damage, and not a deletion. Re-scanning is the remedy.
+  ///
+  /// In en, this message translates to:
+  /// **'A scan could not read these files, so they are not in your library. Nothing was changed or deleted — scanning the folder again tries them.'**
+  String get runFailuresExplanation;
+
+  /// The empty state: a run whose failures are no longer recorded, or none to begin with.
+  ///
+  /// In en, this message translates to:
+  /// **'This scan read every file it found.'**
+  String get runFailuresNone;
+
+  /// Opens the list from the run report that names the count.
+  ///
+  /// In en, this message translates to:
+  /// **'Show which files'**
+  String get runFailuresOpen;
+
   /// Library menu entry opening the list of registered libraries.
   ///
   /// In en, this message translates to:

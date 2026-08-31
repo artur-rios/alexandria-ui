@@ -384,6 +384,21 @@ class FakeCoreClient implements CoreClient {
     return indexStartResult;
   }
 
+  /// What `indexRunFailures` answers, and every run it was asked about.
+  ///
+  /// Recorded because the call takes the run id and the token in that order
+  /// — a transposition compiles and asks the core about a token.
+  CoreJsonResponse runFailuresResponse = (status: RUN_OK, json: '[]');
+
+  /// Every failures read asked for, in order.
+  final List<({String runId, String token})> indexRunFailuresCalls = [];
+
+  @override
+  Future<CoreJsonResponse> indexRunFailures(String runId, String token) async {
+    indexRunFailuresCalls.add((runId: runId, token: token));
+    return runFailuresResponse;
+  }
+
   @override
   Future<CoreJsonResponse> indexRunStatus(String runId, String token) async {
     if (failOnIndexRunStatus) {

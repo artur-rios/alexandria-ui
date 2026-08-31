@@ -1425,6 +1425,20 @@ class AppLocalizationsPt extends AppLocalizations {
   String get searchInALibrary => 'Em uma biblioteca';
 
   @override
+  String get runFailuresTitle => 'Arquivos que não puderam ser lidos';
+
+  @override
+  String get runFailuresExplanation =>
+      'Uma varredura não conseguiu ler estes arquivos, então eles não estão na sua biblioteca. Nada foi alterado ou excluído — varrer a pasta novamente tenta de novo.';
+
+  @override
+  String get runFailuresNone =>
+      'Esta varredura leu todos os arquivos que encontrou.';
+
+  @override
+  String get runFailuresOpen => 'Ver quais arquivos';
+
+  @override
   String get librariesOpen => 'Bibliotecas';
 
   @override

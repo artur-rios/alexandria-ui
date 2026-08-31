@@ -160,6 +160,61 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
+  Future<RunFailuresOutcome> readFailures({
+    required String runId,
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.indexRunFailures(runId, credential);
+    } on CoreCallException {
+      return const RunFailuresOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.run,
+          code: RUN_ERR_OTHER,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.run.isOk(response.status)) {
+      return RunFailuresOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.run, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) {
+      return const RunFailuresOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.run,
+          code: RUN_ERR_OTHER,
+        ),
+      );
+    }
+
+    try {
+      return RunFailuresOutcome.read(
+        failures: [
+          for (final row in jsonDecode(json) as List<dynamic>)
+            RunFailure(
+              path: (row as Map<String, dynamic>)['path'] as String,
+              // A row the core sent without a reason is still a file the
+              // owner needs named. The path is the answer they came for.
+              reason: row['reason'] as String? ?? '',
+            ),
+        ],
+      );
+    } on Object {
+      return const RunFailuresOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.run,
+          code: RUN_ERR_OTHER,
+        ),
+      );
+    }
+  }
+
+  @override
   Future<RunControlOutcome> pauseRun({
     required String runId,
     required String credential,

@@ -177,3 +177,25 @@ abstract class IndexRun with _$IndexRun {
   /// Whether the core is still working on this run.
   bool get isInFlight => status.isInFlight;
 }
+
+/// One file a run could not record, and why (core FR-FC-42).
+///
+/// The tally says how many; this says which. Without it a report can only
+/// give the owner a number about files that are on disk, in no listing, and
+/// named nowhere they can reach.
+@freezed
+abstract class RunFailure with _$RunFailure {
+  /// Creates a failure.
+  const factory RunFailure({
+    /// The file's path on disk, as the walk saw it.
+    required String path,
+
+    /// What went wrong, in the words the core's error carried.
+    ///
+    /// Shown as it came rather than mapped to a message of this
+    /// application's own: the reasons are whatever the filesystem and the
+    /// database said, and a translation table here would be inventing a
+    /// taxonomy neither side keeps.
+    required String reason,
+  }) = _RunFailure;
+}

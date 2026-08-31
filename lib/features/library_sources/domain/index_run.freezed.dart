@@ -644,4 +644,278 @@ $IndexRunCountsCopyWith<$Res>? get counts {
 }
 }
 
+/// @nodoc
+mixin _$RunFailure {
+
+/// The file's path on disk, as the walk saw it.
+ String get path;/// What went wrong, in the words the core's error carried.
+///
+/// Shown as it came rather than mapped to a message of this
+/// application's own: the reasons are whatever the filesystem and the
+/// database said, and a translation table here would be inventing a
+/// taxonomy neither side keeps.
+ String get reason;
+/// Create a copy of RunFailure
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RunFailureCopyWith<RunFailure> get copyWith => _$RunFailureCopyWithImpl<RunFailure>(this as RunFailure, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RunFailure&&(identical(other.path, path) || other.path == path)&&(identical(other.reason, reason) || other.reason == reason));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,path,reason);
+
+@override
+String toString() {
+  return 'RunFailure(path: $path, reason: $reason)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RunFailureCopyWith<$Res>  {
+  factory $RunFailureCopyWith(RunFailure value, $Res Function(RunFailure) _then) = _$RunFailureCopyWithImpl;
+@useResult
+$Res call({
+ String path, String reason
+});
+
+
+
+
+}
+/// @nodoc
+class _$RunFailureCopyWithImpl<$Res>
+    implements $RunFailureCopyWith<$Res> {
+  _$RunFailureCopyWithImpl(this._self, this._then);
+
+  final RunFailure _self;
+  final $Res Function(RunFailure) _then;
+
+/// Create a copy of RunFailure
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? path = null,Object? reason = null,}) {
+  return _then(_self.copyWith(
+path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
+as String,reason: null == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [RunFailure].
+extension RunFailurePatterns on RunFailure {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RunFailure value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RunFailure() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RunFailure value)  $default,){
+final _that = this;
+switch (_that) {
+case _RunFailure():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RunFailure value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RunFailure() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String path,  String reason)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RunFailure() when $default != null:
+return $default(_that.path,_that.reason);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String path,  String reason)  $default,) {final _that = this;
+switch (_that) {
+case _RunFailure():
+return $default(_that.path,_that.reason);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String path,  String reason)?  $default,) {final _that = this;
+switch (_that) {
+case _RunFailure() when $default != null:
+return $default(_that.path,_that.reason);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _RunFailure implements RunFailure {
+  const _RunFailure({required this.path, required this.reason});
+  
+
+/// The file's path on disk, as the walk saw it.
+@override final  String path;
+/// What went wrong, in the words the core's error carried.
+///
+/// Shown as it came rather than mapped to a message of this
+/// application's own: the reasons are whatever the filesystem and the
+/// database said, and a translation table here would be inventing a
+/// taxonomy neither side keeps.
+@override final  String reason;
+
+/// Create a copy of RunFailure
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RunFailureCopyWith<_RunFailure> get copyWith => __$RunFailureCopyWithImpl<_RunFailure>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RunFailure&&(identical(other.path, path) || other.path == path)&&(identical(other.reason, reason) || other.reason == reason));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,path,reason);
+
+@override
+String toString() {
+  return 'RunFailure(path: $path, reason: $reason)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RunFailureCopyWith<$Res> implements $RunFailureCopyWith<$Res> {
+  factory _$RunFailureCopyWith(_RunFailure value, $Res Function(_RunFailure) _then) = __$RunFailureCopyWithImpl;
+@override @useResult
+$Res call({
+ String path, String reason
+});
+
+
+
+
+}
+/// @nodoc
+class __$RunFailureCopyWithImpl<$Res>
+    implements _$RunFailureCopyWith<$Res> {
+  __$RunFailureCopyWithImpl(this._self, this._then);
+
+  final _RunFailure _self;
+  final $Res Function(_RunFailure) _then;
+
+/// Create a copy of RunFailure
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? path = null,Object? reason = null,}) {
+  return _then(_RunFailure(
+path: null == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
+as String,reason: null == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
 // dart format on

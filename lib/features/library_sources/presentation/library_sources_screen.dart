@@ -16,6 +16,7 @@ import '../domain/index_run.dart';
 import '../domain/run_priority.dart';
 import '../../libraries/presentation/library_name_dialog.dart';
 import 'index_scope_dialog.dart';
+import 'run_failures_screen.dart';
 
 /// The library-sources screen (UC-05, FR-LB-01 … FR-LB-04, FR-LB-11).
 ///
@@ -601,6 +602,15 @@ class _RunReport extends ConsumerWidget {
                   : theme.textTheme.bodySmall,
             ),
           ),
+          // Which files, not just how many. The count alone is a fact the
+          // owner can do nothing with: those files are on disk, in no
+          // listing, and until this list they were named nowhere outside a
+          // log file (core FR-FC-42).
+          if (dropped > 0 && run?.runId != null)
+            TextButton(
+              onPressed: () => RunFailuresScreen.show(context, run!.runId),
+              child: Text(l10n.runFailuresOpen),
+            ),
           if (offersUnregister)
             TextButton(
               onPressed: () => _confirmUnregister(context, ref, root),

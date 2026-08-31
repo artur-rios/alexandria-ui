@@ -2,11 +2,14 @@ import 'dart:io';
 
 import 'package:alexandria_ui/core/bindings/core_client.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
 import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/catalog/data/core_catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/library_sources/data/core_index_gateway.dart';
+import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -167,4 +170,49 @@ void main() {
     expect(await namesOf(client, credential, FileType.text), ['note.md']);
     expect(await namesOf(client, credential, FileType.html), ['page.html']);
   });
+  test('GivenARunThatReadEverything_WhenItsFailuresAreRead_ThenThereAreNone', () async {
+    // The failures call across the boundary (core FR-FC-42). What it pins is
+    // the call itself — two consecutive strings, which transposed asks the
+    // core about a token — and that a clean run answers an empty list rather
+    // than an error the screen would show as "could not ask".
+    final (client, credential) = await signedInCore();
+    catalog.addFixture('note.md', '# a note');
+
+    final start = await client.indexStart(
+      catalog.libraryDirectory.path,
+      credential,
+      null,
+      null,
+    );
+    expect(CoreStatusFamily.indexing.isOk(start.status), isTrue);
+
+    await indexAndSettle(client, credential, catalog.libraryDirectory.path, null);
+
+    final outcome = await CoreIndexGateway(client).readFailures(
+      runId: start.runId,
+      credential: credential,
+    );
+
+    expect(outcome, isA<RunFailuresRead>());
+    expect((outcome as RunFailuresRead).failures, isEmpty);
+  });
+
+  test('GivenARunThatNeverRan_WhenItsFailuresAreRead_ThenItIsNotFound', () async {
+    // Not an empty list: "failed on nothing" is a different fact from "no
+    // such run", and the screen would show the first as a clean scan.
+    final (client, credential) = await signedInCore();
+
+    final outcome = await CoreIndexGateway(client).readFailures(
+      runId: '00000000-0000-4000-8000-000000000000',
+      credential: credential,
+    );
+
+    expect(outcome, isA<RunFailuresFailed>());
+    expect(
+      (outcome as RunFailuresFailed).failure,
+      isA<NotFoundFailure>(),
+      reason: 'an unknown run did not reach the application as not-found',
+    );
+  });
+
 }

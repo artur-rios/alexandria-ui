@@ -126,6 +126,14 @@ abstract interface class CoreClient {
   /// numerically and disagree on what `4` means.
   Future<CoreJsonResponse> indexRunStatus(String runId, String token);
 
+  /// The files [runId] could not record, through
+  /// `alexandria_index_run_failures_json` (core FR-FC-42).
+  ///
+  /// Asked for on demand rather than carried on the status above, which is
+  /// polled every second while a run is in flight: this is wanted once, when
+  /// the owner asks which files, if ever.
+  Future<CoreJsonResponse> indexRunFailures(String runId, String token);
+
   /// Starts a refresh run over everything already cataloged through
   /// `alexandria_index_refresh_start` (FR-LB-06, UC-07).
   ///
@@ -699,6 +707,12 @@ class FfiCoreClient implements CoreClient {
   Future<CoreJsonResponse> indexRunStatus(String runId, String token) async =>
       _reply<CoreJsonResponse>(
         await _isolate.call('indexRunStatus', [runId, token]),
+      );
+
+  @override
+  Future<CoreJsonResponse> indexRunFailures(String runId, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('indexRunFailures', [runId, token]),
       );
 
   @override

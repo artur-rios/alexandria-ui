@@ -363,7 +363,7 @@ graph LR
 | AF-02 | The core rejects the start as invalid input | The application presents the reason and marks the folder as not scanned. |
 | AF-03 | The folder disappeared or became unreadable since registration | The application presents the failure and offers to unregister the folder (UC-08). |
 | AF-04 | The run reports files missing on disk | The outcome links to the missing-files review (UC-37). |
-| AF-08 | The run reports files it could not record | The outcome says so in the screen's warning colours rather than as a clause on the summary line: those files are on disk and absent from the library, and no other screen will ever mention them. It happens under write contention, where a file's insert exhausts the core's retry bound — the core counts it and carries on rather than abandoning the walk. The remedy is another run, which the folder's row already offers beside the report. |
+| AF-08 | The run reports files it could not record | The outcome says so in the screen's warning colours rather than as a clause on the summary line: those files are on disk and absent from the library, and no other screen will ever mention them. It happens under write contention, where a file's insert exhausts the core's retry bound — the core counts it and carries on rather than abandoning the walk. The outcome also offers to name them (FR-LB-23), because a count alone leaves the owner nowhere to look, and the remedy is another run, which the folder's row already offers beside the report. |
 | AF-05 | The application is closed while a run is in flight | The run belongs to the core; its outcome is presented at the next launch. |
 | AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
 | AF-07 | The folder's recorded file types name nothing this version recognizes, or no registered folder answers the path | The application refuses the run before calling the core, and says which. Neither can be read as a scope, and no scope means every type — so running one would index what the owner narrowed the folder to exclude. |
@@ -1958,7 +1958,7 @@ graph LR
 | UC-03: Sign out | FR-AU-09 |
 | UC-04: Change credentials | FR-AU-10, FR-AU-11 |
 | UC-05: Register a library folder | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12, FR-LB-22 |
-| UC-06: Index a library folder | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09 |
+| UC-06: Index a library folder | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09, FR-LB-23 |
 | UC-07: Refresh the catalog | FR-LB-06, FR-LB-07, FR-LB-08, FR-LB-21 |
 | UC-08: Unregister a library folder | FR-LB-10 |
 | UC-09: Browse the library by type | FR-CT-01, FR-CT-02, FR-CT-10, FR-CT-16, FR-LB-04 |

@@ -169,6 +169,7 @@ replace the FFI one without touching a screen.
 | FR-LB-20 | The system shall continue to follow every other outstanding run when one of them ends, fails to be read, or is abandoned. |
 | FR-LB-21 | The system shall re-check the catalog when a session is established, unless the owner has turned that off, the catalog holds no files, or a run is already outstanding; and shall report such a re-check through the background activity indicator (FR-LB-15) without announcing a refusal the owner did not ask for. |
 | FR-LB-22 | The system shall let the owner mark a registered source folder as a library, named, either when the folder is registered or afterwards, and shall unmark it on request. A folder is marked at most once: what a library is, is the core's record, and the application's own record of the folder only reflects it. |
+| FR-LB-23 | The system shall name, on request, the files a finished run could not record, each with the reason the core gave (core FR-FC-42), so that the count in a run's report can be acted on rather than only read. Those files are on disk and in no listing; without their paths the owner has nowhere to look. The list is read when it is asked for, not carried on the status the application polls. |
 
 ### 3.3 Catalog Browsing and Search — `CT`
 
@@ -480,7 +481,7 @@ does not already publish.
 | Login | Authenticate the owner | FR-AU-04, FR-AU-05, FR-AU-07 |
 | Password recovery | Spend a recovery code on a new password | FR-AU-15, FR-AU-16, FR-AU-18 |
 | Home dashboard | Recent items, items in progress, counts, last run outcome | FR-CT-11 |
-| Library sources | Register, scan, refresh, pace, unregister, and mark folders as libraries | FR-LB-01 … FR-LB-22 |
+| Library sources | Register, scan, refresh, pace, unregister, mark folders as libraries, and name what a run could not record | FR-LB-01 … FR-LB-23 |
 | Catalog listing | Type-filtered listing in three layouts, with search, filters, and sorting | FR-CT-01 … FR-CT-04, FR-CT-06 … FR-CT-10, FR-CT-12, FR-CT-16 |
 | Libraries | Every library, and one library's folders a level at a time | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
 | File detail | Metadata, path, state, and available actions | FR-CT-05, FR-CT-18, FR-ME-01, FR-ME-02, FR-ME-04 |
@@ -674,7 +675,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Feature | Requirements |
 | --- | --- |
 | F-01 Authentication and session | FR-AU-01 through FR-AU-19 |
-| F-02 Library sources and indexing | FR-LB-01 through FR-LB-22 |
+| F-02 Library sources and indexing | FR-LB-01 through FR-LB-23 |
 | F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-18 |
 | F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
 | F-05 Media playback | FR-PL-01 through FR-PL-11 |
@@ -689,7 +690,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Domain area | Code | Requirement IDs |
 | --- | --- | --- |
 | Authentication and session | `AU` | FR-AU-01 … FR-AU-19 |
-| Library sources and indexing | `LB` | FR-LB-01 … FR-LB-22 |
+| Library sources and indexing | `LB` | FR-LB-01 … FR-LB-23 |
 | Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-18 |
 | Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
 | Media playback | `PL` | FR-PL-01 … FR-PL-11 |

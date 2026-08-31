@@ -53,6 +53,7 @@ import '../../features/catalog/domain/file_name.dart';
 import '../../features/library_sources/application/active_runs_controller.dart';
 import '../../features/library_sources/application/active_runs_state.dart';
 import '../../features/library_sources/application/index_runs_controller.dart';
+import '../../features/library_sources/application/run_failures_controller.dart';
 import '../../features/library_sources/application/index_runs_state.dart';
 import '../../features/library_sources/application/index_session_activity.dart';
 import '../../features/library_sources/data/core_index_gateway.dart';
@@ -61,6 +62,7 @@ import '../../features/library_sources/data/native_folder_picker.dart';
 import '../../features/library_sources/data/settings_library_source_store.dart';
 import '../../features/library_sources/domain/folder_picker.dart';
 import '../../features/library_sources/domain/index_gateway.dart';
+import '../../features/library_sources/domain/index_run.dart';
 import '../../features/library_sources/domain/library_source_store.dart';
 import '../../features/shell/application/preferences_controller.dart';
 import '../../features/shell/application/preferences_state.dart';
@@ -406,6 +408,18 @@ final fileDetailsControllerProvider =
     AsyncNotifierProvider<FileDetailsController, FileDetails?>(
       FileDetailsController.new,
     );
+
+/// The files one run could not record (UC-06 AF-08 / core FR-FC-42).
+///
+/// Family-keyed by run id and auto-disposing: this is read when the owner
+/// opens one run's failures and is of no use afterwards, so it is not kept
+/// alive alongside every other run they ever looked at.
+final runFailuresProvider =
+    AsyncNotifierProvider.family<
+      RunFailuresController,
+      List<RunFailure>,
+      String
+    >(RunFailuresController.new, isAutoDispose: true);
 
 /// The most recently added files, for the dashboard (UC-14).
 final recentFilesProvider =

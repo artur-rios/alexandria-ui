@@ -11,6 +11,25 @@ import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart'
 /// sequence: it is started, then read repeatedly, and what it answers on the
 /// second read is the whole point of UC-06.
 class FakeIndexGateway implements IndexGateway {
+  /// What [readFailures] answers, by run id.
+  ///
+  /// Absent is a run that failed on nothing, which is what almost every test
+  /// wants — the interesting case is the one that names files.
+  final Map<String, RunFailuresOutcome> failures = {};
+
+  /// Every run whose failures were asked for, in order.
+  final List<String> failuresRequested = [];
+
+  @override
+  Future<RunFailuresOutcome> readFailures({
+    required String runId,
+    required String credential,
+  }) async {
+    failuresRequested.add(runId);
+
+    return failures[runId] ?? const RunFailuresOutcome.read(failures: []);
+  }
+
   /// Creates a gateway whose runs start and finish immediately.
   FakeIndexGateway({
     this.runId = '3f9a1b7c-2d4e-4a8b-9c1d-5e6f70819a2b',

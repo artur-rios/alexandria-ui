@@ -1330,6 +1330,38 @@ class AlexandriaBindings {
         )
       >();
 
+  /// The files a run could not record, oldest first (FR-FC-42). `run_id` is
+  /// the id `alexandria_index_start` or `alexandria_index_refresh_start`
+  /// returned. On success `json` carries the same array the HTTP
+  /// `GET /v1/index/runs/{runId}/failures` route returns (FR-FC-24).
+  ///
+  /// A call of its own rather than a field on the status above: status is
+  /// polled every second while a run is in flight, and this is wanted once, if
+  /// ever — when the owner asks which files. The list is bounded per run; the
+  /// run's own `failed` tally stays the authority on how many.
+  ///
+  /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
+  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02), and
+  /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid.
+  RunJsonResult alexandria_index_run_failures_json(
+    ffi.Pointer<ffi.Char> run_id,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_index_run_failures_json(run_id, token);
+  }
+
+  late final _alexandria_index_run_failures_jsonPtr =
+      _lookup<
+        ffi.NativeFunction<
+          RunJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+        >
+      >('alexandria_index_run_failures_json');
+  late final _alexandria_index_run_failures_json =
+      _alexandria_index_run_failures_jsonPtr
+          .asFunction<
+            RunJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+          >();
+
   /// Report an index or re-index run's status and outcome (UC-42 / FR-FC-28).
   /// `run_id` is the id `alexandria_index_start` or
   /// `alexandria_index_refresh_start` returned. On success `json` carries the

@@ -372,6 +372,20 @@ class CoreIsolate {
         }),
       ),
 
+      'indexRunFailures' => withNativeString(
+        arguments.first! as String,
+        (runId) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_index_run_failures_json(
+            runId,
+            token,
+          );
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       'indexRunStatus' => withNativeString(
         arguments.first! as String,
         (runId) => withNativeString(arguments[1]! as String, (token) {

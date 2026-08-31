@@ -1422,6 +1422,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchInALibrary => 'In a library';
 
   @override
+  String get runFailuresTitle => 'Files that could not be read';
+
+  @override
+  String get runFailuresExplanation =>
+      'A scan could not read these files, so they are not in your library. Nothing was changed or deleted — scanning the folder again tries them.';
+
+  @override
+  String get runFailuresNone => 'This scan read every file it found.';
+
+  @override
+  String get runFailuresOpen => 'Show which files';
+
+  @override
   String get librariesOpen => 'Libraries';
 
   @override
