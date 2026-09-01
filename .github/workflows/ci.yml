@@ -182,6 +182,28 @@ jobs:
       - name: Test with coverage
         run: flutter test --coverage
 
+      # TEMPORARY, removed by the commit that adds the file it produces:
+      # `insertion-begins.windows.png` is a picture of the turntable, and
+      # the turntable grew a transport row it does not show. A variant for a
+      # platform can only be made ON that platform, and no developer machine
+      # here runs Windows. The comparator writes variants rather than base
+      # files off Linux, so this cannot overwrite the reference.
+      # `always()`: the step above has just failed, because the variant this
+      # produces is the thing that would have made it pass. Without it the
+      # generation never runs and there is nothing to download.
+      - name: Generate this platform's golden variants
+        if: always() && matrix.platform == 'windows'
+        run: flutter test --update-goldens
+        continue-on-error: true
+
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.platform == 'windows'
+        with:
+          name: windows-goldens
+          path: |
+            test/**/goldens/*.windows.png
+          if-no-files-found: error
+
       # IR-02: proven against the fixture package, so what runs here is the
       # plugin itself rather than a reimplementation of its logic.
       #
