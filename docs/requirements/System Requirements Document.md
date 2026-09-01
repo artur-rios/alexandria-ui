@@ -28,7 +28,8 @@ repeated in each row:
 
 The application covers authentication and session handling; registering and
 indexing library folders; browsing, searching, filtering, and sorting the
-catalog; playing audio and video; viewing documents, comic books, images, and
+catalog; playing audio and video; looking up lyrics and artist photography for
+music when the owner asks for it; viewing documents, comic books, images, and
 saved HTML pages; editing music and video metadata, file names, and Markdown and
 text content; organizing files and bookmarks into collections; tracking
 watchlists and reading lists with per-episode and per-issue progress; carrying
@@ -219,11 +220,13 @@ replace the FFI one without touching a screen.
 | FR-PL-04 | The system shall list the audio tracks available in a video and switch between them. |
 | FR-PL-05 | The system shall play an audio file from its on-disk path in a player that remains available while the owner navigates elsewhere in the application. |
 | FR-PL-06 | The system shall queue the tracks of an album or an artist for continuous playback, and allow skipping within the queue. |
-| FR-PL-07 | The system shall draw the medium — a disc, a vinyl record, or a tape — on its matching player, taking it from its case and inserting it on the session's first audio play and whenever the record playing changes; it shall turn the medium while audio plays and hold its position while paused; and it shall show the same medium in the playback bar. The case's sleeve shall show the album's own embedded picture when the file carries one, and a jacket designed from the album's name otherwise — including while the picture has not yet arrived — without restarting an insertion already under way. |
+| FR-PL-07 | The system shall draw the medium — a disc, a vinyl record, or a tape — on its matching player, taking it from its case and inserting it on the session's first audio play and whenever the record playing changes; it shall turn the medium while audio plays and hold its position while paused; and it shall show the album's own picture in the playback bar, or that same medium turning where the file carries no picture. The case's sleeve shall show the album's own embedded picture when the file carries one, and a jacket designed from the album's name otherwise — including while the picture has not yet arrived — without restarting an insertion already under way. |
 | FR-PL-08 | The system shall keep at most one playback session active, stopping video playback when audio starts and the reverse. |
 | FR-PL-09 | The system shall persist a resume position for a played file and offer to resume from it when the file is opened again. |
 | FR-PL-10 | The system shall report a file that is missing on disk or cannot be decoded as a readable failure, without terminating the application. |
 | FR-PL-11 | The system shall let the owner choose the medium the album animation shows — by the album's release year, pinned to one medium, or off — and shall show no animation and open no player while it is off. |
+| FR-PL-12 | The system shall make the transport drawn on the player's device operable — previous, play and pause, stop, and next — reaching the same queue the playback bar's own controls reach; and, on a device that carries a readout, it shall show which track of the queue is playing and how far into that track playback has reached, following the engine rather than standing at a fixed value. |
+| FR-PL-13 | The system shall present the lyrics and the artist photograph the core has cached for the track playing, offer the words of a track that has none on request, and offer a lookup for one track or for the whole library — naming what a lookup concluded, letting a library-wide one be stopped and taken up again where it left off, and leaving the rest of the interface usable while it runs. It shall make no lookup the owner did not ask for. |
 
 ### 3.6 Document, Image, and Page Viewing — `VW`
 
@@ -310,6 +313,7 @@ replace the FFI one without touching a screen.
 | FR-UX-10 | The system shall confirm every destructive action through a modal that names what will be removed and whether the on-disk file is affected. |
 | FR-UX-11 | The system shall make the primary action of every screen reachable from the keyboard. |
 | FR-UX-12 | The system shall persist the owner's theme, language, layout, sort, and filter preferences locally and restore them at launch. |
+| FR-UX-13 | The system shall let the owner switch music information lookup on or off and record the contact address the lookup services are given, applying either to the core without restarting the application; lookup shall be on where the owner has expressed no preference, and while it is off the application shall request none. |
 
 ---
 
@@ -487,7 +491,7 @@ does not already publish.
 | File detail | Metadata, path, state, and available actions | FR-CT-05, FR-CT-18, FR-ME-01, FR-ME-02, FR-ME-04 |
 | Text editor | Markdown and text editing with live preview | FR-ME-06 … FR-ME-10 |
 | Video player | Playback with subtitle and audio tracks | FR-PL-01 … FR-PL-04, FR-PL-08 … FR-PL-10 |
-| Audio player | Persistent playback with queue and album animation | FR-PL-05 … FR-PL-11 |
+| Audio player | Persistent playback with queue, album animation, device transport, and the words of the track playing | FR-PL-05 … FR-PL-13 |
 | Document viewer | PDFs and e-books | FR-VW-02, FR-VW-07, FR-VW-08 |
 | Comic viewer | Comic archives, page by page | FR-VW-03, FR-VW-07, FR-VW-08 |
 | Image viewer | Fit and zoom | FR-VW-04, FR-VW-07 |
@@ -499,7 +503,8 @@ does not already publish.
 | Playlists | Named, ordered lists of audio, their entries, and playing one | FR-TR-15 … FR-TR-20 |
 | Deleted items | Restore and purge, with retention shown | FR-LC-02 … FR-LC-07 |
 | Missing files | Review and re-scan | FR-LC-08 |
-| Preferences | Theme, language, and credential change | FR-AU-10, FR-UX-04, FR-UX-05, FR-UX-12 |
+| Music info lookup | Look lyrics and artist photography up for the library, with progress and a stop | FR-PL-13, FR-UX-13 |
+| Preferences | Theme, language, music information lookup, and credential change | FR-AU-10, FR-UX-04, FR-UX-05, FR-UX-12, FR-UX-13 |
 
 ### 5.2 Core Call Surface
 
@@ -521,6 +526,8 @@ Calls are grouped by the gateway that owns them.
 | Watchlists | `alexandria_watchlist_create`, `_add_video`, `alexandria_watchlists_list`, `_update_progress`, `_remove_video`, `_delete` | FR-TR-01 … FR-TR-07 |
 | Reading lists | `alexandria_reading_list_create`, `_add_item`, `alexandria_reading_lists_list`, `_update_progress`, `_remove_item`, `_delete` | FR-TR-08 … FR-TR-14 |
 | Playlists | `alexandria_playlist_create`, `_rename`, `_delete`, `alexandria_playlists_list`, `alexandria_playlist_read`, `_add_entries`, `_remove_entry`, `_move_entry` | FR-TR-15 … FR-TR-20 |
+| Music enrichment | `alexandria_enrichment_read_track`, `alexandria_enrichment_run` | FR-PL-13, FR-UX-13 |
+| Settings | `alexandria_settings_json` | FR-LC-03, FR-UX-13 |
 | Memory | `alexandria_free_string` | NFR-13 |
 
 ### 5.3 Filesystem Surface
@@ -529,7 +536,7 @@ Calls are grouped by the gateway that owns them.
 | --- | --- | --- |
 | Read bytes at a file's path | Playback and viewing | FR-PL-01, FR-PL-05, FR-VW-02 … FR-VW-07 |
 | Read a directory's existence and readability | Validating a library folder before registering it | FR-LB-02 |
-| Write the local settings store and the log file | Application-owned state | FR-UX-12, and [Operations & Infrastructure §4](Operations%20%26%20Infrastructure%20Document.md) |
+| Write the local settings store and the log file | Application-owned state | FR-UX-12, FR-UX-13, and [Operations & Infrastructure §4](Operations%20%26%20Infrastructure%20Document.md) |
 
 The application performs no other filesystem write. Renaming, content saving, and
 file deletion happen through the core.
@@ -678,12 +685,12 @@ Three cascade notes follow from the core's rules and bind the interface:
 | F-02 Library sources and indexing | FR-LB-01 through FR-LB-23 |
 | F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-18 |
 | F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
-| F-05 Media playback | FR-PL-01 through FR-PL-11 |
+| F-05 Media playback | FR-PL-01 through FR-PL-13 |
 | F-06 Document, image, and page viewing | FR-VW-01 through FR-VW-08 |
 | F-07 Collections and bookmarks | FR-OG-01 through FR-OG-12 |
 | F-08 Watchlists, reading lists, and playlists | FR-TR-01 through FR-TR-20 |
 | F-09 Safe deletion lifecycle | FR-LC-01 through FR-LC-09 |
-| F-10 Application shell, theming, and localization | FR-UX-01 through FR-UX-12 |
+| F-10 Application shell, theming, and localization | FR-UX-01 through FR-UX-13 |
 
 ### 9.2 Domain areas to codes
 
@@ -693,12 +700,12 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Library sources and indexing | `LB` | FR-LB-01 … FR-LB-23 |
 | Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-18 |
 | Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
-| Media playback | `PL` | FR-PL-01 … FR-PL-11 |
+| Media playback | `PL` | FR-PL-01 … FR-PL-13 |
 | Document, image, and page viewing | `VW` | FR-VW-01 … FR-VW-08 |
 | Collections and bookmarks | `OG` | FR-OG-01 … FR-OG-12 |
 | Watchlists, reading lists, and playlists | `TR` | FR-TR-01 … FR-TR-20 |
 | Deletion lifecycle | `LC` | FR-LC-01 … FR-LC-09 |
-| Application shell, theming, and localization | `UX` | FR-UX-01 … FR-UX-12 |
+| Application shell, theming, and localization | `UX` | FR-UX-01 … FR-UX-13 |
 
 ### 9.3 Business rules to requirements
 
@@ -712,7 +719,7 @@ appears exactly once.
 | BR-03 Every call carries the session | FR-AU-06, FR-AU-07 |
 | BR-04 Plaintext password never persisted or logged | FR-AU-11, FR-AU-13, NFR-11 |
 | BR-05 Session in memory for the run only | FR-AU-05, FR-AU-09 |
-| BR-06 The application writes only text content and its own settings | §5.3, FR-UX-12 |
+| BR-06 The application writes only text content and its own settings | §5.3, FR-UX-12, FR-UX-13 |
 | BR-07 Every destructive action is confirmed | FR-LC-01, FR-LC-05, FR-OG-03, FR-TR-02, FR-TR-09, FR-UX-10 |
 | BR-08 Purge-on-disk is presented distinctly | FR-LC-06 |
 | BR-09 No media editing | §1.1, FR-PL-01 |
