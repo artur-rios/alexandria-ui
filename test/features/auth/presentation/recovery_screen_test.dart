@@ -127,6 +127,30 @@ void main() {
     },
   );
 
+  testWidgets(
+    'GivenAMarkedField_WhenTheOwnerTypesInIt_ThenTheMarkGoesAway',
+    (tester) async {
+      // AF-01, as on every other form: what the last attempt marked stops
+      // being true at the first keystroke.
+      await openRecovery(tester);
+      final l10n = messages(tester);
+      await tester.tap(find.text(l10n.recoverySubmit));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.recoveryCodeMissing), findsOneWidget);
+
+      await tester.enterText(
+        find.ancestor(
+          of: find.text(l10n.recoveryCodeLabel),
+          matching: find.byType(TextField),
+        ),
+        code,
+      );
+      await tester.pump();
+
+      expect(find.text(l10n.recoveryCodeMissing), findsNothing);
+    },
+  );
+
   group('the main flow', () {
     // Step 1: reachable from login, and only from there.
     testWidgets('GivenTheLoginScreen_WhenRecoveryIsAsked_ThenTheScreenOpens', (

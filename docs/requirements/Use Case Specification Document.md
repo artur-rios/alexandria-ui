@@ -205,7 +205,7 @@ graph LR
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The e-mail is malformed or the password is empty | The application marks the field and does not call the core. |
+| AF-01 | The e-mail is malformed or the password is empty | The application marks the field and does not call the core. The mark, and any refusal above the form, clear at the first keystroke: what they named stops being true as soon as the owner acts on it, and the next attempt restates whatever still is. |
 | AF-02 | The core rejects the credentials | The application presents an authentication-failed message, clears the password, and stays on the login screen. The message does not distinguish an unknown address from a wrong password. |
 | AF-03 | No account exists in the core | The application presents sign-up instead (UC-01). |
 | AF-04 | The core rejects a later call as unauthorized | The application discards the session, returns to the login screen, and states why the owner was signed out. |
@@ -866,7 +866,9 @@ graph LR
 
 1. Audio playback begins — a track, an album, or an artist.
 2. An insertion is owed — the session's first play, or the record playing has
-   changed — and the application opens the full-window player.
+   changed — and the application opens the full-window player. The owner
+   reaches it again from the playback bar: from its button, or by pressing the
+   sleeve beside it, which is what they recognise.
 3. The application takes the medium — a disc, a vinyl record, or a tape —
    from its case and inserts it into its matching player.
 4. The medium turns while audio plays, for the duration of the queue.
@@ -878,7 +880,7 @@ graph LR
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The window's available height or width falls below the floor the stage needs | The application hides the stage and keeps the rest of the player; the screen scrolls to reach the transport controls instead of overflowing. |
+| AF-01 | The window's available height or width falls below the floor the stage needs | The application hides the stage and keeps the rest of the player, and shows a transport of its own in place of the device's — the full player fills the window, so a screen with no device on it would otherwise have no way to pause. |
 | AF-02 | The owner navigates to another screen | Playback and the persistent player continue; the animation is shown wherever the full player is visible. |
 | AF-03 | The system requests reduced motion | The application presents the medium without the turning motion, and playback is unaffected. |
 | AF-04 | The owner has turned the album animation off | The application shows no medium and does not open the full-window player on its own; audio plays normally. |

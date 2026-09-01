@@ -79,6 +79,9 @@ class _RecoveryScreenState extends ConsumerState<RecoveryScreen> {
                 l10n: l10n,
                 theme: theme,
                 onSubmit: () => unawaited(_submit()),
+                // AF-01: what the last attempt marked stops being true at
+                // the first keystroke.
+                onEditing: ref.read(recoveryControllerProvider.notifier).reset,
               ),
             },
           ),
@@ -111,6 +114,7 @@ class _Form extends StatelessWidget {
     required this.l10n,
     required this.theme,
     required this.onSubmit,
+    required this.onEditing,
   });
 
   final TextEditingController code;
@@ -120,6 +124,9 @@ class _Form extends StatelessWidget {
   final AppLocalizations l10n;
   final ThemeData theme;
   final VoidCallback onSubmit;
+
+  /// Clears what the last attempt marked, as the owner types.
+  final VoidCallback onEditing;
 
   @override
   Widget build(BuildContext context) {
@@ -142,6 +149,7 @@ class _Form extends StatelessWidget {
           autofocus: true,
           // Return submits, from here as from any field (FR-UX-11).
           onSubmitted: (_) => onSubmit(),
+          onChanged: (_) => onEditing(),
           decoration: InputDecoration(
             labelText: l10n.recoveryCodeLabel,
             errorText: invalid?.codeError == null
@@ -156,6 +164,7 @@ class _Form extends StatelessWidget {
           enabled: !submitting,
           obscureText: true,
           onSubmitted: (_) => onSubmit(),
+          onChanged: (_) => onEditing(),
           decoration: InputDecoration(labelText: l10n.recoveryNewPassword),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -175,6 +184,7 @@ class _Form extends StatelessWidget {
             },
           ),
           onSubmitted: (_) => onSubmit(),
+          onChanged: (_) => onEditing(),
         ),
 
         if (_refusal(problem) case final message?) ...[

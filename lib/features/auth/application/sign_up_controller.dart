@@ -96,6 +96,21 @@ class SignUpController extends Notifier<SignUpState> {
     }
   }
 
+  /// Clears what the last attempt reported, as the owner types (AF-01) —
+  /// the same rule the login form keeps, for the same reason: a mark that
+  /// outlives the mistake it named is a mark that is no longer true.
+  void resetProblems() {
+    if (state case final SignUpEditing editing) {
+      if (editing.emailError == null &&
+          editing.passwordError == null &&
+          editing.passwordConfirmationError == null &&
+          editing.problem == null) {
+        return;
+      }
+      state = const SignUpState.editing();
+    }
+  }
+
   /// How each failure the core can answer with reads to the owner.
   SignUpProblem _problemFor(Failure failure) => switch (failure) {
     // AF-04: the core refuses to overwrite an account that exists.

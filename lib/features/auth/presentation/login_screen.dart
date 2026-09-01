@@ -129,6 +129,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // sitting there.
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _submit(),
+                  // AF-01: what the last attempt marked stops being true at
+                  // the first keystroke.
+                  onChanged: (_) =>
+                      ref.read(loginControllerProvider.notifier).resetProblems(),
                   decoration: InputDecoration(
                     labelText: l10n.loginEmailLabel,
                     errorText: authFieldMessage(
@@ -150,6 +154,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // field, since a form is submitted from wherever the owner
                   // happens to be in it.
                   onSubmitted: (_) => _submit(),
+                  onChanged: (_) =>
+                      ref.read(loginControllerProvider.notifier).resetProblems(),
                   decoration: InputDecoration(
                     labelText: l10n.loginPasswordLabel,
                     errorText: authFieldMessage(

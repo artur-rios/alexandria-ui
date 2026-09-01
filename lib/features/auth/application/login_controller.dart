@@ -68,6 +68,29 @@ class LoginController extends Notifier<LoginState> {
     }
   }
 
+  /// Clears what the last attempt reported, as the owner types (AF-01).
+  ///
+  /// A field marked "required" that stays marked while the owner fills it in
+  /// is telling them something that stopped being true at the first
+  /// keystroke — and the refusal above the form belongs to credentials they
+  /// are now replacing. The next attempt restates whatever is still wrong,
+  /// so nothing is lost by clearing it here; what is gained is a form that
+  /// answers the owner rather than one that argues with them.
+  ///
+  /// Does nothing while an attempt is in flight (the form is disabled then)
+  /// and nothing when there is nothing marked, so typing does not rebuild
+  /// the screen on every keystroke.
+  void resetProblems() {
+    if (state case final LoginEditing editing) {
+      if (editing.emailError == null &&
+          editing.passwordError == null &&
+          editing.problem == null) {
+        return;
+      }
+      state = const LoginState.editing();
+    }
+  }
+
   /// How each failure the core can answer with reads to the owner.
   ///
   /// `ConfigurationFailure` is AF-03 rather than a generic configuration

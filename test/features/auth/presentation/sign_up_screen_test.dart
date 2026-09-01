@@ -68,6 +68,26 @@ void main() {
     },
   );
 
+  testWidgets(
+    'GivenAMarkedField_WhenTheOwnerTypesInIt_ThenTheMarkGoesAway',
+    (tester) async {
+      // The same rule the login form keeps (AF-01): a mark that outlives
+      // the mistake it named is a mark that is no longer true.
+      await tester.pumpSignUpScreen();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(SignUpScreen)),
+      );
+      expect(find.text(l10n.loginEmailMissing), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField).first, 'owner@x.com');
+      await tester.pump();
+
+      expect(find.text(l10n.loginEmailMissing), findsNothing);
+    },
+  );
+
   group('the main flow', () {
     testWidgets(
       'GivenAValidForm_WhenTheOwnerSignsUp_ThenTheSignUpScreenIsReplaced',

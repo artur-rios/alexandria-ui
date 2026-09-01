@@ -105,6 +105,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   // Return submits, from here as from any field (FR-UX-11).
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _submit(),
+                  // AF-01: what the last attempt marked stops being true
+                  // at the first keystroke.
+                  onChanged: (_) => ref
+                      .read(signUpControllerProvider.notifier)
+                      .resetProblems(),
                   decoration: InputDecoration(
                     labelText: l10n.loginEmailLabel,
                     errorText: authFieldMessage(
@@ -122,6 +127,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   enabled: !submitting,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _submit(),
+                  // AF-01: what the last attempt marked stops being true
+                  // at the first keystroke.
+                  onChanged: (_) => ref
+                      .read(signUpControllerProvider.notifier)
+                      .resetProblems(),
                   decoration: InputDecoration(
                     labelText: l10n.loginPasswordLabel,
                     errorText: authFieldMessage(
@@ -139,6 +149,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   enabled: !submitting,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _submit(),
+                  // AF-01: what the last attempt marked stops being true
+                  // at the first keystroke.
+                  onChanged: (_) => ref
+                      .read(signUpControllerProvider.notifier)
+                      .resetProblems(),
                   decoration: InputDecoration(
                     labelText: l10n.signUpPasswordConfirmationLabel,
                     errorText: authFieldMessage(
