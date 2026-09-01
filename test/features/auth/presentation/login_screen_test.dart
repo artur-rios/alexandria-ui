@@ -7,6 +7,7 @@ import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/core/startup/core_unavailable_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
@@ -80,6 +81,82 @@ void main() {
 
         gateway.release();
         await tester.pumpAndSettle();
+      },
+    );
+  });
+
+  group('the keyboard (FR-UX-11)', () {
+    /// The field's own action, performed the way the platform performs it.
+    ///
+    /// Reading the action off the widget rather than naming one is what
+    /// makes this a test of the *behaviour*: a field configured to move the
+    /// focus and a field configured to submit both get exactly what the
+    /// desktop would send them when Return is pressed in them.
+    Future<void> pressReturnIn(WidgetTester tester, Finder field) async {
+      await tester.tap(field);
+      await tester.pump();
+      await tester.testTextInput.receiveAction(
+        tester.widget<TextField>(field).textInputAction!,
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+      'GivenTheEmailField_WhenReturnIsPressed_ThenTheFormIsSubmitted',
+      (tester) async {
+        // The complaint this answers: Return moved the focus instead of
+        // signing in. That is Tab's job, and the field was configured to do
+        // it because `TextInputAction.next` is written for a soft keyboard
+        // this application never shows.
+        final gateway = FakeAuthGateway();
+        await tester.pumpLoginScreen(gateway: gateway);
+        await tester.enterCredentials();
+
+        await pressReturnIn(tester, find.byType(TextField).first);
+
+        expect(gateway.calls, hasLength(1));
+      },
+    );
+
+    // The password field's own case is `the screen surface`'s
+    // `GivenCredentialsTyped_WhenEnterIsPressedInThePasswordField...`, which
+    // predates this group: that field always submitted, and is why the
+    // difference between the two was so easy to miss.
+
+    testWidgets(
+      'GivenTheEmailField_WhenTabIsPressed_ThenTheFocusMovesToThePassword',
+      (tester) async {
+        // Moving between fields is what Tab is for, and it still does it.
+        await tester.pumpLoginScreen();
+        await tester.tap(find.byType(TextField).first);
+        await tester.pump();
+
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+
+        final password = tester.widget<EditableText>(
+          find.descendant(
+            of: find.byType(TextField).last,
+            matching: find.byType(EditableText),
+          ),
+        );
+        expect(password.focusNode.hasFocus, isTrue);
+      },
+    );
+
+    testWidgets(
+      'GivenAnEmptyForm_WhenReturnIsPressed_ThenItIsRefusedRatherThanIgnored',
+      (tester) async {
+        // Submitting from a field the owner has not filled is still
+        // submitting: the form says what is missing, which is the answer
+        // they need, rather than silently doing nothing.
+        final gateway = FakeAuthGateway();
+        await tester.pumpLoginScreen(gateway: gateway);
+
+        await pressReturnIn(tester, find.byType(TextField).first);
+
+        expect(gateway.calls, isEmpty);
+        expect(find.text(en.loginEmailMissing), findsOneWidget);
       },
     );
   });

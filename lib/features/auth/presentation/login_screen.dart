@@ -115,7 +115,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   autofocus: true,
                   enabled: !submitting,
                   keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
+                  // Enter submits from here too, rather than doing Tab's job.
+                  //
+                  // `TextInputAction.next` is what a soft keyboard's corner
+                  // key should say on a field with another one after it, and
+                  // this application has no soft keyboard: it runs on two
+                  // desktops (IR-01), where the key that carries the action
+                  // is Return and moving between fields is what Tab is for.
+                  // Configured `next`, Return moved the focus and the form
+                  // could only be submitted from the last field or the
+                  // button — an owner who typed their password and pressed
+                  // Return got their focus moved and their credentials left
+                  // sitting there.
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
                     labelText: l10n.loginEmailLabel,
                     errorText: authFieldMessage(
@@ -133,7 +146,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   enabled: !submitting,
                   textInputAction: TextInputAction.done,
                   // Enter submits, so the primary action is reachable without
-                  // tabbing to the button (FR-UX-11).
+                  // tabbing to the button (FR-UX-11) — the same from either
+                  // field, since a form is submitted from wherever the owner
+                  // happens to be in it.
                   onSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
                     labelText: l10n.loginPasswordLabel,
