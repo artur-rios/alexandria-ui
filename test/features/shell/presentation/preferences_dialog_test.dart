@@ -61,6 +61,46 @@ void main() {
     );
 
     testWidgets(
+      'GivenNoSession_WhenPreferencesOpen_ThenOnlyTheThemeAndLanguageAreOffered',
+      (tester) async {
+        // What an owner standing on the login screen can actually act on
+        // (UC-39 AF-05). The theme and the language change the screen in
+        // front of them; the rest are settings for a library they have not
+        // opened, and one of them reconfigures the core.
+        await tester.pumpLoginScreen();
+        await tester.tap(find.byType(PreferencesButton));
+        await tester.pumpAndSettle();
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        expect(find.text(l10n.preferencesThemeLabel), findsOneWidget);
+        expect(find.text(l10n.preferencesLanguageLabel), findsOneWidget);
+        expect(find.text(l10n.animationLabel), findsNothing);
+        expect(find.text(l10n.startupRecheckLabel), findsNothing);
+        expect(find.text(l10n.musicLookupLabel), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenASession_WhenPreferencesOpen_ThenEveryChoiceIsOffered',
+      (tester) async {
+        // The other half, and what stops the gate above from being a switch
+        // nobody ever turns back on.
+        await openFromShell(tester);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        expect(find.text(l10n.preferencesThemeLabel), findsOneWidget);
+        expect(find.text(l10n.preferencesLanguageLabel), findsOneWidget);
+        expect(find.text(l10n.animationLabel), findsOneWidget);
+        expect(find.text(l10n.startupRecheckLabel), findsOneWidget);
+        expect(find.text(l10n.musicLookupLabel), findsOneWidget);
+      },
+    );
+
+    testWidgets(
       'GivenAFirstLaunch_WhenTheSignUpScreenIsShown_ThenPreferencesCanBeOpened',
       (tester) async {
         // The first screen a fresh installation shows, and so the owner's

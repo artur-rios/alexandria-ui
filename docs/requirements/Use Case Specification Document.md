@@ -1494,7 +1494,8 @@ graph LR
 
 **Main Flow**
 
-1. The owner opens preferences, which is reachable with or without a session.
+1. The owner opens preferences, which is reachable with or without a session —
+   showing, without one, the choices that apply from where they are (AF-05).
 2. The owner chooses light, dark, or the system theme.
 3. The application applies it immediately, taking every color from the active
    theme, without restarting.
@@ -1511,6 +1512,7 @@ graph LR
 | AF-02 | The settings store cannot be written | The choices apply for this session and the application reports that they were not saved. |
 | AF-03 | No preference has ever been set | The application starts on the system theme and the system language when it is one of the two supported, and English otherwise. |
 | AF-04 | Playback or an index run is active | Both continue uninterrupted through a theme or language change. |
+| AF-05 | There is no session | Only the theme and the language are offered — they change the screen the owner is standing on. The choices that belong to a library nobody has opened (the album animation, the startup re-check, and music lookup, the last of which reconfigures the core) appear once they have signed in. |
 
 ---
 

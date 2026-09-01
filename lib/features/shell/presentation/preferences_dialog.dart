@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../auth/application/session_state.dart';
 import '../../playback/domain/album_medium.dart';
 import '../application/preferences_controller.dart';
 
@@ -34,6 +35,17 @@ class PreferencesDialog extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final preferences = ref.watch(preferencesControllerProvider);
     final controller = ref.read(preferencesControllerProvider.notifier);
+    // What the owner can act on from where they are (UC-39 AF-05).
+    //
+    // The theme and the language change the screen they are standing on, so
+    // they belong on the login screen as much as anywhere. The rest do not:
+    // the animation is about a player they cannot reach, the re-check is
+    // about a library that is not open, and the lookup is about music they
+    // have not signed in to. Offering them here is offering settings for a
+    // session that does not exist — and the last of the three reconfigures
+    // the core, which is a strange thing to let happen from a screen whose
+    // whole purpose is that nobody has authenticated yet.
+    final signedIn = ref.watch(sessionControllerProvider) is SessionActive;
 
     return AlertDialog(
       title: Text(l10n.preferencesTitle),
@@ -93,63 +105,65 @@ class PreferencesDialog extends ConsumerWidget {
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.md),
-              _GroupLabel(l10n.animationLabel),
-              RadioGroup<AlbumAnimationMode>(
-                groupValue: preferences.albumAnimation,
-                // Finding 10: `setAlbumAnimation` returns a `Future<void>`,
-                // and a bare ternary would discard it — `unawaited` says so
-                // on purpose, the same way every other fire-and-forget call
-                // in this application does.
-                onChanged: (mode) => mode == null
-                    ? null
-                    : unawaited(controller.setAlbumAnimation(mode)),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final option in _AnimationOption.values)
-                      RadioListTile<AlbumAnimationMode>(
-                        value: option.mode,
-                        title: Text(option.label(l10n)),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                  ],
+              if (signedIn) ...[
+                const SizedBox(height: AppSpacing.md),
+                _GroupLabel(l10n.animationLabel),
+                RadioGroup<AlbumAnimationMode>(
+                  groupValue: preferences.albumAnimation,
+                  // Finding 10: `setAlbumAnimation` returns a `Future<void>`,
+                  // and a bare ternary would discard it — `unawaited` says so
+                  // on purpose, the same way every other fire-and-forget call
+                  // in this application does.
+                  onChanged: (mode) => mode == null
+                      ? null
+                      : unawaited(controller.setAlbumAnimation(mode)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final option in _AnimationOption.values)
+                        RadioListTile<AlbumAnimationMode>(
+                          value: option.mode,
+                          title: Text(option.label(l10n)),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: AppSpacing.md),
-              // No `_GroupLabel` here: a group of one control restating its
-              // own name in a label above it would be the same redundancy
-              // this fixes, only moved rather than removed. The switch names
-              // itself.
-              SwitchListTile(
-                title: Text(l10n.startupRecheckLabel),
-                subtitle: Text(l10n.startupRecheckDescription),
-                value: preferences.rechecksAtStartup,
-                contentPadding: EdgeInsets.zero,
-                onChanged: (value) =>
-                    unawaited(controller.setRechecksAtStartup(value)),
-              ),
+                const SizedBox(height: AppSpacing.md),
+                // No `_GroupLabel` here: a group of one control restating its
+                // own name in a label above it would be the same redundancy
+                // this fixes, only moved rather than removed. The switch names
+                // itself.
+                SwitchListTile(
+                  title: Text(l10n.startupRecheckLabel),
+                  subtitle: Text(l10n.startupRecheckDescription),
+                  value: preferences.rechecksAtStartup,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (value) =>
+                      unawaited(controller.setRechecksAtStartup(value)),
+                ),
 
-              const SizedBox(height: AppSpacing.md),
-              // This one *does* get a label above it, unlike the switch
-              // before it: the group is two controls, and the contact field
-              // beneath the switch would otherwise read as belonging to the
-              // preference above rather than to the lookup.
-              _GroupLabel(l10n.preferencesMusicLookupLabel),
-              SwitchListTile(
-                title: Text(l10n.musicLookupLabel),
-                subtitle: Text(l10n.musicLookupDescription),
-                value: preferences.musicLookupEnabled,
-                contentPadding: EdgeInsets.zero,
-                onChanged: (value) =>
-                    unawaited(controller.setMusicLookupEnabled(value)),
-              ),
-              // Only while the lookup is on: an address for a service
-              // nothing is going to call is a question with no consequence,
-              // and MusicBrainz's requirement is about requests being made.
-              if (preferences.musicLookupEnabled)
-                _ContactField(contact: preferences.musicLookupContact),
+                const SizedBox(height: AppSpacing.md),
+                // This one *does* get a label above it, unlike the switch
+                // before it: the group is two controls, and the contact field
+                // beneath the switch would otherwise read as belonging to the
+                // preference above rather than to the lookup.
+                _GroupLabel(l10n.preferencesMusicLookupLabel),
+                SwitchListTile(
+                  title: Text(l10n.musicLookupLabel),
+                  subtitle: Text(l10n.musicLookupDescription),
+                  value: preferences.musicLookupEnabled,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (value) =>
+                      unawaited(controller.setMusicLookupEnabled(value)),
+                ),
+                // Only while the lookup is on: an address for a service
+                // nothing is going to call is a question with no consequence,
+                // and MusicBrainz's requirement is about requests being made.
+                if (preferences.musicLookupEnabled)
+                  _ContactField(contact: preferences.musicLookupContact),
+              ],
             ],
           ),
         ),
