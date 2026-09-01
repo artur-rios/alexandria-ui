@@ -3629,6 +3629,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.'**
   String get lyricsSwitchedOff;
+
+  /// UC-21: names the transport buttons drawn on the device in the full player, so a screen reader reaching them is told what the group of controls is.
+  ///
+  /// In en, this message translates to:
+  /// **'Player controls'**
+  String get audioTransportSemantics;
 }
 
 class _AppLocalizationsDelegate

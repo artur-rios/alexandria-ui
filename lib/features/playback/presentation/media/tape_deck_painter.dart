@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import '../../domain/album_medium.dart';
 import 'device_layer.dart';
+import 'device_transport.dart';
 
 /// A tape deck, waiting for a cassette or playing one (UC-21, FR-PL-07).
 ///
@@ -22,6 +24,7 @@ class TapeDeckPainter extends CustomPainter {
     required this.palette,
     required this.closed,
     required this.layer,
+    this.isPlaying = false,
   });
 
   /// The artwork's colours (FR-UX-07).
@@ -34,21 +37,15 @@ class TapeDeckPainter extends CustomPainter {
   /// Which pass this paint call draws.
   final DeviceLayer layer;
 
+  /// Whether audio is running, which is what the play cap shows as a pause.
+  final bool isPlaying;
+
   /// A deck face is a wide, short panel.
   static const double aspect = 1.7;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    final faceMargin = h * 0.03;
-    final face = Rect.fromLTWH(
-      faceMargin,
-      faceMargin,
-      w - faceMargin * 2,
-      h - faceMargin * 2,
-    );
+    final face = deviceFaceOf(size);
     final well = Rect.fromLTWH(
       face.left + face.width * 0.06,
       face.top + face.height * 0.50,
@@ -175,62 +172,19 @@ class TapeDeckPainter extends CustomPainter {
     }
   }
 
+  /// The transport, drawn from the shared geometry the stage lays its hit
+  /// targets over ([transportBoundsFor]) — the same four buttons this deck
+  /// already showed, in the same band, now in one place rather than in a
+  /// copy of the CD player's.
   void _paintButtons(Canvas canvas, Rect face) {
-    final glyph = Paint()..color = palette.chromeLight;
-    final cap = Paint()..color = palette.panelDark;
-    final capEdge = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = face.height * 0.005
-      ..color = palette.panelEdge;
-
-    final buttonsY = face.top + face.height * 0.20;
-    final size = face.height * 0.10;
-
-    void button(double dx, void Function(Offset centre) drawGlyph) {
-      final centre = Offset(face.left + face.width * dx, buttonsY);
-      final rect = RRect.fromRectAndRadius(
-        Rect.fromCenter(center: centre, width: size, height: size),
-        Radius.circular(size * 0.18),
-      );
-      canvas.drawRRect(rect, cap);
-      canvas.drawRRect(rect, capEdge);
-      drawGlyph(centre);
-    }
-
-    button(0.70, (c) {
-      final path = Path()
-        ..moveTo(c.dx - size * 0.14, c.dy - size * 0.18)
-        ..lineTo(c.dx - size * 0.14, c.dy + size * 0.18)
-        ..lineTo(c.dx + size * 0.18, c.dy)
-        ..close();
-      canvas.drawPath(path, glyph);
-    });
-    button(0.80, (c) {
-      canvas.drawRect(
-        Rect.fromCenter(center: c, width: size * 0.32, height: size * 0.32),
-        glyph,
-      );
-    });
-    button(0.90, (c) {
-      for (final dx in [-size * 0.16, size * 0.02]) {
-        final path = Path()
-          ..moveTo(c.dx + dx, c.dy - size * 0.16)
-          ..lineTo(c.dx + dx, c.dy + size * 0.16)
-          ..lineTo(c.dx + dx + size * 0.16, c.dy)
-          ..close();
-        canvas.drawPath(path, glyph);
-      }
-    });
-    button(0.60, (c) {
-      for (final dx in [size * 0.14, -size * 0.02]) {
-        final path = Path()
-          ..moveTo(c.dx + dx, c.dy - size * 0.16)
-          ..lineTo(c.dx + dx, c.dy + size * 0.16)
-          ..lineTo(c.dx + dx - size * 0.16, c.dy)
-          ..close();
-        canvas.drawPath(path, glyph);
-      }
-    });
+    paintTransport(
+      canvas,
+      bounds: transportBoundsFor(AlbumMedium.tape, face),
+      palette: palette,
+      isPlaying: isPlaying,
+      // Squarer caps than the CD player's, as a deck's are.
+      corner: 0.18,
+    );
   }
 
   void _paintWell(Canvas canvas, Rect well) {
@@ -377,5 +331,6 @@ class TapeDeckPainter extends CustomPainter {
   bool shouldRepaint(TapeDeckPainter oldDelegate) =>
       oldDelegate.closed != closed ||
       oldDelegate.palette != palette ||
-      oldDelegate.layer != layer;
+      oldDelegate.layer != layer ||
+      oldDelegate.isPlaying != isPlaying;
 }

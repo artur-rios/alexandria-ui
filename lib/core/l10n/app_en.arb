@@ -2763,5 +2763,9 @@
   "lyricsSwitchedOff": "Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.",
   "@lyricsSwitchedOff": {
     "description": "Music enrichment design: the owner opened the lyrics panel for a track with none cached while the lookup preference is off. Says where the switch is rather than only that the feature is unavailable."
+  },
+  "audioTransportSemantics": "Player controls",
+  "@audioTransportSemantics": {
+    "description": "UC-21: names the transport buttons drawn on the device in the full player, so a screen reader reaching them is told what the group of controls is."
   }
 }

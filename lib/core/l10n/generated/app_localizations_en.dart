@@ -2095,4 +2095,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lyricsSwitchedOff =>
       'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.';
+
+  @override
+  String get audioTransportSemantics => 'Player controls';
 }

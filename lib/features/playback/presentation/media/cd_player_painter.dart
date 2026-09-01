@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import '../../domain/album_medium.dart';
 import 'device_layer.dart';
+import 'device_transport.dart';
 
 /// A CD player, waiting for a disc or playing one (UC-21, FR-PL-07).
 ///
@@ -21,6 +23,8 @@ class CdPlayerPainter extends CustomPainter {
     required this.palette,
     required this.closed,
     required this.layer,
+    this.isPlaying = false,
+    this.display = '',
   });
 
   /// The artwork's colours (FR-UX-07).
@@ -33,21 +37,26 @@ class CdPlayerPainter extends CustomPainter {
   /// Which pass this paint call draws.
   final DeviceLayer layer;
 
+  /// Whether audio is running, which is what the play cap shows as a pause.
+  final bool isPlaying;
+
+  /// What the readout says — the track and where it has got to, formatted by
+  /// the caller (`AlbumStage`).
+  ///
+  /// A string rather than a track number and a duration: the display is a
+  /// piece of glass with digits behind it, and how a position is written is
+  /// already decided in one place for the whole application
+  /// (`formatPlaybackPosition`). A painter that formatted its own would be a
+  /// second answer to that question, free to drift from the one beside it in
+  /// the bar. Empty draws nothing, which is a player with no disc in it.
+  final String display;
+
   /// A CD player face is wide, like the tape deck it sits beside.
   static const double aspect = 1.7;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    final faceMargin = h * 0.03;
-    final face = Rect.fromLTWH(
-      faceMargin,
-      faceMargin,
-      w - faceMargin * 2,
-      h - faceMargin * 2,
-    );
+    final face = deviceFaceOf(size);
 
     // The well is the dominant feature and sits centred in the body, below
     // the display/button band, with room on every side so the lid — sized
@@ -129,9 +138,11 @@ class CdPlayerPainter extends CustomPainter {
         ..color = palette.panelEdge,
     );
 
+    if (display.isEmpty) return;
+
     final track = TextPainter(
       text: TextSpan(
-        text: '01  03:47',
+        text: display,
         style: TextStyle(
           color: palette.displayInk,
           fontSize: recessRect.height * 0.4,
@@ -151,62 +162,23 @@ class CdPlayerPainter extends CustomPainter {
     );
   }
 
+  /// The transport, drawn from the shared geometry the stage lays its hit
+  /// targets over ([transportBoundsFor]) so a press lands on the cap the
+  /// owner aimed at.
+  ///
+  /// The eject glyph that used to sit here is gone: it was the one button on
+  /// the face that named an action this application has no equivalent of —
+  /// there is no disc to eject — where the other three were already the
+  /// transport the player has always had. Skipping took its place.
   void _paintButtons(Canvas canvas, Rect face) {
-    final glyph = Paint()..color = palette.chromeLight;
-    final cap = Paint()..color = palette.panelDark;
-    final capEdge = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = face.height * 0.005
-      ..color = palette.panelEdge;
-
-    final buttonsY = face.top + face.height * 0.18;
-    final size = face.height * 0.11;
-    // Kept clear of the display recess, which occupies the left half of
-    // this same band — a button drawn over the readout was the bug an
-    // earlier pass had here.
-
-    void button(double dx, void Function(Offset centre) drawGlyph) {
-      final centre = Offset(face.left + face.width * dx, buttonsY);
-      final rect = RRect.fromRectAndRadius(
-        Rect.fromCenter(center: centre, width: size, height: size),
-        Radius.circular(size),
-      );
-      canvas.drawRRect(rect, cap);
-      canvas.drawRRect(rect, capEdge);
-      drawGlyph(centre);
-    }
-
-    button(0.66, (c) {
-      final path = Path()
-        ..moveTo(c.dx - size * 0.14, c.dy - size * 0.18)
-        ..lineTo(c.dx - size * 0.14, c.dy + size * 0.18)
-        ..lineTo(c.dx + size * 0.18, c.dy)
-        ..close();
-      canvas.drawPath(path, glyph);
-    });
-    button(0.78, (c) {
-      canvas.drawRect(
-        Rect.fromCenter(center: c, width: size * 0.32, height: size * 0.32),
-        glyph,
-      );
-    });
-    button(0.90, (c) {
-      // The eject glyph: an upward arrow over a bar.
-      final path = Path()
-        ..moveTo(c.dx, c.dy - size * 0.20)
-        ..lineTo(c.dx - size * 0.16, c.dy + size * 0.02)
-        ..lineTo(c.dx + size * 0.16, c.dy + size * 0.02)
-        ..close();
-      canvas.drawPath(path, glyph);
-      canvas.drawRect(
-        Rect.fromCenter(
-          center: c.translate(0, size * 0.18),
-          width: size * 0.34,
-          height: size * 0.06,
-        ),
-        glyph,
-      );
-    });
+    paintTransport(
+      canvas,
+      bounds: transportBoundsFor(AlbumMedium.disc, face),
+      palette: palette,
+      isPlaying: isPlaying,
+      // Round caps, as a CD player's buttons are.
+      corner: 0.5,
+    );
   }
 
   void _paintWell(Canvas canvas, Offset centre, double radius) {
@@ -292,5 +264,7 @@ class CdPlayerPainter extends CustomPainter {
   bool shouldRepaint(CdPlayerPainter oldDelegate) =>
       oldDelegate.closed != closed ||
       oldDelegate.palette != palette ||
-      oldDelegate.layer != layer;
+      oldDelegate.layer != layer ||
+      oldDelegate.isPlaying != isPlaying ||
+      oldDelegate.display != display;
 }

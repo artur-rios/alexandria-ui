@@ -2,12 +2,14 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/album_palette.dart';
 import '../domain/album_medium.dart';
 import 'media/case_painter.dart';
 import 'media/cassette_painter.dart';
 import 'media/cd_player_painter.dart';
 import 'media/device_layer.dart';
+import 'media/device_transport.dart';
 import 'media/disc_painter.dart';
 import 'media/tape_deck_painter.dart';
 import 'media/turntable_painter.dart';
@@ -43,6 +45,9 @@ class StageLayout extends StatelessWidget {
     required this.mediumEmergence,
     required this.travel,
     this.cover,
+    this.isPlaying = false,
+    this.display = '',
+    this.onControl,
     super.key,
   });
 
@@ -92,6 +97,23 @@ class StageLayout extends StatelessWidget {
   /// to draw the designed jacket (design section 4). Handed straight to
   /// [CasePainter], which owns the drawing choice this makes.
   final ui.Image? cover;
+
+  /// Whether audio is running, which is what the device's play button shows
+  /// as a pause.
+  final bool isPlaying;
+
+  /// What the CD player's readout says — the track and where it has got to,
+  /// already formatted. Empty on the devices that have no readout.
+  final String display;
+
+  /// What a press on one of the device's own buttons does, or `null` for a
+  /// stage nobody can operate.
+  ///
+  /// The buttons are painted either way: they are part of what a tape deck
+  /// looks like. What this adds is that pressing one reaches the transport —
+  /// the same [AudioPlaybackController] the row beneath the stage reaches,
+  /// never a second copy of the queue's rules.
+  final void Function(DeviceControl control)? onControl;
 
   /// The medium's scale while still nested in the case (Reference values):
   /// smaller for the cassette, whose case is wider than the record or disc
@@ -197,6 +219,20 @@ class StageLayout extends StatelessWidget {
         // is the part of the device whose entire job is to be seen touching
         // or covering the medium, so it has to be painted after it.
         devicePainted(DeviceLayer.foreground),
+        // Over everything, including the case: the case is a passing beat of
+        // the insertion and the transport is not, and a jacket sliding
+        // through would otherwise swallow presses on its way past. It parks
+        // at 0.30 of the width and the controls sit from 0.60, so the two
+        // never actually overlap — this is about the frames where the case
+        // is still travelling.
+        if (onControl case final onControl?)
+          _TransportOverlay(
+            medium: medium,
+            device: deviceRect,
+            isPlaying: isPlaying,
+            onControl: onControl,
+          ),
+
         if (caseOpacity > 0)
           Positioned(
             left: caseCentre.dx - caseWidth / 2,
@@ -230,16 +266,20 @@ class StageLayout extends StatelessWidget {
       palette: palette,
       closed: closed,
       layer: layer,
+      isPlaying: isPlaying,
     ),
     AlbumMedium.tape => TapeDeckPainter(
       palette: palette,
       closed: closed,
       layer: layer,
+      isPlaying: isPlaying,
     ),
     AlbumMedium.disc => CdPlayerPainter(
       palette: palette,
       closed: closed,
       layer: layer,
+      isPlaying: isPlaying,
+      display: display,
     ),
   };
 
@@ -273,6 +313,90 @@ class StageLayout extends StatelessWidget {
       height: device.height * 0.42,
     ),
   };
+}
+
+/// The hit targets over a device's painted buttons (UC-21, FR-PL-06).
+///
+/// Transparent on purpose: the buttons are already drawn, by the device
+/// painter, from the very geometry this reads ([transportBoundsFor]). What
+/// this adds is that they can be pressed — and that a screen reader finds
+/// four named buttons where sighted owners see four caps, rather than a
+/// picture of a tape deck with nothing operable in it.
+class _TransportOverlay extends StatelessWidget {
+  const _TransportOverlay({
+    required this.medium,
+    required this.device,
+    required this.isPlaying,
+    required this.onControl,
+  });
+
+  /// Which device's buttons are being covered.
+  final AlbumMedium medium;
+
+  /// Where the device is drawn, in the stage's own coordinates.
+  final Rect device;
+
+  /// Whether audio is running, which is what the play button is called.
+  final bool isPlaying;
+
+  /// What a press does.
+  final void Function(DeviceControl control) onControl;
+
+  /// What each control is called, in the owner's language — the same words
+  /// the bar's own transport uses, so the two never name the same action
+  /// differently.
+  String _label(DeviceControl control, AppLocalizations l10n) =>
+      switch (control) {
+        DeviceControl.previous => l10n.audioPrevious,
+        DeviceControl.playPause => isPlaying ? l10n.audioPause : l10n.audioPlay,
+        DeviceControl.stop => l10n.audioStop,
+        DeviceControl.next => l10n.audioNext,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    // The device painter draws into its own rect, so the bounds come back in
+    // the device's coordinates and are shifted into the stage's.
+    final bounds = transportBoundsFor(
+      medium,
+      Offset.zero & device.size,
+    ).map((control, rect) => MapEntry(control, rect.shift(device.topLeft)));
+
+    return Semantics(
+      container: true,
+      label: l10n.audioTransportSemantics,
+      child: Stack(
+        children: [
+          for (final entry in bounds.entries)
+            Positioned.fromRect(
+              // Widened a little beyond the painted cap: the caps are small
+              // at a stage's smallest size, and a hit target the exact size
+              // of the glyph under it is one an owner has to aim at.
+              rect: entry.value.inflate(entry.value.width * 0.2),
+              child: Semantics(
+                button: true,
+                label: _label(entry.key, l10n),
+                // A transparent `Material` of its own so the press has
+                // something to show on: an `InkResponse` splashes onto the
+                // nearest ink surface, which here is the page behind the
+                // whole stage — the feedback would be painted underneath the
+                // device and never seen.
+                child: Material(
+                  type: MaterialType.transparency,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkResponse(
+                    onTap: () => onControl(entry.key),
+                    child: const SizedBox.expand(),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 /// A layer's centre point and footprint, in the stage's own coordinates.

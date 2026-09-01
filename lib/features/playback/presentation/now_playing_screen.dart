@@ -11,8 +11,11 @@ import '../../enrichment/presentation/enrich_track_button.dart';
 import '../../enrichment/presentation/lyrics_button.dart';
 import '../../enrichment/presentation/track_enrichment_panel.dart';
 import '../../playlists/presentation/add_to_playlist_button.dart';
+import '../../shell/presentation/playback_bar.dart';
+import '../application/audio_playback_controller.dart';
 import '../domain/album_cover.dart';
 import 'album_stage.dart';
+import 'media/device_transport.dart';
 import 'music_display_name.dart';
 
 /// The full audio player (UC-21, FR-PL-07).
@@ -84,6 +87,21 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   void dispose() {
     NowPlayingScreen._mounted = false;
     super.dispose();
+  }
+
+  /// Does what a press on one of the device's own buttons asks.
+  ///
+  /// Straight onto [AudioPlaybackController], with no queue rules of its
+  /// own: `next` and `previous` already decline at the ends of a queue, and
+  /// a second opinion here about when a skip is allowed is exactly how the
+  /// device and the bar would come to disagree.
+  void _operate(AudioPlaybackController controller, DeviceControl control) {
+    unawaited(switch (control) {
+      DeviceControl.previous => controller.previous(),
+      DeviceControl.playPause => controller.togglePlaying(),
+      DeviceControl.stop => controller.stop(),
+      DeviceControl.next => controller.next(),
+    });
   }
 
   @override
@@ -225,7 +243,17 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                           state.queue.label ??
                           musicEntryForFile(ref, current).album,
                       cover: cover,
+                      // What the CD player's readout shows: which track of
+                      // the queue is playing, and where it has got to. It
+                      // read `01  03:47` on every album ever played until
+                      // now — a fixed string, typeset into the painter,
+                      // that said the same thing about a two-minute single
+                      // and a twenty-minute side.
+                      display: cdDisplayFor(state),
                       size: stageSize,
+                      // The device's own buttons, wired to the same
+                      // controller the row below reaches (main flow step 6).
+                      onControl: (control) => _operate(controller, control),
                       onInserted: ref
                           .read(albumAnimationControllerProvider.notifier)
                           .insertionShown,
@@ -319,4 +347,26 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       ),
     );
   }
+}
+
+/// What the CD player's readout says: the track's place in the queue and
+/// where playback has got to (FR-PL-09).
+///
+/// A top-level function rather than a method on the screen so the test that
+/// cares about the *text* does not have to build a player to read it, and so
+/// the same rule is available to any other device that grows a readout.
+///
+/// Written with [formatPlaybackPosition], the bar's own formatter, for the
+/// reason every shared formatter exists: the elapsed time on the device and
+/// the elapsed time in the bar are the same fact, and a readout that wrote
+/// it its own way could show two different answers on one screen.
+String cdDisplayFor(AudioPlaybackState state) {
+  if (state.current == null) return '';
+
+  // Two digits, as a disc player's track counter has always been — and the
+  // queue's index, not the track's own tag: what a player counts is the
+  // track it is playing, which is where in *this* queue it has got to.
+  final track = (state.queue.index + 1).toString().padLeft(2, '0');
+
+  return '$track  ${formatPlaybackPosition(state.status.position)}';
 }

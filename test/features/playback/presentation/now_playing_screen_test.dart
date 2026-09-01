@@ -238,6 +238,167 @@ void main() {
 
   // The player is a route that fills the window, not a 360-pixel dialog
   // (Task 7).
+  /// One of the device's own painted buttons, found by the name a screen
+  /// reader is given for it — never by position among the overlay's four,
+  /// which would pass just as happily with the labels transposed.
+  Finder deviceControl(WidgetTester tester, String label) => find.descendant(
+    of: find.byType(AlbumStage),
+    matching: find.byWidgetPredicate(
+      (widget) => widget is Semantics && widget.properties.label == label,
+    ),
+  );
+
+  group('the device\'s own transport (main flow step 6)', () {
+    testWidgets(
+      'GivenAPlayingStage_WhenTheDevicesPlayButtonIsPressed_ThenPlaybackPauses',
+      (tester) async {
+        // The buttons were painted on every device from the first version of
+        // this screen and did nothing at all: a tape deck with a play cap
+        // that ignores a press is a picture of a tape deck.
+        // The player opens itself for an owed insertion (Task 7 step 4), so
+        // there is nothing to tap the bar's button for here.
+        final played = await play(tester, mode: AlbumAnimationMode.disc);
+        final l10n = messages(tester);
+
+        await tester.tap(deviceControl(tester, l10n.audioPause));
+        await settle(tester);
+
+        expect(played.player.pauseCount, 1);
+      },
+    );
+
+    testWidgets(
+      'GivenAPausedStage_WhenTheDevicesPlayButtonIsPressed_ThenPlaybackResumes',
+      (tester) async {
+        // The player opens itself for an owed insertion (Task 7 step 4), so
+        // there is nothing to tap the bar's button for here.
+        final played = await play(tester, mode: AlbumAnimationMode.disc);
+        final l10n = messages(tester);
+
+        await tester.tap(deviceControl(tester, l10n.audioPause));
+        await settle(tester);
+        // Now it is paused, so the same cap is the play button again — the
+        // glyph and the name both follow the engine.
+        await tester.tap(deviceControl(tester, l10n.audioPlay));
+        await settle(tester);
+
+        expect(played.player.playCount, greaterThanOrEqualTo(1));
+      },
+    );
+
+    testWidgets(
+      'GivenAnAlbumQueue_WhenTheDevicesNextButtonIsPressed_ThenTheQueueMovesOn',
+      (tester) async {
+        // The player opens itself for an owed insertion (Task 7 step 4), so
+        // there is nothing to tap the bar's button for here.
+        final played = await play(tester, mode: AlbumAnimationMode.disc);
+        final l10n = messages(tester);
+
+        await tester.tap(deviceControl(tester, l10n.audioNext));
+        await settle(tester);
+
+        expect(
+          played.container.read(audioPlaybackControllerProvider).queue.index,
+          1,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenAStage_WhenTheDevicesStopButtonIsPressed_ThenPlaybackStops',
+      (tester) async {
+        // The player opens itself for an owed insertion (Task 7 step 4), so
+        // there is nothing to tap the bar's button for here.
+        final played = await play(tester, mode: AlbumAnimationMode.disc);
+        final l10n = messages(tester);
+
+        await tester.tap(deviceControl(tester, l10n.audioStop));
+        await settle(tester);
+
+        expect(played.player.stopCount, greaterThanOrEqualTo(1));
+        expect(
+          played.container.read(audioPlaybackControllerProvider).queue.isEmpty,
+          isTrue,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheAnimationIsOff_WhenThePlayerOpens_ThenThereIsNoDeviceToPress',
+      (tester) async {
+        // No stage, no device — and the row beneath it is still the whole
+        // transport, which is why turning the animation off costs the owner
+        // no control at all.
+        await play(tester);
+        await openPlayer(tester);
+        final l10n = messages(tester);
+
+        expect(find.byType(AlbumStage), findsNothing);
+        expect(
+          find.widgetWithIcon(IconButton, Icons.pause_circle),
+          findsOneWidget,
+          reason: 'the screen\'s own transport row is not part of the stage',
+        );
+        expect(deviceControl(tester, l10n.audioStop), findsNothing);
+      },
+    );
+  });
+
+  group('the CD player\'s readout (FR-PL-09)', () {
+    test('GivenNothingPlaying_WhenTheReadoutIsRead_ThenItIsBlank', () {
+      // A player with no disc in it shows nothing, rather than 00:00 against
+      // a track number for a track that does not exist.
+      expect(cdDisplayFor(const AudioPlaybackState()), isEmpty);
+    });
+
+    test(
+      'GivenATrackPlaying_WhenTheReadoutIsRead_ThenItNamesTheTrackAndPosition',
+      () {
+        // The defect this closes: the readout was the fixed string
+        // `01  03:47`, painted into the device, which said the same thing
+        // about every album ever played.
+        final state = AudioPlaybackState(
+          queue: PlaybackQueue(
+            tracks: [
+              aFile(uuid: 'a', name: 'a.flac'),
+              aFile(uuid: 'b', name: 'b.flac'),
+            ],
+            kind: QueueKind.album,
+            index: 1,
+          ),
+          stage: AudioStage.playing,
+          status: const PlaybackStatus(
+            isPlaying: true,
+            position: Duration(minutes: 4, seconds: 5),
+          ),
+        );
+
+        expect(cdDisplayFor(state), '02  04:05');
+      },
+    );
+
+    testWidgets(
+      'GivenACdPlayerOnScreen_WhenTheEngineMoves_ThenTheReadoutFollowsIt',
+      (tester) async {
+        final played = await play(tester, mode: AlbumAnimationMode.disc);
+
+        played.player.report(
+          const PlaybackStatus(
+            isPlaying: true,
+            position: Duration(seconds: 42),
+            duration: Duration(minutes: 9),
+          ),
+        );
+        await settle(tester);
+
+        expect(
+          tester.widget<AlbumStage>(find.byType(AlbumStage)).display,
+          '01  00:42',
+        );
+      },
+    );
+  });
+
   group('the full window (Task 7)', () {
     testWidgets(
       'GivenSomethingPlaying_WhenThePlayerIsOpened_ThenItFillsTheWindow',

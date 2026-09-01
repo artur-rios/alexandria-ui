@@ -8,6 +8,7 @@ import '../../../core/theme/album_palette.dart';
 import '../domain/album_medium.dart';
 import '../domain/sleeve_design.dart';
 import 'album_medium_label.dart';
+import 'media/device_transport.dart';
 import 'stage_layout.dart';
 
 /// The two timelines over the painters from Tasks 3 and 4 (UC-21 main flow,
@@ -34,6 +35,8 @@ class AlbumStage extends StatefulWidget {
     this.size = 420,
     this.onInserted,
     this.cover,
+    this.display = '',
+    this.onControl,
     super.key,
   });
 
@@ -77,6 +80,20 @@ class AlbumStage extends StatefulWidget {
   /// repaints the sleeve with it, which is what keeps a cover arriving
   /// mid-insertion from restarting anything (design section 4).
   final ui.Image? cover;
+
+  /// What the CD player's readout says — the track playing and where it has
+  /// got to, formatted by the caller (`NowPlayingScreen`) with the same
+  /// `formatPlaybackPosition` the bar writes its own position with. Empty
+  /// for the devices that carry no readout, and for a stage with nothing
+  /// playing.
+  final String display;
+
+  /// What a press on the device's own buttons does, or `null` for a stage
+  /// that is only looked at.
+  ///
+  /// The stage passes it straight to [StageLayout]; the queue's rules stay
+  /// where they already are, in `AudioPlaybackController`.
+  final void Function(DeviceControl control)? onControl;
 
   /// How long the insertion takes, start to finish (Reference values).
   static const Duration insertionDuration = Duration(milliseconds: 4400);
@@ -269,6 +286,9 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
             mediumEmergence: _mediumOut.value,
             travel: _travel.value,
             cover: widget.cover,
+            isPlaying: widget.isPlaying,
+            display: widget.display,
+            onControl: widget.onControl,
           ),
         ),
       ),

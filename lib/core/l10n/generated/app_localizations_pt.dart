@@ -2101,4 +2101,7 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get lyricsSwitchedOff =>
       'A busca de informações musicais está desligada. Ligue-a nas Preferências para buscar letras.';
+
+  @override
+  String get audioTransportSemantics => 'Controles do reprodutor';
 }

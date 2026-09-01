@@ -587,5 +587,6 @@
   "lyricsOpen": "Letra",
   "lyricsTitle": "Letra",
   "lyricsNone": "Nenhuma letra foi encontrada para esta faixa.",
-  "lyricsSwitchedOff": "A busca de informa\u00e7\u00f5es musicais est\u00e1 desligada. Ligue-a nas Prefer\u00eancias para buscar letras."
+  "lyricsSwitchedOff": "A busca de informa\u00e7\u00f5es musicais est\u00e1 desligada. Ligue-a nas Prefer\u00eancias para buscar letras.",
+  "audioTransportSemantics": "Controles do reprodutor"
 }

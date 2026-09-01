@@ -4,7 +4,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import '../../domain/album_medium.dart';
 import 'device_layer.dart';
+import 'device_transport.dart';
 
 /// A turntable, waiting for a record or playing one (UC-21, FR-PL-07).
 ///
@@ -25,6 +27,7 @@ class TurntablePainter extends CustomPainter {
     required this.palette,
     required this.closed,
     required this.layer,
+    this.isPlaying = false,
   });
 
   /// The artwork's colours (FR-UX-07).
@@ -36,6 +39,9 @@ class TurntablePainter extends CustomPainter {
 
   /// Which pass this paint call draws.
   final DeviceLayer layer;
+
+  /// Whether audio is running, which is what the play cap shows as a pause.
+  final bool isPlaying;
 
   /// A turntable's plinth is noticeably wider than it is tall.
   static const double aspect = 1.5;
@@ -61,6 +67,7 @@ class TurntablePainter extends CustomPainter {
         _paintPlinth(canvas, w, h);
         _paintPlatter(canvas, platterCentre, platterRadius);
         _paintControls(canvas, w, h);
+        _paintTransport(canvas, size);
       case DeviceLayer.foreground:
         _paintTonearm(canvas, w, h, platterCentre, platterRadius);
     }
@@ -234,6 +241,23 @@ class TurntablePainter extends CustomPainter {
     }
   }
 
+  /// The transport, on the plinth's front-right corner.
+  ///
+  /// The one invention among the three devices: a real turntable has no
+  /// transport at all, which is why this row had to be added rather than
+  /// merely wired up. It sits low on the plinth, below the speed caps and
+  /// well clear of the tonearm's sweep — a modern deck's cue buttons, drawn
+  /// where a modern deck puts them.
+  void _paintTransport(Canvas canvas, Size size) {
+    paintTransport(
+      canvas,
+      bounds: transportBoundsFor(AlbumMedium.vinyl, deviceFaceOf(size)),
+      palette: palette,
+      isPlaying: isPlaying,
+      corner: 0.18,
+    );
+  }
+
   void _paintTonearm(
     Canvas canvas,
     double w,
@@ -336,5 +360,6 @@ class TurntablePainter extends CustomPainter {
   bool shouldRepaint(TurntablePainter oldDelegate) =>
       oldDelegate.closed != closed ||
       oldDelegate.palette != palette ||
-      oldDelegate.layer != layer;
+      oldDelegate.layer != layer ||
+      oldDelegate.isPlaying != isPlaying;
 }

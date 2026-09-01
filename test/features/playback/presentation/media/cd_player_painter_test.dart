@@ -51,6 +51,76 @@ void main() {
     }
   });
 
+  group('the readout and the transport (FR-PL-09, main flow step 6)', () {
+    testWidgets(
+      'GivenATrackPlaying_WhenThePlayerIsDrawn_ThenTheReadoutAndPauseAreShown',
+      (tester) async {
+        // A golden of its own rather than a changed one above: the two
+        // states of this face — waiting, and playing a track — differ in
+        // both the display and the play cap, and a device that reads `01
+        // 03:47` while nothing is playing is the defect this replaced.
+        await tester.pumpWidget(
+          painted(
+            const CdPlayerPainter(
+              palette: palette,
+              closed: 1,
+              layer: DeviceLayer.chassis,
+              isPlaying: true,
+              display: '03  01:24',
+            ),
+            const Size(320, 220),
+          ),
+        );
+
+        await expectLater(
+          find.byType(CustomPaint).last,
+          matchesGoldenFile('goldens/cd-player-playing-chassis.png'),
+        );
+      },
+      skip: !goldensAreComparable,
+    );
+
+    test('GivenAPainter_WhenOnlyTheReadoutChanges_ThenItRepaints', () {
+      // The readout moves once a second while a track plays. A painter that
+      // did not repaint for it would freeze the position on screen — which
+      // is exactly how the old fixed string behaved.
+      const first = CdPlayerPainter(
+        palette: palette,
+        closed: 1,
+        layer: DeviceLayer.chassis,
+        display: '01  00:01',
+      );
+      const second = CdPlayerPainter(
+        palette: palette,
+        closed: 1,
+        layer: DeviceLayer.chassis,
+        display: '01  00:02',
+      );
+
+      expect(second.shouldRepaint(first), isTrue);
+    });
+
+    test('GivenAPainter_WhenPlayingChanges_ThenItRepaints', () {
+      const paused = CdPlayerPainter(
+        palette: palette,
+        closed: 1,
+        layer: DeviceLayer.chassis,
+      );
+      const playing = CdPlayerPainter(
+        palette: palette,
+        closed: 1,
+        layer: DeviceLayer.chassis,
+        isPlaying: true,
+      );
+
+      expect(
+        playing.shouldRepaint(paused),
+        isTrue,
+        reason: 'the play cap becomes a pause cap; the face has changed',
+      );
+    });
+  });
+
   group('what closed means', () {
     test('GivenACdPlayerPainter_WhenOnlyClosedChanges_ThenItRepaints', () {
       const first = CdPlayerPainter(
