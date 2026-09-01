@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import 'media/cassette_painter.dart';
 import 'media/diagonal_sheen.dart';
 import 'media/disc_painter.dart';
 import 'media/vinyl_painter.dart';
+import 'now_playing_screen.dart';
 
 /// A recessed window in the playback bar, showing the album's own cover —
 /// or, for a record that carries none, the same medium the full player's
@@ -201,15 +203,25 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
       // more: a screen reader told "long-playing record" while a sleeve is
       // on screen is being told about a drawing that is not there.
       label: cover == null ? _label(l10n, medium) : l10n.albumCoverLabel,
-      child: SizedBox.square(
-        dimension: widget.size,
-        child: AnimatedBuilder(
-          animation: _spin,
-          builder: (context, _) => _Recess(
-            medium: medium,
-            palette: palette,
-            turns: _spin.value,
-            cover: cover,
+      button: true,
+      // The sleeve is the obvious thing to press to see the record playing,
+      // and an owner who has just recognised their album across the room
+      // reaches for the picture rather than for the chevron beside it
+      // (UC-21 main flow step 2). The bar's own button stays: this is a
+      // second way in, not a replacement, and a control that only exists as
+      // an unlabelled picture is one a keyboard cannot reach.
+      child: GestureDetector(
+        onTap: () => unawaited(NowPlayingScreen.show(context)),
+        child: SizedBox.square(
+          dimension: widget.size,
+          child: AnimatedBuilder(
+            animation: _spin,
+            builder: (context, _) => _Recess(
+              medium: medium,
+              palette: palette,
+              turns: _spin.value,
+              cover: cover,
+            ),
           ),
         ),
       ),

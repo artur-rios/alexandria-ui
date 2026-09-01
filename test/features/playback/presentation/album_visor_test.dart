@@ -10,6 +10,7 @@ import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/disc_painter.dart';
+import 'package:alexandria_ui/features/playback/presentation/now_playing_screen.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/vinyl_painter.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
 import 'dart:ui' as ui;
@@ -295,6 +296,30 @@ void main() {
 
         expect(find.byType(RawImage), findsNothing);
         expect(discPainterOf(tester), isNotNull);
+      },
+    );
+
+    testWidgets(
+      'GivenTheRecess_WhenItIsPressed_ThenTheFullPlayerOpens',
+      (tester) async {
+        // What an owner reaches for: the sleeve they have just recognised,
+        // rather than the chevron beside it (UC-21 main flow step 2).
+        await pumpBar(
+          tester,
+          audio: playingState(),
+          medium: AlbumMedium.disc,
+        );
+
+        await tester.tap(find.byType(AlbumVisor));
+        // Bounded pumps, not `pumpAndSettle`: the player that opens carries
+        // a stage that repeats for as long as audio plays, so nothing here
+        // ever settles — the same reason `now_playing_screen_test.dart`
+        // pumps by hand.
+        for (var frame = 0; frame < 6; frame++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
       },
     );
 
