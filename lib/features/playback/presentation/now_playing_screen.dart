@@ -9,7 +9,6 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../enrichment/presentation/enrich_track_button.dart';
 import '../../enrichment/presentation/lyrics_button.dart';
-import '../../enrichment/presentation/track_enrichment_panel.dart';
 import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../../shell/presentation/playback_bar.dart';
 import '../application/audio_playback_controller.dart';
@@ -264,32 +263,40 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                           .read(albumAnimationControllerProvider.notifier)
                           .insertionShown,
                     ),
-                    const SizedBox(height: AppSpacing.lg),
                   ],
 
-                  Text(
-                    // Never the file name (FR-CT-13): the metadata title,
-                    // the same one the bar and the browsing area already
-                    // agree a track is called — this screen does not get to
-                    // disagree just because it names the track in its own
-                    // body text.
-                    current == null
-                        ? l10n.playbackNothingPlaying
-                        : musicTitleForFile(ref, current, l10n),
-                    style: theme.textTheme.headlineSmall,
-                    textAlign: TextAlign.center,
-                  ),
-                  if (current != null && queueLabel != null) ...[
-                    const SizedBox(height: AppSpacing.xs),
+                  // Named on the device, not under it.
+                  //
+                  // The nameplate on the machine says what is playing and
+                  // the sleeve on the medium shows which record it is from,
+                  // so a title and an album repeated in body text below were
+                  // the same two facts a second time. What is left when the
+                  // stage is hidden is the whole of what this screen can
+                  // say, which is why the text below is kept for exactly
+                  // that case.
+                  if (!showsStage) ...[
                     Text(
-                      queueLabel,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+                      // Never the file name (FR-CT-13): the metadata title,
+                      // the same one the bar and the browsing area already
+                      // agree a track is called.
+                      current == null
+                          ? l10n.playbackNothingPlaying
+                          : musicTitleForFile(ref, current, l10n),
+                      style: theme.textTheme.headlineSmall,
                       textAlign: TextAlign.center,
                     ),
+                    if (current != null && queueLabel != null) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        queueLabel,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.xl),
                   ],
-                  const SizedBox(height: AppSpacing.xl),
 
                   // Only when there is no device to press.
                   //
@@ -340,24 +347,6 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                       ],
                     ),
 
-                  // Below the transport, deliberately. Whatever the core
-                  // cached about this track is worth reading while it plays,
-                  // but it is not what this screen is for — the controls do
-                  // not move down the page to make room for a photograph,
-                  // and the panel renders nothing at all when there is
-                  // nothing to show, which is most of a real library.
-                  if (current != null)
-                    TrackEnrichmentPanel(
-                      fileUuid: current.uuid,
-                      // The album artist, which is whose record this is and
-                      // therefore whose photograph belongs against it —
-                      // not the track's performer, which would put a guest's
-                      // face on the host's album. The raw tag, never the
-                      // localised "Unknown artist": that word is not
-                      // anybody's name, and looking it up would ask the core
-                      // for a photograph of a phrase.
-                      artistName: musicEntryForFile(ref, current).albumArtist,
-                    ),
                 ],
               ),
             ),

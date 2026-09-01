@@ -139,6 +139,41 @@ void main() {
   );
 
   testWidgets(
+    'GivenAnArtistPhotograph_WhenThePanelOpens_ThenItIsShownAndCredited',
+    (tester) async {
+      // The photograph used to sit under the player, beside a title and an
+      // album the device now says itself. What the lookup found belongs
+      // where the owner comes to read it — and the credit travels with the
+      // picture, because a Commons licence requires attribution and an image
+      // whose provenance was lost cannot lawfully be shown.
+      await pumpAndOpen(
+        tester,
+        gateway: FakeEnrichmentGateway(
+          enrichment: const TrackEnrichment(
+            artistImage: ArtistImage(
+              artistName: '50 Cent',
+              path: '/cache/artist-images/50-cent.jpg',
+              sourceUrl: 'https://commons.wikimedia.org/wiki/File:50cent.jpg',
+            ),
+            lyrics: TrackLyrics(lines: ['a cached line']),
+          ),
+        ),
+      );
+      final l10n = AppLocalizations.of(tester.element(find.byType(LyricsPanel)));
+
+      expect(find.byType(Image), findsOneWidget);
+      expect(
+        find.text(
+          l10n.enrichmentImageCredit(
+            'https://commons.wikimedia.org/wiki/File:50cent.jpg',
+          ),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
     'GivenTimedLyrics_WhenThePanelOpens_ThenTheyFollowTheMusic',
     (tester) async {
       await pumpAndOpen(

@@ -366,6 +366,57 @@ void main() {
     );
 
     testWidgets(
+      'GivenAStageOnScreen_WhenThePlayerIsShown_ThenTheTitleIsNotRepeatedBelow',
+      (tester) async {
+        // The nameplate says what is playing and the sleeve on the medium
+        // says which record it is from, so a title and an album in body text
+        // underneath were the same two facts a second time.
+        await play(tester, mode: AlbumAnimationMode.disc);
+
+        expect(
+          find.byType(AlbumStage),
+          findsOneWidget,
+          reason: 'the device is what carries the name',
+        );
+        // Scoped to the player: the shell behind this route keeps its own
+        // bar, and the bar naming the track is the point of it.
+        expect(
+          find.descendant(
+            of: find.byType(NowPlayingScreen),
+            matching: find.text('So What'),
+          ),
+          findsNothing,
+        );
+        expect(
+          find.descendant(
+            of: find.byType(NowPlayingScreen),
+            matching: find.textContaining('Kind of Blue'),
+          ),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenNoStage_WhenThePlayerIsShown_ThenTheScreenNamesTheTrackItself',
+      (tester) async {
+        // With the animation off there is no device to read it from, and a
+        // player that named nothing at all would be a page of buttons.
+        await play(tester);
+        await openPlayer(tester);
+
+        expect(find.byType(AlbumStage), findsNothing);
+        expect(
+          find.descendant(
+            of: find.byType(NowPlayingScreen),
+            matching: find.text('So What'),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
       'GivenATrackPlaying_WhenTheStageIsShown_ThenTheDeviceNamesIt',
       (tester) async {
         // The device knew everything about the record except what was

@@ -80,7 +80,7 @@ env:
   # ran the integration suite against. A release is the one place that matters
   # most. Moving this is now the same deliberate act as moving CI's — both
   # values change together, or the build stops.
-  CORE_REF: 42889d15034cac29fc50eb5c5f1212ef2c5f35de
+  CORE_REF: 267024f0cfc8872426ac76be3141fd4dd7318206
 
   # Must match the SDK the committed pubspec.lock was resolved with, for the
   # same reason CI pins it: a newer SDK rewrites the lock during `pub get`, and

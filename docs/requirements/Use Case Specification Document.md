@@ -880,7 +880,7 @@ graph LR
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The window's available height or width falls below the floor the stage needs | The application hides the stage and keeps the rest of the player, and shows a transport of its own in place of the device's — the full player fills the window, so a screen with no device on it would otherwise have no way to pause. |
+| AF-01 | The window's available height or width falls below the floor the stage needs | The application hides the stage and names the track and offers a transport of its own in place of the device's — the full player fills the window, so a screen with no device on it would otherwise say nothing and have no way to pause. |
 | AF-02 | The owner navigates to another screen | Playback and the persistent player continue; the animation is shown wherever the full player is visible. |
 | AF-03 | The system requests reduced motion | The application presents the medium without the turning motion, and playback is unaffected. |
 | AF-04 | The owner has turned the album animation off | The application shows no medium and does not open the full-window player on its own; audio plays normally. |

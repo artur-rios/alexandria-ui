@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -153,6 +155,15 @@ class _LyricsPanelState extends ConsumerState<LyricsPanel> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.md),
+            // The photograph, where the words are.
+            //
+            // It used to sit under the player, which is where the track's
+            // own title and album sat as well — and having the device say
+            // both of those left the panel down there repeating what the
+            // machine already showed. What the lookup found belongs
+            // together, and this is where the owner comes to read it.
+            if (enrichment.value?.artistImage case final image?)
+              _ArtistPortrait(image: image),
             _Body(
               lyrics: enrichment.value?.lyrics,
               // The lookup in flight and the first read of the cache are the
@@ -164,6 +175,55 @@ class _LyricsPanelState extends ConsumerState<LyricsPanel> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The artist's photograph, with the credit its licence requires.
+class _ArtistPortrait extends StatelessWidget {
+  const _ArtistPortrait({required this.image});
+
+  final ArtistImage image;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.sm),
+          child: Image.file(
+            File(image.path),
+            width: 120,
+            height: 120,
+            fit: BoxFit.cover,
+            // The bytes are a cache the core wrote, and a cache can be
+            // cleared, moved, or half-written. A missing or unreadable file
+            // shows nothing rather than Flutter's broken-image glyph, which
+            // would read as a defect in the application rather than as an
+            // image that is simply not there any more.
+            errorBuilder: (context, error, stackTrace) =>
+                const SizedBox.shrink(),
+          ),
+        ),
+        if (image.sourceUrl case final source?) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            // Not decoration. Wikimedia Commons licences require
+            // attribution, so the credit travels with the picture — an image
+            // whose provenance was lost cannot lawfully be shown, which is
+            // why the core stores the source alongside the bytes.
+            l10n.enrichmentImageCredit(source),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+        const SizedBox(height: AppSpacing.md),
+      ],
     );
   }
 }
