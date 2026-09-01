@@ -66,15 +66,39 @@ Rect deviceFaceOf(Size size) {
 ///
 /// The turntable is the one that had no transport at all: a real one has
 /// none, which is why these had to be invented rather than merely wired up.
-Map<DeviceControl, Rect> transportBoundsFor(AlbumMedium medium, Rect face) {
-  // The row's height, its size, the first cap's centre and the gap to the
-  // next — all as fractions of the face, so a device drawn at any size keeps
-  // the same arrangement.
-  final (centre, size, first, step) = switch (medium) {
-    AlbumMedium.vinyl => (0.93, 0.085, 0.769, 0.065),
-    AlbumMedium.tape => (0.20, 0.10, 0.60, 0.10),
-    AlbumMedium.disc => (0.18, 0.11, 0.60, 0.10),
-  };
+///
+/// The CD player is the one that is no longer a row. Its buttons sat in the
+/// top right, which is where the nameplate had to go once a track title
+/// needed a window wide enough to hold one — the band across the top is the
+/// only part of that face nothing is ever drawn over. So the four caps moved
+/// down the right-hand side into a square of two by two, in the strip
+/// between the well's edge and the face's, reading left to right and top to
+/// bottom in the order they always had.
+Map<DeviceControl, Rect> transportBoundsFor(AlbumMedium medium, Rect face) =>
+    switch (medium) {
+      AlbumMedium.disc => _discGrid(face),
+      AlbumMedium.tape => _row(face, centre: 0.20, size: 0.10, first: 0.60),
+      AlbumMedium.vinyl => _row(
+        face,
+        centre: 0.93,
+        size: 0.085,
+        first: 0.769,
+        step: 0.065,
+      ),
+    };
+
+/// A row of four caps across [face], at [centre] of its height.
+///
+/// [size], [first] and [step] are all fractions of the face — its height for
+/// the cap, its width for where the caps sit — so a device drawn at any size
+/// keeps the same arrangement.
+Map<DeviceControl, Rect> _row(
+  Rect face, {
+  required double centre,
+  required double size,
+  required double first,
+  double step = 0.10,
+}) {
   final diameter = face.height * size;
   final centreY = face.top + face.height * centre;
 
@@ -84,6 +108,32 @@ Map<DeviceControl, Rect> transportBoundsFor(AlbumMedium medium, Rect face) {
         center: Offset(
           face.left + face.width * (first + step * index),
           centreY,
+        ),
+        width: diameter,
+        height: diameter,
+      ),
+  };
+}
+
+/// The CD player's four caps, in two rows of two down the face's right side.
+///
+/// The column positions are what keep them off the disc: the well is centred
+/// on the face with a radius of 0.296 of the height, which on this face's
+/// 1.7 aspect reaches 0.674 of the width — and the lid drawn over it is
+/// exactly as wide. Both columns begin past that, and the outer one stops
+/// short of the face's own edge.
+Map<DeviceControl, Rect> _discGrid(Rect face) {
+  const size = 0.13;
+  const columns = [0.765, 0.90];
+  const rows = [0.50, 0.72];
+  final diameter = face.height * size;
+
+  return {
+    for (final (index, control) in DeviceControl.values.indexed)
+      control: Rect.fromCenter(
+        center: Offset(
+          face.left + face.width * columns[index % 2],
+          face.top + face.height * rows[index ~/ 2],
         ),
         width: diameter,
         height: diameter,
@@ -122,10 +172,7 @@ void paintTransport(
     final centre = rect.center;
     capEdge.strokeWidth = size * 0.05;
 
-    final shape = RRect.fromRectAndRadius(
-      rect,
-      Radius.circular(size * corner),
-    );
+    final shape = RRect.fromRectAndRadius(rect, Radius.circular(size * corner));
     canvas.drawRRect(shape, cap);
     canvas.drawRRect(shape, capEdge);
 

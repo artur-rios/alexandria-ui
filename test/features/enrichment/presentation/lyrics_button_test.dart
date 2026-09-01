@@ -26,8 +26,12 @@ void main() {
     lyrics: TrackLyrics(lines: ['a cached line'], source: 'lrclib'),
   );
 
-  /// Pumps the button over a container whose enrichment gateway is [gateway],
-  /// then presses it and settles the sheet it opens.
+  /// Pumps the panel over a container whose enrichment gateway is [gateway].
+  ///
+  /// The panel itself, not the button that reveals it: the two came apart
+  /// when the words moved out of a modal and into a column beside the device
+  /// — the screen decides whether the column is there (`now_playing_screen`
+  /// covers that), and everything below is about what the column holds.
   Future<void> pumpAndOpen(
     WidgetTester tester, {
     required FakeEnrichmentGateway gateway,
@@ -58,34 +62,60 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: LyricsButton(fileUuid: 'f-1', artistName: 'Miles Davis'),
+            body: LyricsPanel(fileUuid: 'f-1', artistName: 'Miles Davis'),
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
-
-    await tester.tap(find.byType(IconButton));
-    await tester.pumpAndSettle();
   }
 
-  testWidgets('GivenATrack_WhenThePlayerIsOpen_ThenALyricsButtonIsOffered', (
-    tester,
-  ) async {
-    final gateway = FakeEnrichmentGateway();
-    await pumpAndOpen(tester, gateway: gateway);
+  testWidgets(
+    'GivenTheWordsAreShown_WhenTheButtonIsRead_ThenItOffersToHideThemAgain',
+    (tester) async {
+      // The one button, both ways round. It carries a glyph alone, so its
+      // tooltip is the only thing that says which way pressing it goes —
+      // and a control that still said "Lyrics" while the lyrics were on
+      // screen would leave the owner guessing.
+      var presses = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: LyricsButton(isOpen: true, onPressed: () => presses++),
+          ),
+        ),
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LyricsButton)),
+      );
 
-    // The tap in the harness already proved it is there and pressable; what
-    // this asserts is that it is *named*, since it carries a glyph alone.
-    final l10n = AppLocalizations.of(tester.element(find.byType(LyricsPanel)));
-    expect(
-      tester.widget<IconButton>(find.byType(IconButton)).tooltip,
-      l10n.lyricsOpen,
-    );
-  });
+      expect(
+        tester.widget<IconButton>(find.byType(IconButton)).tooltip,
+        l10n.lyricsClose,
+      );
+
+      await tester.tap(find.byType(IconButton));
+      expect(presses, 1);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: LyricsButton(isOpen: false, onPressed: () {})),
+        ),
+      );
+
+      expect(
+        tester.widget<IconButton>(find.byType(IconButton)).tooltip,
+        l10n.lyricsOpen,
+      );
+    },
+  );
 
   testWidgets(
-    'GivenCachedLyrics_WhenTheButtonIsPressed_ThenTheyAreShownWithoutALookup',
+    'GivenCachedLyrics_WhenThePanelOpens_ThenTheyAreShownWithoutALookup',
     (tester) async {
       final gateway = FakeEnrichmentGateway(enrichment: cachedLyrics);
 
@@ -103,7 +133,7 @@ void main() {
   );
 
   testWidgets(
-    'GivenNothingCached_WhenTheButtonIsPressed_ThenALookupRunsForThatTrack',
+    'GivenNothingCached_WhenThePanelOpens_ThenALookupRunsForThatTrack',
     (tester) async {
       // "Show the lyrics right away" is the whole point: a track nobody has
       // looked up shows its words on the first press, not on the second.
@@ -139,13 +169,15 @@ void main() {
   );
 
   testWidgets(
-    'GivenAnArtistPhotograph_WhenThePanelOpens_ThenItIsShownAndCredited',
+    'GivenAnArtistPhotograph_WhenThePanelOpens_ThenOnlyTheWordsAreShown',
     (tester) async {
-      // The photograph used to sit under the player, beside a title and an
-      // album the device now says itself. What the lookup found belongs
-      // where the owner comes to read it — and the credit travels with the
-      // picture, because a Commons licence requires attribution and an image
-      // whose provenance was lost cannot lawfully be shown.
+      // The photograph is fetched by the same lookup and is deliberately not
+      // shown here. It sat over the words for one release and turned this
+      // column into a short article about the artist with the song
+      // underneath — a face belongs where an owner is looking *for* artists,
+      // which is the artists list (`music_rows_test`). Its credit goes with
+      // it: a Commons licence requires attribution wherever the picture is
+      // shown, so the two can only ever move together.
       await pumpAndOpen(
         tester,
         gateway: FakeEnrichmentGateway(
@@ -159,47 +191,49 @@ void main() {
           ),
         ),
       );
-      final l10n = AppLocalizations.of(tester.element(find.byType(LyricsPanel)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LyricsPanel)),
+      );
 
-      expect(find.byType(Image), findsOneWidget);
+      expect(find.text('a cached line'), findsOneWidget);
+      expect(find.byType(Image), findsNothing);
       expect(
         find.text(
           l10n.enrichmentImageCredit(
             'https://commons.wikimedia.org/wiki/File:50cent.jpg',
           ),
         ),
-        findsOneWidget,
+        findsNothing,
       );
     },
   );
 
-  testWidgets(
-    'GivenTimedLyrics_WhenThePanelOpens_ThenTheyFollowTheMusic',
-    (tester) async {
-      await pumpAndOpen(
-        tester,
-        gateway: FakeEnrichmentGateway(
-          enrichment: const TrackEnrichment(
-            lyrics: TrackLyrics(
-              lines: ['a cached line'],
-              synced: SyncedLyrics([
-                SyncedLyricLine(at: Duration.zero, text: 'the first line'),
-                SyncedLyricLine(at: Duration(seconds: 9), text: 'the second'),
-              ]),
-            ),
+  testWidgets('GivenTimedLyrics_WhenThePanelOpens_ThenTheyFollowTheMusic', (
+    tester,
+  ) async {
+    await pumpAndOpen(
+      tester,
+      gateway: FakeEnrichmentGateway(
+        enrichment: const TrackEnrichment(
+          lyrics: TrackLyrics(
+            lines: ['a cached line'],
+            synced: SyncedLyrics([
+              SyncedLyricLine(at: Duration.zero, text: 'the first line'),
+              SyncedLyricLine(at: Duration(seconds: 9), text: 'the second'),
+            ]),
           ),
         ),
-      );
+      ),
+    );
 
-      // The timed view, not the plain block: a track whose timing somebody
-      // contributed is exactly the case the synced view exists for.
-      expect(find.byType(SyncedLyricsView), findsOneWidget);
-      expect(find.text('the first line'), findsOneWidget);
-    },
-  );
+    // The timed view, not the plain block: a track whose timing somebody
+    // contributed is exactly the case the synced view exists for.
+    expect(find.byType(SyncedLyricsView), findsOneWidget);
+    expect(find.text('the first line'), findsOneWidget);
+  });
 
   testWidgets(
-    'GivenTheLookupIsSwitchedOff_WhenTheButtonIsPressed_ThenNothingIsFetchedAndTheSwitchIsNamed',
+    'GivenTheLookupIsSwitchedOff_WhenThePanelOpens_ThenNothingIsFetchedAndTheSwitchIsNamed',
     (tester) async {
       // Off means off. Asking anyway and being refused by the core would
       // make the preference a formality, and would tell the owner the
@@ -207,12 +241,10 @@ void main() {
       // it.
       final gateway = FakeEnrichmentGateway();
 
-      await pumpAndOpen(
-        tester,
-        gateway: gateway,
-        musicLookupEnabled: false,
+      await pumpAndOpen(tester, gateway: gateway, musicLookupEnabled: false);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LyricsPanel)),
       );
-      final l10n = AppLocalizations.of(tester.element(find.byType(LyricsPanel)));
 
       expect(gateway.runs, isEmpty);
       expect(find.text(l10n.lyricsSwitchedOff), findsOneWidget);
@@ -226,11 +258,29 @@ void main() {
       // lookup that legitimately found nothing is indistinguishable from one
       // that never ran.
       await pumpAndOpen(tester, gateway: FakeEnrichmentGateway());
-      final l10n = AppLocalizations.of(tester.element(find.byType(LyricsPanel)));
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LyricsPanel)),
+      );
 
       expect(find.text(l10n.lyricsNone), findsOneWidget);
     },
   );
+  testWidgets('GivenTheWordsAreShown_WhenThePanelIsRead_ThenNothingHeadsThem', (
+    tester,
+  ) async {
+    // No heading. The column is there because the owner pressed the lyrics
+    // button a moment ago and it holds the words to the song audibly
+    // playing — a line of type saying "Lyrics" over the top of that told
+    // them nothing they had not just done themselves, and cost a line of
+    // the song.
+    await pumpAndOpen(
+      tester,
+      gateway: FakeEnrichmentGateway(enrichment: cachedLyrics),
+    );
+
+    expect(find.text('a cached line'), findsOneWidget);
+    expect(find.text('Lyrics'), findsNothing);
+  });
 }
 
 /// A gateway that has nothing until a run asks for it, and everything after

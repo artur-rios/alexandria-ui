@@ -30,6 +30,18 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
   const NowPlayingScreen({super.key});
 
+  /// How wide the words are, when they are open.
+  ///
+  /// A column of a fixed comfortable measure, capped at a share of the
+  /// window so a narrow one does not end up with two thin strips instead of
+  /// a device and a page of lyrics. Lines of a song are short; past forty
+  /// characters or so the extra width is margin, and it is width the device
+  /// beside them can use.
+  static const double _lyricsWidth = 420;
+
+  /// The most of the window the words may take.
+  static const double _lyricsShare = 0.42;
+
   /// Below this, the stage reads as a smudge, not a record: the animation
   /// stops being worth the room it would still have to fight the title and
   /// the transport for, so it is hidden rather than drawn this small.
@@ -76,6 +88,14 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
 }
 
 class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
+  /// Whether the words to the track are open beside the device.
+  ///
+  /// Held here rather than in a provider: it is a state of *this screen*,
+  /// closed again the moment the owner leaves it, and the only two things
+  /// that read it — the button in the bar and the layout below — are both
+  /// built from this widget.
+  bool _showsLyrics = false;
+
   @override
   void initState() {
     super.initState();
@@ -170,8 +190,8 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             // track that had already been looked up — which no track has
             // been until somebody looks it up.
             LyricsButton(
-              fileUuid: current.uuid,
-              artistName: musicEntryForFile(ref, current).albumArtist,
+              isOpen: _showsLyrics,
+              onPressed: () => setState(() => _showsLyrics = !_showsLyrics),
             ),
             // Scoped to this track on purpose. A few seconds, where the
             // whole library is hours at MusicBrainz's one-request-per-second
@@ -192,14 +212,31 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       ),
       body: LayoutBuilder(
         builder: (context, viewport) {
+          // The words take a column down one side, and the device moves over
+          // to make the room rather than being covered by them.
+          //
+          // A sheet over the player was the first way this was built, and it
+          // was the wrong shape for what lyrics are: timed lines are read
+          // *while* the record turns, and a modal put the turning record
+          // behind them. Nothing is stacked here — the two live side by
+          // side, and the stage below is laid out in what is left.
+          final showsLyrics = _showsLyrics && current != null;
+          final lyricsWidth = showsLyrics
+              ? math.min(
+                  NowPlayingScreen._lyricsWidth,
+                  viewport.maxWidth * NowPlayingScreen._lyricsShare,
+                )
+              : 0.0;
+
+          final stageRoom = viewport.maxWidth - lyricsWidth - AppSpacing.lg * 2;
           final stageSize = math.min(
-            viewport.maxWidth - AppSpacing.lg * 2,
+            stageRoom,
             viewport.maxHeight - AppSpacing.lg * 2,
           );
           final showsStage =
               showsAnimation && stageSize >= NowPlayingScreen._minimumStageSize;
 
-          return SingleChildScrollView(
+          final device = SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -213,7 +250,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                 // empty beside it. `mainAxisAlignment: center` was centring
                 // it top to bottom all along, which is why only half of the
                 // problem was visible.
-                minWidth: viewport.maxWidth - AppSpacing.lg * 2,
+                //
+                // The room the device was left, not the width of the window:
+                // with the words open the two differ, and centring the stage
+                // in the window would put it half under them.
+                minWidth: stageRoom,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -356,10 +397,33 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         ),
                       ],
                     ),
-
                 ],
               ),
             ),
+          );
+
+          if (!showsLyrics) return device;
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: device),
+              SizedBox(
+                width: lyricsWidth,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const VerticalDivider(width: 1),
+                    Expanded(
+                      child: LyricsPanel(
+                        fileUuid: current.uuid,
+                        artistName: musicEntryForFile(ref, current).albumArtist,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           );
         },
       ),

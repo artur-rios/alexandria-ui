@@ -2752,9 +2752,9 @@
   "@lyricsOpen": {
     "description": "Music enrichment design: opens the words of the track playing now. Looks them up if none are cached yet, which is what makes it worth offering for a track that has never been looked up."
   },
-  "lyricsTitle": "Lyrics",
-  "@lyricsTitle": {
-    "description": "Music enrichment design: heading of the panel the lyrics button opens."
+  "lyricsClose": "Hide lyrics",
+  "@lyricsClose": {
+    "description": "Music enrichment design: puts the words away again and gives the whole window back to the device. The same button that opened them, which is why it names the reverse of what it just did."
   },
   "lyricsNone": "No lyrics were found for this track.",
   "@lyricsNone": {

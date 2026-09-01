@@ -3612,11 +3612,11 @@ abstract class AppLocalizations {
   /// **'Lyrics'**
   String get lyricsOpen;
 
-  /// Music enrichment design: heading of the panel the lyrics button opens.
+  /// Music enrichment design: puts the words away again and gives the whole window back to the device. The same button that opened them, which is why it names the reverse of what it just did.
   ///
   /// In en, this message translates to:
-  /// **'Lyrics'**
-  String get lyricsTitle;
+  /// **'Hide lyrics'**
+  String get lyricsClose;
 
   /// Music enrichment design: the lookup finished and the services had nothing for this track. An answer, not a failure — the core records it so the same track is not asked about again.
   ///

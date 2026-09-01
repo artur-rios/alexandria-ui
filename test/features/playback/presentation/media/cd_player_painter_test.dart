@@ -82,6 +82,40 @@ void main() {
       skip: !goldensAreComparable,
     );
 
+    testWidgets(
+      'GivenALongTitle_WhenThePlayerIsDrawn_ThenTheWindowStillHoldsIt',
+      (tester) async {
+        // The complaint this face was rebuilt for. `Many Men (Wish De…` was
+        // what the old plate showed of a perfectly ordinary track title —
+        // and merely giving the window more room moves the cut rather than
+        // removing it, because the next title is longer again. What fixes it
+        // is setting a long title smaller — this is that same title, whole,
+        // in a window that would cut it at the size a short one gets. Longer
+        // again and it is cut after all: the lettering stops shrinking at a
+        // floor, because a nameplate nobody can read across a desk has
+        // stopped being a nameplate.
+        await tester.pumpWidget(
+          painted(
+            const CdPlayerPainter(
+              palette: palette,
+              closed: 1,
+              layer: DeviceLayer.chassis,
+              isPlaying: true,
+              display: '12  04:07',
+              trackTitle: 'Many Men (Wish Death)',
+            ),
+            const Size(320, 220),
+          ),
+        );
+
+        await expectLater(
+          find.byType(CustomPaint).last,
+          matchesGoldenFile('goldens/cd-player-long-title-chassis.png'),
+        );
+      },
+      skip: !goldensAreComparable,
+    );
+
     test('GivenAPainter_WhenOnlyTheReadoutChanges_ThenItRepaints', () {
       // The readout moves once a second while a track plays. A painter that
       // did not repaint for it would freeze the position on screen — which

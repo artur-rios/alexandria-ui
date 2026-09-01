@@ -2093,7 +2093,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get lyricsOpen => 'Letra';
 
   @override
-  String get lyricsTitle => 'Letra';
+  String get lyricsClose => 'Ocultar letra';
 
   @override
   String get lyricsNone => 'Nenhuma letra foi encontrada para esta faixa.';

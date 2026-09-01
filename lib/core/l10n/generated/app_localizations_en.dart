@@ -2087,7 +2087,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsOpen => 'Lyrics';
 
   @override
-  String get lyricsTitle => 'Lyrics';
+  String get lyricsClose => 'Hide lyrics';
 
   @override
   String get lyricsNone => 'No lyrics were found for this track.';

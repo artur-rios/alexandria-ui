@@ -860,7 +860,7 @@ graph LR
 | **Description** | While audio plays, the disc, vinyl, or tape is shown on its matching player, turning while the audio runs — a single track included: the animation belongs to whatever is playing, not only an album or an artist. |
 | **Preconditions** | Audio playback is active (UC-20). |
 | **Postconditions** | The animation ran for the duration of the playback and stopped with it. |
-| **Requirements** | FR-PL-07, FR-PL-11 |
+| **Requirements** | FR-PL-07, FR-PL-11, FR-PL-12, FR-PL-13 |
 
 **Main Flow**
 
@@ -884,6 +884,7 @@ graph LR
 | AF-02 | The owner navigates to another screen | Playback and the persistent player continue; the animation is shown wherever the full player is visible. |
 | AF-03 | The system requests reduced motion | The application presents the medium without the turning motion, and playback is unaffected. |
 | AF-04 | The owner has turned the album animation off | The application shows no medium and does not open the full-window player on its own; audio plays normally. |
+| AF-05 | The owner asks for the words of the track playing | The application gives one side of the window to them and moves the device over into what is left, rather than covering it: timed lines are read while the record turns. The same control puts them away and gives the whole window back. |
 
 ---
 
@@ -1767,9 +1768,13 @@ graph LR
    `50 Cent feat. Nate Dogg` and `Eminem, 50 Cent` is one artist's record and
    listing every guest beside them is the defect this rule removes. A track
    belonging to no named record answers for itself.
-3. The owner drills into an artist and then an album, or straight into an
+3. Each artist listed is shown with the photograph a lookup has cached for
+   them, and one nobody has looked up is shown by name alone — browsing
+   fetches nothing, because a screenful of rows would be dozens of requests
+   against services that allow one a second.
+4. The owner drills into an artist and then an album, or straight into an
    album, returning by the breadcrumb.
-4. The owner plays a track, an album, or an artist. An album or artist queue
+5. The owner plays a track, an album, or an artist. An album or artist queue
    holds every track the group listed, including the ones a guest performed.
 
 **Alternative Flows**
@@ -1984,7 +1989,7 @@ graph LR
 | UC-18: Edit a Markdown or text file | FR-ME-06, FR-ME-07, FR-ME-08, FR-ME-09, FR-ME-10 |
 | UC-19: Play a video | FR-PL-01, FR-PL-02, FR-PL-03, FR-PL-04, FR-PL-08, FR-PL-10 |
 | UC-20: Play audio | FR-PL-05, FR-PL-06, FR-PL-08, FR-PL-09, FR-PL-10 |
-| UC-21: Show the album playback animation | FR-PL-07, FR-PL-11 |
+| UC-21: Show the album playback animation | FR-PL-07, FR-PL-11, FR-PL-13 |
 | UC-22: View a document | FR-VW-01, FR-VW-02, FR-VW-07, FR-VW-08 |
 | UC-23: Read a comic book | FR-VW-03, FR-VW-07, FR-VW-08 |
 | UC-24: View an image | FR-VW-04, FR-VW-07 |
@@ -2009,7 +2014,7 @@ graph LR
 | UC-43: Follow a scan while it runs | FR-LB-07, FR-LB-13, FR-LB-14, FR-LB-15, FR-LB-19, FR-LB-20, FR-UX-08 |
 | UC-44: Pause, resume, or cancel a scan | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
 | UC-45: Pace a scan | FR-LB-16, FR-LB-18 |
-| UC-46: Browse the music library | FR-CT-13, FR-CT-14 |
+| UC-46: Browse the music library | FR-CT-13, FR-CT-14, FR-PL-15 |
 | UC-47: Manage a playlist | FR-TR-15, FR-TR-16, FR-TR-17, FR-TR-18, FR-TR-19 |
 | UC-48: Play a playlist | FR-TR-20, FR-PL-05, FR-PL-06, FR-PL-07 |
 | UC-49: Browse a library | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |

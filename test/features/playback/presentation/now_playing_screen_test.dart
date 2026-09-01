@@ -2,6 +2,7 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/album_palette.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
+import 'package:alexandria_ui/features/enrichment/presentation/lyrics_button.dart';
 import 'package:alexandria_ui/features/playback/application/album_animation_controller.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
@@ -416,19 +417,18 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenATrackPlaying_WhenTheStageIsShown_ThenTheDeviceNamesIt',
-      (tester) async {
-        // The device knew everything about the record except what was
-        // playing on it.
-        await play(tester, mode: AlbumAnimationMode.disc);
+    testWidgets('GivenATrackPlaying_WhenTheStageIsShown_ThenTheDeviceNamesIt', (
+      tester,
+    ) async {
+      // The device knew everything about the record except what was
+      // playing on it.
+      await play(tester, mode: AlbumAnimationMode.disc);
 
-        expect(
-          tester.widget<AlbumStage>(find.byType(AlbumStage)).trackTitle,
-          'So What',
-        );
-      },
-    );
+      expect(
+        tester.widget<AlbumStage>(find.byType(AlbumStage)).trackTitle,
+        'So What',
+      );
+    });
   });
 
   testWidgets(
@@ -533,6 +533,74 @@ void main() {
         expect(
           tester.widget<AlbumStage>(find.byType(AlbumStage)).display,
           '01  00:42',
+        );
+      },
+    );
+  });
+
+  group('the words, beside the device (music enrichment design)', () {
+    /// Opens the player on a CD player with something playing, and presses
+    /// the lyrics button in its bar.
+    Future<void> openLyrics(WidgetTester tester) async {
+      await tester.tap(find.byIcon(Icons.lyrics_outlined));
+      await settle(tester);
+    }
+
+    testWidgets(
+      'GivenThePlayerIsOpen_WhenTheLyricsAreAskedFor_ThenTheDeviceMovesAside',
+      (tester) async {
+        // The shape of the thing, and the reason it changed: the words used
+        // to open in a modal sheet *over* the player, which put the turning
+        // record behind the lines meant to be followed while it turns.
+        // Nothing is stacked here — the device gives up part of the window
+        // and the two sit side by side.
+        // The disc mode owes an insertion, so the screen is already open
+        // when `play` returns (Task 7 step 4) — pressing the bar's button
+        // here would be asking for a second one.
+        await play(tester, mode: AlbumAnimationMode.disc);
+
+        final middle = tester.getCenter(find.byType(AlbumStage)).dx;
+        await openLyrics(tester);
+
+        expect(find.byType(LyricsPanel), findsOneWidget);
+        expect(
+          tester.getCenter(find.byType(AlbumStage)).dx,
+          lessThan(middle),
+          reason:
+              'the device has to make the room, not be covered by it — it '
+              'stays centred, in what it is left',
+        );
+        expect(
+          tester.getTopLeft(find.byType(LyricsPanel)).dx,
+          greaterThanOrEqualTo(
+            tester.getBottomRight(find.byType(AlbumStage)).dx,
+          ),
+          reason: 'beside the device, on its right',
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheWordsAreOpen_WhenTheButtonIsPressedAgain_ThenTheDeviceHasItBack',
+      (tester) async {
+        // The same button both ways: what opened the column is what puts it
+        // away, and the device gets the whole window back when it does.
+        // The disc mode owes an insertion, so the screen is already open
+        // when `play` returns (Task 7 step 4) — pressing the bar's button
+        // here would be asking for a second one.
+        await play(tester, mode: AlbumAnimationMode.disc);
+
+        await openLyrics(tester);
+        final aside = tester.getCenter(find.byType(AlbumStage)).dx;
+
+        await tester.tap(find.byIcon(Icons.lyrics));
+        await settle(tester);
+
+        expect(find.byType(LyricsPanel), findsNothing);
+        expect(
+          tester.getCenter(find.byType(AlbumStage)).dx,
+          greaterThan(aside),
+          reason: 'the device comes back to the middle of the whole window',
         );
       },
     );

@@ -334,7 +334,6 @@ class TapeDeckPainter extends CustomPainter {
     canvas.restore();
   }
 
-
   /// What is playing, on the face (see [nameplateFor]).
   void _paintNameplate(Canvas canvas, Size size) {
     paintNameplate(

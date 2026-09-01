@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,50 +13,61 @@ import 'synced_lyrics_view.dart';
 
 /// Opens the words of the track playing now (music enrichment design).
 ///
-/// A control of its own rather than a second way to reach
-/// `TrackEnrichmentPanel`: the panel renders nothing until something has
-/// been cached, so a track nobody has looked up yet shows no sign that
-/// lyrics are a thing this application has. This button is that sign, and
-/// pressing it is what fetches them — the owner asks once and reads, rather
-/// than asking for a lookup, waiting, and then scrolling to find out whether
-/// it landed.
-class LyricsButton extends ConsumerWidget {
-  /// Creates the button for [fileUuid].
+/// A control of its own rather than a second way to reach something already
+/// on screen: nothing renders until a lookup has cached something, so a track
+/// nobody has looked up yet shows no sign that lyrics are a thing this
+/// application has. This button is that sign, and pressing it is what fetches
+/// them — the owner asks once and reads, rather than asking for a lookup,
+/// waiting, and then scrolling to find out whether it landed.
+///
+/// A toggle, not a door onto a sheet. The words used to open in a modal over
+/// the player, which is the wrong shape for what they are: timed lines are
+/// read *while* the record turns, and a modal put the turning record behind
+/// them. The screen makes room beside the device instead
+/// (`NowPlayingScreen`), and this button says whether it currently has.
+class LyricsButton extends StatelessWidget {
+  /// Creates the button.
   const LyricsButton({
-    required this.fileUuid,
-    required this.artistName,
+    required this.isOpen,
+    required this.onPressed,
     super.key,
   });
 
-  /// The track whose words to show.
-  final String fileUuid;
+  /// Whether the words are on screen right now.
+  final bool isOpen;
 
-  /// The album artist, carried through to the lookup that may follow.
-  final String? artistName;
+  /// Called to show them, or to put them away.
+  final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
 
     return IconButton(
-      tooltip: l10n.lyricsOpen,
-      icon: const Icon(Icons.lyrics_outlined),
-      onPressed: () => unawaited(
-        LyricsPanel.show(
-          context,
-          fileUuid: fileUuid,
-          artistName: artistName,
-        ),
-      ),
+      // Named for what pressing it does next, not for what it opened: a
+      // control that still said "Lyrics" while the lyrics were open would
+      // leave the owner guessing which way it goes.
+      tooltip: isOpen ? l10n.lyricsClose : l10n.lyricsOpen,
+      isSelected: isOpen,
+      icon: Icon(isOpen ? Icons.lyrics : Icons.lyrics_outlined),
+      color: isOpen ? theme.colorScheme.primary : null,
+      onPressed: onPressed,
     );
   }
 }
 
-/// The words themselves, over the player they belong to.
+/// The words themselves, beside the player they belong to.
 ///
-/// A sheet rather than a route: the track keeps playing behind it, and timed
-/// lyrics are only worth reading while it does — [SyncedLyricsView] follows
-/// the same engine position the transport shows.
+/// Sized by whoever places it and filling what it is given: the player hands
+/// it a column down one side of the window, and [SyncedLyricsView] follows
+/// the same engine position the device's own readout shows.
+///
+/// It holds the words and nothing else. It briefly also carried the artist's
+/// photograph and the credit its licence requires, which made this column a
+/// short article about the artist with the song underneath — a photograph
+/// belongs where an owner is looking *for* artists, which is the artists
+/// list, and that is where it is now (`MusicGroupList`).
 class LyricsPanel extends ConsumerStatefulWidget {
   /// Creates the panel.
   const LyricsPanel({
@@ -70,22 +79,10 @@ class LyricsPanel extends ConsumerStatefulWidget {
   /// The track whose words are shown.
   final String fileUuid;
 
-  /// Whose photograph the re-read afterwards asks for; carried so the lookup
-  /// this panel may start is the same one the panel below the player would
-  /// have started.
+  /// Whose photograph the lookup this panel may start also fetches; carried
+  /// so one press fills both the words here and the portrait in the artists
+  /// list.
   final String? artistName;
-
-  /// Presents the panel over [context].
-  static Future<void> show(
-    BuildContext context, {
-    required String fileUuid,
-    String? artistName,
-  }) => showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    builder: (context) =>
-        LyricsPanel(fileUuid: fileUuid, artistName: artistName),
-  );
 
   @override
   ConsumerState<LyricsPanel> createState() => _LyricsPanelState();
@@ -130,8 +127,6 @@ class _LyricsPanelState extends ConsumerState<LyricsPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final enrichment = ref.watch(trackEnrichmentControllerProvider(_key));
     final run = ref.watch(enrichmentRunControllerProvider);
     final enabled = ref.watch(
@@ -144,86 +139,21 @@ class _LyricsPanelState extends ConsumerState<LyricsPanel> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              l10n.lyricsTitle,
-              style: theme.textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            // The photograph, where the words are.
-            //
-            // It used to sit under the player, which is where the track's
-            // own title and album sat as well — and having the device say
-            // both of those left the panel down there repeating what the
-            // machine already showed. What the lookup found belongs
-            // together, and this is where the owner comes to read it.
-            if (enrichment.value?.artistImage case final image?)
-              _ArtistPortrait(image: image),
-            _Body(
-              lyrics: enrichment.value?.lyrics,
-              // The lookup in flight and the first read of the cache are the
-              // same thing to read: both are "the words are on their way".
-              isWaiting: run.isRunning || enrichment.isLoading,
-              isEnabled: enabled,
-              stage: run.stage,
-            ),
-          ],
+        padding: const EdgeInsets.all(AppSpacing.md),
+        // No heading over it. The column appears because the owner pressed
+        // the lyrics button a moment ago, and it holds the words to the song
+        // that is audibly playing — a line of type saying "Lyrics" over the
+        // top of that told them nothing they had not just done themselves,
+        // and cost a line of the song.
+        child: _Body(
+          lyrics: enrichment.value?.lyrics,
+          // The lookup in flight and the first read of the cache are the
+          // same thing to read: both are "the words are on their way".
+          isWaiting: run.isRunning || enrichment.isLoading,
+          isEnabled: enabled,
+          stage: run.stage,
         ),
       ),
-    );
-  }
-}
-
-/// The artist's photograph, with the credit its licence requires.
-class _ArtistPortrait extends StatelessWidget {
-  const _ArtistPortrait({required this.image});
-
-  final ArtistImage image;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-
-    return Column(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
-          child: Image.file(
-            File(image.path),
-            width: 120,
-            height: 120,
-            fit: BoxFit.cover,
-            // The bytes are a cache the core wrote, and a cache can be
-            // cleared, moved, or half-written. A missing or unreadable file
-            // shows nothing rather than Flutter's broken-image glyph, which
-            // would read as a defect in the application rather than as an
-            // image that is simply not there any more.
-            errorBuilder: (context, error, stackTrace) =>
-                const SizedBox.shrink(),
-          ),
-        ),
-        if (image.sourceUrl case final source?) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            // Not decoration. Wikimedia Commons licences require
-            // attribution, so the credit travels with the picture — an image
-            // whose provenance was lost cannot lawfully be shown, which is
-            // why the core stores the source alongside the bytes.
-            l10n.enrichmentImageCredit(source),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-        const SizedBox(height: AppSpacing.md),
-      ],
     );
   }
 }
@@ -244,14 +174,6 @@ class _Body extends StatelessWidget {
   /// What the lookup this panel started concluded, when it started one.
   final EnrichmentRunStage stage;
 
-  /// How much of the window the words may claim.
-  ///
-  /// A fraction rather than a fixed height: the sheet is as tall as its
-  /// contents, and a song is tens of lines — bounded, or the timed view
-  /// (which builds every line, deliberately) would push the sheet past the
-  /// top of the window.
-  static const double _heightFraction = 0.5;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -262,15 +184,15 @@ class _Body extends StatelessWidget {
       final synced = words.synced;
 
       return Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(context).height * _heightFraction,
-            ),
+          // The whole column, top to bottom. It used to be capped at half
+          // the window because it was a sheet that grew upward from the
+          // bottom edge; a column beside the device is given its height by
+          // the screen, and every line it can hold is a line the owner does
+          // not have to scroll to.
+          Expanded(
             // Timed lines when the provider had them, the plain block when
-            // it did not — the same rule `TrackEnrichmentPanel` applies,
-            // because plenty of tracks have only the words.
+            // it did not, because plenty of tracks have only the words.
             child: synced != null
                 ? SyncedLyricsView(lyrics: synced)
                 : SingleChildScrollView(
@@ -296,10 +218,14 @@ class _Body extends StatelessWidget {
       );
     }
 
+    // Centred in the column, both below: a message about why there are no
+    // words is all this side of the window holds, and pinned to the top of
+    // a full-height column it would read as a caption for a device that is
+    // not there.
     if (isWaiting) {
-      return Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+      return Center(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: AppSpacing.md),
@@ -309,8 +235,7 @@ class _Body extends StatelessWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+    return Center(
       child: Text(
         // Why there are no words, in the owner's terms. Four different
         // facts, and what they can do about each one differs: turn the

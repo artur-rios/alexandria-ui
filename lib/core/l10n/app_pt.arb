@@ -585,7 +585,7 @@
   "musicLookupContactHelp": "O MusicBrainz exige uma forma de falar com quem faz as requisi\u00e7\u00f5es. Deixe como est\u00e1 para usar o endere\u00e7o do pr\u00f3prio aplicativo, ou coloque o seu aqui.",
   "preferencesMusicLookupLabel": "Informa\u00e7\u00f5es musicais",
   "lyricsOpen": "Letra",
-  "lyricsTitle": "Letra",
+  "lyricsClose": "Ocultar letra",
   "lyricsNone": "Nenhuma letra foi encontrada para esta faixa.",
   "lyricsSwitchedOff": "A busca de informa\u00e7\u00f5es musicais est\u00e1 desligada. Ligue-a nas Prefer\u00eancias para buscar letras.",
   "audioTransportSemantics": "Controles do reprodutor",

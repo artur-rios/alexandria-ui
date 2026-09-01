@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,11 +51,14 @@ class MusicGroupList extends ConsumerWidget {
             : null;
 
         return ListTile(
-          leading: Icon(
-            kind == MusicGroupKind.artist
-                ? Icons.person_outline
-                : Icons.album_outlined,
-          ),
+          // An artist is shown as a face where enrichment has found one
+          // (music enrichment design). The photographs used to appear over
+          // the lyrics of whatever was playing, which is the one place an
+          // owner is not looking for artists — here they are what the list
+          // is *of*, and a column of faces is how a shelf of records reads.
+          leading: kind == MusicGroupKind.artist
+              ? _ArtistPortrait(group: group)
+              : const Icon(Icons.album_outlined),
           title: Text(musicGroupName(group, l10n, kind: kind)),
           // An album says whose it is; an artist is already the answer to
           // that question.
@@ -86,6 +90,68 @@ class MusicGroupList extends ConsumerWidget {
               : controller.openAlbum(group.name, artist),
         );
       },
+    );
+  }
+}
+
+/// The photograph enrichment cached for an artist, or the icon that stands in
+/// for one (music enrichment design).
+///
+/// Read, never fetched. A list of artists is a screenful of rows, and looking
+/// each one up as it scrolled past would be dozens of provider calls a second
+/// against services that rate-limit to one — so this shows what a lookup has
+/// already found, and the lookups themselves stay where the owner asks for
+/// them (the lyrics button, and the enrichment sweep). A library nobody has
+/// enriched looks exactly as it did before, which is the honest state of it.
+///
+/// Keyed by a representative track rather than by the artist: the core reads
+/// enrichment per file, and every file of an artist row answers with the same
+/// artist. The first is as good as any.
+class _ArtistPortrait extends ConsumerWidget {
+  const _ArtistPortrait({required this.group});
+
+  final MusicGroup group;
+
+  /// The size of the circle, matching the icon a `ListTile` would otherwise
+  /// lead with so rows keep their height whether a face was found or not.
+  static const double _diameter = 40;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    const fallback = SizedBox(
+      width: _diameter,
+      height: _diameter,
+      child: Icon(Icons.person_outline),
+    );
+
+    // The untagged group is not an artist at all — it is the files that name
+    // none — so there is nobody to have a photograph of.
+    final name = group.name;
+    if (name == null || group.entries.isEmpty) return fallback;
+
+    final enrichment = ref.watch(
+      trackEnrichmentControllerProvider((
+        fileUuid: group.entries.first.file.uuid,
+        artistName: name,
+      )),
+    );
+
+    final image = enrichment.value?.artistImage;
+    if (image == null) return fallback;
+
+    return ClipOval(
+      child: Image.file(
+        File(image.path),
+        width: _diameter,
+        height: _diameter,
+        fit: BoxFit.cover,
+        // The bytes are a cache the core wrote, and a cache can be cleared,
+        // moved, or half-written. A missing or unreadable file falls back to
+        // the icon rather than to Flutter's broken-image glyph, which would
+        // read as a defect in the application rather than as a picture that
+        // is simply not there any more.
+        errorBuilder: (context, error, stackTrace) => fallback,
+      ),
     );
   }
 }

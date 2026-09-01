@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
@@ -5,6 +7,7 @@ import '../../domain/album_medium.dart';
 import 'device_layer.dart';
 import 'device_nameplate.dart';
 import 'device_transport.dart';
+import 'led_panel.dart';
 
 /// A CD player, waiting for a disc or playing one (UC-21, FR-PL-07).
 ///
@@ -77,6 +80,7 @@ class CdPlayerPainter extends CustomPainter {
       case DeviceLayer.chassis:
         _paintFace(canvas, face);
         _paintDisplay(canvas, face);
+        _paintGrille(canvas, face);
         _paintButtons(canvas, face);
         _paintNameplate(canvas, size);
         _paintWell(canvas, wellCentre, wellRadius);
@@ -125,48 +129,76 @@ class CdPlayerPainter extends CustomPainter {
     );
   }
 
+  /// The readout, in the left half of the display band.
+  ///
+  /// Narrower than it was, and lit rather than printed: the band it sits in
+  /// is shared with the nameplate now (see [nameplateFor]), and the two
+  /// windows together are what make this face read as an instrument panel.
+  /// The digits are sized off the window's *width* as well as its height,
+  /// because what has to fit is a known nine characters — a font chosen off
+  /// the height alone would spill them the moment the band narrowed.
   void _paintDisplay(Canvas canvas, Rect face) {
-    final recessRect = Rect.fromLTWH(
-      face.left + face.width * 0.06,
-      face.top + face.height * 0.08,
-      face.width * 0.46,
-      face.height * 0.20,
-    );
-    final recess = RRect.fromRectAndRadius(
-      recessRect,
-      Radius.circular(face.height * 0.02),
-    );
-    canvas.drawRRect(recess, Paint()..color = palette.panelDark);
-    canvas.drawRRect(
-      recess,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = face.height * 0.006
-        ..color = palette.panelEdge,
+    final bounds = Rect.fromLTWH(
+      face.left + face.width * 0.05,
+      face.top + face.height * 0.07,
+      face.width * 0.35,
+      face.height * 0.22,
     );
 
-    if (display.isEmpty) return;
-
-    final track = TextPainter(
-      text: TextSpan(
-        text: display,
-        style: TextStyle(
-          color: palette.displayInk,
-          fontSize: recessRect.height * 0.4,
-          fontFeatures: const [FontFeature.tabularFigures()],
-          fontFamily: 'monospace',
-          letterSpacing: 1,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout(maxWidth: recessRect.width - recessRect.width * 0.16);
-    track.paint(
+    paintLedPanel(
       canvas,
-      Offset(
-        recessRect.left + recessRect.width * 0.08,
-        recessRect.center.dy - track.height / 2,
-      ),
+      bounds: bounds,
+      palette: palette,
+      text: display,
+      fontSize: math.min(bounds.height * 0.34, bounds.width * 0.12),
     );
+  }
+
+  /// The speaker, down the face's left side.
+  ///
+  /// Not a CD player's feature — a radio's. The face had a wide empty strip
+  /// beside the well once the transport moved to the right of it, and an
+  /// empty strip of brushed aluminium reads as a device missing a part. A
+  /// grille is what a machine with a display band across its top and a
+  /// square of buttons beside it is: the drilled dots are the cue, so they
+  /// are drawn as dots rather than suggested with a texture.
+  void _paintGrille(Canvas canvas, Rect face) {
+    final bounds = Rect.fromLTWH(
+      face.left + face.width * 0.05,
+      face.top + face.height * 0.40,
+      face.width * 0.22,
+      face.height * 0.48,
+    );
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(bounds, Radius.circular(face.height * 0.03)),
+      Paint()..color = palette.panelDark.withValues(alpha: 0.55),
+    );
+
+    // Rows and columns counted from the pitch rather than fixed, so the
+    // grille keeps the same hole *size* on a small device instead of the
+    // same number of ever-smaller holes.
+    final pitch = face.height * 0.062;
+    final hole = Paint()..color = palette.wellDark;
+    final rim = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = pitch * 0.06
+      ..color = palette.chromeDark.withValues(alpha: 0.5);
+
+    for (
+      var y = bounds.top + pitch * 0.7;
+      y < bounds.bottom - pitch * 0.3;
+      y += pitch
+    ) {
+      for (
+        var x = bounds.left + pitch * 0.7;
+        x < bounds.right - pitch * 0.3;
+        x += pitch
+      ) {
+        canvas.drawCircle(Offset(x, y), pitch * 0.26, hole);
+        canvas.drawCircle(Offset(x, y), pitch * 0.26, rim);
+      }
+    }
   }
 
   /// The transport, drawn from the shared geometry the stage lays its hit
@@ -266,7 +298,6 @@ class CdPlayerPainter extends CustomPainter {
 
     canvas.restore();
   }
-
 
   /// What is playing, on the face (see [nameplateFor]).
   void _paintNameplate(Canvas canvas, Size size) {

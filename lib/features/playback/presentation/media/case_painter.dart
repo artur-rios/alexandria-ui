@@ -4,22 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
 import '../../domain/album_medium.dart';
-
-
-/// The face the sleeve is typeset in, bundled with the application
-/// (`pubspec.yaml`'s `fonts:` block).
-///
-/// Every `TextStyle` on the case names it. A `TextPainter` does not inherit
-/// from a `Theme` — it carries the style it is given — so leaving the family
-/// null does not fall back to the application's typeface, it falls back to
-/// the host's, which is a different face on each platform and is what made
-/// these goldens fail on Linux while passing on the machine that made them.
-///
-/// The name is this application's, not the typeface's: the files are Roboto,
-/// but a bundled family actually *called* Roboto is what Material's default
-/// typography resolves to, so it would restyle every screen in the
-/// application rather than this one drawing.
-const String _sleeveFontFamily = 'AlexandriaSleeve';
+import 'device_lettering.dart';
 
 /// The case the medium comes out of and goes back into (UC-21, FR-PL-07).
 ///
@@ -89,7 +74,12 @@ class CasePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
     final margin = w * 0.04;
-    final bounds = Rect.fromLTWH(margin, margin, w - margin * 2, h - margin * 2);
+    final bounds = Rect.fromLTWH(
+      margin,
+      margin,
+      w - margin * 2,
+      h - margin * 2,
+    );
 
     _paintShadow(canvas, bounds);
 
@@ -113,7 +103,9 @@ class CasePainter extends CustomPainter {
   }
 
   void _paintShadow(Canvas canvas, Rect bounds) {
-    final shadowRect = bounds.shift(Offset(bounds.width * 0.03, bounds.height * 0.04));
+    final shadowRect = bounds.shift(
+      Offset(bounds.width * 0.03, bounds.height * 0.04),
+    );
     canvas.drawRRect(
       RRect.fromRectAndRadius(shadowRect, Radius.circular(bounds.width * 0.02)),
       Paint()
@@ -123,11 +115,17 @@ class CasePainter extends CustomPainter {
   }
 
   void _paintJacket(Canvas canvas, Rect bounds) {
-    _paintFace(canvas, RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.015)));
+    _paintFace(
+      canvas,
+      RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.015)),
+    );
   }
 
   void _paintCassetteCase(Canvas canvas, Rect bounds) {
-    _paintFace(canvas, RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.03)));
+    _paintFace(
+      canvas,
+      RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.03)),
+    );
   }
 
   void _paintJewelCase(Canvas canvas, Rect bounds) {
@@ -138,13 +136,21 @@ class CasePainter extends CustomPainter {
       bounds.width - spineWidth,
       bounds.height,
     );
-    _paintFace(canvas, RRect.fromRectAndRadius(caseRect, Radius.circular(bounds.width * 0.01)));
+    _paintFace(
+      canvas,
+      RRect.fromRectAndRadius(caseRect, Radius.circular(bounds.width * 0.01)),
+    );
 
     // The hinge spine: a narrower, darker strip along the case's left edge
     // — the ribbed hinge a jewel case shows side-on — kept unhued so it
     // reads as clear plastic over the booklet rather than as a second
     // sleeve colour.
-    final spineRect = Rect.fromLTWH(bounds.left, bounds.top, spineWidth, bounds.height);
+    final spineRect = Rect.fromLTWH(
+      bounds.left,
+      bounds.top,
+      spineWidth,
+      bounds.height,
+    );
     canvas.drawRect(
       spineRect,
       Paint()
@@ -160,7 +166,11 @@ class CasePainter extends CustomPainter {
       ..color = palette.chromeDark.withValues(alpha: 0.5);
     for (var i = 1; i < 6; i++) {
       final y = bounds.top + bounds.height * i / 6;
-      canvas.drawLine(Offset(spineRect.left, y), Offset(spineRect.right, y), rib);
+      canvas.drawLine(
+        Offset(spineRect.left, y),
+        Offset(spineRect.right, y),
+        rib,
+      );
     }
   }
 
@@ -175,7 +185,12 @@ class CasePainter extends CustomPainter {
       // matches the case it is going on.
       canvas.save();
       canvas.clipRRect(shape);
-      paintImage(canvas: canvas, rect: shape.outerRect, image: cover, fit: BoxFit.cover);
+      paintImage(
+        canvas: canvas,
+        rect: shape.outerRect,
+        image: cover,
+        fit: BoxFit.cover,
+      );
       canvas.restore();
     }
 
@@ -218,7 +233,7 @@ class CasePainter extends CustomPainter {
           // host offers, which typeset this sleeve in a different face on
           // Windows than on Linux and made the goldens un-comparable
           // between them. See the `fonts:` block in `pubspec.yaml`.
-          fontFamily: _sleeveFontFamily,
+          fontFamily: deviceFontFamily,
           color: palette.sleeveInk,
           fontSize: bounds.width * 0.09,
           fontWeight: FontWeight.w600,
@@ -245,7 +260,7 @@ class CasePainter extends CustomPainter {
       text: TextSpan(
         text: artist,
         style: TextStyle(
-          fontFamily: _sleeveFontFamily,
+          fontFamily: deviceFontFamily,
           color: palette.sleeveInk.withValues(alpha: 0.85),
           fontSize: bounds.width * 0.07,
         ),
