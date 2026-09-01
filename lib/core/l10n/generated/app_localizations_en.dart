@@ -2082,4 +2082,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preferencesMusicLookupLabel => 'Music info';
+
+  @override
+  String get lyricsOpen => 'Lyrics';
+
+  @override
+  String get lyricsTitle => 'Lyrics';
+
+  @override
+  String get lyricsNone => 'No lyrics were found for this track.';
+
+  @override
+  String get lyricsSwitchedOff =>
+      'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.';
 }

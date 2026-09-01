@@ -2747,5 +2747,21 @@
   "preferencesMusicLookupLabel": "Music info",
   "@preferencesMusicLookupLabel": {
     "description": "Music enrichment design: heading over the music-lookup preferences in the preferences dialog."
+  },
+  "lyricsOpen": "Lyrics",
+  "@lyricsOpen": {
+    "description": "Music enrichment design: opens the words of the track playing now. Looks them up if none are cached yet, which is what makes it worth offering for a track that has never been looked up."
+  },
+  "lyricsTitle": "Lyrics",
+  "@lyricsTitle": {
+    "description": "Music enrichment design: heading of the panel the lyrics button opens."
+  },
+  "lyricsNone": "No lyrics were found for this track.",
+  "@lyricsNone": {
+    "description": "Music enrichment design: the lookup finished and the services had nothing for this track. An answer, not a failure \u2014 the core records it so the same track is not asked about again."
+  },
+  "lyricsSwitchedOff": "Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.",
+  "@lyricsSwitchedOff": {
+    "description": "Music enrichment design: the owner opened the lyrics panel for a track with none cached while the lookup preference is off. Says where the switch is rather than only that the feature is unavailable."
   }
 }

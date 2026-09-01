@@ -2088,4 +2088,17 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get preferencesMusicLookupLabel => 'Informações musicais';
+
+  @override
+  String get lyricsOpen => 'Letra';
+
+  @override
+  String get lyricsTitle => 'Letra';
+
+  @override
+  String get lyricsNone => 'Nenhuma letra foi encontrada para esta faixa.';
+
+  @override
+  String get lyricsSwitchedOff =>
+      'A busca de informações musicais está desligada. Ligue-a nas Preferências para buscar letras.';
 }

@@ -8,6 +8,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../enrichment/presentation/enrich_track_button.dart';
+import '../../enrichment/presentation/lyrics_button.dart';
 import '../../enrichment/presentation/track_enrichment_panel.dart';
 import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../domain/album_cover.dart';
@@ -146,6 +147,15 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           // Task 5 entry point 3: whatever is currently playing — nothing
           // when the queue is empty, since there is then no track to add.
           if (current != null) ...[
+            // Task 5 entry point 2: the words of the track playing, fetched
+            // on the press when nothing has been cached for it yet. Before
+            // this button, lyrics could only appear beneath the player for a
+            // track that had already been looked up — which no track has
+            // been until somebody looks it up.
+            LyricsButton(
+              fileUuid: current.uuid,
+              artistName: musicEntryForFile(ref, current).albumArtist,
+            ),
             // Scoped to this track on purpose. A few seconds, where the
             // whole library is hours at MusicBrainz's one-request-per-second
             // limit — an action that long needs a screen to report progress

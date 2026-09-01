@@ -3605,6 +3605,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Music info'**
   String get preferencesMusicLookupLabel;
+
+  /// Music enrichment design: opens the words of the track playing now. Looks them up if none are cached yet, which is what makes it worth offering for a track that has never been looked up.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics'**
+  String get lyricsOpen;
+
+  /// Music enrichment design: heading of the panel the lyrics button opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics'**
+  String get lyricsTitle;
+
+  /// Music enrichment design: the lookup finished and the services had nothing for this track. An answer, not a failure — the core records it so the same track is not asked about again.
+  ///
+  /// In en, this message translates to:
+  /// **'No lyrics were found for this track.'**
+  String get lyricsNone;
+
+  /// Music enrichment design: the owner opened the lyrics panel for a track with none cached while the lookup preference is off. Says where the switch is rather than only that the feature is unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.'**
+  String get lyricsSwitchedOff;
 }
 
 class _AppLocalizationsDelegate
