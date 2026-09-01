@@ -182,6 +182,8 @@ environment. There is no server, no connection string, and no secret to inject.
 | Owner preferences — theme, language, layout, sort, filters, library folders, window geometry | The local settings store | Owner-facing state, changed in the interface, never in a config file. |
 | Music enrichment — whether lookups may run, and the contact they carry | The local settings store, applied to the core's `ALEXANDRIA_METADATA_*` variables before it is initialized | The core's own setting, but the owner's decision: this application embeds the core, so the owner *is* the operator, and asking them to edit a `config.toml` to see a lyric would be asking them to administer their own music player. |
 
+| The core's caches — artist photographs and thumbnails | Set to directories beside the catalog, through `ALEXANDRIA_METADATA_IMAGE_CACHE_DIR` and `ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR`, before the core is initialized | Both settings default to a path relative to the process's working directory, which for an installed application is wherever the desktop started it — a directory this application does not own and often cannot write to. The catalog's own directory is the one it does. |
+
 No secret is ever written into this document, into the repository, or into a
 build argument. The only credential in the product is the owner's password, which
 the application forwards to the core and never stores.

@@ -163,6 +163,74 @@ class MusicLookup {
   String toString() => 'MusicLookup(enabled: $enabled, contact: $contact)';
 }
 
+/// Where the core keeps the artist photographs it fetches.
+const String coreImageCacheDirVariable = 'ALEXANDRIA_METADATA_IMAGE_CACHE_DIR';
+
+/// Where the core keeps the thumbnails it renders.
+const String coreThumbnailCacheDirVariable =
+    'ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR';
+
+/// Puts the core's caches inside [applicationDirectory], before it is
+/// initialized.
+///
+/// Both settings default to a **relative** path — `artist-images` and
+/// `thumbnails` — which the core resolves against the process's working
+/// directory. For a program launched from its own source tree that is
+/// harmless and invisible; for an installed application it is wherever the
+/// desktop happened to start it, which is a directory this application does
+/// not own and often cannot write to. An artist photograph then either fails
+/// to be written at all, or is written somewhere nothing will look for it
+/// again — and the core answers the path it stored, so the player is handed
+/// `artist-images/….jpg` and finds nothing there. That is the whole of "the
+/// picture never appears".
+///
+/// The catalog's own directory is the answer, because it is the one
+/// directory this application already owns and already creates (IR-05). The
+/// caches sit beside `catalog.db`: they belong to that catalog, they are
+/// discarded with it, and an owner who moved their database took its caches
+/// along without having to be told they existed.
+///
+/// A variable already set in the environment is left alone, as everywhere
+/// else here.
+void ensureCacheDirectories(
+  String applicationDirectory, {
+  Map<String, String>? environment,
+}) {
+  final current = environment ?? Platform.environment;
+
+  cacheDirectoriesIn(applicationDirectory).forEach((variable, path) {
+    if (!shouldSetCoreVariable(current, variable)) return;
+
+    setProcessEnvironment(variable, path);
+  });
+}
+
+/// Where each cache goes, given the directory the catalog lives in.
+///
+/// Separated from the setting so the decision can be read back: writing an
+/// environment variable is a platform call that `Platform.environment` — a
+/// snapshot taken before it — cannot show, so what is testable here is the
+/// path this application chooses, which is where the mistake would be.
+///
+/// The core's own default names are kept: this moves where the caches are,
+/// not what they are called, and an owner who goes looking finds the
+/// directories the core's documentation describes.
+Map<String, String> cacheDirectoriesIn(String applicationDirectory) {
+  final root = _withoutTrailingSeparator(applicationDirectory);
+
+  return {
+    coreImageCacheDirVariable: '$root${Platform.pathSeparator}artist-images',
+    coreThumbnailCacheDirVariable: '$root${Platform.pathSeparator}thumbnails',
+  };
+}
+
+/// [directory] without a trailing separator, so joining a name to it cannot
+/// produce a doubled one.
+String _withoutTrailingSeparator(String directory) =>
+    directory.endsWith(Platform.pathSeparator) && directory.length > 1
+    ? directory.substring(0, directory.length - 1)
+    : directory;
+
 /// Whether the application has to set [name] itself.
 ///
 /// The same rule [shouldSetAuthMode] applies, per variable: an explicit

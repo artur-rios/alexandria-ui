@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:isolate';
 
+import 'package:path/path.dart' as p;
+
 import 'alexandria_bindings.dart';
 import 'core_environment.dart';
 import 'core_strings.dart';
@@ -325,6 +327,12 @@ class CoreIsolate {
       // would be too late for the process.
       'init' => withNativeString(arguments.first! as String, (path) {
         ensureLocalAuthMode();
+        // The caches go beside the database, which is the directory this
+        // application owns — see `ensureCacheDirectories`. Derived from the
+        // path rather than passed as a second argument, because "beside the
+        // catalog" is the rule, and a caller free to say otherwise is a
+        // caller that can put them somewhere the catalog does not follow.
+        ensureCacheDirectories(p.dirname(arguments.first! as String));
         ensureMusicLookup(
           MusicLookup(
             enabled: arguments[1]! as bool,

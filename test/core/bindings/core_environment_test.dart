@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:alexandria_ui/core/bindings/core_environment.dart';
+import 'package:path/path.dart' as p;
 import 'package:flutter_test/flutter_test.dart';
 
 /// The decision half of putting the core into local auth mode.
@@ -144,6 +147,66 @@ void main() {
     // with no contact cannot look anything up at all.
     test('GivenTheShippedContact_WhenItIsRead_ThenItIsNotEmpty', () {
       expect(defaultMusicLookupContact.trim(), isNotEmpty);
+    });
+  });
+
+  group('the core\'s caches (music enrichment design)', () {
+    // The defect this closes: both settings default to a *relative* path,
+    // which the core resolves against the process's working directory. For
+    // an installed application that is wherever the desktop started it — a
+    // directory this application does not own and often cannot write to —
+    // so an artist photograph was written somewhere nothing would look for
+    // it again, and the player was handed `artist-images/….jpg` and found
+    // nothing there.
+    test('GivenTheCatalogsDirectory_WhenTheCachesArePlaced_ThenTheyAreBesideIt', () {
+      final directories = cacheDirectoriesIn(
+        '${Platform.pathSeparator}home${Platform.pathSeparator}owner',
+      );
+
+      expect(
+        directories[coreImageCacheDirVariable],
+        '${Platform.pathSeparator}home${Platform.pathSeparator}owner'
+        '${Platform.pathSeparator}artist-images',
+      );
+      expect(
+        directories[coreThumbnailCacheDirVariable],
+        '${Platform.pathSeparator}home${Platform.pathSeparator}owner'
+        '${Platform.pathSeparator}thumbnails',
+      );
+    });
+
+    test('GivenAPathThatEndsInASeparator_WhenPlaced_ThenItIsNotDoubled', () {
+      final directories = cacheDirectoriesIn(
+        '${Platform.pathSeparator}data${Platform.pathSeparator}',
+      );
+
+      expect(
+        directories[coreImageCacheDirVariable],
+        '${Platform.pathSeparator}data'
+        '${Platform.pathSeparator}artist-images',
+      );
+    });
+
+    test('GivenAnAbsoluteCatalog_WhenPlaced_ThenTheCachesAreAbsoluteToo', () {
+      // The whole point: a relative answer is one the core resolves against
+      // a working directory nobody chose.
+      final directories = cacheDirectoriesIn(
+        '${Platform.pathSeparator}var${Platform.pathSeparator}alexandria',
+      );
+
+      for (final path in directories.values) {
+        expect(p.isAbsolute(path), isTrue, reason: path);
+      }
+    });
+
+    // An explicit setting is deliberate, exactly as it is for the auth mode.
+    test('GivenAnImageDirIsAlreadySet_WhenChecked_ThenItIsLeftAlone', () {
+      expect(
+        shouldSetCoreVariable(const {
+          coreImageCacheDirVariable: '/somewhere/else',
+        }, coreImageCacheDirVariable),
+        isFalse,
+      );
     });
   });
 }
