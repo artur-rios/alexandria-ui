@@ -53,12 +53,13 @@ void main() {
 
   group('the readout and the transport (FR-PL-09, main flow step 6)', () {
     testWidgets(
-      'GivenATrackPlaying_WhenThePlayerIsDrawn_ThenTheReadoutAndPauseAreShown',
+      'GivenATrackPlaying_WhenThePlayerIsDrawn_ThenItSaysWhatIsOnIt',
       (tester) async {
         // A golden of its own rather than a changed one above: the two
         // states of this face — waiting, and playing a track — differ in
-        // both the display and the play cap, and a device that reads `01
-        // 03:47` while nothing is playing is the defect this replaced.
+        // the display, the play cap and the nameplate, and a device that
+        // reads `01  03:47` while nothing is playing is the defect this
+        // replaced.
         await tester.pumpWidget(
           painted(
             const CdPlayerPainter(
@@ -67,6 +68,7 @@ void main() {
               layer: DeviceLayer.chassis,
               isPlaying: true,
               display: '03  01:24',
+              trackTitle: 'Blue in Green',
             ),
             const Size(320, 220),
           ),

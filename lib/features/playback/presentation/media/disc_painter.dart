@@ -1,8 +1,10 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import 'album_art.dart';
 
 /// A compact disc, turning (UC-21, FR-PL-07).
 ///
@@ -13,10 +15,14 @@ import '../../../../core/theme/album_palette.dart';
 /// falling on it.
 class DiscPainter extends CustomPainter {
   /// Creates the painter.
-  const DiscPainter({required this.palette, required this.turns});
+  const DiscPainter({required this.palette, required this.turns, this.cover});
 
   /// The artwork's colours (FR-UX-07).
   final AlbumPalette palette;
+
+  /// The album's own picture, printed on the disc, or `null` for a plain
+  /// pressing.
+  final ui.Image? cover;
 
   /// How far through a turn the disc is, in whole turns.
   final double turns;
@@ -120,6 +126,19 @@ class DiscPainter extends CustomPainter {
         ).createShader(Rect.fromCircle(center: centre, radius: radius * 0.37)),
     );
 
+    // The album's art, printed where a pressed disc carries it: inside the
+    // data area, around the hub. Not to the very edge — the outer ring is
+    // where the iridescence lives, and it is what says "compact disc" at a
+    // glance.
+    if (cover case final cover?) {
+      paintAlbumArtInCircle(
+        canvas,
+        cover: cover,
+        centre: centre,
+        radius: radius * 0.58,
+      );
+    }
+
     // The hub and its spindle hole.
     canvas.drawCircle(centre, radius * 0.16, Paint()..color = palette.discRing);
     canvas.drawCircle(centre, radius * 0.05, Paint()..color = palette.wellDark);
@@ -159,5 +178,6 @@ class DiscPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(DiscPainter oldDelegate) =>
+      !identical(oldDelegate.cover, cover) ||
       oldDelegate.turns != turns || oldDelegate.palette != palette;
 }

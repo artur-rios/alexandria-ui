@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/album_palette.dart';
 import '../../domain/album_medium.dart';
 import 'device_layer.dart';
+import 'device_nameplate.dart';
 import 'device_transport.dart';
 
 /// A tape deck, waiting for a cassette or playing one (UC-21, FR-PL-07).
@@ -25,6 +26,7 @@ class TapeDeckPainter extends CustomPainter {
     required this.closed,
     required this.layer,
     this.isPlaying = false,
+    this.trackTitle = '',
   });
 
   /// The artwork's colours (FR-UX-07).
@@ -39,6 +41,10 @@ class TapeDeckPainter extends CustomPainter {
 
   /// Whether audio is running, which is what the play cap shows as a pause.
   final bool isPlaying;
+
+  /// What is playing, printed on the device's own nameplate. Empty draws no
+  /// plate at all — a device with nothing in it says nothing.
+  final String trackTitle;
 
   /// A deck face is a wide, short panel.
   static const double aspect = 1.7;
@@ -58,6 +64,7 @@ class TapeDeckPainter extends CustomPainter {
         _paintFace(canvas, face);
         _paintVuMeter(canvas, face);
         _paintButtons(canvas, face);
+        _paintNameplate(canvas, size);
         _paintWell(canvas, well);
       case DeviceLayer.foreground:
         _paintDoor(canvas, face, well);
@@ -327,10 +334,22 @@ class TapeDeckPainter extends CustomPainter {
     canvas.restore();
   }
 
+
+  /// What is playing, on the face (see [nameplateFor]).
+  void _paintNameplate(Canvas canvas, Size size) {
+    paintNameplate(
+      canvas,
+      bounds: nameplateFor(AlbumMedium.tape, deviceFaceOf(size)),
+      palette: palette,
+      title: trackTitle,
+    );
+  }
+
   @override
   bool shouldRepaint(TapeDeckPainter oldDelegate) =>
       oldDelegate.closed != closed ||
       oldDelegate.palette != palette ||
       oldDelegate.layer != layer ||
-      oldDelegate.isPlaying != isPlaying;
+      oldDelegate.isPlaying != isPlaying ||
+      oldDelegate.trackTitle != trackTitle;
 }

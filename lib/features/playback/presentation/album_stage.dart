@@ -36,6 +36,7 @@ class AlbumStage extends StatefulWidget {
     this.onInserted,
     this.cover,
     this.display = '',
+    this.trackTitle = '',
     this.onControl,
     super.key,
   });
@@ -87,6 +88,10 @@ class AlbumStage extends StatefulWidget {
   /// for the devices that carry no readout, and for a stage with nothing
   /// playing.
   final String display;
+
+  /// What is playing, printed on the device's own nameplate — the track's
+  /// title, not the album's, which the case already carries.
+  final String trackTitle;
 
   /// What a press on the device's own buttons does, or `null` for a stage
   /// that is only looked at.
@@ -288,6 +293,7 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
             cover: widget.cover,
             isPlaying: widget.isPlaying,
             display: widget.display,
+            trackTitle: widget.trackTitle,
             onControl: widget.onControl,
           ),
         ),

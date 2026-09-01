@@ -250,6 +250,12 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                       // that said the same thing about a two-minute single
                       // and a twenty-minute side.
                       display: cdDisplayFor(state),
+                      // What is playing, on the device itself — the track's
+                      // own title, where the case beside it carries the
+                      // record's. The page names it again below, in text
+                      // that can be read at any size and selected; the plate
+                      // is what makes the device know what is on it.
+                      trackTitle: musicTitleForFile(ref, current, l10n),
                       size: stageSize,
                       // The device's own buttons, wired to the same
                       // controller the row below reaches (main flow step 6).
@@ -285,41 +291,54 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                   ],
                   const SizedBox(height: AppSpacing.xl),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        tooltip: l10n.audioPrevious,
-                        iconSize: 48,
-                        icon: const Icon(Icons.skip_previous),
-                        onPressed: state.queue.hasPrevious
-                            ? () => unawaited(controller.previous())
-                            : null,
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      IconButton(
-                        tooltip: state.isPlaying
-                            ? l10n.audioPause
-                            : l10n.audioPlay,
-                        iconSize: 72,
-                        icon: Icon(
-                          state.isPlaying
-                              ? Icons.pause_circle
-                              : Icons.play_circle,
+                  // Only when there is no device to press.
+                  //
+                  // The transport belongs on the machine: an owner looking
+                  // at a tape deck reaches for the deck's own buttons, and a
+                  // second row of the same three underneath it was the same
+                  // controls twice. But this screen fills the window — the
+                  // playback bar is behind it, not under it — so a stage
+                  // that is hidden (the animation switched off, FR-PL-11, or
+                  // a window too short to draw one in) would leave the
+                  // player with no way to pause at all. This row is that
+                  // floor, and nothing more.
+                  if (!showsStage)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          tooltip: l10n.audioPrevious,
+                          iconSize: 48,
+                          icon: const Icon(Icons.skip_previous),
+                          onPressed: state.queue.hasPrevious
+                              ? () => unawaited(controller.previous())
+                              : null,
                         ),
-                        onPressed: () => unawaited(controller.togglePlaying()),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      IconButton(
-                        tooltip: l10n.audioNext,
-                        iconSize: 48,
-                        icon: const Icon(Icons.skip_next),
-                        onPressed: state.queue.hasNext
-                            ? () => unawaited(controller.next())
-                            : null,
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: AppSpacing.md),
+                        IconButton(
+                          tooltip: state.isPlaying
+                              ? l10n.audioPause
+                              : l10n.audioPlay,
+                          iconSize: 72,
+                          icon: Icon(
+                            state.isPlaying
+                                ? Icons.pause_circle
+                                : Icons.play_circle,
+                          ),
+                          onPressed: () =>
+                              unawaited(controller.togglePlaying()),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        IconButton(
+                          tooltip: l10n.audioNext,
+                          iconSize: 48,
+                          icon: const Icon(Icons.skip_next),
+                          onPressed: state.queue.hasNext
+                              ? () => unawaited(controller.next())
+                              : null,
+                        ),
+                      ],
+                    ),
 
                   // Below the transport, deliberately. Whatever the core
                   // cached about this track is worth reading while it plays,

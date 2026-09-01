@@ -344,6 +344,69 @@ void main() {
     );
   });
 
+  group('one transport, on the device (main flow step 6)', () {
+    testWidgets(
+      'GivenAStageOnScreen_WhenThePlayerIsShown_ThenTheRowBeneathItIsGone',
+      (tester) async {
+        // The same three controls twice, once on the machine and once under
+        // it, is what this removes: an owner looking at a tape deck reaches
+        // for the deck's own buttons.
+        await play(tester, mode: AlbumAnimationMode.disc);
+
+        expect(find.byType(AlbumStage), findsOneWidget);
+        expect(
+          find.widgetWithIcon(IconButton, Icons.pause_circle),
+          findsNothing,
+        );
+        expect(
+          deviceControl(tester, messages(tester).audioPause),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenATrackPlaying_WhenTheStageIsShown_ThenTheDeviceNamesIt',
+      (tester) async {
+        // The device knew everything about the record except what was
+        // playing on it.
+        await play(tester, mode: AlbumAnimationMode.disc);
+
+        expect(
+          tester.widget<AlbumStage>(find.byType(AlbumStage)).trackTitle,
+          'So What',
+        );
+      },
+    );
+  });
+
+  testWidgets(
+    'GivenTheDevicesButtons_WhenTheyAreLaidOut_ThenNothingInksOverThem',
+    (tester) async {
+      // The highlight an `InkResponse` draws is Material's and the cap
+      // underneath is painted: a grey circle appearing over the pointer
+      // reads as a smudge on the picture rather than as a control lighting
+      // up. What the device says it is doing, it says by what it is — the
+      // play cap becomes a pause cap.
+      await play(tester, mode: AlbumAnimationMode.disc);
+
+      expect(
+        find.descendant(
+          of: find.byType(AlbumStage),
+          matching: find.byType(InkResponse),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(AlbumStage),
+          matching: find.byType(InkWell),
+        ),
+        findsNothing,
+      );
+    },
+  );
+
   group('the CD player\'s readout (FR-PL-09)', () {
     test('GivenNothingPlaying_WhenTheReadoutIsRead_ThenItIsBlank', () {
       // A player with no disc in it shows nothing, rather than 00:00 against
@@ -705,7 +768,12 @@ void main() {
         expect(find.byType(NowPlayingScreen), findsOneWidget);
 
         expect(playing.player.opened, hasLength(1));
-        expect(find.byIcon(Icons.pause_circle), findsOneWidget);
+        // The device is what carries the transport now, at every window size
+        // it is drawn at.
+        expect(
+          deviceControl(tester, messages(tester).audioPause),
+          findsOneWidget,
+        );
       },
     );
   });

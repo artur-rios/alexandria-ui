@@ -1,8 +1,11 @@
 import 'dart:math' as math;
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import 'album_art.dart';
 import 'diagonal_sheen.dart';
 
 /// A cassette, turning (UC-21, FR-PL-07).
@@ -16,10 +19,18 @@ import 'diagonal_sheen.dart';
 /// would tear the tape off both hubs in one revolution.
 class CassettePainter extends CustomPainter {
   /// Creates the painter.
-  const CassettePainter({required this.palette, required this.turns});
+  const CassettePainter({
+    required this.palette,
+    required this.turns,
+    this.cover,
+  });
 
   /// The artwork's colours (FR-UX-07).
   final AlbumPalette palette;
+
+  /// The album's own picture, on the shell's sticker, or `null` for a
+  /// blank one.
+  final ui.Image? cover;
 
   /// How far through a turn the reels are, in whole turns.
   final double turns;
@@ -102,6 +113,18 @@ class CassettePainter extends CustomPainter {
       Radius.circular(h * 0.02),
     );
     canvas.drawRRect(label, Paint()..color = palette.tapeLabel);
+
+    // The album's art on the sticker — a square at the label's left end,
+    // which is where an inlay's own picture sits and all the room a shell's
+    // label has for one. The written lines carry on beside it.
+    if (cover case final cover?) {
+      paintAlbumArtInRect(
+        canvas,
+        cover: cover,
+        bounds: Rect.fromLTWH(w * 0.085, h * 0.045, h * 0.14, h * 0.14),
+        corner: h * 0.015,
+      );
+    }
 
     final ink = Paint()..color = palette.tapeLabelInk;
     canvas.drawRect(
@@ -244,5 +267,6 @@ class CassettePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CassettePainter oldDelegate) =>
+      !identical(oldDelegate.cover, cover) ||
       oldDelegate.turns != turns || oldDelegate.palette != palette;
 }

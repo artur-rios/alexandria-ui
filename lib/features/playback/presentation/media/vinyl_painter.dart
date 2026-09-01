@@ -1,8 +1,10 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
+import 'album_art.dart';
 
 /// A record, turning (UC-21, FR-PL-07).
 ///
@@ -13,10 +15,14 @@ import '../../../../core/theme/album_palette.dart';
 /// picture.
 class VinylPainter extends CustomPainter {
   /// Creates the painter.
-  const VinylPainter({required this.palette, required this.turns});
+  const VinylPainter({required this.palette, required this.turns, this.cover});
 
   /// The artwork's colours (FR-UX-07).
   final AlbumPalette palette;
+
+  /// The album's own picture, printed on the label, or `null` for the
+  /// designed one.
+  final ui.Image? cover;
 
   /// How far through a turn the record is, in whole turns.
   final double turns;
@@ -64,6 +70,22 @@ class VinylPainter extends CustomPainter {
     }
 
     canvas.drawCircle(centre, radius * 0.36, Paint()..color = palette.labelPaper);
+
+    // The album's art, printed on the label the way a record's is — and the
+    // designed rings below only when there is none, because a real label
+    // already carries its own artwork and the two drawn together would be
+    // one over the other.
+    if (cover case final cover?) {
+      paintAlbumArtInCircle(
+        canvas,
+        cover: cover,
+        centre: centre,
+        radius: radius * 0.36,
+      );
+      canvas.drawCircle(centre, radius * 0.05, Paint()..color = palette.wellDark);
+      return;
+    }
+
     canvas.drawArc(
       Rect.fromCircle(center: centre, radius: radius * 0.27),
       -math.pi / 2,
@@ -105,5 +127,8 @@ class VinylPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(VinylPainter oldDelegate) =>
+      // Identity, not `==`: `ui.Image` has none of its own, exactly as
+      // `CasePainter` says of the same field.
+      !identical(oldDelegate.cover, cover) ||
       oldDelegate.turns != turns || oldDelegate.palette != palette;
 }

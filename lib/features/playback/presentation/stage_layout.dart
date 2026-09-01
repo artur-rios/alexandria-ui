@@ -47,6 +47,7 @@ class StageLayout extends StatelessWidget {
     this.cover,
     this.isPlaying = false,
     this.display = '',
+    this.trackTitle = '',
     this.onControl,
     super.key,
   });
@@ -105,6 +106,9 @@ class StageLayout extends StatelessWidget {
   /// What the CD player's readout says — the track and where it has got to,
   /// already formatted. Empty on the devices that have no readout.
   final String display;
+
+  /// What is playing, for the device's own nameplate.
+  final String trackTitle;
 
   /// What a press on one of the device's own buttons does, or `null` for a
   /// stage nobody can operate.
@@ -198,18 +202,24 @@ class StageLayout extends StatelessWidget {
           height: mediumHeight,
           child: RepaintBoundary(
             child: CustomPaint(
+              // The cover rides on the medium as well as on the case: the
+              // case is a beat of the insertion and then gone, where the
+              // medium is what stays on screen for the rest of the album.
               painter: switch (medium) {
                 AlbumMedium.vinyl => VinylPainter(
                   palette: palette,
                   turns: appliedTurns,
+                  cover: cover,
                 ),
                 AlbumMedium.disc => DiscPainter(
                   palette: palette,
                   turns: appliedTurns,
+                  cover: cover,
                 ),
                 AlbumMedium.tape => CassettePainter(
                   palette: palette,
                   turns: appliedTurns,
+                  cover: cover,
                 ),
               },
             ),
@@ -267,18 +277,21 @@ class StageLayout extends StatelessWidget {
       closed: closed,
       layer: layer,
       isPlaying: isPlaying,
+      trackTitle: trackTitle,
     ),
     AlbumMedium.tape => TapeDeckPainter(
       palette: palette,
       closed: closed,
       layer: layer,
       isPlaying: isPlaying,
+      trackTitle: trackTitle,
     ),
     AlbumMedium.disc => CdPlayerPainter(
       palette: palette,
       closed: closed,
       layer: layer,
       isPlaying: isPlaying,
+      trackTitle: trackTitle,
       display: display,
     ),
   };
@@ -377,19 +390,20 @@ class _TransportOverlay extends StatelessWidget {
               child: Semantics(
                 button: true,
                 label: _label(entry.key, l10n),
-                // A transparent `Material` of its own so the press has
-                // something to show on: an `InkResponse` splashes onto the
-                // nearest ink surface, which here is the page behind the
-                // whole stage — the feedback would be painted underneath the
-                // device and never seen.
-                child: Material(
-                  type: MaterialType.transparency,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkResponse(
-                    onTap: () => onControl(entry.key),
-                    child: const SizedBox.expand(),
-                  ),
+                // A bare gesture detector, with no ink of its own.
+                //
+                // An `InkResponse` here drew a grey circle over the cap
+                // under the pointer, which on a painted device reads as a
+                // smudge on the picture rather than as a control lighting
+                // up: the highlight is Material's, the cap is not, and the
+                // two do not belong to each other. The device says what it
+                // is doing by what it *is* — the play cap becomes a pause
+                // cap, the medium stops turning — which is feedback the
+                // drawing owns rather than feedback laid over it.
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => onControl(entry.key),
+                  child: const SizedBox.expand(),
                 ),
               ),
             ),
