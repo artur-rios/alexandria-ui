@@ -1,6 +1,7 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/enrichment/application/enrichment_sweep_controller.dart';
 import 'package:alexandria_ui/features/enrichment/domain/enrichment_gateway.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_enrichment_gateway.dart';
+import '../../../support/in_memory_settings_store.dart';
 import '../../../support/shell_harness.dart';
 
 /// Looking music info up for the whole library (music enrichment design).
@@ -31,9 +33,11 @@ void main() {
   Future<ProviderContainer> openSweep(
     WidgetTester tester, {
     required FakeEnrichmentGateway gateway,
+    SettingsStore? settings,
   }) async {
     final container = await tester.pumpShell(
       surfaceSize: const Size(1440, 1000),
+      settings: settings,
       extraOverrides: <Override>[
         enrichmentGatewayProvider.overrideWithValue(gateway),
       ],
@@ -153,6 +157,35 @@ void main() {
     final button = tester.widget<FilledButton>(find.byType(FilledButton));
     expect(button.onPressed, isNull, reason: 'a dead action stayed pressable');
   });
+
+  testWidgets(
+    'GivenTheOwnerSwitchedLookupOff_WhenSweepIsStarted_ThenNothingIsAsked',
+    (tester) async {
+      // FR-UX-13: off means the application asks for nothing, not that it
+      // asks and is refused. The core would refuse it — it is configured
+      // from this same preference — but a sweep is a long run of requests,
+      // and the first of them must not leave here.
+      final gateway = FakeEnrichmentGateway();
+      final container = await openSweep(
+        tester,
+        gateway: gateway,
+        settings: InMemorySettingsStore(musicLookupEnabled: false),
+      );
+
+      await tester.tap(find.text('Start'));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(EnrichmentSweepScreen)),
+      );
+
+      expect(gateway.runs, isEmpty);
+      expect(
+        container.read(enrichmentSweepControllerProvider).stage,
+        SweepStage.unavailable,
+      );
+      expect(find.text(l10n.enrichmentUnavailable), findsOneWidget);
+    },
+  );
 
   testWidgets('GivenABatchFails_WhenSwept_ThenItStopsRatherThanRetryingForever', (
     tester,

@@ -2043,9 +2043,9 @@
   "@enrichmentNothingFound": {
     "description": "The services answered and had nothing. An answer, not a failure — and not retried."
   },
-  "enrichmentUnavailable": "Music lookup is switched off for this installation.",
+  "enrichmentUnavailable": "Music lookup is switched off. You can turn it on in Preferences.",
   "@enrichmentUnavailable": {
-    "description": "Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not the owner's mistake, so it is worded as a fact about the installation rather than as an error."
+    "description": "Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not an error the owner made, so it is worded as a fact and then as the one thing they can do about it — the preferences dialog is where the switch and the contact both live, and an owner told only that the feature is off has nowhere to go."
   },
   "playlistPlay": "Play this playlist",
   "@playlistPlay": {
@@ -2727,5 +2727,25 @@
   "activityDismiss": "Dismiss",
   "@activityDismiss": {
     "description": "FR-FC-29: clears a failed run's report from the strip. The strip's own rather than the text editor's, so that renaming one does not silently change the other."
+  },
+  "musicLookupLabel": "Look up music info online",
+  "@musicLookupLabel": {
+    "description": "Music enrichment design: the preference that switches music lookup on. Named as the action it permits rather than as a feature name, because what it controls is whether this application reaches the internet at all."
+  },
+  "musicLookupDescription": "Lets Alexandria fetch lyrics and artist photography from MusicBrainz, Wikimedia Commons and LRCLIB. This is the only part of Alexandria that reaches the internet, and it only does so when you ask for a lookup. Nothing about you is sent \u2014 only an artist name, a track title, an album name and a duration.",
+  "@musicLookupDescription": {
+    "description": "Music enrichment design: what the lookup preference permits, beneath its label in the preferences dialog. States the exception to the product's no-network principle in the place the owner grants it."
+  },
+  "musicLookupContactLabel": "Contact for the lookup services",
+  "@musicLookupContactLabel": {
+    "description": "Music enrichment design: the address sent to MusicBrainz in the User-Agent of every lookup. Their terms require one, and the core refuses to look anything up while it is empty."
+  },
+  "musicLookupContactHelp": "MusicBrainz requires a way to reach whoever is making the requests. Leave it as it is to use the application's own address, or put your own here.",
+  "@musicLookupContactHelp": {
+    "description": "Music enrichment design: why the contact field exists, beneath it in the preferences dialog. Not a formality: an anonymous client is one MusicBrainz is entitled to block."
+  },
+  "preferencesMusicLookupLabel": "Music info",
+  "@preferencesMusicLookupLabel": {
+    "description": "Music enrichment design: heading over the music-lookup preferences in the preferences dialog."
   }
 }

@@ -7,6 +7,7 @@
 // boundary and so is the last rule that should be switched off here. Every
 // reply the protocol guarantees goes through [_reply] instead.
 
+import 'core_environment.dart';
 import 'core_isolate.dart';
 
 /// The application's view of the Alexandria core.
@@ -26,7 +27,18 @@ abstract interface class CoreClient {
 
   /// Initializes the core against [databasePath], creating and migrating the
   /// database on demand. Returns the core's status code.
-  Future<int> initialize(String databasePath);
+  ///
+  /// [musicLookup] is the owner's music-enrichment choice, applied to the
+  /// core's environment immediately before the call that reads it (music
+  /// enrichment design). A parameter rather than a separate "configure" call
+  /// because the core reads its settings exactly once, at this call: anything
+  /// that has to be decided before enrichment works has to be decided here or
+  /// not at all, and a caller that could initialize without saying would be a
+  /// caller that could silently leave the feature off.
+  Future<int> initialize(
+    String databasePath, {
+    required MusicLookup musicLookup,
+  });
 
   /// Authenticates through `alexandria_auth_local_login` (FR-AU-04).
   ///
@@ -651,8 +663,20 @@ class FfiCoreClient implements CoreClient {
       _reply<int>(await _isolate.call('healthStatus'));
 
   @override
-  Future<int> initialize(String databasePath) async =>
-      _reply<int>(await _isolate.call('init', [databasePath]));
+  Future<int> initialize(
+    String databasePath, {
+    required MusicLookup musicLookup,
+  }) async => _reply<int>(
+    // Sent apart rather than as one object: what crosses to the isolate is a
+    // plain list of primitives everywhere else in this class, and a value
+    // type in the middle of it would be the only thing here relying on what
+    // Dart can send between isolates.
+    await _isolate.call('init', [
+      databasePath,
+      musicLookup.enabled,
+      musicLookup.contact,
+    ]),
+  );
 
   @override
   Future<CoreJsonResponse> authLocalLogin(String jsonBody) async =>

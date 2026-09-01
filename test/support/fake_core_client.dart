@@ -1,5 +1,6 @@
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/bindings/core_client.dart';
+import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/bindings/core_isolate.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 
@@ -166,13 +167,22 @@ class FakeCoreClient implements CoreClient {
   final bool failOnHealth;
 
   /// Whether [initialize] throws instead of returning.
-  final bool failOnInitialize;
+  ///
+  /// Not final, unlike its siblings: `initialize` is the one call this
+  /// application makes *twice* — once at startup and again when the owner
+  /// changes the music-lookup preference — so a test needs a core that
+  /// accepted the first and refuses the second.
+  bool failOnInitialize;
 
   /// What [authLocalLogin] returns. Defaults to a successful login.
   final CoreJsonResponse authLocalLoginResult;
 
   /// Whether [authLocalLogin] throws instead of returning.
   final bool failOnAuthLocalLogin;
+
+  /// The music-lookup configurations [initialize] was called with, in order —
+  /// what the core would have been configured for (music enrichment design).
+  final List<MusicLookup> musicLookupsInitializedWith = [];
 
   /// The database paths [initialize] was called with, in order.
   final List<String> initializedWith = [];
@@ -288,9 +298,13 @@ class FakeCoreClient implements CoreClient {
   }
 
   @override
-  Future<int> initialize(String databasePath) async {
+  Future<int> initialize(
+    String databasePath, {
+    required MusicLookup musicLookup,
+  }) async {
     if (failOnInitialize) throw const CoreCallException('init call failed');
     initializedWith.add(databasePath);
+    musicLookupsInitializedWith.add(musicLookup);
     return initializeResult;
   }
 

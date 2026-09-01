@@ -1539,7 +1539,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get enrichmentUnavailable =>
-      'A busca de informações musicais está desativada nesta instalação.';
+      'A busca de músicas está desligada. Você pode ligá-la nas Preferências.';
 
   @override
   String get playlistPlay => 'Reproduzir esta playlist';
@@ -2071,4 +2071,21 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get activityDismiss => 'Dispensar';
+
+  @override
+  String get musicLookupLabel => 'Buscar informações musicais on-line';
+
+  @override
+  String get musicLookupDescription =>
+      'Permite que o Alexandria busque letras e fotografias de artistas no MusicBrainz, no Wikimedia Commons e no LRCLIB. Esta é a única parte do Alexandria que acessa a internet, e ela só faz isso quando você pede uma busca. Nada sobre você é enviado — apenas o nome de um artista, o título de uma faixa, o nome de um álbum e uma duração.';
+
+  @override
+  String get musicLookupContactLabel => 'Contato para os serviços de busca';
+
+  @override
+  String get musicLookupContactHelp =>
+      'O MusicBrainz exige uma forma de falar com quem faz as requisições. Deixe como está para usar o endereço do próprio aplicativo, ou coloque o seu aqui.';
+
+  @override
+  String get preferencesMusicLookupLabel => 'Informações musicais';
 }

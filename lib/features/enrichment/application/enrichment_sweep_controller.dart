@@ -94,6 +94,14 @@ class EnrichmentSweepController extends Notifier<SweepState> {
   /// Works through the library until it is done, or until [stop] is called.
   Future<void> start() async {
     if (state.isRunning) return;
+    // Switched off means the application asks for nothing (FR-UX-13) — not
+    // that it asks and is refused. The core would refuse it, being
+    // configured from this same preference, but a sweep is a long run of
+    // requests and the first of them must not leave here.
+    if (!ref.read(preferencesControllerProvider).musicLookupEnabled) {
+      state = const SweepState(stage: SweepStage.unavailable);
+      return;
+    }
 
     final credential = ref.read(sessionControllerProvider.notifier).credential;
     if (credential == null) return;

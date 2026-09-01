@@ -7,6 +7,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../playback/domain/album_medium.dart';
+import '../application/preferences_controller.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
 ///
@@ -129,6 +130,26 @@ class PreferencesDialog extends ConsumerWidget {
                 onChanged: (value) =>
                     unawaited(controller.setRechecksAtStartup(value)),
               ),
+
+              const SizedBox(height: AppSpacing.md),
+              // This one *does* get a label above it, unlike the switch
+              // before it: the group is two controls, and the contact field
+              // beneath the switch would otherwise read as belonging to the
+              // preference above rather than to the lookup.
+              _GroupLabel(l10n.preferencesMusicLookupLabel),
+              SwitchListTile(
+                title: Text(l10n.musicLookupLabel),
+                subtitle: Text(l10n.musicLookupDescription),
+                value: preferences.musicLookupEnabled,
+                contentPadding: EdgeInsets.zero,
+                onChanged: (value) =>
+                    unawaited(controller.setMusicLookupEnabled(value)),
+              ),
+              // Only while the lookup is on: an address for a service
+              // nothing is going to call is a question with no consequence,
+              // and MusicBrainz's requirement is about requests being made.
+              if (preferences.musicLookupEnabled)
+                _ContactField(contact: preferences.musicLookupContact),
             ],
           ),
         ),
@@ -143,6 +164,82 @@ class PreferencesDialog extends ConsumerWidget {
           child: Text(l10n.preferencesClose),
         ),
       ],
+    );
+  }
+}
+
+/// The contact every lookup identifies this installation with.
+///
+/// Stateful, and written on submit or on losing focus rather than on every
+/// keystroke: each write reconfigures the core, and a field that did that
+/// per character would re-initialize it a dozen times while an address is
+/// typed — and would hand MusicBrainz a half-typed one in between.
+class _ContactField extends ConsumerStatefulWidget {
+  const _ContactField({required this.contact});
+
+  /// What is stored now, which is what the field starts holding.
+  final String contact;
+
+  @override
+  ConsumerState<_ContactField> createState() => _ContactFieldState();
+}
+
+class _ContactFieldState extends ConsumerState<_ContactField> {
+  late final TextEditingController _text = TextEditingController(
+    text: widget.contact,
+  );
+  final FocusNode _focus = FocusNode();
+
+  /// The controller to write through, captured while this widget is still
+  /// mounted.
+  ///
+  /// Read once rather than at each write, because one of the writes happens
+  /// in [dispose] — an owner who types an address and closes the dialog has
+  /// made a choice, and losing it because the field went away first is
+  /// exactly the silent loss UC-39 AF-02 exists to prevent. `ref` is not
+  /// safe to read from there; a notifier already in hand is.
+  late final PreferencesController _preferences = ref.read(
+    preferencesControllerProvider.notifier,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _save();
+    });
+  }
+
+  @override
+  void dispose() {
+    _save();
+    _text.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  /// Stores what was typed, unless it is what is already stored — a field
+  /// merely tabbed through must not cost a re-initialization of the core.
+  void _save() {
+    if (_text.text.trim() == widget.contact.trim()) return;
+
+    unawaited(_preferences.setMusicLookupContact(_text.text));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return TextField(
+      controller: _text,
+      focusNode: _focus,
+      keyboardType: TextInputType.emailAddress,
+      decoration: InputDecoration(
+        labelText: l10n.musicLookupContactLabel,
+        helperText: l10n.musicLookupContactHelp,
+        helperMaxLines: 3,
+      ),
+      onSubmitted: (_) => _save(),
     );
   }
 }

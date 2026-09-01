@@ -1535,7 +1535,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrichmentUnavailable =>
-      'Music lookup is switched off for this installation.';
+      'Music lookup is switched off. You can turn it on in Preferences.';
 
   @override
   String get playlistPlay => 'Play this playlist';
@@ -2065,4 +2065,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activityDismiss => 'Dismiss';
+
+  @override
+  String get musicLookupLabel => 'Look up music info online';
+
+  @override
+  String get musicLookupDescription =>
+      'Lets Alexandria fetch lyrics and artist photography from MusicBrainz, Wikimedia Commons and LRCLIB. This is the only part of Alexandria that reaches the internet, and it only does so when you ask for a lookup. Nothing about you is sent — only an artist name, a track title, an album name and a duration.';
+
+  @override
+  String get musicLookupContactLabel => 'Contact for the lookup services';
+
+  @override
+  String get musicLookupContactHelp =>
+      'MusicBrainz requires a way to reach whoever is making the requests. Leave it as it is to use the application\'s own address, or put your own here.';
+
+  @override
+  String get preferencesMusicLookupLabel => 'Music info';
 }

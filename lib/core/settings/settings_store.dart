@@ -46,6 +46,30 @@ abstract interface class SettingsStore {
   /// Records [value] for the next launch.
   Future<void> setRechecksAtStartup(bool value);
 
+  /// Whether the core may look music up online, or `true` when the owner has
+  /// not said (music enrichment design).
+  ///
+  /// The one preference in this store that configures the *core* rather than
+  /// the interface: it is applied to the core's environment at startup, and
+  /// again whenever it changes, because enrichment is read from the
+  /// environment at `alexandria_index_init` and nowhere else.
+  bool get musicLookupEnabled;
+
+  /// Records [value], to be applied to the core.
+  Future<void> setMusicLookupEnabled(bool value);
+
+  /// The contact the lookup services are given, or the application's own
+  /// (`defaultMusicLookupContact` in `core_environment.dart`) when the owner
+  /// has named none.
+  ///
+  /// Stored rather than assumed, because MusicBrainz's terms are about
+  /// whoever is *making* the requests: an owner running a large sweep can
+  /// answer for their own traffic by putting their address here.
+  String get musicLookupContact;
+
+  /// Records [contact]. An empty string returns the default.
+  Future<void> setMusicLookupContact(String contact);
+
   /// Reads an arbitrary string preference.
   ///
   /// Features add their own typed accessors above rather than reaching for this

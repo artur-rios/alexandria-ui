@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../bindings/core_client.dart';
+import '../bindings/core_environment.dart';
 import '../bindings/core_isolate.dart';
 import '../di/providers.dart';
 import '../failures/core_status.dart';
@@ -34,14 +35,82 @@ class StartupController extends Notifier<StartupState> {
   CoreClient? _core;
   SettingsStore? _settings;
 
+  /// The database the core was last initialized against, kept so
+  /// [applyMusicLookup] can initialize it again against the same one.
+  String? _databasePath;
+
+  /// What the core was last initialized with, so a preference change that
+  /// does not actually change the core's configuration costs nothing.
+  MusicLookup? _appliedMusicLookup;
+
   /// The loaded core, once startup has reached [StartupReady].
   CoreClient? get core => _core;
 
-  /// The loaded settings store, once startup has passed step 5.
+  /// The loaded settings store, once startup has passed step 3.
   ///
   /// Non-null even when the load failed: the fallback store is still bound, so
   /// the shell has somewhere to write the owner's next choice.
   SettingsStore? get settings => _settings;
+
+  /// The music-enrichment configuration the core should be running with —
+  /// the owner's stored choice, or the shipped default when the settings
+  /// store could not be read (music enrichment design).
+  MusicLookup get musicLookup {
+    final settings = _settings;
+
+    return settings == null
+        ? const MusicLookup(
+            enabled: true,
+            contact: defaultMusicLookupContact,
+          )
+        : MusicLookup(
+            enabled: settings.musicLookupEnabled,
+            contact: settings.musicLookupContact,
+          );
+  }
+
+  /// Re-initializes the core so a music-lookup preference changed after
+  /// startup takes effect now rather than at the next launch.
+  ///
+  /// The core reads that setting once, at `alexandria_index_init`, so there
+  /// is no other way to apply it — and leaving it until the next launch is
+  /// exactly the dead end this exists to remove: an owner who switches the
+  /// lookup on, asks for lyrics, and is told the feature is switched off for
+  /// this installation. `alexandria_index_init` is documented as safe to
+  /// call again, sessions live in the database rather than in the process,
+  /// and a failed re-initialization leaves the core's existing services
+  /// exactly where they were.
+  ///
+  /// Does nothing when the configuration has not actually changed, which is
+  /// every call but the one that follows a change.
+  Future<void> applyMusicLookup() async {
+    final core = _core;
+    final databasePath = _databasePath;
+    if (core == null || databasePath == null) return;
+
+    final lookup = musicLookup;
+    if (lookup == _appliedMusicLookup) return;
+
+    try {
+      final status = await core.initialize(databasePath, musicLookup: lookup);
+      if (!CoreStatusFamily.indexing.isOk(status)) {
+        _log.warning(
+          'the core refused to be reconfigured for music lookup '
+          '(status $status); it keeps the configuration it started with',
+        );
+        return;
+      }
+      _appliedMusicLookup = lookup;
+    } on CoreCallException catch (error) {
+      // Logged, not raised: the owner changed a preference, the preference
+      // is saved, and the core carries on with what it already had. What
+      // they must not get is a broken application because a switch moved.
+      _log.warning(
+        'the core could not be reconfigured for music lookup',
+        error,
+      );
+    }
+  }
 
   @override
   StartupState build() {
@@ -63,12 +132,19 @@ class StartupController extends Notifier<StartupState> {
     final databasePath = await _step2ResolvePaths();
     if (databasePath == null) return;
 
-    if (!await _step3Initialize(databasePath)) return;
+    // Before the core is initialized, not after: the core reads its own
+    // settings exactly once, at `alexandria_index_init`, and whether it may
+    // look music up is one of them (§5.1 step 3). Loading the owner's
+    // preferences afterwards would mean the choice they made last session
+    // could only take effect the session after this one.
+    final warning = await _step3LoadPreferences();
 
-    final version = await _step4Verify();
+    if (!await _step4Initialize(databasePath)) return;
+
+    final version = await _step5Verify();
     if (version == null) return;
 
-    final warning = await _step5LoadPreferences();
+    _databasePath = databasePath;
 
     _log.info('startup settled; core $version, database ready');
     state = StartupState.ready(
@@ -124,11 +200,16 @@ class StartupController extends Notifier<StartupState> {
     }
   }
 
-  Future<bool> _step3Initialize(String databasePath) async {
+  Future<bool> _step4Initialize(String databasePath) async {
     state = const StartupState.running(step: StartupStep.initializingCore);
 
     try {
-      final status = await _core!.initialize(databasePath);
+      final lookup = musicLookup;
+      final status = await _core!.initialize(
+        databasePath,
+        musicLookup: lookup,
+      );
+      _appliedMusicLookup = lookup;
       if (CoreStatusFamily.indexing.isOk(status)) return true;
 
       _fail(
@@ -146,7 +227,7 @@ class StartupController extends Notifier<StartupState> {
     }
   }
 
-  Future<String?> _step4Verify() async {
+  Future<String?> _step5Verify() async {
     state = const StartupState.running(step: StartupStep.verifyingCore);
 
     try {
@@ -179,9 +260,10 @@ class StartupController extends Notifier<StartupState> {
     }
   }
 
-  /// Step 5 never fails the launch: unreadable preferences fall back to the
-  /// system theme and language and are reported (§5.1).
-  Future<Failure?> _step5LoadPreferences() async {
+  /// Step 3 never fails the launch: unreadable preferences fall back to the
+  /// system theme and language — and, for the core's own configuration, to
+  /// the same defaults the store answers with — and are reported (§5.1).
+  Future<Failure?> _step3LoadPreferences() async {
     state = const StartupState.running(step: StartupStep.loadingPreferences);
 
     try {
@@ -211,6 +293,8 @@ class StartupController extends Notifier<StartupState> {
   Future<void> _disposeCore() async {
     final core = _core;
     _core = null;
+    _databasePath = null;
+    _appliedMusicLookup = null;
     await core?.dispose();
   }
 }

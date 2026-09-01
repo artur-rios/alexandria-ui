@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:alexandria_ui/core/bindings/core_client.dart';
+import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
@@ -61,11 +63,16 @@ void main() {
   setUp(() => catalog = TemporaryCatalog.create());
   tearDown(() => catalog.dispose());
 
-  Future<(CoreClient, String)> signedInCore() async {
+  Future<(CoreClient, String)> signedInCore({
+    MusicLookup musicLookup = MusicLookup.off,
+  }) async {
     final client = await FfiCoreClient.load(libraryPath);
     addTearDown(client.dispose);
 
-    final status = await client.initialize(catalog.databasePath);
+    final status = await client.initialize(
+      catalog.databasePath,
+      musicLookup: musicLookup,
+    );
     expect(CoreStatusFamily.indexing.isOk(status), isTrue);
 
     final outcome = await CoreAuthGateway(client).register(
@@ -170,6 +177,26 @@ void main() {
       isA<UnauthorizedFailure>(),
     );
   });
+
+  test(
+    'GivenAnUnconfiguredInstallation_WhenTheCoreIsAsked_ThenItSaysWhyNot',
+    () async {
+      // The other half, and what gives the pair its teeth: a core that
+      // reported "available" whatever it was told would pass the test above
+      // while ignoring the configuration entirely. `signedInCore`'s own
+      // default is the unconfigured one every other test in this file uses,
+      // so this asks for nothing special.
+      final (client, credential) = await signedInCore();
+
+      final response = await client.settings(credential);
+      final metadata =
+          (jsonDecode(response.json!) as Map<String, dynamic>)['metadata']
+              as Map<String, dynamic>;
+
+      expect(metadata['available'], isFalse);
+      expect(metadata['unavailableReason'], 'disabled');
+    },
+  );
 
   test(
     'GivenAnUnconfiguredInstallation_WhenARunIsStarted_ThenItIsRefusedNotAttempted',

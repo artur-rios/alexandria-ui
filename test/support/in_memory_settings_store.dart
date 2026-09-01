@@ -1,3 +1,4 @@
+import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,11 @@ class InMemorySettingsStore implements SettingsStore {
     // adds a stateful fake gateway to a `pumpShell`-based suite inherits this
     // call whether or not it has anything to do with FR-LB-21.
     bool rechecksAtStartup = true,
+    // On, matching the real default (`SettingsStore.musicLookupEnabled`):
+    // a test that asserts what the core was initialized with is asserting
+    // the shipped configuration, not one the test invented.
+    bool musicLookupEnabled = true,
+    String musicLookupContact = defaultMusicLookupContact,
     Map<String, String>? values,
   })
     // The fields are private and a named parameter cannot be, so `this._themeMode`
@@ -32,12 +38,16 @@ class InMemorySettingsStore implements SettingsStore {
        _locale = locale,
        _albumAnimationMode = albumAnimationMode,
        _rechecksAtStartup = rechecksAtStartup,
+       _musicLookupEnabled = musicLookupEnabled,
+       _musicLookupContact = musicLookupContact,
        _values = {...?values};
 
   ThemeMode _themeMode;
   Locale? _locale;
   AlbumAnimationMode _albumAnimationMode;
   bool _rechecksAtStartup;
+  bool _musicLookupEnabled;
+  String _musicLookupContact;
   final Map<String, String> _values;
 
   @override
@@ -65,6 +75,22 @@ class InMemorySettingsStore implements SettingsStore {
   @override
   Future<void> setRechecksAtStartup(bool value) async =>
       _rechecksAtStartup = value;
+
+  @override
+  bool get musicLookupEnabled => _musicLookupEnabled;
+
+  @override
+  Future<void> setMusicLookupEnabled(bool value) async =>
+      _musicLookupEnabled = value;
+
+  @override
+  String get musicLookupContact => _musicLookupContact;
+
+  @override
+  Future<void> setMusicLookupContact(String contact) async =>
+      _musicLookupContact = contact.trim().isEmpty
+          ? defaultMusicLookupContact
+          : contact.trim();
 
   @override
   String? getString(String key) => _values[key];

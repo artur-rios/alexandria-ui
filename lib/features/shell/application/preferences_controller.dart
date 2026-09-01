@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../../../core/bindings/core_environment.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/settings/settings_store.dart';
 import '../../../core/startup/startup_state.dart';
@@ -38,6 +39,9 @@ class PreferencesController extends Notifier<PreferencesState> {
       locale: settings?.locale,
       albumAnimation: settings?.albumAnimationMode ?? AlbumAnimationMode.byYear,
       rechecksAtStartup: settings?.rechecksAtStartup ?? true,
+      musicLookupEnabled: settings?.musicLookupEnabled ?? true,
+      musicLookupContact:
+          settings?.musicLookupContact ?? defaultMusicLookupContact,
     );
   }
 
@@ -72,6 +76,49 @@ class PreferencesController extends Notifier<PreferencesState> {
     state = state.copyWith(rechecksAtStartup: value, lastChangeUnsaved: false);
     await _persist((settings) => settings.setRechecksAtStartup(value));
   }
+
+  /// Applies [value] now and records it for the next launch (music
+  /// enrichment design).
+  ///
+  /// "Now" is two things, and both are needed. The interface stops offering
+  /// lookups the moment this turns false, which is what the owner asked
+  /// for; and the core is reconfigured behind it, because the core reads
+  /// this setting once at initialization and would otherwise keep answering
+  /// "switched off for this installation" to a switch the owner has just
+  /// turned on.
+  Future<void> setMusicLookupEnabled(bool value) async {
+    state = state.copyWith(musicLookupEnabled: value, lastChangeUnsaved: false);
+    await _persist((settings) => settings.setMusicLookupEnabled(value));
+    await _applyToCore();
+  }
+
+  /// Records the contact the lookup services are given, and reconfigures the
+  /// core with it.
+  ///
+  /// An empty [contact] returns the application's own, which is what the
+  /// settings store answers for a cleared preference — the state is set from
+  /// the store rather than from the argument so the field cannot show blank
+  /// while the core is using something else.
+  Future<void> setMusicLookupContact(String contact) async {
+    state = state.copyWith(
+      musicLookupContact: _contactOrDefault(contact),
+      lastChangeUnsaved: false,
+    );
+    await _persist((settings) => settings.setMusicLookupContact(contact));
+    await _applyToCore();
+  }
+
+  /// The contact a store that could not be written would have answered.
+  String _contactOrDefault(String contact) =>
+      contact.trim().isEmpty ? defaultMusicLookupContact : contact.trim();
+
+  /// Hands the core the music-lookup configuration now stored.
+  ///
+  /// Does nothing before startup has a core to reconfigure, and nothing when
+  /// the configuration has not actually changed — see
+  /// `StartupController.applyMusicLookup`.
+  Future<void> _applyToCore() =>
+      ref.read(startupControllerProvider.notifier).applyMusicLookup();
 
   /// Clears the unsaved notice once the owner has seen it.
   void acknowledgeUnsaved() {

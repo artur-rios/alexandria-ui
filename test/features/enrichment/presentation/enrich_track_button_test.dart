@@ -5,6 +5,8 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/enrichment/domain/enrichment_gateway.dart';
 import 'package:alexandria_ui/features/enrichment/domain/track_enrichment.dart';
 import 'package:alexandria_ui/features/enrichment/presentation/enrich_track_button.dart';
+import 'package:alexandria_ui/features/shell/application/preferences_controller.dart';
+import 'package:alexandria_ui/features/shell/application/preferences_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,11 +20,17 @@ void main() {
   Future<({FakeEnrichmentGateway gateway, ProviderContainer container})> pumpButton(
     WidgetTester tester, {
     FakeEnrichmentGateway? gateway,
+    bool musicLookupEnabled = true,
   }) async {
     final theGateway = gateway ?? FakeEnrichmentGateway();
     final container = ProviderContainer(
       overrides: <Override>[
         enrichmentGatewayProvider.overrideWithValue(theGateway),
+        preferencesControllerProvider.overrideWith(
+          () => _FixedPreferences(
+            PreferencesState(musicLookupEnabled: musicLookupEnabled),
+          ),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -119,6 +127,26 @@ void main() {
     expect(find.text(l10n.enrichmentUnavailable), findsOneWidget);
   });
 
+  testWidgets(
+    'GivenTheOwnerSwitchedLookupOff_WhenTheOwnerAsks_ThenNothingIsRequested',
+    (tester) async {
+      // FR-UX-13: the application asks for nothing while the preference is
+      // off. The core would refuse the call anyway, being configured from
+      // the same preference — but a request made and refused is still a
+      // request made, and the owner switched it off to stop them.
+      final pumped = await pumpButton(tester, musicLookupEnabled: false);
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(EnrichTrackButton)),
+      );
+
+      expect(pumped.gateway.runs, isEmpty);
+      expect(find.text(l10n.enrichmentUnavailable), findsOneWidget);
+    },
+  );
+
   testWidgets('GivenARunInFlight_WhenAskedAgain_ThenItIsNotStartedTwice', (
     tester,
   ) async {
@@ -149,4 +177,15 @@ class _SlowGateway extends FakeEnrichmentGateway {
     await Future<void>.delayed(const Duration(milliseconds: 200));
     return super.run(scope: scope, credential: credential);
   }
+}
+
+/// A [PreferencesController] holding a fixed state — the same seam
+/// `lyrics_button_test.dart` and `album_visor_test.dart` use.
+class _FixedPreferences extends PreferencesController {
+  _FixedPreferences(this._state);
+
+  final PreferencesState _state;
+
+  @override
+  PreferencesState build() => _state;
 }

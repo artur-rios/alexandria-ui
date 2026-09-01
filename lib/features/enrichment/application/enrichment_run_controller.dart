@@ -61,6 +61,10 @@ class EnrichmentRunController extends Notifier<EnrichmentRunState> {
     String? artistName,
   }) async {
     if (state.isRunning) return;
+    if (!_lookupIsOn) {
+      state = const EnrichmentRunState(stage: EnrichmentRunStage.unavailable);
+      return;
+    }
 
     final credential = ref.read(sessionControllerProvider.notifier).credential;
     if (credential == null) return;
@@ -112,6 +116,16 @@ class EnrichmentRunController extends Notifier<EnrichmentRunState> {
         state = const EnrichmentRunState(stage: EnrichmentRunStage.failed);
     }
   }
+
+  /// Whether the owner has left music lookup switched on (FR-UX-13).
+  ///
+  /// Read before the call rather than left to the core to refuse. The core
+  /// would refuse it — it is configured from this same preference — but the
+  /// request would have been made, and "off" has to mean the application
+  /// asks for nothing rather than asks and is told no. The owner sees the
+  /// same sentence either way.
+  bool get _lookupIsOn =>
+      ref.read(preferencesControllerProvider).musicLookupEnabled;
 
   /// Clears whatever the last lookup reported.
   void acknowledge() => state = const EnrichmentRunState();

@@ -319,11 +319,18 @@ class CoreIsolate {
 
       'healthStatus' => bindings.alexandria_health_status_code(),
 
-      // The auth mode is settled here, immediately before the one call that
-      // reads the core's settings. Anywhere earlier would be a promise about
-      // ordering; anywhere later would be too late for the process.
+      // The auth mode and the owner's music-lookup choice are settled here,
+      // immediately before the one call that reads the core's settings.
+      // Anywhere earlier would be a promise about ordering; anywhere later
+      // would be too late for the process.
       'init' => withNativeString(arguments.first! as String, (path) {
         ensureLocalAuthMode();
+        ensureMusicLookup(
+          MusicLookup(
+            enabled: arguments[1]! as bool,
+            contact: arguments[2]! as String,
+          ),
+        );
         return bindings.alexandria_index_init(path);
       }),
 

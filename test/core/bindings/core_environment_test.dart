@@ -73,4 +73,77 @@ void main() {
       expect(shouldSetAuthMode(const {coreAuthModeVariable: '   '}), isTrue);
     },
   );
+
+  group('music lookup (music enrichment design)', () {
+    test(
+      'GivenNothingInTheEnvironment_WhenTheSwitchIsChecked_ThenTheApplicationSetsIt',
+      () {
+        expect(
+          shouldSetCoreVariable(const {}, coreMetadataEnabledVariable),
+          isTrue,
+        );
+      },
+    );
+
+    // A packager or a developer who configured the core deliberately keeps
+    // what they configured — the same rule the auth mode follows, and the
+    // reason this is one function rather than two.
+    test(
+      'GivenTheSwitchIsAlreadySet_WhenItIsChecked_ThenTheApplicationLeavesItAlone',
+      () {
+        expect(
+          shouldSetCoreVariable(const {
+            coreMetadataEnabledVariable: 'false',
+          }, coreMetadataEnabledVariable),
+          isFalse,
+        );
+      },
+    );
+
+    test('GivenTheSwitchIsBlank_WhenItIsChecked_ThenTheApplicationSetsIt', () {
+      expect(
+        shouldSetCoreVariable(const {
+          coreMetadataEnabledVariable: '   ',
+        }, coreMetadataEnabledVariable),
+        isTrue,
+      );
+    });
+
+    // The core refuses a switched-on lookup with no contact just as firmly
+    // as a switched-off one, so an interface that read `enabled` alone would
+    // offer a lookup that could never run.
+    test('GivenNoContact_WhenTheLookupIsRead_ThenItIsNotAvailable', () {
+      expect(
+        const MusicLookup(enabled: true, contact: '  ').isAvailable,
+        isFalse,
+      );
+    });
+
+    test('GivenAContactAndTheSwitchOn_WhenItIsRead_ThenItIsAvailable', () {
+      expect(
+        const MusicLookup(
+          enabled: true,
+          contact: defaultMusicLookupContact,
+        ).isAvailable,
+        isTrue,
+      );
+    });
+
+    test('GivenTheSwitchIsOff_WhenTheLookupIsRead_ThenItIsNotAvailable', () {
+      expect(
+        const MusicLookup(
+          enabled: false,
+          contact: defaultMusicLookupContact,
+        ).isAvailable,
+        isFalse,
+      );
+    });
+
+    // What the application ships with, named here so a change to it is a
+    // deliberate edit to a test rather than a silent one: an installation
+    // with no contact cannot look anything up at all.
+    test('GivenTheShippedContact_WhenItIsRead_ThenItIsNotEmpty', () {
+      expect(defaultMusicLookupContact.trim(), isNotEmpty);
+    });
+  });
 }

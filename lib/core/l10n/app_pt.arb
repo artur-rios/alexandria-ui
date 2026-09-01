@@ -447,7 +447,7 @@
   "enrichmentFindForTrack": "Buscar letra e imagens",
   "enrichmentLookingUp": "Buscando…",
   "enrichmentNothingFound": "Nada encontrado para esta faixa.",
-  "enrichmentUnavailable": "A busca de informações musicais está desativada nesta instalação.",
+  "enrichmentUnavailable": "A busca de músicas está desligada. Você pode ligá-la nas Preferências.",
   "playlistPlay": "Reproduzir esta playlist",
   "playlistAddTo": "Adicionar a uma playlist",
   "playlistAddAlbumTo": "Adicionar álbum a uma playlist",
@@ -578,5 +578,10 @@
   "activityViewAll": "Ver",
   "activityPriorityLow": "Baixa",
   "activityPriorityNormal": "Normal",
-  "activityDismiss": "Dispensar"
+  "activityDismiss": "Dispensar",
+  "musicLookupLabel": "Buscar informa\u00e7\u00f5es musicais on-line",
+  "musicLookupDescription": "Permite que o Alexandria busque letras e fotografias de artistas no MusicBrainz, no Wikimedia Commons e no LRCLIB. Esta \u00e9 a \u00fanica parte do Alexandria que acessa a internet, e ela s\u00f3 faz isso quando voc\u00ea pede uma busca. Nada sobre voc\u00ea \u00e9 enviado \u2014 apenas o nome de um artista, o t\u00edtulo de uma faixa, o nome de um \u00e1lbum e uma dura\u00e7\u00e3o.",
+  "musicLookupContactLabel": "Contato para os servi\u00e7os de busca",
+  "musicLookupContactHelp": "O MusicBrainz exige uma forma de falar com quem faz as requisi\u00e7\u00f5es. Deixe como est\u00e1 para usar o endere\u00e7o do pr\u00f3prio aplicativo, ou coloque o seu aqui.",
+  "preferencesMusicLookupLabel": "Informa\u00e7\u00f5es musicais"
 }

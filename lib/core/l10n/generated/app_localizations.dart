@@ -2784,10 +2784,10 @@ abstract class AppLocalizations {
   /// **'Nothing found for this track.'**
   String get enrichmentNothingFound;
 
-  /// Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not the owner's mistake, so it is worded as a fact about the installation rather than as an error.
+  /// Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not an error the owner made, so it is worded as a fact and then as the one thing they can do about it — the preferences dialog is where the switch and the contact both live, and an owner told only that the feature is off has nowhere to go.
   ///
   /// In en, this message translates to:
-  /// **'Music lookup is switched off for this installation.'**
+  /// **'Music lookup is switched off. You can turn it on in Preferences.'**
   String get enrichmentUnavailable;
 
   /// Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list.
@@ -3575,6 +3575,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dismiss'**
   String get activityDismiss;
+
+  /// Music enrichment design: the preference that switches music lookup on. Named as the action it permits rather than as a feature name, because what it controls is whether this application reaches the internet at all.
+  ///
+  /// In en, this message translates to:
+  /// **'Look up music info online'**
+  String get musicLookupLabel;
+
+  /// Music enrichment design: what the lookup preference permits, beneath its label in the preferences dialog. States the exception to the product's no-network principle in the place the owner grants it.
+  ///
+  /// In en, this message translates to:
+  /// **'Lets Alexandria fetch lyrics and artist photography from MusicBrainz, Wikimedia Commons and LRCLIB. This is the only part of Alexandria that reaches the internet, and it only does so when you ask for a lookup. Nothing about you is sent — only an artist name, a track title, an album name and a duration.'**
+  String get musicLookupDescription;
+
+  /// Music enrichment design: the address sent to MusicBrainz in the User-Agent of every lookup. Their terms require one, and the core refuses to look anything up while it is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact for the lookup services'**
+  String get musicLookupContactLabel;
+
+  /// Music enrichment design: why the contact field exists, beneath it in the preferences dialog. Not a formality: an anonymous client is one MusicBrainz is entitled to block.
+  ///
+  /// In en, this message translates to:
+  /// **'MusicBrainz requires a way to reach whoever is making the requests. Leave it as it is to use the application\'s own address, or put your own here.'**
+  String get musicLookupContactHelp;
+
+  /// Music enrichment design: heading over the music-lookup preferences in the preferences dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Music info'**
+  String get preferencesMusicLookupLabel;
 }
 
 class _AppLocalizationsDelegate

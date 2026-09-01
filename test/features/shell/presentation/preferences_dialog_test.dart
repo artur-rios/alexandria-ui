@@ -248,31 +248,42 @@ void main() {
       'GivenTheMinimumWindow_WhenPreferencesOpen_ThenTheLastOptionIsReachable',
       (tester) async {
         // NFR-07: the dialog has to stay usable at the minimum supported
-        // window. Four groups, with the startup re-check now beneath the
-        // animation options, is the tallest this dialog has ever been, so
-        // this is the test that would catch the day scrolling stops being
-        // enough. The switch, not the last radio option, is the true bottom
-        // of the dialog now.
+        // window. Five groups, with the music-lookup switch and its contact
+        // field now beneath the startup re-check, is the tallest this dialog
+        // has ever been, so this is the test that would catch the day
+        // scrolling stops being enough. The contact field, not the last
+        // radio option, is the true bottom of the dialog now.
         await openFromShell(tester, surfaceSize: Breakpoint.minimumWindowSize);
-
-        await tester.scrollUntilVisible(
-          find.byType(SwitchListTile),
-          200,
-          scrollable: find.descendant(
-            of: find.byType(PreferencesDialog),
-            matching: find.byType(Scrollable),
-          ),
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
         );
-        expect(find.byType(SwitchListTile), findsOneWidget);
 
-        await tester.tap(find.byType(SwitchListTile));
+        final lookup = find.widgetWithText(
+          SwitchListTile,
+          l10n.musicLookupLabel,
+        );
+        await tester.scrollUntilVisible(
+          lookup,
+          200,
+          // The dialog's own scroll view, which is the outermost of the two
+          // scrollables in it: the contact field carries one of its own, and
+          // an unqualified finder now matches both.
+          scrollable: find
+              .descendant(
+                of: find.byType(PreferencesDialog),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+
+        await tester.tap(lookup);
         await tester.pumpAndSettle();
 
         final container = ProviderScope.containerOf(
           tester.element(find.byType(PreferencesDialog)),
         );
         expect(
-          container.read(preferencesControllerProvider).rechecksAtStartup,
+          container.read(preferencesControllerProvider).musicLookupEnabled,
           isFalse,
         );
       },
@@ -427,7 +438,11 @@ void main() {
 
         expect(find.text(l10n.startupRecheckLabel), findsOneWidget);
         expect(
-          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          tester
+              .widget<SwitchListTile>(
+                find.widgetWithText(SwitchListTile, l10n.startupRecheckLabel),
+              )
+              .value,
           isTrue,
         );
       },
@@ -443,9 +458,17 @@ void main() {
         );
 
         // The group sits below the theme, language and animation groups, so
-        // it is off the default surface until scrolled into view.
-        await tester.ensureVisible(find.byType(SwitchListTile));
-        await tester.tap(find.byType(SwitchListTile));
+        // it is off the default surface until scrolled into view. Named
+        // rather than found by type: the music-lookup switch beneath it is a
+        // `SwitchListTile` too, and this test is about this one.
+        final recheck = find.widgetWithText(
+          SwitchListTile,
+          AppLocalizations.of(
+            tester.element(find.byType(PreferencesDialog)),
+          ).startupRecheckLabel,
+        );
+        await tester.ensureVisible(recheck);
+        await tester.tap(recheck);
         await tester.pumpAndSettle();
 
         expect(
@@ -468,14 +491,145 @@ void main() {
           ).preferencesLabel,
         );
 
-        await tester.ensureVisible(find.byType(SwitchListTile));
-        await tester.tap(find.byType(SwitchListTile));
-        await tester.pumpAndSettle();
-
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
         );
+        final recheck = find.widgetWithText(
+          SwitchListTile,
+          l10n.startupRecheckLabel,
+        );
+        await tester.ensureVisible(recheck);
+        await tester.tap(recheck);
+        await tester.pumpAndSettle();
+
         expect(find.text(l10n.preferencesUnsaved), findsOneWidget);
+      },
+    );
+  });
+
+  group('music lookup (music enrichment design)', () {
+    testWidgets(
+      'GivenPreferences_WhenTheyOpen_ThenTheLookupIsOfferedAndOn',
+      (tester) async {
+        // On by default, and reachable: the defect this closes is an owner
+        // who could find no way at all to switch music lookup on, because
+        // the application never offered one and the core ships it off.
+        await openFromShell(tester);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        expect(find.text(l10n.musicLookupLabel), findsOneWidget);
+        expect(
+          tester
+              .widget<SwitchListTile>(
+                find.widgetWithText(SwitchListTile, l10n.musicLookupLabel),
+              )
+              .value,
+          isTrue,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenPreferences_WhenTheLookupIsTurnedOff_ThenItIsAppliedAndStored',
+      (tester) async {
+        final store = InMemorySettingsStore();
+        await openFromShell(tester, settings: store);
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        final lookup = find.widgetWithText(
+          SwitchListTile,
+          l10n.musicLookupLabel,
+        );
+        await tester.ensureVisible(lookup);
+        await tester.tap(lookup);
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(preferencesControllerProvider).musicLookupEnabled,
+          isFalse,
+        );
+        expect(store.musicLookupEnabled, isFalse);
+      },
+    );
+
+    testWidgets(
+      'GivenTheLookupIsOn_WhenPreferencesOpen_ThenTheContactIsShownAndEditable',
+      (tester) async {
+        // MusicBrainz's terms are about who is making the requests, so the
+        // address is the owner's to change — and it is only asked for while
+        // there are requests to make.
+        final store = InMemorySettingsStore();
+        await openFromShell(tester, settings: store);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        final field = find.widgetWithText(
+          TextField,
+          l10n.musicLookupContactLabel,
+        );
+        await tester.ensureVisible(field);
+        await tester.enterText(field, 'someone@example.com');
+        // Submitted, not written per keystroke: each write reconfigures the
+        // core, and a field that did that per character would hand
+        // MusicBrainz a half-typed address on the way.
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+
+        expect(store.musicLookupContact, 'someone@example.com');
+      },
+    );
+
+    testWidgets(
+      'GivenATypedContact_WhenTheDialogIsClosed_ThenItIsStillSaved',
+      (tester) async {
+        // The likeliest way an owner actually leaves that field: type an
+        // address and press the button that closes the dialog. A contact
+        // that only saved on submit would lose it silently.
+        final store = InMemorySettingsStore();
+        await openFromShell(tester, settings: store);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        final field = find.widgetWithText(
+          TextField,
+          l10n.musicLookupContactLabel,
+        );
+        await tester.ensureVisible(field);
+        await tester.enterText(field, 'someone@example.com');
+        await tester.tap(find.text(l10n.preferencesClose));
+        await tester.pumpAndSettle();
+
+        expect(store.musicLookupContact, 'someone@example.com');
+      },
+    );
+
+    testWidgets(
+      'GivenTheLookupIsOff_WhenPreferencesOpen_ThenNoContactIsAskedFor',
+      (tester) async {
+        await openFromShell(
+          tester,
+          settings: InMemorySettingsStore(musicLookupEnabled: false),
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        expect(
+          find.widgetWithText(TextField, l10n.musicLookupContactLabel),
+          findsNothing,
+          reason:
+              'an address for a service nothing is going to call is a '
+              'question with no consequence',
+        );
       },
     );
   });
