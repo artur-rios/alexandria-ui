@@ -20,6 +20,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_watchlist_gateway.dart';
+import '../../../support/keyboard.dart';
 import '../../../support/shell_harness.dart';
 
 /// Recording how far through something the owner is (UC-30, FR-TR-05 …
@@ -153,6 +154,26 @@ void main() {
     await tester.tap(find.text(messages(tester).watchProgressSave));
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'GivenAnEpisodeField_WhenReturnIsPressed_ThenTheProgressIsSaved',
+    (tester) async {
+      // FR-UX-11: Return saves, from either of the two counters.
+      final opened = await openProgress(tester);
+      await openEditorFor(tester, 'Twin Peaks.mkv');
+      await typeEpisode(tester, messages(tester).watchCurrentEpisodeLabel, '5');
+
+      await tester.pressReturnIn(
+        find.ancestor(
+          of: find.text(messages(tester).watchCurrentEpisodeLabel),
+          matching: find.byType(TextField),
+        ),
+      );
+
+      expect(opened.gateway.progressUpdates, hasLength(1));
+      expect(opened.gateway.progressUpdates.single.currentEpisode, 5);
+    },
+  );
 
   group('the main flow', () {
     // Step 2: each item's state, and where in a series the owner is.

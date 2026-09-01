@@ -117,6 +117,9 @@ class _VideoMetadataFormState extends ConsumerState<VideoMetadataForm> {
                           : _errorText(state.errors[field]!, l10n),
                     ),
                     onChanged: (value) => editor.edit(field, value),
+                    // Return saves, from whichever field the owner is in
+                    // (FR-UX-11).
+                    onSubmitted: (_) => state.isSaving ? null : editor.submit(),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                 ],

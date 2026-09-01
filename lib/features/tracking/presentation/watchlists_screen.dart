@@ -9,6 +9,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
+import '../application/watch_progress_editor.dart';
 import '../application/watchlists_controller.dart';
 import '../domain/counted_progress.dart';
 import '../domain/watchlist.dart';
@@ -326,6 +327,19 @@ class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
     super.dispose();
   }
 
+  /// What the dialog's own action does, from a field's Return as well as
+  /// from the button (FR-UX-11).
+  ///
+  /// One method rather than the call written twice more beside the fields:
+  /// the guard on a save already in flight has to hold for every way of
+  /// asking, and a copy of it beside each field is a copy that can be
+  /// forgotten.
+  void _save(WatchProgressEditor editor, WatchProgressEditorState state) {
+    if (state.isSaving) return;
+
+    unawaited(editor.submit(countsEpisodes: widget.countsEpisodes));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -379,6 +393,8 @@ class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
                       errorText: _messageFor(state.currentError, l10n),
                     ),
                     onChanged: editor.editCurrentEpisode,
+                    // Return saves, from either field (FR-UX-11).
+                    onSubmitted: (_) => _save(editor, state),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -391,6 +407,7 @@ class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
                       errorText: _messageFor(state.totalError, l10n),
                     ),
                     onChanged: editor.editTotalEpisodes,
+                    onSubmitted: (_) => _save(editor, state),
                   ),
                 ),
               ],
@@ -419,11 +436,7 @@ class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
               ),
               const SizedBox(width: AppSpacing.sm),
               FilledButton(
-                onPressed: state.isSaving
-                    ? null
-                    : () => unawaited(
-                        editor.submit(countsEpisodes: widget.countsEpisodes),
-                      ),
+                onPressed: state.isSaving ? null : () => _save(editor, state),
                 child: Text(l10n.watchProgressSave),
               ),
             ],

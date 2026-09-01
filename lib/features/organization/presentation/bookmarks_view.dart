@@ -249,6 +249,8 @@ class _BookmarkFormState extends ConsumerState<_BookmarkForm> {
                 errorText: _messageFor(state.titleError, l10n),
               ),
               onChanged: form.editTitle,
+              // Return submits, from here as from any field (FR-UX-11).
+              onSubmitted: (_) => unawaited(form.submit()),
             ),
             const SizedBox(height: AppSpacing.sm),
             TextField(

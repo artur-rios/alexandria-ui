@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../support/keyboard.dart';
+
 /// The dialog that asks what a folder is for (UC-05).
 void main() {
   /// Opens the dialog and hands back what it eventually resolved to.
@@ -130,6 +132,48 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(answers.single?.libraryName, 'Rust course');
+    },
+  );
+
+  testWidgets(
+    'GivenTheNameField_WhenReturnIsPressed_ThenTheDialogIsConfirmed',
+    (tester) async {
+      // FR-UX-11: Return answers the dialog from its one field, rather than
+      // leaving the owner to reach for a button they have just finished
+      // typing next to.
+      final answers = await open(tester);
+      final l10n = l10nOf(tester);
+
+      await tester.ensureVisible(find.text(l10n.indexScopeAsLibrary));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.indexScopeAsLibrary));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Rust course');
+      await tester.pumpAndSettle();
+
+      await tester.pressReturnIn(find.byType(TextField));
+
+      expect(answers.single?.libraryName, 'Rust course');
+    },
+  );
+
+  testWidgets(
+    'GivenAnEmptyName_WhenReturnIsPressed_ThenNothingIsAnswered',
+    (tester) async {
+      // The same rule the action is disabled by: a library has to be called
+      // something, and Return must not be a way around a refusal the button
+      // already makes.
+      final answers = await open(tester);
+      final l10n = l10nOf(tester);
+
+      await tester.ensureVisible(find.text(l10n.indexScopeAsLibrary));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.indexScopeAsLibrary));
+      await tester.pumpAndSettle();
+
+      await tester.pressReturnIn(find.byType(TextField));
+
+      expect(answers, isEmpty);
     },
   );
 

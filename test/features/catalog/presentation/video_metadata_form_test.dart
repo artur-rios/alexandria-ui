@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
+import '../../../support/keyboard.dart';
 import '../../../support/fake_watch_progress_gateway.dart';
 import '../../../support/shell_harness.dart';
 
@@ -127,6 +128,26 @@ void main() {
       expect(field.autofocus, isTrue);
     });
   });
+
+  testWidgets(
+    'GivenAField_WhenReturnIsPressed_ThenTheFormIsSaved',
+    (tester) async {
+      // FR-UX-11: Return sends the form from wherever the owner is in it.
+      final (_, gateway) = await openForm(tester);
+      final l10n = messages(tester);
+      await enter(tester, l10n.videoMetadataFieldYear, '1980');
+
+      await tester.pressReturnIn(
+        find.ancestor(
+          of: find.text(l10n.videoMetadataFieldTitle),
+          matching: find.byType(TextField),
+        ),
+      );
+
+      expect(gateway.videoEdits, hasLength(1));
+      expect(gateway.videoEdits.single.metadata.year, 1980);
+    },
+  );
 
   group('the main flow', () {
     testWidgets('GivenAVideoFile_WhenItsDetailsOpen_ThenEditingIsOffered', (

@@ -102,7 +102,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   autofocus: true,
                   enabled: !submitting,
                   keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
+                  // Return submits, from here as from any field (FR-UX-11).
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
                     labelText: l10n.loginEmailLabel,
                     errorText: authFieldMessage(
@@ -118,7 +120,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   controller: _password,
                   obscureText: true,
                   enabled: !submitting,
-                  textInputAction: TextInputAction.next,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
                     labelText: l10n.loginPasswordLabel,
                     errorText: authFieldMessage(

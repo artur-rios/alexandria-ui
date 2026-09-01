@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
+import '../../../support/keyboard.dart';
 import '../../../support/login_harness.dart';
 
 void main() {
@@ -86,21 +87,6 @@ void main() {
   });
 
   group('the keyboard (FR-UX-11)', () {
-    /// The field's own action, performed the way the platform performs it.
-    ///
-    /// Reading the action off the widget rather than naming one is what
-    /// makes this a test of the *behaviour*: a field configured to move the
-    /// focus and a field configured to submit both get exactly what the
-    /// desktop would send them when Return is pressed in them.
-    Future<void> pressReturnIn(WidgetTester tester, Finder field) async {
-      await tester.tap(field);
-      await tester.pump();
-      await tester.testTextInput.receiveAction(
-        tester.widget<TextField>(field).textInputAction!,
-      );
-      await tester.pumpAndSettle();
-    }
-
     testWidgets(
       'GivenTheEmailField_WhenReturnIsPressed_ThenTheFormIsSubmitted',
       (tester) async {
@@ -112,7 +98,7 @@ void main() {
         await tester.pumpLoginScreen(gateway: gateway);
         await tester.enterCredentials();
 
-        await pressReturnIn(tester, find.byType(TextField).first);
+        await tester.pressReturnIn(find.byType(TextField).first);
 
         expect(gateway.calls, hasLength(1));
       },
@@ -153,7 +139,7 @@ void main() {
         final gateway = FakeAuthGateway();
         await tester.pumpLoginScreen(gateway: gateway);
 
-        await pressReturnIn(tester, find.byType(TextField).first);
+        await tester.pressReturnIn(find.byType(TextField).first);
 
         expect(gateway.calls, isEmpty);
         expect(find.text(en.loginEmailMissing), findsOneWidget);

@@ -10,6 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/reading_lists_controller.dart';
+import '../application/reading_progress_editor.dart';
 import '../domain/counted_progress.dart';
 import '../domain/reading_list.dart';
 
@@ -335,6 +336,19 @@ class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
     super.dispose();
   }
 
+  /// What the dialog's own action does, from a field's Return as well as
+  /// from the button (FR-UX-11).
+  ///
+  /// One method rather than the call written twice more beside the fields:
+  /// the guard on a save already in flight has to hold for every way of
+  /// asking, and a copy of it beside each field is a copy that can be
+  /// forgotten.
+  void _save(ReadingProgressEditor editor, ReadingProgressEditorState state) {
+    if (state.isSaving) return;
+
+    unawaited(editor.submit(countsIssues: widget.countsIssues));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -388,6 +402,8 @@ class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
                       errorText: _messageFor(state.currentError, l10n),
                     ),
                     onChanged: editor.editCurrentIssue,
+                    // Return saves, from either field (FR-UX-11).
+                    onSubmitted: (_) => _save(editor, state),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -400,6 +416,7 @@ class _ProgressEditorState extends ConsumerState<_ProgressEditor> {
                       errorText: _messageFor(state.totalError, l10n),
                     ),
                     onChanged: editor.editTotalIssues,
+                    onSubmitted: (_) => _save(editor, state),
                   ),
                 ),
               ],

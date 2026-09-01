@@ -140,6 +140,8 @@ class _Form extends StatelessWidget {
           controller: code,
           enabled: !submitting,
           autofocus: true,
+          // Return submits, from here as from any field (FR-UX-11).
+          onSubmitted: (_) => onSubmit(),
           decoration: InputDecoration(
             labelText: l10n.recoveryCodeLabel,
             errorText: invalid?.codeError == null
@@ -153,6 +155,7 @@ class _Form extends StatelessWidget {
           controller: password,
           enabled: !submitting,
           obscureText: true,
+          onSubmitted: (_) => onSubmit(),
           decoration: InputDecoration(labelText: l10n.recoveryNewPassword),
         ),
         const SizedBox(height: AppSpacing.md),

@@ -86,6 +86,27 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
     super.dispose();
   }
 
+  /// Answers the dialog with what the owner chose.
+  ///
+  /// A method rather than a closure on the button, because Return in the
+  /// library-name field answers it too (FR-UX-11) and an answer assembled
+  /// twice is an answer that can be assembled differently.
+  void _confirm() {
+    if (!_isAnswerable) return;
+
+    Navigator.of(context).pop((
+      // Everything is the absent scope, not a list of seven: one spelling
+      // on both sides of the boundary.
+      types: _isEverything
+          ? const <FileType>[]
+          : [
+              for (final type in FileType.values)
+                if (_chosen.contains(type)) type,
+            ],
+      libraryName: _asLibrary ? _libraryName.text.trim() : null,
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -163,6 +184,10 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
                     labelText: l10n.libraryNameLabel,
                   ),
                   onChanged: (_) => setState(() {}),
+                  // Return confirms, from the one field this dialog has
+                  // (FR-UX-11). It does nothing while the name is empty,
+                  // which is the same rule the action below is disabled by.
+                  onSubmitted: (_) => _confirm(),
                 ),
               ),
           ],
@@ -178,23 +203,7 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
           // A folder scoped to nothing would record nothing, which is not an
           // answer any owner means to give — so it is refused by being
           // unavailable rather than accepted and then explained.
-          onPressed: !_isAnswerable
-              ? null
-              : () => Navigator.of(context).pop(
-                  (
-                    // Everything is the absent scope, not a list of seven:
-                    // one spelling on both sides of the boundary.
-                    types: _isEverything
-                        ? const <FileType>[]
-                        : [
-                            for (final type in FileType.values)
-                              if (_chosen.contains(type)) type,
-                          ],
-                    libraryName: _asLibrary
-                        ? _libraryName.text.trim()
-                        : null,
-                  ),
-                ),
+          onPressed: !_isAnswerable ? null : _confirm,
           child: Text(l10n.indexScopeConfirm),
         ),
       ],

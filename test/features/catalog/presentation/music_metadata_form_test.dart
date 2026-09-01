@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
+import '../../../support/keyboard.dart';
 import '../../../support/shell_harness.dart';
 
 /// Editing an audio file's music metadata (UC-15, FR-ME-01, FR-ME-03).
@@ -105,6 +106,30 @@ void main() {
       expect(field.autofocus, isTrue);
     });
   });
+
+  testWidgets(
+    'GivenAField_WhenReturnIsPressed_ThenTheFormIsSaved',
+    (tester) async {
+      // FR-UX-11, the same contract every form in this application keeps:
+      // Return sends the form from wherever the owner is in it. A dozen
+      // fields is exactly where tabbing to the button to save is worst.
+      final (_, gateway) = await openForm(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+      await enter(tester, l10n.musicMetadataFieldArtist, 'Miles Davis Quintet');
+
+      await tester.pressReturnIn(
+        find.ancestor(
+          of: find.text(l10n.musicMetadataFieldTitle),
+          matching: find.byType(TextField),
+        ),
+      );
+
+      expect(gateway.edits, hasLength(1));
+      expect(gateway.edits.single.metadata.artist, 'Miles Davis Quintet');
+    },
+  );
 
   group('the main flow', () {
     testWidgets('GivenAnAudioFile_WhenItsDetailsOpen_ThenEditingIsOffered', (

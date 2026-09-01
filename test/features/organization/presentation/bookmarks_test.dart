@@ -17,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_bookmarks.dart';
+import '../../../support/keyboard.dart';
 import '../../../support/shell_harness.dart';
 
 /// Managing bookmarks (UC-28, FR-OG-08 … FR-OG-12).
@@ -112,6 +113,22 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, label));
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'GivenTheTitleField_WhenReturnIsPressed_ThenTheBookmarkIsSaved',
+    (tester) async {
+      // FR-UX-11: Return submits from any field, not only from the last one
+      // — the address field always did, and the title beside it did not.
+      final opened = await openBookmarks(tester);
+      await openForm(tester);
+      await fill(tester, title: 'Flutter', url: 'https://flutter.dev');
+
+      await tester.pressReturnIn(formFields.first);
+
+      expect(opened.gateway.writes, hasLength(1));
+      expect(opened.gateway.writes.single.title, 'Flutter');
+    },
+  );
 
   group('the main flow', () {
     // Steps 1 and 2.

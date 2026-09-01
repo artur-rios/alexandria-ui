@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
+import '../../../support/keyboard.dart';
 import '../../../support/login_harness.dart';
 
 /// Recovering access with a recovery code (UC-41, FR-AU-15, FR-AU-16,
@@ -85,6 +86,46 @@ void main() {
     await tester.tap(find.text(l10n.recoverySubmit));
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'GivenTheCodeField_WhenReturnIsPressed_ThenTheCodeIsRedeemed',
+    (tester) async {
+      // FR-UX-11: Return submits from any field of the form.
+      final gateway = await openRecovery(tester);
+      final l10n = messages(tester);
+      await tester.enterText(
+        find.ancestor(
+          of: find.text(l10n.recoveryCodeLabel),
+          matching: find.byType(TextField),
+        ),
+        code,
+      );
+      await tester.enterText(
+        find.ancestor(
+          of: find.text(l10n.recoveryNewPassword),
+          matching: find.byType(TextField),
+        ),
+        password,
+      );
+      await tester.enterText(
+        find.ancestor(
+          of: find.text(l10n.recoveryConfirmPassword),
+          matching: find.byType(TextField),
+        ),
+        password,
+      );
+      await tester.pump();
+
+      await tester.pressReturnIn(
+        find.ancestor(
+          of: find.text(l10n.recoveryCodeLabel),
+          matching: find.byType(TextField),
+        ),
+      );
+
+      expect(gateway.redemptions, hasLength(1));
+    },
+  );
 
   group('the main flow', () {
     // Step 1: reachable from login, and only from there.

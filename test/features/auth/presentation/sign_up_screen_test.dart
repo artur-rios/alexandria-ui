@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
+import '../../../support/keyboard.dart';
 import '../../../support/login_harness.dart';
 
 void main() {
@@ -49,6 +50,23 @@ void main() {
       expect(find.text(en.signUpIntro), findsOneWidget);
     });
   });
+
+  testWidgets(
+    'GivenTheFirstField_WhenReturnIsPressed_ThenTheAccountIsCreated',
+    (tester) async {
+      // The same contract as the login screen (FR-UX-11): Return submits
+      // from wherever the owner is in the form, and Tab is what moves
+      // between fields. This form had two fields configured to do Tab's job.
+      // `pumpSignUpScreen` is what tells the fake there is no account yet.
+      final gateway = FakeAuthGateway();
+      await tester.pumpSignUpScreen(gateway: gateway);
+      await tester.enterRegistration();
+
+      await tester.pressReturnIn(find.byType(TextField).first);
+
+      expect(gateway.registrations, hasLength(1));
+    },
+  );
 
   group('the main flow', () {
     testWidgets(

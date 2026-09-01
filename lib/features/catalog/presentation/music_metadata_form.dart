@@ -128,6 +128,13 @@ class _MusicMetadataFormState extends ConsumerState<MusicMetadataForm> {
                   onChanged: (value) => ref
                       .read(musicMetadataEditorProvider.notifier)
                       .edit(field, value),
+                  // Return saves, from whichever field the owner is in
+                  // (FR-UX-11) — the same action the button carries, so a
+                  // form of a dozen fields does not have to be tabbed to the
+                  // end of before it can be sent.
+                  onSubmitted: (_) => state.isSaving
+                      ? null
+                      : ref.read(musicMetadataEditorProvider.notifier).submit(),
                 ),
                 const SizedBox(height: AppSpacing.sm),
               ],

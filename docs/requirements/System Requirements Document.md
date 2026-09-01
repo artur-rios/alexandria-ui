@@ -311,7 +311,7 @@ replace the FFI one without touching a screen.
 | FR-UX-08 | The system shall present a loading state for every perceptible operation. |
 | FR-UX-09 | The system shall present every failure as a localized, human-readable message derived from the core's status code, never as a raw status code and never as a silent no-operation. |
 | FR-UX-10 | The system shall confirm every destructive action through a modal that names what will be removed and whether the on-disk file is affected. |
-| FR-UX-11 | The system shall make the primary action of every screen reachable from the keyboard. |
+| FR-UX-11 | The system shall make the primary action of every screen reachable from the keyboard: Return shall submit the form the focus is in, from any of its fields, and Tab shall move between them. Neither key shall do the other's work — a field that moves the focus on Return leaves a form that can only be sent from its last field. A field holding more than one line of text keeps Return for a new line, and is the only exception. |
 | FR-UX-12 | The system shall persist the owner's theme, language, layout, sort, and filter preferences locally and restore them at launch. |
 | FR-UX-13 | The system shall let the owner switch music information lookup on or off and record the contact address the lookup services are given, applying either to the core without restarting the application; lookup shall be on where the owner has expressed no preference, and while it is off the application shall request none. |
 

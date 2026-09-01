@@ -20,6 +20,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_reading_list_gateway.dart';
+import '../../../support/keyboard.dart';
 import '../../../support/shell_harness.dart';
 
 /// Tracking reading progress (UC-32, FR-TR-12 … FR-TR-14).
@@ -148,6 +149,26 @@ void main() {
     await tester.tap(find.text(messages(tester).readProgressSave));
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'GivenAnIssueField_WhenReturnIsPressed_ThenTheProgressIsSaved',
+    (tester) async {
+      // FR-UX-11: Return saves, from either of the two counters.
+      final opened = await openLists(tester, items: const [comicProgress]);
+      await openEditor(tester, 'Sandman.cbz');
+      await typeIssue(tester, messages(tester).readCurrentIssueLabel, '7');
+
+      await tester.pressReturnIn(
+        find.ancestor(
+          of: find.text(messages(tester).readCurrentIssueLabel),
+          matching: find.byType(TextField),
+        ),
+      );
+
+      expect(opened.gateway.progressUpdates, hasLength(1));
+      expect(opened.gateway.progressUpdates.single.currentIssue, 7);
+    },
+  );
 
   group('the main flow', () {
     // Step 2: the core's progress is what the screen presents.

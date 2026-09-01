@@ -111,6 +111,8 @@ class _ChangeCredentialsDialogState
                   onChanged: (_) => ref
                       .read(changeCredentialsControllerProvider.notifier)
                       .resetProblems(),
+                  // Return submits, from here as from any field (FR-UX-11).
+                  onSubmitted: (_) => submitting ? null : _submit(),
                   decoration: InputDecoration(
                     labelText: l10n.changeCredentialsEmailLabel,
                     errorText: authFieldMessage(
@@ -129,6 +131,7 @@ class _ChangeCredentialsDialogState
                   onChanged: (_) => ref
                       .read(changeCredentialsControllerProvider.notifier)
                       .resetProblems(),
+                  onSubmitted: (_) => submitting ? null : _submit(),
                   decoration: InputDecoration(
                     labelText: l10n.changeCredentialsPasswordLabel,
                     errorText: authFieldMessage(

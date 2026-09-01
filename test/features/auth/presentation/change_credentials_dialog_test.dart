@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
+import '../../../support/keyboard.dart';
 import '../../../support/shell_harness.dart';
 
 /// The credential-change form (UC-04, FR-AU-10, FR-AU-11).
@@ -58,6 +59,28 @@ void main() {
     await tester.tap(find.text(l10n.changeCredentialsSubmit));
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'GivenTheFirstField_WhenReturnIsPressed_ThenTheCredentialsAreSent',
+    (tester) async {
+      // FR-UX-11, the same as every other form: Return submits from any
+      // field, not only from the last one.
+      final gateway = FakeAuthGateway();
+      await openForm(tester, gateway: gateway);
+      final fields = find.descendant(
+        of: find.byType(ChangeCredentialsDialog),
+        matching: find.byType(TextField),
+      );
+      await tester.enterText(fields.at(0), 'new@example.com');
+      await tester.enterText(fields.at(1), 'a decent long passphrase');
+      await tester.enterText(fields.at(2), 'a decent long passphrase');
+      await tester.pump();
+
+      await tester.pressReturnIn(fields.at(0));
+
+      expect(gateway.credentialChanges, hasLength(1));
+    },
+  );
 
   group('reachability (main flow step 1)', () {
     testWidgets(
