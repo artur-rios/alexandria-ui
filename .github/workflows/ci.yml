@@ -50,10 +50,15 @@ env:
   # codes UC-40, UC-41 and UC-42 are specified against since the core dropped
   # e-mail confirmation and password reset on 2026-08-18.
   CORE_REPOSITORY: artur-rios/alexandria-api
-  # The first core carrying libraries, which is what the Libraries screen
-  # calls. The pin and the vendored header move together — the drift check
-  # below is exactly the guard against them moving apart.
-  CORE_REF: b8f0404aaa26bdcfb617b3b93ea76053eff031d3
+  # The first core that repairs the metadata an older extraction never wrote
+  # (its UC-02): a refresh re-reads a file whose row predates the field the
+  # extractor now knows, which is what fills `albumArtist` for a library
+  # indexed before it existed. The startup re-check (FR-LB-21) is what runs
+  # that refresh, so the repair happens on the next launch and nothing here
+  # had to change to ask for it. The pin and the vendored header move
+  # together — the drift check below is exactly the guard against them moving
+  # apart, and this core's header is byte-identical to the one committed.
+  CORE_REF: 42889d15034cac29fc50eb5c5f1212ef2c5f35de
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned
