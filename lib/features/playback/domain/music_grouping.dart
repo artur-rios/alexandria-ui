@@ -16,7 +16,11 @@ String? trimmedOrNull(String? value) {
 /// One audio file and the metadata the queue is grouped by (FR-PL-06).
 class MusicEntry {
   /// Creates an entry.
-  const MusicEntry({required this.file, required this.metadata});
+  const MusicEntry({
+    required this.file,
+    required this.metadata,
+    this.albumArtistOfRecord,
+  });
 
   /// The file itself.
   final CatalogFile file;
@@ -34,19 +38,35 @@ class MusicEntry {
   /// It is not what the library is grouped by — see [albumArtist].
   String? get artist => trimmedOrNull(metadata.artist);
 
-  /// Who the record is by, falling back to the performer.
+  /// What the rest of this record says its artist is — see
+  /// [albumArtistsAcross], which is the only thing that sets it.
+  ///
+  /// `null` for an entry read on its own, outside a library: a single track
+  /// is no evidence about the record it came from.
+  final String? albumArtistOfRecord;
+
+  /// Who the record is by.
   ///
   /// The one key every grouping and every queue is built from: a compilation
   /// under one album artist is one record rather than one record per
   /// performer, and a guest appearance stays on the host's album.
   ///
-  /// The fallback is what makes this safe on a real library. Most files carry
-  /// no `ALBUMARTIST` frame at all, and a grouping keyed on the raw field
-  /// would empty the Artists list for everyone whose collection predates the
-  /// tag. A library with no album-artist tags therefore groups exactly as it
-  /// did before the field existed, and every file that has one is grouped
-  /// better.
-  String? get albumArtist => trimmedOrNull(metadata.albumArtist) ?? artist;
+  /// Three answers, in order of how much they know:
+  ///
+  /// 1. this file's own `ALBUMARTIST`, which is the record answering for
+  ///    itself;
+  /// 2. what the rest of the record says ([albumArtistOfRecord]) — for a
+  ///    file that carries no such tag, which most files do not;
+  /// 3. this track's own performer, for a track that belongs to no record
+  ///    the library can see.
+  ///
+  /// The middle one is what keeps a rap album out of the artists list twelve
+  /// times over. A record whose tracks are tagged `50 Cent`, `50 Cent feat.
+  /// Nate Dogg` and `Eminem, 50 Cent` and carries no album artist anywhere
+  /// is one record by one artist, and falling straight through to the
+  /// performer listed every guest on it as an artist in their own right.
+  String? get albumArtist =>
+      trimmedOrNull(metadata.albumArtist) ?? albumArtistOfRecord ?? artist;
 
   /// The track's title, or `null` when it names none.
   ///
@@ -155,4 +175,83 @@ int _trackComparison(MusicEntry a, MusicEntry b) {
   if (right != null) return 1;
 
   return a.file.name.compareTo(b.file.name);
+}
+
+/// [entries] again, each told who the record it belongs to is by.
+///
+/// Read once when the library is built, because the answer is a property of
+/// the *record* and no single file holds it: a track carrying no
+/// `ALBUMARTIST` cannot say whose album it is on, and the tracks beside it
+/// can.
+///
+/// Two ways a record answers, in order:
+///
+/// 1. **A tag on any of its tracks.** Files are half-tagged all the time —
+///    one editor writes the frame, another does not — and one track saying
+///    `50 Cent` settles the record for the ones that say nothing.
+/// 2. **Its most common performer.** With no tag anywhere, the artist most
+///    of the record's tracks name is whose record it is; the others are
+///    guests on it.
+///
+/// A record with no name of its own is left alone: two untitled files are
+/// not the same record, and grouping on a blank field would make one record
+/// of an owner's every loose track.
+///
+/// The second rule is a judgement, and worth naming as one: a genuine
+/// various-artists compilation with no album artist anywhere lands under
+/// whichever performer has the most tracks on it. That is a worse answer for
+/// that one record than listing all of them — and a far better one for every
+/// ordinary album with a guest on it, which is what most libraries are made
+/// of. An owner who disagrees has the tag, and it wins.
+List<MusicEntry> albumArtistsAcross(List<MusicEntry> entries) {
+  final tagged = <String, Map<String, int>>{};
+  final performers = <String, Map<String, int>>{};
+
+  for (final entry in entries) {
+    final album = entry.album;
+    if (album == null) continue;
+
+    if (trimmedOrNull(entry.metadata.albumArtist) case final artist?) {
+      tagged.putIfAbsent(album, () => {}).update(
+        artist,
+        (count) => count + 1,
+        ifAbsent: () => 1,
+      );
+    }
+    if (entry.artist case final artist?) {
+      performers.putIfAbsent(album, () => {}).update(
+        artist,
+        (count) => count + 1,
+        ifAbsent: () => 1,
+      );
+    }
+  }
+
+  return [
+    for (final entry in entries)
+      MusicEntry(
+        file: entry.file,
+        metadata: entry.metadata,
+        albumArtistOfRecord: entry.album == null
+            ? null
+            : _commonest(tagged[entry.album!]) ??
+                  _commonest(performers[entry.album!]),
+      ),
+  ];
+}
+
+/// The name most of them carry, or `null` when there are none.
+///
+/// Ties break alphabetically rather than by encounter order: a library
+/// listing its artists differently depending on which track the core
+/// happened to answer first would be a library that reorders itself for no
+/// reason the owner can see.
+String? _commonest(Map<String, int>? counts) {
+  if (counts == null || counts.isEmpty) return null;
+
+  final names = counts.keys.toList()..sort();
+
+  return names.reduce(
+    (best, name) => counts[name]! > counts[best]! ? name : best,
+  );
 }

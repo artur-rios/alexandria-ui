@@ -458,6 +458,31 @@ void main() {
     },
   );
 
+  testWidgets(
+    'GivenAWindowWiderThanItIsTall_WhenThePlayerOpens_ThenTheStageIsCentred',
+    (tester) async {
+      // It sat against the left edge with the rest of the window empty
+      // beside it: a vertical `SingleChildScrollView` hands its child a
+      // loose width and pins it to the left, so the column shrank to the
+      // stage's own width and never had a window's worth of room to centre
+      // itself in.
+      await play(
+        tester,
+        mode: AlbumAnimationMode.disc,
+        surfaceSize: const Size(1600, 700),
+      );
+
+      final stage = tester.getRect(find.byType(AlbumStage));
+      final screen = tester.getRect(find.byType(NowPlayingScreen));
+
+      expect(
+        stage.center.dx,
+        moreOrLessEquals(screen.center.dx, epsilon: 1),
+        reason: 'the stage is the screen now; it belongs in the middle of it',
+      );
+    },
+  );
+
   group('the CD player\'s readout (FR-PL-09)', () {
     test('GivenNothingPlaying_WhenTheReadoutIsRead_ThenItIsBlank', () {
       // A player with no disc in it shows nothing, rather than 00:00 against
@@ -737,13 +762,15 @@ void main() {
             theme: ThemeData(extensions: const [AlbumPalette.standard]),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            // Short enough that `_reservedForTextAndControls` (260) leaves
-            // under `_minimumStageSize` (160) of the height for the stage —
-            // well below anything NFR-07 lets the real window reach.
+            // Short enough that what is left after the app bar and the
+            // page's own padding is under `_minimumStageSize` (160) — well
+            // below anything NFR-07 lets the real window reach. The stage
+            // claims the whole window now that nothing sits beneath it, so
+            // crossing that floor takes a surface this small.
             home: const Center(
               child: SizedBox(
                 width: 1024,
-                height: 350,
+                height: 220,
                 child: NowPlayingScreen(),
               ),
             ),

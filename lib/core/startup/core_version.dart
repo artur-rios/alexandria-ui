@@ -1,15 +1,22 @@
 /// The range of Alexandria core versions this application supports (IR-06).
 ///
-/// The core is pre-1.0, so a minor bump is a breaking change: `0.1.x` is
-/// accepted and `0.2.0` is not. Widening this is a deliberate decision made
+/// The core is pre-1.0, so a minor bump is a breaking change: `0.2.x` is
+/// accepted and `0.3.0` is not. Widening this is a deliberate decision made
 /// after the FFI surface has actually been checked, not a default that drifts
 /// upward on its own.
+///
+/// Moved to `0.2.x` with the core that stamps a row's metadata and looks a
+/// recording up when naming it exactly misses. Both are invisible from here
+/// when they are missing — an artists list quietly grouping by performer, a
+/// lyrics lookup quietly answering nothing — and an owner rebuilding one
+/// repository and not the other met exactly that. This is the line that
+/// turns it into a sentence at startup instead.
 abstract final class CoreVersionRange {
   /// The lowest accepted version, inclusive.
-  static const String minimum = '0.1.0';
+  static const String minimum = '0.2.0';
 
   /// The lowest rejected version, exclusive upper bound.
-  static const String exclusiveMaximum = '0.2.0';
+  static const String exclusiveMaximum = '0.3.0';
 
   /// How the range reads in a failure message.
   static const String description = '>=$minimum <$exclusiveMaximum';

@@ -5,6 +5,7 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/core/startup/core_version.dart';
 import 'package:alexandria_ui/core/startup/startup_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -39,7 +40,7 @@ void main() {
       final state = await runStartup(core: FakeCoreClient());
 
       expect(state, isA<StartupReady>());
-      expect((state as StartupReady).coreVersion, '0.1.0');
+      expect((state as StartupReady).coreVersion, '0.2.0');
       expect(state.warning, isNull);
     },
   );
@@ -143,7 +144,7 @@ void main() {
         expect((state as StartupFailed).step, StartupStep.verifyingCore);
         final failure = state.failure as CoreVersionUnsupportedFailure;
         expect(failure.found, '0.9.0');
-        expect(failure.required, contains('0.1.0'));
+        expect(failure.required, contains(CoreVersionRange.minimum));
       },
     );
 

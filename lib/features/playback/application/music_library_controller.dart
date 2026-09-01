@@ -55,13 +55,18 @@ class MusicLibraryController extends AsyncNotifier<MusicLibrary> {
     switch (listing) {
       case CatalogListingLoaded(:final files):
         return MusicLibrary(
-          entries: [
+          // Told, once, who each record is by: a file carrying no
+          // `ALBUMARTIST` cannot say whose album it is on and the tracks
+          // beside it can, so the answer is worked out here — where the
+          // whole library is in hand — rather than asked of one entry at a
+          // time (`albumArtistsAcross`).
+          entries: albumArtistsAcross([
             for (final row in files)
               MusicEntry(
                 file: row.file,
                 metadata: MusicMetadata.fromDetails(row.metadata),
               ),
-          ],
+          ]),
         );
 
       // AF-04-equivalent: the core rejected the session. Discarding it

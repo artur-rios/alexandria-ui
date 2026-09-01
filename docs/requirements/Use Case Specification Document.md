@@ -1760,6 +1760,13 @@ graph LR
    record it is, so the songs list names the performer of every track, and
    inside a record it names the performers who are not the record's own
    artist — which is what tells a compilation's twelve performers apart.
+   Whose record it is, is answered in order: the track's own album-artist tag;
+   failing that, the tag on any other track of the same record, because files
+   are half-tagged all the time; failing that, the performer most of the
+   record's tracks name, because a record whose tracks read `50 Cent`,
+   `50 Cent feat. Nate Dogg` and `Eminem, 50 Cent` is one artist's record and
+   listing every guest beside them is the defect this rule removes. A track
+   belonging to no named record answers for itself.
 3. The owner drills into an artist and then an album, or straight into an
    album, returning by the breadcrumb.
 4. The owner plays a track, an album, or an artist. An album or artist queue

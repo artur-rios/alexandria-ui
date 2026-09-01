@@ -16,13 +16,16 @@ import '../../domain/album_medium.dart';
 /// say rather than a device with a blank label painted on it.
 Rect nameplateFor(AlbumMedium medium, Rect face) {
   final (left, top, width, height) = switch (medium) {
-    // Between the display recess and the disc — a narrow band, and the
-    // plate is sized to it rather than to the room the *face* has. The disc
-    // is seated at 0.66 of the height with a radius of 0.26 of it, so
-    // anything below 0.394 of the face is drawn over by the record itself:
-    // the medium is painted above the chassis, and a plate the disc reaches
-    // is a plate the owner cannot read.
-    AlbumMedium.disc => (0.06, 0.295, 0.46, 0.08),
+    // To the right of everything the player puts over its own face.
+    //
+    // Not under the display, where there is more room: the *lid* closes over
+    // the disc from 0.355 of the face downward and the display recess ends
+    // at 0.28, which leaves a band too thin to set a title in — and the lid
+    // is glass, so a plate under it is legible enough to look like a
+    // mistake and not enough to read. The lid reaches 0.68 of the face
+    // across; this begins past that, below the transport, where nothing is
+    // ever drawn on top of it.
+    AlbumMedium.disc => (0.69, 0.30, 0.29, 0.09),
     // The deck's right half, below the buttons and beside the well, which
     // occupies the left of the face up to 0.61.
     AlbumMedium.tape => (0.66, 0.56, 0.30, 0.10),

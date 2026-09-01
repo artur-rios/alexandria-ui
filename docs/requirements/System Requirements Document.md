@@ -227,6 +227,7 @@ replace the FFI one without touching a screen.
 | FR-PL-11 | The system shall let the owner choose the medium the album animation shows — by the album's release year, pinned to one medium, or off — and shall show no animation and open no player while it is off. |
 | FR-PL-12 | The system shall make the transport drawn on the player's device operable — previous, play and pause, stop, and next — reaching the same queue the playback bar's own controls reach, and shall present no second copy of it while the device is on screen. It shall name the track playing on the device, clear of the medium seated on it, and print the album's own picture on that medium; on a device that carries a readout, it shall show which track of the queue is playing and how far into that track playback has reached, following the engine rather than standing at a fixed value. Where no device is drawn, the player shall name the track and offer a transport of its own — the two things the device would otherwise have carried. |
 | FR-PL-13 | The system shall present, on request, the lyrics and the artist photograph the core has cached for the track playing — together, in one place, rather than beside a player that already names the track — offer the words of a track that has none on request, and offer a lookup for one track or for the whole library — naming what a lookup concluded, letting a library-wide one be stopped and taken up again where it left off, and leaving the rest of the interface usable while it runs. It shall make no lookup the owner did not ask for. |
+| FR-PL-14 | The system shall group the audio library by the record's own artist, answering who that is from the track's album-artist tag, then from the same tag on any other track of that record, then from the performer most of the record's tracks name — so that a record with guests on it is listed once, under the artist whose record it is, rather than once per performer. A track that names no record answers for itself. |
 
 ### 3.6 Document, Image, and Page Viewing — `VW`
 
@@ -491,7 +492,7 @@ does not already publish.
 | File detail | Metadata, path, state, and available actions | FR-CT-05, FR-CT-18, FR-ME-01, FR-ME-02, FR-ME-04 |
 | Text editor | Markdown and text editing with live preview | FR-ME-06 … FR-ME-10 |
 | Video player | Playback with subtitle and audio tracks | FR-PL-01 … FR-PL-04, FR-PL-08 … FR-PL-10 |
-| Audio player | Persistent playback with queue, album animation, device transport, and the words of the track playing | FR-PL-05 … FR-PL-13 |
+| Audio player | Persistent playback with queue, album animation, device transport, and the words of the track playing | FR-PL-05 … FR-PL-14 |
 | Document viewer | PDFs and e-books | FR-VW-02, FR-VW-07, FR-VW-08 |
 | Comic viewer | Comic archives, page by page | FR-VW-03, FR-VW-07, FR-VW-08 |
 | Image viewer | Fit and zoom | FR-VW-04, FR-VW-07 |
@@ -685,7 +686,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | F-02 Library sources and indexing | FR-LB-01 through FR-LB-23 |
 | F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-18 |
 | F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
-| F-05 Media playback | FR-PL-01 through FR-PL-13 |
+| F-05 Media playback | FR-PL-01 through FR-PL-14 |
 | F-06 Document, image, and page viewing | FR-VW-01 through FR-VW-08 |
 | F-07 Collections and bookmarks | FR-OG-01 through FR-OG-12 |
 | F-08 Watchlists, reading lists, and playlists | FR-TR-01 through FR-TR-20 |
@@ -700,7 +701,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Library sources and indexing | `LB` | FR-LB-01 … FR-LB-23 |
 | Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-18 |
 | Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
-| Media playback | `PL` | FR-PL-01 … FR-PL-13 |
+| Media playback | `PL` | FR-PL-01 … FR-PL-14 |
 | Document, image, and page viewing | `VW` | FR-VW-01 … FR-VW-08 |
 | Collections and bookmarks | `OG` | FR-OG-01 … FR-OG-12 |
 | Watchlists, reading lists, and playlists | `TR` | FR-TR-01 … FR-TR-20 |

@@ -35,17 +35,17 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
   /// the transport for, so it is hidden rather than drawn this small.
   static const double _minimumStageSize = 160;
 
-  /// A rough allowance for the title, the queue label, and the transport row
-  /// beneath the stage, subtracted from the window's height to decide how
-  /// much of it the stage may claim.
+  /// The room left around the stage, top and bottom.
   ///
-  /// An estimate, not a measurement: the real height of that text depends on
-  /// the locale and the owner's text scale, neither known until *after* a
-  /// stage size would have to be chosen to lay the rest out around it. The
-  /// `SingleChildScrollView` in [build] is what keeps this estimate from
-  /// being load-bearing — if it undershoots, the page scrolls instead of
-  /// overflowing.
-  static const double _reservedForTextAndControls = 260;
+  /// The stage is the only thing on this screen now: the title, the album
+  /// and the transport row moved onto the device itself, and what is left
+  /// below it is nothing at all. So what used to be a 260-pixel allowance
+  /// for that text is the page's own padding and no more — an allowance for
+  /// what is no longer there was drawing the device at two thirds of the
+  /// height it could have had.
+  ///
+  /// The text and the transport come back when there is no stage, and they
+  /// have the whole window to themselves when they do.
 
   /// Whether a [NowPlayingScreen] is currently mounted anywhere in the tree.
   ///
@@ -194,7 +194,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         builder: (context, viewport) {
           final stageSize = math.min(
             viewport.maxWidth - AppSpacing.lg * 2,
-            viewport.maxHeight - NowPlayingScreen._reservedForTextAndControls,
+            viewport.maxHeight - AppSpacing.lg * 2,
           );
           final showsStage =
               showsAnimation && stageSize >= NowPlayingScreen._minimumStageSize;
@@ -204,6 +204,16 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minHeight: viewport.maxHeight - AppSpacing.lg * 2,
+                // Wide as the window, and that is what centres the stage.
+                //
+                // A vertical `SingleChildScrollView` hands its child a
+                // *loose* width and pins it to the left, so the column
+                // shrank to the width of the widest thing in it — the stage
+                // — and sat against the edge with the rest of the window
+                // empty beside it. `mainAxisAlignment: center` was centring
+                // it top to bottom all along, which is why only half of the
+                // problem was visible.
+                minWidth: viewport.maxWidth - AppSpacing.lg * 2,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
