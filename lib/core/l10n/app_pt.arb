@@ -588,5 +588,6 @@
   "lyricsTitle": "Letra",
   "lyricsNone": "Nenhuma letra foi encontrada para esta faixa.",
   "lyricsSwitchedOff": "A busca de informa\u00e7\u00f5es musicais est\u00e1 desligada. Ligue-a nas Prefer\u00eancias para buscar letras.",
-  "audioTransportSemantics": "Controles do reprodutor"
+  "audioTransportSemantics": "Controles do reprodutor",
+  "albumCoverLabel": "Capa do \u00e1lbum"
 }

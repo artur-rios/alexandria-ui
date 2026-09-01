@@ -2767,5 +2767,9 @@
   "audioTransportSemantics": "Player controls",
   "@audioTransportSemantics": {
     "description": "UC-21: names the transport buttons drawn on the device in the full player, so a screen reader reaching them is told what the group of controls is."
+  },
+  "albumCoverLabel": "Album cover",
+  "@albumCoverLabel": {
+    "description": "UC-21, FR-UX-01: what the playback bar's recess is showing when the album carries its own picture. Named for a screen reader, which would otherwise be told the recess holds a turning record when it holds a photograph of a sleeve."
   }
 }

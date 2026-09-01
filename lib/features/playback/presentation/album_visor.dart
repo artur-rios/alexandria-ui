@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +8,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/album_palette.dart';
 import '../application/album_animation_controller.dart';
 import '../application/audio_playback_controller.dart';
+import '../domain/album_cover.dart';
 import '../domain/album_medium.dart';
 import 'album_medium_label.dart';
 import 'media/cassette_painter.dart';
@@ -13,8 +16,18 @@ import 'media/diagonal_sheen.dart';
 import 'media/disc_painter.dart';
 import 'media/vinyl_painter.dart';
 
-/// A recessed window in the playback bar, showing the same medium the full
-/// player's stage would (UC-21, FR-PL-07, FR-UX-01).
+/// A recessed window in the playback bar, showing the album's own cover —
+/// or, for a record that carries none, the same medium the full player's
+/// stage turns (UC-21, FR-PL-07, FR-UX-01).
+///
+/// The cover comes first, and that is a change from what this showed at
+/// first. A spinning disc is the same drawing for every album ever played:
+/// it says a record is on, and nothing whatever about *which* record. The
+/// sleeve is what an owner recognises at a glance across a room, which is
+/// precisely what a bar that is on screen all session is for. The medium is
+/// what remains when a file carries no picture — common enough that it is a
+/// fallback rather than an error, exactly as it is for the case on the
+/// stage (design section 4).
 ///
 /// The bar is on screen for as long as the owner is anywhere in the
 /// application, which is most of a session — that is what makes it the
@@ -56,6 +69,14 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
   bool _isPlaying = false;
   bool _hasCurrent = false;
 
+  /// Whether the album's own picture is what is in the recess.
+  ///
+  /// Tracked alongside the rest because it decides whether the ticker runs
+  /// at all: a cover does not turn, and a controller left repeating behind a
+  /// still photograph would burn a frame's work every frame for a rotation
+  /// nobody can see — the same waste `_reduceMotion` exists to avoid.
+  bool _showsCover = false;
+
   /// AF-03: whether the system asked for less motion, exactly as `AlbumStage`
   /// reads it — decided in `didChangeDependencies`, not `build`, because a
   /// context is not safe to establish an inherited dependency from before
@@ -70,6 +91,7 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
     _medium = animation.medium;
     _isPlaying = audio.isPlaying;
     _hasCurrent = audio.current != null;
+    _showsCover = ref.read(albumCoverControllerProvider) is AlbumCoverFetched;
     if (_medium case final medium?) _spin.duration = spinPeriodFor(medium);
     _applySpin();
   }
@@ -102,7 +124,11 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
   /// that — a controller change elsewhere must not be able to leave a ticker
   /// running behind an empty recess.
   void _applySpin() {
-    if (_medium == null || _reduceMotion || !_isPlaying || !_hasCurrent) {
+    if (_medium == null ||
+        _reduceMotion ||
+        _showsCover ||
+        !_isPlaying ||
+        !_hasCurrent) {
       _spin.stop();
       return;
     }
@@ -141,9 +167,24 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
       _applySpin();
     });
 
+    ref.listen<AlbumCover>(albumCoverControllerProvider, (previous, next) {
+      final showsCover = next is AlbumCoverFetched;
+      if (showsCover == _showsCover) return;
+      _showsCover = showsCover;
+      _applySpin();
+    });
+
     final medium = ref.watch(
       albumAnimationControllerProvider.select((state) => state.medium),
     );
+    // The album's own picture, when `AlbumCoverController` has fetched one.
+    // The very same image the full player's case is drawn with, from the
+    // very same provider: the bar and the stage cannot show two different
+    // covers for one record, and nothing here fetches anything of its own.
+    final cover = switch (ref.watch(albumCoverControllerProvider)) {
+      AlbumCoverFetched(:final image) => image,
+      AlbumCoverDesigned() => null,
+    };
     final current = ref.watch(
       audioPlaybackControllerProvider.select((state) => state.current),
     );
@@ -156,13 +197,20 @@ class _AlbumVisorState extends ConsumerState<AlbumVisor>
     final l10n = AppLocalizations.of(context);
 
     return Semantics(
-      label: _label(l10n, medium),
+      // What is actually in the recess, which is not always the medium any
+      // more: a screen reader told "long-playing record" while a sleeve is
+      // on screen is being told about a drawing that is not there.
+      label: cover == null ? _label(l10n, medium) : l10n.albumCoverLabel,
       child: SizedBox.square(
         dimension: widget.size,
         child: AnimatedBuilder(
           animation: _spin,
-          builder: (context, _) =>
-              _Recess(medium: medium, palette: palette, turns: _spin.value),
+          builder: (context, _) => _Recess(
+            medium: medium,
+            palette: palette,
+            turns: _spin.value,
+            cover: cover,
+          ),
         ),
       ),
     );
@@ -188,11 +236,15 @@ class _Recess extends StatelessWidget {
     required this.medium,
     required this.palette,
     required this.turns,
+    this.cover,
   });
 
   final AlbumMedium medium;
   final AlbumPalette palette;
   final double turns;
+
+  /// The album's own picture, or `null` to turn the medium instead.
+  final ui.Image? cover;
 
   /// The recess reads as a cut-out in the bar's panel, not a card sitting on
   /// it — a small radius rather than a fully rounded shape keeps that read at
@@ -227,18 +279,26 @@ class _Recess extends StatelessWidget {
             CustomPaint(
               painter: _InnerShadowPainter(color: palette.contactShadow),
             ),
-            // The medium is fit to the recess by its own aspect rather than
-            // forced square: `CassettePainter.aspect` is 130/66, and filling
-            // a square with it would squash the shell into a circle-adjacent
-            // blob instead of the rectangle a cassette actually is.
-            Center(
-              child: AspectRatio(
-                aspectRatio: _aspect,
-                child: RepaintBoundary(
-                  child: CustomPaint(painter: _mediumPainter),
+            if (cover case final cover?)
+              // Cropped to fill the recess rather than letterboxed inside
+              // it: sleeves are square and the recess is square, so the
+              // crop is almost never visible — and a picture with bars down
+              // its sides would read as a mistake in a window this small.
+              RawImage(image: cover, fit: BoxFit.cover)
+            else
+              // The medium is fit to the recess by its own aspect rather
+              // than forced square: `CassettePainter.aspect` is 130/66, and
+              // filling a square with it would squash the shell into a
+              // circle-adjacent blob instead of the rectangle a cassette
+              // actually is.
+              Center(
+                child: AspectRatio(
+                  aspectRatio: _aspect,
+                  child: RepaintBoundary(
+                    child: CustomPaint(painter: _mediumPainter),
+                  ),
                 ),
               ),
-            ),
             IgnorePointer(
               child: CustomPaint(
                 painter: _SheenPainter(color: palette.glassSheen),

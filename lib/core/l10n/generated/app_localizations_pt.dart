@@ -2104,4 +2104,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get audioTransportSemantics => 'Controles do reprodutor';
+
+  @override
+  String get albumCoverLabel => 'Capa do álbum';
 }

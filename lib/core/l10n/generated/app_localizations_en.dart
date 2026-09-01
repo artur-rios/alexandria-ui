@@ -2098,4 +2098,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get audioTransportSemantics => 'Player controls';
+
+  @override
+  String get albumCoverLabel => 'Album cover';
 }

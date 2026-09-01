@@ -2,7 +2,9 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/album_palette.dart';
 import 'package:alexandria_ui/features/playback/application/album_animation_controller.dart';
+import 'package:alexandria_ui/features/playback/application/album_cover_controller.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
+import 'package:alexandria_ui/features/playback/domain/album_cover.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
@@ -10,6 +12,8 @@ import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/disc_painter.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/vinyl_painter.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,6 +46,7 @@ void main() {
     required AudioPlaybackState audio,
     AlbumMedium? medium,
     bool reduceMotion = false,
+    AlbumCover cover = const AlbumCoverDesigned(),
   }) async {
     final audioController = _FixedAudioPlaybackController(audio);
     final animationController = _FixedAlbumAnimationController(
@@ -54,6 +59,9 @@ void main() {
           audioPlaybackControllerProvider.overrideWith(() => audioController),
           albumAnimationControllerProvider.overrideWith(
             () => animationController,
+          ),
+          albumCoverControllerProvider.overrideWith(
+            () => _FixedAlbumCoverController(cover),
           ),
         ],
         child: MediaQuery(
@@ -242,6 +250,75 @@ void main() {
     },
   );
 
+  group('the album\'s own cover (UC-21, FR-UX-01)', () {
+    testWidgets(
+      'GivenAFetchedCover_WhenTheBarIsShown_ThenTheSleeveIsInTheRecess',
+      (tester) async {
+        // What the owner asked for, and what a bar on screen all session is
+        // actually good for: a spinning disc is the same drawing for every
+        // album ever played, where the sleeve says which record is on.
+        final cover = await aCover();
+        addTearDown(cover.dispose);
+
+        await pumpBar(
+          tester,
+          audio: playingState(),
+          medium: AlbumMedium.disc,
+          cover: AlbumCoverFetched(image: cover),
+        );
+
+        expect(
+          tester.widget<RawImage>(find.byType(RawImage)).image,
+          same(cover),
+        );
+        expect(
+          find.byWidgetPredicate(
+            (widget) => widget is CustomPaint && widget.painter is DiscPainter,
+          ),
+          findsNothing,
+          reason: 'the medium is the fallback, not a layer under the picture',
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenNoCover_WhenTheBarIsShown_ThenTheMediumTurnsAsBefore',
+      (tester) async {
+        // Common rather than exceptional: plenty of files carry no embedded
+        // picture, and a bar that showed an empty recess for them would be
+        // worse than the disc it used to show for everything.
+        await pumpBar(
+          tester,
+          audio: playingState(),
+          medium: AlbumMedium.disc,
+        );
+
+        expect(find.byType(RawImage), findsNothing);
+        expect(discPainterOf(tester), isNotNull);
+      },
+    );
+
+    testWidgets(
+      'GivenAFetchedCover_WhenTimePasses_ThenNoTickerRunsBehindIt',
+      (tester) async {
+        // A photograph does not turn, so nothing should be scheduling frames
+        // for it — the same waste the reduced-motion case avoids.
+        final cover = await aCover();
+        addTearDown(cover.dispose);
+
+        await pumpBar(
+          tester,
+          audio: playingState(),
+          medium: AlbumMedium.disc,
+          cover: AlbumCoverFetched(image: cover),
+        );
+        await tester.pump(const Duration(milliseconds: 16));
+
+        expect(tester.binding.hasScheduledFrame, isFalse);
+      },
+    );
+  });
+
   testWidgets('GivenReducedMotion_WhenTheVisorIsShown_ThenItIsStill', (
     tester,
   ) async {
@@ -299,4 +376,31 @@ class _FixedAlbumAnimationController extends AlbumAnimationController {
 
   @override
   AlbumAnimationState build() => _state;
+}
+
+/// An [AlbumCoverController] holding a fixed cover, so the visor can be shown
+/// what a fetched sleeve looks like without a catalog behind it.
+class _FixedAlbumCoverController extends AlbumCoverController {
+  _FixedAlbumCoverController(this._cover);
+
+  final AlbumCover _cover;
+
+  @override
+  AlbumCover build() => _cover;
+}
+
+/// A small square image, standing in for an album's own picture — the same
+/// stand-in `album_stage_test.dart` builds for the case.
+Future<ui.Image> aCover() async {
+  final recorder = ui.PictureRecorder();
+  Canvas(recorder).drawRect(
+    const Rect.fromLTWH(0, 0, 20, 20),
+    Paint()..color = const Color(0xFF808080),
+  );
+  final picture = recorder.endRecording();
+  try {
+    return await picture.toImage(20, 20);
+  } finally {
+    picture.dispose();
+  }
 }

@@ -3635,6 +3635,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Player controls'**
   String get audioTransportSemantics;
+
+  /// UC-21, FR-UX-01: what the playback bar's recess is showing when the album carries its own picture. Named for a screen reader, which would otherwise be told the recess holds a turning record when it holds a photograph of a sleeve.
+  ///
+  /// In en, this message translates to:
+  /// **'Album cover'**
+  String get albumCoverLabel;
 }
 
 class _AppLocalizationsDelegate
