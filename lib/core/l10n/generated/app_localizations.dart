@@ -3641,6 +3641,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Album cover'**
   String get albumCoverLabel;
+
+  /// Music enrichment design: a run that reached the services and could not finish — the network is down, or a provider answered with an error. Distinct from the switched-off message, which is what this used to say: an owner who had just turned the feature on was being told to turn it on.
+  ///
+  /// In en, this message translates to:
+  /// **'The lookup could not be completed. The services may be unreachable — try again later.'**
+  String get enrichmentLookupFailed;
+
+  /// Music enrichment design: the run skipped the track because the tags a lookup is built from are missing. Distinct from finding nothing — this one the owner can fix, by tagging the file.
+  ///
+  /// In en, this message translates to:
+  /// **'This track has no artist or title tag to look anything up with.'**
+  String get enrichmentUntagged;
 }
 
 class _AppLocalizationsDelegate

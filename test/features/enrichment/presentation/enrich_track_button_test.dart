@@ -147,6 +147,77 @@ void main() {
     },
   );
 
+  testWidgets(
+    'GivenTheServicesCouldNotBeReached_WhenAsked_ThenItSaysSoNotThatItIsOff',
+    (tester) async {
+      // The owner's own report: "still does not work, even with them
+      // enabled". A run that reached the services and failed was reported
+      // with the message for an installation that has the feature switched
+      // off — so an owner who had just turned it on was told to turn it on.
+      final gateway = FakeEnrichmentGateway()
+        ..runOutcome = const EnrichmentRunOutcome.done(
+          report: EnrichmentReport(considered: 2, failed: 2),
+        );
+      final pumped = await pumpButton(tester, gateway: gateway);
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(EnrichTrackButton)),
+      );
+
+      expect(find.text(l10n.enrichmentLookupFailed), findsOneWidget);
+      expect(find.text(l10n.enrichmentUnavailable), findsNothing);
+      expect(pumped.gateway.runs, hasLength(1));
+    },
+  );
+
+  testWidgets(
+    'GivenATrackWithNoTags_WhenAsked_ThenItSaysThereIsNothingToSearchWith',
+    (tester) async {
+      // Skipped, not searched: the core needs a title and an artist to ask
+      // anything at all. Told "nothing found", an owner with an untagged
+      // library reads a working feature as a broken one — and this one they
+      // can actually fix.
+      final gateway = FakeEnrichmentGateway()
+        ..runOutcome = const EnrichmentRunOutcome.done(
+          report: EnrichmentReport(considered: 2, skipped: 2),
+        );
+      await pumpButton(tester, gateway: gateway);
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(EnrichTrackButton)),
+      );
+
+      expect(find.text(l10n.enrichmentUntagged), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'GivenSomethingWasFoundAndSomethingFailed_WhenAsked_ThenTheFindWins',
+    (tester) async {
+      // A photograph that could not be written while the words arrived is
+      // still a lookup that got the owner something, and the words appearing
+      // is the report.
+      final gateway = FakeEnrichmentGateway()
+        ..runOutcome = const EnrichmentRunOutcome.done(
+          report: EnrichmentReport(considered: 2, found: 1, failed: 1),
+        );
+      await pumpButton(tester, gateway: gateway);
+
+      await tester.tap(find.byType(IconButton));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(EnrichTrackButton)),
+      );
+
+      expect(find.text(l10n.enrichmentLookupFailed), findsNothing);
+      expect(find.text(l10n.enrichmentNothingFound), findsNothing);
+    },
+  );
+
   testWidgets('GivenARunInFlight_WhenAskedAgain_ThenItIsNotStartedTwice', (
     tester,
   ) async {

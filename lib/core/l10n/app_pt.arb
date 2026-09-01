@@ -589,5 +589,7 @@
   "lyricsNone": "Nenhuma letra foi encontrada para esta faixa.",
   "lyricsSwitchedOff": "A busca de informa\u00e7\u00f5es musicais est\u00e1 desligada. Ligue-a nas Prefer\u00eancias para buscar letras.",
   "audioTransportSemantics": "Controles do reprodutor",
-  "albumCoverLabel": "Capa do \u00e1lbum"
+  "albumCoverLabel": "Capa do \u00e1lbum",
+  "enrichmentLookupFailed": "A busca n\u00e3o p\u00f4de ser conclu\u00edda. Os servi\u00e7os podem estar inacess\u00edveis \u2014 tente novamente mais tarde.",
+  "enrichmentUntagged": "Esta faixa n\u00e3o tem etiqueta de artista ou de t\u00edtulo para buscar nada com ela."
 }

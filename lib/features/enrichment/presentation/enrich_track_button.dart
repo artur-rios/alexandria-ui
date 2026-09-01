@@ -43,8 +43,12 @@ class EnrichTrackButton extends ConsumerWidget {
     ) {
       final message = switch (next.stage) {
         EnrichmentRunStage.nothingFound => l10n.enrichmentNothingFound,
+        EnrichmentRunStage.untagged => l10n.enrichmentUntagged,
         EnrichmentRunStage.unavailable => l10n.enrichmentUnavailable,
-        EnrichmentRunStage.failed => l10n.enrichmentUnavailable,
+        // Not the switched-off message, which is what this said: a service
+        // that could not be reached told the owner to turn on a feature they
+        // had already turned on.
+        EnrichmentRunStage.failed => l10n.enrichmentLookupFailed,
         EnrichmentRunStage.idle ||
         EnrichmentRunStage.running ||
         // Nothing to say: the words and the photograph appearing below is

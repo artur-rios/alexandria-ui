@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../application/enrichment_run_controller.dart';
 import '../application/track_enrichment_controller.dart';
 import '../domain/track_enrichment.dart';
 import 'synced_lyrics_view.dart';
@@ -130,9 +131,7 @@ class _LyricsPanelState extends ConsumerState<LyricsPanel> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final enrichment = ref.watch(trackEnrichmentControllerProvider(_key));
-    final isRunning = ref.watch(
-      enrichmentRunControllerProvider.select((state) => state.isRunning),
-    );
+    final run = ref.watch(enrichmentRunControllerProvider);
     final enabled = ref.watch(
       preferencesControllerProvider.select(
         (preferences) => preferences.musicLookupEnabled,
@@ -158,8 +157,9 @@ class _LyricsPanelState extends ConsumerState<LyricsPanel> {
               lyrics: enrichment.value?.lyrics,
               // The lookup in flight and the first read of the cache are the
               // same thing to read: both are "the words are on their way".
-              isWaiting: isRunning || enrichment.isLoading,
+              isWaiting: run.isRunning || enrichment.isLoading,
               isEnabled: enabled,
+              stage: run.stage,
             ),
           ],
         ),
@@ -174,11 +174,15 @@ class _Body extends StatelessWidget {
     required this.lyrics,
     required this.isWaiting,
     required this.isEnabled,
+    required this.stage,
   });
 
   final TrackLyrics? lyrics;
   final bool isWaiting;
   final bool isEnabled;
+
+  /// What the lookup this panel started concluded, when it started one.
+  final EnrichmentRunStage stage;
 
   /// How much of the window the words may claim.
   ///
@@ -248,10 +252,19 @@ class _Body extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Text(
-        // Two different facts, and the owner can act on only one of them:
-        // a switched-off lookup is something to go and turn on, where a
-        // service with nothing for this track is not.
-        isEnabled ? l10n.lyricsNone : l10n.lyricsSwitchedOff,
+        // Why there are no words, in the owner's terms. Four different
+        // facts, and what they can do about each one differs: turn the
+        // lookup on, tag the file, try again later, or nothing at all.
+        // Told only "no lyrics found", a track that was never searched for
+        // and a service that could not be reached both read as the feature
+        // being broken.
+        switch (stage) {
+          _ when !isEnabled => l10n.lyricsSwitchedOff,
+          EnrichmentRunStage.unavailable => l10n.enrichmentUnavailable,
+          EnrichmentRunStage.failed => l10n.enrichmentLookupFailed,
+          EnrichmentRunStage.untagged => l10n.enrichmentUntagged,
+          _ => l10n.lyricsNone,
+        },
         style: theme.textTheme.bodyMedium,
         textAlign: TextAlign.center,
       ),

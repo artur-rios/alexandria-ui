@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../domain/enrichment_gateway.dart';
+import '../domain/track_enrichment.dart';
 
 /// Where a lookup the owner asked for has got to.
 enum EnrichmentRunStage {
@@ -19,6 +20,16 @@ enum EnrichmentRunStage {
   /// It finished and the services had nothing. An answer, not a failure, and
   /// one the core records so it is not asked again.
   nothingFound,
+
+  /// The track carries nothing to look anything up *with*.
+  ///
+  /// Its own stage rather than folded into [nothingFound], because the two
+  /// ask different things of the owner: a track the services do not know is
+  /// nothing anybody can act on, where a track with no artist or title tag
+  /// is one the owner can fix — and being told "nothing found" about a file
+  /// that was never actually searched for is how a library full of untagged
+  /// files reads as a broken feature.
+  untagged,
 
   /// The installation has enrichment switched off, or on with no MusicBrainz
   /// contact configured. Not the owner's mistake.
@@ -90,14 +101,7 @@ class EnrichmentRunController extends Notifier<EnrichmentRunState> {
             artistName: artistName,
           )),
         );
-        state = EnrichmentRunState(
-          // "Found nothing" is an answer worth saying out loud. Left silent,
-          // a lookup that legitimately found nothing is indistinguishable
-          // from one that never ran.
-          stage: report.found > 0
-              ? EnrichmentRunStage.found
-              : EnrichmentRunStage.nothingFound,
-        );
+        state = EnrichmentRunState(stage: _stageFor(report));
 
       // A rejected session returns the owner to login, as everywhere else.
       case EnrichmentRunFailed(failure: final UnauthorizedFailure failure):
@@ -115,6 +119,35 @@ class EnrichmentRunController extends Notifier<EnrichmentRunState> {
       case EnrichmentRunFailed():
         state = const EnrichmentRunState(stage: EnrichmentRunStage.failed);
     }
+  }
+
+  /// What a finished run actually concluded.
+  ///
+  /// Four outcomes, because a run that returns successfully can mean four
+  /// different things and the owner can act on only two of them. The counts
+  /// are per *fact* rather than per file — one track is a photograph and a
+  /// set of words — which is why this reads them in order of what matters
+  /// rather than adding them up.
+  ///
+  /// `failed` is the one that was being told as "the feature is switched
+  /// off": a service that could not be reached was reported with the message
+  /// for an installation that has it disabled, so an owner who had just
+  /// turned it on was told to turn it on.
+  EnrichmentRunStage _stageFor(EnrichmentReport report) {
+    if (report.found > 0) return EnrichmentRunStage.found;
+    if (report.failed > 0) return EnrichmentRunStage.failed;
+
+    // Nothing was looked up at all, and for a named track that means the
+    // tags are missing — a scope the owner asked for is never skipped for
+    // being already settled (`EnrichHandler`'s own rule).
+    if (report.skipped > 0 && report.notFound == 0 && report.rejected == 0) {
+      return EnrichmentRunStage.untagged;
+    }
+
+    // "Found nothing" is an answer worth saying out loud. Left silent, a
+    // lookup that legitimately found nothing is indistinguishable from one
+    // that never ran.
+    return EnrichmentRunStage.nothingFound;
   }
 
   /// Whether the owner has left music lookup switched on (FR-UX-13).

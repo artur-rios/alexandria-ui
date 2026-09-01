@@ -2101,4 +2101,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get albumCoverLabel => 'Album cover';
+
+  @override
+  String get enrichmentLookupFailed =>
+      'The lookup could not be completed. The services may be unreachable — try again later.';
+
+  @override
+  String get enrichmentUntagged =>
+      'This track has no artist or title tag to look anything up with.';
 }

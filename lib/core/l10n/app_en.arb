@@ -2771,5 +2771,13 @@
   "albumCoverLabel": "Album cover",
   "@albumCoverLabel": {
     "description": "UC-21, FR-UX-01: what the playback bar's recess is showing when the album carries its own picture. Named for a screen reader, which would otherwise be told the recess holds a turning record when it holds a photograph of a sleeve."
+  },
+  "enrichmentLookupFailed": "The lookup could not be completed. The services may be unreachable \u2014 try again later.",
+  "@enrichmentLookupFailed": {
+    "description": "Music enrichment design: a run that reached the services and could not finish \u2014 the network is down, or a provider answered with an error. Distinct from the switched-off message, which is what this used to say: an owner who had just turned the feature on was being told to turn it on."
+  },
+  "enrichmentUntagged": "This track has no artist or title tag to look anything up with.",
+  "@enrichmentUntagged": {
+    "description": "Music enrichment design: the run skipped the track because the tags a lookup is built from are missing. Distinct from finding nothing \u2014 this one the owner can fix, by tagging the file."
   }
 }

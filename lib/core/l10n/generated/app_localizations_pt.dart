@@ -2107,4 +2107,12 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get albumCoverLabel => 'Capa do álbum';
+
+  @override
+  String get enrichmentLookupFailed =>
+      'A busca não pôde ser concluída. Os serviços podem estar inacessíveis — tente novamente mais tarde.';
+
+  @override
+  String get enrichmentUntagged =>
+      'Esta faixa não tem etiqueta de artista ou de título para buscar nada com ela.';
 }
