@@ -132,6 +132,17 @@ flutter:
   uses-material-design: true
   generate: true
 
+  assets:
+    # The three machines the album animation plays a record on (UC-21,
+    # FR-PL-07). Photographs of a turntable, a cassette deck and a CD player,
+    # cut out of their backgrounds so they sit on the window's own surface
+    # rather than in a white box. They replace three painters that drew a
+    # machine out of gradients and rounded rectangles — next to a rendered
+    # one, a drawn one reads as a diagram. `device_artwork.dart` holds the
+    # measurements taken off each picture: where the medium sits, where the
+    # screen's two lines are, and which dark circle is the play button.
+    - assets/devices/
+
   # The typeface the album case is typeset in (UC-21). Bundled rather than
   # left to the host, for two reasons that turn out to be the same reason.
   #

@@ -14,7 +14,7 @@ import '../../shell/presentation/playback_bar.dart';
 import '../application/audio_playback_controller.dart';
 import '../domain/album_cover.dart';
 import 'album_stage.dart';
-import 'media/device_transport.dart';
+import 'media/device_artwork.dart';
 import 'music_display_name.dart';
 
 /// The full audio player (UC-21, FR-PL-07).
@@ -141,6 +141,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       AlbumCoverFetched(:final image) => image,
       AlbumCoverDesigned() => null,
     };
+
+    // The machines themselves, read off the bundle once and held for the
+    // life of the process. `null` for the frame or two before the decode
+    // finishes, which the stage draws nothing at all for.
+    final devices = ref.watch(deviceImagesProvider).value;
 
     // `AlbumAnimationState.medium` is already `null` for an empty queue and
     // for the mode being off — `AlbumAnimationController` folds both rules
@@ -300,6 +305,8 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                       // that said the same thing about a two-minute single
                       // and a twenty-minute side.
                       display: cdDisplayFor(state),
+                      // The machine this medium plays on.
+                      device: devices?[animation.medium!],
                       // What is playing, on the device itself — the track's
                       // own title, where the case beside it carries the
                       // record's. The page names it again below, in text

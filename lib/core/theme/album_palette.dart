@@ -55,6 +55,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     required this.specular,
     required this.contactShadow,
     required this.displayInk,
+    required this.displayGround,
     required this.indicator,
     required this.sleeveHues,
     required this.sleeveInk,
@@ -173,8 +174,18 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
   /// The soft shadow a device casts onto the plinth beneath it.
   final Color contactShadow;
 
-  /// The ink of text on a device's display.
+  /// The ink a machine's screen is lit in.
+  ///
+  /// Amber, which is what the three photographed machines have: their screens
+  /// are lit in it, and what this application prints over the top of what
+  /// they were photographed showing has to be the same colour or the line it
+  /// replaces would read as a repair.
   final Color displayInk;
+
+  /// The near-black behind that ink — the glass of the screen with nothing
+  /// lit on it, which is what covers the words the photograph was taken
+  /// with.
+  final Color displayGround;
 
   /// A device's power/play indicator light.
   final Color indicator;
@@ -240,7 +251,8 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     glassSheen: Color(0x66FFFFFF),
     specular: Color(0xFFF5F5F0),
     contactShadow: Color(0x66000000),
-    displayInk: Color(0xFF9FE8A0),
+    displayInk: Color(0xFFFFBF00),
+    displayGround: Color(0xFF0B0704),
     indicator: Color(0xFF4CD964),
     sleeveHues: [
       Color(0xFFB5473D),
@@ -293,6 +305,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     Color? specular,
     Color? contactShadow,
     Color? displayInk,
+    Color? displayGround,
     Color? indicator,
     List<Color>? sleeveHues,
     Color? sleeveInk,
@@ -334,6 +347,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     specular: specular ?? this.specular,
     contactShadow: contactShadow ?? this.contactShadow,
     displayInk: displayInk ?? this.displayInk,
+    displayGround: displayGround ?? this.displayGround,
     indicator: indicator ?? this.indicator,
     sleeveHues: sleeveHues ?? this.sleeveHues,
     sleeveInk: sleeveInk ?? this.sleeveInk,
@@ -356,13 +370,10 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
       plinthBottom:
           Color.lerp(plinthBottom, other.plinthBottom, t) ?? plinthBottom,
       plinthEdge: Color.lerp(plinthEdge, other.plinthEdge, t) ?? plinthEdge,
-      deckFaceTop:
-          Color.lerp(deckFaceTop, other.deckFaceTop, t) ?? deckFaceTop,
+      deckFaceTop: Color.lerp(deckFaceTop, other.deckFaceTop, t) ?? deckFaceTop,
       deckFaceBottom:
-          Color.lerp(deckFaceBottom, other.deckFaceBottom, t) ??
-          deckFaceBottom,
-      chromeLight:
-          Color.lerp(chromeLight, other.chromeLight, t) ?? chromeLight,
+          Color.lerp(deckFaceBottom, other.deckFaceBottom, t) ?? deckFaceBottom,
+      chromeLight: Color.lerp(chromeLight, other.chromeLight, t) ?? chromeLight,
       chromeMid: Color.lerp(chromeMid, other.chromeMid, t) ?? chromeMid,
       chromeDark: Color.lerp(chromeDark, other.chromeDark, t) ?? chromeDark,
       wellDark: Color.lerp(wellDark, other.wellDark, t) ?? wellDark,
@@ -386,8 +397,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
       discHub: Color.lerp(discHub, other.discHub, t) ?? discHub,
       discRing: Color.lerp(discRing, other.discRing, t) ?? discRing,
       shellTop: Color.lerp(shellTop, other.shellTop, t) ?? shellTop,
-      shellBottom:
-          Color.lerp(shellBottom, other.shellBottom, t) ?? shellBottom,
+      shellBottom: Color.lerp(shellBottom, other.shellBottom, t) ?? shellBottom,
       reelHub: Color.lerp(reelHub, other.reelHub, t) ?? reelHub,
       reelTeeth: Color.lerp(reelTeeth, other.reelTeeth, t) ?? reelTeeth,
       tapePack: Color.lerp(tapePack, other.tapePack, t) ?? tapePack,
@@ -400,6 +410,8 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
       contactShadow:
           Color.lerp(contactShadow, other.contactShadow, t) ?? contactShadow,
       displayInk: Color.lerp(displayInk, other.displayInk, t) ?? displayInk,
+      displayGround:
+          Color.lerp(displayGround, other.displayGround, t) ?? displayGround,
       indicator: Color.lerp(indicator, other.indicator, t) ?? indicator,
       sleeveHues: lerpHues(sleeveHues, other.sleeveHues, t),
       sleeveInk: Color.lerp(sleeveInk, other.sleeveInk, t) ?? sleeveInk,
@@ -448,6 +460,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
           specular == other.specular &&
           contactShadow == other.contactShadow &&
           displayInk == other.displayInk &&
+          displayGround == other.displayGround &&
           indicator == other.indicator &&
           listEquals(sleeveHues, other.sleeveHues) &&
           sleeveInk == other.sleeveInk;
@@ -491,6 +504,7 @@ class AlbumPalette extends ThemeExtension<AlbumPalette> {
     specular,
     contactShadow,
     displayInk,
+    displayGround,
     indicator,
     Object.hashAll(sleeveHues),
     sleeveInk,

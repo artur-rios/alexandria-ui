@@ -8,7 +8,7 @@ import '../../../core/theme/album_palette.dart';
 import '../domain/album_medium.dart';
 import '../domain/sleeve_design.dart';
 import 'album_medium_label.dart';
-import 'media/device_transport.dart';
+import 'media/device_artwork.dart';
 import 'stage_layout.dart';
 
 /// The two timelines over the painters from Tasks 3 and 4 (UC-21 main flow,
@@ -37,6 +37,7 @@ class AlbumStage extends StatefulWidget {
     this.cover,
     this.display = '',
     this.trackTitle = '',
+    this.device,
     this.onControl,
     super.key,
   });
@@ -88,6 +89,10 @@ class AlbumStage extends StatefulWidget {
   /// for the devices that carry no readout, and for a stage with nothing
   /// playing.
   final String display;
+
+  /// The photograph of the machine, decoded (`deviceImagesProvider`), or
+  /// `null` while the bundle is still being read.
+  final ui.Image? device;
 
   /// What is playing, printed on the device's own nameplate — the track's
   /// title, not the album's, which the case already carries.
@@ -294,6 +299,7 @@ class _AlbumStageState extends State<AlbumStage> with TickerProviderStateMixin {
             isPlaying: widget.isPlaying,
             display: widget.display,
             trackTitle: widget.trackTitle,
+            device: widget.device,
             onControl: widget.onControl,
           ),
         ),

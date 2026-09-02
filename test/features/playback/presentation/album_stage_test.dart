@@ -5,10 +5,11 @@ import 'package:alexandria_ui/core/theme/album_palette.dart';
 import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_stage.dart';
 import 'package:alexandria_ui/features/playback/presentation/media/case_painter.dart';
-import 'package:alexandria_ui/features/playback/presentation/media/disc_painter.dart';
-import 'package:alexandria_ui/features/playback/presentation/media/vinyl_painter.dart';
+import 'package:alexandria_ui/features/playback/presentation/media/device_photograph.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../support/device_images.dart';
 
 import '../../../flutter_test_config.dart';
 
@@ -32,6 +33,16 @@ Future<ui.Image> _testCover() async {
 
 /// The insertion and the spin (UC-21 main flow, FR-PL-07).
 void main() {
+  late Map<AlbumMedium, ui.Image> devices;
+
+  setUpAll(() async {
+    // The machines themselves. Loaded here rather than left `null`: the
+    // stage's goldens are pictures of a record going into a machine, and
+    // without the photograph they would be pictures of a record going
+    // nowhere.
+    devices = await loadDeviceImages();
+  });
+
   Widget staged({
     required AlbumMedium medium,
     required bool insert,
@@ -52,6 +63,7 @@ void main() {
         body: Center(
           child: AlbumStage(
             medium: medium,
+            device: devices[medium],
             isPlaying: isPlaying,
             insert: insert,
             title: 'Paranoid Android',
@@ -81,11 +93,16 @@ void main() {
       )
       .opacity;
 
-  /// The medium's own `CustomPaint`, found among the stage's four layers
-  /// (device chassis, medium, device foreground, case) by the type of
-  /// painter it carries rather than by position — the layer order is an
-  /// implementation detail these tests should not have to track.
-  VinylPainter vinylPainterOf(WidgetTester tester) => tester
+  /// How far through a turn the medium is, read off the machine it is
+  /// turning on.
+  ///
+  /// The photograph is where the spin lives now: the medium the insertion
+  /// carries in is a drawn one, and it fades the moment it is seated — what
+  /// turns from then on is the record in the picture, which
+  /// [DevicePhotograph] rotates in place. Found by the type of painter
+  /// rather than by position, because the layer order is an implementation
+  /// detail these tests should not have to track.
+  double turnsOf(WidgetTester tester) => tester
       .widgetList<CustomPaint>(
         find.descendant(
           of: find.byType(AlbumStage),
@@ -93,21 +110,9 @@ void main() {
         ),
       )
       .map((widget) => widget.painter)
-      .whereType<VinylPainter>()
-      .single;
-
-  /// [DiscPainter]'s own `CustomPaint`, found the same way [vinylPainterOf]
-  /// finds [VinylPainter]'s.
-  DiscPainter discPainterOf(WidgetTester tester) => tester
-      .widgetList<CustomPaint>(
-        find.descendant(
-          of: find.byType(AlbumStage),
-          matching: find.byType(CustomPaint),
-        ),
-      )
-      .map((widget) => widget.painter)
-      .whereType<DiscPainter>()
-      .single;
+      .whereType<DevicePhotograph>()
+      .single
+      .turns;
 
   group('the insertion (main flow steps 2 and 3)', () {
     testWidgets(
@@ -308,7 +313,7 @@ void main() {
     testWidgets('GivenAPlayingStage_WhenTimePasses_ThenTheMediumHasTurned', (
       tester,
     ) async {
-      // `vinylPainterOf` (the file's own helper, already used by the paused
+      // `turnsOf` (the file's own helper, already used by the paused
       // test below) rather than `.last` and identity comparison: `.last` is
       // the device's foreground painter, not the medium, and no painter here
       // overrides `==`, so two distinct instances are never `equal` even when
@@ -318,10 +323,10 @@ void main() {
       // what a "the medium has turned" test has to check.
       await tester.pumpWidget(staged(medium: AlbumMedium.vinyl, insert: false));
       await tester.pump(const Duration(milliseconds: 16));
-      final first = vinylPainterOf(tester).turns;
+      final first = turnsOf(tester);
 
       await tester.pump(const Duration(milliseconds: 400));
-      final later = vinylPainterOf(tester).turns;
+      final later = turnsOf(tester);
 
       expect(later, isNot(first));
     });
@@ -347,7 +352,7 @@ void main() {
       // directly, not just by the golden comparison below, so a silent
       // reset to `turns == 0` fails on the value rather than merely risking
       // a golden diff too small for the comparator's tolerance to catch.
-      final held = vinylPainterOf(tester).turns;
+      final held = turnsOf(tester);
       expect(held, isNot(0));
 
       await expectLater(
@@ -357,7 +362,7 @@ void main() {
 
       await tester.pump(const Duration(milliseconds: 900));
 
-      expect(vinylPainterOf(tester).turns, held);
+      expect(turnsOf(tester), held);
       await expectLater(
         find.byType(AlbumStage),
         matchesGoldenFile('goldens/paused.png'),
@@ -380,13 +385,13 @@ void main() {
         staged(medium: AlbumMedium.vinyl, insert: false, isPlaying: false),
       );
       await tester.pump(const Duration(milliseconds: 16));
-      final atPause = vinylPainterOf(tester).turns;
+      final atPause = turnsOf(tester);
 
       // Held while paused — the same assertion the test above makes, kept
       // here too so a resume test that starts from a spin that never
       // actually stopped could not pass this by accident.
       await tester.pump(const Duration(milliseconds: 300));
-      expect(vinylPainterOf(tester).turns, atPause);
+      expect(turnsOf(tester), atPause);
 
       await tester.pumpWidget(
         staged(medium: AlbumMedium.vinyl, insert: false, isPlaying: true),
@@ -397,7 +402,7 @@ void main() {
       // would still satisfy "the medium has turned", so the value is
       // checked against where the pause left it rather than merely against
       // zero.
-      expect(vinylPainterOf(tester).turns, isNot(atPause));
+      expect(turnsOf(tester), isNot(atPause));
     });
 
     testWidgets('GivenADisc_WhenItSpins_ThenTheRateComesFromSpinPeriodFor', (
@@ -412,10 +417,10 @@ void main() {
       // phase after the same wall-clock wait, which this would catch.
       await tester.pumpWidget(staged(medium: AlbumMedium.disc, insert: false));
       await tester.pump(const Duration(milliseconds: 137));
-      final before = discPainterOf(tester).turns;
+      final before = turnsOf(tester);
 
       await tester.pump(spinPeriodFor(AlbumMedium.disc));
-      final after = discPainterOf(tester).turns;
+      final after = turnsOf(tester);
 
       expect(after, closeTo(before, 1e-9));
     });

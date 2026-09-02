@@ -857,7 +857,7 @@ graph LR
 | **ID** | UC-21 |
 | **Name** | Show the album playback animation |
 | **Actors** | Owner |
-| **Description** | While audio plays, the disc, vinyl, or tape is shown turning in its own slot on one machine — a console with a turntable, a cassette bay and a disc drawer — for as long as the audio runs; a single track included, because the animation belongs to whatever is playing rather than only to an album or an artist. |
+| **Description** | While audio plays, the disc, vinyl, or tape is shown turning on the machine it belongs to — a turntable, a cassette deck or a CD player, each of them a photograph of the real thing — for as long as the audio runs; a single track included, because the animation belongs to whatever is playing rather than only to an album or an artist. |
 | **Preconditions** | Audio playback is active (UC-20). |
 | **Postconditions** | The animation ran for the duration of the playback and stopped with it. |
 | **Requirements** | FR-PL-07, FR-PL-11, FR-PL-12, FR-PL-13 |
@@ -870,9 +870,10 @@ graph LR
    bar: from its button, or by pressing the sleeve beside it, which is what
    they recognise.
 3. The application takes the medium — a disc, a vinyl record, or a tape —
-   from its case and inserts it into the machine's own slot for it: the
-   platter under the lid, the cassette bay, or the disc drawer, all three of
-   them on the one console.
+   from its case and puts it into the machine that plays it: a turntable, a
+   cassette deck or a CD player. The machine's screen names the track and
+   says where playback has reached, and the album's own picture is printed
+   on the record's label, which is what shows it turning.
 4. The medium turns while audio plays, for the duration of the queue.
 5. The owner pauses; the motion stops and the medium stays in place.
 6. The owner resumes; the motion continues.

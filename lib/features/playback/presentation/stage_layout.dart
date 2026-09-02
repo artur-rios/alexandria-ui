@@ -7,9 +7,8 @@ import '../../../core/theme/album_palette.dart';
 import '../domain/album_medium.dart';
 import 'media/case_painter.dart';
 import 'media/cassette_painter.dart';
-import 'media/console_painter.dart';
-import 'media/device_layer.dart';
-import 'media/device_transport.dart';
+import 'media/device_artwork.dart';
+import 'media/device_photograph.dart';
 import 'media/disc_painter.dart';
 import 'media/vinyl_painter.dart';
 
@@ -42,6 +41,7 @@ class StageLayout extends StatelessWidget {
     required this.caseDeparture,
     required this.mediumEmergence,
     required this.travel,
+    this.device,
     this.cover,
     this.isPlaying = false,
     this.display = '',
@@ -92,9 +92,19 @@ class StageLayout extends StatelessWidget {
   /// How far the medium has travelled from the case to its seat, 0 to 1.
   final double travel;
 
+  /// The photograph of the machine this medium plays on, decoded and ready
+  /// to paint (`deviceImagesProvider`), or `null` while it is still being
+  /// read off the bundle.
+  ///
+  /// Nothing at all is drawn without it, rather than a drawn machine standing
+  /// in: the decode is one read at startup, the gap is a frame or two, and a
+  /// painted stand-in that appeared for that frame and vanished would be the
+  /// only time an owner ever saw it.
+  final ui.Image? device;
+
   /// The current album's own picture, decoded and ready to paint, or `null`
-  /// to draw the designed jacket (design section 4). Handed straight to
-  /// [CasePainter], which owns the drawing choice this makes.
+  /// to draw the designed jacket (design section 4). Handed to [CasePainter]
+  /// for the sleeve, and to the record's label, which carries it too.
   final ui.Image? cover;
 
   /// Whether audio is running, which is what the device's play button shows
@@ -125,24 +135,31 @@ class StageLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // One machine for all three media, so one aspect: the stage no longer
-    // changes shape when a record from 1996 follows one from 1971.
-    final deviceHeight = size / ConsolePainter.aspect;
+    // The machine's own proportions, from the photograph of it: each of the
+    // three is a wide, shallow strip, and the stage is a square — so the
+    // picture spans the width and sits in the middle of it, with the room
+    // above and below for the case to arrive in.
+    final artwork = DeviceArtwork.of(medium);
+    final deviceHeight = size / artwork.aspect;
     final deviceRect = Rect.fromLTWH(
       0,
       (size - deviceHeight) / 2,
       size,
       deviceHeight,
     );
-    // The face the painter insets for itself, so a seat lands where the
-    // console is actually drawn to hold it.
-    final seat = consoleSeatFor(
-      medium,
-      deviceFaceOf(deviceRect.size).shift(deviceRect.topLeft),
+    final seatRect = DeviceArtwork.resolve(artwork.seat, deviceRect);
+    final seat = (
+      centre: seatRect.center,
+      width: seatRect.width,
+      height: seatRect.height,
     );
 
     final caseAspect = CasePainter.aspectFor(medium);
-    final caseWidth = size * 0.5;
+    // Smaller than it was, because what it arrives in front of has changed
+    // shape: the three machines are photographs of wide, shallow hi-fi
+    // separates, and a jacket half the stage across parked squarely over the
+    // one thing the owner opened the player to look at.
+    final caseWidth = size * 0.36;
     final caseHeight = caseWidth / caseAspect;
     // Finding 8, beat 1: the case floats in from the left, its sleeve facing
     // the owner — not centred and faded up in place, which read as a sleeve
@@ -157,14 +174,16 @@ class StageLayout extends StatelessWidget {
     // every device's own controls (`_paintControls`/`_paintButtons`, drawn
     // from roughly 0.66 to 0.90 of the width in each device painter) sit well
     // clear of a case parked here.
-    final caseParkX = size * 0.30;
+    final caseParkX = size * 0.26;
     final caseArriveX = ui.lerpDouble(-caseWidth * 0.7, caseParkX, caseSettle)!;
     // The case settles into place as it arrives, then drifts up and away as
     // it fades — the same beats that drive its opacity, read as a slide
     // rather than a plain cross-fade.
     final caseSlideY =
         size * 0.12 * (1 - caseSettle) - size * 0.08 * caseDeparture;
-    final caseCentre = Offset(caseArriveX, size * 0.66 + caseSlideY);
+    // Below the machine, not across it: the picture is a band through the
+    // middle of the stage, and the room the stage has left is under it.
+    final caseCentre = Offset(caseArriveX, size * 0.76 + caseSlideY);
 
     final mediumScale = ui.lerpDouble(
       _insideCaseScale(medium),
@@ -181,54 +200,70 @@ class StageLayout extends StatelessWidget {
     // toward the platter reads as turning in mid-air.
     final appliedTurns = travel > 0 ? turns : 0.0;
 
-    Widget devicePainted(DeviceLayer layer) => Positioned.fromRect(
-      rect: deviceRect,
-      child: RepaintBoundary(
-        child: CustomPaint(painter: _devicePainter(layer)),
-      ),
-    );
+    // The medium fades as it seats.
+    //
+    // The machine in the photograph already has a record on its platter — it
+    // was photographed with one — so the medium that flies in from the case
+    // has something to become rather than something to sit on top of. It
+    // arrives, it lands on the one in the picture, and it goes; what turns
+    // from then on is the photograph's own.
+    final mediumOpacity = 1 - closed;
 
     return Stack(
       children: [
-        // The chassis — everything a device shows before the medium is on
-        // it — sits behind the medium (Finding 2): the well the record or
-        // disc rests in, or the slot the cassette slides into, has to be
-        // under it, not painted over it.
-        devicePainted(DeviceLayer.chassis),
-        Positioned(
-          left: mediumCentre.dx - mediumWidth / 2,
-          top: mediumCentre.dy - mediumHeight / 2,
-          width: mediumWidth,
-          height: mediumHeight,
-          child: RepaintBoundary(
-            child: CustomPaint(
-              // The cover rides on the medium as well as on the case: the
-              // case is a beat of the insertion and then gone, where the
-              // medium is what stays on screen for the rest of the album.
-              painter: switch (medium) {
-                AlbumMedium.vinyl => VinylPainter(
+        if (device case final device?)
+          Positioned.fromRect(
+            rect: deviceRect,
+            child: RepaintBoundary(
+              child: CustomPaint(
+                painter: DevicePhotograph(
+                  image: device,
+                  artwork: artwork,
                   palette: palette,
-                  turns: appliedTurns,
+                  turns: turns,
+                  isPlaying: isPlaying,
+                  status: display,
+                  trackTitle: trackTitle,
                   cover: cover,
                 ),
-                AlbumMedium.disc => DiscPainter(
-                  palette: palette,
-                  turns: appliedTurns,
-                  cover: cover,
-                ),
-                AlbumMedium.tape => CassettePainter(
-                  palette: palette,
-                  turns: appliedTurns,
-                  cover: cover,
-                ),
-              },
+              ),
             ),
           ),
-        ),
-        // The foreground — the tonearm, the deck's door, the player's lid —
-        // is the part of the device whose entire job is to be seen touching
-        // or covering the medium, so it has to be painted after it.
-        devicePainted(DeviceLayer.foreground),
+
+        if (mediumOpacity > 0)
+          Positioned(
+            left: mediumCentre.dx - mediumWidth / 2,
+            top: mediumCentre.dy - mediumHeight / 2,
+            width: mediumWidth,
+            height: mediumHeight,
+            child: Opacity(
+              opacity: mediumOpacity,
+              child: RepaintBoundary(
+                child: CustomPaint(
+                  // The cover rides on the medium as well as on the case:
+                  // the case is a beat of the insertion and then gone.
+                  painter: switch (medium) {
+                    AlbumMedium.vinyl => VinylPainter(
+                      palette: palette,
+                      turns: appliedTurns,
+                      cover: cover,
+                    ),
+                    AlbumMedium.disc => DiscPainter(
+                      palette: palette,
+                      turns: appliedTurns,
+                      cover: cover,
+                    ),
+                    AlbumMedium.tape => CassettePainter(
+                      palette: palette,
+                      turns: appliedTurns,
+                      cover: cover,
+                    ),
+                  },
+                ),
+              ),
+            ),
+          ),
+
         if (caseOpacity > 0)
           Positioned(
             left: caseCentre.dx - caseWidth / 2,
@@ -263,6 +298,7 @@ class StageLayout extends StatelessWidget {
         // two of the four caps on its way through.
         if (onControl case final onControl?)
           _TransportOverlay(
+            medium: medium,
             device: deviceRect,
             isPlaying: isPlaying,
             onControl: onControl,
@@ -270,17 +306,6 @@ class StageLayout extends StatelessWidget {
       ],
     );
   }
-
-  /// The console painter for [layer].
-  CustomPainter _devicePainter(DeviceLayer layer) => ConsolePainter(
-    palette: palette,
-    medium: medium,
-    closed: closed,
-    layer: layer,
-    isPlaying: isPlaying,
-    trackTitle: trackTitle,
-    display: display,
-  );
 }
 
 /// The hit targets over a device's painted buttons (UC-21, FR-PL-06).
@@ -292,12 +317,16 @@ class StageLayout extends StatelessWidget {
 /// picture of a tape deck with nothing operable in it.
 class _TransportOverlay extends StatelessWidget {
   const _TransportOverlay({
+    required this.medium,
     required this.device,
     required this.isPlaying,
     required this.onControl,
   });
 
-  /// Where the console is drawn, in the stage's own coordinates.
+  /// Which machine's buttons are being covered.
+  final AlbumMedium medium;
+
+  /// Where the photograph is drawn, in the stage's own coordinates.
   final Rect device;
 
   /// Whether audio is running, which is what the play button is called.
@@ -322,9 +351,10 @@ class _TransportOverlay extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     // The device painter draws into its own rect, so the bounds come back in
     // the device's coordinates and are shifted into the stage's.
-    final bounds = transportBoundsFor(
-      deviceFaceOf(device.size),
-    ).map((control, rect) => MapEntry(control, rect.shift(device.topLeft)));
+    final bounds = DeviceArtwork.of(medium).buttons.map(
+      (control, fraction) =>
+          MapEntry(control, DeviceArtwork.resolve(fraction, device)),
+    );
 
     return Semantics(
       container: true,
