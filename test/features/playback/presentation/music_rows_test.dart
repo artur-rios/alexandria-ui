@@ -113,13 +113,16 @@ void main() {
         final path = cachedPhotograph();
         final gateway = FakeCatalogGateway()
           ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
+        // Stored under the name the row shows, which is how the row asks for
+        // it: a picture kept against whatever one file was tagged with is one
+        // this list would never find.
         final container = buildContainer(
           gateway,
-          enrichmentGateway: FakeEnrichmentGateway(
-            enrichment: TrackEnrichment(
-              artistImage: ArtistImage(artistName: 'Radiohead', path: path),
+          enrichmentGateway: FakeEnrichmentGateway()
+            ..artistImages['Radiohead'] = ArtistImage(
+              artistName: 'Radiohead',
+              path: path,
             ),
-          ),
         );
         final library = await container.read(musicLibraryProvider.future);
 
@@ -169,7 +172,7 @@ void main() {
 
         expect(find.byIcon(Icons.person_outline), findsOneWidget);
         expect(find.byType(Image), findsNothing);
-        expect(enrichment.runs, isEmpty);
+        expect(enrichment.artistImageFetches, isEmpty);
       },
     );
   });

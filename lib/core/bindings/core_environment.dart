@@ -256,10 +256,7 @@ bool shouldSetCoreVariable(Map<String, String> environment, String name) =>
 ///
 /// Must run before `alexandria_index_init`; afterwards the settings are
 /// fixed until the core is initialized again.
-void ensureMusicLookup(
-  MusicLookup lookup, {
-  Map<String, String>? environment,
-}) {
+void ensureMusicLookup(MusicLookup lookup, {Map<String, String>? environment}) {
   final current = environment ?? Platform.environment;
 
   if (shouldSetCoreVariable(current, coreMetadataEnabledVariable)) {

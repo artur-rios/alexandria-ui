@@ -1440,6 +1440,37 @@ struct EnrichmentJsonResult alexandria_enrichment_read_track(const char *uuid,
                                                              const char *token);
 
 /**
+ * UC-46 step 3 — the photograph stored for one artist, by name (FR-PL-15).
+ *
+ * A read, never a lookup: an artists list is a screenful of rows, and a call
+ * per row that could reach the network would be dozens of requests a second
+ * against services that allow one. `ENRICHMENT_ERR_NOT_FOUND` for an artist
+ * nobody has looked up and for one looked up without success — a client has
+ * nothing different to draw for the two.
+ *
+ * By name, not by file: a client's artists list is grouped by a name it
+ * worked out itself across every track of a record, and a picture stored
+ * under whatever one file happened to be tagged with is one that list will
+ * never find.
+ */
+struct EnrichmentJsonResult alexandria_artist_image(const char *name, const char *token);
+
+/**
+ * UC-46 step 3 — look one artist's photograph up, and keep it (FR-PL-15).
+ *
+ * **Reaches the network**, once, for one artist: the identity service and
+ * then the picture. A row already settled — found, or looked for and not
+ * found — is answered from storage without a request, which is what keeps a
+ * library of five hundred artists from being five hundred requests every
+ * session.
+ *
+ * Answers the row whatever it concluded, so a caller can tell "found" from
+ * "nothing to be found" and stop asking. The path is relative to the core's
+ * own image cache; `alexandria_artist_image` answers it resolved.
+ */
+struct EnrichmentJsonResult alexandria_artist_image_fetch(const char *name, const char *token);
+
+/**
  * Treat a folder as a library (libraries design).
  *
  * `json_body` is the JSON body `POST /v1/libraries` takes (`name`,

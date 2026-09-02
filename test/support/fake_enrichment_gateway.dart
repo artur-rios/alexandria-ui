@@ -27,6 +27,24 @@ class FakeEnrichmentGateway implements EnrichmentGateway {
   /// Every run asked for, in order.
   final List<EnrichmentScope> runs = [];
 
+  /// What a read by artist name answers, by name.
+  ///
+  /// Absent is the ordinary case: most of a library has never been looked up.
+  final Map<String, ArtistImage> artistImages = {};
+
+  /// What a fetch by artist name concludes, by name — and what it concludes
+  /// for a name nothing was seeded for.
+  final Map<String, ArtistImageLookup> artistLookups = {};
+
+  /// See [artistLookups].
+  ArtistImageLookup artistLookupOutcome = ArtistImageLookup.nothing;
+
+  /// Every name read, in order.
+  final List<String> artistImageReads = [];
+
+  /// Every name looked up, in order.
+  final List<String> artistImageFetches = [];
+
   @override
   Future<TrackEnrichmentRead> readTrack({
     required String fileUuid,
@@ -36,6 +54,33 @@ class FakeEnrichmentGateway implements EnrichmentGateway {
     reads.add((fileUuid: fileUuid, artistName: artistName));
 
     return readOutcome ?? TrackEnrichmentRead.loaded(enrichment: enrichment);
+  }
+
+  @override
+  Future<ArtistImage?> readArtistImage({
+    required String artistName,
+    required String credential,
+  }) async {
+    artistImageReads.add(artistName);
+
+    return artistImages[artistName];
+  }
+
+  @override
+  Future<ArtistImageLookup> fetchArtistImage({
+    required String artistName,
+    required String credential,
+  }) async {
+    artistImageFetches.add(artistName);
+    final outcome = artistLookups[artistName] ?? artistLookupOutcome;
+    if (outcome == ArtistImageLookup.found) {
+      artistImages[artistName] = ArtistImage(
+        artistName: artistName,
+        path: '/cache/artist-images/$artistName.jpg',
+      );
+    }
+
+    return outcome;
   }
 
   @override

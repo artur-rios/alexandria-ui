@@ -58,7 +58,7 @@ env:
   # had to change to ask for it. The pin and the vendored header move
   # together — the drift check below is exactly the guard against them moving
   # apart, and this core's header is byte-identical to the one committed.
-  CORE_REF: 9b110abcb51a75f63cf31523521cec3d62eddba3
+  CORE_REF: 5a2b4805ed00ca058d38abb0669d257841f36a46
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned

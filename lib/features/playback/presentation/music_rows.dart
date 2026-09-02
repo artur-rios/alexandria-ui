@@ -8,7 +8,6 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/presentation/file_details_view.dart';
-import '../../enrichment/application/artist_portrait_backfill_controller.dart';
 import '../../catalog/presentation/music_metadata_form.dart';
 import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../application/audio_playback_controller.dart';
@@ -127,15 +126,16 @@ class _ArtistPortrait extends ConsumerWidget {
 
     // The untagged group is not an artist at all — it is the files that name
     // none — so there is nobody to have a photograph of.
-    // The same key the startup pass fills, from the one function that
-    // decides it: a row looking under a different track than the pass wrote
-    // under would show nothing however much was fetched.
-    final key = artistPortraitKeyFor(group);
-    if (key == null) return fallback;
+    final name = group.name;
+    if (name == null) return fallback;
 
-    final enrichment = ref.watch(trackEnrichmentControllerProvider(key));
+    // By the name this row shows, which is the name the startup pass asks
+    // under: a picture stored against whatever one file was tagged with is a
+    // picture this list would never find, and that was the whole of "the
+    // artist pictures do not load".
+    final enrichment = ref.watch(artistImageControllerProvider(name));
 
-    final image = enrichment.value?.artistImage;
+    final image = enrichment.value;
     if (image == null) return fallback;
 
     return ClipOval(

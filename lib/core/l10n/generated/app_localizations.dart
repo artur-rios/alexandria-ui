@@ -3414,6 +3414,12 @@ abstract class AppLocalizations {
   /// **'Review'**
   String get libraryToolsGroupReview;
 
+  /// FR-PL-15: the background pass that fetches a photograph for every artist in the library, shown in the activity strip while it runs. Counted rather than described, because an owner watching it can then tell a long pass from one that is nearly done.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding artist photographs — {done} of {total}'**
+  String artistPortraitsProgress(int done, int total);
+
   /// FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now.
   ///
   /// In en, this message translates to:

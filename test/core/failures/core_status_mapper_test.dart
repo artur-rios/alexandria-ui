@@ -165,7 +165,7 @@ void main() {
       () => expect(
         const Failure.coreVersionUnsupported(
           found: '0.9.0',
-          required: '>=0.3.0 <0.4.0',
+          required: '>=0.4.0 <0.5.0',
         ).isCoreUnavailable,
         isTrue,
       ),

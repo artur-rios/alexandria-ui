@@ -14,7 +14,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 class FakeCoreClient implements CoreClient {
   /// Creates a fake reporting a healthy, supported core by default.
   FakeCoreClient({
-    this.versionResult = '0.3.0',
+    this.versionResult = '0.4.0',
     int? healthResult,
     int? initializeResult,
     this.failOnVersion = false,
@@ -1043,8 +1043,39 @@ class FakeCoreClient implements CoreClient {
   final List<({String scopeJson, String token})> enrichmentRunCalls = [];
 
   /// Every track read asked for, in order.
-  final List<({String uuid, String artist, String token})>
-  enrichmentReadCalls = [];
+  final List<({String uuid, String artist, String token})> enrichmentReadCalls =
+      [];
+
+  /// What the two artist-image calls answer, and what they were asked
+  /// (FR-PL-15).
+  CoreJsonResponse artistImageResponse = (
+    status: ENRICHMENT_ERR_NOT_FOUND,
+    json: null,
+  );
+
+  /// See [artistImageResponse].
+  CoreJsonResponse artistImageFetchResponse = (
+    status: ENRICHMENT_OK,
+    json: '{}',
+  );
+
+  /// Every name read, in order.
+  final List<({String name, String token})> artistImageReads = [];
+
+  /// Every name looked up, in order.
+  final List<({String name, String token})> artistImageFetches = [];
+
+  @override
+  Future<CoreJsonResponse> artistImage(String name, String token) async {
+    artistImageReads.add((name: name, token: token));
+    return artistImageResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> artistImageFetch(String name, String token) async {
+    artistImageFetches.add((name: name, token: token));
+    return artistImageFetchResponse;
+  }
 
   /// What `trackEnergy` answers, and what it was asked for (UC-21,
   /// FR-MP-07).

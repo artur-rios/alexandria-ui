@@ -118,6 +118,64 @@ class CoreEnrichmentGateway implements EnrichmentGateway {
       limit == null ? '' : jsonEncode({'limit': limit}),
   };
 
+  @override
+  Future<ArtistImage?> readArtistImage({
+    required String artistName,
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.artistImage(artistName, credential);
+    } on CoreCallException {
+      return null;
+    }
+
+    // Not found is the ordinary answer here, not a failure: most of a library
+    // has never been looked up, and a list has nothing different to draw for
+    // "never asked" and "asked, nothing found".
+    if (!CoreStatusFamily.enrichment.isOk(response.status)) return null;
+
+    final json = response.json;
+    if (json == null) return null;
+
+    try {
+      return _imageFrom(jsonDecode(json));
+    } on Object {
+      return null;
+    }
+  }
+
+  @override
+  Future<ArtistImageLookup> fetchArtistImage({
+    required String artistName,
+    required String credential,
+  }) async {
+    final CoreJsonResponse response;
+    try {
+      response = await _core.artistImageFetch(artistName, credential);
+    } on CoreCallException {
+      return ArtistImageLookup.unavailable;
+    }
+
+    if (!CoreStatusFamily.enrichment.isOk(response.status)) {
+      return ArtistImageLookup.unavailable;
+    }
+
+    final json = response.json;
+    if (json == null) return ArtistImageLookup.unavailable;
+
+    try {
+      // The row the core stored, whatever it concluded. A picture is
+      // `found`; a settled row with no picture is `nothing`, and the caller
+      // that reads it knows not to ask again.
+      return _imageFrom(jsonDecode(json)) == null
+          ? ArtistImageLookup.nothing
+          : ArtistImageLookup.found;
+    } on Object {
+      return ArtistImageLookup.unavailable;
+    }
+  }
+
   /// The stored image, or `null` when there is none to show.
   ///
   /// A row with no path is a lookup that concluded something — nothing

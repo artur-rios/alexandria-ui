@@ -27,6 +27,77 @@ class AlexandriaBindings {
     ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup,
   ) : _lookup = lookup;
 
+  /// UC-46 step 3 — the photograph stored for one artist, by name (FR-PL-15).
+  ///
+  /// A read, never a lookup: an artists list is a screenful of rows, and a call
+  /// per row that could reach the network would be dozens of requests a second
+  /// against services that allow one. `ENRICHMENT_ERR_NOT_FOUND` for an artist
+  /// nobody has looked up and for one looked up without success — a client has
+  /// nothing different to draw for the two.
+  ///
+  /// By name, not by file: a client's artists list is grouped by a name it
+  /// worked out itself across every track of a record, and a picture stored
+  /// under whatever one file happened to be tagged with is one that list will
+  /// never find.
+  EnrichmentJsonResult alexandria_artist_image(
+    ffi.Pointer<ffi.Char> name,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_artist_image(name, token);
+  }
+
+  late final _alexandria_artist_imagePtr =
+      _lookup<
+        ffi.NativeFunction<
+          EnrichmentJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_artist_image');
+  late final _alexandria_artist_image = _alexandria_artist_imagePtr
+      .asFunction<
+        EnrichmentJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
+  /// UC-46 step 3 — look one artist's photograph up, and keep it (FR-PL-15).
+  ///
+  /// **Reaches the network**, once, for one artist: the identity service and
+  /// then the picture. A row already settled — found, or looked for and not
+  /// found — is answered from storage without a request, which is what keeps a
+  /// library of five hundred artists from being five hundred requests every
+  /// session.
+  ///
+  /// Answers the row whatever it concluded, so a caller can tell "found" from
+  /// "nothing to be found" and stop asking. The path is relative to the core's
+  /// own image cache; `alexandria_artist_image` answers it resolved.
+  EnrichmentJsonResult alexandria_artist_image_fetch(
+    ffi.Pointer<ffi.Char> name,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_artist_image_fetch(name, token);
+  }
+
+  late final _alexandria_artist_image_fetchPtr =
+      _lookup<
+        ffi.NativeFunction<
+          EnrichmentJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_artist_image_fetch');
+  late final _alexandria_artist_image_fetch = _alexandria_artist_image_fetchPtr
+      .asFunction<
+        EnrichmentJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
   /// Report the authenticated owner's account state (FR-AU-18): the same body
   /// `GET /v1/auth/local/account` returns. `token` is the session id.
   ///

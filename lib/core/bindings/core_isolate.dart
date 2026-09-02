@@ -1146,9 +1146,7 @@ class CoreIsolate {
         }),
       ),
 
-      'playlistsList' => withNativeString(arguments.first! as String, (
-        token,
-      ) {
+      'playlistsList' => withNativeString(arguments.first! as String, (token) {
         final result = bindings.alexandria_playlists_list(token);
         return (
           status: result.status,
@@ -1267,6 +1265,28 @@ class CoreIsolate {
             );
           }),
         ),
+      ),
+
+      'artistImage' => withNativeString(
+        arguments.first! as String,
+        (name) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_artist_image(name, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'artistImageFetch' => withNativeString(
+        arguments.first! as String,
+        (name) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_artist_image_fetch(name, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
       ),
 
       'trackEnergy' => withNativeString(

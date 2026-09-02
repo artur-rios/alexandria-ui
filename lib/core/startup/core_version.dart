@@ -13,10 +13,10 @@
 /// turns it into a sentence at startup instead.
 abstract final class CoreVersionRange {
   /// The lowest accepted version, inclusive.
-  static const String minimum = '0.3.0';
+  static const String minimum = '0.4.0';
 
   /// The lowest rejected version, exclusive upper bound.
-  static const String exclusiveMaximum = '0.4.0';
+  static const String exclusiveMaximum = '0.5.0';
 
   /// How the range reads in a failure message.
   static const String description = '>=$minimum <$exclusiveMaximum';

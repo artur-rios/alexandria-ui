@@ -959,6 +959,17 @@ final trackEnergyControllerProvider =
       isAutoDispose: true,
     );
 
+/// The photograph stored for one artist, by name (FR-PL-15).
+///
+/// Auto-disposed, which a family is not by default: a library has hundreds of
+/// artists and a list shows a screenful, so an entry per artist ever scrolled
+/// past would be held for the life of the container and never read again.
+final artistImageControllerProvider =
+    AsyncNotifierProvider.family<ArtistImageController, ArtistImage?, String>(
+      ArtistImageController.new,
+      isAutoDispose: true,
+    );
+
 /// The startup pass that fetches the photograph of every artist that has
 /// none (FR-PL-15).
 ///

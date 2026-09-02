@@ -1774,11 +1774,13 @@ graph LR
    `50 Cent feat. Nate Dogg` and `Eminem, 50 Cent` is one artist's record and
    listing every guest beside them is the defect this rule removes. A track
    belonging to no named record answers for itself.
-3. Each artist listed is shown with the photograph a lookup has cached for
-   them. Browsing fetches nothing — a screenful of rows would be dozens of
-   requests against services that allow one a second — so the pictures are
-   fetched instead by a background pass that runs once a session, one artist
-   at a time, for the artists that have none.
+3. Each artist listed is shown with the photograph the core holds for them,
+   asked for by the name the list shows. Browsing fetches nothing — a
+   screenful of rows would be dozens of requests against services that allow
+   one a second — so the pictures are fetched instead by a background pass
+   that runs once a session, one artist at a time, for the artists that have
+   none. The application says the pass is running and how far through it is
+   (AF-06).
 4. The owner drills into an artist and then an album, or straight into an
    album, returning by the breadcrumb.
 5. The owner plays a track, an album, or an artist. An album or artist queue
@@ -1793,6 +1795,7 @@ graph LR
 | AF-03 | No audio files are catalogued | The application says so. |
 | AF-04 | The audio listing fails outright | The application presents a failure view with a retry, distinct from an empty library. |
 | AF-05 | A file's metadata names no album artist | The file is grouped under its own performer instead, so a library tagged before the album artist existed browses exactly as it did. |
+| AF-06 | The background pass cannot reach the services | It continues past an artist they have no picture of, and gives up only when several lookups in a row cannot be made at all — a machine with no connection does not walk the whole library discovering that once per artist. What it fetched is kept, and the artists it never reached are asked for on the next session. |
 
 ---
 

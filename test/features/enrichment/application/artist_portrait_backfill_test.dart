@@ -1,10 +1,6 @@
 import 'package:alexandria_ui/core/di/providers.dart';
-import 'package:alexandria_ui/core/failures/core_status.dart';
-import 'package:alexandria_ui/core/failures/failure.dart';
-import 'package:alexandria_ui/features/enrichment/application/artist_portrait_backfill_controller.dart';
 import 'package:alexandria_ui/features/enrichment/domain/enrichment_gateway.dart';
 import 'package:alexandria_ui/features/enrichment/domain/track_enrichment.dart';
-import 'package:alexandria_ui/features/playback/domain/music_browse.dart';
 import 'package:alexandria_ui/features/shell/application/preferences_controller.dart';
 import 'package:alexandria_ui/features/shell/application/preferences_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,11 +19,6 @@ import '../../../support/fake_enrichment_gateway.dart';
 /// open. This is the other half: one pass, in the background, filling in the
 /// ones that have none.
 void main() {
-  const image = ArtistImage(
-    artistName: 'Miles Davis',
-    path: '/cache/artist-images/miles.jpg',
-  );
-
   /// A library of two artists, one track each.
   FakeCatalogGateway twoArtists() => FakeCatalogGateway()
     ..addAudio(
@@ -42,6 +33,21 @@ void main() {
       album: 'Blue Train',
       artist: 'John Coltrane',
     );
+
+  /// A library of [count] artists, one track each.
+  FakeCatalogGateway manyArtists(int count) {
+    final gateway = FakeCatalogGateway();
+    for (var index = 0; index < count; index++) {
+      gateway.addAudio(
+        uuid: 'track-$index',
+        title: 'Track $index',
+        album: 'Record $index',
+        artist: 'Artist $index',
+      );
+    }
+
+    return gateway;
+  }
 
   ProviderContainer buildContainer(
     FakeCatalogGateway catalog,
@@ -91,40 +97,111 @@ void main() {
   }
 
   test(
-    'GivenArtistsWithNoPhotograph_WhenTheAppStarts_ThenEachIsLookedUp',
+    'GivenArtistsWithNoPhotograph_WhenTheAppStarts_ThenEachIsLookedUpByName',
     () async {
+      // By the name the artists list shows, which is the whole correction:
+      // the pass used to ask for one *track* of theirs to be enriched, which
+      // stored the picture under whatever that file was tagged with — and a
+      // list grouped by the record's artist then asked for a name nobody had
+      // written. Fetched, paid for, and never shown.
       final enrichment = FakeEnrichmentGateway();
       final container = buildContainer(twoArtists(), enrichment);
 
       await run(container);
 
       expect(
-        enrichment.runs.whereType<EnrichmentScopeFile>().map(
-          (scope) => scope.fileUuid,
-        ),
-        containsAll(<String>['kob-1', 'bt-1']),
+        enrichment.artistImageFetches,
+        containsAll(<String>['Miles Davis', 'John Coltrane']),
       );
     },
   );
 
   test(
-    'GivenAPhotographAlreadyCached_WhenTheAppStarts_ThenNoLookupIsMade',
+    'GivenAPhotographAlreadyStored_WhenTheAppStarts_ThenNoLookupIsMade',
     () async {
-      // A read is a database call; a run is a request to somebody else's
+      // A read is a database call; a lookup is a request to somebody else's
       // server. After the first session most of a library is answered, and a
       // pass that asked anyway would spend an hour re-fetching pictures it
       // already holds.
-      final enrichment = FakeEnrichmentGateway(
-        enrichment: const TrackEnrichment(artistImage: image),
-      );
+      final enrichment = FakeEnrichmentGateway()
+        ..artistImages['Miles Davis'] = const ArtistImage(
+          artistName: 'Miles Davis',
+          path: '/cache/artist-images/miles.jpg',
+        )
+        ..artistImages['John Coltrane'] = const ArtistImage(
+          artistName: 'John Coltrane',
+          path: '/cache/artist-images/coltrane.jpg',
+        );
       final container = buildContainer(twoArtists(), enrichment);
 
       await run(container);
 
-      expect(enrichment.reads, hasLength(2));
-      expect(enrichment.runs, isEmpty);
+      expect(enrichment.artistImageReads, hasLength(2));
+      expect(enrichment.artistImageFetches, isEmpty);
     },
   );
+
+  test(
+    'GivenOneArtistHasNoPicture_WhenTheAppStarts_ThenTheNextIsStillAsked',
+    () async {
+      // One artist missing from the services says nothing about the next.
+      // The pass used to stop at the first thing that was not a success,
+      // which meant a library whose first artist was unknown got no pictures
+      // at all and nothing said why.
+      final enrichment = FakeEnrichmentGateway()
+        ..artistLookups['John Coltrane'] = ArtistImageLookup.nothing
+        ..artistLookups['Miles Davis'] = ArtistImageLookup.found;
+      final container = buildContainer(twoArtists(), enrichment);
+
+      await run(container);
+
+      expect(
+        enrichment.artistImageFetches,
+        containsAll(<String>['Miles Davis', 'John Coltrane']),
+      );
+    },
+  );
+
+  test(
+    'GivenNothingCanBeReached_WhenTheAppStarts_ThenThePassGivesUp',
+    () async {
+      // Three unreachable lookups in a row is not one artist's problem, it is
+      // the network's — and a machine with no connection should not walk a
+      // library of five hundred artists discovering that five hundred times.
+      final enrichment = FakeEnrichmentGateway()
+        ..artistLookupOutcome = ArtistImageLookup.unavailable;
+      final container = buildContainer(manyArtists(6), enrichment);
+
+      await run(container);
+
+      expect(enrichment.artistImageFetches, hasLength(3));
+      expect(
+        container.read(artistPortraitBackfillProvider).stopped,
+        isTrue,
+        reason:
+            'the pass says it gave up, so the strip can stop claiming it is '
+            'working',
+      );
+    },
+  );
+
+  test('GivenAPassRan_WhenItIsRead_ThenItSaysHowFarItGot', () async {
+    // The indication the owner sees (FR-PL-15): a picture arriving an hour
+    // into a session is inexplicable unless something says a pass is under
+    // way.
+    final enrichment = FakeEnrichmentGateway()
+      ..artistLookupOutcome = ArtistImageLookup.found;
+    final container = buildContainer(twoArtists(), enrichment);
+
+    await run(container);
+    final state = container.read(artistPortraitBackfillProvider);
+
+    expect(state.total, 2);
+    expect(state.considered, 2);
+    expect(state.fetched, 2);
+    expect(state.isRunning, isFalse, reason: 'it has finished');
+    expect(state.progress, 1.0);
+  });
 
   test(
     'GivenTheLookupIsSwitchedOff_WhenTheAppStarts_ThenNothingIsAsked',
@@ -140,8 +217,8 @@ void main() {
 
       await run(container);
 
-      expect(enrichment.reads, isEmpty);
-      expect(enrichment.runs, isEmpty);
+      expect(enrichment.artistImageReads, isEmpty);
+      expect(enrichment.artistImageFetches, isEmpty);
     },
   );
 
@@ -152,67 +229,30 @@ void main() {
 
     await run(container);
 
-    expect(enrichment.reads, isEmpty);
-    expect(enrichment.runs, isEmpty);
-  });
-
-  test('GivenTheFirstLookupFails_WhenTheAppStarts_ThenThePassStops', () async {
-    // A machine with no network at startup would otherwise walk the whole
-    // library discovering it is offline, one failed request per artist.
-    final enrichment = FakeEnrichmentGateway()
-      ..runOutcome = const EnrichmentRunOutcome.failed(
-        failure: Failure.serviceUnavailable(
-          family: CoreStatusFamily.enrichment,
-          code: 3,
-        ),
-      );
-    final container = buildContainer(twoArtists(), enrichment);
-
-    await run(container);
-
-    expect(enrichment.runs, hasLength(1));
+    expect(enrichment.artistImageReads, isEmpty);
+    expect(enrichment.artistImageFetches, isEmpty);
   });
 
   test(
     'GivenAPassThatFindsAPhotograph_WhenItLands_ThenTheRowsReadItBack',
     () async {
       // What makes a face appear under whoever is looking at the list: the
-      // rows watch the cache by key, and nothing else would tell them the
-      // read they made a moment ago has something behind it now.
-      final enrichment = _FindsOnRun(
-        found: const TrackEnrichment(artistImage: image),
-      );
+      // rows watch the core's storage by *name*, and nothing else would tell
+      // them the read they made a moment ago has something behind it now.
+      final enrichment = FakeEnrichmentGateway()
+        ..artistLookupOutcome = ArtistImageLookup.found;
       final container = buildContainer(twoArtists(), enrichment);
 
       await run(container);
 
-      final library = await container.read(musicLibraryProvider.future);
-      final key = artistPortraitKeyFor(artistsIn(library.entries).first);
       final read = await container.read(
-        trackEnrichmentControllerProvider(key!).future,
+        artistImageControllerProvider('Miles Davis').future,
       );
 
-      expect(read.artistImage, image);
+      expect(read, isNotNull);
+      expect(read!.artistName, 'Miles Davis');
     },
   );
-}
-
-/// A gateway with nothing until a run asks for it, and something after.
-class _FindsOnRun extends FakeEnrichmentGateway {
-  _FindsOnRun({required this.found});
-
-  /// What the cache holds once a run has finished.
-  final TrackEnrichment found;
-
-  @override
-  Future<EnrichmentRunOutcome> run({
-    required EnrichmentScope scope,
-    required String credential,
-  }) async {
-    enrichment = found;
-
-    return super.run(scope: scope, credential: credential);
-  }
 }
 
 /// A [PreferencesController] holding a fixed state — the same seam the other

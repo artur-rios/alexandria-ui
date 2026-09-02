@@ -98,6 +98,33 @@ abstract interface class EnrichmentGateway {
     required String credential,
   });
 
+  /// The photograph stored for [artistName], if one has been looked up.
+  ///
+  /// A read, and safe to make once per row of an artists list: it makes no
+  /// network call and answers whether or not enrichment is switched on.
+  /// `null` for an artist nobody has looked up *and* for one looked up
+  /// without success — a list has nothing different to draw for the two.
+  ///
+  /// By name rather than by track, which is the whole point of it: a list
+  /// grouped by the record's artist (FR-PL-14) asks for a name no single
+  /// file may be tagged with, and a picture stored under one file's tags is
+  /// one that list would never find.
+  Future<ArtistImage?> readArtistImage({
+    required String artistName,
+    required String credential,
+  });
+
+  /// Looks [artistName]'s photograph up and keeps it (FR-PL-15).
+  ///
+  /// **Reaches the network**, once, for one artist — and not at all for an
+  /// artist already looked up, found or not, which is what keeps a library of
+  /// five hundred artists from being five hundred requests every session.
+  /// Answers what the lookup concluded so a caller can stop asking.
+  Future<ArtistImageLookup> fetchArtistImage({
+    required String artistName,
+    required String credential,
+  });
+
   /// Runs enrichment over [scope].
   ///
   /// **Reaches the network, and is slow by design**: MusicBrainz is
@@ -107,4 +134,21 @@ abstract interface class EnrichmentGateway {
     required EnrichmentScope scope,
     required String credential,
   });
+}
+
+/// What looking one artist's photograph up concluded (FR-PL-15).
+///
+/// Three answers rather than two: a picture, a lookup that settled with
+/// nothing to show, and a lookup that could not be made at all. The middle
+/// one is why an artists list does not ask again — the services have
+/// answered, and the answer was no.
+enum ArtistImageLookup {
+  /// A photograph is now stored for them.
+  found,
+
+  /// The services were asked and had nothing, or nothing good enough.
+  nothing,
+
+  /// The lookup could not be made: switched off, unreachable, or refused.
+  unavailable,
 }

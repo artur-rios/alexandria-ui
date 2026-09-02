@@ -559,6 +559,21 @@ abstract interface class CoreClient {
     String token,
   );
 
+  /// Reads the photograph stored for an artist, by name, through
+  /// `alexandria_artist_image` (FR-PL-15).
+  ///
+  /// A read: it never reaches the network, which is what makes it safe to
+  /// call once per row of an artists list.
+  Future<CoreJsonResponse> artistImage(String name, String token);
+
+  /// Looks an artist's photograph up through `alexandria_artist_image_fetch`
+  /// (FR-PL-15).
+  ///
+  /// **Reaches the network**, once, for one artist — and not at all for an
+  /// artist already looked up, found or not. Never awaited anywhere a frame
+  /// is waiting on it.
+  Future<CoreJsonResponse> artistImageFetch(String name, String token);
+
   /// Reads a track's energy envelope through `alexandria_track_energy`
   /// (UC-21, FR-MP-07).
   ///
@@ -1121,10 +1136,12 @@ class FfiCoreClient implements CoreClient {
       );
 
   @override
-  Future<CoreJsonResponse> libraryRegister(String jsonBody, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('libraryRegister', [jsonBody, token]),
-      );
+  Future<CoreJsonResponse> libraryRegister(
+    String jsonBody,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('libraryRegister', [jsonBody, token]),
+  );
 
   @override
   Future<CoreJsonResponse> librariesList(String token) async =>
@@ -1155,10 +1172,12 @@ class FfiCoreClient implements CoreClient {
       );
 
   @override
-  Future<CoreJsonResponse> enrichmentRun(String scopeJson, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('enrichmentRun', [scopeJson, token]),
-      );
+  Future<CoreJsonResponse> enrichmentRun(
+    String scopeJson,
+    String token,
+  ) async => _reply<CoreJsonResponse>(
+    await _isolate.call('enrichmentRun', [scopeJson, token]),
+  );
 
   @override
   Future<CoreJsonResponse> enrichmentReadTrack(
@@ -1168,6 +1187,18 @@ class FfiCoreClient implements CoreClient {
   ) async => _reply<CoreJsonResponse>(
     await _isolate.call('enrichmentReadTrack', [uuid, artist, token]),
   );
+
+  @override
+  Future<CoreJsonResponse> artistImage(String name, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('artistImage', [name, token]),
+      );
+
+  @override
+  Future<CoreJsonResponse> artistImageFetch(String name, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('artistImageFetch', [name, token]),
+      );
 
   @override
   Future<CoreJsonResponse> trackEnergy(String uuid, String token) async =>

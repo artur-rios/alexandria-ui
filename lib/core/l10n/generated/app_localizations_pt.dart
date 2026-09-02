@@ -1928,6 +1928,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryToolsGroupReview => 'Revisão';
 
   @override
+  String artistPortraitsProgress(int done, int total) {
+    return 'Buscando fotos de artistas — $done de $total';
+  }
+
+  @override
   String get activityBarLabel => 'Indexação em segundo plano';
 
   @override

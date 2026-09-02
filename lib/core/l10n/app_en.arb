@@ -2539,6 +2539,14 @@
   "@libraryToolsGroupReview": {
     "description": "Heading over the library tools menu's third group: deleted items and the missing-files review — what has left the library or needs a look."
   },
+  "artistPortraitsProgress": "Finding artist photographs — {done} of {total}",
+  "@artistPortraitsProgress": {
+    "description": "FR-PL-15: the background pass that fetches a photograph for every artist in the library, shown in the activity strip while it runs. Counted rather than described, because an owner watching it can then tell a long pass from one that is nearly done.",
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
   "activityBarLabel": "Background indexing",
   "@activityBarLabel": {
     "description": "FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now."
