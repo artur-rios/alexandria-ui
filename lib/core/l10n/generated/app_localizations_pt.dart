@@ -253,22 +253,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get preferencesLanguageSystem => 'Acompanhar o sistema';
 
   @override
-  String get animationLabel => 'Animação do álbum';
+  String get playerAutoOpenLabel => 'Abrir o reprodutor ao iniciar uma faixa';
 
   @override
-  String get animationByYear => 'Seguir o ano do álbum';
-
-  @override
-  String get animationVinyl => 'Sempre vinil';
-
-  @override
-  String get animationTape => 'Sempre fita cassete';
-
-  @override
-  String get animationDisc => 'Sempre CD';
-
-  @override
-  String get animationOff => 'Desligada';
+  String get playerAutoOpenDescription =>
+      'O reprodutor completo abre sozinho sempre que algo novo começa a tocar.';
 
   @override
   String get startupRecheckLabel => 'Verificar a biblioteca ao iniciar';
@@ -2101,6 +2090,9 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get lyricsSwitchedOff =>
       'A busca de informações musicais está desligada. Ligue-a nas Preferências para buscar letras.';
+
+  @override
+  String get audioSoundBarsLabel => 'Níveis de som';
 
   @override
   String get audioTransportSemantics => 'Controles do reprodutor';

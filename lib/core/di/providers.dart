@@ -11,10 +11,8 @@ library;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -86,7 +84,6 @@ import '../../features/organization/domain/bookmark_gateway.dart';
 import '../../features/organization/domain/collection.dart';
 import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
-import '../../features/playback/application/album_animation_controller.dart';
 import '../../features/playback/application/album_cover_controller.dart';
 import '../../features/playback/application/audio_playback_controller.dart';
 import '../../features/playback/application/audio_playback_session.dart';
@@ -99,8 +96,6 @@ import '../../features/playback/data/core_playback_source_gateway.dart';
 import '../../features/playback/data/media_kit_player.dart';
 import '../../features/playback/data/settings_playback_position_store.dart';
 import '../../features/playback/domain/album_cover.dart';
-import '../../features/playback/domain/album_medium.dart';
-import '../../features/playback/presentation/media/device_artwork.dart';
 import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
@@ -524,11 +519,6 @@ final audioPlaybackControllerProvider =
     );
 
 /// Whether the album animation owes an insertion, and what medium it would
-/// show (UC-21).
-final albumAnimationControllerProvider =
-    NotifierProvider<AlbumAnimationController, AlbumAnimationState>(
-      AlbumAnimationController.new,
-    );
 
 /// What the current album's case sleeve shows — its own cover, or the
 /// designed jacket (UC-21, FR-PL-07, design section 4).
@@ -944,34 +934,6 @@ final trackEnrichmentControllerProvider =
       TrackEnrichment,
       TrackEnrichmentKey
     >(TrackEnrichmentController.new, isAutoDispose: true);
-
-/// The three machines the album animation is drawn on, decoded once
-/// (UC-21, FR-PL-07).
-///
-/// A future rather than an image per painter: decoding a PNG is work, the
-/// three are needed for as long as the application runs, and a painter is
-/// rebuilt on every frame of a spin. Kept alive deliberately — the cost of
-/// holding three pictures is smaller than the cost of decoding one again
-/// every time an owner opens the player.
-final deviceImagesProvider = FutureProvider<Map<AlbumMedium, ui.Image>>((
-  ref,
-) async {
-  ref.keepAlive();
-
-  return {
-    for (final medium in AlbumMedium.values)
-      medium: await _decodeAsset(DeviceArtwork.of(medium).asset),
-  };
-});
-
-/// Reads one bundled picture and hands back a painted image.
-Future<ui.Image> _decodeAsset(String asset) async {
-  final data = await rootBundle.load(asset);
-  final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
-  final frame = await codec.getNextFrame();
-
-  return frame.image;
-}
 
 /// The startup pass that fetches the photograph of every artist that has
 /// none (FR-PL-15).

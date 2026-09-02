@@ -524,41 +524,17 @@ abstract class AppLocalizations {
   /// **'Match the system'**
   String get preferencesLanguageSystem;
 
-  /// Group label in preferences for the medium the now-playing animation shows.
+  /// UC-21 main flow step 2: whether starting a track puts the full player on screen. What is left of the album-animation preference, which used to choose between a record, a tape and a disc — the animation is gone and the half of the choice that was about behaviour rather than decoration is this.
   ///
   /// In en, this message translates to:
-  /// **'Album animation'**
-  String get animationLabel;
+  /// **'Open the player when a track starts'**
+  String get playerAutoOpenLabel;
 
-  /// Animation preference: the album's release year picks the medium — vinyl, cassette or compact disc.
+  /// UC-21 main flow step 2: what the switch above does, said once.
   ///
   /// In en, this message translates to:
-  /// **'Match the album\'s year'**
-  String get animationByYear;
-
-  /// Animation preference: every album arrives on a record whatever its year.
-  ///
-  /// In en, this message translates to:
-  /// **'Always vinyl'**
-  String get animationVinyl;
-
-  /// Animation preference: every album arrives on a cassette whatever its year.
-  ///
-  /// In en, this message translates to:
-  /// **'Always cassette'**
-  String get animationTape;
-
-  /// Animation preference: every album arrives on a compact disc whatever its year.
-  ///
-  /// In en, this message translates to:
-  /// **'Always compact disc'**
-  String get animationDisc;
-
-  /// Animation preference: no animation, and the player never opens itself.
-  ///
-  /// In en, this message translates to:
-  /// **'Off'**
-  String get animationOff;
+  /// **'The full player opens by itself whenever something new begins playing.'**
+  String get playerAutoOpenDescription;
 
   /// Preference controlling whether the catalog is re-checked against the disk each time a session is established.
   ///
@@ -3629,6 +3605,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.'**
   String get lyricsSwitchedOff;
+
+  /// UC-21: names the moving bars on the player screen for a screen reader. They are an instrument that runs with the music rather than a control, so the label says what they show rather than what pressing them would do.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound levels'**
+  String get audioSoundBarsLabel;
 
   /// UC-21: names the transport buttons drawn on the device in the full player, so a screen reader reaching them is told what the group of controls is.
   ///

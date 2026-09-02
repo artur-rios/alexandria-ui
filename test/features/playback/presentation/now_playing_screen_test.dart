@@ -1,14 +1,8 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/core/theme/album_palette.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/enrichment/presentation/lyrics_button.dart';
-import 'package:alexandria_ui/features/playback/application/album_animation_controller.dart';
-import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
-import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
-import 'package:alexandria_ui/features/playback/domain/media_player.dart';
-import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
-import 'package:alexandria_ui/features/playback/presentation/album_stage.dart';
+import 'package:alexandria_ui/features/playback/presentation/sound_bars.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
 import 'package:alexandria_ui/features/playback/presentation/now_playing_screen.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
@@ -26,8 +20,14 @@ import '../../../support/fake_playback.dart';
 import '../../../support/fake_playlist_gateway.dart';
 import '../../../support/shell_harness.dart';
 
-/// The full player's own behaviour, apart from whatever medium `AlbumStage`
-/// draws inside it (UC-21, FR-PL-07, FR-CT-13).
+/// The full player (UC-21, FR-PL-07, FR-CT-13).
+///
+/// Rewritten with the screen. What stood here was an album animation — a
+/// case, a medium and a machine to put it into — and most of this file was
+/// about that: which device was drawn, where its buttons were, when the
+/// medium went in again. None of it exists now. The screen shows the sleeve,
+/// names what is playing, and moves with it ([SoundBars]), and this is what
+/// holds that up.
 ///
 /// Renamed from `album_player_screen_test.dart`, Task 7's own file, when
 /// `AlbumPlayerScreen` — a 360-pixel dialog — was replaced wholesale by
@@ -48,10 +48,10 @@ import '../../../support/shell_harness.dart';
 void main() {
   /// Pumps a few frames without waiting for the tree to settle.
   ///
-  /// The stage repeats for as long as audio plays, so `pumpAndSettle` never
-  /// returns once a medium is on screen and spinning — which is the point of
-  /// it, and exactly why this file does not lean on `pumpAndSettle` past the
-  /// point playback starts.
+  /// The bars run for as long as audio plays, so `pumpAndSettle` never
+  /// returns once the player is on screen — which is the point of them, and
+  /// exactly why this file does not lean on it past the point playback
+  /// starts.
   Future<void> settle(WidgetTester tester) async {
     for (var frame = 0; frame < 6; frame++) {
       await tester.pump(const Duration(milliseconds: 50));
@@ -60,16 +60,11 @@ void main() {
 
   /// Signs in and plays a track of Miles Davis's "Kind of Blue" from the
   /// music area (UC-46), as an album unless [asTrack] says otherwise — the
-  /// real path an owner takes, and now the only one: the rows play on tap
-  /// rather than opening a details dialog with play buttons on it.
+  /// real path an owner takes.
   ///
-  /// [mode] defaults to off: most of the groups built on this helper are
-  /// about the screen's own behaviour once it is open by hand, not about
-  /// Task 7 step 4's auto-open, and leaving the animation on by default would
-  /// make every one of them race the shell's own listener for which route
-  /// gets there first (Finding 5). The groups that want the auto-open ask
-  /// for it explicitly, by name, and know to expect the screen already open
-  /// when `play` returns.
+  /// The auto-open is left on here, which is the owner's own default: a
+  /// track started from the browsing area puts the player on screen, so a
+  /// caller of this helper finds it already open.
   Future<({ProviderContainer container, FakeMediaPlayer player})> play(
     WidgetTester tester, {
     bool asTrack = false,
@@ -77,7 +72,7 @@ void main() {
     Size surfaceSize = const Size(1440, 1000),
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
-    AlbumAnimationMode mode = AlbumAnimationMode.off,
+    bool opensPlayerOnPlay = true,
   }) async {
     final catalog = FakeCatalogGateway()
       ..addAudio(
@@ -116,7 +111,7 @@ void main() {
 
     await container
         .read(preferencesControllerProvider.notifier)
-        .setAlbumAnimation(mode);
+        .setOpensPlayerOnPlay(opensPlayerOnPlay);
 
     container.read(shellControllerProvider.notifier).go(ShellDestination.music);
     await tester.pumpAndSettle();
@@ -146,40 +141,11 @@ void main() {
   AppLocalizations messages(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(ShellScreen)));
 
-  /// Opens the full player from the bar (main flow step 2).
-  ///
-  /// Always taps the button — never skips it, and asserts first that the
-  /// player is not already open — so a caller's assumption about which
-  /// route got the screen open is never silently wrong (Finding 5). Waits
-  /// with [settle] rather than `pumpAndSettle`: whether the stage that
-  /// appears here spins for real depends on the caller's own choice of
-  /// `AlbumAnimationMode` and motion setting, not on anything this helper
-  /// controls, so it cannot assume settling is safe.
-  Future<void> openPlayer(WidgetTester tester) async {
-    expect(
-      find.byType(NowPlayingScreen),
-      findsNothing,
-      reason:
-          'openPlayer taps the bar\'s own button; if the player is already '
-          'open, something opened it before this call did — most likely '
-          'Task 7 step 4\'s auto-open, for a caller playing under a mode '
-          'that owes an insertion.',
-    );
-
-    await tester.tap(
-      find.descendant(
-        of: find.byType(PlaybackBar),
-        matching: find.byIcon(Icons.expand_less),
-      ),
-    );
-    await settle(tester);
-  }
-
-  /// Signs in and starts an album of two tracks playing under [mode] and
-  /// [reduceMotion].
+  /// Signs in and starts an album of two tracks playing, with the auto-open
+  /// off unless a caller asks for it.
   Future<ProviderContainer> playSomething(
     WidgetTester tester, {
-    AlbumAnimationMode mode = AlbumAnimationMode.off,
+    bool opensPlayerOnPlay = false,
     bool reduceMotion = false,
   }) async {
     final catalog = FakeCatalogGateway()
@@ -216,7 +182,7 @@ void main() {
 
     await container
         .read(preferencesControllerProvider.notifier)
-        .setAlbumAnimation(mode);
+        .setOpensPlayerOnPlay(opensPlayerOnPlay);
     await container
         .read(audioPlaybackControllerProvider.notifier)
         .playAlbum(aFile(uuid: 'kob-1'));
@@ -237,176 +203,23 @@ void main() {
     tester.element(find.byType(NowPlayingScreen)),
   ).audioClosePlayer;
 
-  // The player is a route that fills the window, not a 360-pixel dialog
-  // (Task 7).
-  /// One of the device's own painted buttons, found by the name a screen
-  /// reader is given for it — never by position among the overlay's four,
-  /// which would pass just as happily with the labels transposed.
-  Finder deviceControl(WidgetTester tester, String label) => find.descendant(
-    of: find.byType(AlbumStage),
-    matching: find.byWidgetPredicate(
-      (widget) => widget is Semantics && widget.properties.label == label,
-    ),
+  /// The player's own transport, found by the tooltip a screen reader and a
+  /// pointer both get — never by position in the row, which would pass just
+  /// as happily with two of them transposed.
+  Finder control(WidgetTester tester, String label) => find.descendant(
+    of: find.byType(NowPlayingScreen),
+    matching: find.byTooltip(label),
   );
 
-  group('the device\'s own transport (main flow step 6)', () {
+  group('what the screen shows (FR-PL-07, FR-CT-13)', () {
     testWidgets(
-      'GivenAPlayingStage_WhenTheDevicesPlayButtonIsPressed_ThenPlaybackPauses',
+      'GivenATrackPlaying_WhenThePlayerOpens_ThenItNamesTheTrackAndTheRecord',
       (tester) async {
-        // The buttons were painted on every device from the first version of
-        // this screen and did nothing at all: a tape deck with a play cap
-        // that ignores a press is a picture of a tape deck.
-        // The player opens itself for an owed insertion (Task 7 step 4), so
-        // there is nothing to tap the bar's button for here.
-        final played = await play(tester, mode: AlbumAnimationMode.disc);
-        final l10n = messages(tester);
-
-        await tester.tap(deviceControl(tester, l10n.audioPause));
-        await settle(tester);
-
-        expect(played.player.pauseCount, 1);
-      },
-    );
-
-    testWidgets(
-      'GivenAPausedStage_WhenTheDevicesPlayButtonIsPressed_ThenPlaybackResumes',
-      (tester) async {
-        // The player opens itself for an owed insertion (Task 7 step 4), so
-        // there is nothing to tap the bar's button for here.
-        final played = await play(tester, mode: AlbumAnimationMode.disc);
-        final l10n = messages(tester);
-
-        await tester.tap(deviceControl(tester, l10n.audioPause));
-        await settle(tester);
-        // Now it is paused, so the same cap is the play button again — the
-        // glyph and the name both follow the engine.
-        await tester.tap(deviceControl(tester, l10n.audioPlay));
-        await settle(tester);
-
-        expect(played.player.playCount, greaterThanOrEqualTo(1));
-      },
-    );
-
-    testWidgets(
-      'GivenAnAlbumQueue_WhenTheDevicesNextButtonIsPressed_ThenTheQueueMovesOn',
-      (tester) async {
-        // The player opens itself for an owed insertion (Task 7 step 4), so
-        // there is nothing to tap the bar's button for here.
-        final played = await play(tester, mode: AlbumAnimationMode.disc);
-        final l10n = messages(tester);
-
-        await tester.tap(deviceControl(tester, l10n.audioNext));
-        await settle(tester);
-
-        expect(
-          played.container.read(audioPlaybackControllerProvider).queue.index,
-          1,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenAStage_WhenTheDevicesStopButtonIsPressed_ThenPlaybackStops',
-      (tester) async {
-        // The player opens itself for an owed insertion (Task 7 step 4), so
-        // there is nothing to tap the bar's button for here.
-        final played = await play(tester, mode: AlbumAnimationMode.disc);
-        final l10n = messages(tester);
-
-        await tester.tap(deviceControl(tester, l10n.audioStop));
-        await settle(tester);
-
-        expect(played.player.stopCount, greaterThanOrEqualTo(1));
-        expect(
-          played.container.read(audioPlaybackControllerProvider).queue.isEmpty,
-          isTrue,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenTheAnimationIsOff_WhenThePlayerOpens_ThenThereIsNoDeviceToPress',
-      (tester) async {
-        // No stage, no device — and the row beneath it is still the whole
-        // transport, which is why turning the animation off costs the owner
-        // no control at all.
         await play(tester);
-        await openPlayer(tester);
-        final l10n = messages(tester);
 
-        expect(find.byType(AlbumStage), findsNothing);
-        expect(
-          find.widgetWithIcon(IconButton, Icons.pause_circle),
-          findsOneWidget,
-          reason: 'the screen\'s own transport row is not part of the stage',
-        );
-        expect(deviceControl(tester, l10n.audioStop), findsNothing);
-      },
-    );
-  });
-
-  group('one transport, on the device (main flow step 6)', () {
-    testWidgets(
-      'GivenAStageOnScreen_WhenThePlayerIsShown_ThenTheRowBeneathItIsGone',
-      (tester) async {
-        // The same three controls twice, once on the machine and once under
-        // it, is what this removes: an owner looking at a tape deck reaches
-        // for the deck's own buttons.
-        await play(tester, mode: AlbumAnimationMode.disc);
-
-        expect(find.byType(AlbumStage), findsOneWidget);
-        expect(
-          find.widgetWithIcon(IconButton, Icons.pause_circle),
-          findsNothing,
-        );
-        expect(
-          deviceControl(tester, messages(tester).audioPause),
-          findsOneWidget,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenAStageOnScreen_WhenThePlayerIsShown_ThenTheTitleIsNotRepeatedBelow',
-      (tester) async {
-        // The nameplate says what is playing and the sleeve on the medium
-        // says which record it is from, so a title and an album in body text
-        // underneath were the same two facts a second time.
-        await play(tester, mode: AlbumAnimationMode.disc);
-
-        expect(
-          find.byType(AlbumStage),
-          findsOneWidget,
-          reason: 'the device is what carries the name',
-        );
-        // Scoped to the player: the shell behind this route keeps its own
-        // bar, and the bar naming the track is the point of it.
-        expect(
-          find.descendant(
-            of: find.byType(NowPlayingScreen),
-            matching: find.text('So What'),
-          ),
-          findsNothing,
-        );
-        expect(
-          find.descendant(
-            of: find.byType(NowPlayingScreen),
-            matching: find.textContaining('Kind of Blue'),
-          ),
-          findsNothing,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenNoStage_WhenThePlayerIsShown_ThenTheScreenNamesTheTrackItself',
-      (tester) async {
-        // With the animation off there is no device to read it from, and a
-        // player that named nothing at all would be a page of buttons.
-        await play(tester);
-        await openPlayer(tester);
-
-        expect(find.byType(AlbumStage), findsNothing);
+        // The title, the record's artist and the record — the three facts an
+        // owner opens this screen to read, and the whole of what the screen
+        // says in words.
         expect(
           find.descendant(
             of: find.byType(NowPlayingScreen),
@@ -414,848 +227,229 @@ void main() {
           ),
           findsOneWidget,
         );
+        expect(
+          find.descendant(
+            of: find.byType(NowPlayingScreen),
+            matching: find.text('Miles Davis'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(
+            of: find.byType(NowPlayingScreen),
+            matching: find.text('Kind of Blue'),
+          ),
+          findsOneWidget,
+        );
       },
     );
 
-    testWidgets('GivenATrackPlaying_WhenTheStageIsShown_ThenTheDeviceNamesIt', (
+    testWidgets('GivenATrackPlaying_WhenThePlayerOpens_ThenTheBarsAreOnIt', (
       tester,
     ) async {
-      // The device knew everything about the record except what was
-      // playing on it.
-      await play(tester, mode: AlbumAnimationMode.disc);
+      // The one thing on the screen that moves, and the reason the screen
+      // exists rather than being a row in the bar.
+      await play(tester);
 
+      final bars = find.descendant(
+        of: find.byType(NowPlayingScreen),
+        matching: find.byType(SoundBars),
+      );
+      expect(bars, findsOneWidget);
       expect(
-        tester.widget<AlbumStage>(find.byType(AlbumStage)).trackTitle,
-        'So What',
+        tester.widget<SoundBars>(bars).isPlaying,
+        isTrue,
+        reason: 'audio is running, so the bars are running',
       );
     });
-  });
 
-  testWidgets(
-    'GivenTheDevicesButtons_WhenTheyAreLaidOut_ThenNothingInksOverThem',
-    (tester) async {
-      // The highlight an `InkResponse` draws is Material's and the cap
-      // underneath is painted: a grey circle appearing over the pointer
-      // reads as a smudge on the picture rather than as a control lighting
-      // up. What the device says it is doing, it says by what it is — the
-      // play cap becomes a pause cap.
-      await play(tester, mode: AlbumAnimationMode.disc);
+    testWidgets('GivenPlaybackPauses_WhenTheBarsAreRead_ThenTheyAreTold', (
+      tester,
+    ) async {
+      // The bars settle on a pause rather than freezing mid-swell, and what
+      // decides that is this flag reaching them at all.
+      final played = await play(tester);
+      final l10n = messages(tester);
 
-      expect(
-        find.descendant(
-          of: find.byType(AlbumStage),
-          matching: find.byType(InkResponse),
-        ),
-        findsNothing,
-      );
-      expect(
-        find.descendant(
-          of: find.byType(AlbumStage),
-          matching: find.byType(InkWell),
-        ),
-        findsNothing,
-      );
-    },
-  );
-
-  testWidgets(
-    'GivenAWindowWiderThanItIsTall_WhenThePlayerOpens_ThenTheStageIsCentred',
-    (tester) async {
-      // It sat against the left edge with the rest of the window empty
-      // beside it: a vertical `SingleChildScrollView` hands its child a
-      // loose width and pins it to the left, so the column shrank to the
-      // stage's own width and never had a window's worth of room to centre
-      // itself in.
-      await play(
-        tester,
-        mode: AlbumAnimationMode.disc,
-        surfaceSize: const Size(1600, 700),
-      );
-
-      final stage = tester.getRect(find.byType(AlbumStage));
-      final screen = tester.getRect(find.byType(NowPlayingScreen));
-
-      expect(
-        stage.center.dx,
-        moreOrLessEquals(screen.center.dx, epsilon: 1),
-        reason: 'the stage is the screen now; it belongs in the middle of it',
-      );
-    },
-  );
-
-  group('the CD player\'s readout (FR-PL-09)', () {
-    test('GivenNothingPlaying_WhenTheReadoutIsRead_ThenItIsBlank', () {
-      // A player with no disc in it shows nothing, rather than 00:00 against
-      // a track number for a track that does not exist.
-      expect(cdDisplayFor(const AudioPlaybackState()), isEmpty);
-    });
-
-    test(
-      'GivenATrackPlaying_WhenTheReadoutIsRead_ThenItNamesTheTrackAndPosition',
-      () {
-        // The defect this closes: the readout was the fixed string
-        // `01  03:47`, painted into the device, which said the same thing
-        // about every album ever played.
-        final state = AudioPlaybackState(
-          queue: PlaybackQueue(
-            tracks: [
-              aFile(uuid: 'a', name: 'a.flac'),
-              aFile(uuid: 'b', name: 'b.flac'),
-            ],
-            kind: QueueKind.album,
-            index: 1,
-          ),
-          stage: AudioStage.playing,
-          status: const PlaybackStatus(
-            isPlaying: true,
-            position: Duration(minutes: 4, seconds: 5),
-          ),
-        );
-
-        expect(cdDisplayFor(state), '02  04:05');
-      },
-    );
-
-    testWidgets(
-      'GivenACdPlayerOnScreen_WhenTheEngineMoves_ThenTheReadoutFollowsIt',
-      (tester) async {
-        final played = await play(tester, mode: AlbumAnimationMode.disc);
-
-        played.player.report(
-          const PlaybackStatus(
-            isPlaying: true,
-            position: Duration(seconds: 42),
-            duration: Duration(minutes: 9),
-          ),
-        );
-        await settle(tester);
-
-        expect(
-          tester.widget<AlbumStage>(find.byType(AlbumStage)).display,
-          '01  00:42',
-        );
-      },
-    );
-  });
-
-  group('the words, beside the device (music enrichment design)', () {
-    /// Opens the player on a CD player with something playing, and presses
-    /// the lyrics button in its bar.
-    Future<void> openLyrics(WidgetTester tester) async {
-      await tester.tap(find.byIcon(Icons.lyrics_outlined));
+      await tester.tap(control(tester, l10n.audioPause));
       await settle(tester);
-    }
 
-    testWidgets(
-      'GivenThePlayerIsOpen_WhenTheLyricsAreAskedFor_ThenTheDeviceMovesAside',
-      (tester) async {
-        // The shape of the thing, and the reason it changed: the words used
-        // to open in a modal sheet *over* the player, which put the turning
-        // record behind the lines meant to be followed while it turns.
-        // Nothing is stacked here — the device gives up part of the window
-        // and the two sit side by side.
-        // The disc mode owes an insertion, so the screen is already open
-        // when `play` returns (Task 7 step 4) — pressing the bar's button
-        // here would be asking for a second one.
-        await play(tester, mode: AlbumAnimationMode.disc);
-
-        final middle = tester.getCenter(find.byType(AlbumStage)).dx;
-        await openLyrics(tester);
-
-        expect(find.byType(LyricsPanel), findsOneWidget);
-        expect(
-          tester.getCenter(find.byType(AlbumStage)).dx,
-          lessThan(middle),
-          reason:
-              'the device has to make the room, not be covered by it — it '
-              'stays centred, in what it is left',
-        );
-        expect(
-          tester.getTopLeft(find.byType(LyricsPanel)).dx,
-          greaterThanOrEqualTo(
-            tester.getBottomRight(find.byType(AlbumStage)).dx,
-          ),
-          reason: 'beside the device, on its right',
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenTheWordsAreOpen_WhenTheButtonIsPressedAgain_ThenTheDeviceHasItBack',
-      (tester) async {
-        // The same button both ways: what opened the column is what puts it
-        // away, and the device gets the whole window back when it does.
-        // The disc mode owes an insertion, so the screen is already open
-        // when `play` returns (Task 7 step 4) — pressing the bar's button
-        // here would be asking for a second one.
-        await play(tester, mode: AlbumAnimationMode.disc);
-
-        await openLyrics(tester);
-        final aside = tester.getCenter(find.byType(AlbumStage)).dx;
-
-        await tester.tap(find.byIcon(Icons.lyrics));
-        await settle(tester);
-
-        expect(find.byType(LyricsPanel), findsNothing);
-        expect(
-          tester.getCenter(find.byType(AlbumStage)).dx,
-          greaterThan(aside),
-          reason: 'the device comes back to the middle of the whole window',
-        );
-      },
-    );
-  });
-
-  group('the full window (Task 7)', () {
-    testWidgets(
-      'GivenSomethingPlaying_WhenThePlayerIsOpened_ThenItFillsTheWindow',
-      (tester) async {
-        // A dialog cannot give the animation the room it needs, which is why
-        // this stopped being one.
-        await playSomething(tester);
-        await tester.tap(find.byIcon(Icons.expand_less));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        expect(
-          tester.getSize(find.byType(NowPlayingScreen)).width,
-          tester.getSize(find.byType(MaterialApp)).width,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenThePlayerIsOpen_WhenItIsClosed_ThenTheQueueAndTheBarAreUntouched',
-      (tester) async {
-        // AF-02: closing the player is not stopping playback.
-        final container = await playSomething(tester);
-        await tester.tap(find.byIcon(Icons.expand_less));
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.byTooltip(closeLabel(tester)));
-        await tester.pumpAndSettle();
-
-        expect(
-          container.read(audioPlaybackControllerProvider).isPlaying,
-          isTrue,
-        );
-        expect(find.byType(PlaybackBar), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenTheAnimationIsOff_WhenThePlayerIsOpened_ThenNoStageIsShown',
-      (tester) async {
-        // FR-PL-11: off means off, on every surface.
-        await playSomething(tester, mode: AlbumAnimationMode.off);
-        await tester.tap(find.byIcon(Icons.expand_less));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(AlbumStage), findsNothing);
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenTheQueueEndsWithThePlayerOpen_WhenItDoes_ThenTheStageIsGone',
-      (tester) async {
-        // Restores coverage lost across the branch's test shuffles
-        // (Finding 6): `AlbumVisor`'s own equivalent
-        // (`GivenNothingPlaying_WhenTheBarIsShown_ThenThereIsNoVisor`) exists,
-        // but the screen's had gone missing. `showsAnimation` requires
-        // `current != null`, so stopping the queue while the player is open
-        // has to take the stage away, not leave it drawing over nothing.
-        final container = await playSomething(
-          tester,
-          mode: AlbumAnimationMode.byYear,
-        );
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        expect(find.byType(AlbumStage), findsOneWidget);
-
-        await container.read(audioPlaybackControllerProvider.notifier).stop();
-        await settle(tester);
-
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        expect(find.byType(AlbumStage), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenSomethingPlaying_WhenTheScreenAndTheVisorAreBothShown_ThenTheyShowTheSameMedium',
-      (tester) async {
-        // Finding 6: nothing previously asserted the visor and the stage
-        // agree on which medium is turning, as a pair rather than as two
-        // fixtures that happen to use the same one. The bar's own route stays
-        // in the tree beneath the pushed `NowPlayingScreen` (Flutter does not
-        // remove a covered route until it is popped), so both `AlbumVisor`
-        // and `AlbumStage` are reachable from the same pumped tree at once.
-        await playSomething(tester, mode: AlbumAnimationMode.byYear);
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-
-        final stageMedium = tester
-            .widgetList<AlbumStage>(find.byType(AlbumStage))
-            .single
-            .medium;
-        // The visor draws no `AlbumMedium` of its own to compare against
-        // directly, so its label — the same words `AlbumStage._label` uses
-        // for the same medium — stands in for it: if the two widgets ever
-        // disagreed about which medium is playing, they would announce
-        // different labels for the one record on screen.
-        final l10n = messages(tester);
-        final expectedLabel = switch (stageMedium) {
-          AlbumMedium.vinyl => l10n.albumMediumVinyl,
-          AlbumMedium.tape => l10n.albumMediumTape,
-          AlbumMedium.disc => l10n.albumMediumDisc,
-        };
-
-        /// The `Semantics` inside [finder] that actually carries a label —
-        /// both `AlbumStage` and `AlbumVisor` wrap their own drawing in one,
-        /// returned from their own `build`, so it is a descendant of the
-        /// widget, not an ancestor of it.
-        String? labelOf(Finder finder) => tester
-            .widgetList<Semantics>(
-              find.descendant(of: finder, matching: find.byType(Semantics)),
-            )
-            .map((widget) => widget.properties.label)
-            .firstWhere((label) => label != null, orElse: () => null);
-
-        expect(labelOf(find.byType(AlbumStage)), expectedLabel);
-        expect(labelOf(find.byType(AlbumVisor)), expectedLabel);
-      },
-    );
-  });
-
-  // Task 5 entry point 3: whatever is currently playing.
-  group('adding the current track to a playlist (Task 5)', () {
-    testWidgets(
-      'GivenATrackIsPlaying_WhenAddToPlaylistIsChosen_ThenTheCurrentTrackIsSent',
-      (tester) async {
-        const jazz = Playlist(uuid: 'p-1', name: 'Jazz');
-        final playlistGateway = FakePlaylistGateway(playlists: [jazz]);
-        final catalog = FakeCatalogGateway()
-          ..addAudio(uuid: 'loose-1', title: 'Naima', artist: 'John Coltrane');
-
-        final container = await tester.pumpShell(
-          extraOverrides: <Override>[
-            catalogGatewayProvider.overrideWithValue(catalog),
-            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
-            playbackSourceGatewayProvider.overrideWithValue(
-              FakePlaybackSourceGateway(),
-            ),
-            playbackPositionsProvider.overrideWithValue(
-              FakePlaybackPositionStore(),
-            ),
-            playlistGatewayProvider.overrideWithValue(playlistGateway),
-          ],
-        );
-        await container
-            .read(preferencesControllerProvider.notifier)
-            .setAlbumAnimation(AlbumAnimationMode.off);
-
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playTrack(aFile(uuid: 'loose-1'));
-        await tester.pumpAndSettle();
-        await openPlayer(tester);
-
-        await tester.tap(
-          find.descendant(
-            of: find.byType(NowPlayingScreen),
-            matching: find.byIcon(Icons.playlist_add),
-          ),
-        );
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Jazz'));
-        await tester.pumpAndSettle();
-
-        // Not a list-literal comparison: `entriesAdded`'s `fileUuids` field
-        // is a `List<String>`, and a record's `==` compares that field by
-        // reference — a fresh list literal on the right would never match
-        // regardless of its contents.
-        expect(playlistGateway.entriesAdded, hasLength(1));
-        expect(playlistGateway.entriesAdded.single.uuid, 'p-1');
-        expect(playlistGateway.entriesAdded.single.fileUuids, ['loose-1']);
-      },
-    );
-  });
-
-  // AF-01 was "the window is too small" — a check the compact *dialog*
-  // needed because its own content was fixed at 360 pixels wide regardless of
-  // the window around it. A route that fills the window has no such ceiling:
-  // there is no width the shell runs at (NFR-07's floor is 1024 × 640) where
-  // the stage has less room than the dialog ever offered, so the two tests
-  // that used to assert the medium was hidden at the minimum window are
-  // replaced by the opposite assertion — the medium is still shown there,
-  // with real motion, and playback still runs.
-  // Finding 11: `_minimumStageSize` is correct defensive code, but cannot
-  // trigger at the 1024x640 floor NFR-07 enforces on the real window — the
-  // group below proves the path is reachable and behaves the way AF-01
-  // (Use Case Specification Document, UC-21) describes, at a surface no
-  // owner can actually reach but a test can still lay the screen out at.
-  //
-  // Pumps `NowPlayingScreen` on its own, over fixed controllers, inside a
-  // `SizedBox` — not `pumpShell` resized down: the shell's own navigation
-  // cannot lay out at 1024x350 at all, so neither an owner nor `play`'s own
-  // tap-through-the-library helper could ever reach a stage this small by
-  // way of it, and a `SizedBox` constrains the actual render tree in a way a
-  // physical view resize applied to an already-built route did not reliably
-  // do (confirmed: the route's own `LayoutBuilder` never re-ran against the
-  // new size).
-  group('below the stage floor (Finding 11, AF-01)', () {
-    Future<void> pumpBelowFloor(WidgetTester tester) async {
-      final audioController = _FixedAudioPlaybackController(
-        AudioPlaybackState(
-          queue: PlaybackQueue(
-            tracks: [aFile(uuid: 'kob-1', name: 'So What.flac')],
-            kind: QueueKind.album,
-            label: 'Kind of Blue',
-          ),
-          stage: AudioStage.playing,
-          status: const PlaybackStatus(isPlaying: true),
-        ),
-      );
-      final animationController = _FixedAlbumAnimationController(
-        const AlbumAnimationState(medium: AlbumMedium.vinyl),
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            audioPlaybackControllerProvider.overrideWith(() => audioController),
-            albumAnimationControllerProvider.overrideWith(
-              () => animationController,
-            ),
-          ],
-          child: MaterialApp(
-            theme: ThemeData(extensions: const [AlbumPalette.standard]),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            // Short enough that what is left after the app bar and the
-            // page's own padding is under `_minimumStageSize` (160) — well
-            // below anything NFR-07 lets the real window reach. The stage
-            // claims the whole window now that nothing sits beneath it, so
-            // crossing that floor takes a surface this small.
-            home: const Center(
-              child: SizedBox(
-                width: 1024,
-                height: 220,
-                child: NowPlayingScreen(),
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-    }
-
-    testWidgets(
-      'GivenASurfaceBelowTheStageFloor_WhenTheFullPlayerOpens_ThenTheStageHides',
-      (tester) async {
-        await pumpBelowFloor(tester);
-
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        expect(find.byType(AlbumStage), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenASurfaceBelowTheStageFloor_WhenTheFullPlayerOpens_ThenTheRestStillShowsWithoutOverflowing',
-      (tester) async {
-        // AF-01: "the application hides the stage and keeps the rest of the
-        // player; the screen scrolls to reach the transport controls instead
-        // of overflowing." The title and the transport are what "the rest of
-        // the player" names — both still have to be reachable, and nothing
-        // may have overflowed to get there.
-        await pumpBelowFloor(tester);
-
-        // The queue's own label — never the track's title, which this
-        // harness's fixed controllers leave unresolved (no catalog behind
-        // them) and so falls back to the generic "untitled" word; the label
-        // is what proves the rest of the player laid out and read state
-        // correctly regardless.
-        expect(find.text('Kind of Blue'), findsOneWidget);
-        expect(find.byIcon(Icons.pause_circle), findsOneWidget);
-        expect(find.byIcon(Icons.skip_next), findsOneWidget);
-        // An overflowing `Column`/`Row` throws during layout or paint, which
-        // the test binding records rather than letting the widget tree
-        // silently clip or crash — reaching here with nothing recorded is
-        // what "without overflowing" means for this test.
-        expect(tester.takeException(), isNull);
-      },
-    );
-  });
-
-  group('the minimum window', () {
-    testWidgets(
-      'GivenTheMinimumWindow_WhenTheFullPlayerOpens_ThenTheStageIsStillShown',
-      (tester) async {
-        await play(
-          tester,
-          mode: AlbumAnimationMode.byYear,
-          surfaceSize: Breakpoint.minimumWindowSize,
-        );
-        // The album's first play owes an insertion, so the auto-open
-        // (Task 7 step 4) already has the player open here — real motion is
-        // running underneath it, which is the point of this group.
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-
-        expect(find.byType(AlbumStage), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenTheMinimumWindow_WhenTheFullPlayerOpens_ThenItStillPlays',
-      (tester) async {
-        final playing = await play(
-          tester,
-          mode: AlbumAnimationMode.byYear,
-          surfaceSize: Breakpoint.minimumWindowSize,
-        );
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-
-        expect(playing.player.opened, hasLength(1));
-        // The device is what carries the transport now, at every window size
-        // it is drawn at.
-        expect(
-          deviceControl(tester, messages(tester).audioPause),
-          findsOneWidget,
-        );
-      },
-    );
-  });
-
-  // A track is a record too (design §1): the animation belongs to whatever
-  // is playing, a single track from the Songs list included.
-  group('a single track', () {
-    testWidgets(
-      'GivenOneTrackPlays_WhenItStarts_ThenTheAnimationShowsAndThePlayerOpens',
-      (tester) async {
-        // The owner's own report: playing a single track from the Songs
-        // list showed no animation and opened no player. The first play of
-        // any queue owes an insertion (Task 7 step 4's auto-open), and a
-        // track queue is no longer excluded from owing one.
-        await play(tester, asTrack: true, mode: AlbumAnimationMode.byYear);
-
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        expect(find.byType(AlbumStage), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenOneTrackPlays_WhenTheOwnerOpensThePlayerManually_ThenItStillPlays',
-      (tester) async {
-        // The animation turned off, so nothing auto-opens the player and
-        // `openPlayer` below is unambiguous: this is what proves the
-        // transport still works for a lone track regardless of whether the
-        // animation is drawn.
-        await play(tester, asTrack: true, mode: AlbumAnimationMode.off);
-
-        await openPlayer(tester);
-
-        expect(find.byIcon(Icons.pause_circle), findsOneWidget);
-      },
-    );
-  });
-
-  // AF-02: the owner goes elsewhere.
-  group('leaving the player', () {
-    testWidgets('GivenTheFullPlayerIsClosed_WhenItIs_ThenPlaybackContinues', (
-      tester,
-    ) async {
-      final playing = await play(tester);
-      await openPlayer(tester);
-
-      await tester.tap(find.byTooltip(closeLabel(tester)));
-      await tester.pumpAndSettle();
-
-      expect(playing.player.stopCount, 0);
+      expect(played.player.pauseCount, 1);
       expect(
-        find.descendant(
-          of: find.byType(PlaybackBar),
-          matching: find.text('So What'),
-        ),
-        findsOneWidget,
+        tester
+            .widget<SoundBars>(
+              find.descendant(
+                of: find.byType(NowPlayingScreen),
+                matching: find.byType(SoundBars),
+              ),
+            )
+            .isPlaying,
+        isFalse,
       );
     });
 
-    testWidgets(
-      'GivenTheOwnerReopensThePlayer_WhenTheyDo_ThenTheMediumIsBack',
-      (tester) async {
-        await play(tester, mode: AlbumAnimationMode.byYear);
-        // The album's first play owes an insertion, so the auto-open
-        // (Task 7 step 4) already has the player open here.
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        await tester.tap(find.byTooltip(closeLabel(tester)));
-        // Not `pumpAndSettle`: closing the full player leaves the bar on
-        // screen, and `AlbumVisor` (Task 8) now spins in it for as long as
-        // this record keeps playing — exactly the reason every other wait in
-        // this file past the point playback starts already uses [settle].
-        // Called twice: one [settle] run is 300ms, exactly the pop route's
-        // own transition duration, and a single run leaves the close too
-        // close to that edge to reliably land after it finishes.
-        await settle(tester);
-        await settle(tester);
-
-        // Closed now, so `openPlayer` is unambiguous again: this is a
-        // deliberate, manual reopen, not a race with another auto-open.
-        await openPlayer(tester);
-
-        expect(find.byType(AlbumStage), findsOneWidget);
-      },
-    );
-  });
-
-  // The queue label beside the track title (UC-20, UC-21, FR-CT-13): named
-  // through the controller directly rather than the browsing area's own
-  // navigation, since an untagged album or artist has no named group tile to
-  // tap through — the whole point of these fixtures is that the tag is
-  // absent.
-  group('the queue label (FR-CT-13)', () {
-    /// Signs in over [gateway] and asks the controller to play [file] via
-    /// [action], then settles the tree.
-    ///
-    /// The animation is turned off first: an untagged album or artist here
-    /// is still a record, not a lone track, so step 4's auto-open would
-    /// otherwise push the player open on its own before `openPlayer` below
-    /// gets a chance to — a real interaction this group is not the one
-    /// testing. `opening itself for an owed insertion` (Task 7 step 4) is.
-    Future<ProviderContainer> playDirect(
-      WidgetTester tester, {
-      required FakeCatalogGateway gateway,
-      required Future<void> Function(AudioPlaybackController) action,
-    }) async {
-      final container = await tester.pumpShell(
-        extraOverrides: <Override>[
-          catalogGatewayProvider.overrideWithValue(gateway),
-          audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
-          playbackSourceGatewayProvider.overrideWithValue(
-            FakePlaybackSourceGateway(),
-          ),
-          playbackPositionsProvider.overrideWithValue(
-            FakePlaybackPositionStore(),
-          ),
-        ],
-      );
-
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setAlbumAnimation(AlbumAnimationMode.off);
-      await action(container.read(audioPlaybackControllerProvider.notifier));
-      await tester.pumpAndSettle();
-
-      return container;
-    }
-
-    /// No text anywhere on screen contains [needle].
-    ///
-    /// Unscoped, unlike a search limited to the bar or the full player: the
-    /// Home dashboard's own recent-files list is on screen underneath both of
-    /// them (`tester.pumpShell` lands there), and it once showed every file —
-    /// audio included — by its name on disk, which would have made an
-    /// unscoped search here fail on that list's text regardless of what a fix
-    /// in the bar or player did. That gap is closed: the dashboard names
-    /// audio by its metadata too, so nothing on screen carries the raw file
-    /// name for this to find by accident.
-    void expectAbsent(WidgetTester tester, String needle) {
-      expect(find.textContaining(needle), findsNothing);
-    }
-
-    testWidgets('GivenASingleTrackPlays_WhenShown_ThenNoFileNameIsOnScreen', (
+    testWidgets('GivenTwoTracks_WhenTheyPlay_ThenTheBarsMoveDifferently', (
       tester,
     ) async {
-      // Tagged on every field a queue label could show, so a leak of any
-      // of them — the file name, or the album repeated as a label that
-      // means nothing beside a title that already says it — would be
-      // caught, not hidden by the fixture being untagged.
-      final gateway = FakeCatalogGateway()
-        ..addAudio(
-          uuid: '1',
-          name: 'DISKNAME-01.flac',
-          title: 'Airbag',
-          artist: 'Radiohead',
-          album: 'Kind of Blue',
-        );
-      final file = aFile(uuid: '1', name: 'DISKNAME-01.flac');
+      // Each track its own movement: the seed is the file, so two songs do
+      // not swell in step and the same song looks the same way twice.
+      final played = await play(tester);
+      final first = tester
+          .widget<SoundBars>(
+            find.descendant(
+              of: find.byType(NowPlayingScreen),
+              matching: find.byType(SoundBars),
+            ),
+          )
+          .seed;
 
-      await playDirect(
-        tester,
-        gateway: gateway,
-        action: (controller) => controller.playTrack(file),
-      );
+      await played.container
+          .read(audioPlaybackControllerProvider.notifier)
+          .next();
+      await settle(tester);
 
-      expectAbsent(tester, 'DISKNAME');
-      // No queue label at all for a single track: the bar already shows
-      // its title, so a label repeating the album would be noise.
       expect(
-        find.descendant(
-          of: find.byType(PlaybackBar),
-          matching: find.text('Kind of Blue'),
-        ),
-        findsNothing,
+        tester
+            .widget<SoundBars>(
+              find.descendant(
+                of: find.byType(NowPlayingScreen),
+                matching: find.byType(SoundBars),
+              ),
+            )
+            .seed,
+        isNot(first),
       );
+    });
 
-      await openPlayer(tester);
+    testWidgets('GivenNoCoverYet_WhenThePlayerOpens_ThenAPlaceholderStandsIn', (
+      tester,
+    ) async {
+      // A file with no embedded picture is ordinary, not an error: the
+      // screen shows a sleeve-shaped placeholder rather than a hole where
+      // the album should be.
+      await play(tester);
 
-      expectAbsent(tester, 'DISKNAME');
       expect(
         find.descendant(
           of: find.byType(NowPlayingScreen),
-          matching: find.text('Kind of Blue'),
+          matching: find.byIcon(Icons.album_outlined),
         ),
-        findsNothing,
+        findsWidgets,
+      );
+    });
+  });
+
+  group('the transport (main flow step 6)', () {
+    testWidgets('GivenAPlayingTrack_WhenPauseIsPressed_ThenPlaybackPauses', (
+      tester,
+    ) async {
+      final played = await play(tester);
+      final l10n = messages(tester);
+
+      await tester.tap(control(tester, l10n.audioPause));
+      await settle(tester);
+
+      expect(played.player.pauseCount, 1);
+    });
+
+    testWidgets('GivenAPausedTrack_WhenPlayIsPressed_ThenPlaybackResumes', (
+      tester,
+    ) async {
+      final played = await play(tester);
+      final l10n = messages(tester);
+
+      await tester.tap(control(tester, l10n.audioPause));
+      await settle(tester);
+      await tester.tap(control(tester, l10n.audioPlay));
+      await settle(tester);
+
+      expect(played.player.playCount, greaterThanOrEqualTo(1));
+    });
+
+    testWidgets('GivenAnAlbumQueue_WhenNextIsPressed_ThenTheQueueMovesOn', (
+      tester,
+    ) async {
+      final played = await play(tester);
+      final l10n = messages(tester);
+
+      await tester.tap(control(tester, l10n.audioNext));
+      await settle(tester);
+
+      expect(
+        played.container.read(audioPlaybackControllerProvider).queue.index,
+        1,
+      );
+    });
+
+    testWidgets('GivenATrackPlaying_WhenStopIsPressed_ThenPlaybackStops', (
+      tester,
+    ) async {
+      final played = await play(tester);
+      final l10n = messages(tester);
+
+      await tester.tap(control(tester, l10n.audioStop));
+      await settle(tester);
+
+      expect(
+        played.container.read(audioPlaybackControllerProvider).current,
+        isNull,
       );
     });
 
     testWidgets(
-      'GivenAnUntaggedAlbumPlays_WhenShown_ThenTheUnknownAlbumWordIsUsed',
+      'GivenTheFirstTrackOfAQueue_WhenItIsShown_ThenPreviousIsRefused',
       (tester) async {
-        final gateway = FakeCatalogGateway()
-          ..addAudio(uuid: '1', name: 'DISKNAME-01.flac', title: 'Airbag');
-        final file = aFile(uuid: '1', name: 'DISKNAME-01.flac');
+        // The queue's own rule, shown rather than restated: a disabled key
+        // is what says "there is nothing behind this" without the owner
+        // having to press it to find out.
+        await play(tester);
 
-        await playDirect(
-          tester,
-          gateway: gateway,
-          action: (controller) => controller.playAlbum(file),
-        );
-        final l10n = messages(tester);
-
-        expectAbsent(tester, 'DISKNAME');
+        // By its glyph rather than its tooltip: a tooltip is a widget
+        // *inside* the button it names, so a search for the button among its
+        // own descendants finds nothing.
         expect(
-          find.descendant(
-            of: find.byType(PlaybackBar),
-            matching: find.text(l10n.musicUnknownAlbum),
-          ),
-          findsOneWidget,
+          tester
+              .widget<IconButton>(
+                find.descendant(
+                  of: find.byType(NowPlayingScreen),
+                  matching: find.widgetWithIcon(
+                    IconButton,
+                    Icons.skip_previous,
+                  ),
+                ),
+              )
+              .onPressed,
+          isNull,
         );
-
-        await openPlayer(tester);
-
-        expectAbsent(tester, 'DISKNAME');
-        // The full player's title is the queue label, so the unknown-album
-        // word appears there too rather than the generic "Player" one.
-        expect(
-          find.descendant(
-            of: find.byType(NowPlayingScreen),
-            matching: find.text(l10n.musicUnknownAlbum),
-          ),
-          findsOneWidget,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenAnUntaggedArtistPlays_WhenShown_ThenTheUnknownArtistWordIsUsed',
-      (tester) async {
-        final gateway = FakeCatalogGateway()
-          ..addAudio(uuid: '1', name: 'DISKNAME-01.flac', title: 'Airbag');
-        final file = aFile(uuid: '1', name: 'DISKNAME-01.flac');
-
-        await playDirect(
-          tester,
-          gateway: gateway,
-          action: (controller) => controller.playArtist(file),
-        );
-        final l10n = messages(tester);
-
-        expectAbsent(tester, 'DISKNAME');
-        expect(
-          find.descendant(
-            of: find.byType(PlaybackBar),
-            matching: find.text(l10n.musicUnknownArtist),
-          ),
-          findsOneWidget,
-        );
-
-        await openPlayer(tester);
-
-        expectAbsent(tester, 'DISKNAME');
-        expect(
-          find.descendant(
-            of: find.byType(NowPlayingScreen),
-            matching: find.text(l10n.musicUnknownArtist),
-          ),
-          findsOneWidget,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenTheFullPlayerIsOpen_WhenTheCurrentTrackIsShown_ThenItIsTheTitleNotTheFileName',
-      (tester) async {
-        // The bug this whole group exists to catch had nothing to do with
-        // the queue label: the full player's own current-track text once
-        // read `current.name` — the file name — directly, unrelated to
-        // whether the queue had a label at all.
-        final gateway = FakeCatalogGateway()
-          ..addAudio(uuid: '1', name: 'DISKNAME-01.flac', title: 'Airbag');
-        final file = aFile(uuid: '1', name: 'DISKNAME-01.flac');
-
-        await playDirect(
-          tester,
-          gateway: gateway,
-          action: (controller) => controller.playTrack(file),
-        );
-        await openPlayer(tester);
-
-        expect(
-          find.descendant(
-            of: find.byType(NowPlayingScreen),
-            matching: find.text('Airbag'),
-          ),
-          findsOneWidget,
-        );
-        expectAbsent(tester, 'DISKNAME');
       },
     );
   });
 
-  // Task 7 step 4: the player opens itself for an owed insertion, from
-  // wherever playback was started — a shell-level listener rather than
-  // anything wired into `playAlbum`/`playArtist`/`playTrack` themselves, so
-  // every entry point gets it for free.
-  group('opening itself for an owed insertion (Task 7 step 4)', () {
-    testWidgets(
-      'GivenNothingHasPlayed_WhenATrackIsStarted_ThenThePlayerOpensItself',
-      (tester) async {
-        await playSomething(tester, mode: AlbumAnimationMode.byYear);
+  group('opening itself when a track starts (main flow step 2)', () {
+    testWidgets('GivenNothingHasPlayed_WhenATrackStarts_ThenThePlayerOpens', (
+      tester,
+    ) async {
+      // What the owner asked for: the screen in front of them whenever
+      // something new begins, from wherever they started it.
+      final container = await playSomething(tester, opensPlayerOnPlay: true);
 
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        // Proves the shell's `ref.listen` push is safe to run when it runs —
-        // Task 6 left whether a build-phase call to `insertionShown()` is
-        // safe for its caller to settle, and pushing a route from a listener
-        // callback is the closest thing to that here. A framework exception
-        // (Navigator/setState-during-build) would otherwise pass silently:
-        // nothing else in this test would fail because of it.
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(find.byType(NowPlayingScreen), findsOneWidget);
+      expect(
+        container.read(audioPlaybackControllerProvider).current,
+        isNotNull,
+      );
+    });
 
     testWidgets(
-      'GivenARecordIsPlaying_WhenTheNextTrackStarts_ThenThePlayerOpensAgain',
+      'GivenTheOwnerClosedIt_WhenTheNextTrackStarts_ThenItOpensAgain',
       (tester) async {
-        // Every track, which is a deliberate reversal of what this asserted
-        // before: the player used to open once per record and stay shut for
-        // the rest of it, so an owner who closed it after the first track
-        // never saw the animation again. The insertion is what they open the
-        // player to watch, and a record's second track is a track being
-        // played.
-        final container = await playSomething(
-          tester,
-          mode: AlbumAnimationMode.byYear,
-        );
-        // The player already auto-opened for the first track. Acknowledge
-        // the insertion the way `AlbumStage.onInserted` does when it plays,
-        // then leave the player the way AF-02 already does, before the next
-        // track of the same record starts.
-        container
-            .read(albumAnimationControllerProvider.notifier)
-            .insertionShown();
+        // Every track, not every record: a screen that opened once and then
+        // stayed shut for the rest of an album is the behaviour this
+        // replaced.
+        final container = await playSomething(tester, opensPlayerOnPlay: true);
         await tester.tap(find.byTooltip(closeLabel(tester)));
-        // Twice: one `settle` is six frames, and the pop's own transition is
-        // longer than that — the screen is still mounted, mid-animation, at
-        // the end of the first one, and `show` declines to stack a second
-        // player on a first that has not finished leaving.
+        // Twice: one `settle` is six frames and the pop is longer than that,
+        // and `show` declines to stack a player on one still leaving.
         await settle(tester);
         await settle(tester);
         expect(find.byType(NowPlayingScreen), findsNothing);
@@ -1267,392 +461,140 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenTheAnimationIsOff_WhenATrackIsStarted_ThenThePlayerDoesNotOpen',
-      (tester) async {
-        await playSomething(tester, mode: AlbumAnimationMode.off);
-
-        expect(find.byType(NowPlayingScreen), findsNothing);
-      },
-    );
-
-    testWidgets('GivenALoneTrackStarts_WhenItPlays_ThenThePlayerOpensItself', (
+    testWidgets('GivenTheAutoOpenIsOff_WhenATrackStarts_ThenNothingOpens', (
       tester,
     ) async {
-      // A track is a record too (design §1): the shell's auto-open reads
-      // the very same `insertionOwed` edge whichever kind of queue crossed
-      // it, so a lone track's first play opens the player exactly as an
-      // album's or an artist's already does.
-      final gateway = FakeCatalogGateway()
-        ..addAudio(
-          uuid: 'loose-1',
-          title: 'Naima',
-          artist: 'John Coltrane',
-          year: 2001,
-        );
-      final container = await tester.pumpShell(
-        extraOverrides: <Override>[
-          catalogGatewayProvider.overrideWithValue(gateway),
-          audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
-          playbackSourceGatewayProvider.overrideWithValue(
-            FakePlaybackSourceGateway(),
-          ),
-          playbackPositionsProvider.overrideWithValue(
-            FakePlaybackPositionStore(),
-          ),
-        ],
-      );
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setAlbumAnimation(AlbumAnimationMode.byYear);
+      // The owner's own switch (FR-PL-11): playback starts where they left
+      // the interface rather than in front of the player.
+      await playSomething(tester, opensPlayerOnPlay: false);
 
-      await container
-          .read(audioPlaybackControllerProvider.notifier)
-          .playTrack(aFile(uuid: 'loose-1'));
-      await settle(tester);
-
-      expect(find.byType(NowPlayingScreen), findsOneWidget);
+      expect(find.byType(NowPlayingScreen), findsNothing);
     });
 
     testWidgets(
-      'GivenALoneTrackPlayedFirst_WhenAnAlbumStarts_ThenThePlayerOpensItselfAgain',
+      'GivenThePlayerIsAlreadyOpen_WhenTheNextTrackStarts_ThenOnlyOneShows',
       (tester) async {
-        // Before this fix, a lone track never drew a stage at all — nothing
-        // showed one for `QueueKind.track` — so nothing ever called
-        // `insertionShown()` for it, and `insertionOwed` stuck at `true`
-        // through whatever played next (Finding 1's recovery case). Now a
-        // lone track is a record like any other: its own insertion is shown
-        // and acknowledged the ordinary way, closing the player the way
-        // AF-02 already does, so the album that follows crosses a fresh edge
-        // of its own rather than finding the flag already stuck `true`.
-        final gateway = FakeCatalogGateway()
-          ..addAudio(
-            uuid: 'loose-1',
-            title: 'Naima',
-            artist: 'John Coltrane',
-            year: 2001,
-          )
-          ..addAudio(
-            uuid: 'kob-1',
-            title: 'So What',
-            artist: 'Miles Davis',
-            album: 'Kind of Blue',
-            year: 1959,
-            track: 1,
-          )
-          ..addAudio(
-            uuid: 'kob-2',
-            title: 'Freddie Freeloader',
-            artist: 'Miles Davis',
-            album: 'Kind of Blue',
-            year: 1959,
-            track: 2,
-          );
-        final container = await tester.pumpShell(
-          extraOverrides: <Override>[
-            catalogGatewayProvider.overrideWithValue(gateway),
-            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
-            playbackSourceGatewayProvider.overrideWithValue(
-              FakePlaybackSourceGateway(),
-            ),
-            playbackPositionsProvider.overrideWithValue(
-              FakePlaybackPositionStore(),
-            ),
-          ],
-        );
-        await container
-            .read(preferencesControllerProvider.notifier)
-            .setAlbumAnimation(AlbumAnimationMode.byYear);
+        final container = await playSomething(tester, opensPlayerOnPlay: true);
 
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playTrack(aFile(uuid: 'loose-1'));
-        await settle(tester);
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-
-        container
-            .read(albumAnimationControllerProvider.notifier)
-            .insertionShown();
-        await tester.tap(find.byTooltip(closeLabel(tester)));
-        // Two runs, as `GivenTheOwnerReopensThePlayer...` above already
-        // documents: one `settle` run is 300ms, exactly the pop route's own
-        // transition duration, and a single run leaves the close too close to
-        // that edge to reliably land after it finishes.
-        await settle(tester);
-        await settle(tester);
-        expect(find.byType(NowPlayingScreen), findsNothing);
-
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playAlbum(aFile(uuid: 'kob-1'));
+        await container.read(audioPlaybackControllerProvider.notifier).next();
         await settle(tester);
 
         expect(find.byType(NowPlayingScreen), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenMotionIsReduced_WhenTheInsertionIsSeated_ThenNothingStaysOwed',
-      (tester) async {
-        // Finding 1's other half: under reduced motion, `AlbumStage` never
-        // calls `onInserted` (`album_stage.dart`'s own guard — nothing
-        // "finished playing" when nothing played), so `NowPlayingScreen`'s
-        // own acknowledgement is what has to clear the flag instead.
-        final container = await playSomething(
-          tester,
-          mode: AlbumAnimationMode.byYear,
-          reduceMotion: true,
-        );
-
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        expect(
-          container.read(albumAnimationControllerProvider).insertionOwed,
-          isFalse,
-        );
-      },
-    );
-
-    /// Two two-track albums by different artists, both eligible for the
-    /// animation, so a test can move from one to the other without the
-    /// second's `playAlbum` racing a gateway swap.
-    FakeCatalogGateway twoAlbumsGateway() => FakeCatalogGateway()
-      ..addAudio(
-        uuid: 'kob-1',
-        title: 'So What',
-        artist: 'Miles Davis',
-        album: 'Kind of Blue',
-        year: 1959,
-        track: 1,
-      )
-      ..addAudio(
-        uuid: 'kob-2',
-        title: 'Freddie Freeloader',
-        artist: 'Miles Davis',
-        album: 'Kind of Blue',
-        year: 1959,
-        track: 2,
-      )
-      ..addAudio(
-        uuid: 'bt-1',
-        title: 'Blue Train',
-        artist: 'John Coltrane',
-        album: 'Blue Train',
-        year: 1957,
-        track: 1,
-      )
-      ..addAudio(
-        uuid: 'bt-2',
-        title: 'Moment\'s Notice',
-        artist: 'John Coltrane',
-        album: 'Blue Train',
-        year: 1957,
-        track: 2,
-      );
-
-    /// Signs in over [twoAlbumsGateway] under [mode] and [reduceMotion], and
-    /// returns the container without playing anything yet — the two tests
-    /// below each play the two albums in their own order.
-    Future<ProviderContainer> pumpTwoAlbums(
-      WidgetTester tester, {
-      required AlbumAnimationMode mode,
-      bool reduceMotion = false,
-    }) async {
-      final container = await tester.pumpShell(
-        reduceMotion: reduceMotion,
-        extraOverrides: <Override>[
-          catalogGatewayProvider.overrideWithValue(twoAlbumsGateway()),
-          audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
-          playbackSourceGatewayProvider.overrideWithValue(
-            FakePlaybackSourceGateway(),
-          ),
-          playbackPositionsProvider.overrideWithValue(
-            FakePlaybackPositionStore(),
-          ),
-        ],
-      );
-      await container
-          .read(preferencesControllerProvider.notifier)
-          .setAlbumAnimation(mode);
-      return container;
-    }
-
-    testWidgets(
-      'GivenThePlayerIsClosedMidInsertion_WhenAnotherAlbumStarts_ThenThePlayerOpensItself',
-      (tester) async {
-        // Finding 1: closing the route while `AlbumStage`'s insertion is
-        // still running disposes the stage before `onInserted` ever fires, so
-        // nothing clears `insertionOwed` for the interrupted album. Before
-        // the fix this left the flag permanently `true` — `owedIdentity`
-        // still pointed at the interrupted album, and a listener keyed on
-        // the bare boolean never saw it change — so no later album could ever
-        // re-open the player for the rest of the session. Run against the
-        // pre-fix `shell_screen.dart` (edge-triggering on `insertionOwed`
-        // alone), this test fails: the boolean is `true` both before and
-        // after the second album starts, so the `!(previous?.insertionOwed
-        // ?? false)` guard never lets the second push through.
-        final container = await pumpTwoAlbums(
-          tester,
-          mode: AlbumAnimationMode.byYear,
-        );
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playAlbum(aFile(uuid: 'kob-1'));
-        await settle(tester);
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-
-        // Well short of `AlbumStage.insertionDuration` (4.4s): the case is
-        // still on its way in, not seated, when the route closes.
-        await tester.pump(const Duration(milliseconds: 700));
-        await tester.tap(find.byTooltip(closeLabel(tester)));
-        // Two runs, as `GivenTheOwnerReopensThePlayer...` above already
-        // documents: one `settle` run is 300ms, exactly the pop route's own
-        // transition duration, and a single run leaves the close too close
-        // to that edge to reliably land after it finishes.
-        await settle(tester);
-        await settle(tester);
-        expect(find.byType(NowPlayingScreen), findsNothing);
-
-        // A different record — not the next track of the one that was
-        // interrupted, which correctly owes nothing more.
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playAlbum(aFile(uuid: 'bt-1'));
-        await settle(tester);
-
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenThePlayerIsAlreadyOpen_WhenAnotherAlbumStarts_ThenOnlyOneScreenShows',
-      (tester) async {
-        // Finding 3: `shell_screen.dart`'s own push was unconditional, so an
-        // album started while the auto-opened player is still on screen
-        // stacked a second `NowPlayingScreen` route on top of the first —
-        // the owner would then have to close it twice, and the buried
-        // stage's tickers would keep running underneath. Starting a second,
-        // different album while the first's player is still open must still
-        // leave exactly one screen on the stack.
-        final container = await pumpTwoAlbums(
-          tester,
-          mode: AlbumAnimationMode.byYear,
-        );
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playAlbum(aFile(uuid: 'kob-1'));
-        await settle(tester);
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        // Let the first insertion finish so the second album's own insertion
-        // is a clean, independent owed-insertion edge.
-        await tester.pump(AlbumStage.insertionDuration);
-        await settle(tester);
-
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playAlbum(aFile(uuid: 'bt-1'));
-        await settle(tester);
-
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenMotionIsReduced_WhenTheAlbumChangesWithThePlayerOpen_ThenNothingStaysOwed',
-      (tester) async {
-        // Finding 5: reduced motion means `AlbumStage` never calls
-        // `onInserted` for *any* insertion, including one that becomes newly
-        // owed while the stage stays mounted across an album change — the
-        // player already open, a different record starting under it. The
-        // only thing that can clear that owed insertion is
-        // `NowPlayingScreen`'s own post-frame acknowledgement, and until now
-        // nothing exercised it past the screen's first build.
-        final container = await pumpTwoAlbums(
-          tester,
-          mode: AlbumAnimationMode.byYear,
-          reduceMotion: true,
-        );
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playAlbum(aFile(uuid: 'kob-1'));
-        await settle(tester);
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        expect(
-          container.read(albumAnimationControllerProvider).insertionOwed,
-          isFalse,
-        );
-
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playAlbum(aFile(uuid: 'bt-1'));
-        await settle(tester);
-
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-        expect(
-          container.read(albumAnimationControllerProvider).insertionOwed,
-          isFalse,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenMotionIsNotReduced_WhenTheInsertionPlaysThrough_ThenNoExceptionIsThrown',
-      (tester) async {
-        // Finding 3: the build-phase question Task 6 left open is about
-        // `AlbumStage`'s own status listener firing from a genuine animation
-        // completion — a path only reachable with real motion running, which
-        // reduced-motion coverage elsewhere in this file cannot exercise.
-        final container = await playSomething(
-          tester,
-          mode: AlbumAnimationMode.byYear,
-        );
-        expect(find.byType(NowPlayingScreen), findsOneWidget);
-
-        // Jumps the insertion's controller to completed in one step — the
-        // test binding's clock is simulated, so this does not take 4.4 real
-        // seconds — which is what drives `AlbumStage`'s status listener to
-        // call `onInserted` (wired to `insertionShown()`) from a real
-        // animation frame rather than from a build.
-        await tester.pump(AlbumStage.insertionDuration);
-        await settle(tester);
-
-        expect(tester.takeException(), isNull);
-        expect(
-          container.read(albumAnimationControllerProvider).insertionOwed,
-          isFalse,
-        );
       },
     );
   });
 
-  group('the case names the record (UC-46, FR-CT-13)', () {
+  group('the words, beside the player (music enrichment design)', () {
     testWidgets(
-      'GivenAGuestTrack_WhenThePlayerIsOpen_ThenTheCaseNamesTheAlbumArtist',
+      'GivenThePlayerIsOpen_WhenTheLyricsAreAskedFor_ThenTheyOpenBesideIt',
       (tester) async {
-        // The case is the record's sleeve, so it is typeset with whose record
-        // it is. Typeset with the current track's performer instead, a
-        // compilation would re-letter its own case between two tracks of one
-        // sleeve, and a guest appearance would put the guest's name on the
-        // host's record.
-        final catalog = FakeCatalogGateway()
-          ..addAudio(
-            uuid: 'comp-1',
-            title: 'One',
-            artist: 'First Performer',
-            albumArtist: 'Various Artists',
-            album: "Now That's Music",
-            year: 1959,
-            track: 1,
-          )
-          ..addAudio(
-            uuid: 'comp-2',
-            title: 'Two',
-            artist: 'Second Performer',
-            albumArtist: 'Various Artists',
-            album: "Now That's Music",
-            year: 1959,
-            track: 2,
-          );
+        // Beside, not over: timed lines are read while the music runs, and a
+        // sheet over the player put the screen they belong to behind them.
+        await play(tester);
 
+        await tester.tap(find.byIcon(Icons.lyrics_outlined));
+        await settle(tester);
+
+        expect(find.byType(LyricsPanel), findsOneWidget);
+        expect(
+          tester.getTopLeft(find.byType(LyricsPanel)).dx,
+          greaterThan(tester.getCenter(find.byType(SoundBars)).dx),
+          reason: 'the words take the right of the window',
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheWordsAreOpen_WhenTheButtonIsPressedAgain_ThenTheyClose',
+      (tester) async {
+        await play(tester);
+
+        await tester.tap(find.byIcon(Icons.lyrics_outlined));
+        await settle(tester);
+        await tester.tap(find.byIcon(Icons.lyrics));
+        await settle(tester);
+
+        expect(find.byType(LyricsPanel), findsNothing);
+      },
+    );
+  });
+
+  group('the full window', () {
+    testWidgets(
+      'GivenSomethingPlaying_WhenThePlayerIsOpened_ThenItFillsTheWindow',
+      (tester) async {
+        // A dialog cannot give the sleeve the room it needs, which is why
+        // this is a route.
+        await playSomething(tester);
+        await tester.tap(find.byIcon(Icons.expand_less));
+        await settle(tester);
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(
+          tester.getSize(find.byType(NowPlayingScreen)).width,
+          tester.getSize(find.byType(MaterialApp)).width,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheMinimumWindow_WhenThePlayerOpens_ThenNothingOverflows',
+      (tester) async {
+        // NFR-07: the smallest window the application supports still has to
+        // show a sleeve, a name and a transport without laying them over
+        // each other.
+        await play(tester, surfaceSize: Breakpoint.minimumWindowSize);
+
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  });
+
+  group('leaving the player', () {
+    testWidgets('GivenTheFullPlayerIsClosed_WhenItIs_ThenPlaybackContinues', (
+      tester,
+    ) async {
+      // AF-02: the queue and the bar are not this screen's, so closing it
+      // takes nothing with it.
+      final played = await play(tester);
+
+      await tester.tap(find.byTooltip(closeLabel(tester)));
+      await settle(tester);
+      await settle(tester);
+
+      expect(find.byType(NowPlayingScreen), findsNothing);
+      expect(
+        played.container.read(audioPlaybackControllerProvider).current,
+        isNotNull,
+      );
+      expect(find.byType(PlaybackBar), findsOneWidget);
+    });
+
+    testWidgets('GivenTheBarsSleeve_WhenItIsPressed_ThenThePlayerOpensAgain', (
+      tester,
+    ) async {
+      // The way back in an owner reaches for first (main flow step 2).
+      await play(tester);
+      await tester.tap(find.byTooltip(closeLabel(tester)));
+      await settle(tester);
+      await settle(tester);
+
+      await tester.tap(find.byType(AlbumVisor));
+      await settle(tester);
+
+      expect(find.byType(NowPlayingScreen), findsOneWidget);
+    });
+  });
+
+  group('never a file name (FR-CT-13)', () {
+    testWidgets(
+      'GivenAnUntaggedTrack_WhenThePlayerOpens_ThenTheUnknownWordsAreUsed',
+      (tester) async {
+        // A file called `01 - track.flac` is not a title, and the screen
+        // that shows what is playing is the last place a path should appear.
+        final catalog = FakeCatalogGateway()
+          ..addAudio(uuid: 'raw-1', name: '01 - track.flac');
         final container = await tester.pumpShell(
           extraOverrides: <Override>[
             catalogGatewayProvider.overrideWithValue(catalog),
@@ -1666,61 +608,66 @@ void main() {
           ],
         );
         await container
-            .read(preferencesControllerProvider.notifier)
-            .setAlbumAnimation(AlbumAnimationMode.byYear);
-
-        // The second track, whose performer is not the record's artist: it is
-        // where the two tags disagree, so it is the only track that can tell
-        // which of them the case was typeset with.
-        await container
             .read(audioPlaybackControllerProvider.notifier)
-            .playTrack(aFile(uuid: 'comp-2'));
+            .playTrack(aFile(uuid: 'raw-1', name: '01 - track.flac'));
         await settle(tester);
 
-        // The insertion opens the player itself; where it has not, it is
-        // opened from the bar the way an owner would.
-        if (find.byType(NowPlayingScreen).evaluate().isEmpty) {
-          await tester.tap(find.byIcon(Icons.expand_less));
-          await settle(tester);
-        }
-
-        // Every stage in the tree, not one of them: the pushed route and the
-        // bar's own route beneath it can both be mounted mid-transition, and
-        // a case typeset with the performer on either of them is the defect
-        // this pins.
-        final stages = tester.widgetList<AlbumStage>(find.byType(AlbumStage));
-        expect(stages, isNotEmpty);
-        expect(stages.map((stage) => stage.artist).toSet(), {
-          'Various Artists',
-        });
-        expect(stages.map((stage) => stage.title).toSet(), {
-          "Now That's Music",
-        });
+        final l10n = messages(tester);
+        expect(
+          find.descendant(
+            of: find.byType(NowPlayingScreen),
+            matching: find.text(l10n.musicUnknownTitle),
+          ),
+          findsOneWidget,
+        );
+        expect(find.textContaining('.flac'), findsNothing);
       },
     );
   });
-}
 
-/// An [AudioPlaybackController] that answers with a fixed state — mirrors
-/// `album_visor_test.dart`'s own fixture, used here for Finding 11's
-/// below-the-floor group, which needs a stage-sized surface `pumpShell`'s
-/// own real navigation cannot lay out at all.
-class _FixedAudioPlaybackController extends AudioPlaybackController {
-  _FixedAudioPlaybackController(this._state);
+  group('adding the current track to a playlist (Task 5)', () {
+    testWidgets(
+      'GivenThePlayerIsOpen_WhenAddToPlaylistIsChosen_ThenTheTrackIsSent',
+      (tester) async {
+        final playlists = FakePlaylistGateway(
+          playlists: [const Playlist(uuid: 'p-1', name: 'Evening')],
+        );
+        final catalog = FakeCatalogGateway()
+          ..addAudio(uuid: 'kob-1', title: 'So What', artist: 'Miles Davis');
+        final container = await tester.pumpShell(
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(catalog),
+            playlistGatewayProvider.overrideWithValue(playlists),
+            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway(),
+            ),
+            playbackPositionsProvider.overrideWithValue(
+              FakePlaybackPositionStore(),
+            ),
+          ],
+        );
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playTrack(aFile(uuid: 'kob-1'));
+        await settle(tester);
 
-  final AudioPlaybackState _state;
+        final l10n = messages(tester);
+        await tester.tap(
+          find.descendant(
+            of: find.byType(NowPlayingScreen),
+            matching: find.byTooltip(l10n.playlistAddTo),
+          ),
+        );
+        // `settle`, never `pumpAndSettle`: the bars are running behind the
+        // menu and nothing in this tree ever settles while they are.
+        await settle(tester);
+        await tester.tap(find.text('Evening'));
+        await settle(tester);
 
-  @override
-  AudioPlaybackState build() => _state;
-}
-
-/// An [AlbumAnimationController] that answers with a fixed state — mirrors
-/// `album_visor_test.dart`'s own fixture.
-class _FixedAlbumAnimationController extends AlbumAnimationController {
-  _FixedAlbumAnimationController(this._state);
-
-  final AlbumAnimationState _state;
-
-  @override
-  AlbumAnimationState build() => _state;
+        expect(playlists.entriesAdded, isNotEmpty);
+        expect(playlists.entriesAdded.last.fileUuids, ['kob-1']);
+      },
+    );
+  });
 }

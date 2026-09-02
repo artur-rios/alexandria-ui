@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/bindings/core_environment.dart';
-import '../../playback/domain/album_medium.dart';
 
 part 'preferences_state.freezed.dart';
 
@@ -23,7 +22,7 @@ sealed class PreferencesState with _$PreferencesState {
   const factory PreferencesState({
     @Default(ThemeMode.system) ThemeMode themeMode,
     Locale? locale,
-    @Default(AlbumAnimationMode.byYear) AlbumAnimationMode albumAnimation,
+    @Default(true) bool opensPlayerOnPlay,
     @Default(true) bool rechecksAtStartup,
     @Default(true) bool musicLookupEnabled,
     @Default(defaultMusicLookupContact) String musicLookupContact,

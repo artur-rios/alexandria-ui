@@ -6,7 +6,6 @@ import '../../../core/bindings/core_environment.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/settings/settings_store.dart';
 import '../../../core/startup/startup_state.dart';
-import '../../playback/domain/album_medium.dart';
 import 'preferences_state.dart';
 
 /// The owner's theme and language (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
@@ -37,7 +36,7 @@ class PreferencesController extends Notifier<PreferencesState> {
     return PreferencesState(
       themeMode: settings?.themeMode ?? ThemeMode.system,
       locale: settings?.locale,
-      albumAnimation: settings?.albumAnimationMode ?? AlbumAnimationMode.byYear,
+      opensPlayerOnPlay: settings?.opensPlayerOnPlay ?? true,
       rechecksAtStartup: settings?.rechecksAtStartup ?? true,
       musicLookupEnabled: settings?.musicLookupEnabled ?? true,
       musicLookupContact:
@@ -65,10 +64,16 @@ class PreferencesController extends Notifier<PreferencesState> {
     await _persist((settings) => settings.setLocale(locale));
   }
 
-  /// Applies [mode] now and records it for the next launch (FR-PL-11).
-  Future<void> setAlbumAnimation(AlbumAnimationMode mode) async {
-    state = state.copyWith(albumAnimation: mode, lastChangeUnsaved: false);
-    await _persist((settings) => settings.setAlbumAnimationMode(mode));
+  /// Applies [value] now and records it for the next launch (FR-PL-11).
+  ///
+  /// What the album-animation choice used to be. That preference picked which
+  /// medium the animation showed — a record, a tape or a disc — and the
+  /// animation is gone: what is left of the choice is the half of it that was
+  /// about behaviour rather than decoration, which is whether starting a
+  /// track puts the player on screen.
+  Future<void> setOpensPlayerOnPlay(bool value) async {
+    state = state.copyWith(opensPlayerOnPlay: value, lastChangeUnsaved: false);
+    await _persist((settings) => settings.setOpensPlayerOnPlay(value));
   }
 
   /// Applies [value] now and records it for the next launch (FR-LB-21).

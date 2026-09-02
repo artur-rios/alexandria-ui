@@ -32,18 +32,17 @@ class PlaybackSessionActivity implements SessionActivity {
 
   final Ref _ref;
 
-  /// The animation is a display choice derived from the queue, not a draft —
-  /// there is nothing here an owner could lose by signing out.
+  /// The cover is a picture derived from the queue, not a draft — there is
+  /// nothing here an owner could lose by signing out.
   @override
   bool get holdsUnsavedChanges => false;
 
-  /// The animation belongs to the session's own window, not to the core.
+  /// The cover belongs to the session's own window, not to the core.
   @override
   bool get continuesInTheCore => false;
 
   @override
   Future<void> end() async {
-    _ref.read(albumAnimationControllerProvider.notifier).forgetSession();
     _ref.read(albumCoverControllerProvider.notifier).forgetSession();
   }
 

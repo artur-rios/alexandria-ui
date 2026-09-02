@@ -6,18 +6,102 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../catalog/domain/catalog_gateway.dart';
+import '../../catalog/domain/music_metadata.dart';
+import '../domain/music_grouping.dart';
 import '../domain/album_cover.dart';
 import '../domain/playback_queue.dart';
-import 'album_animation_controller.dart' show AlbumIdentity, recordOf;
 import 'music_library_controller.dart';
+
+/// What identifies "which record is playing", as `(kind, identity)`
+/// (see [recordOf]).
+typedef AlbumIdentity = (Object, String);
+
+/// The record [queue] plays: its identity — what a caller pairs with
+/// [PlaybackQueue.kind] to get an [AlbumIdentity] — and the year that picks
+/// its medium.
+///
+/// Shared by `AlbumAnimationController` and `AlbumCoverController` rather
+/// than duplicated between them, because the two have to agree on when a
+/// track change is still the same record and when it is a new one: if they
+/// disagreed, a cover could swap under a case that never re-inserted, or an
+/// insertion could play under a cover left over from the record before it
+/// (Finding 2). `AlbumCoverController` only ever reads the identity half —
+/// it has no use for a year — but calls this all the same, so there is
+/// exactly one place either fact is computed.
+///
+/// For an album or an artist queue, both come from the queue itself: the
+/// label alone is not enough for the identity, because `albumOf`/`artistOf`
+/// (`music_grouping.dart`) already treat an absent tag as "this file's own
+/// group of one" rather than as a shared value — two different untitled
+/// albums are not the same record, and folding them together here would
+/// silently break that rule for the one consumer that reads `label` as an
+/// identity instead of a display string. Falling back to the first track's
+/// uuid keeps the tracks of one untagged record identified with each other
+/// (the uuid does not change between them) while telling two different
+/// untagged records apart (their first tracks differ).
+///
+/// For a queue that names no record of its own — a lone track, or a playlist
+/// (playlists design §6) — both are read from [library] instead, off the
+/// track *playing now*: its own album, artist and year, resolved the same way
+/// every other surface resolves a track's metadata (`MusicLibrary.entryFor`,
+/// design §2, §3). A track with no album tag falls back to its own uuid, the
+/// same untagged rule `albumOf` states; one with an album tag identifies by
+/// album and album artist together, since two different artists can name an
+/// album the same thing — the album artist, so that two tracks of one
+/// compilation are the same record here as they are in the browsing area
+/// rather than two records with two insertions. `library` is `null` while it
+/// has not loaded, or does not hold the track — the fallback entry that
+/// answers then has no album and no year, so the identity falls back to the
+/// uuid and the medium falls back to a disc, exactly as an unknown record
+/// does everywhere else.
+///
+/// Reading a playlist per track is what makes crossing from one album into
+/// the next inside one insert the new medium, while moving between two tracks
+/// of the same album does not — the behaviour the design asked for, falling
+/// out of the rule already here rather than a second rule beside it. A
+/// playlist's own `label` is its name, for the bar to show, and is
+/// deliberately not read as an identity: one value standing for the whole
+/// playlist would mean no crossing inside it was ever seen.
+///
+/// Called only once a caller has confirmed [queue] is non-empty, so the
+/// `tracks.first` fallback is safe.
+({String identity, int? year}) recordOf(
+  PlaybackQueue queue,
+  MusicLibrary? library,
+) {
+  if (queue.namesOwnRecord) {
+    return (identity: queue.label ?? queue.tracks.first.uuid, year: queue.year);
+  }
+
+  // The track playing now, not `tracks.first`: for a single-track queue they
+  // are the same file, but a playlist's record changes as it plays through,
+  // and reading the first track would pin every one of its records to the
+  // one it opened with. `current` is null only for an index past the end,
+  // which no caller reaches here — the fallback keeps the read total rather
+  // than standing in for a state this is called in.
+  final track = queue.current ?? queue.tracks.first;
+  final entry =
+      library?.entryFor(track) ??
+      MusicEntry(file: track, metadata: const MusicMetadata());
+  final album = entry.album;
+
+  return (
+    // A plain space between them: it keeps an untagged-artist album from
+    // reading as the same identity as a different, shorter album name that
+    // happens to share a prefix, without needing a character no tag could
+    // ever carry.
+    identity: album == null ? track.uuid : '$album ${entry.albumArtist ?? ''}',
+    year: entry.metadata.year,
+  );
+}
 
 /// Fetches and holds the current album's cover (design section 4, UC-21,
 /// FR-PL-07).
 ///
-/// Identifies "the same record" the same way `AlbumAnimationController`
-/// does — [AlbumIdentity], computed by the very same [recordOf] function,
-/// not a second copy of its rule — because the two controllers have to
-/// agree on when a track change is still the same album and when it is a
+/// Identifies "the same record" with [recordOf], which used to live beside
+/// the album animation and moved here when the animation went: this is the
+/// last thing that needs to know when a track change is still the same album
+/// and when it is a
 /// new one; if they disagreed, a cover could swap under a case that never
 /// re-inserted, or an insertion could play under a cover left over from the
 /// record before it.

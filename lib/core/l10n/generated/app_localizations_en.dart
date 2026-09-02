@@ -253,22 +253,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preferencesLanguageSystem => 'Match the system';
 
   @override
-  String get animationLabel => 'Album animation';
+  String get playerAutoOpenLabel => 'Open the player when a track starts';
 
   @override
-  String get animationByYear => 'Match the album\'s year';
-
-  @override
-  String get animationVinyl => 'Always vinyl';
-
-  @override
-  String get animationTape => 'Always cassette';
-
-  @override
-  String get animationDisc => 'Always compact disc';
-
-  @override
-  String get animationOff => 'Off';
+  String get playerAutoOpenDescription =>
+      'The full player opens by itself whenever something new begins playing.';
 
   @override
   String get startupRecheckLabel => 'Re-check the library at startup';
@@ -2095,6 +2084,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get lyricsSwitchedOff =>
       'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.';
+
+  @override
+  String get audioSoundBarsLabel => 'Sound levels';
 
   @override
   String get audioTransportSemantics => 'Player controls';

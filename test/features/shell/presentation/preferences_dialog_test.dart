@@ -1,6 +1,5 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
@@ -76,29 +75,28 @@ void main() {
 
         expect(find.text(l10n.preferencesThemeLabel), findsOneWidget);
         expect(find.text(l10n.preferencesLanguageLabel), findsOneWidget);
-        expect(find.text(l10n.animationLabel), findsNothing);
+        expect(find.text(l10n.playerAutoOpenLabel), findsNothing);
         expect(find.text(l10n.startupRecheckLabel), findsNothing);
         expect(find.text(l10n.musicLookupLabel), findsNothing);
       },
     );
 
-    testWidgets(
-      'GivenASession_WhenPreferencesOpen_ThenEveryChoiceIsOffered',
-      (tester) async {
-        // The other half, and what stops the gate above from being a switch
-        // nobody ever turns back on.
-        await openFromShell(tester);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
+    testWidgets('GivenASession_WhenPreferencesOpen_ThenEveryChoiceIsOffered', (
+      tester,
+    ) async {
+      // The other half, and what stops the gate above from being a switch
+      // nobody ever turns back on.
+      await openFromShell(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(PreferencesDialog)),
+      );
 
-        expect(find.text(l10n.preferencesThemeLabel), findsOneWidget);
-        expect(find.text(l10n.preferencesLanguageLabel), findsOneWidget);
-        expect(find.text(l10n.animationLabel), findsOneWidget);
-        expect(find.text(l10n.startupRecheckLabel), findsOneWidget);
-        expect(find.text(l10n.musicLookupLabel), findsOneWidget);
-      },
-    );
+      expect(find.text(l10n.preferencesThemeLabel), findsOneWidget);
+      expect(find.text(l10n.preferencesLanguageLabel), findsOneWidget);
+      expect(find.text(l10n.playerAutoOpenLabel), findsOneWidget);
+      expect(find.text(l10n.startupRecheckLabel), findsOneWidget);
+      expect(find.text(l10n.musicLookupLabel), findsOneWidget);
+    });
 
     testWidgets(
       'GivenAFirstLaunch_WhenTheSignUpScreenIsShown_ThenPreferencesCanBeOpened',
@@ -205,60 +203,62 @@ void main() {
     );
   });
 
-  group('the album animation (FR-PL-11)', () {
-    testWidgets(
-      'GivenPreferences_WhenTheyOpen_ThenEveryAnimationModeIsOffered',
-      (tester) async {
-        await openFromShell(tester);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-
-        for (final label in [
-          l10n.animationByYear,
-          l10n.animationVinyl,
-          l10n.animationTape,
-          l10n.animationDisc,
-          l10n.animationOff,
-        ]) {
-          expect(find.text(label), findsOneWidget, reason: label);
-        }
-      },
-    );
-
-    testWidgets('GivenPreferences_WhenAModeIsChosen_ThenItIsAppliedAndStored', (
+  group('opening the player by itself (FR-PL-11)', () {
+    testWidgets('GivenPreferences_WhenTheyOpen_ThenTheAutoOpenIsOfferedAndOn', (
       tester,
     ) async {
-      // The controller's own state holds the applied value whether or not
-      // the write reached the store — that is exactly AF-02's "applied but
-      // not saved" case. A test named "...AndStored" has to look at the
-      // store itself, or it would pass unchanged if the write silently
-      // failed.
-      final store = InMemorySettingsStore();
-      await openFromShell(tester, settings: store);
+      // What is left of the album-animation choice. That preference picked
+      // which medium an animation showed — a record, a tape or a disc —
+      // and the animation is gone; the half of it that was about behaviour
+      // rather than decoration is this switch, and it ships on.
+      await openFromShell(tester);
       final l10n = AppLocalizations.of(
         tester.element(find.byType(PreferencesDialog)),
       );
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(PreferencesDialog)),
-      );
 
-      await tester.tap(find.text(l10n.animationVinyl));
-      await tester.pumpAndSettle();
-
-      expect(
-        container.read(preferencesControllerProvider).albumAnimation,
-        AlbumAnimationMode.vinyl,
+      final auto = find.widgetWithText(
+        SwitchListTile,
+        l10n.playerAutoOpenLabel,
       );
-      expect(store.albumAnimationMode, AlbumAnimationMode.vinyl);
+      expect(auto, findsOneWidget);
+      expect(tester.widget<SwitchListTile>(auto).value, isTrue);
     });
 
     testWidgets(
-      'GivenTheStoreRefusesAWrite_WhenAModeIsChosen_ThenTheOwnerIsTold',
+      'GivenPreferences_WhenTheAutoOpenIsTurnedOff_ThenItIsAppliedAndStored',
       (tester) async {
-        // UC-39 AF-02, for this preference specifically: the theme has such a
-        // test already, and the write-through path is shared code, but
-        // nothing exercised it for the animation setter until now.
+        // The controller's own state holds the applied value whether or not
+        // the write reached the store — that is exactly AF-02's "applied but
+        // not saved" case. A test named "...AndStored" has to look at the
+        // store itself, or it would pass unchanged if the write silently
+        // failed.
+        final store = InMemorySettingsStore();
+        await openFromShell(tester, settings: store);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(PreferencesDialog)),
+        );
+
+        await tester.tap(
+          find.widgetWithText(SwitchListTile, l10n.playerAutoOpenLabel),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          container.read(preferencesControllerProvider).opensPlayerOnPlay,
+          isFalse,
+        );
+        expect(store.opensPlayerOnPlay, isFalse);
+      },
+    );
+
+    testWidgets(
+      'GivenTheStoreRefusesAWrite_WhenTheAutoOpenIsTurnedOff_ThenTheOwnerIsTold',
+      (tester) async {
+        // UC-39 AF-02, for this preference specifically: the write-through
+        // path is shared code, and nothing exercised it for this setter.
         await tester.pumpShellWithFailingSettings();
         await tester.openSettingsMenuEntry(
           AppLocalizations.of(
@@ -272,13 +272,15 @@ void main() {
           tester.element(find.byType(PreferencesDialog)),
         );
 
-        await tester.tap(find.text(l10n.animationVinyl));
+        await tester.tap(
+          find.widgetWithText(SwitchListTile, l10n.playerAutoOpenLabel),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text(l10n.preferencesUnsaved), findsOneWidget);
         expect(
-          container.read(preferencesControllerProvider).albumAnimation,
-          AlbumAnimationMode.vinyl,
+          container.read(preferencesControllerProvider).opensPlayerOnPlay,
+          isFalse,
           reason: 'AF-02: the choice applies for this session either way',
         );
       },
@@ -288,11 +290,9 @@ void main() {
       'GivenTheMinimumWindow_WhenPreferencesOpen_ThenTheLastOptionIsReachable',
       (tester) async {
         // NFR-07: the dialog has to stay usable at the minimum supported
-        // window. Five groups, with the music-lookup switch and its contact
-        // field now beneath the startup re-check, is the tallest this dialog
-        // has ever been, so this is the test that would catch the day
-        // scrolling stops being enough. The contact field, not the last
-        // radio option, is the true bottom of the dialog now.
+        // window. The music-lookup switch and its contact field sit at the
+        // bottom of it, so this is the test that would catch the day
+        // scrolling stops being enough.
         await openFromShell(tester, surfaceSize: Breakpoint.minimumWindowSize);
         final l10n = AppLocalizations.of(
           tester.element(find.byType(PreferencesDialog)),
@@ -548,28 +548,27 @@ void main() {
   });
 
   group('music lookup (music enrichment design)', () {
-    testWidgets(
-      'GivenPreferences_WhenTheyOpen_ThenTheLookupIsOfferedAndOn',
-      (tester) async {
-        // On by default, and reachable: the defect this closes is an owner
-        // who could find no way at all to switch music lookup on, because
-        // the application never offered one and the core ships it off.
-        await openFromShell(tester);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
+    testWidgets('GivenPreferences_WhenTheyOpen_ThenTheLookupIsOfferedAndOn', (
+      tester,
+    ) async {
+      // On by default, and reachable: the defect this closes is an owner
+      // who could find no way at all to switch music lookup on, because
+      // the application never offered one and the core ships it off.
+      await openFromShell(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(PreferencesDialog)),
+      );
 
-        expect(find.text(l10n.musicLookupLabel), findsOneWidget);
-        expect(
-          tester
-              .widget<SwitchListTile>(
-                find.widgetWithText(SwitchListTile, l10n.musicLookupLabel),
-              )
-              .value,
-          isTrue,
-        );
-      },
-    );
+      expect(find.text(l10n.musicLookupLabel), findsOneWidget);
+      expect(
+        tester
+            .widget<SwitchListTile>(
+              find.widgetWithText(SwitchListTile, l10n.musicLookupLabel),
+            )
+            .value,
+        isTrue,
+      );
+    });
 
     testWidgets(
       'GivenPreferences_WhenTheLookupIsTurnedOff_ThenItIsAppliedAndStored',
@@ -627,30 +626,29 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenATypedContact_WhenTheDialogIsClosed_ThenItIsStillSaved',
-      (tester) async {
-        // The likeliest way an owner actually leaves that field: type an
-        // address and press the button that closes the dialog. A contact
-        // that only saved on submit would lose it silently.
-        final store = InMemorySettingsStore();
-        await openFromShell(tester, settings: store);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
+    testWidgets('GivenATypedContact_WhenTheDialogIsClosed_ThenItIsStillSaved', (
+      tester,
+    ) async {
+      // The likeliest way an owner actually leaves that field: type an
+      // address and press the button that closes the dialog. A contact
+      // that only saved on submit would lose it silently.
+      final store = InMemorySettingsStore();
+      await openFromShell(tester, settings: store);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(PreferencesDialog)),
+      );
 
-        final field = find.widgetWithText(
-          TextField,
-          l10n.musicLookupContactLabel,
-        );
-        await tester.ensureVisible(field);
-        await tester.enterText(field, 'someone@example.com');
-        await tester.tap(find.text(l10n.preferencesClose));
-        await tester.pumpAndSettle();
+      final field = find.widgetWithText(
+        TextField,
+        l10n.musicLookupContactLabel,
+      );
+      await tester.ensureVisible(field);
+      await tester.enterText(field, 'someone@example.com');
+      await tester.tap(find.text(l10n.preferencesClose));
+      await tester.pumpAndSettle();
 
-        expect(store.musicLookupContact, 'someone@example.com');
-      },
-    );
+      expect(store.musicLookupContact, 'someone@example.com');
+    });
 
     testWidgets(
       'GivenTheLookupIsOff_WhenPreferencesOpen_ThenNoContactIsAskedFor',

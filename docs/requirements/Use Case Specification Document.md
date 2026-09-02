@@ -84,7 +84,7 @@ graph LR
     subgraph "Playback (PL)"
         UC19[UC-19: Play a video]
         UC20[UC-20: Play audio]
-        UC21[UC-21: Album playback animation]
+        UC21[UC-21: See what is playing]
     end
 
     subgraph "Viewing (VW)"
@@ -850,44 +850,43 @@ graph LR
 
 ---
 
-### UC-21: Show the album playback animation
+### UC-21: See what is playing
 
 | Field | Value |
 | --- | --- |
 | **ID** | UC-21 |
-| **Name** | Show the album playback animation |
+| **Name** | See what is playing |
 | **Actors** | Owner |
-| **Description** | While audio plays, the disc, vinyl, or tape is shown turning on the machine it belongs to — a turntable, a cassette deck or a CD player, each of them a photograph of the real thing — for as long as the audio runs; a single track included, because the animation belongs to whatever is playing rather than only to an album or an artist. |
+| **Description** | While audio plays, a full-window player shows the album's own picture, names the track and the record it is from, and shows the sound moving — bars that run while playback runs and settle when it stops. |
 | **Preconditions** | Audio playback is active (UC-20). |
-| **Postconditions** | The animation ran for the duration of the playback and stopped with it. |
+| **Postconditions** | The catalog is unchanged; playback is unaffected by opening or closing the player. |
 | **Requirements** | FR-PL-07, FR-PL-11, FR-PL-12, FR-PL-13 |
 
 **Main Flow**
 
 1. Audio playback begins — a track, an album, or an artist.
-2. An insertion is owed — every track played owes one — and the application
-   opens the full-window player. The owner reaches it again from the playback
-   bar: from its button, or by pressing the sleeve beside it, which is what
-   they recognise.
-3. The application takes the medium — a disc, a vinyl record, or a tape —
-   from its case and puts it into the machine that plays it: a turntable, a
-   cassette deck or a CD player. The machine's screen names the track and
-   says where playback has reached, and the album's own picture is printed
-   on the record's label, which is what shows it turning.
-4. The medium turns while audio plays, for the duration of the queue.
-5. The owner pauses; the motion stops and the medium stays in place.
-6. The owner resumes; the motion continues.
-7. The queue ends or playback stops; the animation ends.
+2. The application opens the full-window player, on every track played
+   (AF-04 is the owner turning that off). The owner reaches it again from the
+   playback bar: from its button, or by pressing the sleeve beside it, which
+   is what they recognise.
+3. The player shows the album's own picture, the track's name, the artist
+   whose record it is, and the album — never the file's name (FR-CT-13).
+4. The bars move while the audio runs, and settle when it is paused or
+   stopped.
+5. The owner operates the transport on the player — back, play and pause,
+   stop, forward — which reaches the same queue the playback bar's controls
+   reach, and reads how far into the track playback has got.
+6. The owner closes the player; playback and the bar are untouched.
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The window's available height or width falls below the floor the stage needs | The application hides the stage and names the track and offers a transport of its own in place of the device's — the full player fills the window, so a screen with no device on it would otherwise say nothing and have no way to pause. |
-| AF-02 | The owner navigates to another screen | Playback and the persistent player continue; the animation is shown wherever the full player is visible. |
-| AF-03 | The system requests reduced motion | The application presents the medium without the turning motion, and playback is unaffected. |
-| AF-04 | The owner has turned the album animation off | The application shows no medium and does not open the full-window player on its own; audio plays normally. |
-| AF-05 | The owner asks for the words of the track playing | The application gives one side of the window to them and moves the device over into what is left, rather than covering it: timed lines are read while the record turns. The same control puts them away and gives the whole window back. |
+| AF-01 | The file carries no picture of its own | The player and the bar show a placeholder in the sleeve's own shape, rather than an empty frame. |
+| AF-02 | The owner navigates to another screen | Playback and the persistent player continue; the full player is reachable again from the bar. |
+| AF-03 | The system requests reduced motion | The bars are drawn without moving: the picture the instrument makes, and none of the motion somebody asked the system not to show them. |
+| AF-04 | The owner has turned off opening the player automatically | Playback starts where the owner left the interface; the player is opened by hand from the bar. |
+| AF-05 | The owner asks for the words of the track playing | The application gives one side of the window to them and moves the player over into what is left, rather than covering it. The same control puts them away and gives the whole window back. |
 
 ---
 
@@ -1518,7 +1517,7 @@ graph LR
 | AF-02 | The settings store cannot be written | The choices apply for this session and the application reports that they were not saved. |
 | AF-03 | No preference has ever been set | The application starts on the system theme and the system language when it is one of the two supported, and English otherwise. |
 | AF-04 | Playback or an index run is active | Both continue uninterrupted through a theme or language change. |
-| AF-05 | There is no session | Only the theme and the language are offered — they change the screen the owner is standing on. The choices that belong to a library nobody has opened (the album animation, the startup re-check, and music lookup, the last of which reconfigures the core) appear once they have signed in. |
+| AF-05 | There is no session | Only the theme and the language are offered — they change the screen the owner is standing on. The choices that belong to a library nobody has opened (whether the player opens itself, the startup re-check, and music lookup, the last of which reconfigures the core) appear once they have signed in. |
 
 ---
 
@@ -1874,8 +1873,8 @@ graph LR
 3. Playback proceeds as UC-20 describes it — the same queue, the same transport,
    the same resume behaviour — since a playlist is a queue and not a second
    notion of what is playing.
-4. The album animation resolves the record from the track playing now, so
-   crossing from one album into the next inserts the new medium and moving
+4. The player resolves the record from the track playing now, so crossing
+   from one album into the next changes the picture it shows and moving
    between two tracks of one album does not (UC-21).
 
 **Alternative Flows**
@@ -1889,7 +1888,7 @@ graph LR
 
 > **A playlist queue names no record of its own.** It carries the playlist's
 > name for the player to show, and nothing else — no album, no artist, no year.
-> That is what makes the album animation resolve the record from the current
+> That is what makes the player resolve the record from the current
 > track, exactly as it already does for a single track, so the behaviour in main
 > flow step 4 falls out of the rule that is already there rather than being a
 > second rule beside it. A playlist has no cover of its own either: the player
@@ -1993,7 +1992,7 @@ graph LR
 | UC-18: Edit a Markdown or text file | FR-ME-06, FR-ME-07, FR-ME-08, FR-ME-09, FR-ME-10 |
 | UC-19: Play a video | FR-PL-01, FR-PL-02, FR-PL-03, FR-PL-04, FR-PL-08, FR-PL-10 |
 | UC-20: Play audio | FR-PL-05, FR-PL-06, FR-PL-08, FR-PL-09, FR-PL-10 |
-| UC-21: Show the album playback animation | FR-PL-07, FR-PL-11, FR-PL-13 |
+| UC-21: See what is playing | FR-PL-07, FR-PL-11, FR-PL-12, FR-PL-13 |
 | UC-22: View a document | FR-VW-01, FR-VW-02, FR-VW-07, FR-VW-08 |
 | UC-23: Read a comic book | FR-VW-03, FR-VW-07, FR-VW-08 |
 | UC-24: View an image | FR-VW-04, FR-VW-07 |
@@ -2126,8 +2125,8 @@ stateDiagram-v2
     Failed --> Idle : dismissed
 ```
 
-The album animation (UC-21) follows this machine exactly: it turns in `Playing`,
-holds in `Paused`, and ends on `Idle`.
+The player's bars (UC-21) follow this machine exactly: they run in `Playing`,
+settle in `Paused`, and rest on `Idle`.
 
 ### 4.6 Text editor lifecycle
 

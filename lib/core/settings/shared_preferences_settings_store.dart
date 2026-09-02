@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../features/playback/domain/album_medium.dart';
 import '../bindings/core_environment.dart';
 import 'settings_store.dart';
 
@@ -26,7 +25,7 @@ class SharedPreferencesSettingsStore implements SettingsStore {
 
   static const _themeModeKey = 'settings.themeMode';
   static const _localeKey = 'settings.locale';
-  static const _albumAnimationKey = 'settings.albumAnimation';
+  static const _opensPlayerKey = 'settings.opensPlayerOnPlay';
   static const _rechecksAtStartupKey = 'settings.rechecksAtStartup';
   static const _musicLookupEnabledKey = 'settings.musicLookupEnabled';
   static const _musicLookupContactKey = 'settings.musicLookupContact';
@@ -71,14 +70,16 @@ class SharedPreferencesSettingsStore implements SettingsStore {
     );
   }
 
+  /// Absent reads as on: an owner who has never opened the dialog gets the
+  /// player when they start something, which is the behaviour the screen
+  /// exists for.
   @override
-  AlbumAnimationMode get albumAnimationMode =>
-      AlbumAnimationMode.byName(_preferences.getString(_albumAnimationKey)) ??
-      AlbumAnimationMode.byYear;
+  bool get opensPlayerOnPlay =>
+      _preferences.getBool(_opensPlayerKey) ?? true;
 
   @override
-  Future<void> setAlbumAnimationMode(AlbumAnimationMode mode) =>
-      _preferences.setString(_albumAnimationKey, mode.name);
+  Future<void> setOpensPlayerOnPlay(bool value) =>
+      _preferences.setBool(_opensPlayerKey, value);
 
   /// Absent reads as on, which is the default the preference ships with: an
   /// owner who has never opened the dialog gets the re-check.

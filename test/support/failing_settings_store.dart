@@ -1,6 +1,5 @@
 import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
-import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:flutter/material.dart';
 
 /// A [SettingsStore] whose writes fail (UC-39 AF-02).
@@ -14,7 +13,7 @@ class FailingSettingsStore implements SettingsStore {
   FailingSettingsStore({
     ThemeMode themeMode = ThemeMode.system,
     Locale? locale,
-    AlbumAnimationMode albumAnimationMode = AlbumAnimationMode.byYear,
+    bool opensPlayerOnPlay = true,
     bool rechecksAtStartup = true,
     bool musicLookupEnabled = true,
     String musicLookupContact = defaultMusicLookupContact,
@@ -27,7 +26,7 @@ class FailingSettingsStore implements SettingsStore {
        // ignore: prefer_initializing_formals
        _locale = locale,
        // ignore: prefer_initializing_formals
-       _albumAnimationMode = albumAnimationMode,
+       _opensPlayerOnPlay = opensPlayerOnPlay,
        // ignore: prefer_initializing_formals
        _rechecksAtStartup = rechecksAtStartup,
        // ignore: prefer_initializing_formals
@@ -37,7 +36,7 @@ class FailingSettingsStore implements SettingsStore {
 
   final ThemeMode _themeMode;
   final Locale? _locale;
-  final AlbumAnimationMode _albumAnimationMode;
+  final bool _opensPlayerOnPlay;
   final bool _rechecksAtStartup;
   final bool _musicLookupEnabled;
   final String _musicLookupContact;
@@ -64,11 +63,11 @@ class FailingSettingsStore implements SettingsStore {
   }
 
   @override
-  AlbumAnimationMode get albumAnimationMode => _albumAnimationMode;
+  bool get opensPlayerOnPlay => _opensPlayerOnPlay;
 
   @override
-  Future<void> setAlbumAnimationMode(AlbumAnimationMode mode) async {
-    attempted.add('albumAnimationMode');
+  Future<void> setOpensPlayerOnPlay(bool value) async {
+    attempted.add('opensPlayerOnPlay');
     throw const FileSystemException('the settings file is read-only');
   }
 

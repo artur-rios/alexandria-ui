@@ -1,6 +1,5 @@
 import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
-import 'package:alexandria_ui/features/playback/domain/album_medium.dart';
 import 'package:flutter/material.dart';
 
 /// The in-memory [SettingsStore] every unit and widget test binds
@@ -13,7 +12,7 @@ class InMemorySettingsStore implements SettingsStore {
   InMemorySettingsStore({
     ThemeMode themeMode = ThemeMode.system,
     Locale? locale,
-    AlbumAnimationMode albumAnimationMode = AlbumAnimationMode.byYear,
+    bool opensPlayerOnPlay = true,
     // On, matching the real default (`SettingsStore.rechecksAtStartup`'s own
     // doc) — the honest default any owner starts a session with. This is a
     // live coupling worth knowing about: `pumpShell` (shell_harness.dart)
@@ -36,7 +35,7 @@ class InMemorySettingsStore implements SettingsStore {
     // ignore_for_file: prefer_initializing_formals
     : _themeMode = themeMode,
        _locale = locale,
-       _albumAnimationMode = albumAnimationMode,
+       _opensPlayerOnPlay = opensPlayerOnPlay,
        _rechecksAtStartup = rechecksAtStartup,
        _musicLookupEnabled = musicLookupEnabled,
        _musicLookupContact = musicLookupContact,
@@ -44,7 +43,7 @@ class InMemorySettingsStore implements SettingsStore {
 
   ThemeMode _themeMode;
   Locale? _locale;
-  AlbumAnimationMode _albumAnimationMode;
+  bool _opensPlayerOnPlay;
   bool _rechecksAtStartup;
   bool _musicLookupEnabled;
   String _musicLookupContact;
@@ -63,11 +62,11 @@ class InMemorySettingsStore implements SettingsStore {
   Future<void> setLocale(Locale? locale) async => _locale = locale;
 
   @override
-  AlbumAnimationMode get albumAnimationMode => _albumAnimationMode;
+  bool get opensPlayerOnPlay => _opensPlayerOnPlay;
 
   @override
-  Future<void> setAlbumAnimationMode(AlbumAnimationMode mode) async =>
-      _albumAnimationMode = mode;
+  Future<void> setOpensPlayerOnPlay(bool value) async =>
+      _opensPlayerOnPlay = value;
 
   @override
   bool get rechecksAtStartup => _rechecksAtStartup;

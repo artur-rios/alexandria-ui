@@ -7,7 +7,6 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/application/session_state.dart';
-import '../../playback/domain/album_medium.dart';
 import '../application/preferences_controller.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
@@ -107,27 +106,16 @@ class PreferencesDialog extends ConsumerWidget {
 
               if (signedIn) ...[
                 const SizedBox(height: AppSpacing.md),
-                _GroupLabel(l10n.animationLabel),
-                RadioGroup<AlbumAnimationMode>(
-                  groupValue: preferences.albumAnimation,
-                  // Finding 10: `setAlbumAnimation` returns a `Future<void>`,
-                  // and a bare ternary would discard it — `unawaited` says so
-                  // on purpose, the same way every other fire-and-forget call
-                  // in this application does.
-                  onChanged: (mode) => mode == null
-                      ? null
-                      : unawaited(controller.setAlbumAnimation(mode)),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (final option in _AnimationOption.values)
-                        RadioListTile<AlbumAnimationMode>(
-                          value: option.mode,
-                          title: Text(option.label(l10n)),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                    ],
-                  ),
+                // No `_GroupLabel` here, for the reason the switch below
+                // records: a group of one control restating its own name in
+                // a label above it is redundancy, not structure.
+                SwitchListTile(
+                  title: Text(l10n.playerAutoOpenLabel),
+                  subtitle: Text(l10n.playerAutoOpenDescription),
+                  value: preferences.opensPlayerOnPlay,
+                  onChanged: (value) =>
+                      unawaited(controller.setOpensPlayerOnPlay(value)),
+                  contentPadding: EdgeInsets.zero,
                 ),
 
                 const SizedBox(height: AppSpacing.md),
@@ -323,27 +311,6 @@ enum _ThemeOption {
     _ThemeOption.system => l10n.preferencesThemeSystem,
     _ThemeOption.light => l10n.preferencesThemeLight,
     _ThemeOption.dark => l10n.preferencesThemeDark,
-  };
-}
-
-/// The album animation choices, in the order they are offered.
-enum _AnimationOption {
-  byYear(AlbumAnimationMode.byYear),
-  vinyl(AlbumAnimationMode.vinyl),
-  tape(AlbumAnimationMode.tape),
-  disc(AlbumAnimationMode.disc),
-  off(AlbumAnimationMode.off);
-
-  const _AnimationOption(this.mode);
-
-  final AlbumAnimationMode mode;
-
-  String label(AppLocalizations l10n) => switch (this) {
-    _AnimationOption.byYear => l10n.animationByYear,
-    _AnimationOption.vinyl => l10n.animationVinyl,
-    _AnimationOption.tape => l10n.animationTape,
-    _AnimationOption.disc => l10n.animationDisc,
-    _AnimationOption.off => l10n.animationOff,
   };
 }
 

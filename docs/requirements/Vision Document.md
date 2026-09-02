@@ -150,7 +150,7 @@ the core.
 | F-02 | Library sources and indexing | Registering one or more library folders, starting and observing index runs, refreshing the catalog, and unregistering a folder without losing data. |
 | F-03 | Catalog browsing, search, and filtering | A type panel, three view layouts, a detail view, search across the catalog, filters and sorting, and a home dashboard. |
 | F-04 | Metadata and content editing | Editing music and video metadata, renaming any file, and editing Markdown and text content in place with a live preview. |
-| F-05 | Media playback | A video player with full screen, seeking, subtitle tracks, and audio tracks; an audio player with a queue, resume points, and the album playback animation. |
+| F-05 | Media playback | A video player with full screen, seeking, subtitle tracks, and audio tracks; an audio player with a queue, resume points, and a full player showing the album's picture and the sound moving. |
 | F-06 | Document, image, and page viewing | Reading PDFs and e-books, reading comic books, viewing images, and viewing saved HTML pages. |
 | F-07 | Collections and bookmarks | Creating, renaming, and deleting collections; adding and removing their members; and managing browser bookmarks within bookmark collections. |
 | F-08 | Watchlists, reading lists, and playlists | Creating and deleting watchlists and reading lists, adding and removing items, and tracking per-episode and per-issue progress; and naming, arranging, and playing playlists of the owner's own music. |
@@ -310,8 +310,9 @@ graph TD
   application or touching a file manager.
 - Music, video, documents, comics, notes, saved pages, images, and bookmarks are
   all reachable from one window and one search.
-- A video plays with subtitle and audio-track selection, and an album plays with
-  its animation spinning while the audio runs and stopping when it pauses.
+- A video plays with subtitle and audio-track selection, and a track plays on a
+  full player showing its sleeve, its name, and bars that move while the audio
+  runs and settle when it pauses.
 - A Markdown file is edited and saved, and the change is visible on disk outside
   the application.
 - Every destructive action states what it will remove and whether the on-disk file
