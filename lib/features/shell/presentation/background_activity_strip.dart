@@ -681,12 +681,15 @@ class _PortraitsRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Row(
         children: [
-          SizedBox.square(
+          // Turning, not filling. A determinate arc was what this had, and
+          // it never moved: `value` only changes when an artist is finished
+          // with, a lookup takes a second or two, and a ring frozen at
+          // three-tenths for seconds at a time reads as a picture of a
+          // spinner rather than as work in progress. How far through it is
+          // belongs in the words beside it, which can say it exactly.
+          const SizedBox.square(
             dimension: 16,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              value: state.progress,
-            ),
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(

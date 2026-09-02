@@ -759,7 +759,15 @@ void main() {
         tester.element(find.byType(BackgroundActivityStrip)),
       );
       expect(find.text(l10n.artistPortraitsProgress(12, 40)), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      // Turning, not filling: a determinate ring only moves when an artist
+      // is finished with, and a lookup takes a second or two — so it stood
+      // still long enough to read as a picture of a spinner. How far through
+      // it is, the words beside it say exactly.
+      final spinner = tester.widget<CircularProgressIndicator>(
+        find.byType(CircularProgressIndicator),
+      );
+      expect(spinner.value, isNull);
     });
 
     testWidgets('GivenThePassIsDone_WhenTheStripIsShown_ThenItTakesNoRoom', (

@@ -287,9 +287,23 @@ class _Player extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
 
+            // Stop, back, play, forward — the order every machine with these
+            // four keys prints them in, and the order the decks this screen
+            // replaced had. Play used to sit between back and stop, which
+            // put the stop key between the two an owner reaches for most and
+            // left `next` stranded on the far side of it.
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                IconButton(
+                  tooltip: l10n.audioStop,
+                  iconSize: 40,
+                  icon: const Icon(Icons.stop),
+                  onPressed: current == null
+                      ? null
+                      : () => unawaited(controller.stop()),
+                ),
+                const SizedBox(width: AppSpacing.sm),
                 IconButton(
                   tooltip: l10n.audioPrevious,
                   iconSize: 40,
@@ -308,15 +322,6 @@ class _Player extends ConsumerWidget {
                   onPressed: current == null
                       ? null
                       : () => unawaited(controller.togglePlaying()),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                IconButton(
-                  tooltip: l10n.audioStop,
-                  iconSize: 40,
-                  icon: const Icon(Icons.stop),
-                  onPressed: current == null
-                      ? null
-                      : () => unawaited(controller.stop()),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 IconButton(

@@ -424,6 +424,42 @@ void main() {
     );
   });
 
+  group('the transport (order and reach, main flow step 6)', () {
+    testWidgets('GivenThePlayer_WhenTheKeysAreRead_ThenTheyAreInOrder', (
+      tester,
+    ) async {
+      // Stop, back, play, forward — the order every machine with these four
+      // keys prints them in. Play used to sit between back and stop, which
+      // put the stop key between the two an owner reaches for most and left
+      // forward stranded on the far side of it.
+      await play(tester);
+
+      double centreOf(IconData glyph) => tester
+          .getCenter(
+            find.descendant(
+              of: find.byType(NowPlayingScreen),
+              matching: find.widgetWithIcon(IconButton, glyph),
+            ),
+          )
+          .dx;
+
+      final places = [
+        centreOf(Icons.stop),
+        centreOf(Icons.skip_previous),
+        centreOf(Icons.pause_circle),
+        centreOf(Icons.skip_next),
+      ];
+
+      for (var index = 1; index < places.length; index++) {
+        expect(
+          places[index],
+          greaterThan(places[index - 1]),
+          reason: 'key $index sits right of the one before it',
+        );
+      }
+    });
+  });
+
   group('moving through the track (FR-PL-12)', () {
     testWidgets('GivenATrackPlaying_WhenTheSliderIsDragged_ThenItSeeks', (
       tester,
