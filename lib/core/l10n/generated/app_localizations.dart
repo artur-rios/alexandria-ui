@@ -1878,6 +1878,36 @@ abstract class AppLocalizations {
   /// **'Play'**
   String get audioPlay;
 
+  /// FR-PL-06: plays the whole record in an order nobody chose. On the row itself, because shuffling a record is something owners do constantly and a control they have to go looking for is one they stop using.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle album'**
+  String get audioShuffleAlbum;
+
+  /// FR-PL-06: plays everything by the artist in an order nobody chose.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle artist'**
+  String get audioShuffleArtist;
+
+  /// FR-PL-06: plays the whole audio library in an order nobody chose, from wherever in the music area the owner is standing.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle everything'**
+  String get audioShuffleAll;
+
+  /// FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name, the way a playlist is.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffled library'**
+  String get audioShuffleAllLabel;
+
+  /// FR-PL-06: plays the playlist's tracks in an order nobody chose, leaving the curated order untouched.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle playlist'**
+  String get audioShufflePlaylist;
+
   /// UC-20 main flow steps 1 and 3: queues the album this track belongs to.
   ///
   /// In en, this message translates to:

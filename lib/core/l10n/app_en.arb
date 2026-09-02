@@ -1326,6 +1326,26 @@
   "@audioPlay": {
     "description": "UC-20 main flow step 1: plays this track on its own."
   },
+  "audioShuffleAlbum": "Shuffle album",
+  "@audioShuffleAlbum": {
+    "description": "FR-PL-06: plays the whole record in an order nobody chose. On the row itself, because shuffling a record is something owners do constantly and a control they have to go looking for is one they stop using."
+  },
+  "audioShuffleArtist": "Shuffle artist",
+  "@audioShuffleArtist": {
+    "description": "FR-PL-06: plays everything by the artist in an order nobody chose."
+  },
+  "audioShuffleAll": "Shuffle everything",
+  "@audioShuffleAll": {
+    "description": "FR-PL-06: plays the whole audio library in an order nobody chose, from wherever in the music area the owner is standing."
+  },
+  "audioShuffleAllLabel": "Shuffled library",
+  "@audioShuffleAllLabel": {
+    "description": "FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name, the way a playlist is."
+  },
+  "audioShufflePlaylist": "Shuffle playlist",
+  "@audioShufflePlaylist": {
+    "description": "FR-PL-06: plays the playlist's tracks in an order nobody chose, leaving the curated order untouched."
+  },
   "audioPlayAlbum": "Play album",
   "@audioPlayAlbum": {
     "description": "UC-20 main flow steps 1 and 3: queues the album this track belongs to."

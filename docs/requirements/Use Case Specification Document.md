@@ -1757,7 +1757,7 @@ graph LR
 | **Description** | The owner browses the catalog's audio by artist, album, or song, named by its tags rather than by its files, and plays what they find. The artist a track is browsed and grouped under is the album's artist — who the record is by — rather than who performed that track, so a record with guests on it is one artist's record and a compilation is one album rather than one album per performer. |
 | **Preconditions** | An active session exists and the catalog holds audio files. |
 | **Postconditions** | The catalog is unchanged; a queue exists when the owner played something. |
-| **Requirements** | FR-CT-13, FR-CT-14 |
+| **Requirements** | FR-CT-13, FR-CT-14, FR-CT-03, FR-CT-04, FR-PL-06, FR-PL-15 |
 
 **Main Flow**
 
@@ -1785,6 +1785,14 @@ graph LR
    album, returning by the breadcrumb.
 5. The owner plays a track, an album, or an artist. An album or artist queue
    holds every track the group listed, including the ones a guest performed.
+   Any of them can be played in an order nobody chose instead, as can the whole
+   audio library from wherever in the area the owner is standing — the same
+   tracks, queued shuffled, starting at the top of that order rather than at
+   whichever row was clicked.
+6. The owner chooses rows or a grid, and the area remembers it. Both are
+   offered over artists, albums and tracks alike: an artist is shown by their
+   photograph and a record by the picture embedded in its own files, so a grid
+   is a shelf of faces and sleeves rather than a wall of identical glyphs.
 
 **Alternative Flows**
 
@@ -1796,6 +1804,7 @@ graph LR
 | AF-04 | The audio listing fails outright | The application presents a failure view with a retry, distinct from an empty library. |
 | AF-05 | A file's metadata names no album artist | The file is grouped under its own performer instead, so a library tagged before the album artist existed browses exactly as it did. |
 | AF-06 | The background pass cannot reach the services | It continues past an artist they have no picture of, and gives up only when several lookups in a row cannot be made at all — a machine with no connection does not walk the whole library discovering that once per artist. What it fetched is kept, and the artists it never reached are asked for on the next session. |
+| AF-07 | A record's files carry no embedded picture | The row or tile keeps the glyph that stands for a record. Most of a real library is like this; it is not a failure to word. |
 
 ---
 
@@ -1874,9 +1883,11 @@ graph LR
 
 **Main Flow**
 
-1. The owner presses play on an open playlist.
-2. The application replaces the queue with the playlist's tracks, in the order
-   shown, and starts at the first.
+1. The owner presses play on an open playlist, or shuffle beside it.
+2. The application replaces the queue with the playlist's tracks — in the order
+   shown, or in an order nobody chose when shuffle was pressed — and starts at
+   the first of that order. Shuffling plays the playlist; it never rewrites it,
+   so the stored order the screen renders is unchanged (FR-PL-06).
 3. Playback proceeds as UC-20 describes it — the same queue, the same transport,
    the same resume behaviour — since a playlist is a queue and not a second
    notion of what is playing.
@@ -1890,7 +1901,7 @@ graph LR
 | --- | --- | --- |
 | AF-01 | An entry's file cannot be opened | It is named and stepped over, and the next track plays. The list continues rather than stopping partway. |
 | AF-02 | No entry in the playlist could be opened | The application reports that nothing was playable, rather than appearing to play silence. |
-| AF-03 | The playlist holds no tracks | No play action is offered; the screen already states that the playlist is empty. |
+| AF-03 | The playlist holds no tracks | Neither play action is offered; the screen already states that the playlist is empty. |
 | AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
 
 > **A playlist queue names no record of its own.** It carries the playlist's
@@ -2024,7 +2035,7 @@ graph LR
 | UC-43: Follow a scan while it runs | FR-LB-07, FR-LB-13, FR-LB-14, FR-LB-15, FR-LB-19, FR-LB-20, FR-UX-08 |
 | UC-44: Pause, resume, or cancel a scan | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
 | UC-45: Pace a scan | FR-LB-16, FR-LB-18 |
-| UC-46: Browse the music library | FR-CT-13, FR-CT-14, FR-PL-15 |
+| UC-46: Browse the music library | FR-CT-03, FR-CT-04, FR-CT-13, FR-CT-14, FR-PL-06, FR-PL-15 |
 | UC-47: Manage a playlist | FR-TR-15, FR-TR-16, FR-TR-17, FR-TR-18, FR-TR-19 |
 | UC-48: Play a playlist | FR-TR-20, FR-PL-05, FR-PL-06, FR-PL-07 |
 | UC-49: Browse a library | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |

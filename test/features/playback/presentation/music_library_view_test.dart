@@ -1,7 +1,11 @@
+import 'dart:math';
+
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
+import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/playback/presentation/music_library_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
@@ -15,6 +19,8 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
+import '../../../support/fake_media_player.dart';
+import '../../../support/fake_playback.dart';
 import '../../../support/shell_harness.dart';
 
 /// Browsing the music library (UC-46, FR-CT-13).
@@ -319,70 +325,162 @@ void main() {
     );
   });
 
-  group('a run finishes while the area is open (bug: catalog never refreshes)', () {
-    // The reported bug: an owner indexes a folder full of music, the run
-    // reports done, and the Music tab keeps showing the empty library it
-    // resolved before the run — nothing tells it the catalog changed.
-    // `musicLibraryProvider` is watched here (the area is open) precisely
-    // because that is what distinguishes this from a listing tab, which
-    // re-lists on every navigation anyway.
-    testWidgets(
-      'GivenTheMusicAreaIsOpenAndEmpty_WhenAnIndexRunFinishes_ThenTheNewTracksAppear',
-      (tester) async {
-        final catalogGateway = FakeCatalogGateway();
-        final indexGateway = FakeIndexGateway();
+  group(
+    'a run finishes while the area is open (bug: catalog never refreshes)',
+    () {
+      // The reported bug: an owner indexes a folder full of music, the run
+      // reports done, and the Music tab keeps showing the empty library it
+      // resolved before the run — nothing tells it the catalog changed.
+      // `musicLibraryProvider` is watched here (the area is open) precisely
+      // because that is what distinguishes this from a listing tab, which
+      // re-lists on every navigation anyway.
+      testWidgets(
+        'GivenTheMusicAreaIsOpenAndEmpty_WhenAnIndexRunFinishes_ThenTheNewTracksAppear',
+        (tester) async {
+          final catalogGateway = FakeCatalogGateway();
+          final indexGateway = FakeIndexGateway();
 
-        // No run outstanding yet at launch, so the shell's activity strip has
-        // nothing to animate and sign-in's own `pumpAndSettle` can still
-        // settle.
+          // No run outstanding yet at launch, so the shell's activity strip has
+          // nothing to animate and sign-in's own `pumpAndSettle` can still
+          // settle.
+          final container = await openMusic(
+            tester,
+            gateway: catalogGateway,
+            extraOverrides: [
+              indexGatewayProvider.overrideWithValue(indexGateway),
+              // Long enough that no timer fires during the test: the run
+              // ending is observed by calling refresh directly, the same way
+              // the poller itself would call it.
+              runPollIntervalProvider.overrideWithValue(
+                const Duration(hours: 1),
+              ),
+            ],
+          );
+          final l10n = localizations(tester);
+
+          // Before the run: nothing catalogued yet, so the area is empty.
+          expect(find.text(l10n.musicEmpty), findsOneWidget);
+
+          // The folder starts being indexed — a run is now outstanding.
+          indexGateway.activeRunsOutcome = ActiveRunsOutcome.read(
+            runs: [
+              IndexRun(
+                runId: indexGateway.runId,
+                root: '/home/owner/music',
+                status: IndexRunStatus.running,
+              ),
+            ],
+          );
+          await container.read(activeRunsControllerProvider.notifier).refresh();
+          // Pumped rather than settled: the running indicator in the shell's
+          // activity strip is an animation that never idles on its own.
+          await tester.pump();
+
+          // The run finishes and leaves audio behind in the catalog — the
+          // scan itself is what added it, not this test reaching around it.
+          catalogGateway.addAudio(
+            uuid: '1',
+            title: 'Airbag',
+            artist: 'Radiohead',
+          );
+          indexGateway.activeRunsOutcome = const ActiveRunsOutcome.read(
+            runs: [],
+          );
+
+          // What the poller does on its own schedule, driven directly rather
+          // than waiting out a timer.
+          await container.read(activeRunsControllerProvider.notifier).refresh();
+          // Two bounded pumps rather than `pumpAndSettle`: the outcome banner
+          // this transition also raises clears itself on a timer that would
+          // otherwise never elapse. One frame to flush the refetch's Future,
+          // one more so the rebuilt list actually paints.
+          await tester.pump();
+          await tester.pump();
+
+          expect(find.text(l10n.musicEmpty), findsNothing);
+          expect(find.text('Radiohead'), findsOneWidget);
+        },
+      );
+    },
+  );
+
+  group('rows or tiles (FR-CT-03)', () {
+    testWidgets(
+      'GivenTheMusicArea_WhenTilesAreChosen_ThenTheListBecomesAGrid',
+      (tester) async {
+        final container = await openMusic(tester, gateway: libraryOfThree());
+        final l10n = localizations(tester);
+
+        await tester.tap(find.byIcon(Icons.grid_view_outlined));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(GridView), findsOneWidget);
+        expect(container.read(musicLayoutControllerProvider), ViewLayout.grid);
+        // The same artists, drawn differently — a layout switch is never a
+        // change of what is on screen.
+        expect(find.text('Radiohead'), findsOneWidget);
+        expect(find.text(l10n.musicViewArtists), findsOneWidget);
+      },
+    );
+
+    testWidgets('GivenTilesAreChosen_WhenTheOwnerDrillsIn_ThenTheTilesStay', (
+      tester,
+    ) async {
+      // One choice for the area, not one per level: a layout that reset on
+      // the way into a record would be a setting re-made at every step.
+      await openMusic(tester, gateway: libraryOfThree());
+
+      await tester.tap(find.byIcon(Icons.grid_view_outlined));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Radiohead'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(GridView), findsOneWidget);
+      expect(find.text('OK'), findsOneWidget);
+    });
+  });
+
+  group('playing everything in an order nobody chose (FR-PL-06)', () {
+    testWidgets(
+      'GivenTheMusicArea_WhenShuffleEverythingIsPressed_ThenTheWholeLibraryQueues',
+      (tester) async {
+        // An owner who wants something to play is not browsing: making them
+        // pick a record first would be asking the question they opened this
+        // to avoid.
         final container = await openMusic(
           tester,
-          gateway: catalogGateway,
+          gateway: libraryOfThree(),
           extraOverrides: [
-            indexGatewayProvider.overrideWithValue(indexGateway),
-            // Long enough that no timer fires during the test: the run
-            // ending is observed by calling refresh directly, the same way
-            // the poller itself would call it.
-            runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
+            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway(),
+            ),
+            playbackPositionsProvider.overrideWithValue(
+              FakePlaybackPositionStore(),
+            ),
+            // Seeded, so the order is a fact rather than a coin toss.
+            shuffleRandomProvider.overrideWithValue(Random(7)),
           ],
         );
         final l10n = localizations(tester);
 
-        // Before the run: nothing catalogued yet, so the area is empty.
-        expect(find.text(l10n.musicEmpty), findsOneWidget);
-
-        // The folder starts being indexed — a run is now outstanding.
-        indexGateway.activeRunsOutcome = ActiveRunsOutcome.read(
-          runs: [
-            IndexRun(
-              runId: indexGateway.runId,
-              root: '/home/owner/music',
-              status: IndexRunStatus.running,
-            ),
-          ],
+        // Narrowed by its tooltip: every artist row carries a shuffle of its
+        // own, so the glyph alone matches a screenful of buttons.
+        await tester.tap(
+          find.ancestor(
+            of: find.byTooltip(l10n.audioShuffleAll),
+            matching: find.byType(IconButton),
+          ),
         );
-        await container.read(activeRunsControllerProvider.notifier).refresh();
-        // Pumped rather than settled: the running indicator in the shell's
-        // activity strip is an animation that never idles on its own.
+        // Bounded pumps rather than `pumpAndSettle`: something is playing
+        // now, and the player's bars never idle.
         await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-        // The run finishes and leaves audio behind in the catalog — the
-        // scan itself is what added it, not this test reaching around it.
-        catalogGateway.addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
-        indexGateway.activeRunsOutcome = const ActiveRunsOutcome.read(runs: []);
-
-        // What the poller does on its own schedule, driven directly rather
-        // than waiting out a timer.
-        await container.read(activeRunsControllerProvider.notifier).refresh();
-        // Two bounded pumps rather than `pumpAndSettle`: the outcome banner
-        // this transition also raises clears itself on a timer that would
-        // otherwise never elapse. One frame to flush the refetch's Future,
-        // one more so the rebuilt list actually paints.
-        await tester.pump();
-        await tester.pump();
-
-        expect(find.text(l10n.musicEmpty), findsNothing);
-        expect(find.text('Radiohead'), findsOneWidget);
+        final queue = container.read(audioPlaybackControllerProvider).queue;
+        expect(queue.kind, QueueKind.playlist);
+        expect(queue.label, l10n.audioShuffleAllLabel);
+        expect(queue.tracks.map((file) => file.uuid), ['1', '3', '2']);
       },
     );
   });

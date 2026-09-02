@@ -23,10 +23,12 @@ class PlaylistDetailScreen extends ConsumerWidget {
   final String uuid;
 
   /// Presents the screen over [context].
-  static Future<void> show(BuildContext context, String uuid) => showDialog<void>(
-    context: context,
-    builder: (context) => Dialog.fullscreen(child: PlaylistDetailScreen(uuid: uuid)),
-  );
+  static Future<void> show(BuildContext context, String uuid) =>
+      showDialog<void>(
+        context: context,
+        builder: (context) =>
+            Dialog.fullscreen(child: PlaylistDetailScreen(uuid: uuid)),
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,12 +51,21 @@ class PlaylistDetailScreen extends ConsumerWidget {
           // Offered only once there is something to play. An empty playlist
           // is a state the body already words, and an action that could only
           // do nothing does not belong beside it.
-          if (loaded != null && loaded.entries.isNotEmpty)
+          if (loaded != null && loaded.entries.isNotEmpty) ...[
             IconButton(
               tooltip: l10n.playlistPlay,
               icon: const Icon(Icons.play_arrow),
               onPressed: () => unawaited(_play(ref, loaded)),
             ),
+            // Beside it rather than instead of it: the stored order is the
+            // playlist, and shuffling is a way to hear it once — it never
+            // rewrites what was curated.
+            IconButton(
+              tooltip: l10n.audioShufflePlaylist,
+              icon: const Icon(Icons.shuffle),
+              onPressed: () => unawaited(_play(ref, loaded, shuffled: true)),
+            ),
+          ],
         ],
       ),
       body: AsyncStateView<PlaylistView?>(
@@ -78,13 +89,21 @@ class PlaylistDetailScreen extends ConsumerWidget {
   /// is the resolve's answer, and the player names and steps over the ones
   /// that do not (design section 5). Filtering here would be this screen
   /// deciding playability from a flag it only renders.
-  Future<void> _play(WidgetRef ref, PlaylistView view) =>
-      ref
-          .read(audioPlaybackControllerProvider.notifier)
-          .playPlaylist(
-            name: view.playlist.name,
-            tracks: [for (final entry in view.entries) entry.file],
-          );
+  ///
+  /// [shuffled] queues the same entries in an order nobody chose (FR-PL-06),
+  /// which is a way of hearing the playlist and not an edit of it: what the
+  /// core stored is untouched, and the next plain play is in order again.
+  Future<void> _play(
+    WidgetRef ref,
+    PlaylistView view, {
+    bool shuffled = false,
+  }) => ref
+      .read(audioPlaybackControllerProvider.notifier)
+      .playPlaylist(
+        name: view.playlist.name,
+        tracks: [for (final entry in view.entries) entry.file],
+        shuffled: shuffled,
+      );
 }
 
 /// The playlist's tracks, in the order the core sent them, reorderable.

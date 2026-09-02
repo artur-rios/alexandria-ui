@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
@@ -29,8 +30,12 @@ import '../../../support/shell_harness.dart';
 void main() {
   const playlistUuid = 'pl-1';
 
-  CatalogFile file(String uuid) =>
-      CatalogFile(uuid: uuid, name: '$uuid.flac', path: '/music/$uuid.flac', type: FileType.audio);
+  CatalogFile file(String uuid) => CatalogFile(
+    uuid: uuid,
+    name: '$uuid.flac',
+    path: '/music/$uuid.flac',
+    type: FileType.audio,
+  );
 
   PlaylistEntry entry({
     required String uuid,
@@ -146,10 +151,7 @@ void main() {
         // colours from the theme (BR-18 / FR-UX-07) rather than a literal
         // chosen here.
         final missingTile = tester.widget<ListTile>(
-          find.ancestor(
-            of: find.text('Gone'),
-            matching: find.byType(ListTile),
-          ),
+          find.ancestor(of: find.text('Gone'), matching: find.byType(ListTile)),
         );
         expect(missingTile.enabled, isFalse);
 
@@ -179,11 +181,7 @@ void main() {
         );
         final gateway = FakePlaylistGateway()
           ..reads[playlistUuid] = PlaylistRead.loaded(view: before);
-        final opened = await openDetail(
-          tester,
-          view: before,
-          gateway: gateway,
-        );
+        final opened = await openDetail(tester, view: before, gateway: gateway);
 
         // What the core answers once 'e-1' is gone.
         final after = PlaylistView(
@@ -232,11 +230,7 @@ void main() {
         );
         final gateway = FakePlaylistGateway()
           ..reads[playlistUuid] = PlaylistRead.loaded(view: before);
-        final opened = await openDetail(
-          tester,
-          view: before,
-          gateway: gateway,
-        );
+        final opened = await openDetail(tester, view: before, gateway: gateway);
 
         final list = tester.widget<ReorderableListView>(
           find.byType(ReorderableListView),
@@ -255,40 +249,35 @@ void main() {
     // The companion case: a real move through the identical path still
     // reaches the core, so the pair above proves the guard blocks only the
     // no-op rather than every reorder.
-    testWidgets(
-      'GivenAGenuineMove_WhenOnReorderFires_ThenTheCoreIsCalled',
-      (tester) async {
-        final before = PlaylistView(
-          playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
-          entries: [
-            entry(uuid: 'e-1', position: 0, title: 'A'),
-            entry(uuid: 'e-2', position: 1, title: 'B'),
-            entry(uuid: 'e-3', position: 2, title: 'C'),
-            entry(uuid: 'e-4', position: 3, title: 'D'),
-          ],
-        );
-        final gateway = FakePlaylistGateway()
-          ..reads[playlistUuid] = PlaylistRead.loaded(view: before);
-        final opened = await openDetail(
-          tester,
-          view: before,
-          gateway: gateway,
-        );
+    testWidgets('GivenAGenuineMove_WhenOnReorderFires_ThenTheCoreIsCalled', (
+      tester,
+    ) async {
+      final before = PlaylistView(
+        playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+        entries: [
+          entry(uuid: 'e-1', position: 0, title: 'A'),
+          entry(uuid: 'e-2', position: 1, title: 'B'),
+          entry(uuid: 'e-3', position: 2, title: 'C'),
+          entry(uuid: 'e-4', position: 3, title: 'D'),
+        ],
+      );
+      final gateway = FakePlaylistGateway()
+        ..reads[playlistUuid] = PlaylistRead.loaded(view: before);
+      final opened = await openDetail(tester, view: before, gateway: gateway);
 
-        final list = tester.widget<ReorderableListView>(
-          find.byType(ReorderableListView),
-        );
-        // (1, 3) converts to toIndex 2 — a real destination, not the
-        // entry's own index.
-        // ignore: deprecated_member_use
-        list.onReorder!(1, 3);
-        await tester.pumpAndSettle();
+      final list = tester.widget<ReorderableListView>(
+        find.byType(ReorderableListView),
+      );
+      // (1, 3) converts to toIndex 2 — a real destination, not the
+      // entry's own index.
+      // ignore: deprecated_member_use
+      list.onReorder!(1, 3);
+      await tester.pumpAndSettle();
 
-        expect(opened.gateway.entriesMoved, [
-          (uuid: playlistUuid, entryUuid: 'e-2', toIndex: 2),
-        ]);
-      },
-    );
+      expect(opened.gateway.entriesMoved, [
+        (uuid: playlistUuid, entryUuid: 'e-2', toIndex: 2),
+      ]);
+    });
 
     // Dragging a track down puts it where it was dropped — the case
     // Flutter's off-by-one breaks: naively passing `newIndex` through would
@@ -307,11 +296,7 @@ void main() {
         );
         final gateway = FakePlaylistGateway()
           ..reads[playlistUuid] = PlaylistRead.loaded(view: before);
-        final opened = await openDetail(
-          tester,
-          view: before,
-          gateway: gateway,
-        );
+        final opened = await openDetail(tester, view: before, gateway: gateway);
 
         await dragHandle(tester, fromIndex: 0, rows: 3);
 
@@ -336,11 +321,7 @@ void main() {
         );
         final gateway = FakePlaylistGateway()
           ..reads[playlistUuid] = PlaylistRead.loaded(view: before);
-        final opened = await openDetail(
-          tester,
-          view: before,
-          gateway: gateway,
-        );
+        final opened = await openDetail(tester, view: before, gateway: gateway);
 
         await dragHandle(tester, fromIndex: 3, rows: -3);
 
@@ -509,6 +490,65 @@ void main() {
         expect(queue.kind, QueueKind.playlist);
         expect(queue.label, 'Jazz');
         expect(queue.tracks.map((file) => file.uuid), ['f-1', 'f-2']);
+      },
+    );
+
+    testWidgets(
+      'GivenAPlaylist_WhenShuffleIsPressed_ThenItsTracksQueueOutOfOrder',
+      (tester) async {
+        // FR-PL-06: a way of hearing the playlist, not an edit of it. The
+        // stored order is untouched — the entries still render in it, and
+        // the next plain play is in order again.
+        final view = PlaylistView(
+          playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+          entries: [
+            for (final (index, title) in [
+              'So What',
+              'Freddie',
+              'Blue',
+              'Flamenco',
+            ].indexed)
+              entry(
+                uuid: 'e-${index + 1}',
+                position: index,
+                fileUuid: 'f-${index + 1}',
+                title: title,
+              ),
+          ],
+        );
+        final opened = await openDetail(
+          tester,
+          view: view,
+          extraOverrides: [
+            ...playbackOverrides(),
+            // Seeded, so the shuffled order is a fact rather than a coin
+            // toss: this is the permutation `Random(7)` makes of four.
+            shuffleRandomProvider.overrideWithValue(Random(7)),
+          ],
+        );
+
+        await tester.tap(find.byIcon(Icons.shuffle));
+        // Stepped past with bounded pumps, never `pumpAndSettle`: something
+        // is playing now, so UC-21's bars are running and never settle.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        final queue = opened.container
+            .read(audioPlaybackControllerProvider)
+            .queue;
+        expect(queue.kind, QueueKind.playlist);
+        expect(queue.label, 'Jazz');
+        expect(queue.tracks.map((file) => file.uuid), [
+          'f-2',
+          'f-4',
+          'f-3',
+          'f-1',
+        ]);
+        expect(
+          opened.gateway.entriesMoved,
+          isEmpty,
+          reason: 'shuffling plays the playlist, it does not rewrite it',
+        );
       },
     );
 

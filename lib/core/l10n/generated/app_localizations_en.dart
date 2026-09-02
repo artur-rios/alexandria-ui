@@ -1011,6 +1011,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get audioPlay => 'Play';
 
   @override
+  String get audioShuffleAlbum => 'Shuffle album';
+
+  @override
+  String get audioShuffleArtist => 'Shuffle artist';
+
+  @override
+  String get audioShuffleAll => 'Shuffle everything';
+
+  @override
+  String get audioShuffleAllLabel => 'Shuffled library';
+
+  @override
+  String get audioShufflePlaylist => 'Shuffle playlist';
+
+  @override
   String get audioPlayAlbum => 'Play album';
 
   @override

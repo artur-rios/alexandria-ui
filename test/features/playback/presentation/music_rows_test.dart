@@ -1,8 +1,13 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
+import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
 import 'package:alexandria_ui/features/enrichment/domain/track_enrichment.dart';
 import 'package:alexandria_ui/features/playback/domain/music_browse.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
@@ -54,6 +59,10 @@ void main() {
         ),
         if (playlistGateway != null)
           playlistGatewayProvider.overrideWithValue(playlistGateway),
+        // Seeded, so "an order nobody chose" is still an order this test
+        // knows: shuffling is the one behaviour here that would otherwise
+        // have to be asserted as "probably not the original".
+        shuffleRandomProvider.overrideWithValue(Random(7)),
       ],
     );
     addTearDown(container.dispose);
@@ -173,6 +182,260 @@ void main() {
         expect(find.byIcon(Icons.person_outline), findsOneWidget);
         expect(find.byType(Image), findsNothing);
         expect(enrichment.artistImageFetches, isEmpty);
+      },
+    );
+  });
+
+  /// A real PNG, painted here rather than pasted: a sleeve is only a sleeve
+  /// once it decodes, and bytes that do not are the failing case rather than
+  /// the passing one.
+  ///
+  /// Painted once in [setUpAll] rather than inside a case, because painting
+  /// one goes through the engine: `toImage` and `toByteData` complete on real
+  /// asynchrony, and a `testWidgets` body runs on a fake clock that never
+  /// advances far enough to see them — the call simply never returns.
+  late final Uint8List sleeve;
+
+  Future<Uint8List> paintSleeve() async {
+    final recorder = ui.PictureRecorder();
+    Canvas(recorder).drawRect(
+      const Rect.fromLTWH(0, 0, 10, 10),
+      Paint()..color = const Color(0xFF102030),
+    );
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(10, 10);
+    try {
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+
+      return bytes!.buffer.asUint8List();
+    } finally {
+      image.dispose();
+      picture.dispose();
+    }
+  }
+
+  setUpAll(() async => sleeve = await paintSleeve());
+
+  /// Lets the engine finish decoding a sleeve, then paints the result.
+  ///
+  /// Decoding is real asynchrony for the same reason painting one is, so a
+  /// pump alone would only ever see the placeholder — this hands the fake
+  /// clock back to the real one for long enough for the codec to answer.
+  Future<void> settleArtwork(WidgetTester tester) async {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pump();
+  }
+
+  group('an album row wears its sleeve (UC-46)', () {
+    testWidgets(
+      'GivenATrackWithAnEmbeddedPicture_WhenTheAlbumsAreListed_ThenTheRowShowsIt',
+      (tester) async {
+        // The listing drew the same record glyph against every album ever
+        // indexed, which says an album is an album and nothing about which
+        // one. The sleeve is what an owner recognises across a room.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'a1',
+            title: 'One',
+            artist: 'Artist',
+            album: 'Album',
+            track: 1,
+          );
+        gateway.thumbnails['a1'] = FileThumbnailOutcome.read(bytes: sleeve);
+        final container = buildContainer(gateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicGroupList(
+            groups: albumsIn(library.entries),
+            kind: MusicGroupKind.album,
+          ),
+        );
+        await settleArtwork(tester);
+
+        expect(find.byType(RawImage), findsOneWidget);
+        expect(
+          find.byIcon(Icons.album_outlined),
+          findsNothing,
+          reason: 'the sleeve replaces the stand-in rather than joining it',
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenNoEmbeddedPicture_WhenTheAlbumsAreListed_ThenTheRowKeepsTheGlyph',
+      (tester) async {
+        // Most of a real library, and not a failure worth wording: a record
+        // whose files carry no picture reads exactly as it always did.
+        final gateway = FakeCatalogGateway()
+          ..addAudio(
+            uuid: 'a1',
+            title: 'One',
+            artist: 'Artist',
+            album: 'Album',
+            track: 1,
+          );
+        final container = buildContainer(gateway);
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicGroupList(
+            groups: albumsIn(library.entries),
+            kind: MusicGroupKind.album,
+          ),
+        );
+
+        expect(find.byIcon(Icons.album_outlined), findsOneWidget);
+        expect(find.byType(RawImage), findsNothing);
+      },
+    );
+  });
+
+  group('tiles (FR-CT-03)', () {
+    /// Two records by one artist, each of two tracks.
+    FakeCatalogGateway aShelf() => FakeCatalogGateway()
+      ..addAudio(
+        uuid: 'a1',
+        title: 'One',
+        artist: 'Artist',
+        album: 'First',
+        track: 1,
+      )
+      ..addAudio(
+        uuid: 'a2',
+        title: 'Two',
+        artist: 'Artist',
+        album: 'First',
+        track: 2,
+      )
+      ..addAudio(
+        uuid: 'b1',
+        title: 'Three',
+        artist: 'Artist',
+        album: 'Second',
+        track: 1,
+      );
+
+    testWidgets(
+      'GivenTheGridLayout_WhenAlbumsAreShown_ThenEachRecordIsATileNamingIt',
+      (tester) async {
+        final container = buildContainer(aShelf());
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicGroupList(
+            groups: albumsIn(library.entries),
+            kind: MusicGroupKind.album,
+            layout: ViewLayout.grid,
+          ),
+        );
+
+        expect(find.byType(GridView), findsOneWidget);
+        expect(find.byType(ListTile), findsNothing);
+        expect(find.text('First'), findsOneWidget);
+        expect(find.text('Second'), findsOneWidget);
+      },
+    );
+
+    testWidgets('GivenAnAlbumTile_WhenItIsTapped_ThenTheRecordOpens', (
+      tester,
+    ) async {
+      // The same drill-in the row does: choosing tiles changes how the area
+      // looks, never what it does.
+      final container = buildContainer(aShelf());
+      final library = await container.read(musicLibraryProvider.future);
+
+      await pumpRows(
+        tester,
+        container,
+        MusicGroupList(
+          groups: albumsIn(library.entries),
+          kind: MusicGroupKind.album,
+          layout: ViewLayout.grid,
+        ),
+      );
+
+      await tester.tap(find.text('Second'));
+      await tester.pumpAndSettle();
+
+      expect(container.read(musicBrowseControllerProvider).album, 'Second');
+    });
+
+    testWidgets('GivenTheGridLayout_WhenSongsAreShown_ThenEachTrackIsATile', (
+      tester,
+    ) async {
+      final container = buildContainer(aShelf());
+      final library = await container.read(musicLibraryProvider.future);
+
+      await pumpRows(
+        tester,
+        container,
+        MusicTrackList(
+          entries: library.entries,
+          numbered: false,
+          layout: ViewLayout.grid,
+        ),
+      );
+
+      expect(find.byType(GridView), findsOneWidget);
+      expect(find.text('One'), findsOneWidget);
+      expect(find.text('Three'), findsOneWidget);
+    });
+  });
+
+  group('playing in an order nobody chose (FR-PL-06)', () {
+    /// A record of four tracks, in order.
+    FakeCatalogGateway aRecord() {
+      final gateway = FakeCatalogGateway();
+      for (final (index, title) in ['One', 'Two', 'Three', 'Four'].indexed) {
+        gateway.addAudio(
+          uuid: 'a${index + 1}',
+          title: title,
+          artist: 'Artist',
+          album: 'Album',
+          track: index + 1,
+        );
+      }
+
+      return gateway;
+    }
+
+    testWidgets(
+      'GivenAnAlbumRow_WhenItsShuffleIsPressed_ThenTheWholeRecordQueuesOutOfOrder',
+      (tester) async {
+        final container = buildContainer(aRecord());
+        final library = await container.read(musicLibraryProvider.future);
+
+        await pumpRows(
+          tester,
+          container,
+          MusicGroupList(
+            groups: albumsIn(library.entries),
+            kind: MusicGroupKind.album,
+          ),
+        );
+
+        await tester.tap(find.widgetWithIcon(IconButton, Icons.shuffle));
+        await tester.pumpAndSettle();
+
+        final state = container.read(audioPlaybackControllerProvider);
+        expect(state.queue.kind, QueueKind.album);
+        expect(
+          [for (final file in state.queue.tracks) file.uuid],
+          // Seeded, so the order is a fact rather than a coin toss: this is
+          // the permutation `Random(7)` produces, and asserting it is what
+          // makes a queue that quietly stayed in track order fail.
+          ['a2', 'a4', 'a3', 'a1'],
+        );
+        expect(state.current?.uuid, 'a2');
       },
     );
   });

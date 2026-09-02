@@ -11,6 +11,8 @@ library;
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart' as mkv;
@@ -47,6 +49,7 @@ import '../../features/catalog/application/catalog_session_activity.dart';
 import '../../features/catalog/data/core_catalog_gateway.dart';
 import '../../features/catalog/domain/catalog_file.dart';
 import '../../features/catalog/domain/file_type.dart';
+import '../../features/catalog/domain/view_layout.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
 import '../../features/catalog/domain/file_name.dart';
@@ -84,6 +87,8 @@ import '../../features/organization/domain/bookmark_gateway.dart';
 import '../../features/organization/domain/collection.dart';
 import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
+import '../../features/playback/application/album_art_controller.dart';
+import '../../features/playback/application/music_layout_controller.dart';
 import '../../features/playback/application/album_cover_controller.dart';
 import '../../features/playback/application/audio_playback_controller.dart';
 import '../../features/playback/application/audio_playback_session.dart';
@@ -514,6 +519,32 @@ final musicBrowseControllerProvider =
     NotifierProvider<MusicBrowseController, MusicBrowseState>(
       MusicBrowseController.new,
     );
+
+/// How the music area draws its artists and albums (UC-46, FR-CT-03).
+final musicLayoutControllerProvider =
+    NotifierProvider<MusicLayoutController, ViewLayout>(
+      MusicLayoutController.new,
+    );
+
+/// One record's sleeve, keyed by a representative track (UC-46).
+///
+/// Auto-disposed, which a family is not by default: a library of a thousand
+/// records scrolled past would otherwise hold a thousand decoded pictures for
+/// the life of the container.
+final albumArtControllerProvider =
+    AsyncNotifierProvider.family<AlbumArtController, ui.Image?, String>(
+      AlbumArtController.new,
+      isAutoDispose: true,
+    );
+
+/// Where a shuffle gets its randomness (FR-PL-06).
+///
+/// A provider rather than a `Random()` built where it is used, for one
+/// reason: a shuffle nobody can reproduce is a shuffle nobody can test. A
+/// test overrides this with a seeded source and asserts the order, where
+/// otherwise it could only assert that the same tracks came back — which a
+/// shuffle that did nothing at all would also satisfy.
+final shuffleRandomProvider = Provider<Random>((ref) => Random());
 
 /// The persistent audio player (UC-20).
 final audioPlaybackControllerProvider =

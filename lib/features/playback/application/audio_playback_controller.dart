@@ -162,12 +162,57 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   }
 
   /// Plays the album [file] belongs to (main flow steps 1 and 3).
-  Future<void> playAlbum(CatalogFile file) =>
-      _playGrouped(file, _GroupKind.album);
+  ///
+  /// [shuffled] plays the same tracks in an order nobody chose (FR-PL-06):
+  /// the record, out of order, which is the one thing a shuffle is for.
+  Future<void> playAlbum(CatalogFile file, {bool shuffled = false}) =>
+      _playGrouped(file, _GroupKind.album, shuffled: shuffled);
 
   /// Plays everything by [file]'s artist (main flow steps 1 and 3).
-  Future<void> playArtist(CatalogFile file) =>
-      _playGrouped(file, _GroupKind.artist);
+  Future<void> playArtist(CatalogFile file, {bool shuffled = false}) =>
+      _playGrouped(file, _GroupKind.artist, shuffled: shuffled);
+
+  /// Plays the whole audio library in an order nobody chose (FR-PL-06).
+  ///
+  /// [label] is what the bar calls it, passed in for the reason
+  /// [playPlaylist]'s name is: this is application code with no
+  /// `AppLocalizations` to name anything, and a label written here would be
+  /// in one language for every owner.
+  ///
+  /// Every audio file the library holds, not the view the owner is looking
+  /// at: "shuffle everything" said while standing in one artist would
+  /// otherwise mean something different from the same words said in Songs,
+  /// and neither reading is written anywhere an owner could check.
+  Future<void> playEverythingShuffled({required String label}) async {
+    await _stopOtherMedia();
+
+    state = state.copyWith(stage: AudioStage.starting);
+
+    final List<MusicEntry> library;
+    try {
+      library = (await ref.read(musicLibraryProvider.future)).entries;
+    } on Object {
+      // The catalog could not be asked, so there is nothing to shuffle —
+      // reported the same way a group that could not be gathered is.
+      state = const AudioPlaybackState(stage: AudioStage.allFailed);
+      return;
+    }
+
+    if (library.isEmpty) return;
+
+    await _playQueue(
+      PlaybackQueue(
+        tracks: _shuffled([for (final entry in library) entry.file]),
+        // A playlist, because that is what it is: a sequence with a name and
+        // no record of its own, so the player resolves the record from
+        // whichever track is playing rather than pinning the whole shuffle to
+        // whatever came out first.
+        kind: QueueKind.playlist,
+        label: label,
+      ),
+      at: Duration.zero,
+    );
+  }
 
   /// Plays [tracks], in the order given, as the playlist called [name]
   /// (playlists design section 6).
@@ -195,6 +240,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   Future<void> playPlaylist({
     required String name,
     required List<CatalogFile> tracks,
+    bool shuffled = false,
   }) async {
     // Nothing was asked to play, which is not AF-03 — there, tracks were
     // tried and every one failed. Whatever is playing keeps playing, and an
@@ -205,7 +251,11 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     await _stopOtherMedia();
 
     await _playQueue(
-      PlaybackQueue(tracks: tracks, kind: QueueKind.playlist, label: name),
+      PlaybackQueue(
+        tracks: shuffled ? _shuffled(tracks) : tracks,
+        kind: QueueKind.playlist,
+        label: name,
+      ),
       at: Duration.zero,
     );
   }
@@ -315,7 +365,11 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   /// arm here would be dead code that reads as if single-track playback
   /// waited on the whole library too. Narrowing the parameter's type rules
   /// that reading out at the call site instead of a runtime check.
-  Future<void> _playGrouped(CatalogFile file, _GroupKind kind) async {
+  Future<void> _playGrouped(
+    CatalogFile file,
+    _GroupKind kind, {
+    bool shuffled = false,
+  }) async {
     await _stopOtherMedia();
 
     state = state.copyWith(stage: AudioStage.starting);
@@ -350,10 +404,11 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
       orElse: () => MusicEntry(file: file, metadata: const MusicMetadata()),
     );
 
-    final tracks = switch (kind) {
+    final gathered = switch (kind) {
       _GroupKind.album => albumOf(entry, library),
       _GroupKind.artist => artistOf(entry, library),
     };
+    final tracks = shuffled ? _shuffled(gathered) : gathered;
 
     // Never the file name (FR-CT-13): an absent tag is carried as `null`
     // rather than defaulting to `file.name` here, because this is
@@ -370,9 +425,13 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
     // Starting where the owner started, not at the top: they picked this
     // track, and an album started from track seven begins at seven.
-    final startIndex = tracks.indexWhere(
-      (candidate) => candidate.uuid == file.uuid,
-    );
+    //
+    // Except when shuffled, which begins at the top of the order the shuffle
+    // made: starting a shuffle at the track the owner happened to right-click
+    // would make the first track the one predictable thing about it.
+    final startIndex = shuffled
+        ? 0
+        : tracks.indexWhere((candidate) => candidate.uuid == file.uuid);
 
     await _playQueue(
       PlaybackQueue(
@@ -389,6 +448,19 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
       at: Duration.zero,
     );
   }
+
+  /// The same tracks in an order nobody chose (FR-PL-06).
+  ///
+  /// A copy, never the list it was given: the caller's list is the library's
+  /// own order (or a playlist's curated one), and shuffling it in place would
+  /// reorder what every other reader of it sees.
+  ///
+  /// The source of randomness comes from a provider so a test can pin it. A
+  /// shuffle nobody can reproduce is a shuffle nobody can test: with a seeded
+  /// source, "these are the same tracks in a different order" is an assertion
+  /// rather than a hope.
+  List<CatalogFile> _shuffled(List<CatalogFile> tracks) =>
+      [...tracks]..shuffle(ref.read(shuffleRandomProvider));
 
   /// Stops any other medium (main flow step 2, FR-PL-08).
   Future<void> _stopOtherMedia() async {

@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../catalog/domain/view_layout.dart';
 import '../../shell/presentation/async_state_view.dart';
+import '../application/music_layout_controller.dart';
 import '../application/music_browse_controller.dart';
 import '../application/music_library_controller.dart';
 import '../domain/music_browse.dart';
@@ -29,11 +33,18 @@ class MusicLibraryView extends ConsumerWidget {
     // read behind `musicLibraryProvider`.
     final asyncLibrary = ref.watch(musicLibraryProvider);
     final browse = ref.watch(musicBrowseControllerProvider);
+    final layout = ref.watch(musicLayoutControllerProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _ViewSwitcher(selected: browse.view),
+        Row(
+          children: [
+            Expanded(child: _ViewSwitcher(selected: browse.view)),
+            const _ShuffleEverythingButton(),
+            _LayoutSwitcher(selected: layout),
+          ],
+        ),
         const SizedBox(height: AppSpacing.sm),
         _Breadcrumb(state: browse),
         Expanded(
@@ -43,7 +54,7 @@ class MusicLibraryView extends ConsumerWidget {
             isEmpty: (loaded) => loaded.entries.isEmpty,
             emptyBuilder: (context) => const _Empty(),
             builder: (context, loaded) =>
-                _List(state: browse, library: loaded.entries),
+                _List(state: browse, library: loaded.entries, layout: layout),
           ),
         ),
       ],
@@ -53,33 +64,114 @@ class MusicLibraryView extends ConsumerWidget {
 
 /// Which list the area is showing, given where the owner has drilled to.
 class _List extends ConsumerWidget {
-  const _List({required this.state, required this.library});
+  const _List({
+    required this.state,
+    required this.library,
+    required this.layout,
+  });
 
   final MusicBrowseState state;
   final List<MusicEntry> library;
+
+  /// Rows or tiles, the same choice wherever the owner has drilled to: a
+  /// layout that changed under them as they went into a record would be a
+  /// setting they had to re-make at every level.
+  final ViewLayout layout;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => switch (state) {
     MusicBrowseState(inAlbum: true) => MusicTrackList(
       entries: tracksOfAlbum(state.album, state.artist, library),
       numbered: true,
+      layout: layout,
     ),
     MusicBrowseState(view: MusicView.artists, inArtist: true) => MusicGroupList(
       groups: albumsOfArtist(state.artist, library),
       kind: MusicGroupKind.album,
+      layout: layout,
     ),
     MusicBrowseState(view: MusicView.artists) => MusicGroupList(
       groups: artistsIn(library),
       kind: MusicGroupKind.artist,
+      layout: layout,
     ),
     MusicBrowseState(view: MusicView.albums) => MusicGroupList(
       groups: albumsIn(library),
       kind: MusicGroupKind.album,
+      layout: layout,
     ),
     MusicBrowseState(view: MusicView.songs) => MusicTrackList(
       entries: songsIn(library),
       numbered: false,
+      layout: layout,
     ),
+  };
+}
+
+/// Rows or tiles, remembered (FR-CT-03, FR-CT-04).
+class _LayoutSwitcher extends ConsumerWidget {
+  const _LayoutSwitcher({required this.selected});
+
+  final ViewLayout selected;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
+    return SegmentedButton<ViewLayout>(
+      segments: [
+        for (final layout in MusicLayoutController.offered)
+          ButtonSegment(
+            value: layout,
+            icon: Icon(layout.icon),
+            tooltip: layout.label(l10n),
+          ),
+      ],
+      selected: {selected},
+      showSelectedIcon: false,
+      onSelectionChanged: (chosen) => unawaited(
+        ref.read(musicLayoutControllerProvider.notifier).choose(chosen.single),
+      ),
+    );
+  }
+}
+
+/// Plays the whole audio library in an order nobody chose (FR-PL-06).
+///
+/// Beside the views rather than inside one of them: an owner who wants
+/// something to play is not browsing, and making them first pick a record to
+/// shuffle would be asking them the question they opened this to avoid.
+class _ShuffleEverythingButton extends ConsumerWidget {
+  const _ShuffleEverythingButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
+    return IconButton(
+      tooltip: l10n.audioShuffleAll,
+      icon: const Icon(Icons.shuffle),
+      onPressed: () => unawaited(
+        ref
+            .read(audioPlaybackControllerProvider.notifier)
+            .playEverythingShuffled(label: l10n.audioShuffleAllLabel),
+      ),
+    );
+  }
+}
+
+/// How each layout presents itself in the switcher.
+extension _ViewLayoutPresentation on ViewLayout {
+  IconData get icon => switch (this) {
+    ViewLayout.list => Icons.view_list_outlined,
+    ViewLayout.detailedList => Icons.view_agenda_outlined,
+    ViewLayout.grid => Icons.grid_view_outlined,
+  };
+
+  String label(AppLocalizations l10n) => switch (this) {
+    ViewLayout.list => l10n.layoutList,
+    ViewLayout.detailedList => l10n.layoutDetailedList,
+    ViewLayout.grid => l10n.layoutGrid,
   };
 }
 

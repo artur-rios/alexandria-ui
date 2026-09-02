@@ -1012,6 +1012,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String get audioPlay => 'Reproduzir';
 
   @override
+  String get audioShuffleAlbum => 'Embaralhar álbum';
+
+  @override
+  String get audioShuffleArtist => 'Embaralhar artista';
+
+  @override
+  String get audioShuffleAll => 'Embaralhar tudo';
+
+  @override
+  String get audioShuffleAllLabel => 'Biblioteca embaralhada';
+
+  @override
+  String get audioShufflePlaylist => 'Embaralhar playlist';
+
+  @override
   String get audioPlayAlbum => 'Reproduzir álbum';
 
   @override

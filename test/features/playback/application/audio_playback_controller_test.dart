@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
@@ -27,10 +29,14 @@ void main() {
   ProviderContainer buildContainer(
     FakeCatalogGateway gateway, {
     FakePlaybackSourceGateway? source,
+    Random? shuffle,
   }) {
     final container = ProviderContainer(
       retry: (_, _) => null,
       overrides: [
+        // Seeded where a test asks, so "an order nobody chose" is still an
+        // order the test knows.
+        if (shuffle != null) shuffleRandomProvider.overrideWithValue(shuffle),
         catalogGatewayProvider.overrideWithValue(gateway),
         audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
         playbackSourceGatewayProvider.overrideWithValue(
@@ -152,7 +158,10 @@ void main() {
 
       await audio.playPlaylist(
         name: 'Road Trip',
-        tracks: [aFile(uuid: 'pl-a'), aFile(uuid: 'pl-b')],
+        tracks: [
+          aFile(uuid: 'pl-a'),
+          aFile(uuid: 'pl-b'),
+        ],
       );
 
       final state = container.read(audioPlaybackControllerProvider);
@@ -163,24 +172,24 @@ void main() {
     },
   );
 
-  test(
-    'GivenAPlaylist_WhenItIsPlayed_ThenItNamesNoRecordOfItsOwn',
-    () async {
-      // Design section 6: the queue carries the playlist's name for the bar
-      // to show, but no year — the medium and the record identity are the
-      // current track's to answer, never the playlist's (see `recordOf`).
-      final container = buildContainer(FakeCatalogGateway());
+  test('GivenAPlaylist_WhenItIsPlayed_ThenItNamesNoRecordOfItsOwn', () async {
+    // Design section 6: the queue carries the playlist's name for the bar
+    // to show, but no year — the medium and the record identity are the
+    // current track's to answer, never the playlist's (see `recordOf`).
+    final container = buildContainer(FakeCatalogGateway());
 
-      await container
-          .read(audioPlaybackControllerProvider.notifier)
-          .playPlaylist(name: 'Road Trip', tracks: [aFile(uuid: 'pl-a')]);
+    await container
+        .read(audioPlaybackControllerProvider.notifier)
+        .playPlaylist(
+          name: 'Road Trip',
+          tracks: [aFile(uuid: 'pl-a')],
+        );
 
-      final queue = container.read(audioPlaybackControllerProvider).queue;
-      expect(queue.namesOwnRecord, isFalse);
-      expect(queue.label, 'Road Trip');
-      expect(queue.year, isNull);
-    },
-  );
+    final queue = container.read(audioPlaybackControllerProvider).queue;
+    expect(queue.namesOwnRecord, isFalse);
+    expect(queue.label, 'Road Trip');
+    expect(queue.year, isNull);
+  });
 
   test(
     'GivenAMissingTrack_WhenAPlaylistIsPlayed_ThenItIsSteppedOverAndTheNextPlays',
@@ -198,7 +207,10 @@ void main() {
           .read(audioPlaybackControllerProvider.notifier)
           .playPlaylist(
             name: 'Road Trip',
-            tracks: [aFile(uuid: 'gone'), aFile(uuid: 'here')],
+            tracks: [
+              aFile(uuid: 'gone'),
+              aFile(uuid: 'here'),
+            ],
           );
 
       final state = container.read(audioPlaybackControllerProvider);
@@ -226,7 +238,10 @@ void main() {
           .read(audioPlaybackControllerProvider.notifier)
           .playPlaylist(
             name: 'Road Trip',
-            tracks: [aFile(uuid: 'gone-1'), aFile(uuid: 'gone-2')],
+            tracks: [
+              aFile(uuid: 'gone-1'),
+              aFile(uuid: 'gone-2'),
+            ],
           );
 
       final state = container.read(audioPlaybackControllerProvider);
@@ -255,4 +270,129 @@ void main() {
       expect(source.resolved, ['other-1']);
     },
   );
+
+  group('playing in an order nobody chose (FR-PL-06)', () {
+    /// One record of four tracks, tagged in order.
+    FakeCatalogGateway aRecord() {
+      final gateway = FakeCatalogGateway();
+      for (final (index, title) in ['One', 'Two', 'Three', 'Four'].indexed) {
+        gateway.addAudio(
+          uuid: 'a${index + 1}',
+          title: title,
+          artist: 'Artist',
+          album: 'Album',
+          track: index + 1,
+        );
+      }
+
+      return gateway;
+    }
+
+    test(
+      'GivenAnAlbum_WhenItIsShuffled_ThenTheWholeRecordQueuesOutOfOrder',
+      () async {
+        // The record, all of it, in a different order — not a subset, and
+        // not the one track the owner's click happened to land on.
+        final container = buildContainer(aRecord(), shuffle: Random(7));
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'a1'), shuffled: true);
+
+        final state = container.read(audioPlaybackControllerProvider);
+        expect(state.queue.kind, QueueKind.album);
+        expect(
+          [for (final file in state.queue.tracks) file.uuid],
+          ['a2', 'a4', 'a3', 'a1'],
+        );
+      },
+    );
+
+    test('GivenAShuffledAlbum_WhenItStarts_ThenItStartsAtTheTop', () async {
+      // Starting at the track that was clicked would make the first track
+      // the one predictable thing about a shuffle.
+      final container = buildContainer(aRecord(), shuffle: Random(7));
+
+      await container
+          .read(audioPlaybackControllerProvider.notifier)
+          .playAlbum(aFile(uuid: 'a1'), shuffled: true);
+
+      final state = container.read(audioPlaybackControllerProvider);
+      expect(state.current?.uuid, 'a2');
+    });
+
+    test(
+      'GivenAnAlbum_WhenItIsPlayedPlainly_ThenTheOrderIsTheRecords',
+      () async {
+        // The default is untouched: shuffling is something asked for, never
+        // something that happens.
+        final container = buildContainer(aRecord(), shuffle: Random(7));
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playAlbum(aFile(uuid: 'a1'));
+
+        final state = container.read(audioPlaybackControllerProvider);
+        expect(
+          [for (final file in state.queue.tracks) file.uuid],
+          ['a1', 'a2', 'a3', 'a4'],
+        );
+      },
+    );
+
+    test(
+      'GivenTheWholeLibrary_WhenEverythingIsShuffled_ThenItAllQueuesUnderTheGivenName',
+      () async {
+        // Every audio file in the catalog, as a named sequence with no record
+        // of its own — which is what a playlist queue is.
+        final container = buildContainer(aRecord(), shuffle: Random(7));
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playEverythingShuffled(label: 'Shuffled library');
+
+        final state = container.read(audioPlaybackControllerProvider);
+        expect(state.queue.kind, QueueKind.playlist);
+        expect(state.queue.label, 'Shuffled library');
+        expect(
+          [for (final file in state.queue.tracks) file.uuid],
+          ['a2', 'a4', 'a3', 'a1'],
+        );
+      },
+    );
+
+    test(
+      'GivenAnEmptyLibrary_WhenEverythingIsShuffled_ThenNothingIsQueued',
+      () async {
+        // Nothing to play is not a failure to report; it is a library with
+        // no audio in it.
+        final container = buildContainer(FakeCatalogGateway());
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playEverythingShuffled(label: 'Shuffled library');
+
+        final state = container.read(audioPlaybackControllerProvider);
+        expect(state.queue.tracks, isEmpty);
+        expect(state.stage, isNot(AudioStage.allFailed));
+      },
+    );
+
+    test(
+      'GivenTheListingFails_WhenEverythingIsShuffled_ThenNothingIsPlayable',
+      () async {
+        // The same answer "play album" gives when the catalog cannot be
+        // asked: said out loud rather than left parked in `starting`.
+        final container = buildContainer(FakeCatalogGateway()..failListing());
+
+        await container
+            .read(audioPlaybackControllerProvider.notifier)
+            .playEverythingShuffled(label: 'Shuffled library');
+
+        final state = container.read(audioPlaybackControllerProvider);
+        expect(state.stage, AudioStage.allFailed);
+        expect(state.queue.tracks, isEmpty);
+      },
+    );
+  });
 }
