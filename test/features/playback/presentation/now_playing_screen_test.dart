@@ -4,6 +4,7 @@ import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/enrichment/presentation/lyrics_button.dart';
 import 'package:alexandria_ui/features/playback/presentation/sound_bars.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
+import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/presentation/now_playing_screen.dart';
 import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
@@ -288,38 +289,36 @@ void main() {
       );
     });
 
-    testWidgets('GivenTwoTracks_WhenTheyPlay_ThenTheBarsMoveDifferently', (
-      tester,
-    ) async {
-      // Each track its own movement: the seed is the file, so two songs do
-      // not swell in step and the same song looks the same way twice.
-      final played = await play(tester);
-      final first = tester
-          .widget<SoundBars>(
-            find.descendant(
-              of: find.byType(NowPlayingScreen),
-              matching: find.byType(SoundBars),
-            ),
-          )
-          .seed;
+    testWidgets(
+      'GivenATrackPlaying_WhenTheBarsAreDrawn_ThenTheyFollowTheEngine',
+      (tester) async {
+        // The bars are drawn from the track's own sound at the position
+        // playing (FR-MP-07), so the position the engine reports has to
+        // reach them: without it they would draw the same moment of the
+        // music for the whole track.
+        final played = await play(tester);
+        played.player.report(
+          const PlaybackStatus(
+            isPlaying: true,
+            position: Duration(seconds: 12),
+            duration: Duration(minutes: 4),
+          ),
+        );
+        await settle(tester);
 
-      await played.container
-          .read(audioPlaybackControllerProvider.notifier)
-          .next();
-      await settle(tester);
-
-      expect(
-        tester
-            .widget<SoundBars>(
-              find.descendant(
-                of: find.byType(NowPlayingScreen),
-                matching: find.byType(SoundBars),
-              ),
-            )
-            .seed,
-        isNot(first),
-      );
-    });
+        expect(
+          tester
+              .widget<SoundBars>(
+                find.descendant(
+                  of: find.byType(NowPlayingScreen),
+                  matching: find.byType(SoundBars),
+                ),
+              )
+              .position,
+          const Duration(seconds: 12),
+        );
+      },
+    );
 
     testWidgets('GivenNoCoverYet_WhenThePlayerOpens_ThenAPlaceholderStandsIn', (
       tester,
@@ -423,6 +422,68 @@ void main() {
         );
       },
     );
+  });
+
+  group('moving through the track (FR-PL-12)', () {
+    testWidgets('GivenATrackPlaying_WhenTheSliderIsDragged_ThenItSeeks', (
+      tester,
+    ) async {
+      // The line under the player is the thing an owner drags, and the engine
+      // has offered `seek` all along — it was the queue's controller that had
+      // no way to ask for it.
+      final played = await play(tester);
+      // A duration the engine has reported: nothing can be a fraction of a
+      // length nobody knows yet, and the slider is refused until it is.
+      played.player.report(
+        const PlaybackStatus(
+          isPlaying: true,
+          position: Duration(seconds: 5),
+          duration: Duration(minutes: 4),
+        ),
+      );
+      await settle(tester);
+
+      final slider = find.descendant(
+        of: find.byType(NowPlayingScreen),
+        matching: find.byType(Slider),
+      );
+      expect(slider, findsOneWidget);
+
+      // Dragged to a little past halfway, which is a seek to a little past
+      // two minutes of a four-minute track.
+      final box = tester.getRect(slider);
+      await tester.dragFrom(
+        box.centerLeft + const Offset(8, 0),
+        Offset(box.width * 0.5, 0),
+      );
+      await settle(tester);
+
+      expect(played.player.seeks, isNotEmpty);
+      expect(played.player.seeks.last, greaterThan(const Duration(minutes: 1)));
+      expect(
+        played.player.seeks.last,
+        lessThanOrEqualTo(const Duration(minutes: 4)),
+      );
+    });
+
+    testWidgets('GivenNoDurationYet_WhenTheSliderIsRead_ThenItRefusesToMove', (
+      tester,
+    ) async {
+      // A track whose length the engine has not worked out cannot be
+      // seeked into: a slider that moved anyway would be a control that
+      // does nothing, which is what the plain bar before it at least never
+      // pretended to be.
+      await play(tester);
+
+      final slider = tester.widget<Slider>(
+        find.descendant(
+          of: find.byType(NowPlayingScreen),
+          matching: find.byType(Slider),
+        ),
+      );
+
+      expect(slider.onChanged, isNull);
+    });
   });
 
   group('opening itself when a track starts (main flow step 2)', () {

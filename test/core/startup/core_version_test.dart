@@ -8,7 +8,7 @@ void main() {
   });
 
   test('GivenAPatchAboveTheMinimum_WhenItIsChecked_ThenItIsSupported', () {
-    expect(CoreVersionRange.supports('0.2.7'), isTrue);
+    expect(CoreVersionRange.supports('0.3.7'), isTrue);
   });
 
   test('GivenTheExclusiveMaximum_WhenItIsChecked_ThenItIsNotSupported', () {
@@ -30,9 +30,11 @@ void main() {
     // The case this check earned its keep on: an owner who rebuilt one
     // repository and not the other ran a core whose metadata stamp and
     // lyrics fallback did not exist, and saw two features quietly do
-    // nothing. Refused at startup, by name and version, it is a sentence
+    // nothing. The same would now be true of a core with no way to measure
+    // a track's sound: the bars would rest for every song and nothing would
+    // say why. Refused at startup, by name and version, it is a sentence
     // instead of a mystery.
-    expect(CoreVersionRange.supports('0.1.0'), isFalse);
+    expect(CoreVersionRange.supports('0.2.0'), isFalse);
   });
 
   test('GivenAMuchLaterVersion_WhenItIsChecked_ThenItIsNotSupported', () {
@@ -40,14 +42,14 @@ void main() {
   });
 
   test('GivenAPreReleaseSuffix_WhenItIsChecked_ThenTheSuffixIsIgnored', () {
-    expect(CoreVersionRange.supports('0.2.0-rc.1'), isTrue);
-    expect(CoreVersionRange.supports('0.2.0+build.5'), isTrue);
+    expect(CoreVersionRange.supports('0.3.0-rc.1'), isTrue);
+    expect(CoreVersionRange.supports('0.3.0+build.5'), isTrue);
   });
 
   group('a core that will not say what it is', () {
     // Not supported, deliberately. Treating an unreadable version as acceptable
     // would let through exactly the case this check exists to catch.
-    for (final version in [null, '', 'unknown', '0.2', '0.2.x', '-1.0.0']) {
+    for (final version in [null, '', 'unknown', '0.3', '0.3.x', '-1.0.0']) {
       test(
         'Given${version == null ? 'NoVersion' : 'TheVersion"$version"'}_WhenItIsChecked_ThenItIsNotSupported',
         () => expect(CoreVersionRange.supports(version), isFalse),

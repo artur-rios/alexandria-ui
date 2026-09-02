@@ -239,6 +239,30 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     }
   }
 
+  /// Moves playback to [position] within the track playing (FR-PL-12).
+  ///
+  /// Bounded here rather than trusted from the caller: the slider on the
+  /// player hands over a fraction of a duration the engine reported, and a
+  /// duration that has since changed — a track that ended, a queue that moved
+  /// on — would otherwise be a seek past the end of whatever is playing now.
+  ///
+  /// The resume position is written straight away. A seek is the owner saying
+  /// where they are in the track, and a session that ended before the next
+  /// periodic write would otherwise come back to where they were before it.
+  Future<void> seekTo(Duration position) async {
+    if (state.stage != AudioStage.playing) return;
+
+    final duration = state.status.duration;
+    final bounded = switch (position) {
+      final at when at < Duration.zero => Duration.zero,
+      final at when duration != null && at > duration => duration,
+      final at => at,
+    };
+
+    await _player.seek(bounded);
+    await _recordPosition(force: true);
+  }
+
   /// Moves to the next track in the queue (main flow step 6, FR-PL-06).
   Future<void> next() async {
     if (!state.queue.hasNext) return;

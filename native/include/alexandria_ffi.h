@@ -641,6 +641,22 @@ struct PlaybackJsonResult alexandria_comic_page(const char *uuid, uint32_t page,
 struct PlaybackJsonResult alexandria_file_thumbnail(const char *uuid, const char *token);
 
 /**
+ * UC-21 — the sound of a track, as levels a visualiser can draw.
+ *
+ * `uuid` is the file's public UUID (NUL-terminated string), `token` the
+ * bearer auth token. On success the JSON carries the shape of the envelope
+ * and the levels themselves, base64 encoded: `{"uuid":…,"bands":16,
+ * "frameMs":100,"levelsBase64":"…"}` — row-major, `bands` levels per frame,
+ * each 0 (silence) to 255 (the loudest moment of this track).
+ *
+ * **The first call for a track decodes it**, which is a second or two of CPU
+ * on the blocking pool; every call after it reads what was stored. A caller
+ * on a frame deadline should treat the first call as slow and draw nothing
+ * until it answers, which is exactly what the player does.
+ */
+struct PlaybackJsonResult alexandria_track_energy(const char *uuid, const char *token);
+
+/**
  * Write edited content back to a TextFile on disk (UC-33 / FR-TX-02,
  * FR-TX-03).
  *

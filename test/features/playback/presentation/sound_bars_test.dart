@@ -1,117 +1,95 @@
+import 'dart:typed_data';
+
+import 'package:alexandria_ui/features/playback/domain/track_energy.dart';
 import 'package:alexandria_ui/features/playback/presentation/sound_bars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// The bars that move with the music (UC-21, FR-PL-07).
+/// The bars that move with the music (UC-21, FR-PL-07, FR-MP-07).
 ///
-/// They are not a spectrum of the audio and the widget's own documentation
-/// says so: nothing in this application can see the sound. What the cases
-/// below hold is what the bars actually promise — that they run while the
-/// music runs, that they settle rather than freeze when it stops, that a
-/// track moves the same way every time it plays and two tracks do not move
-/// the same way, and that a request for less motion is honoured to the letter
-/// rather than by slowing anything down.
+/// They move with it literally now: the core measures the file and this reads
+/// the levels back at the position playing. The cases below are about that
+/// reading — a bar between two measured bands, an instrument with nothing to
+/// show yet, and the two states nothing may tick in.
 void main() {
+  /// Four bands: silent, quiet, loud, silent — for one frame.
+  TrackEnergy oneFrame() => TrackEnergy(
+    bands: 4,
+    frameMs: 100,
+    levels: Uint8List.fromList([0, 128, 255, 0]),
+  );
+
   Widget bars({
     required bool isPlaying,
-    int seed = 7,
+    TrackEnergy? energy,
+    Duration position = Duration.zero,
     bool reduceMotion = false,
   }) => MediaQuery(
     data: MediaQueryData(disableAnimations: reduceMotion),
     child: MaterialApp(
       home: Scaffold(
         body: Center(
-          child: SoundBars(isPlaying: isPlaying, seed: seed),
+          child: SoundBars(
+            isPlaying: isPlaying,
+            position: position,
+            energy: energy,
+          ),
         ),
       ),
     ),
   );
 
-  group('the shape of it', () {
-    test('GivenTheSameTrackAndMoment_WhenReadTwice_ThenItIsTheSame', () {
-      // The seed is the whole reason this is a function and not a random
-      // source: a visualiser that reshuffled on every rebuild would flicker
-      // whenever anything else on the screen changed.
-      double level() => SoundBarsPainter.levelFor(
-        index: 5,
-        bars: 40,
-        seconds: 12.5,
-        seed: 99,
-        energy: 1,
-      );
+  SoundBarsPainter painter({
+    TrackEnergy? energy,
+    double energyIn = 1,
+    int bars = 8,
+  }) => SoundBarsPainter(
+    energy: energy,
+    position: Duration.zero,
+    energyIn: energyIn,
+    bars: bars,
+    hot: const Color(0xFF112233),
+    cool: const Color(0xFF445566),
+  );
 
-      expect(level(), level());
+  group('reading the sound', () {
+    test('GivenNoEnvelope_WhenABarIsRead_ThenItRests', () {
+      // The first play of a track waits a second or two while the core
+      // measures it, and a file it cannot decode never gets one: in both
+      // cases the instrument sits still rather than inventing something.
+      final resting = painter().levelFor(3);
+
+      expect(resting, greaterThan(0));
+      expect(resting, lessThan(0.2));
     });
 
-    test('GivenTwoTracks_WhenReadAtTheSameMoment_ThenTheyDiffer', () {
-      double level(int seed) => SoundBarsPainter.levelFor(
-        index: 5,
-        bars: 40,
-        seconds: 12.5,
-        seed: seed,
-        energy: 1,
-      );
+    test('GivenAnEnvelope_WhenTheBandsAreRead_ThenTheLoudOneStandsTallest', () {
+      // The whole point: what is loud in the recording is tall on the
+      // screen, at the moment it is loud.
+      final drawn = painter(energy: oneFrame(), bars: 4);
 
-      expect(level(1), isNot(level(2)));
+      expect(drawn.levelFor(2), greaterThan(drawn.levelFor(1)));
+      expect(drawn.levelFor(1), greaterThan(drawn.levelFor(3)));
     });
 
-    test('GivenAnyMoment_WhenEveryBarIsRead_ThenNoneLeavesTheFrame', () {
-      // A level outside 0..1 is a bar drawn past the top of the widget, or
-      // one drawn upside down.
-      for (var index = 0; index < 56; index++) {
-        for (final seconds in [0.0, 0.37, 4.2, 61.9]) {
-          final level = SoundBarsPainter.levelFor(
-            index: index,
-            bars: 56,
-            seconds: seconds,
-            seed: 3,
-            energy: 1,
-          );
+    test('GivenMoreBarsThanBands_WhenReadBetweenTwo_ThenItIsBlended', () {
+      // Sixteen bands drawn as fifty-six bars: a bar between two bands is a
+      // blend of them, because what the eye reads as a spectrum is a curve
+      // and sixteen wide blocks is not one.
+      final drawn = painter(energy: oneFrame(), bars: 7);
+      // Bar 3 of 7 sits between band 1 (128) and band 2 (255).
+      final between = drawn.levelFor(3);
 
-          expect(level, inInclusiveRange(0, 1), reason: '$index at $seconds');
-        }
-      }
+      expect(between, greaterThan(drawn.levelFor(2)));
+      expect(between, lessThan(drawn.levelFor(4)));
     });
 
-    test('GivenNothingPlaying_WhenTheBarsAreRead_ThenTheyAllRest', () {
-      // Not zero: a row of bars flat against the floor reads as a broken
-      // widget rather than as silence.
-      final levels = [
-        for (var index = 0; index < 20; index++)
-          SoundBarsPainter.levelFor(
-            index: index,
-            bars: 20,
-            seconds: 3,
-            seed: 5,
-            energy: 0,
-          ),
-      ];
+    test('GivenTheBarsHaveNotRisen_WhenTheyAreRead_ThenTheyRest', () {
+      // `energyIn` is the settle: a pause takes the bars down to rest rather
+      // than freezing them at whatever the last frame held.
+      final settled = painter(energy: oneFrame(), energyIn: 0, bars: 4);
 
-      expect(levels.toSet(), hasLength(1));
-      expect(levels.first, greaterThan(0));
-      expect(levels.first, lessThan(0.2));
-    });
-
-    test('GivenABandOfEach_WhenAveraged_ThenTheLowOnesStandTaller', () {
-      // The tilt of a spectrum analyser at rest — bass loud on the left,
-      // treble quiet on the right. Without it a row of equal bars reads as a
-      // decoration rather than as an instrument.
-      double average(int index) {
-        var total = 0.0;
-        for (var step = 0; step < 200; step++) {
-          total += SoundBarsPainter.levelFor(
-            index: index,
-            bars: 40,
-            seconds: step * 0.05,
-            seed: 11,
-            energy: 1,
-          );
-        }
-
-        return total / 200;
-      }
-
-      expect(average(2), greaterThan(average(37)));
+      expect(settled.levelFor(2), lessThan(0.2));
     });
   });
 
@@ -119,7 +97,7 @@ void main() {
     testWidgets('GivenSomethingPlaying_WhenItIsShown_ThenItKeepsMoving', (
       tester,
     ) async {
-      await tester.pumpWidget(bars(isPlaying: true));
+      await tester.pumpWidget(bars(isPlaying: true, energy: oneFrame()));
       await tester.pump(const Duration(milliseconds: 16));
 
       expect(tester.binding.hasScheduledFrame, isTrue);
@@ -128,18 +106,16 @@ void main() {
     testWidgets('GivenPlaybackStops_WhenTheBarsSettle_ThenNothingTicksOn', (
       tester,
     ) async {
-      // A stopped clock is a frame never scheduled, which is the whole
-      // reason to stop it: the screen stays open while the owner reads the
-      // lyrics beside it, and a widget that kept painting a still picture
-      // would burn a frame's work sixty times a second for nothing.
-      await tester.pumpWidget(bars(isPlaying: true));
+      // A stopped ticker is a frame never scheduled, which is the whole
+      // reason to stop it: the player stays open while the owner reads the
+      // lyrics beside it.
+      await tester.pumpWidget(bars(isPlaying: true, energy: oneFrame()));
       await tester.pump(const Duration(milliseconds: 200));
 
-      await tester.pumpWidget(bars(isPlaying: false));
-      // Past the settle, which is deliberately longer than the swell: the
-      // sound falls away rather than being cut.
-      await tester.pump(const Duration(milliseconds: 700));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpWidget(bars(isPlaying: false, energy: oneFrame()));
+      for (var frame = 0; frame < 40; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
 
       expect(tester.binding.hasScheduledFrame, isFalse);
     });
@@ -147,30 +123,25 @@ void main() {
     testWidgets('GivenReducedMotion_WhenItIsShown_ThenNothingMovesAtAll', (
       tester,
     ) async {
-      // AF-03, honoured to the letter: not the same thing slower, but the
-      // picture the instrument makes with no motion in it.
-      await tester.pumpWidget(bars(isPlaying: true, reduceMotion: true));
+      // AF-03, honoured to the letter: the levels of the moment playback is
+      // at, and none of the motion somebody asked the system not to show.
+      await tester.pumpWidget(
+        bars(isPlaying: true, energy: oneFrame(), reduceMotion: true),
+      );
       await tester.pump(const Duration(milliseconds: 16));
 
       expect(tester.binding.hasScheduledFrame, isFalse);
     });
 
-    test('GivenAPainter_WhenOnlyTheClockMoves_ThenItRepaints', () {
-      const first = SoundBarsPainter(
-        seconds: 1,
-        energy: 1,
-        seed: 4,
-        bars: 40,
-        hot: Color(0xFF112233),
-        cool: Color(0xFF445566),
-      );
-      const second = SoundBarsPainter(
-        seconds: 1.016,
-        energy: 1,
-        seed: 4,
-        bars: 40,
-        hot: Color(0xFF112233),
-        cool: Color(0xFF445566),
+    test('GivenAPainter_WhenThePositionMoves_ThenItRepaints', () {
+      final first = painter(energy: oneFrame());
+      final second = SoundBarsPainter(
+        energy: first.energy,
+        position: const Duration(milliseconds: 16),
+        energyIn: 1,
+        bars: 8,
+        hot: const Color(0xFF112233),
+        cool: const Color(0xFF445566),
       );
 
       expect(second.shouldRepaint(first), isTrue);

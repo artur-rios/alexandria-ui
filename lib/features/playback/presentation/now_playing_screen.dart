@@ -266,9 +266,16 @@ class _Player extends ConsumerWidget {
                 label: l10n.audioSoundBarsLabel,
                 child: SoundBars(
                   isPlaying: state.isPlaying,
-                  // Each track its own movement, the same way every time it
-                  // plays.
-                  seed: current?.uuid.hashCode ?? 0,
+                  position: state.status.position,
+                  // The track's own sound, measured by the core and read
+                  // back at the position playing (FR-MP-07). `null` until it
+                  // answers, which is a second or two the first time a track
+                  // is played and a read every time after.
+                  energy: current == null
+                      ? null
+                      : ref
+                            .watch(trackEnergyControllerProvider(current.uuid))
+                            .value,
                 ),
               ),
             ),
@@ -381,22 +388,40 @@ class _Sleeve extends StatelessWidget {
   }
 }
 
-/// Where the track has got to (FR-PL-09).
-class _Progress extends StatelessWidget {
+/// Where the track has got to, and how to move it (FR-PL-09, FR-PL-12).
+///
+/// A slider rather than the plain bar this was: an owner watching a player
+/// expects the line under it to be the thing they drag, and the engine has
+/// offered `seek` all along — it was the queue's controller that had no way
+/// to ask for it.
+class _Progress extends ConsumerStatefulWidget {
   const _Progress({required this.status});
 
   final PlaybackStatus status;
 
   @override
+  ConsumerState<_Progress> createState() => _ProgressState();
+}
+
+class _ProgressState extends ConsumerState<_Progress> {
+  /// Where the owner has dragged to, while they are dragging.
+  ///
+  /// The engine keeps reporting the position it is actually at for as long as
+  /// a drag lasts, and a slider that took its value from that would spring
+  /// back under the thumb on every report. This is the thumb's own position
+  /// until the drag ends, and `null` at every other time.
+  double? _dragging;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final duration = status.duration;
+    final duration = widget.status.duration;
+    final elapsed = widget.status.position;
+
     final fraction = duration == null || duration == Duration.zero
         ? null
-        : (status.position.inMilliseconds / duration.inMilliseconds).clamp(
-            0.0,
-            1.0,
-          );
+        : (elapsed.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+    final value = _dragging ?? fraction;
 
     final label = theme.textTheme.bodySmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
@@ -404,18 +429,47 @@ class _Progress extends StatelessWidget {
 
     return Column(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppSpacing.xs),
-          // Shown, not dragged: seeking is the engine's to offer and nothing
-          // in this application asks it to yet, so a bar that looked draggable
-          // would be a control that does nothing.
-          child: LinearProgressIndicator(value: fraction, minHeight: 4),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 4,
+            // Room to grab, without a knob the size of a coin sitting on a
+            // four-pixel line.
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+          ),
+          child: Slider(
+            value: value ?? 0,
+            // A track whose length the engine has not worked out yet cannot
+            // be seeked into: there is nothing to be a fraction of.
+            onChanged: duration == null
+                ? null
+                : (next) => setState(() => _dragging = next),
+            onChangeEnd: duration == null
+                ? null
+                : (next) {
+                    setState(() => _dragging = null);
+                    unawaited(
+                      ref
+                          .read(audioPlaybackControllerProvider.notifier)
+                          .seekTo(duration * next),
+                    );
+                  },
+          ),
         ),
-        const SizedBox(height: AppSpacing.xs),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(formatPlaybackPosition(status.position), style: label),
+            Text(
+              formatPlaybackPosition(
+                // What the thumb says while it is being dragged, so the time
+                // under it is the time it would seek to rather than the time
+                // playback has reached behind it.
+                _dragging == null || duration == null
+                    ? elapsed
+                    : duration * _dragging!,
+              ),
+              style: label,
+            ),
             if (duration != null)
               Text(formatPlaybackPosition(duration), style: label),
           ],

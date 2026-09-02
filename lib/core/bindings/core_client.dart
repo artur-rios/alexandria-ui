@@ -559,6 +559,15 @@ abstract interface class CoreClient {
     String token,
   );
 
+  /// Reads a track's energy envelope through `alexandria_track_energy`
+  /// (UC-21, FR-MP-07).
+  ///
+  /// **The first call for a track decodes it**, which is a second or two of
+  /// the core's CPU — every call after it is a read of what was stored. It is
+  /// on the isolate like every other call, so a slow first answer costs the
+  /// interface nothing but the wait.
+  Future<CoreJsonResponse> trackEnergy(String uuid, String token);
+
   /// Appends tracks to a playlist through `alexandria_playlist_add_entries`
   /// (playlists Task 4).
   ///
@@ -1159,6 +1168,12 @@ class FfiCoreClient implements CoreClient {
   ) async => _reply<CoreJsonResponse>(
     await _isolate.call('enrichmentReadTrack', [uuid, artist, token]),
   );
+
+  @override
+  Future<CoreJsonResponse> trackEnergy(String uuid, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('trackEnergy', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> playlistAddEntries(

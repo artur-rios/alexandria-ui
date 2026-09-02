@@ -14,7 +14,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 class FakeCoreClient implements CoreClient {
   /// Creates a fake reporting a healthy, supported core by default.
   FakeCoreClient({
-    this.versionResult = '0.2.0',
+    this.versionResult = '0.3.0',
     int? healthResult,
     int? initializeResult,
     this.failOnVersion = false,
@@ -1045,6 +1045,19 @@ class FakeCoreClient implements CoreClient {
   /// Every track read asked for, in order.
   final List<({String uuid, String artist, String token})>
   enrichmentReadCalls = [];
+
+  /// What `trackEnergy` answers, and what it was asked for (UC-21,
+  /// FR-MP-07).
+  CoreJsonResponse energyResponse = (status: PLAYBACK_OK, json: '{}');
+
+  /// Every envelope asked for, in order.
+  final List<({String uuid, String token})> energyCalls = [];
+
+  @override
+  Future<CoreJsonResponse> trackEnergy(String uuid, String token) async {
+    energyCalls.add((uuid: uuid, token: token));
+    return energyResponse;
+  }
 
   @override
   Future<CoreJsonResponse> enrichmentRun(String scopeJson, String token) async {

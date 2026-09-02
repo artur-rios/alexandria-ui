@@ -90,6 +90,9 @@ import '../../features/playback/application/audio_playback_session.dart';
 import '../../features/playback/application/music_browse_controller.dart';
 import '../../features/playback/application/music_library_controller.dart';
 import '../../features/playback/application/playback_session_activity.dart';
+import '../../features/playback/application/track_energy_controller.dart';
+import '../../features/playback/data/core_energy_gateway.dart';
+import '../../features/playback/domain/track_energy.dart';
 import '../../features/playback/application/video_playback_controller.dart';
 import '../../features/playback/application/video_playback_session.dart';
 import '../../features/playback/data/core_playback_source_gateway.dart';
@@ -934,6 +937,27 @@ final trackEnrichmentControllerProvider =
       TrackEnrichment,
       TrackEnrichmentKey
     >(TrackEnrichmentController.new, isAutoDispose: true);
+
+/// The core's energy envelopes (UC-21, FR-MP-07).
+final energyGatewayProvider = Provider<EnergyGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError('the energy gateway was read before the core was loaded');
+  }
+
+  return CoreEnergyGateway(core);
+});
+
+/// The sound of one track, read once and held while it is on screen.
+///
+/// Auto-disposed, which a family is not by default: a player moves through a
+/// queue, and an envelope for every track ever played would be tens of
+/// kilobytes each, held for the life of the container and never read again.
+final trackEnergyControllerProvider =
+    AsyncNotifierProvider.family<TrackEnergyController, TrackEnergy?, String>(
+      TrackEnergyController.new,
+      isAutoDispose: true,
+    );
 
 /// The startup pass that fetches the photograph of every artist that has
 /// none (FR-PL-15).

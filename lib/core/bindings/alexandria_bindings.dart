@@ -2094,6 +2094,42 @@ class AlexandriaBindings {
   late final _alexandria_settings_json = _alexandria_settings_jsonPtr
       .asFunction<SettingsJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
+  /// UC-21 — the sound of a track, as levels a visualiser can draw.
+  ///
+  /// `uuid` is the file's public UUID (NUL-terminated string), `token` the
+  /// bearer auth token. On success the JSON carries the shape of the envelope
+  /// and the levels themselves, base64 encoded: `{"uuid":…,"bands":16,
+  /// "frameMs":100,"levelsBase64":"…"}` — row-major, `bands` levels per frame,
+  /// each 0 (silence) to 255 (the loudest moment of this track).
+  ///
+  /// **The first call for a track decodes it**, which is a second or two of CPU
+  /// on the blocking pool; every call after it reads what was stored. A caller
+  /// on a frame deadline should treat the first call as slow and draw nothing
+  /// until it answers, which is exactly what the player does.
+  PlaybackJsonResult alexandria_track_energy(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_track_energy(uuid, token);
+  }
+
+  late final _alexandria_track_energyPtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlaybackJsonResult Function(
+            ffi.Pointer<ffi.Char>,
+            ffi.Pointer<ffi.Char>,
+          )
+        >
+      >('alexandria_track_energy');
+  late final _alexandria_track_energy = _alexandria_track_energyPtr
+      .asFunction<
+        PlaybackJsonResult Function(
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+        )
+      >();
+
   ffi.Pointer<ffi.Char> alexandria_version() {
     return _alexandria_version();
   }

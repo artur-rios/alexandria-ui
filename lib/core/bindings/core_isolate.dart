@@ -1269,6 +1269,17 @@ class CoreIsolate {
         ),
       ),
 
+      'trackEnergy' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_track_energy(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       'playlistAddEntries' => withNativeString(
         arguments.first! as String,
         (uuid) => withNativeString(

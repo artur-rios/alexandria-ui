@@ -1,50 +1,53 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show Ticker;
+
+import '../domain/track_energy.dart';
 
 /// The bars that move with the music on the player screen (UC-21, FR-PL-07).
 ///
-/// **What this is, plainly: it is not a spectrum of the audio.** Nothing in
-/// this application can see the sound. The engine (`MediaPlayer`, over
-/// media_kit) reports what is playing, whether it is running and where it has
-/// got to — and no samples, no levels, no frequency bands, because mpv exposes
-/// none of that through the interface this application has. A visualiser drawn
-/// from data nobody has would be a lie told sixty times a second.
+/// They move with it literally: [energy] is the track's own sound, measured
+/// from the file by the core (FR-MP-07) and read back at the position
+/// playing. A band that is loud in the recording is a tall bar at the moment
+/// it is loud, and the same second of the same song draws the same bars every
+/// time it plays.
 ///
-/// So this is what it honestly is: an animated instrument that runs while the
-/// music runs, settles when it stops, and has a character of its own for each
-/// track. Every bar carries three waves of its own at frequencies that never
-/// line up, tilted the way a spectrum analyser sits — loud at the bottom of
-/// the range, quieter at the top — and the whole set is seeded from the
-/// track's identity, so two songs do not move the same way and the same song
-/// moves the same way twice.
+/// This was invented for one release — three sine waves a bar, seeded from
+/// the track so no two songs moved alike — because nothing in the playing
+/// path could see the sound: the engine reports position and nothing else.
+/// What replaced it is the core decoding the file once and keeping what it
+/// measured, which is the only honest way to draw this.
 ///
-/// Making it real is a job for the core rather than a job for this widget: an
-/// energy envelope computed once per file at index time, stored beside the
-/// track and read back at the position playing, would drive these same bars
-/// from the actual music. The shape here is deliberately the shape that would
-/// take — a level per band, per moment.
+/// With no envelope the bars rest. The first play of a track waits a second
+/// or two while the core measures it, and a file it cannot decode never gets
+/// one — in both cases the instrument sits still rather than inventing
+/// something to show.
 class SoundBars extends StatefulWidget {
   /// Creates the visualiser.
   const SoundBars({
     required this.isPlaying,
-    required this.seed,
+    required this.position,
+    this.energy,
     this.bars = 56,
     this.height = 140,
     super.key,
   });
 
-  /// Whether audio is running: the bars swell while it is and lie down when
-  /// it is not.
+  /// Whether audio is running: the bars follow the music while it is and lie
+  /// down when it is not.
   final bool isPlaying;
 
-  /// What gives this track its own movement — the file's uuid, hashed.
+  /// Where playback has reached, as the engine last reported it.
   ///
-  /// A seed rather than a random source: a visualiser that reshuffled itself
-  /// on every rebuild would flicker whenever anything else on the screen
-  /// changed, and the same track would look different every time it played.
-  final int seed;
+  /// Reported about four times a second, which is nowhere near a frame rate
+  /// — so the widget carries it forward itself between reports (see
+  /// [_SoundBarsState._elapsed]). Without that the bars would step four times
+  /// a second however smooth the envelope is.
+  final Duration position;
+
+  /// The track's own sound, or `null` while it is being measured.
+  final TrackEnergy? energy;
 
   /// How many bars are drawn.
   final int bars;
@@ -56,38 +59,34 @@ class SoundBars extends StatefulWidget {
   State<SoundBars> createState() => _SoundBarsState();
 }
 
-class _SoundBarsState extends State<SoundBars> with TickerProviderStateMixin {
-  /// The clock the waves are read against.
-  ///
-  /// A minute per cycle rather than a second: the waves below are functions
-  /// of elapsed seconds, and a controller that reset every second would put a
-  /// seam in every one of them each time it did.
-  late final AnimationController _clock = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 60),
-  );
+class _SoundBarsState extends State<SoundBars>
+    with SingleTickerProviderStateMixin {
+  /// Drives one repaint per frame while the music runs.
+  late final Ticker _ticker = createTicker((_) => setState(() {}));
 
-  /// How much of the swell is applied, 0 lying flat and 1 at full height.
+  /// When the position now on the widget was reported.
   ///
-  /// Its own animation so that stopping the music settles the bars instead of
-  /// dropping them: what an owner sees when they press pause is the sound
-  /// falling away, which is what pausing actually did.
-  late final AnimationController _energy = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 420),
-    reverseDuration: const Duration(milliseconds: 620),
-  );
+  /// The engine reports about four times a second; between reports the
+  /// position is carried forward by the clock, so the envelope is read at
+  /// the moment being *heard* rather than at the last moment anybody
+  /// mentioned.
+  DateTime _reportedAt = DateTime.now();
+
+  /// How far the bars have risen toward what the envelope says, 0 to 1.
+  ///
+  /// A pause settles them rather than freezing them mid-swell: what an owner
+  /// sees when they press pause is the sound falling away, which is what
+  /// pausing actually did.
+  double _energyIn = 0;
 
   @override
   void didUpdateWidget(SoundBars oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.position != widget.position) _reportedAt = DateTime.now();
     if (oldWidget.isPlaying != widget.isPlaying) _apply();
   }
 
-  /// Where the running is decided, rather than in `initState`: what decides
-  /// it is [MediaQuery.disableAnimationsOf], and an inherited widget may not
-  /// be read before `initState` has finished — this runs once on mount and
-  /// again whenever that answer changes.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -96,60 +95,67 @@ class _SoundBarsState extends State<SoundBars> with TickerProviderStateMixin {
 
   /// Runs or rests, and honours a request for less motion (AF-03).
   ///
-  /// Reduced motion is not "the same thing, slower": nothing moves at all,
-  /// and the bars stand at the levels the first moment of the track would
-  /// have given them — the picture the instrument makes, without the motion
-  /// somebody asked the system not to show them.
+  /// Reduced motion is not "the same thing, slower": the bars stand at the
+  /// levels of the moment playback is at and do not move at all, which is the
+  /// picture the instrument makes without the motion somebody asked the
+  /// system not to show them.
   void _apply() {
     final reduced = MediaQuery.disableAnimationsOf(context);
 
-    if (reduced) {
-      _clock.stop();
-      _energy.value = widget.isPlaying ? 1 : 0;
+    if (reduced || !widget.isPlaying) {
+      if (_ticker.isActive) _ticker.stop();
+      setState(() => _energyIn = reduced && widget.isPlaying ? 1 : 0);
 
       return;
     }
 
-    if (widget.isPlaying) {
-      if (!_clock.isAnimating) unawaited(_clock.repeat());
-      unawaited(_energy.forward());
-    } else {
-      unawaited(
-        _energy.reverse().whenComplete(() {
-          // Nothing to draw and nothing moving: a stopped clock is a frame
-          // never scheduled, which is the whole reason to stop it.
-          if (mounted && !widget.isPlaying) _clock.stop();
-        }),
-      );
-    }
+    if (!_ticker.isActive) _ticker.start();
   }
 
   @override
   void dispose() {
-    _clock.dispose();
-    _energy.dispose();
+    _ticker.dispose();
     super.dispose();
+  }
+
+  /// Where the music is now: the last reported position, carried forward by
+  /// the clock for as long as it has been running.
+  Duration get _elapsed {
+    if (!widget.isPlaying) return widget.position;
+
+    return widget.position + DateTime.now().difference(_reportedAt);
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
+    // Toward full while it plays and back down when it stops, a step a frame:
+    // the settle is the only motion the bars make of their own accord, and it
+    // is what keeps a pause from looking like a freeze.
+    if (_ticker.isActive) {
+      _energyIn = math.min(1, _energyIn + 0.06);
+    } else if (_energyIn > 0 && !widget.isPlaying) {
+      _energyIn = math.max(0, _energyIn - 0.04);
+      if (_energyIn > 0) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() {});
+        });
+      }
+    }
+
     return SizedBox(
       height: widget.height,
       width: double.infinity,
       child: RepaintBoundary(
-        child: AnimatedBuilder(
-          animation: Listenable.merge([_clock, _energy]),
-          builder: (context, child) => CustomPaint(
-            painter: SoundBarsPainter(
-              seconds: _clock.value * 60,
-              energy: _energy.value,
-              seed: widget.seed,
-              bars: widget.bars,
-              hot: scheme.primary,
-              cool: scheme.tertiary,
-            ),
+        child: CustomPaint(
+          painter: SoundBarsPainter(
+            energy: widget.energy,
+            position: _elapsed,
+            energyIn: _energyIn,
+            bars: widget.bars,
+            hot: scheme.primary,
+            cool: scheme.tertiary,
           ),
         ),
       ),
@@ -161,22 +167,22 @@ class _SoundBarsState extends State<SoundBars> with TickerProviderStateMixin {
 class SoundBarsPainter extends CustomPainter {
   /// Creates the painter.
   const SoundBarsPainter({
-    required this.seconds,
-    required this.energy,
-    required this.seed,
+    required this.position,
+    required this.energyIn,
     required this.bars,
     required this.hot,
     required this.cool,
+    this.energy,
   });
 
-  /// Where the clock has got to, in seconds.
-  final double seconds;
+  /// The track's own sound, or `null` for an instrument with nothing to show.
+  final TrackEnergy? energy;
 
-  /// How much of the swell to apply, 0 to 1.
-  final double energy;
+  /// Where the music is.
+  final Duration position;
 
-  /// The track's own seed.
-  final int seed;
+  /// How much of the level to apply, 0 to 1.
+  final double energyIn;
 
   /// How many bars to draw.
   final int bars;
@@ -207,27 +213,20 @@ class SoundBarsPainter extends CustomPainter {
     final radius = Radius.circular(width / 2);
 
     for (var index = 0; index < bars; index++) {
-      final level = levelFor(
-        index: index,
-        bars: bars,
-        seconds: seconds,
-        seed: seed,
-        energy: energy,
-      );
+      final level = levelFor(index);
       final half = middle * level;
       final centre = pitch * (index + 0.5);
-      final bar = RRect.fromRectAndRadius(
-        Rect.fromLTRB(
-          centre - width / 2,
-          middle - half,
-          centre + width / 2,
-          middle + half,
-        ),
-        radius,
-      );
 
       canvas.drawRRect(
-        bar,
+        RRect.fromRectAndRadius(
+          Rect.fromLTRB(
+            centre - width / 2,
+            middle - half,
+            centre + width / 2,
+            middle + half,
+          ),
+          radius,
+        ),
         Paint()
           ..color = Color.lerp(hot, cool, index / (bars - 1))!.withValues(
             // Lit in proportion to how far it has risen, so the loud bars
@@ -240,56 +239,32 @@ class SoundBarsPainter extends CustomPainter {
 
   /// How high the bar at [index] stands, 0 to 1.
   ///
-  /// Top-level and pure so the shape can be tested without a ticker, a
-  /// canvas, or a frame: everything below is a function of the four numbers
-  /// it is given, which is what makes the same track move the same way twice.
-  static double levelFor({
-    required int index,
-    required int bars,
-    required double seconds,
-    required int seed,
-    required double energy,
-  }) {
-    final band = bars <= 1 ? 0.0 : index / (bars - 1);
-    // The tilt of a spectrum analyser at rest: bass on the left and loud,
-    // treble on the right and quiet. Without it a row of equal bars reads as
-    // a decoration rather than as an instrument.
-    final tilt = 0.42 + 0.58 * math.pow(1 - band, 0.9);
+  /// There are more bars than the core measures bands — sixteen bands drawn
+  /// as fifty-six bars — so a bar between two bands is read as a blend of
+  /// them. A row of sixteen wide blocks would be the same data and a worse
+  /// picture: what the eye reads as a spectrum is a curve, and the curve is
+  /// what the interpolation restores.
+  double levelFor(int index) {
+    final envelope = energy;
+    if (envelope == null || bars <= 1) return _resting;
 
-    // Three waves whose periods never line up, so no two bars share a rhythm
-    // and the pattern does not repeat while anybody is watching.
-    final fast = math.sin(seconds * (2.4 + band * 7.5) + _phase(index, seed));
-    final slow = math.sin(
-      seconds * (0.7 + band * 1.9) + _phase(index + 31, seed),
-    );
-    final beat = math.sin(seconds * 3.1 + _phase(index + 71, seed));
-    // Weighted so the product of three waves lands high often rather than
-    // multiplying down to a ripple: three factors each averaging a half
-    // average an eighth between them, which is a row of stubs.
-    final swell =
-        (0.64 + 0.36 * fast) * (0.74 + 0.26 * slow) * (0.88 + 0.12 * beat);
+    final band = index / (bars - 1) * (envelope.bands - 1);
+    final lower = band.floor();
+    final upper = math.min(lower + 1, envelope.bands - 1);
+    final into = band - lower;
 
-    final level = tilt * swell;
+    final from = envelope.levelAt(band: lower, position: position);
+    final to = envelope.levelAt(band: upper, position: position);
+    final level = from + (to - from) * into;
 
-    return (_resting + (level - _resting) * energy).clamp(_resting, 1.0);
-  }
-
-  /// A phase angle for one bar, from the track's seed.
-  ///
-  /// Hashed rather than random: the same track has to move the same way every
-  /// time it plays, and a widget that rebuilt into a new arrangement would
-  /// twitch every time anything else on the screen changed.
-  static double _phase(int index, int seed) {
-    final mixed = (seed ^ (index * 2654435761)) & 0x7FFFFFFF;
-
-    return (mixed % 6283) / 1000;
+    return _resting + (level - _resting).clamp(0, 1) * energyIn;
   }
 
   @override
   bool shouldRepaint(SoundBarsPainter old) =>
-      old.seconds != seconds ||
-      old.energy != energy ||
-      old.seed != seed ||
+      old.position != position ||
+      old.energyIn != energyIn ||
+      !identical(old.energy, energy) ||
       old.bars != bars ||
       old.hot != hot ||
       old.cool != cool;

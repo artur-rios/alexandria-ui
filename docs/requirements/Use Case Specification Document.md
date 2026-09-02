@@ -871,12 +871,15 @@ graph LR
    is what they recognise.
 3. The player shows the album's own picture, the track's name, the artist
    whose record it is, and the album — never the file's name (FR-CT-13).
-4. The bars move while the audio runs, and settle when it is paused or
-   stopped.
-5. The owner operates the transport on the player — back, play and pause,
+4. The bars move with the music: they are drawn from the core's own
+   measurement of the recording (api FR-MP-07), read at the position playing,
+   and they settle when playback is paused or stopped.
+5. The owner drags the position indication to move playback within the
+   track.
+6. The owner operates the transport on the player — back, play and pause,
    stop, forward — which reaches the same queue the playback bar's controls
-   reach, and reads how far into the track playback has got.
-6. The owner closes the player; playback and the bar are untouched.
+   reach.
+7. The owner closes the player; playback and the bar are untouched.
 
 **Alternative Flows**
 
@@ -884,7 +887,8 @@ graph LR
 | --- | --- | --- |
 | AF-01 | The file carries no picture of its own | The player and the bar show a placeholder in the sleeve's own shape, rather than an empty frame. |
 | AF-02 | The owner navigates to another screen | Playback and the persistent player continue; the full player is reachable again from the bar. |
-| AF-03 | The system requests reduced motion | The bars are drawn without moving: the picture the instrument makes, and none of the motion somebody asked the system not to show them. |
+| AF-03 | The system requests reduced motion | The bars are drawn without moving: the levels of the moment playback is at, and none of the motion somebody asked the system not to show them. |
+| AF-06 | The recording has not been measured yet, or cannot be | The bars rest. The first play of a track waits while the core measures it, and a file the core cannot decode is never measured — in both cases the player shows no motion rather than inventing some. |
 | AF-04 | The owner has turned off opening the player automatically | Playback starts where the owner left the interface; the player is opened by hand from the bar. |
 | AF-05 | The owner asks for the words of the track playing | The application gives one side of the window to them and moves the player over into what is left, rather than covering it. The same control puts them away and gives the whole window back. |
 
