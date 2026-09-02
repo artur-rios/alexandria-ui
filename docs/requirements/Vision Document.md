@@ -270,13 +270,17 @@ graph TD
   synchronization, no second user, and no network call this application
   makes at all. The one exception is outbound and lives in the core: music
   enrichment (artist photography and lyrics) may look those up from three
-  public services. **Nothing goes out unless the owner asks for it**: a
-  lookup runs only from the lyrics button, the per-track lookup, or the
-  sweep screen — never on its own, never in the background, and never
-  merely because a track started playing. The capability ships switched on
-  so that asking works, and the owner switches it off for good in
-  Preferences, which is where the contact the services are given also
-  lives. Nothing about the owner is sent — the queries carry an artist name,
+  public services. **Nothing goes out while the owner has it switched off**,
+  and one switch governs every path: the lyrics button, the per-track
+  lookup, the sweep screen, and the one pass this application starts by
+  itself — a background walk, once a session, that fetches the photograph of
+  each artist that has none, so the artists list is a shelf of faces rather
+  than a list with a few. That pass was added deliberately and it is the only
+  traffic not traceable to a press: it asks for one picture per artist, stops
+  at the first request that cannot be completed, and never runs merely
+  because a track started playing. The capability ships switched on so that
+  asking works, and the owner switches it off for good in Preferences, which
+  is where the contact the services are given also lives. Nothing about the owner is sent — the queries carry an artist name,
   a track title, an album name and a duration — and everything fetched is
   cached, so a lookup happens once per artist and once per recording rather
   than once per play. This interface holds no HTTP client and contacts no

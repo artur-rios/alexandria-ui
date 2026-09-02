@@ -3,6 +3,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/enrichment/application/artist_portrait_backfill_controller.dart';
 import 'package:alexandria_ui/features/enrichment/application/enrichment_sweep_controller.dart';
 import 'package:alexandria_ui/features/enrichment/domain/enrichment_gateway.dart';
 import 'package:alexandria_ui/features/enrichment/domain/track_enrichment.dart';
@@ -40,6 +41,16 @@ void main() {
       settings: settings,
       extraOverrides: <Override>[
         enrichmentGatewayProvider.overrideWithValue(gateway),
+        // The startup pass, held still for these cases.
+        //
+        // It reaches the same gateway this file counts calls on (FR-PL-15) —
+        // in a real session both run, and the core's own rate gate is what
+        // keeps them civil — so left alone it would put file-scoped runs
+        // into `runs` and spend the counting fake's budget on artists. What
+        // is under test here is the sweep's own batching, so the other
+        // caller is overridden away rather than filtered out of every
+        // assertion.
+        artistPortraitBackfillProvider.overrideWith(_NoBackfill.new),
       ],
     );
 
@@ -187,30 +198,31 @@ void main() {
     },
   );
 
-  testWidgets('GivenABatchFails_WhenSwept_ThenItStopsRatherThanRetryingForever', (
-    tester,
-  ) async {
-    // A service being down is already absorbed inside a batch — the core
-    // records it and carries on. A failure reaching this far is about the
-    // call itself, and repeating it a thousand times is a thousand failures.
-    final gateway = FakeEnrichmentGateway()
-      ..runOutcome = const EnrichmentRunOutcome.failed(
-        failure: Failure.unexpected(
-          family: CoreStatusFamily.enrichment,
-          code: 9,
-        ),
+  testWidgets(
+    'GivenABatchFails_WhenSwept_ThenItStopsRatherThanRetryingForever',
+    (tester) async {
+      // A service being down is already absorbed inside a batch — the core
+      // records it and carries on. A failure reaching this far is about the
+      // call itself, and repeating it a thousand times is a thousand failures.
+      final gateway = FakeEnrichmentGateway()
+        ..runOutcome = const EnrichmentRunOutcome.failed(
+          failure: Failure.unexpected(
+            family: CoreStatusFamily.enrichment,
+            code: 9,
+          ),
+        );
+      final container = await openSweep(tester, gateway: gateway);
+
+      await tester.tap(find.text('Start'));
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(enrichmentSweepControllerProvider).stage,
+        SweepStage.failed,
       );
-    final container = await openSweep(tester, gateway: gateway);
-
-    await tester.tap(find.text('Start'));
-    await tester.pumpAndSettle();
-
-    expect(
-      container.read(enrichmentSweepControllerProvider).stage,
-      SweepStage.failed,
-    );
-    expect(gateway.runs, hasLength(1), reason: 'a failing call was retried');
-  });
+      expect(gateway.runs, hasLength(1), reason: 'a failing call was retried');
+    },
+  );
 
   testWidgets('GivenARunningSweep_WhenItIsStopped_ThenWhatWasDoneIsKept', (
     tester,
@@ -244,6 +256,12 @@ void main() {
 }
 
 /// Hands back `total` pending items, a batch at a time.
+/// A startup pass that does nothing at all.
+class _NoBackfill extends ArtistPortraitBackfillController {
+  @override
+  ArtistPortraitBackfill build() => const ArtistPortraitBackfill();
+}
+
 class _CountingGateway extends FakeEnrichmentGateway {
   _CountingGateway(this._remaining, {this.perBatch = Duration.zero});
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/album_palette.dart';
-import '../../domain/album_medium.dart';
 
 /// The transport a device's own buttons work (UC-21 main flow, FR-PL-06).
 ///
@@ -46,59 +45,30 @@ Rect deviceFaceOf(Size size) {
   );
 }
 
-/// Where each control sits on a device drawn into [face], in the same
+/// Where each control sits on the console drawn into [face], in the same
 /// coordinates the painter draws in.
 ///
-/// The band is the same idea on every device — a row of caps clear of the
-/// display, the well and the medium — because the four controls mean the
-/// same four things whichever record is playing, and an owner who found
-/// them on the deck should not have to hunt for them on the CD player.
+/// One row of four, in the order they are read in: back, play or pause,
+/// stop, forward. It was briefly a square of two by two on the CD player's
+/// face, to free the band across its top for a wider name window — and a
+/// square is exactly where the order of four controls stops being obvious,
+/// because nothing says whether it is read across or down. There is one
+/// machine now and its fascia is wide enough for a row, so a row is what it
+/// has: the same order as the playback bar's, left to right, which is the
+/// order every transport in the world is in.
 ///
-/// Where they *sit* is not the same, and cannot be. The deck and the CD
-/// player both keep their upper right free, so the row goes there. The
-/// turntable's platter is centred at 0.40 of the width with a radius of
-/// 0.40 of the height, which reaches 0.667 of the width at its widest — a
-/// row in that band would be laid half under the record. Its buttons go
-/// along the front edge of the plinth instead, below the platter's own
-/// curve and above the feet, which is where a modern deck puts its cue
-/// controls anyway. They are smaller there, because that strip is what the
-/// plinth has left.
-///
-/// The turntable is the one that had no transport at all: a real one has
-/// none, which is why these had to be invented rather than merely wired up.
-///
-/// The CD player is the one that is no longer a row. Its buttons sat in the
-/// top right, which is where the nameplate had to go once a track title
-/// needed a window wide enough to hold one — the band across the top is the
-/// only part of that face nothing is ever drawn over. So the four caps moved
-/// down the right-hand side into a square of two by two, in the strip
-/// between the well's edge and the face's, reading left to right and top to
-/// bottom in the order they always had.
-Map<DeviceControl, Rect> transportBoundsFor(AlbumMedium medium, Rect face) =>
-    switch (medium) {
-      AlbumMedium.disc => _discGrid(face),
-      AlbumMedium.tape => _row(face, centre: 0.20, size: 0.10, first: 0.60),
-      AlbumMedium.vinyl => _row(
-        face,
-        centre: 0.93,
-        size: 0.085,
-        first: 0.769,
-        step: 0.065,
-      ),
-    };
+/// Read by the painter that draws the caps and by the stage that lays hit
+/// targets over them, so a button can never be drawn in a place the owner's
+/// press does not reach.
+Map<DeviceControl, Rect> transportBoundsFor(Rect face) {
+  // The row's height, the cap's size, the first cap's centre and the gap to
+  // the next — all fractions of the face, so a console drawn at any size
+  // keeps the same arrangement.
+  const centre = 0.735;
+  const size = 0.075;
+  const first = 0.385;
+  const step = 0.092;
 
-/// A row of four caps across [face], at [centre] of its height.
-///
-/// [size], [first] and [step] are all fractions of the face — its height for
-/// the cap, its width for where the caps sit — so a device drawn at any size
-/// keeps the same arrangement.
-Map<DeviceControl, Rect> _row(
-  Rect face, {
-  required double centre,
-  required double size,
-  required double first,
-  double step = 0.10,
-}) {
   final diameter = face.height * size;
   final centreY = face.top + face.height * centre;
 
@@ -108,32 +78,6 @@ Map<DeviceControl, Rect> _row(
         center: Offset(
           face.left + face.width * (first + step * index),
           centreY,
-        ),
-        width: diameter,
-        height: diameter,
-      ),
-  };
-}
-
-/// The CD player's four caps, in two rows of two down the face's right side.
-///
-/// The column positions are what keep them off the disc: the well is centred
-/// on the face with a radius of 0.296 of the height, which on this face's
-/// 1.7 aspect reaches 0.674 of the width — and the lid drawn over it is
-/// exactly as wide. Both columns begin past that, and the outer one stops
-/// short of the face's own edge.
-Map<DeviceControl, Rect> _discGrid(Rect face) {
-  const size = 0.13;
-  const columns = [0.765, 0.90];
-  const rows = [0.50, 0.72];
-  final diameter = face.height * size;
-
-  return {
-    for (final (index, control) in DeviceControl.values.indexed)
-      control: Rect.fromCenter(
-        center: Offset(
-          face.left + face.width * columns[index % 2],
-          face.top + face.height * rows[index ~/ 2],
         ),
         width: diameter,
         height: diameter,

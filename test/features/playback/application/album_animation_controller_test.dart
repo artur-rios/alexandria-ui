@@ -101,10 +101,14 @@ void main() {
   );
 
   test(
-    'GivenARecordIsPlaying_WhenTheNextTrackOfItStarts_ThenNoInsertionIsOwed',
+    'GivenARecordIsPlaying_WhenTheNextTrackOfItStarts_ThenOneIsOwedAgain',
     () async {
-      // A record already on the platter is not taken off and put back for its
-      // next track.
+      // Every track, deliberately. A record already on the platter is not
+      // taken off and put back for its next track — that was the rule here,
+      // it is true of a real turntable, and it is not what the owner wants
+      // from this one: the insertion is the thing they are watching, and an
+      // album that showed it once and then went quiet for eleven tracks had
+      // effectively lost the feature after the first minute.
       final gateway = libraryGateway();
       final container = buildContainer(gateway);
       final audio = container.read(audioPlaybackControllerProvider.notifier);
@@ -117,7 +121,12 @@ void main() {
       await audio.next();
 
       final state = container.read(albumAnimationControllerProvider);
-      expect(state.insertionOwed, isFalse);
+      expect(state.insertionOwed, isTrue);
+      expect(
+        state.medium,
+        isNotNull,
+        reason: 'the record picks the medium, and the record has not changed',
+      );
     },
   );
 
@@ -275,13 +284,13 @@ void main() {
     );
 
     test(
-      'GivenATrackOfAnAlbumIsPlaying_WhenTwoMoreTracksOfTheSameAlbumStartFromTheSongsList_ThenNoInsertionIsOwed',
+      'GivenATrackOfAnAlbumIsPlaying_WhenTwoMoreTracksOfTheSameAlbumStartFromTheSongsList_ThenEachOwesOne',
       () async {
-        // Three tracks of one album, played one after another from the
-        // Songs list rather than as an album queue, insert once: the
-        // identity is the record — the track's own album and artist — not
-        // the queue's uuid-per-track identity `playTrack` builds. Three
-        // rather than two, matching the design's own testing list exactly.
+        // Three tracks of one album, played one after another from the Songs
+        // list rather than as an album queue. Each owes its own insertion —
+        // the owner asked for the animation on every track played — and each
+        // is still the same record, which is what keeps the medium steady
+        // across all three.
         final gateway = libraryGateway();
         final container = buildContainer(gateway);
         final audio = container.read(audioPlaybackControllerProvider.notifier);
@@ -294,16 +303,18 @@ void main() {
 
         await audio.playTrack(aFile(uuid: 'kob-2'));
         await container.read(musicLibraryProvider.future);
-        expect(
-          container.read(albumAnimationControllerProvider).insertionOwed,
-          isFalse,
-        );
+        final second = container.read(albumAnimationControllerProvider);
+        expect(second.insertionOwed, isTrue);
+        container
+            .read(albumAnimationControllerProvider.notifier)
+            .insertionShown();
 
         await audio.playTrack(aFile(uuid: 'kob-3'));
         await container.read(musicLibraryProvider.future);
 
         final state = container.read(albumAnimationControllerProvider);
-        expect(state.insertionOwed, isFalse);
+        expect(state.insertionOwed, isTrue);
+        expect(state.medium, second.medium);
       },
     );
 
@@ -468,14 +479,16 @@ void main() {
   });
 
   test(
-    'GivenACompilationTrackIsPlaying_WhenAnotherOfItsTracksStarts_ThenNoInsertionIsOwed',
+    'GivenACompilationTrackIsPlaying_WhenAnotherOfItsTracksStarts_ThenTheMediumIsUnchanged',
     () async {
       // Two tracks of one compilation, played one after another from the
-      // Songs list. Identified by the track's own performer they would be
-      // two different records, and the case would come out and go back in
-      // between two tracks of the same sleeve; identified by the album
-      // artist — the same key the browsing area groups them under — they are
-      // the one record they are.
+      // Songs list. Both insert, as every track now does — what this is
+      // about is that they insert the *same* record: identified by the
+      // track's own performer they would be two different records with two
+      // different years and possibly two different media, where identified
+      // by the album artist — the same key the browsing area groups them
+      // under — they are the one record they are, and the machine that comes
+      // back is the same machine.
       final gateway = FakeCatalogGateway()
         ..addAudio(
           uuid: 'comp-1',
@@ -510,20 +523,21 @@ void main() {
       await container.read(musicLibraryProvider.future);
 
       final state = container.read(albumAnimationControllerProvider);
-      expect(state.insertionOwed, isFalse);
-      expect(state.owedIdentity, isNull);
+      expect(state.insertionOwed, isTrue);
+      expect(state.medium, first.medium);
     },
   );
 
   test(
-    'GivenAPlaylistIsPlaying_WhenTheNextTrackIsTheSameAlbum_ThenNoInsertionIsOwed',
+    'GivenAPlaylistIsPlaying_WhenTheNextTrackIsTheSameAlbum_ThenTheMediumIsUnchanged',
     () async {
       // Design section 6: a playlist queue names no record of its own, so the
       // record is resolved from the track playing now — and two tracks of one
       // album are one record inside a playlist exactly as they are inside an
-      // album queue. Were the identity read off the queue instead, it would
-      // be one constant value for the whole playlist and this would pass for
-      // the wrong reason — which is why the crossing test below is its pair.
+      // album queue. Both tracks insert, as every track does; what this holds
+      // is that the record they insert is the same one, so the medium does
+      // not change under a playlist mid-album. Its pair is the crossing test
+      // below, where it does.
       final gateway = libraryGateway();
       final container = buildContainer(gateway);
       final audio = container.read(audioPlaybackControllerProvider.notifier);
@@ -541,8 +555,8 @@ void main() {
       await container.read(musicLibraryProvider.future);
 
       final state = container.read(albumAnimationControllerProvider);
-      expect(state.insertionOwed, isFalse);
-      expect(state.owedIdentity, isNull);
+      expect(state.insertionOwed, isTrue);
+      expect(state.medium, AlbumMedium.vinyl);
     },
   );
 

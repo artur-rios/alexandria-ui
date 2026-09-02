@@ -1232,8 +1232,14 @@ void main() {
     );
 
     testWidgets(
-      'GivenARecordIsPlaying_WhenTheNextTrackStarts_ThenThePlayerDoesNotOpen',
+      'GivenARecordIsPlaying_WhenTheNextTrackStarts_ThenThePlayerOpensAgain',
       (tester) async {
+        // Every track, which is a deliberate reversal of what this asserted
+        // before: the player used to open once per record and stay shut for
+        // the rest of it, so an owner who closed it after the first track
+        // never saw the animation again. The insertion is what they open the
+        // player to watch, and a record's second track is a track being
+        // played.
         final container = await playSomething(
           tester,
           mode: AlbumAnimationMode.byYear,
@@ -1246,12 +1252,18 @@ void main() {
             .read(albumAnimationControllerProvider.notifier)
             .insertionShown();
         await tester.tap(find.byTooltip(closeLabel(tester)));
+        // Twice: one `settle` is six frames, and the pop's own transition is
+        // longer than that — the screen is still mounted, mid-animation, at
+        // the end of the first one, and `show` declines to stack a second
+        // player on a first that has not finished leaving.
         await settle(tester);
+        await settle(tester);
+        expect(find.byType(NowPlayingScreen), findsNothing);
 
         await container.read(audioPlaybackControllerProvider.notifier).next();
         await settle(tester);
 
-        expect(find.byType(NowPlayingScreen), findsNothing);
+        expect(find.byType(NowPlayingScreen), findsOneWidget);
       },
     );
 

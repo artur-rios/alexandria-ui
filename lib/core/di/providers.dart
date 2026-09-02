@@ -103,6 +103,7 @@ import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/playlists/application/playlist_detail_controller.dart';
 import '../../features/playlists/application/playlists_controller.dart';
+import '../../features/enrichment/application/artist_portrait_backfill_controller.dart';
 import '../../features/enrichment/application/enrichment_run_controller.dart';
 import '../../features/enrichment/application/enrichment_sweep_controller.dart';
 import '../../features/enrichment/application/track_enrichment_controller.dart';
@@ -940,6 +941,17 @@ final trackEnrichmentControllerProvider =
       TrackEnrichmentKey
     >(TrackEnrichmentController.new, isAutoDispose: true);
 
+/// The startup pass that fetches the photograph of every artist that has
+/// none (FR-PL-15).
+///
+/// Kept alive by the shell rather than by whoever is looking at the artists
+/// list: it is a startup job, and an owner who never opens the music area is
+/// still an owner whose artists have faces the next time they do.
+final artistPortraitBackfillProvider =
+    NotifierProvider<ArtistPortraitBackfillController, ArtistPortraitBackfill>(
+      ArtistPortraitBackfillController.new,
+    );
+
 /// The core's library operations (libraries design).
 final libraryGatewayProvider = Provider<LibraryGateway>((ref) {
   final core = ref.read(startupControllerProvider.notifier).core;
@@ -982,8 +994,9 @@ final enrichmentRunControllerProvider =
     );
 
 /// The playlists screen's own state.
-final playlistsFormProvider =
-    NotifierProvider<PlaylistsForm, PlaylistsState>(PlaylistsForm.new);
+final playlistsFormProvider = NotifierProvider<PlaylistsForm, PlaylistsState>(
+  PlaylistsForm.new,
+);
 
 /// One playlist and its tracks, keyed by playlist uuid (playlists design
 /// section 3).
@@ -999,10 +1012,11 @@ final playlistsFormProvider =
 /// on a uuid, read afresh from the core rather than trusting a copy the
 /// caller already had.
 final playlistDetailControllerProvider =
-    AsyncNotifierProvider.family<PlaylistDetailController, PlaylistView?, String>(
-      PlaylistDetailController.new,
-      isAutoDispose: true,
-    );
+    AsyncNotifierProvider.family<
+      PlaylistDetailController,
+      PlaylistView?,
+      String
+    >(PlaylistDetailController.new, isAutoDispose: true);
 
 /// The tracked books' and comics' names (UC-32 main flow step 2).
 final trackedReadingItemsProvider =

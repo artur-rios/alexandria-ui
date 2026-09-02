@@ -857,7 +857,7 @@ graph LR
 | **ID** | UC-21 |
 | **Name** | Show the album playback animation |
 | **Actors** | Owner |
-| **Description** | While audio plays, the disc, vinyl, or tape is shown on its matching player, turning while the audio runs — a single track included: the animation belongs to whatever is playing, not only an album or an artist. |
+| **Description** | While audio plays, the disc, vinyl, or tape is shown turning in its own slot on one machine — a console with a turntable, a cassette bay and a disc drawer — for as long as the audio runs; a single track included, because the animation belongs to whatever is playing rather than only to an album or an artist. |
 | **Preconditions** | Audio playback is active (UC-20). |
 | **Postconditions** | The animation ran for the duration of the playback and stopped with it. |
 | **Requirements** | FR-PL-07, FR-PL-11, FR-PL-12, FR-PL-13 |
@@ -865,12 +865,14 @@ graph LR
 **Main Flow**
 
 1. Audio playback begins — a track, an album, or an artist.
-2. An insertion is owed — the session's first play, or the record playing has
-   changed — and the application opens the full-window player. The owner
-   reaches it again from the playback bar: from its button, or by pressing the
-   sleeve beside it, which is what they recognise.
+2. An insertion is owed — every track played owes one — and the application
+   opens the full-window player. The owner reaches it again from the playback
+   bar: from its button, or by pressing the sleeve beside it, which is what
+   they recognise.
 3. The application takes the medium — a disc, a vinyl record, or a tape —
-   from its case and inserts it into its matching player.
+   from its case and inserts it into the machine's own slot for it: the
+   platter under the lid, the cassette bay, or the disc drawer, all three of
+   them on the one console.
 4. The medium turns while audio plays, for the duration of the queue.
 5. The owner pauses; the motion stops and the medium stays in place.
 6. The owner resumes; the motion continues.
@@ -1769,9 +1771,10 @@ graph LR
    listing every guest beside them is the defect this rule removes. A track
    belonging to no named record answers for itself.
 3. Each artist listed is shown with the photograph a lookup has cached for
-   them, and one nobody has looked up is shown by name alone — browsing
-   fetches nothing, because a screenful of rows would be dozens of requests
-   against services that allow one a second.
+   them. Browsing fetches nothing — a screenful of rows would be dozens of
+   requests against services that allow one a second — so the pictures are
+   fetched instead by a background pass that runs once a session, one artist
+   at a time, for the artists that have none.
 4. The owner drills into an artist and then an album, or straight into an
    album, returning by the breadcrumb.
 5. The owner plays a track, an album, or an artist. An album or artist queue

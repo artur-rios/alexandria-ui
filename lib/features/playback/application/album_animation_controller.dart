@@ -134,12 +134,18 @@ class AlbumAnimationState {
 
 /// Whether the medium has to go in again (UC-21 main flow step 2).
 ///
-/// An insertion is owed on the session's first play, and whenever the record
-/// changes — never between the tracks of one record, which is what a record
-/// already on the platter does not need. A record is its album and its
-/// artist, however the queue that plays it was built: an album or an artist
-/// queue carries that label itself, and a track queue's record is resolved
-/// from the current track's own metadata (see [recordOf]).
+/// Once per track played, which is a deliberate reversal. This owed an
+/// insertion only when the *record* changed — a record already on the platter
+/// does not need putting on again, which is true of a real one and was the
+/// rule here for as long as there was one. What it meant in use is that the
+/// animation played once and then never again for the rest of an album, and
+/// the player screen it opens stopped opening: the owner asked for it back on
+/// every track, and the machine putting the medium in again is the thing they
+/// are playing music to watch.
+///
+/// The record is still what picks the medium (see [recordOf]) — a 1971 album
+/// is a record on every one of its tracks — but what an insertion is owed
+/// *for* is the track now playing.
 class AlbumAnimationController extends Notifier<AlbumAnimationState> {
   /// What the last insertion was shown for, as `(kind, identity)`.
   ///
@@ -177,7 +183,7 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
       return const AlbumAnimationState();
     }
 
-    final identity = (queue.kind, record.identity);
+    final identity = (queue.kind, _identityOf(queue, record.identity));
     final owed = _shownFor != identity;
 
     return AlbumAnimationState(
@@ -207,9 +213,22 @@ class AlbumAnimationController extends Notifier<AlbumAnimationState> {
     final library = !queue.isEmpty && !queue.namesOwnRecord
         ? ref.read(musicLibraryProvider).value
         : null;
-    _shownFor = (queue.kind, recordOf(queue, library).identity);
+    _shownFor = (
+      queue.kind,
+      _identityOf(queue, recordOf(queue, library).identity),
+    );
     state = AlbumAnimationState(medium: state.medium);
   }
+
+  /// What an insertion is owed for: the track playing, falling back to the
+  /// record.
+  ///
+  /// The track's uuid alone would do for every queue that has one, and the
+  /// record is kept behind it for the one case that does not — an index past
+  /// the end of the queue, where `current` is null and the record is still a
+  /// perfectly good answer to "what is this".
+  String _identityOf(PlaybackQueue queue, String record) =>
+      queue.current?.uuid ?? record;
 
   /// Forgets which record has already had its insertion shown, so the next
   /// play — even of the very same record — owes one again (Finding 4).
