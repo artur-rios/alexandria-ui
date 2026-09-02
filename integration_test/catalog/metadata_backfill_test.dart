@@ -121,7 +121,26 @@ void main() {
 
       // The tags the file was indexed with: a performer and no album artist,
       // which is what leaves the artists area listing the performer.
-      final asIndexed = await theTrack(client, credential);
+      //
+      // Polled for the same reason the refresh below is, and it took a
+      // Windows runner to show why: `indexCountFiles` answers as soon as the
+      // run has *counted* a file, which is not the same moment its tags have
+      // been read and written. Asserting straight off that count passed on
+      // every Linux run and lost the race on a slower machine, reading a row
+      // that existed with nothing in it yet.
+      final tagged = DateTime.now().add(const Duration(seconds: 30));
+      Map<String, String> asIndexed = await theTrack(client, credential);
+      while (asIndexed['artist'] == null) {
+        expect(
+          DateTime.now().isBefore(tagged),
+          isTrue,
+          reason:
+              'the run never read the fixture: the catalog holds $asIndexed',
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        asIndexed = await theTrack(client, credential);
+      }
+
       expect(asIndexed['artist'], 'The Guest');
       expect(asIndexed['albumArtist'], isNull);
 
