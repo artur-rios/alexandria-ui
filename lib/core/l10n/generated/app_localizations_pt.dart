@@ -1455,7 +1455,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get librariesNone =>
-      'Você ainda não criou uma biblioteca. Marque uma pasta registrada como biblioteca na tela de pastas de origem.';
+      'Você ainda não criou uma biblioteca. Crie uma com o botão acima — uma pasta vira uma biblioteca, e seus arquivos aparecem lá em vez de nos painéis por tipo.';
 
   @override
   String get librariesExplanation =>

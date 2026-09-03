@@ -424,7 +424,7 @@
   "runFailuresOpen": "Ver quais arquivos",
   "librariesOpen": "Bibliotecas",
   "librariesTitle": "Bibliotecas",
-  "librariesNone": "Voc\u00ea ainda n\u00e3o criou uma biblioteca. Marque uma pasta registrada como biblioteca na tela de pastas de origem.",
+  "librariesNone": "Voc\u00ea ainda n\u00e3o criou uma biblioteca. Crie uma com o bot\u00e3o acima \u2014 uma pasta vira uma biblioteca, e seus arquivos aparecem l\u00e1 em vez de nos pain\u00e9is por tipo.",
   "librariesExplanation": "Uma biblioteca mantém os arquivos de uma pasta juntos e em suas pastas — um curso, com a gravação e os materiais de cada aula lado a lado. Seus arquivos aparecem aqui em vez de nos painéis por tipo, para não soterrar o resto. A busca continua encontrando-os.",
   "libraryNameLabel": "Nome da biblioteca",
   "libraryAdd": "Adicionar uma biblioteca",

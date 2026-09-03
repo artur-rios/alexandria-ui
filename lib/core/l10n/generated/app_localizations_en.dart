@@ -1451,7 +1451,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get librariesNone =>
-      'You have not made a library yet. Mark a registered folder as a library on the Source folders screen.';
+      'You have not made a library yet. Add one with the button above — a folder becomes a library, and its files are shown there instead of in the type panels.';
 
   @override
   String get librariesExplanation =>

@@ -1945,9 +1945,9 @@
   "@librariesTitle": {
     "description": "Title of the screen listing registered libraries."
   },
-  "librariesNone": "You have not made a library yet. Mark a registered folder as a library on the Source folders screen.",
+  "librariesNone": "You have not made a library yet. Add one with the button above \u2014 a folder becomes a library, and its files are shown there instead of in the type panels.",
   "@librariesNone": {
-    "description": "Libraries design: no folder has been marked as a library. A state, not a failure."
+    "description": "Libraries design: no folder has been made into a library yet. A state, not a failure \u2014 and it points at the button on this screen rather than at another one."
   },
   "librariesExplanation": "A library keeps a folder's files together and in their folders — a course, with each class's recording and handouts side by side. Its files are shown here instead of in the type panels, so they do not bury everything else. Search still finds them.",
   "@librariesExplanation": {

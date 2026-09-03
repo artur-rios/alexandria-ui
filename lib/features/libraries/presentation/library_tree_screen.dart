@@ -10,6 +10,7 @@ import '../../catalog/presentation/file_details_view.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../domain/library.dart';
+import 'library_name_dialog.dart';
 
 /// One library, browsed as the folders it is (libraries design).
 ///
@@ -143,16 +144,30 @@ class LibrariesScreen extends ConsumerWidget {
             // Said before anything is marked. Marking a folder empties part
             // of a type panel, and that is not visible until afterwards.
             Text(l10n.librariesExplanation, style: theme.textTheme.bodyMedium),
+            const SizedBox(height: AppSpacing.md),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FilledButton.icon(
+                // The screen's primary action, focused so it is reachable
+                // from the keyboard (FR-UX-11). Here as well as on the
+                // sources screen: making a library was reachable only while
+                // registering a folder or from that folder's own row, which
+                // is not where an owner looking at their libraries goes to
+                // add one.
+                autofocus: true,
+                onPressed: () => _add(context, ref),
+                icon: const Icon(Icons.create_new_folder_outlined),
+                label: Text(l10n.libraryAdd),
+              ),
+            ),
             const SizedBox(height: AppSpacing.lg),
             Expanded(
               child: AsyncStateView(
                 value: libraries,
                 onRetry: ref.read(librariesControllerProvider.notifier).reload,
                 isEmpty: (libraries) => libraries.isEmpty,
-                // Says where libraries come from, because there is nothing
-                // to press here: a folder becomes a library on the sources
-                // screen, where its scope is chosen, and an empty list with
-                // no explanation reads as a broken screen.
+                // Points at the button above rather than at another screen:
+                // an empty list with nothing said reads as a broken screen.
                 emptyBuilder: (context) =>
                     Center(child: Text(l10n.librariesNone)),
                 builder: (context, libraries) => ListView.builder(
@@ -192,6 +207,58 @@ class LibrariesScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Makes a library out of a folder the owner picks.
+  ///
+  /// Through the sources controller rather than straight to the libraries
+  /// one, which is what the folder's own row does: registering with the core
+  /// and marking the folder are one action, and doing only the first leaves
+  /// the sources screen still offering to mark a folder that is already a
+  /// library. The mark is written only when the folder is a registered
+  /// source — a library can be made of a folder that is not one.
+  ///
+  /// A folder picker rather than a text field, for the reason [_move] gives:
+  /// the owner is naming somewhere that exists.
+  Future<void> _add(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+
+    final path = await ref.read(folderPickerProvider).pickFolder();
+    // AF-01 of every picker flow here: cancelling asks for nothing.
+    if (path == null || !context.mounted) return;
+
+    // Suggested from the folder, editable before it is stored: a directory
+    // called `2024-final-v2` is a path, not a title.
+    final name = await askForLibraryName(context, suggestion: _folderName(path));
+    if (name == null || !context.mounted) return;
+
+    final failure = await ref
+        .read(librarySourcesControllerProvider.notifier)
+        .markAsLibrary(path: path, name: name);
+    if (failure == null || !context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          failure is ConflictFailure
+              ? l10n.libraryOverlaps
+              : failure.localizedMessage(l10n),
+        ),
+      ),
+    );
+  }
+
+  /// The last segment of [path], which is what the folder is called.
+  ///
+  /// Both separators, and trailing ones dropped: a Windows path picked at a
+  /// drive's root arrives as `D:\courses\` and its name is `courses`, not
+  /// the empty string after the final slash.
+  String _folderName(String path) {
+    final segments = path
+        .split(RegExp(r'[/\\]'))
+        .where((segment) => segment.isNotEmpty);
+
+    return segments.isEmpty ? path : segments.last;
   }
 
   /// Points [library] at the folder it moved to.

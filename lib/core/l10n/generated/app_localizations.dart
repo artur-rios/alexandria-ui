@@ -2646,10 +2646,10 @@ abstract class AppLocalizations {
   /// **'Libraries'**
   String get librariesTitle;
 
-  /// Libraries design: no folder has been marked as a library. A state, not a failure.
+  /// Libraries design: no folder has been made into a library yet. A state, not a failure — and it points at the button on this screen rather than at another one.
   ///
   /// In en, this message translates to:
-  /// **'You have not made a library yet. Mark a registered folder as a library on the Source folders screen.'**
+  /// **'You have not made a library yet. Add one with the button above — a folder becomes a library, and its files are shown there instead of in the type panels.'**
   String get librariesNone;
 
   /// Says what a library does and, crucially, what it hides: marking a folder empties part of a type panel and that is not visible until afterwards.
