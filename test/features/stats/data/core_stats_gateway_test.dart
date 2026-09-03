@@ -139,7 +139,7 @@ void main() {
       final read = await built.gateway.read(limit: 10, credential: credential);
 
       expect(
-        ((read as MusicStatsReadLoaded).stats).topAlbums.single.artist,
+        (read as MusicStatsReadLoaded).stats.topAlbums.single.artist,
         isNull,
       );
     });
