@@ -492,6 +492,22 @@ abstract interface class CoreClient {
   /// `alexandria_playlist_read` (playlists Task 6).
   Future<CoreJsonResponse> playlistRead(String uuid, String token);
 
+  /// Records that a track was played, through `alexandria_play_record`
+  /// (play history design).
+  ///
+  /// [jsonBody] carries the `fileUuid`, and nothing else: the core stamps
+  /// the moment from its own clock, so this application says what was
+  /// played and never when.
+  Future<CoreJsonResponse> playRecord(String jsonBody, String token);
+
+  /// What was played most, through `alexandria_music_stats` (play history
+  /// design).
+  ///
+  /// [jsonQuery] carries an optional `limit` — how many rows each ranking
+  /// answers with. One call rather than one per ranking: they are read
+  /// together, and separate calls could each see a different instant.
+  Future<CoreJsonResponse> musicStats(String jsonQuery, String token);
+
   /// Treats a folder as a library through `alexandria_library_register`
   /// (libraries design).
   ///
@@ -1133,6 +1149,18 @@ class FfiCoreClient implements CoreClient {
   Future<CoreJsonResponse> playlistRead(String uuid, String token) async =>
       _reply<CoreJsonResponse>(
         await _isolate.call('playlistRead', [uuid, token]),
+      );
+
+  @override
+  Future<CoreJsonResponse> playRecord(String jsonBody, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('playRecord', [jsonBody, token]),
+      );
+
+  @override
+  Future<CoreJsonResponse> musicStats(String jsonQuery, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('musicStats', [jsonQuery, token]),
       );
 
   @override

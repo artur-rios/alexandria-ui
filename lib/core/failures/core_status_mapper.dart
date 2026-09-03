@@ -36,6 +36,7 @@ Failure mapCoreStatus(
     CoreStatusFamily.watchlist => _mapWatchlist(code),
     CoreStatusFamily.readingList => _mapReadingList(code),
     CoreStatusFamily.playlist => _mapPlaylist(code),
+    CoreStatusFamily.play => _mapPlay(code),
     CoreStatusFamily.enrichment => _mapEnrichment(code),
     CoreStatusFamily.library => _mapLibrary(code),
     CoreStatusFamily.auth => _mapAuth(code),
@@ -283,6 +284,31 @@ Failure _mapPlaylist(int code) => switch (code) {
     code: code,
   ),
   _ => Failure.unexpected(family: CoreStatusFamily.playlist, code: code),
+};
+
+// The play family is the playlist family minus its invalid-state code: a
+// play is recorded or it is not, and there is no state for one to be in.
+// Confirmed against alexandria-ffi's own `PLAY_ERR_*` constants rather than
+// assumed from the pattern — `PLAY_ERR_OTHER` is 9 here as it is there, with
+// 5 left unused.
+Failure _mapPlay(int code) => switch (code) {
+  PLAY_ERR_INVALID_INPUT => Failure.invalidInput(
+    family: CoreStatusFamily.play,
+    code: code,
+  ),
+  PLAY_ERR_UNAUTHORIZED => Failure.unauthorized(
+    family: CoreStatusFamily.play,
+    code: code,
+  ),
+  PLAY_ERR_NOT_INITIALIZED => Failure.notInitialized(
+    family: CoreStatusFamily.play,
+    code: code,
+  ),
+  PLAY_ERR_NOT_FOUND => Failure.notFound(
+    family: CoreStatusFamily.play,
+    code: code,
+  ),
+  _ => Failure.unexpected(family: CoreStatusFamily.play, code: code),
 };
 
 // The enrichment family carries one code the others do not:

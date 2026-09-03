@@ -8,6 +8,7 @@ import '../../organization/presentation/collections_screen.dart';
 import '../../enrichment/presentation/enrichment_sweep_screen.dart';
 import '../../libraries/presentation/library_tree_screen.dart';
 import '../../playlists/presentation/playlists_screen.dart';
+import '../../stats/presentation/music_stats_screen.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
 import 'menu_entry.dart';
@@ -78,6 +79,15 @@ class LibraryMenu extends StatelessWidget {
           icon: Icons.travel_explore_outlined,
           label: l10n.enrichmentSweepOpen,
           onSelected: () => EnrichmentSweepScreen.show(context),
+        ),
+        // Beside the playlists and the lookup, in the group that is about
+        // what the owner does with the library rather than what is in it:
+        // this is the only screen here that answers a question about the
+        // owner instead of about their files.
+        MenuEntry(
+          icon: Icons.insights_outlined,
+          label: l10n.musicStatsOpen,
+          onSelected: () => MusicStatsScreen.show(context),
         ),
         MenuGroupHeading(l10n.libraryToolsGroupReview),
         MenuEntry(

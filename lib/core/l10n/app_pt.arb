@@ -424,7 +424,7 @@
   "runFailuresOpen": "Ver quais arquivos",
   "librariesOpen": "Bibliotecas",
   "librariesTitle": "Bibliotecas",
-  "librariesNone": "Você ainda não criou uma biblioteca. Marque uma pasta registrada como biblioteca na tela de pastas de origem.",
+  "librariesNone": "Voc\u00ea ainda n\u00e3o criou uma biblioteca. Marque uma pasta registrada como biblioteca na tela de pastas de origem.",
   "librariesExplanation": "Uma biblioteca mantém os arquivos de uma pasta juntos e em suas pastas — um curso, com a gravação e os materiais de cada aula lado a lado. Seus arquivos aparecem aqui em vez de nos painéis por tipo, para não soterrar o resto. A busca continua encontrando-os.",
   "libraryNameLabel": "Nome da biblioteca",
   "libraryAdd": "Adicionar uma biblioteca",
@@ -594,5 +594,18 @@
   "audioTransportSemantics": "Controles do reprodutor",
   "albumCoverLabel": "Capa do \u00e1lbum",
   "enrichmentLookupFailed": "A busca n\u00e3o p\u00f4de ser conclu\u00edda. Os servi\u00e7os podem estar inacess\u00edveis \u2014 tente novamente mais tarde.",
-  "enrichmentUntagged": "Esta faixa n\u00e3o tem etiqueta de artista ou de t\u00edtulo para buscar nada com ela."
+  "enrichmentUntagged": "Esta faixa n\u00e3o tem etiqueta de artista ou de t\u00edtulo para buscar nada com ela.",
+  "musicStatsOpen": "Estat\u00edsticas musicais",
+  "musicStatsTitle": "Estat\u00edsticas musicais",
+  "musicStatsNone": "Nada foi contado ainda. Uma faixa conta quando voc\u00ea ouve metade dela, ou quatro minutos \u2014 o que vier primeiro.",
+  "musicStatsSummary": "{plays, plural, =1{1 reprodu\u00e7\u00e3o} other{{plays} reprodu\u00e7\u00f5es}} em {tracks, plural, =1{1 faixa} other{{tracks} faixas}}",
+  "musicStatsPeriod": "Contado de {first} at\u00e9 {last}",
+  "musicStatsRefresh": "Ler de novo",
+  "musicStatsTopTracks": "Faixas mais reproduzidas",
+  "musicStatsTopArtists": "Artistas mais reproduzidos",
+  "musicStatsTopAlbums": "\u00c1lbuns mais reproduzidos",
+  "musicStatsTopGenres": "G\u00eaneros mais reproduzidos",
+  "musicStatsPlays": "{count, plural, =1{1 reprodu\u00e7\u00e3o} other{{count} reprodu\u00e7\u00f5es}}",
+  "musicStatsArtistTracks": "{count, plural, =1{1 faixa} other{{count} faixas}}",
+  "musicStatsUntaggedNote": "Faixas sem etiquetas entram nos totais e s\u00f3 podem ser listadas pelo nome."
 }

@@ -2127,4 +2127,77 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get enrichmentUntagged =>
       'Esta faixa não tem etiqueta de artista ou de título para buscar nada com ela.';
+
+  @override
+  String get musicStatsOpen => 'Estatísticas musicais';
+
+  @override
+  String get musicStatsTitle => 'Estatísticas musicais';
+
+  @override
+  String get musicStatsNone =>
+      'Nada foi contado ainda. Uma faixa conta quando você ouve metade dela, ou quatro minutos — o que vier primeiro.';
+
+  @override
+  String musicStatsSummary(num plays, num tracks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      plays,
+      locale: localeName,
+      other: '$plays reproduções',
+      one: '1 reprodução',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      tracks,
+      locale: localeName,
+      other: '$tracks faixas',
+      one: '1 faixa',
+    );
+    return '$_temp0 em $_temp1';
+  }
+
+  @override
+  String musicStatsPeriod(String first, String last) {
+    return 'Contado de $first até $last';
+  }
+
+  @override
+  String get musicStatsRefresh => 'Ler de novo';
+
+  @override
+  String get musicStatsTopTracks => 'Faixas mais reproduzidas';
+
+  @override
+  String get musicStatsTopArtists => 'Artistas mais reproduzidos';
+
+  @override
+  String get musicStatsTopAlbums => 'Álbuns mais reproduzidos';
+
+  @override
+  String get musicStatsTopGenres => 'Gêneros mais reproduzidos';
+
+  @override
+  String musicStatsPlays(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reproduções',
+      one: '1 reprodução',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String musicStatsArtistTracks(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count faixas',
+      one: '1 faixa',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get musicStatsUntaggedNote =>
+      'Faixas sem etiquetas entram nos totais e só podem ser listadas pelo nome.';
 }

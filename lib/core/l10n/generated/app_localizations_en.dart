@@ -2121,4 +2121,77 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get enrichmentUntagged =>
       'This track has no artist or title tag to look anything up with.';
+
+  @override
+  String get musicStatsOpen => 'Music stats';
+
+  @override
+  String get musicStatsTitle => 'Music stats';
+
+  @override
+  String get musicStatsNone =>
+      'Nothing has been counted yet. A track counts once you have heard half of it, or four minutes of it — whichever comes first.';
+
+  @override
+  String musicStatsSummary(num plays, num tracks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      plays,
+      locale: localeName,
+      other: '$plays plays',
+      one: '1 play',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      tracks,
+      locale: localeName,
+      other: '$tracks tracks',
+      one: '1 track',
+    );
+    return '$_temp0 across $_temp1';
+  }
+
+  @override
+  String musicStatsPeriod(String first, String last) {
+    return 'Counted from $first to $last';
+  }
+
+  @override
+  String get musicStatsRefresh => 'Read again';
+
+  @override
+  String get musicStatsTopTracks => 'Most played tracks';
+
+  @override
+  String get musicStatsTopArtists => 'Most played artists';
+
+  @override
+  String get musicStatsTopAlbums => 'Most played albums';
+
+  @override
+  String get musicStatsTopGenres => 'Most played genres';
+
+  @override
+  String musicStatsPlays(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count plays',
+      one: '1 play',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String musicStatsArtistTracks(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tracks',
+      one: '1 track',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get musicStatsUntaggedNote =>
+      'Tracks with no tags are counted in the totals, and can only be listed by name.';
 }

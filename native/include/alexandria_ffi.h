@@ -165,6 +165,26 @@
 #define PLAYLIST_ERR_OTHER 9
 
 /**
+ * FFI status codes returned by play-history operations (play history
+ * design). Deliberately separate from `PLAYLIST_*` — per the convention
+ * above — even though the two families are about the same music: a
+ * playlist is a thing the owner curates and a play is something that
+ * happened, and the calls fail for different reasons. `PLAY_OK ==
+ * PLAYLIST_OK == 0` by convention.
+ */
+#define PLAY_OK 0
+
+#define PLAY_ERR_INVALID_INPUT 1
+
+#define PLAY_ERR_UNAUTHORIZED 2
+
+#define PLAY_ERR_NOT_INITIALIZED 3
+
+#define PLAY_ERR_NOT_FOUND 4
+
+#define PLAY_ERR_OTHER 9
+
+/**
  * FFI status codes returned by local-auth operations (UC-34/UC-35).
  * Deliberately separate from the other `*_OK == 0` families — per the
  * convention above — so local-auth use cases can grow their own set
@@ -422,6 +442,19 @@ typedef struct PlaylistJsonResult {
   int status;
   char *json;
 } PlaylistJsonResult;
+
+/**
+ * Result of every play-history FFI function. On success `status` is
+ * `PLAY_OK` and `json` is a NUL-terminated JSON string of the response
+ * body — byte-for-byte the same shape HTTP returns from the matching
+ * `/v1/plays*` route (FR-FC-24 / NFR-09). On failure `json` is NULL and
+ * `status` carries the mapped error code. The caller must free `json`
+ * with `alexandria_free_string`.
+ */
+typedef struct PlayJsonResult {
+  int status;
+  char *json;
+} PlayJsonResult;
 
 /**
  * Result of `alexandria_auth_local_login` / `alexandria_auth_local_set_credentials`
@@ -1186,6 +1219,31 @@ struct PlaylistJsonResult alexandria_playlist_move_entry(const char *playlist_uu
                                                          const char *entry_uuid,
                                                          const char *json_body,
                                                          const char *token);
+
+/**
+ * Record that a track was played (play history design).
+ *
+ * `json_body` is the JSON body HTTP would send (`fileUuid`). The function
+ * deserializes it, calls the same `RecordPlayHandler` the HTTP route uses,
+ * and on success serializes the returned `PlayEvent` back to JSON — so the
+ * FFI and HTTP surfaces agree byte-for-byte modulo key ordering (parity,
+ * FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ *
+ * The play is stamped from the core's clock, not from anything passed
+ * here: the caller says *what* was played, never *when*.
+ */
+struct PlayJsonResult alexandria_play_record(const char *json_body, const char *token);
+
+/**
+ * What was played most (play history design).
+ *
+ * `json_query` is the JSON form of the query string HTTP would send
+ * (`limit`); NULL or an empty string asks for the default. On success
+ * `json` carries the `MusicStats` — byte-for-byte the same shape HTTP
+ * returns from `GET /v1/plays/stats` (parity, FR-FC-24 / NFR-09).
+ * `token` is the bearer auth token.
+ */
+struct PlayJsonResult alexandria_music_stats(const char *json_query, const char *token);
 
 /**
  * Local login (UC-34 / FR-AU-04): verify email + password and create a

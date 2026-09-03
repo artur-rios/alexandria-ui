@@ -29,6 +29,9 @@ single local application with no network hop between the interface and its data.
 - Plays video with full screen, seeking, subtitle tracks, and audio tracks.
 - Plays audio in a persistent player, with the disc, vinyl, or tape animation
   turning for the duration of an album or artist and stopping on pause.
+- Counts what is played and ranks it — most played tracks, artists, albums,
+  and genres — where a track counts once half of it, or four minutes of it,
+  has been heard.
 - Views PDFs, e-books, comic books, images, saved HTML pages, and rendered
   Markdown.
 - Edits Markdown and text files in place, with a live preview.

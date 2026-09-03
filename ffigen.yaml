@@ -62,6 +62,11 @@ macros:
     # header's own convention, but a family of its own so the two never
     # cross-read.
     - "PLAYLIST_.*"
+    # Play history: recording a play and reading the rankings it feeds. Its
+    # own family, deliberately separate from PLAYLIST_ in the header -- a
+    # playlist is something the owner curates and a play is something that
+    # happened, and the calls fail for different reasons.
+    - "PLAY_.*"
     # Music enrichment. Its own family, and the only one carrying a code for
     # "this installation has not configured the feature" — mapped to a
     # configuration failure rather than an invalid input, because the caller

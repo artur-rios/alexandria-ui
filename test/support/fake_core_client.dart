@@ -969,6 +969,32 @@ class FakeCoreClient implements CoreClient {
     return playlistResponse;
   }
 
+  /// What both play history calls answer, and what they were called with.
+  ///
+  /// One response for the pair, as the library calls share theirs: a test
+  /// that cares about the record and a test that cares about the rankings
+  /// never run in the same act.
+  CoreJsonResponse playResponse = (status: PLAY_OK, json: '{}');
+
+  /// Every play recorded, in order.
+  final List<({String jsonBody, String token})> playRecordCalls = [];
+
+  /// Every statistics read asked for, in order — the recorded query is what
+  /// says the screen's row limit actually reached the core.
+  final List<({String jsonQuery, String token})> musicStatsCalls = [];
+
+  @override
+  Future<CoreJsonResponse> playRecord(String jsonBody, String token) async {
+    playRecordCalls.add((jsonBody: jsonBody, token: token));
+    return playResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> musicStats(String jsonQuery, String token) async {
+    musicStatsCalls.add((jsonQuery: jsonQuery, token: token));
+    return playResponse;
+  }
+
   /// What every library call answers, and what they were called with.
   ///
   /// The recorded arguments are the assertion that matters for

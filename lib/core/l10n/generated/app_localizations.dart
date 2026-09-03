@@ -3671,6 +3671,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This track has no artist or title tag to look anything up with.'**
   String get enrichmentUntagged;
+
+  /// Library menu entry opening what the owner has played most (play history design).
+  ///
+  /// In en, this message translates to:
+  /// **'Music stats'**
+  String get musicStatsOpen;
+
+  /// Title of the screen ranking what has been played.
+  ///
+  /// In en, this message translates to:
+  /// **'Music stats'**
+  String get musicStatsTitle;
+
+  /// Play history design: an empty state that also says what the rule is, because a chart that stays empty after a few skipped tracks is otherwise indistinguishable from one that is broken.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been counted yet. A track counts once you have heard half of it, or four minutes of it — whichever comes first.'**
+  String get musicStatsNone;
+
+  /// Play history design: the totals above the rankings. Both halves are counted over everything played, including tracks carrying no tags, which the rankings below cannot show.
+  ///
+  /// In en, this message translates to:
+  /// **'{plays, plural, =1{1 play} other{{plays} plays}} across {tracks, plural, =1{1 track} other{{tracks} tracks}}'**
+  String musicStatsSummary(num plays, num tracks);
+
+  /// Play history design: what period the numbers cover, so a small total reads as a short history rather than as little listening.
+  ///
+  /// In en, this message translates to:
+  /// **'Counted from {first} to {last}'**
+  String musicStatsPeriod(String first, String last);
+
+  /// Play history design: re-reads the rankings. The screen does not follow the music while it is open — a chart reordering itself under the reader would be harder to read than one a minute old.
+  ///
+  /// In en, this message translates to:
+  /// **'Read again'**
+  String get musicStatsRefresh;
+
+  /// Play history design: heading of the track ranking.
+  ///
+  /// In en, this message translates to:
+  /// **'Most played tracks'**
+  String get musicStatsTopTracks;
+
+  /// Play history design: heading of the artist ranking.
+  ///
+  /// In en, this message translates to:
+  /// **'Most played artists'**
+  String get musicStatsTopArtists;
+
+  /// Play history design: heading of the album ranking.
+  ///
+  /// In en, this message translates to:
+  /// **'Most played albums'**
+  String get musicStatsTopAlbums;
+
+  /// Play history design: heading of the genre ranking.
+  ///
+  /// In en, this message translates to:
+  /// **'Most played genres'**
+  String get musicStatsTopGenres;
+
+  /// Play history design: how many times one row was played.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 play} other{{count} plays}}'**
+  String musicStatsPlays(num count);
+
+  /// Play history design: how many distinct tracks of one artist's were played — what tells a deep catalogue apart from one song on repeat.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 track} other{{count} tracks}}'**
+  String musicStatsArtistTracks(num count);
+
+  /// Play history design: says why the rankings below the track list can be shorter than the totals suggest, rather than leaving it looking like rows went missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracks with no tags are counted in the totals, and can only be listed by name.'**
+  String get musicStatsUntaggedNote;
 }
 
 class _AppLocalizationsDelegate

@@ -6,6 +6,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../../catalog/domain/music_metadata.dart';
+import '../../stats/domain/play_threshold.dart';
 import '../domain/media_player.dart';
 import '../domain/music_grouping.dart';
 import '../domain/playback_position_store.dart';
@@ -115,6 +116,16 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
   StreamSubscription<PlaybackStatus>? _statuses;
   DateTime _lastWrite = DateTime.fromMillisecondsSinceEpoch(0);
+
+  /// Whether the track now open has already been counted as played (play
+  /// history design).
+  ///
+  /// Cleared every time a track opens, which is what makes a track played
+  /// twice two plays rather than one — the same record put on again is the
+  /// listening the rankings exist to count. It also keeps the status stream,
+  /// which reports several times a second, from writing a row each time it
+  /// passes the threshold.
+  bool _playCounted = false;
 
   /// Which run of [_openAt] is the current one.
   ///
@@ -529,6 +540,9 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
             source.path,
             startAt: queue.index == index ? at : Duration.zero,
           );
+          // A different track, or the same one again: either way this is a
+          // playthrough that has not been counted yet.
+          _playCounted = false;
           state = state.copyWith(
             queue: queue,
             stage: AudioStage.playing,
@@ -598,6 +612,11 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
       state = state.copyWith(status: status, lastSkipped: state.lastSkipped);
 
       if (status.hasEnded) {
+        // Heard to the end, so it is a play whatever its length — counted
+        // before the queue moves on, while the finished track is still the
+        // current one.
+        _countPlay();
+
         // Step 7: a track played through leaves no position, and the queue
         // moves on — or ends.
         unawaited(_forgetPosition());
@@ -609,8 +628,35 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
         return;
       }
 
+      // Half of it, or four minutes — the point at which a track the owner
+      // moved on from still counts (`countsAsPlayed`). Checked on the status
+      // stream rather than only at the end, because a track skipped after
+      // most of it was heard was listened to.
+      if (countsAsPlayed(
+        position: status.position,
+        duration: status.duration,
+      )) {
+        _countPlay();
+      }
+
       unawaited(_recordPosition());
     });
+  }
+
+  /// Records a play of the open track, at most once per time it opened.
+  ///
+  /// Fire-and-forget: the recorder never throws, and nothing the owner is
+  /// doing waits on a statistic being written. The flag is set before the
+  /// call rather than after it, so the several statuses that arrive while
+  /// the write is in flight cannot each start one of their own.
+  void _countPlay() {
+    if (_playCounted) return;
+
+    final file = state.queue.current;
+    if (file == null) return;
+
+    _playCounted = true;
+    unawaited(ref.read(playRecorderProvider).record(file.uuid));
   }
 
   Future<void> _forgetPosition() async {

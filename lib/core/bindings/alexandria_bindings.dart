@@ -1660,6 +1660,59 @@ class AlexandriaBindings {
         LibraryJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
       >();
 
+  /// What was played most (play history design).
+  ///
+  /// `json_query` is the JSON form of the query string HTTP would send
+  /// (`limit`); NULL or an empty string asks for the default. On success
+  /// `json` carries the `MusicStats` — byte-for-byte the same shape HTTP
+  /// returns from `GET /v1/plays/stats` (parity, FR-FC-24 / NFR-09).
+  /// `token` is the bearer auth token.
+  PlayJsonResult alexandria_music_stats(
+    ffi.Pointer<ffi.Char> json_query,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_music_stats(json_query, token);
+  }
+
+  late final _alexandria_music_statsPtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlayJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+        >
+      >('alexandria_music_stats');
+  late final _alexandria_music_stats = _alexandria_music_statsPtr
+      .asFunction<
+        PlayJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+      >();
+
+  /// Record that a track was played (play history design).
+  ///
+  /// `json_body` is the JSON body HTTP would send (`fileUuid`). The function
+  /// deserializes it, calls the same `RecordPlayHandler` the HTTP route uses,
+  /// and on success serializes the returned `PlayEvent` back to JSON — so the
+  /// FFI and HTTP surfaces agree byte-for-byte modulo key ordering (parity,
+  /// FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  ///
+  /// The play is stamped from the core's clock, not from anything passed
+  /// here: the caller says *what* was played, never *when*.
+  PlayJsonResult alexandria_play_record(
+    ffi.Pointer<ffi.Char> json_body,
+    ffi.Pointer<ffi.Char> token,
+  ) {
+    return _alexandria_play_record(json_body, token);
+  }
+
+  late final _alexandria_play_recordPtr =
+      _lookup<
+        ffi.NativeFunction<
+          PlayJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+        >
+      >('alexandria_play_record');
+  late final _alexandria_play_record = _alexandria_play_recordPtr
+      .asFunction<
+        PlayJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
+      >();
+
   /// Append tracks to a playlist, in order, at consecutive positions after
   /// whatever it already holds (Task 4). The whole slice succeeds or none of
   /// it does.
@@ -2734,6 +2787,39 @@ const int PLAYLIST_ERR_OTHER = 9;
 const int PLAYLIST_ERR_UNAUTHORIZED = 2;
 
 const int PLAYLIST_OK = 0;
+
+const int PLAY_ERR_INVALID_INPUT = 1;
+
+const int PLAY_ERR_NOT_FOUND = 4;
+
+const int PLAY_ERR_NOT_INITIALIZED = 3;
+
+const int PLAY_ERR_OTHER = 9;
+
+const int PLAY_ERR_UNAUTHORIZED = 2;
+
+const int PLAY_OK = 0;
+
+/// Result of every play-history FFI function. On success `status` is
+/// `PLAY_OK` and `json` is a NUL-terminated JSON string of the response
+/// body — byte-for-byte the same shape HTTP returns from the matching
+/// `/v1/plays*` route (FR-FC-24 / NFR-09). On failure `json` is NULL and
+/// `status` carries the mapped error code. The caller must free `json`
+/// with `alexandria_free_string`.
+final class PlayJsonResult extends ffi.Struct {
+  @ffi.Int()
+  external int status;
+
+  external ffi.Pointer<ffi.Char> json;
+
+  static ffi.Pointer<PlayJsonResult> $allocate(
+    ffi.Allocator $allocator, {
+    required int status,
+    required ffi.Pointer<ffi.Char> json,
+  }) => $allocator<PlayJsonResult>()
+    ..ref.status = status
+    ..ref.json = json;
+}
 
 /// JSON result for the playback functions. `json` is NULL on error and
 /// `status` carries the mapped code. The caller must free `json` with

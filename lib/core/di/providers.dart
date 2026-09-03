@@ -160,6 +160,11 @@ import '../../features/tracking/data/core_watch_progress_gateway.dart';
 import '../../features/tracking/data/core_reading_list_gateway.dart';
 import '../../features/tracking/data/core_watchlist_gateway.dart';
 import '../../features/tracking/domain/reading_list.dart';
+import '../../features/stats/application/music_stats_controller.dart';
+import '../../features/stats/application/play_recorder.dart';
+import '../../features/stats/data/core_stats_gateway.dart';
+import '../../features/stats/domain/music_stats.dart';
+import '../../features/stats/domain/stats_gateway.dart';
 import '../../features/tracking/domain/reading_list_gateway.dart';
 import '../../features/tracking/domain/watchlist.dart';
 import '../../features/tracking/domain/watchlist_gateway.dart';
@@ -1022,6 +1027,28 @@ final artistImageControllerProvider =
 final artistPortraitBackfillProvider =
     NotifierProvider<ArtistPortraitBackfillController, ArtistPortraitBackfill>(
       ArtistPortraitBackfillController.new,
+    );
+
+/// The core's play history operations (play history design).
+final statsGatewayProvider = Provider<StatsGateway>((ref) {
+  final core = ref.read(startupControllerProvider.notifier).core;
+  if (core == null) {
+    throw StateError('the stats gateway was read before the core was loaded');
+  }
+
+  return CoreStatsGateway(core);
+});
+
+/// Tells the core a track was played.
+///
+/// A plain provider rather than a notifier: it holds no state, and the
+/// player is the only thing that calls it.
+final playRecorderProvider = Provider<PlayRecorder>(PlayRecorder.new);
+
+/// What the owner has played most.
+final musicStatsControllerProvider =
+    AsyncNotifierProvider<MusicStatsController, MusicStats?>(
+      MusicStatsController.new,
     );
 
 /// The core's library operations (libraries design).

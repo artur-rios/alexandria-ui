@@ -1165,6 +1165,31 @@ class CoreIsolate {
         }),
       ),
 
+      // The play history calls (play history design). Both take a JSON
+      // payload and the token, the shape every other two-string call here
+      // uses.
+      'playRecord' => withNativeString(
+        arguments.first! as String,
+        (jsonBody) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_play_record(jsonBody, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'musicStats' => withNativeString(
+        arguments.first! as String,
+        (jsonQuery) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_music_stats(jsonQuery, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
       // The library calls. `libraryBrowse` takes three consecutive strings,
       // which is the mapping a transposition breaks silently — the uuid
       // would be read as a folder path and answer nothing.
