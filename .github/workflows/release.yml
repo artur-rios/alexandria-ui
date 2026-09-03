@@ -110,8 +110,8 @@ env:
   # The 7.1 series specifically, not a newer one — see the long note on the
   # equivalent step in ci.yml for why ffmpeg-sys-next cannot build against
   # master's hwcontext headers.
-  FFMPEG_WINDOWS_RELEASE: autobuild-2026-08-16-13-00
-  FFMPEG_WINDOWS_ARCHIVE: ffmpeg-n7.1.5-16-g9a4bb2c579-win64-lgpl-shared-7.1.zip
+  FFMPEG_WINDOWS_RELEASE: autobuild-2026-07-31-14-10
+  FFMPEG_WINDOWS_ARCHIVE: ffmpeg-n7.1.5-12-g1fdbca85aa-win64-lgpl-shared-7.1.zip
 
   # The libraries a shared ffmpeg build links the core against by name. Listed
   # once so the bundling steps below cannot drift from each other.
@@ -140,10 +140,30 @@ jobs:
       # 7.1 series rather than master.
       - name: Install the ffmpeg development libraries
         shell: bash
+        # For the fallback's `gh api` call only; the pinned download needs no
+        # credential.
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -e
-          curl -fsSL -o /tmp/ffmpeg.zip \
-            "https://github.com/BtbN/FFmpeg-Builds/releases/download/${FFMPEG_WINDOWS_RELEASE}/${FFMPEG_WINDOWS_ARCHIVE}"
+          base=https://github.com/BtbN/FFmpeg-Builds/releases/download
+          # The same fallback CI has, and for the same reason: BtbN's autobuild
+          # releases are rolling, and an old tag is deleted once it ages out.
+          # A pin is the right default — a release should be built from a build
+          # somebody chose — but a pin that has been deleted upstream must not
+          # be the difference between a release happening and not happening.
+          # This one lapsed while nobody was tagging, and the failure landed on
+          # the next person to try to cut a release.
+          if ! curl -fsSL -o /tmp/ffmpeg.zip \
+            "$base/${FFMPEG_WINDOWS_RELEASE}/${FFMPEG_WINDOWS_ARCHIVE}"; then
+            echo "::warning::${FFMPEG_WINDOWS_RELEASE} no longer carries ${FFMPEG_WINDOWS_ARCHIVE}; falling back to the newest release that has a 7.1 LGPL shared build."
+            url=$(gh api repos/BtbN/FFmpeg-Builds/releases --paginate \
+              --jq '.[] | .assets[] | select(.name | test("win64-lgpl-shared-7\\.1\\.zip$")) | .browser_download_url' \
+              | head -1)
+            test -n "$url"
+            echo "::notice::using $url"
+            curl -fsSL -o /tmp/ffmpeg.zip "$url"
+          fi
           7z x /tmp/ffmpeg.zip -o/tmp/ffmpeg > /dev/null
           root=$(find /tmp/ffmpeg -maxdepth 1 -mindepth 1 -type d | head -1)
           test -f "$root/include/libavutil/hwcontext_cuda.h"
