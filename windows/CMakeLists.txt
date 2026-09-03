@@ -53,22 +53,30 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 add_subdirectory("runner")
 
 
-# TEMPORARY, for the blank-webview investigation. Remove once the cause is
-# known.
+# Keep the page engine off the GPU, because two plugins here cannot both have
+# one.
 #
-# webview_cef draws the page one of two ways. Linux compiles neither
-# `shared_texture_enabled` nor `external_begin_frame_enabled`, so CEF paints
-# into a CPU buffer and the plugin uploads it; Windows and macOS take frames as
-# a D3D11/IOSurface shared texture through `OnAcceleratedPaint`, and on that
-# build it is the *only* render path -- there is no `OnPaint` fallback behind
-# it. A saved page that responds to the cursor while showing nothing is what
-# that path looks like when the frames never arrive, and Windows is the only
-# platform here that runs it.
+# `media_kit_libs_windows_video` bundles its own ANGLE -- `libEGL.dll`,
+# `libGLESv2.dll`, `d3dcompiler_47.dll`, `vk_swiftshader.dll`, `vulkan-1.dll`,
+# a snapshot pinned by MD5 in 2022 -- and CEF's `CEF_BINARY_FILES` carries
+# files of exactly those five names. Both land in the bundle root, one copy
+# overwrites the other, and the loser is whichever plugin the install step got
+# to first. media_kit's build won, so Chromium's GPU process opened a
+# four-year-old ANGLE, asked `eglCreateContext` for an attribute that ANGLE has
+# never heard of, and died -- three times, and then fatally, which takes the
+# application with it. Before that it merely left the page blank, because the
+# GPU build of this plugin renders through `OnAcceleratedPaint` and has no
+# `OnPaint` behind it.
 #
-# Setting the cache entry before the plugin's own `option()` sees it puts
-# Windows on the same software path Linux has been using all along. If the page
-# appears, the GPU bridge is the fault and this line is a workaround; if it
-# stays blank, the fault is elsewhere and this line only costs frame rate.
+# Setting the cache entry before the plugin's own `option()` reads it compiles
+# out the shared-texture path, and that is also what makes `webview_app.cc`
+# pass `--disable-gpu --disable-gpu-compositing`. No GPU process, so the ANGLE
+# that would break it is never loaded, and the page is drawn into a CPU buffer
+# the way it already is on Linux. media_kit keeps its ANGLE and its video.
+#
+# The alternative is to make CEF's copies win instead and give the engine its
+# GPU back, which trades this failure for the risk of the same one in the video
+# player. A page that draws is worth more here than a page that draws quickly.
 set(WEBVIEW_CEF_GPU_TEXTURE OFF CACHE BOOL "" FORCE)
 
 # Generated plugin build rules, which manage building the plugins and adding
