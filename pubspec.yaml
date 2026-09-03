@@ -73,9 +73,10 @@ dependencies:
   file_selector: ^1.1.0
 
   # Renders the editor's live preview (Technology Stack Document §5, UC-18
-  # FR-ME-07). Discontinued upstream, and kept deliberately: the stack document
-  # records why, and what replaces it when the time comes.
-  flutter_markdown: ^0.7.7+1
+  # FR-ME-07). The maintained fork of `flutter_markdown`, which its own authors
+  # discontinued and named this as the replacement for; the API is the same one
+  # the preview was written against.
+  flutter_markdown_plus: ^1.0.12
 
   # The playback engine and its render surface (Technology Stack Document §5).
   # libmpv-backed, chosen because subtitle-track and audio-track selection on

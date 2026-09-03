@@ -102,7 +102,7 @@ them writes, re-encodes, or converts a file.
 | **xml** | latest stable at implementation time | Viewers | Reads an EPUB's container and package documents. See *EPUB is read directly* below. |
 | **archive** | latest stable at implementation time | Viewers | Reads CBZ comic archives and EPUB containers — both are zip — entry by entry, without extracting them to disk. |
 | **flutter_widget_from_html** | latest stable at implementation time | Viewers | Renders saved HTML pages as widgets. Deliberately not a browser engine: no script execution, which is both a lighter dependency and a smaller trust surface for arbitrary saved pages. |
-| **flutter_markdown** | latest stable at implementation time | Viewers, Editor | Renders Markdown for reading and for the editor's live preview pane. Discontinued upstream — see *flutter_markdown is discontinued* below. |
+| **flutter_markdown_plus** | latest stable at implementation time | Viewers, Editor | Renders Markdown for reading and for the editor's live preview pane. The maintained fork of `flutter_markdown` — see *the Markdown renderer moved* below. |
 | **markdown** | latest stable at implementation time | Viewers | Parses Markdown to HTML where the page renderer draws it. |
 
 Flutter's built-in `Image` decoders cover the image viewer; no additional package
@@ -118,14 +118,18 @@ The chapters come out as markup and are drawn by the same renderer a saved HTML
 page uses, so the two viewers share one rendering path rather than each carrying
 its own.
 
-**flutter_markdown is discontinued.** It was marked discontinued upstream after
-this stack was chosen. It is kept because it works, it is pure Dart, and nothing
-about a discontinued package stops rendering Markdown correctly — but it will
-not receive fixes, so it is a replacement waiting to be scheduled rather than a
-choice to defend. `flutter_widget_from_html` already renders the saved-page
-viewer and the EPUB chapters; routing Markdown through `markdown` to HTML and
-then through it would collapse three renderers into one, and is the obvious
-candidate when the time comes.
+**The Markdown renderer moved.** `flutter_markdown` was marked discontinued
+upstream after this stack was chosen, and its own authors named
+`flutter_markdown_plus` as the replacement. That is what the editor's preview
+draws with now: the same API the preview was written against, so the move was
+an import and a dependency line, and a package that is maintained again rather
+than one frozen at its last release.
+
+The longer-term consolidation is still open and still worth doing.
+`flutter_widget_from_html` already renders the saved-page viewer and the EPUB
+chapters; routing Markdown through `markdown` to HTML and then through it would
+collapse three renderers into one. The fork buys the time to do that when it is
+worth doing rather than because a dependency stopped receiving fixes.
 
 **Deferred decision — CBR.** CBZ archives are zip and are supported at launch by
 `archive`. CBR archives are RAR, which has no maintained pure-Dart decoder; that
@@ -244,7 +248,7 @@ section is the canonical list of the tools and versions.
 | Viewers | xml | latest stable at implementation time |
 | Viewers | archive | latest stable at implementation time |
 | Viewers | flutter_widget_from_html | latest stable at implementation time |
-| Viewers | flutter_markdown | latest stable at implementation time |
+| Viewers | flutter_markdown_plus | latest stable at implementation time |
 | Viewers | markdown | latest stable at implementation time |
 | Shell | window_manager | latest stable at implementation time |
 | Shell | file_selector | latest stable at implementation time |
