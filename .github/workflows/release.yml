@@ -436,6 +436,21 @@ jobs:
           }
           echo "The core is in the bundle, installed by the build itself."
 
+      # Chromium ships unstripped: `libcef.so` alone is 1.3 GB of library and
+      # symbols, and every Linux package here would carry all of it. Stripped,
+      # the whole bundle is about 390 MB rather than 1.5 GB.
+      #
+      # Both copies, and this is the part worth reading twice. The plugin's own
+      # downloaded copy is stripped as well as the built bundle's, because
+      # every later `flutter build linux` reassembles the bundle from that copy
+      # — and flutter_distributor runs a build of its own for the .deb. Strip
+      # only the bundle and the .deb ships the unstripped engine anyway.
+      - name: Strip the page engine
+        run: |
+          sh packaging/linux/strip-engine.sh \
+            build/linux/x64/release/bundle/lib \
+            linux/flutter/ephemeral/.plugin_symlinks/webview_cef/third/cef/Release
+
       # Records what the core needs at runtime, so a package that cannot load
       # it is diagnosable from the build log rather than only from a user's
       # machine. Deliberately not a gate: every library resolves here because
