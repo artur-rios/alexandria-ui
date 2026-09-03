@@ -31,12 +31,17 @@ class ChromiumPage extends StatefulWidget {
   /// What to load.
   final String fileUrl;
 
-  /// Called when the engine could not be started at all.
+  /// Called when the engine could not be started, or started and then never
+  /// read the file.
   ///
   /// A machine without a working CEF — an unpacked build, a missing library,
   /// a sandbox that refuses it — still has a library full of saved pages, so
   /// the viewer falls back to drawing the markup itself rather than showing
   /// the owner an empty frame (`PageViewerScreen`).
+  ///
+  /// What it cannot answer for is an engine that reads the file and then draws
+  /// nothing: `webview_cef` reports a load, and reports no frame. A page whose
+  /// texture stays empty is a page this callback never hears about.
   final VoidCallback onFailed;
 
   @override
@@ -57,16 +62,38 @@ class _ChromiumPageState extends State<ChromiumPage> {
   /// page; waiting is not.
   static const Duration _startupBudget = Duration(seconds: 10);
 
+  /// How long the engine has to finish loading the file after it has started.
+  ///
+  /// Separate from [_startupBudget] because they are different failures: that
+  /// one is Chromium never coming up, this one is Chromium coming up and then
+  /// never reading the file. The document is on the owner's own disk, so this
+  /// is many times longer than it can honestly take.
+  static const Duration _loadBudget = Duration(seconds: 15);
+
   late final WebViewController _controller;
 
   /// Whether the engine got far enough to own anything worth closing.
   bool _started = false;
+
+  /// Runs while the engine has a file open and has not said it read it.
+  Timer? _loadDeadline;
 
   @override
   void initState() {
     super.initState();
     _controller = WebviewManager().createWebView(
       loading: const Center(child: CircularProgressIndicator()),
+    );
+    // Set before the load starts, not after: `initialize` is what begins it,
+    // and a listener attached afterwards can miss the event it is waiting for
+    // on a file that was quick to read.
+    _controller.setWebviewListener(
+      WebviewEventsListener(
+        onLoadEnd: (_, _) {
+          _loadDeadline?.cancel();
+          _loadDeadline = null;
+        },
+      ),
     );
     unawaited(_start());
   }
@@ -82,6 +109,9 @@ class _ChromiumPageState extends State<ChromiumPage> {
 
       await _controller.initialize(widget.fileUrl).timeout(_startupBudget);
       _started = true;
+      // Armed only now: before this there is no browser to be waiting on, and
+      // a slow start is already [_startupBudget]'s to complain about.
+      _loadDeadline = Timer(_loadBudget, _giveUp);
     } on Object catch (error) {
       // Not raised: a page that cannot be drawn by the engine is a page this
       // application can still draw itself, and that is a better answer than a
@@ -101,8 +131,16 @@ class _ChromiumPageState extends State<ChromiumPage> {
     // raises `LateInitializationError` out of a widget being unmounted —
     // which is a crash while leaving a page, over an engine that had already
     // failed.
+    _loadDeadline?.cancel();
     if (_started) unawaited(_close());
     super.dispose();
+  }
+
+  /// Hands the page back to the markup renderer, once.
+  void _giveUp() {
+    _loadDeadline = null;
+    _log.warning('the page engine did not read the file in $_loadBudget');
+    if (mounted) widget.onFailed();
   }
 
   Future<void> _close() async {

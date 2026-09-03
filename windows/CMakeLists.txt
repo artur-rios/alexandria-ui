@@ -53,6 +53,24 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 add_subdirectory("runner")
 
 
+# TEMPORARY, for the blank-webview investigation. Remove once the cause is
+# known.
+#
+# webview_cef draws the page one of two ways. Linux compiles neither
+# `shared_texture_enabled` nor `external_begin_frame_enabled`, so CEF paints
+# into a CPU buffer and the plugin uploads it; Windows and macOS take frames as
+# a D3D11/IOSurface shared texture through `OnAcceleratedPaint`, and on that
+# build it is the *only* render path -- there is no `OnPaint` fallback behind
+# it. A saved page that responds to the cursor while showing nothing is what
+# that path looks like when the frames never arrive, and Windows is the only
+# platform here that runs it.
+#
+# Setting the cache entry before the plugin's own `option()` sees it puts
+# Windows on the same software path Linux has been using all along. If the page
+# appears, the GPU bridge is the fault and this line is a workaround; if it
+# stays blank, the fault is elsewhere and this line only costs frame rate.
+set(WEBVIEW_CEF_GPU_TEXTURE OFF CACHE BOOL "" FORCE)
+
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
 include(flutter/generated_plugins.cmake)
