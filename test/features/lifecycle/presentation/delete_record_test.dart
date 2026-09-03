@@ -26,6 +26,7 @@ import '../../../support/fake_bookmarks.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_lifecycle_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// A [FileHold] a test can put on a file (UC-33 AF-04).
 class _StubHold implements FileHold {
@@ -97,7 +98,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Solaris.epub').first);
+    await openDetailsOf(tester, 'Solaris.epub');
     await tester.pumpAndSettle();
 
     return (container: container, lifecycle: lifecycle);

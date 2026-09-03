@@ -88,8 +88,8 @@ class InMemorySettingsStore implements SettingsStore {
   @override
   Future<void> setMusicLookupContact(String contact) async =>
       _musicLookupContact = contact.trim().isEmpty
-          ? defaultMusicLookupContact
-          : contact.trim();
+      ? defaultMusicLookupContact
+      : contact.trim();
 
   @override
   String? getString(String key) => _values[key];

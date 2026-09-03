@@ -144,8 +144,10 @@ void main() {
       // every second of the track rather than at the few points a
       // hand-written case would cover.
       final List<SyncedLyricLine> lines = parseLrc(
-        List.generate(50, (i) => '[00:${(i * 1).toString().padLeft(2, '0')}.00]line $i')
-            .join('\n'),
+        List.generate(
+          50,
+          (i) => '[00:${(i * 1).toString().padLeft(2, '0')}.00]line $i',
+        ).join('\n'),
       );
       final subject = SyncedLyrics(lines);
 

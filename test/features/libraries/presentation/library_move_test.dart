@@ -59,9 +59,7 @@ void main() {
       surfaceSize: const Size(1440, 1000),
       extraOverrides: <Override>[
         libraryGatewayProvider.overrideWithValue(gateway),
-        folderPickerProvider.overrideWithValue(
-          FakeFolderPicker(path: picked),
-        ),
+        folderPickerProvider.overrideWithValue(FakeFolderPicker(path: picked)),
         librarySourceStoreProvider.overrideWithValue(store),
       ],
     );
@@ -144,10 +142,7 @@ void main() {
       tester,
       writeOutcomes: const [
         LibraryWrite.failed(
-          failure: Failure.conflict(
-            family: CoreStatusFamily.library,
-            code: 6,
-          ),
+          failure: Failure.conflict(family: CoreStatusFamily.library, code: 6),
         ),
       ],
     );
@@ -187,11 +182,10 @@ void main() {
       await pressMove(tester);
 
       expect(opened.gateway.moved, hasLength(1));
-      expect(
-        opened.store.read().map((source) => source.path),
-        [from, to],
-        reason: 'a registration was overwritten',
-      );
+      expect(opened.store.read().map((source) => source.path), [
+        from,
+        to,
+      ], reason: 'a registration was overwritten');
     },
   );
 }

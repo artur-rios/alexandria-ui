@@ -15,8 +15,14 @@ void main() {
     // would mean the derivation was not deriving anything.
     final indexes = {
       for (final album in [
-        'OK Computer', 'Kind of Blue', 'Hounds of Love', 'Dummy',
-        'In Rainbows', 'Blue Lines', 'Loveless', 'Spiderland',
+        'OK Computer',
+        'Kind of Blue',
+        'Hounds of Love',
+        'Dummy',
+        'In Rainbows',
+        'Blue Lines',
+        'Loveless',
+        'Spiderland',
       ])
         sleeveIndexFor(album, 8),
     };

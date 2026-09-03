@@ -25,6 +25,7 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_watchlist_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Managing watchlists (UC-29, FR-TR-01 … FR-TR-04).
 void main() {
@@ -156,7 +157,7 @@ void main() {
     ) async {
       final opened = await openWatchlists(tester, openScreen: false);
 
-      await tester.tap(find.text('Stalker.mkv').first);
+      await openDetailsOf(tester, 'Stalker.mkv');
       await tester.pumpAndSettle();
       await tester.tap(find.text(messages(tester).watchlistAddTo));
       await tester.pumpAndSettle();
@@ -316,8 +317,7 @@ void main() {
         openScreen: false,
       );
 
-      await tester.tap(find.text('Stalker.mkv').first);
-      await tester.pumpAndSettle();
+      await openDetailsOf(tester, 'Stalker.mkv');
       await tester.tap(find.text(messages(tester).watchlistAddTo));
       await tester.pumpAndSettle();
       await tester.tap(
@@ -339,8 +339,7 @@ void main() {
         openScreen: false,
       );
 
-      await tester.tap(find.text('Stalker.mkv').first);
-      await tester.pumpAndSettle();
+      await openDetailsOf(tester, 'Stalker.mkv');
       await tester.tap(find.text(messages(tester).watchlistAddTo));
       await tester.pumpAndSettle();
 

@@ -240,32 +240,33 @@ void main() {
         entry('4.flac', album: 'Get Rich', artist: 'Eminem, 50 Cent'),
       ]);
 
-      expect(
-        library.map((entry) => entry.albumArtist).toSet(),
-        {'50 Cent'},
-        reason: 'one record, one artist, whatever each track names',
-      );
+      expect(library.map((entry) => entry.albumArtist).toSet(), {
+        '50 Cent',
+      }, reason: 'one record, one artist, whatever each track names');
     });
 
     // Half-tagged libraries are the norm: one editor writes the frame,
     // another does not.
-    test('GivenOneTrackTagged_WhenAskedWhoTheRecordIsBy_ThenThatTagSettlesIt', () {
-      final library = albumArtistsAcross([
-        entry('1.flac', album: 'Kind of Blue', artist: 'Miles Davis'),
-        entry(
-          '2.flac',
-          album: 'Kind of Blue',
-          artist: 'John Coltrane',
-          albumArtist: 'Miles Davis Sextet',
-        ),
-      ]);
+    test(
+      'GivenOneTrackTagged_WhenAskedWhoTheRecordIsBy_ThenThatTagSettlesIt',
+      () {
+        final library = albumArtistsAcross([
+          entry('1.flac', album: 'Kind of Blue', artist: 'Miles Davis'),
+          entry(
+            '2.flac',
+            album: 'Kind of Blue',
+            artist: 'John Coltrane',
+            albumArtist: 'Miles Davis Sextet',
+          ),
+        ]);
 
-      expect(
-        library.map((entry) => entry.albumArtist).toSet(),
-        {'Miles Davis Sextet'},
-        reason: 'a tag on any track answers for the record, not just its own',
-      );
-    });
+        expect(
+          library.map((entry) => entry.albumArtist).toSet(),
+          {'Miles Davis Sextet'},
+          reason: 'a tag on any track answers for the record, not just its own',
+        );
+      },
+    );
 
     test('GivenATrackWithItsOwnTag_WhenAsked_ThenItsOwnTagWins', () {
       // The owner's answer outranks anything inferred from its neighbours.
@@ -274,10 +275,7 @@ void main() {
         entry('2.flac', album: 'Split', artist: 'B', albumArtist: 'B'),
       ]);
 
-      expect(
-        library.map((entry) => entry.albumArtist).toList(),
-        ['A', 'B'],
-      );
+      expect(library.map((entry) => entry.albumArtist).toList(), ['A', 'B']);
     });
 
     test('GivenNoAlbum_WhenAsked_ThenTheTrackAnswersForItself', () {
@@ -298,10 +296,11 @@ void main() {
         entry('3.flac', album: 'Two', artist: 'C'),
       ]);
 
-      expect(
-        library.map((entry) => entry.albumArtist).toList(),
-        ['A', 'A', 'C'],
-      );
+      expect(library.map((entry) => entry.albumArtist).toList(), [
+        'A',
+        'A',
+        'C',
+      ]);
     });
 
     test('GivenATie_WhenAsked_ThenTheAnswerIsStable', () {
@@ -317,10 +316,7 @@ void main() {
         entry('1.flac', album: 'Split', artist: 'B'),
       ]);
 
-      expect(
-        first.first.albumArtist,
-        second.first.albumArtist,
-      );
+      expect(first.first.albumArtist, second.first.albumArtist);
       expect(first.first.albumArtist, 'A');
     });
   });

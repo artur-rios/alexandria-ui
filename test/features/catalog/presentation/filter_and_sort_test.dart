@@ -37,16 +37,8 @@ void main() {
                 listings ??
                 {
                   FileType.video: loadedDetails([
-                    aFile(
-                      uuid: '1',
-                      name: 'zebra.mp4',
-                      type: FileType.video,
-                    ),
-                    aFile(
-                      uuid: '2',
-                      name: 'apple.mp4',
-                      type: FileType.video,
-                    ),
+                    aFile(uuid: '1', name: 'zebra.mp4', type: FileType.video),
+                    aFile(uuid: '2', name: 'apple.mp4', type: FileType.video),
                   ]),
                 },
           ),

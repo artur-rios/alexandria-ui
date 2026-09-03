@@ -87,69 +87,67 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets(
-    'GivenTheCodeField_WhenReturnIsPressed_ThenTheCodeIsRedeemed',
-    (tester) async {
-      // FR-UX-11: Return submits from any field of the form.
-      final gateway = await openRecovery(tester);
-      final l10n = messages(tester);
-      await tester.enterText(
-        find.ancestor(
-          of: find.text(l10n.recoveryCodeLabel),
-          matching: find.byType(TextField),
-        ),
-        code,
-      );
-      await tester.enterText(
-        find.ancestor(
-          of: find.text(l10n.recoveryNewPassword),
-          matching: find.byType(TextField),
-        ),
-        password,
-      );
-      await tester.enterText(
-        find.ancestor(
-          of: find.text(l10n.recoveryConfirmPassword),
-          matching: find.byType(TextField),
-        ),
-        password,
-      );
-      await tester.pump();
+  testWidgets('GivenTheCodeField_WhenReturnIsPressed_ThenTheCodeIsRedeemed', (
+    tester,
+  ) async {
+    // FR-UX-11: Return submits from any field of the form.
+    final gateway = await openRecovery(tester);
+    final l10n = messages(tester);
+    await tester.enterText(
+      find.ancestor(
+        of: find.text(l10n.recoveryCodeLabel),
+        matching: find.byType(TextField),
+      ),
+      code,
+    );
+    await tester.enterText(
+      find.ancestor(
+        of: find.text(l10n.recoveryNewPassword),
+        matching: find.byType(TextField),
+      ),
+      password,
+    );
+    await tester.enterText(
+      find.ancestor(
+        of: find.text(l10n.recoveryConfirmPassword),
+        matching: find.byType(TextField),
+      ),
+      password,
+    );
+    await tester.pump();
 
-      await tester.pressReturnIn(
-        find.ancestor(
-          of: find.text(l10n.recoveryCodeLabel),
-          matching: find.byType(TextField),
-        ),
-      );
+    await tester.pressReturnIn(
+      find.ancestor(
+        of: find.text(l10n.recoveryCodeLabel),
+        matching: find.byType(TextField),
+      ),
+    );
 
-      expect(gateway.redemptions, hasLength(1));
-    },
-  );
+    expect(gateway.redemptions, hasLength(1));
+  });
 
-  testWidgets(
-    'GivenAMarkedField_WhenTheOwnerTypesInIt_ThenTheMarkGoesAway',
-    (tester) async {
-      // AF-01, as on every other form: what the last attempt marked stops
-      // being true at the first keystroke.
-      await openRecovery(tester);
-      final l10n = messages(tester);
-      await tester.tap(find.text(l10n.recoverySubmit));
-      await tester.pumpAndSettle();
-      expect(find.text(l10n.recoveryCodeMissing), findsOneWidget);
+  testWidgets('GivenAMarkedField_WhenTheOwnerTypesInIt_ThenTheMarkGoesAway', (
+    tester,
+  ) async {
+    // AF-01, as on every other form: what the last attempt marked stops
+    // being true at the first keystroke.
+    await openRecovery(tester);
+    final l10n = messages(tester);
+    await tester.tap(find.text(l10n.recoverySubmit));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.recoveryCodeMissing), findsOneWidget);
 
-      await tester.enterText(
-        find.ancestor(
-          of: find.text(l10n.recoveryCodeLabel),
-          matching: find.byType(TextField),
-        ),
-        code,
-      );
-      await tester.pump();
+    await tester.enterText(
+      find.ancestor(
+        of: find.text(l10n.recoveryCodeLabel),
+        matching: find.byType(TextField),
+      ),
+      code,
+    );
+    await tester.pump();
 
-      expect(find.text(l10n.recoveryCodeMissing), findsNothing);
-    },
-  );
+    expect(find.text(l10n.recoveryCodeMissing), findsNothing);
+  });
 
   group('the main flow', () {
     // Step 1: reachable from login, and only from there.

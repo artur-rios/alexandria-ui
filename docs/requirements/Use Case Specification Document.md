@@ -585,13 +585,19 @@ graph LR
 
 **Main Flow**
 
-1. The owner opens a file from a listing, a search result, or a collection.
+1. The owner presses the details button on a file's row or tile, in a listing,
+   the dashboard's recent list, or a library's folder view. Tapping the row
+   itself opens the file rather than its details: a reader, a viewer, or
+   playback, according to its type. The details are one press away from
+   wherever a file is listed, because everything else a file can have done to
+   it — renaming, metadata, collections, deletion — is reached from them.
 2. The application requests the file by its UUID from the core.
 3. The core returns the record with its type-specific metadata.
 4. The application presents the metadata, the on-disk path, and the lifecycle
    state, together with the actions the file's type allows.
-5. The owner may open the file, which hands off to the viewer or player registered
-   for its type.
+5. The owner may open the file from here too, which hands off to the same
+   viewer or player a tap on the row would — the details remain the way in for
+   a file that cannot simply be opened.
 
 **Alternative Flows**
 
@@ -599,7 +605,7 @@ graph LR
 | --- | --- | --- |
 | AF-01 | The core reports the file as not found | The application says the file is no longer in the catalog and returns to the listing, refreshing it. |
 | AF-02 | The record is soft-deleted | The application shows it as deleted and offers restore (UC-34) instead of editing. |
-| AF-03 | The record is marked missing on disk | The application shows it as missing, offers a re-scan, and disables the actions that need the file. |
+| AF-03 | The record is marked missing on disk | The application shows it as missing, offers a re-scan, and disables the actions that need the file. A tap on such a file's row opens these details rather than a reader, since there is nothing on disk to open. |
 | AF-04 | No viewer is registered for the type | The application presents the details and reports that the file cannot be opened, leaving the other actions available. |
 | AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
 

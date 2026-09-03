@@ -158,22 +158,25 @@ void main() {
     // so an artist photograph was written somewhere nothing would look for
     // it again, and the player was handed `artist-images/….jpg` and found
     // nothing there.
-    test('GivenTheCatalogsDirectory_WhenTheCachesArePlaced_ThenTheyAreBesideIt', () {
-      final directories = cacheDirectoriesIn(
-        '${Platform.pathSeparator}home${Platform.pathSeparator}owner',
-      );
+    test(
+      'GivenTheCatalogsDirectory_WhenTheCachesArePlaced_ThenTheyAreBesideIt',
+      () {
+        final directories = cacheDirectoriesIn(
+          '${Platform.pathSeparator}home${Platform.pathSeparator}owner',
+        );
 
-      expect(
-        directories[coreImageCacheDirVariable],
-        '${Platform.pathSeparator}home${Platform.pathSeparator}owner'
-        '${Platform.pathSeparator}artist-images',
-      );
-      expect(
-        directories[coreThumbnailCacheDirVariable],
-        '${Platform.pathSeparator}home${Platform.pathSeparator}owner'
-        '${Platform.pathSeparator}thumbnails',
-      );
-    });
+        expect(
+          directories[coreImageCacheDirVariable],
+          '${Platform.pathSeparator}home${Platform.pathSeparator}owner'
+          '${Platform.pathSeparator}artist-images',
+        );
+        expect(
+          directories[coreThumbnailCacheDirVariable],
+          '${Platform.pathSeparator}home${Platform.pathSeparator}owner'
+          '${Platform.pathSeparator}thumbnails',
+        );
+      },
+    );
 
     test('GivenAPathThatEndsInASeparator_WhenPlaced_ThenItIsNotDoubled', () {
       final directories = cacheDirectoriesIn(

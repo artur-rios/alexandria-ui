@@ -15,6 +15,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Looking at an image (UC-24, FR-VW-04, FR-VW-07).
 void main() {
@@ -72,15 +73,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text(target.name).first);
-    await tester.pumpAndSettle();
-
+    // The row opens the file itself now, so a test that wants it open taps
+    // the row, and one that wants the details taps the button beside it —
+    // where the Open action still is, for a file that cannot just be opened.
     if (openIt) {
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
-      );
-      await tester.tap(find.text(l10n.viewerOpen));
+      await tester.tap(find.text(target.name).first);
       await tester.pumpAndSettle();
+    } else {
+      await openDetailsOf(tester, target.name);
     }
 
     return container;

@@ -7,8 +7,7 @@ import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 /// §2.3).
 class FakeLibraryGateway implements LibraryGateway {
   /// Creates a gateway holding [libraries].
-  FakeLibraryGateway({List<Library>? libraries})
-    : libraries = [...?libraries];
+  FakeLibraryGateway({List<Library>? libraries}) : libraries = [...?libraries];
 
   /// What a browse answers.
   final List<Library> libraries;
@@ -71,7 +70,11 @@ class FakeLibraryGateway implements LibraryGateway {
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
 
     libraries.add(
-      Library(uuid: 'lib-${libraries.length + 1}', name: name, rootPath: rootPath),
+      Library(
+        uuid: 'lib-${libraries.length + 1}',
+        name: name,
+        rootPath: rootPath,
+      ),
     );
     return const LibraryWrite.done();
   }

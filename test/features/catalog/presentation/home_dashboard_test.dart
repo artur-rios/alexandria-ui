@@ -11,6 +11,7 @@ import 'package:alexandria_ui/features/library_sources/presentation/library_sour
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/tracking/domain/reading_list.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist.dart';
+import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -151,17 +152,19 @@ void main() {
       },
     );
 
-    testWidgets('GivenARecentFile_WhenItIsOpened_ThenTheDetailsAppear', (
+    testWidgets('GivenARecentFile_WhenItIsOpened_ThenTheFileItselfOpens', (
       tester,
     ) async {
       // Main flow step 4: opening from here behaves as opening from a listing,
-      // because it is the same view.
+      // because it is the same call — and a listing row opens the file rather
+      // than a dialog about it (`openFile`).
       await openDashboard(tester, listings: aLibrary());
 
       await tester.tap(find.text('newest.pdf'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(FileDetailsView), findsOneWidget);
+      expect(find.byType(DocumentViewerScreen), findsOneWidget);
+      expect(find.byType(FileDetailsView), findsNothing);
     });
 
     testWidgets(
@@ -223,11 +226,7 @@ void main() {
             title: 'So What',
             indexedAt: DateTime.utc(2026, 1),
           )
-          ..addFile(
-            uuid: '2',
-            name: 'itinerary.pdf',
-            type: FileType.document,
-          );
+          ..addFile(uuid: '2', name: 'itinerary.pdf', type: FileType.document);
 
         await openDashboard(tester, gateway: gateway);
 

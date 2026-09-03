@@ -19,6 +19,7 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_lifecycle_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// One file's details (UC-13, FR-CT-05).
 void main() {
@@ -67,7 +68,7 @@ void main() {
     await tester.pumpAndSettle();
 
     if (tapRow) {
-      await tester.tap(find.text('Kind of Blue.flac'));
+      await openDetailsOf(tester, 'Kind of Blue.flac');
       await tester.pumpAndSettle();
     }
 
@@ -603,25 +604,31 @@ void main() {
       );
     });
 
-    testWidgets('GivenAVideo_WhenItsDetailsOpen_ThenNoPlaylistActionIsOffered', (
-      tester,
-    ) async {
-      // Offered for its own type and nothing else, like the two tracking
-      // controls beside it: a playlist holds audio.
-      //
-      // The outcome is spelled out because the fake gateway answers
-      // `aFile(uuid)` when a test does not, and that helper defaults to
-      // audio — so `openDetails(tester)` alone would show an audio dialog
-      // and pass this for the wrong reason.
-      await openDetails(
-        tester,
-        outcome: FileDetailsOutcome.read(
-          details: FileDetails(file: aFile(uuid: uuid, type: FileType.video)),
-        ),
-      );
+    testWidgets(
+      'GivenAVideo_WhenItsDetailsOpen_ThenNoPlaylistActionIsOffered',
+      (tester) async {
+        // Offered for its own type and nothing else, like the two tracking
+        // controls beside it: a playlist holds audio.
+        //
+        // The outcome is spelled out because the fake gateway answers
+        // `aFile(uuid)` when a test does not, and that helper defaults to
+        // audio — so `openDetails(tester)` alone would show an audio dialog
+        // and pass this for the wrong reason.
+        await openDetails(
+          tester,
+          outcome: FileDetailsOutcome.read(
+            details: FileDetails(
+              file: aFile(uuid: uuid, type: FileType.video),
+            ),
+          ),
+        );
 
-      expect(find.byTooltip(localizations(tester).playlistAddTo), findsNothing);
-    });
+        expect(
+          find.byTooltip(localizations(tester).playlistAddTo),
+          findsNothing,
+        );
+      },
+    );
 
     testWidgets('GivenADeletedTrack_WhenItsDetailsOpen_ThenItCannotJoinOne', (
       tester,
@@ -641,5 +648,4 @@ void main() {
       expect(find.byTooltip(localizations(tester).playlistAddTo), findsNothing);
     });
   });
-
 }

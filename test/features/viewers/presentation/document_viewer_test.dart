@@ -18,6 +18,7 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_document_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Reading a PDF or an e-book (UC-22, FR-VW-01, FR-VW-02, FR-VW-07, FR-VW-08).
 void main() {
@@ -78,15 +79,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Solaris.epub').first);
-    await tester.pumpAndSettle();
-
+    // The row opens the file itself now, so a test that wants it open taps
+    // the row, and one that wants the details taps the button beside it —
+    // where the Open action still is, for a file that cannot just be opened.
     if (openIt) {
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
-      );
-      await tester.tap(find.text(l10n.viewerOpen));
+      await tester.tap(find.text('Solaris.epub').first);
       await tester.pumpAndSettle();
+    } else {
+      await openDetailsOf(tester, 'Solaris.epub');
     }
 
     return (container: container, documents: documents);
@@ -281,8 +281,11 @@ void main() {
       );
     });
 
-    // The viewer is left, and the file's other actions are where they were.
-    testWidgets('GivenAFailure_WhenTheViewerIsClosed_ThenTheDetailsAreBack', (
+    // The viewer is left, and the file's other actions are where they always
+    // are: a press away, on the row it was opened from. It closes back to the
+    // listing rather than to a dialog now, because that is where the owner
+    // opened it.
+    testWidgets('GivenAFailure_WhenTheViewerIsClosed_ThenTheListingIsBack', (
       tester,
     ) async {
       await open(tester, outcome: FakeDocumentGateway.unreadable);
@@ -290,6 +293,9 @@ void main() {
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
 
+      expect(find.byType(DocumentViewerScreen), findsNothing);
+
+      await openDetailsOf(tester, 'Solaris.epub');
       expect(find.text(messages(tester).renameOpen), findsOneWidget);
     });
   });

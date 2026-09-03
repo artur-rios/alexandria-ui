@@ -104,8 +104,13 @@ class _RecentSection extends ConsumerWidget {
                 title: Text(title),
                 subtitle: Text(file.type.label(l10n)),
                 // Main flow step 4: opening an item here behaves exactly as
-                // opening it from its listing, because it is the same view.
-                onTap: () => FileDetailsView.show(context, ref, file.uuid),
+                // opening it from its listing, which now means the file
+                // itself rather than a dialog about it (`openFile`).
+                onTap: () => openFile(context, ref, file),
+                // And the way to its details is where it is on a listing row:
+                // beside it. A file is reachable from here, so everything the
+                // details hold has to be too.
+                trailing: FileDetailsButton(file: file),
               );
             },
           ),

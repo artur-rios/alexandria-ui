@@ -805,9 +805,7 @@ void main() {
         await openScreen(
           tester,
           registered: [source('/home/owner/courses/rust')],
-          extraOverrides: [
-            libraryGatewayProvider.overrideWithValue(libraries),
-          ],
+          extraOverrides: [libraryGatewayProvider.overrideWithValue(libraries)],
         );
         final l10n = AppLocalizations.of(
           tester.element(find.byType(LibrarySourcesScreen)),

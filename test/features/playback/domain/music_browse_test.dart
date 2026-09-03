@@ -33,9 +33,27 @@ void main() {
   );
 
   final tagged = [
-    entry(uuid: '1', title: 'Airbag', artist: 'Radiohead', album: 'OK', track: 1),
-    entry(uuid: '2', title: 'Karma', artist: 'Radiohead', album: 'OK', track: 2),
-    entry(uuid: '3', title: 'Roads', artist: 'Portishead', album: 'Dummy', track: 1),
+    entry(
+      uuid: '1',
+      title: 'Airbag',
+      artist: 'Radiohead',
+      album: 'OK',
+      track: 1,
+    ),
+    entry(
+      uuid: '2',
+      title: 'Karma',
+      artist: 'Radiohead',
+      album: 'OK',
+      track: 2,
+    ),
+    entry(
+      uuid: '3',
+      title: 'Roads',
+      artist: 'Portishead',
+      album: 'Dummy',
+      track: 1,
+    ),
   ];
 
   group('artists', () {
@@ -44,10 +62,10 @@ void main() {
       () {
         final artists = artistsIn(tagged);
 
-        expect([for (final group in artists) group.name], [
-          'Portishead',
-          'Radiohead',
-        ]);
+        expect(
+          [for (final group in artists) group.name],
+          ['Portishead', 'Radiohead'],
+        );
       },
     );
 
@@ -62,7 +80,10 @@ void main() {
       () {
         // The untagged files are the ones that need tagging: gathered, and out
         // of the way of a library that is mostly tagged.
-        final artists = artistsIn([...tagged, entry(uuid: '4', title: 'Loose')]);
+        final artists = artistsIn([
+          ...tagged,
+          entry(uuid: '4', title: 'Loose'),
+        ]);
 
         expect(artists.last.name, isNull);
         expect(artists.last.entries.single.file.uuid, '4');
@@ -77,10 +98,10 @@ void main() {
         entry(uuid: '6', artist: 'Boards of Canada'),
       ]);
 
-      expect([for (final group in artists) group.name], [
-        'aphex twin',
-        'Boards of Canada',
-      ]);
+      expect(
+        [for (final group in artists) group.name],
+        ['aphex twin', 'Boards of Canada'],
+      );
     });
   });
 
@@ -151,17 +172,20 @@ void main() {
         ...tagged,
       ]);
 
-      expect([for (final group in artists) group.name], [
-        'Portishead',
-        'Radiohead',
-      ]);
+      expect(
+        [for (final group in artists) group.name],
+        ['Portishead', 'Radiohead'],
+      );
       expect(artists.last.entries, hasLength(3));
     });
   });
 
   group('albums', () {
     test('GivenALibrary_WhenAlbumsAreListed_ThenEachAppearsOnce', () {
-      expect([for (final group in albumsIn(tagged)) group.name], ['Dummy', 'OK']);
+      expect(
+        [for (final group in albumsIn(tagged)) group.name],
+        ['Dummy', 'OK'],
+      );
     });
 
     test(
@@ -198,18 +222,33 @@ void main() {
       },
     );
 
-    test('GivenAnArtist_WhenTheirAlbumsAreListed_ThenOnlyTheirsAreReturned', () {
-      final albums = albumsOfArtist('Radiohead', tagged);
+    test(
+      'GivenAnArtist_WhenTheirAlbumsAreListed_ThenOnlyTheirsAreReturned',
+      () {
+        final albums = albumsOfArtist('Radiohead', tagged);
 
-      expect([for (final group in albums) group.name], ['OK']);
-    });
+        expect([for (final group in albums) group.name], ['OK']);
+      },
+    );
   });
 
   group('tracks', () {
     test('GivenAnAlbum_WhenItsTracksAreListed_ThenTheyComeInTrackOrder', () {
       final tracks = tracksOfAlbum('OK', 'Radiohead', [
-        entry(uuid: '9', title: 'Karma', artist: 'Radiohead', album: 'OK', track: 2),
-        entry(uuid: '10', title: 'Airbag', artist: 'Radiohead', album: 'OK', track: 1),
+        entry(
+          uuid: '9',
+          title: 'Karma',
+          artist: 'Radiohead',
+          album: 'OK',
+          track: 2,
+        ),
+        entry(
+          uuid: '10',
+          title: 'Airbag',
+          artist: 'Radiohead',
+          album: 'OK',
+          track: 1,
+        ),
       ]);
 
       expect(tracks.map((e) => e.title), ['Airbag', 'Karma']);
@@ -220,7 +259,13 @@ void main() {
       () {
         final tracks = tracksOfAlbum('OK', 'Radiohead', [
           entry(uuid: '11', title: 'Bonus', artist: 'Radiohead', album: 'OK'),
-          entry(uuid: '12', title: 'Airbag', artist: 'Radiohead', album: 'OK', track: 1),
+          entry(
+            uuid: '12',
+            title: 'Airbag',
+            artist: 'Radiohead',
+            album: 'OK',
+            track: 1,
+          ),
         ]);
 
         expect(tracks.map((e) => e.title), ['Airbag', 'Bonus']);

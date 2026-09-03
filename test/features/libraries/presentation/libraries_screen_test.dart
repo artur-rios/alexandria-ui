@@ -22,7 +22,8 @@ void main() {
     rootPath: '/library/course',
   );
 
-  Future<({ProviderContainer container, FakeLibraryGateway gateway})> openLibraries(
+  Future<({ProviderContainer container, FakeLibraryGateway gateway})>
+  openLibraries(
     WidgetTester tester, {
     FakeLibraryGateway? gateway,
     List<Library> libraries = const [course],
@@ -52,10 +53,7 @@ void main() {
     // until afterwards. Said before anything is marked.
     await openLibraries(tester);
 
-    expect(
-      find.text(messages(tester).librariesExplanation),
-      findsOneWidget,
-    );
+    expect(find.text(messages(tester).librariesExplanation), findsOneWidget);
   });
 
   testWidgets('GivenNoLibraries_WhenTheScreenOpens_ThenItSaysSo', (
@@ -113,10 +111,7 @@ void main() {
     await tester.tap(find.text('class-01'));
     await tester.pumpAndSettle();
 
-    expect(
-      opened.gateway.readsMade.last,
-      (uuid: 'lib-1', path: 'class-01'),
-    );
+    expect(opened.gateway.readsMade.last, (uuid: 'lib-1', path: 'class-01'));
   });
 
   testWidgets('GivenAFolderIsOpen_WhenBackIsPressed_ThenItGoesUpNotOut', (
@@ -168,10 +163,7 @@ void main() {
     final gateway = FakeLibraryGateway(libraries: const [course])
       ..writeOutcomes.add(
         const LibraryWrite.failed(
-          failure: Failure.conflict(
-            family: CoreStatusFamily.library,
-            code: 6,
-          ),
+          failure: Failure.conflict(family: CoreStatusFamily.library, code: 6),
         ),
       );
     final opened = await openLibraries(tester, gateway: gateway);

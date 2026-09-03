@@ -515,15 +515,16 @@ void main() {
       );
     });
 
-    testWidgets('GivenAHitOutsideEveryLibrary_WhenItIsListed_ThenItIsNotTagged', (
-      tester,
-    ) async {
-      // The half that makes the test above mean something: a row that tagged
-      // everything would pass it.
-      await searchInLibrary(tester, libraryUuid: null);
+    testWidgets(
+      'GivenAHitOutsideEveryLibrary_WhenItIsListed_ThenItIsNotTagged',
+      (tester) async {
+        // The half that makes the test above mean something: a row that tagged
+        // everything would pass it.
+        await searchInLibrary(tester, libraryUuid: null);
 
-      expect(find.byType(Chip), findsNothing);
-    });
+        expect(find.byType(Chip), findsNothing);
+      },
+    );
 
     testWidgets(
       'GivenTheLibrariesAreNotReadYet_WhenAHitIsListed_ThenItStillSaysItIsInOne',
@@ -540,5 +541,4 @@ void main() {
       },
     );
   });
-
 }

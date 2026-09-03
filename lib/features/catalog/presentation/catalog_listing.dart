@@ -237,30 +237,43 @@ class _FileGrid extends ConsumerWidget {
         final file = files[index];
 
         return Card(
-          child: InkWell(
-            onTap: () => FileDetailsView.show(context, ref, file.uuid),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    file.isMissing
-                        ? Icons.report_gmailerrorred_outlined
-                        : Icons.insert_drive_file_outlined,
-                    color: file.isMissing ? theme.colorScheme.error : null,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    file.name,
-                    style: theme.textTheme.bodySmall,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+          child: Stack(
+            children: [
+              Positioned(
+                top: 0,
+                right: 0,
+                child: FileDetailsButton(file: file),
               ),
-            ),
+              Positioned.fill(
+                child: InkWell(
+                  onTap: () => openFile(context, ref, file),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          file.isMissing
+                              ? Icons.report_gmailerrorred_outlined
+                              : Icons.insert_drive_file_outlined,
+                          color: file.isMissing
+                              ? theme.colorScheme.error
+                              : null,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          file.name,
+                          style: theme.textTheme.bodySmall,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -304,8 +317,10 @@ class _FileRow extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return ListTile(
-      // UC-13 main flow step 1: a row opens its file's details.
-      onTap: () => FileDetailsView.show(context, ref, file.uuid),
+      // UC-13 main flow step 1: a row opens its file. The details are the
+      // button at the end of the row, and are still where a file that cannot
+      // be opened ends up (`openFile`).
+      onTap: () => openFile(context, ref, file),
       leading: Icon(
         // Deliberately not one of the navigation panel's icons: a row and a
         // destination that draw the same glyph are two different things
@@ -341,14 +356,19 @@ class _FileRow extends ConsumerWidget {
           : Text(file.name),
       // A file the last refresh could not find is still an active record; it
       // is marked rather than hidden, and reviewing them is UC-37.
-      trailing: file.isMissing
-          ? Text(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (file.isMissing)
+            Text(
               l10n.catalogFileMissing,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.error,
               ),
-            )
-          : null,
+            ),
+          FileDetailsButton(file: file),
+        ],
+      ),
     );
   }
 }
@@ -415,9 +435,7 @@ class _EmptyListing extends ConsumerWidget {
               const SizedBox(height: AppSpacing.lg),
               FilledButton.icon(
                 onPressed: () {
-                  final type = fileTypeFor(
-                    ref.read(shellControllerProvider),
-                  );
+                  final type = fileTypeFor(ref.read(shellControllerProvider));
                   if (type != null) {
                     ref
                         .read(listingViewControllerProvider.notifier)

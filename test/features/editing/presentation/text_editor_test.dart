@@ -25,6 +25,7 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_text_content_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Editing a Markdown or text file (UC-18, FR-ME-06 … FR-ME-10).
 void main() {
@@ -89,7 +90,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Notes.md').first);
+    await openDetailsOf(tester, 'Notes.md');
     await tester.pumpAndSettle();
 
     if (openIt && !loaded.isDeleted) {

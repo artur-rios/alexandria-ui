@@ -8,10 +8,13 @@ import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 // test speaks about both.
 import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
     as widgets;
+import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
+import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_ui/features/organization/presentation/bookmarks_view.dart';
 import 'package:alexandria_ui/features/playback/presentation/music_library_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -53,6 +56,97 @@ void main() {
 
     return container;
   }
+
+  group('opening a file (UC-13 main flow step 1)', () {
+    /// One document, listed under Documents.
+    Map<FileType, CatalogListing> aDocument({bool missing = false}) => {
+      FileType.document: loadedDetails([
+        aFile(
+          uuid: 'doc-1',
+          name: 'Solaris.epub',
+          type: FileType.document,
+          missingAt: missing ? DateTime(2026) : null,
+        ),
+      ]),
+    };
+
+    testWidgets('GivenARow_WhenItIsTapped_ThenTheFileItselfOpens', (
+      tester,
+    ) async {
+      // It used to open a dialog about the file, with an Open button inside
+      // it: two clicks and a modal to read something the owner had already
+      // pointed at.
+      await openListing(
+        tester,
+        listings: aDocument(),
+        destination: ShellDestination.books,
+      );
+
+      await tester.tap(find.text('Solaris.epub'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DocumentViewerScreen), findsOneWidget);
+      expect(find.byType(FileDetailsView), findsNothing);
+    });
+
+    testWidgets('GivenARow_WhenItsDetailsButtonIsPressed_ThenTheDetailsOpen', (
+      tester,
+    ) async {
+      // Renaming, metadata, collections and deletion all live in the details,
+      // so the way in is on every row rather than behind a gesture.
+      await openListing(
+        tester,
+        listings: aDocument(),
+        destination: ShellDestination.books,
+      );
+
+      await tester.tap(find.byType(FileDetailsButton));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(FileDetailsView), findsOneWidget);
+      expect(find.byType(DocumentViewerScreen), findsNothing);
+    });
+
+    testWidgets('GivenAMissingFile_WhenItsRowIsTapped_ThenTheDetailsOpen', (
+      tester,
+    ) async {
+      // A file the last refresh could not find has nothing to open. The
+      // details are where that is explained and where the rescan is (UC-37),
+      // so that is where the tap goes rather than into a reader that would
+      // only fail.
+      await openListing(
+        tester,
+        listings: aDocument(missing: true),
+        destination: ShellDestination.books,
+      );
+
+      await tester.tap(find.text('Solaris.epub'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(FileDetailsView), findsOneWidget);
+      expect(find.byType(DocumentViewerScreen), findsNothing);
+    });
+
+    testWidgets('GivenTheGrid_WhenATileIsTapped_ThenTheFileItselfOpens', (
+      tester,
+    ) async {
+      // The tile is the row in another shape; it opens what the row opens.
+      final container = await openListing(
+        tester,
+        listings: aDocument(),
+        destination: ShellDestination.books,
+      );
+      await container
+          .read(layoutControllerProvider.notifier)
+          .choose(FileType.document, ViewLayout.grid);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Solaris.epub'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DocumentViewerScreen), findsOneWidget);
+    });
+  });
 
   group('the main flow', () {
     testWidgets('GivenATypeWithFiles_WhenItIsSelected_ThenItsFilesAreListed', (
@@ -106,10 +200,7 @@ void main() {
         tester,
         listings: {
           FileType.video: loadedDetails([
-            aFile(
-              type: FileType.video,
-              missingAt: DateTime.utc(2026, 8, 19),
-            ),
+            aFile(type: FileType.video, missingAt: DateTime.utc(2026, 8, 19)),
           ]),
         },
       );

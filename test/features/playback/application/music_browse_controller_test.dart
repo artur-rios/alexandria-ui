@@ -11,7 +11,8 @@ void main() {
   // The controller reads nothing from the catalog, but testContainer needs a
   // gateway to build — an empty fake is enough, as it is for every other
   // controller test in this directory.
-  ProviderContainer buildContainer() => testContainer(gateway: FakeCatalogGateway());
+  ProviderContainer buildContainer() =>
+      testContainer(gateway: FakeCatalogGateway());
 
   test('GivenAFreshArea_WhenItOpens_ThenItShowsArtistsAtTheTop', () {
     final container = buildContainer();
@@ -34,18 +35,21 @@ void main() {
     expect(state.inAlbum, isFalse);
   });
 
-  test('GivenTheUntaggedGroup_WhenItIsOpened_ThenItIsADrillNotADeselection', () {
-    // A null artist is a real group — the files that name none — so it cannot
-    // double as "nothing selected".
-    final container = buildContainer();
-    final controller = container.read(musicBrowseControllerProvider.notifier);
+  test(
+    'GivenTheUntaggedGroup_WhenItIsOpened_ThenItIsADrillNotADeselection',
+    () {
+      // A null artist is a real group — the files that name none — so it cannot
+      // double as "nothing selected".
+      final container = buildContainer();
+      final controller = container.read(musicBrowseControllerProvider.notifier);
 
-    controller.openArtist(null);
+      controller.openArtist(null);
 
-    final state = container.read(musicBrowseControllerProvider);
-    expect(state.inArtist, isTrue);
-    expect(state.artist, isNull);
-  });
+      final state = container.read(musicBrowseControllerProvider);
+      expect(state.inArtist, isTrue);
+      expect(state.artist, isNull);
+    },
+  );
 
   test('GivenAnAlbumIsOpen_WhenTheOwnerGoesUp_ThenTheArtistRemains', () {
     final container = buildContainer();
@@ -83,9 +87,7 @@ void main() {
       // no artist was opened on the way there, so the breadcrumb should not
       // claim one was.
       final container = buildContainer();
-      final controller = container.read(
-        musicBrowseControllerProvider.notifier,
-      );
+      final controller = container.read(musicBrowseControllerProvider.notifier);
 
       controller.show(MusicView.albums);
       controller.openAlbum('OK', 'Radiohead');
@@ -103,9 +105,7 @@ void main() {
       // Going up from an album opened straight off the Albums view must not
       // land the owner inside an artist they never opened.
       final container = buildContainer();
-      final controller = container.read(
-        musicBrowseControllerProvider.notifier,
-      );
+      final controller = container.read(musicBrowseControllerProvider.notifier);
 
       controller.show(MusicView.albums);
       controller.openAlbum('OK', 'Radiohead');

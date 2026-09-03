@@ -59,16 +59,19 @@ void main() {
       expect(html, contains('<h1 style="color: #ff0000">Headline</h1>'));
     });
 
-    test('GivenASheetThatIsNotThere_WhenThePageIsPrepared_ThenItStillDraws', () {
-      // AF-02: a page whose stylesheet was not saved with it is a page that
-      // reads plainly, not a page that fails to open.
-      final html = prepared(
-        '<html><head><link rel="stylesheet" href="gone.css"></head>'
-        '<body><h1>Headline</h1></body></html>',
-      );
+    test(
+      'GivenASheetThatIsNotThere_WhenThePageIsPrepared_ThenItStillDraws',
+      () {
+        // AF-02: a page whose stylesheet was not saved with it is a page that
+        // reads plainly, not a page that fails to open.
+        final html = prepared(
+          '<html><head><link rel="stylesheet" href="gone.css"></head>'
+          '<body><h1>Headline</h1></body></html>',
+        );
 
-      expect(html, contains('<h1>Headline</h1>'));
-    });
+        expect(html, contains('<h1>Headline</h1>'));
+      },
+    );
 
     test('GivenANonStylesheetLink_WhenThePageIsPrepared_ThenItIsNotRead', () {
       // A `<link>` is also how a page names its icon and its feeds; only the
@@ -161,19 +164,22 @@ void main() {
       expect(html, isNot(contains('#ff0000')));
     });
 
-    test('GivenAPropertyTheRendererIgnores_WhenPrepared_ThenItIsNotCarried', () {
-      // A framework stylesheet is mostly properties this renderer has no
-      // answer for. Dropping them is what keeps the matching work
-      // proportional to the styling a page actually gets.
-      final html = prepared(
-        '<html><head><style>p { position: absolute; z-index: 4; '
-        'color: #123456; }</style></head><body><p>Words</p></body></html>',
-      );
+    test(
+      'GivenAPropertyTheRendererIgnores_WhenPrepared_ThenItIsNotCarried',
+      () {
+        // A framework stylesheet is mostly properties this renderer has no
+        // answer for. Dropping them is what keeps the matching work
+        // proportional to the styling a page actually gets.
+        final html = prepared(
+          '<html><head><style>p { position: absolute; z-index: 4; '
+          'color: #123456; }</style></head><body><p>Words</p></body></html>',
+        );
 
-      expect(html, contains('color: #123456'));
-      expect(html, isNot(contains('position')));
-      expect(html, isNot(contains('z-index')));
-    });
+        expect(html, contains('color: #123456'));
+        expect(html, isNot(contains('position')));
+        expect(html, isNot(contains('z-index')));
+      },
+    );
 
     test('GivenAnImportantRule_WhenThePageIsPrepared_ThenTheValueIsClean', () {
       // The renderer parses the value, not the cascade instruction attached

@@ -74,11 +74,9 @@ class _LibraryTreeScreenState extends ConsumerState<LibraryTreeScreen> {
       ),
       body: AsyncStateView<LibraryListing?>(
         value: listing,
-        onRetry: () =>
-            ref.invalidate(libraryTreeControllerProvider(location)),
+        onRetry: () => ref.invalidate(libraryTreeControllerProvider(location)),
         isEmpty: (loaded) => loaded != null && loaded.isEmpty,
-        emptyBuilder: (context) =>
-            Center(child: Text(l10n.libraryEmptyFolder)),
+        emptyBuilder: (context) => Center(child: Text(l10n.libraryEmptyFolder)),
         builder: (context, loaded) => loaded == null
             ? const SizedBox.shrink()
             : ListView(
@@ -99,11 +97,10 @@ class _LibraryTreeScreenState extends ConsumerState<LibraryTreeScreen> {
                       // they saw on disk, and a lecture recording tagged
                       // with something else would be unfindable.
                       title: Text(entry.file.name),
-                      onTap: () => FileDetailsView.show(
-                        context,
-                        ref,
-                        entry.file.uuid,
-                      ),
+                      // The same as a listing row: the file, with its details
+                      // one press to the right (`openFile`).
+                      onTap: () => openFile(context, ref, entry.file),
+                      trailing: FileDetailsButton(file: entry.file),
                     ),
                 ],
               ),
@@ -145,10 +142,7 @@ class LibrariesScreen extends ConsumerWidget {
           children: [
             // Said before anything is marked. Marking a folder empties part
             // of a type panel, and that is not visible until afterwards.
-            Text(
-              l10n.librariesExplanation,
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(l10n.librariesExplanation, style: theme.textTheme.bodyMedium),
             const SizedBox(height: AppSpacing.lg),
             Expanded(
               child: AsyncStateView(
@@ -268,9 +262,9 @@ class LibrariesScreen extends ConsumerWidget {
     // registered, and nothing on screen says the removal did not happen.
     if (failure != null) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.localizedMessage(l10n))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failure.localizedMessage(l10n))));
       return;
     }
 

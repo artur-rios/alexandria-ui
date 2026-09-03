@@ -247,12 +247,16 @@ class _LibraryTag extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final libraries = ref.watch(librariesControllerProvider).value ?? const [];
-    final named = libraries.where((library) => library.uuid == uuid).firstOrNull;
+    final named = libraries
+        .where((library) => library.uuid == uuid)
+        .firstOrNull;
 
     return Chip(
       avatar: const Icon(Icons.folder_special_outlined, size: 16),
       label: Text(
-        named == null ? l10n.searchInALibrary : l10n.searchInLibrary(named.name),
+        named == null
+            ? l10n.searchInALibrary
+            : l10n.searchInLibrary(named.name),
         style: theme.textTheme.labelSmall,
       ),
       visualDensity: VisualDensity.compact,

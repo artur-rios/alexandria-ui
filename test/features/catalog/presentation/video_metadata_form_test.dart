@@ -21,6 +21,7 @@ import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/keyboard.dart';
 import '../../../support/fake_watch_progress_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Editing a video file's metadata (UC-16, FR-ME-02, FR-ME-03, FR-ME-05).
 void main() {
@@ -83,7 +84,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Main flow step 1: the form is opened from the file's detail view.
-    await tester.tap(find.text('Stalker.mkv').first);
+    await openDetailsOf(tester, 'Stalker.mkv');
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.edit_outlined));
     await tester.pumpAndSettle();
@@ -129,25 +130,24 @@ void main() {
     });
   });
 
-  testWidgets(
-    'GivenAField_WhenReturnIsPressed_ThenTheFormIsSaved',
-    (tester) async {
-      // FR-UX-11: Return sends the form from wherever the owner is in it.
-      final (_, gateway) = await openForm(tester);
-      final l10n = messages(tester);
-      await enter(tester, l10n.videoMetadataFieldYear, '1980');
+  testWidgets('GivenAField_WhenReturnIsPressed_ThenTheFormIsSaved', (
+    tester,
+  ) async {
+    // FR-UX-11: Return sends the form from wherever the owner is in it.
+    final (_, gateway) = await openForm(tester);
+    final l10n = messages(tester);
+    await enter(tester, l10n.videoMetadataFieldYear, '1980');
 
-      await tester.pressReturnIn(
-        find.ancestor(
-          of: find.text(l10n.videoMetadataFieldTitle),
-          matching: find.byType(TextField),
-        ),
-      );
+    await tester.pressReturnIn(
+      find.ancestor(
+        of: find.text(l10n.videoMetadataFieldTitle),
+        matching: find.byType(TextField),
+      ),
+    );
 
-      expect(gateway.videoEdits, hasLength(1));
-      expect(gateway.videoEdits.single.metadata.year, 1980);
-    },
-  );
+    expect(gateway.videoEdits, hasLength(1));
+    expect(gateway.videoEdits.single.metadata.year, 1980);
+  });
 
   group('the main flow', () {
     testWidgets('GivenAVideoFile_WhenItsDetailsOpen_ThenEditingIsOffered', (
@@ -288,8 +288,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Stalker.mkv').first);
-        await tester.pumpAndSettle();
+        await openDetailsOf(tester, 'Stalker.mkv');
 
         expect(find.byIcon(Icons.edit_outlined), findsNothing);
       },

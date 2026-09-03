@@ -18,6 +18,7 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/keyboard.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Editing an audio file's music metadata (UC-15, FR-ME-01, FR-ME-03).
 void main() {
@@ -68,7 +69,7 @@ void main() {
     // Main flow step 1: the form is opened from the file's detail view,
     // reached from the dashboard's recent list, which names an audio file by
     // its metadata title rather than its file name (FR-CT-13).
-    await tester.tap(find.text('So What').first);
+    await openDetailsOf(tester, 'So What');
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.edit_outlined));
     await tester.pumpAndSettle();
@@ -107,29 +108,26 @@ void main() {
     });
   });
 
-  testWidgets(
-    'GivenAField_WhenReturnIsPressed_ThenTheFormIsSaved',
-    (tester) async {
-      // FR-UX-11, the same contract every form in this application keeps:
-      // Return sends the form from wherever the owner is in it. A dozen
-      // fields is exactly where tabbing to the button to save is worst.
-      final (_, gateway) = await openForm(tester);
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
-      );
-      await enter(tester, l10n.musicMetadataFieldArtist, 'Miles Davis Quintet');
+  testWidgets('GivenAField_WhenReturnIsPressed_ThenTheFormIsSaved', (
+    tester,
+  ) async {
+    // FR-UX-11, the same contract every form in this application keeps:
+    // Return sends the form from wherever the owner is in it. A dozen
+    // fields is exactly where tabbing to the button to save is worst.
+    final (_, gateway) = await openForm(tester);
+    final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
+    await enter(tester, l10n.musicMetadataFieldArtist, 'Miles Davis Quintet');
 
-      await tester.pressReturnIn(
-        find.ancestor(
-          of: find.text(l10n.musicMetadataFieldTitle),
-          matching: find.byType(TextField),
-        ),
-      );
+    await tester.pressReturnIn(
+      find.ancestor(
+        of: find.text(l10n.musicMetadataFieldTitle),
+        matching: find.byType(TextField),
+      ),
+    );
 
-      expect(gateway.edits, hasLength(1));
-      expect(gateway.edits.single.metadata.artist, 'Miles Davis Quintet');
-    },
-  );
+    expect(gateway.edits, hasLength(1));
+    expect(gateway.edits.single.metadata.artist, 'Miles Davis Quintet');
+  });
 
   group('the main flow', () {
     testWidgets('GivenAnAudioFile_WhenItsDetailsOpen_ThenEditingIsOffered', (
@@ -576,8 +574,7 @@ void main() {
         await tester.pumpAndSettle();
         // Named by its metadata title on the dashboard, not its file name
         // (FR-CT-13).
-        await tester.tap(find.text('So What').first);
-        await tester.pumpAndSettle();
+        await openDetailsOf(tester, 'So What');
 
         expect(find.byIcon(Icons.edit_outlined), findsNothing);
       },

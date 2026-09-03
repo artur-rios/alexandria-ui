@@ -24,19 +24,19 @@ void main() {
 
   IndexRunOutcome refreshed({int missing = 0, int failed = 0}) =>
       IndexRunOutcome.read(
-    run: IndexRun(
-      runId: '8c2d0e51-77af-4b93-8a10-2f6c4d9b1e37',
-      root: '',
-      kind: IndexRunKind.refresh,
-      status: IndexRunStatus.complete,
-      counts: IndexRunCounts(
-        refreshed: 9,
-        unchanged: 110,
-        markedMissing: missing,
-        failed: failed,
-      ),
-    ),
-  );
+        run: IndexRun(
+          runId: '8c2d0e51-77af-4b93-8a10-2f6c4d9b1e37',
+          root: '',
+          kind: IndexRunKind.refresh,
+          status: IndexRunStatus.complete,
+          counts: IndexRunCounts(
+            refreshed: 9,
+            unchanged: 110,
+            markedMissing: missing,
+            failed: failed,
+          ),
+        ),
+      );
 
   Future<ProviderContainer> openScreen(
     WidgetTester tester, {
@@ -306,27 +306,27 @@ void main() {
       );
     }
   });
-  testWidgets('GivenARefreshCouldNotReadSomeFiles_WhenItFinishes_ThenItSaysSo', (
-    tester,
-  ) async {
-    // This report dropped `failed` on the floor: a refresh that could not
-    // re-read some records answered a clean summary, so the state those
-    // records carry — present, or missing — was whatever the last successful
-    // run left there, and nothing said so.
-    final gateway = FakeIndexGateway()
-      ..readOutcomes = [refreshed(failed: 3)];
-    await openScreen(tester, gateway: gateway);
+  testWidgets(
+    'GivenARefreshCouldNotReadSomeFiles_WhenItFinishes_ThenItSaysSo',
+    (tester) async {
+      // This report dropped `failed` on the floor: a refresh that could not
+      // re-read some records answered a clean summary, so the state those
+      // records carry — present, or missing — was whatever the last successful
+      // run left there, and nothing said so.
+      final gateway = FakeIndexGateway()..readOutcomes = [refreshed(failed: 3)];
+      await openScreen(tester, gateway: gateway);
 
-    await pressRefresh(tester);
+      await pressRefresh(tester);
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(LibrarySourcesScreen)),
-    );
-    expect(
-      find.textContaining(l10n.librarySourcesRunFailedCount(3)),
-      findsOneWidget,
-    );
-  });
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+      expect(
+        find.textContaining(l10n.librarySourcesRunFailedCount(3)),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('GivenARefreshReadEverything_WhenItFinishes_ThenNothingIsSaid', (
     tester,
@@ -346,5 +346,4 @@ void main() {
       findsNothing,
     );
   });
-
 }

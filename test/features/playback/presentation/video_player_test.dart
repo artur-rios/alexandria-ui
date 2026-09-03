@@ -19,6 +19,7 @@ import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_media_player.dart';
 import '../../../support/fake_playback.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Watching a video (UC-19, FR-PL-01 … FR-PL-04, FR-PL-08 … FR-PL-10).
 void main() {
@@ -83,12 +84,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Stalker.mkv').first);
-    await tester.pumpAndSettle();
-
+    // A video row plays the file now (`openFile`), which is what the play
+    // button inside the details used to do. A test that wants the details
+    // taps the button beside the row instead.
     if (play) {
-      await tester.tap(find.byIcon(Icons.play_arrow).first);
+      await tester.tap(find.text('Stalker.mkv').first);
       await tester.pumpAndSettle();
+    } else {
+      await openDetailsOf(tester, 'Stalker.mkv');
     }
 
     return (

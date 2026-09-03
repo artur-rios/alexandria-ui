@@ -171,9 +171,7 @@ void main() {
         );
 
         expect(
-          sut.ref
-              .read(listingViewControllerProvider)
-              .forType(FileType.audio),
+          sut.ref.read(listingViewControllerProvider).forType(FileType.audio),
           ListingView.initial,
         );
       },
@@ -264,10 +262,7 @@ void main() {
         await pumpEventQueue();
 
         final state = sut.ref.read(listingViewControllerProvider);
-        expect(
-          state.forType(FileType.audio).lifecycle,
-          LifecycleFilter.active,
-        );
+        expect(state.forType(FileType.audio).lifecycle, LifecycleFilter.active);
         expect(state.rejection, isA<InvalidInputFailure>());
       },
     );

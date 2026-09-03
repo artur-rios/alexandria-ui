@@ -312,7 +312,7 @@ void main() {
               return true;
             },
             onScopeChosen: (_) async =>
-              (types: const <FileType>[], libraryName: null),
+                (types: const <FileType>[], libraryName: null),
           );
 
       expect(asked, isFalse);
@@ -334,12 +334,12 @@ void main() {
       final first = controller.registerFolder(
         onOverlapConfirmed: (_, _) async => true,
         onScopeChosen: (_) async =>
-              (types: const <FileType>[], libraryName: null),
+            (types: const <FileType>[], libraryName: null),
       );
       await controller.registerFolder(
         onOverlapConfirmed: (_, _) async => true,
         onScopeChosen: (_) async =>
-              (types: const <FileType>[], libraryName: null),
+            (types: const <FileType>[], libraryName: null),
       );
       await first;
 

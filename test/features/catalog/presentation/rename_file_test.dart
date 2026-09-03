@@ -17,6 +17,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Renaming a file (UC-17, FR-ME-04, FR-ME-05).
 void main() {
@@ -61,7 +62,7 @@ void main() {
 
     // Reached from the dashboard's recent list, which names an audio file by
     // its metadata title rather than its file name (FR-CT-13).
-    await tester.tap(find.text('So What').first);
+    await openDetailsOf(tester, 'So What');
     await tester.pumpAndSettle();
 
     if (!loaded.isDeleted) {

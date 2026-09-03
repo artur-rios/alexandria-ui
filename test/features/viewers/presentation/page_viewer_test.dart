@@ -18,6 +18,7 @@ import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_page_gateway.dart';
 import '../../../support/fake_text_content_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Reading a saved page, or a Markdown file rendered (UC-25, FR-VW-05,
 /// FR-VW-06, FR-VW-07).
@@ -70,15 +71,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text(name).first);
-    await tester.pumpAndSettle();
-
+    // The row opens the file itself now, so a test that wants it open taps
+    // the row, and one that wants the details taps the button beside it —
+    // where the Open action still is, for a file that cannot just be opened.
     if (openIt) {
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
-      );
-      await tester.tap(find.text(l10n.viewerOpen));
+      await tester.tap(find.text(name).first);
       await tester.pumpAndSettle();
+    } else {
+      await openDetailsOf(tester, name);
     }
 
     return (container: container, pages: pages);

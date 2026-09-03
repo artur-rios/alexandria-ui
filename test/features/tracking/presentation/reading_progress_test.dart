@@ -150,25 +150,24 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets(
-    'GivenAnIssueField_WhenReturnIsPressed_ThenTheProgressIsSaved',
-    (tester) async {
-      // FR-UX-11: Return saves, from either of the two counters.
-      final opened = await openLists(tester, items: const [comicProgress]);
-      await openEditor(tester, 'Sandman.cbz');
-      await typeIssue(tester, messages(tester).readCurrentIssueLabel, '7');
+  testWidgets('GivenAnIssueField_WhenReturnIsPressed_ThenTheProgressIsSaved', (
+    tester,
+  ) async {
+    // FR-UX-11: Return saves, from either of the two counters.
+    final opened = await openLists(tester, items: const [comicProgress]);
+    await openEditor(tester, 'Sandman.cbz');
+    await typeIssue(tester, messages(tester).readCurrentIssueLabel, '7');
 
-      await tester.pressReturnIn(
-        find.ancestor(
-          of: find.text(messages(tester).readCurrentIssueLabel),
-          matching: find.byType(TextField),
-        ),
-      );
+    await tester.pressReturnIn(
+      find.ancestor(
+        of: find.text(messages(tester).readCurrentIssueLabel),
+        matching: find.byType(TextField),
+      ),
+    );
 
-      expect(opened.gateway.progressUpdates, hasLength(1));
-      expect(opened.gateway.progressUpdates.single.currentIssue, 7);
-    },
-  );
+    expect(opened.gateway.progressUpdates, hasLength(1));
+    expect(opened.gateway.progressUpdates.single.currentIssue, 7);
+  });
 
   group('the main flow', () {
     // Step 2: the core's progress is what the screen presents.

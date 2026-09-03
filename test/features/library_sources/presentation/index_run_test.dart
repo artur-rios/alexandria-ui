@@ -368,9 +368,8 @@ void main() {
       return gateway;
     }
 
-    AppLocalizations messages(WidgetTester tester) => AppLocalizations.of(
-      tester.element(find.byType(LibrarySourcesScreen)),
-    );
+    AppLocalizations messages(WidgetTester tester) =>
+        AppLocalizations.of(tester.element(find.byType(LibrarySourcesScreen)));
 
     testWidgets('GivenARunDroppedFiles_WhenItIsReported_ThenItSaysSo', (
       tester,
@@ -387,32 +386,34 @@ void main() {
       );
     });
 
-    testWidgets('GivenARunDroppedFiles_WhenItIsReported_ThenItReadsAsAProblem', (
-      tester,
-    ) async {
-      // Styling asserted because it is the whole difference between a
-      // statistic and something to act on: this sentence sat in the same
-      // neutral grey as "40 scanned, 38 indexed".
-      await openWithFailures(tester);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'GivenARunDroppedFiles_WhenItIsReported_ThenItReadsAsAProblem',
+      (tester) async {
+        // Styling asserted because it is the whole difference between a
+        // statistic and something to act on: this sentence sat in the same
+        // neutral grey as "40 scanned, 38 indexed".
+        await openWithFailures(tester);
+        await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.warning_amber_outlined), findsOneWidget);
-    });
+        expect(find.byIcon(Icons.warning_amber_outlined), findsOneWidget);
+      },
+    );
 
-    testWidgets('GivenARunDroppedFiles_WhenItIsReported_ThenTheRowStillOffersARescan', (
-      tester,
-    ) async {
-      // The remedy the sentence names. Not a control of its own inside the
-      // report — the row already carries Rescan for a settled run, and a
-      // second copy would be two ways to press one button.
-      final gateway = await openWithFailures(tester);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'GivenARunDroppedFiles_WhenItIsReported_ThenTheRowStillOffersARescan',
+      (tester) async {
+        // The remedy the sentence names. Not a control of its own inside the
+        // report — the row already carries Rescan for a settled run, and a
+        // second copy would be two ways to press one button.
+        final gateway = await openWithFailures(tester);
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text(messages(tester).librarySourcesRescan));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text(messages(tester).librarySourcesRescan));
+        await tester.pumpAndSettle();
 
-      expect(gateway.starts, isNotEmpty);
-    });
+        expect(gateway.starts, isNotEmpty);
+      },
+    );
 
     testWidgets('GivenARunDroppedNothing_WhenItIsReported_ThenNothingWarns', (
       tester,
@@ -425,5 +426,4 @@ void main() {
       expect(find.byIcon(Icons.warning_amber_outlined), findsNothing);
     });
   });
-
 }

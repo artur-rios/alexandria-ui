@@ -17,7 +17,8 @@ import '../../../support/fake_enrichment_gateway.dart';
 
 /// Asking the core to look one track up (music enrichment design).
 void main() {
-  Future<({FakeEnrichmentGateway gateway, ProviderContainer container})> pumpButton(
+  Future<({FakeEnrichmentGateway gateway, ProviderContainer container})>
+  pumpButton(
     WidgetTester tester, {
     FakeEnrichmentGateway? gateway,
     bool musicLookupEnabled = true,
@@ -67,10 +68,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(pumped.gateway.runs, hasLength(1));
-    expect(
-      (pumped.gateway.runs.single as EnrichmentScopeFile).fileUuid,
-      'f-1',
-    );
+    expect((pumped.gateway.runs.single as EnrichmentScopeFile).fileUuid, 'f-1');
   });
 
   testWidgets('GivenTheServicesHadNothing_WhenItFinishes_ThenTheOwnerIsTold', (

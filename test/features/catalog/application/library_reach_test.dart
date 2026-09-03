@@ -83,8 +83,7 @@ void main() {
       expect(
         sut.gateway.libraryReaches.every((reached) => reached),
         isTrue,
-        reason:
-            'a deleted library file would be reachable from nowhere at all',
+        reason: 'a deleted library file would be reachable from nowhere at all',
       );
     },
   );
@@ -105,7 +104,10 @@ void main() {
     // reads the same index the search does, and a course's handouts arriving
     // on the front page is what marking the folder was meant to stop.
     final sut = build(
-      files: [row('lecture.pdf', library: 'lib-1'), row('manual.pdf')],
+      files: [
+        row('lecture.pdf', library: 'lib-1'),
+        row('manual.pdf'),
+      ],
     );
 
     final recent = await sut.ref.read(recentFilesProvider.future);

@@ -494,6 +494,71 @@ Future<void> openViewer(
   }
 }
 
+/// The way to a file's details, now that a row opens the file itself.
+///
+/// On every row and every tile rather than behind a gesture: renaming a file,
+/// reading its metadata, adding it to a collection and deleting it all live in
+/// the details, and a door nobody can see is a door nobody uses.
+class FileDetailsButton extends ConsumerWidget {
+  /// Creates the button for [file].
+  const FileDetailsButton({required this.file, super.key});
+
+  /// The file whose details it opens.
+  final CatalogFile file;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
+    return IconButton(
+      tooltip: l10n.detailsTitle,
+      icon: const Icon(Icons.info_outline),
+      onPressed: () => unawaited(FileDetailsView.show(context, ref, file.uuid)),
+    );
+  }
+}
+
+/// What a tap on a file does (UC-13 main flow step 1).
+///
+/// It opens the file. A row used to open the details dialog and offer an
+/// **Open** button inside it, which put a dialog between the owner and every
+/// file they wanted to read — two clicks and a modal to look at a page they
+/// had already pointed at.
+///
+/// The details are one press away, from the button beside the row, and they
+/// are still where a file that cannot simply be opened ends up: one whose type
+/// has no viewer registered (FR-VW-08), and one the last refresh could not
+/// find, which is a state to explain and a rescan to offer rather than a
+/// reader to fail in (UC-37).
+Future<void> openFile(BuildContext context, WidgetRef ref, CatalogFile file) {
+  if (file.isMissing) return FileDetailsView.show(context, ref, file.uuid);
+
+  // The two kinds of opening this application does. A viewer presents a file;
+  // a player starts playing one, which is why the media types are not in the
+  // viewer registry — and why a tap on them does what the music area's own
+  // rows already do rather than something a second glyph would have to
+  // explain.
+  switch (file.type) {
+    case FileType.video:
+      return VideoPlayerScreen.show(context, ref, file);
+
+    case FileType.audio:
+      final player = ref.read(audioPlaybackControllerProvider.notifier);
+
+      return player.playTrack(file);
+
+    case FileType.document:
+    case FileType.comic:
+    case FileType.image:
+    case FileType.html:
+    case FileType.text:
+      final viewer = ref.read(viewerRegistryProvider).viewerFor(file.type);
+      if (viewer == null) return FileDetailsView.show(context, ref, file.uuid);
+
+      return openViewer(context, ref, viewer, file);
+  }
+}
+
 Future<void> _showViewer(
   BuildContext context,
   WidgetRef ref,

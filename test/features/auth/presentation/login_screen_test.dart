@@ -149,24 +149,23 @@ void main() {
   });
 
   group('what a refusal leaves behind (AF-01, AF-02)', () {
-    testWidgets(
-      'GivenAMarkedField_WhenTheOwnerTypesInIt_ThenTheMarkGoesAway',
-      (tester) async {
-        // The owner's own report: submitting with something missing marked
-        // the field, and filling it in left the mark exactly where it was.
-        // A form that goes on saying "required" about a field with a value
-        // in it is arguing with the person using it.
-        await tester.pumpLoginScreen();
-        await tester.tap(find.byType(FilledButton));
-        await tester.pumpAndSettle();
-        expect(find.text(en.loginEmailMissing), findsOneWidget);
+    testWidgets('GivenAMarkedField_WhenTheOwnerTypesInIt_ThenTheMarkGoesAway', (
+      tester,
+    ) async {
+      // The owner's own report: submitting with something missing marked
+      // the field, and filling it in left the mark exactly where it was.
+      // A form that goes on saying "required" about a field with a value
+      // in it is arguing with the person using it.
+      await tester.pumpLoginScreen();
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
+      expect(find.text(en.loginEmailMissing), findsOneWidget);
 
-        await tester.enterText(find.byType(TextField).first, 'owner@x.com');
-        await tester.pump();
+      await tester.enterText(find.byType(TextField).first, 'owner@x.com');
+      await tester.pump();
 
-        expect(find.text(en.loginEmailMissing), findsNothing);
-      },
-    );
+      expect(find.text(en.loginEmailMissing), findsNothing);
+    });
 
     testWidgets(
       'GivenARefusal_WhenTheOwnerTypesAgain_ThenTheNoticeGoesWithIt',
@@ -203,7 +202,10 @@ void main() {
         await tester.enterText(find.byType(TextField).first, 'owner@x.com');
         await tester.pump();
 
-        expect(identical(container.read(loginControllerProvider), before), isTrue);
+        expect(
+          identical(container.read(loginControllerProvider), before),
+          isTrue,
+        );
       },
     );
   });

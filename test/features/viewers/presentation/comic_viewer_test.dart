@@ -18,6 +18,7 @@ import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_comic_gateway.dart';
 import '../../../support/fake_document_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Reading a comic book (UC-23, FR-VW-03, FR-VW-07, FR-VW-08).
 void main() {
@@ -75,15 +76,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Watchmen 01.cbz').first);
-    await tester.pumpAndSettle();
-
+    // The row opens the file itself now, so a test that wants it open taps
+    // the row, and one that wants the details taps the button beside it —
+    // where the Open action still is, for a file that cannot just be opened.
     if (openIt) {
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
-      );
-      await tester.tap(find.text(l10n.viewerOpen));
+      await tester.tap(find.text('Watchmen 01.cbz').first);
       await tester.pumpAndSettle();
+    } else {
+      await openDetailsOf(tester, 'Watchmen 01.cbz');
     }
 
     return (container: container, comics: archive, positions: store);
@@ -269,6 +269,11 @@ void main() {
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
 
+      // Back to the listing it was opened from, with the file's other actions
+      // a press away on its row.
+      expect(find.byType(ComicViewerScreen), findsNothing);
+
+      await openDetailsOf(tester, 'Watchmen 01.cbz');
       expect(find.text(messages(tester).renameOpen), findsOneWidget);
     });
   });
@@ -306,28 +311,28 @@ void main() {
     // Running out of archive mid-gap: the page on screen has to stay on
     // screen.
     testWidgets(
-        'GivenEveryPageAheadIsBad_WhenPagingOn_ThenTheLastGoodOneStays', (
-      tester,
-    ) async {
-      // The viewer used to end this run holding the stage open with no image
-      // and the number of a page that never decoded — a blank frame with
-      // working controls and nothing to say why.
-      final comics = FakeComicGateway()..undecodable.addAll([2, 3]);
-      final opened = await open(tester, comics: comics);
+      'GivenEveryPageAheadIsBad_WhenPagingOn_ThenTheLastGoodOneStays',
+      (tester) async {
+        // The viewer used to end this run holding the stage open with no image
+        // and the number of a page that never decoded — a blank frame with
+        // working controls and nothing to say why.
+        final comics = FakeComicGateway()..undecodable.addAll([2, 3]);
+        final opened = await open(tester, comics: comics);
 
-      await tester.tap(find.byIcon(Icons.chevron_right));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.chevron_right));
+        await tester.pumpAndSettle();
 
-      expect(opened.comics.requested, [1, 2, 3]);
-      expect(find.text(messages(tester).comicPageOf(1, 3)), findsOneWidget);
-      // The image itself, because the number alone was right in one of the
-      // ways this was broken and the frame was still empty.
-      expect(find.byType(Image), findsWidgets);
-      expect(
-        find.text(messages(tester).comicPagesSkipped('2, 3')),
-        findsOneWidget,
-      );
-    });
+        expect(opened.comics.requested, [1, 2, 3]);
+        expect(find.text(messages(tester).comicPageOf(1, 3)), findsOneWidget);
+        // The image itself, because the number alone was right in one of the
+        // ways this was broken and the frame was still empty.
+        expect(find.byType(Image), findsWidgets);
+        expect(
+          find.text(messages(tester).comicPagesSkipped('2, 3')),
+          findsOneWidget,
+        );
+      },
+    );
 
     // Paging backwards over a gap steps backwards, not forwards.
     testWidgets('GivenABadPage_WhenPagingBack_ThenItStepsBackPastIt', (

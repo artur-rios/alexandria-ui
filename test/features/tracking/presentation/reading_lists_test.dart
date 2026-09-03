@@ -25,6 +25,7 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_reading_list_gateway.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/file_row.dart';
 
 /// Managing reading lists (UC-31, FR-TR-08 … FR-TR-11).
 void main() {
@@ -157,7 +158,7 @@ void main() {
     ) async {
       final opened = await openLists(tester, openScreen: false);
 
-      await tester.tap(find.text('Solaris.epub').first);
+      await openDetailsOf(tester, 'Solaris.epub');
       await tester.pumpAndSettle();
       await tester.tap(find.text(messages(tester).readingListAddTo));
       await tester.pumpAndSettle();
@@ -307,8 +308,7 @@ void main() {
         openScreen: false,
       );
 
-      await tester.tap(find.text('Solaris.epub').first);
-      await tester.pumpAndSettle();
+      await openDetailsOf(tester, 'Solaris.epub');
       await tester.tap(find.text(messages(tester).readingListAddTo));
       await tester.pumpAndSettle();
       await tester.tap(

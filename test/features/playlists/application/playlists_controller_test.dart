@@ -142,10 +142,7 @@ void main() {
 
         await sut.ref.read(playlistsControllerProvider.notifier).reload();
 
-        expect(
-          sut.ref.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
+        expect(sut.ref.read(sessionControllerProvider), isA<SessionAbsent>());
       },
     );
   });
@@ -164,7 +161,10 @@ void main() {
 
       await sut.ref.read(playlistsFormProvider.notifier).delete(jazz.uuid);
 
-      expect(sut.ref.read(playlistsFormProvider).notice, PlaylistNotice.notFound);
+      expect(
+        sut.ref.read(playlistsFormProvider).notice,
+        PlaylistNotice.notFound,
+      );
     });
   });
 }

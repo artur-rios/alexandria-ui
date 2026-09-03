@@ -157,25 +157,24 @@ void main() {
     },
   );
 
-  testWidgets(
-    'GivenAnEmptyName_WhenReturnIsPressed_ThenNothingIsAnswered',
-    (tester) async {
-      // The same rule the action is disabled by: a library has to be called
-      // something, and Return must not be a way around a refusal the button
-      // already makes.
-      final answers = await open(tester);
-      final l10n = l10nOf(tester);
+  testWidgets('GivenAnEmptyName_WhenReturnIsPressed_ThenNothingIsAnswered', (
+    tester,
+  ) async {
+    // The same rule the action is disabled by: a library has to be called
+    // something, and Return must not be a way around a refusal the button
+    // already makes.
+    final answers = await open(tester);
+    final l10n = l10nOf(tester);
 
-      await tester.ensureVisible(find.text(l10n.indexScopeAsLibrary));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(l10n.indexScopeAsLibrary));
-      await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text(l10n.indexScopeAsLibrary));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.indexScopeAsLibrary));
+    await tester.pumpAndSettle();
 
-      await tester.pressReturnIn(find.byType(TextField));
+    await tester.pressReturnIn(find.byType(TextField));
 
-      expect(answers, isEmpty);
-    },
-  );
+    expect(answers, isEmpty);
+  });
 
   testWidgets(
     'GivenTheLibraryBoxIsTickedAndUnnamed_WhenItIsRead_ThenItCannotBeConfirmed',

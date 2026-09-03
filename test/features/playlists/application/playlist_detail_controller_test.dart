@@ -20,8 +20,12 @@ import '../../../support/fake_playlist_gateway.dart';
 void main() {
   const playlistUuid = 'pl-1';
 
-  CatalogFile file(String uuid, {String name = 'track.flac'}) =>
-      CatalogFile(uuid: uuid, name: name, path: '/music/$name', type: FileType.audio);
+  CatalogFile file(String uuid, {String name = 'track.flac'}) => CatalogFile(
+    uuid: uuid,
+    name: name,
+    path: '/music/$name',
+    type: FileType.audio,
+  );
 
   PlaylistEntry entry({
     required String uuid,
@@ -61,54 +65,65 @@ void main() {
   }
 
   group('reading a playlist', () {
-    test('GivenEntriesInPositionOrder_WhenRead_ThenTheyRenderInThatOrder', () async {
-      final view = PlaylistView(
-        playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
-        entries: [
-          entry(uuid: 'e-1', position: 0, title: 'So What'),
-          entry(uuid: 'e-2', position: 1, title: 'Freddie Freeloader'),
-        ],
-      );
-      final sut = build(view: view);
+    test(
+      'GivenEntriesInPositionOrder_WhenRead_ThenTheyRenderInThatOrder',
+      () async {
+        final view = PlaylistView(
+          playlist: const Playlist(uuid: playlistUuid, name: 'Jazz'),
+          entries: [
+            entry(uuid: 'e-1', position: 0, title: 'So What'),
+            entry(uuid: 'e-2', position: 1, title: 'Freddie Freeloader'),
+          ],
+        );
+        final sut = build(view: view);
 
-      final read = await sut.ref
-          .read(playlistDetailControllerProvider(playlistUuid).future);
+        final read = await sut.ref.read(
+          playlistDetailControllerProvider(playlistUuid).future,
+        );
 
-      expect(read?.entries.map((e) => e.metadata?.title), [
-        'So What',
-        'Freddie Freeloader',
-      ]);
-    });
+        expect(read?.entries.map((e) => e.metadata?.title), [
+          'So What',
+          'Freddie Freeloader',
+        ]);
+      },
+    );
 
     test('GivenNoSession_WhenRead_ThenTheCoreIsNeverCalled', () async {
       final sut = build(signedIn: false);
 
-      final read = await sut.ref
-          .read(playlistDetailControllerProvider(playlistUuid).future);
+      final read = await sut.ref.read(
+        playlistDetailControllerProvider(playlistUuid).future,
+      );
 
       expect(read, isNull);
       expect(sut.gateway.readsMade, isEmpty);
     });
 
-    test('GivenNoSession_WhenAnEntryIsRemoved_ThenTheCoreIsNeverCalled', () async {
-      final sut = build(signedIn: false);
+    test(
+      'GivenNoSession_WhenAnEntryIsRemoved_ThenTheCoreIsNeverCalled',
+      () async {
+        final sut = build(signedIn: false);
 
-      await sut.ref
-          .read(playlistDetailControllerProvider(playlistUuid).notifier)
-          .removeEntry('e-1');
+        await sut.ref
+            .read(playlistDetailControllerProvider(playlistUuid).notifier)
+            .removeEntry('e-1');
 
-      expect(sut.gateway.entriesRemoved, isEmpty);
-    });
+        expect(sut.gateway.entriesRemoved, isEmpty);
+      },
+    );
 
-    test('GivenNoSession_WhenAnEntryIsMoved_ThenTheCoreIsNeverCalled', () async {
-      final sut = build(signedIn: false);
+    test(
+      'GivenNoSession_WhenAnEntryIsMoved_ThenTheCoreIsNeverCalled',
+      () async {
+        final sut = build(signedIn: false);
 
-      await sut.ref
-          .read(playlistDetailControllerProvider(playlistUuid).notifier)
-          .moveEntry(entryUuid: 'e-1', toIndex: 0);
+        await sut.ref
+            .read(playlistDetailControllerProvider(playlistUuid).notifier)
+            .moveEntry(entryUuid: 'e-1', toIndex: 0);
 
-      expect(sut.gateway.entriesMoved, isEmpty);
-    });
+        expect(sut.gateway.entriesMoved, isEmpty);
+      },
+    );
 
     test('GivenAMissingEntry_WhenRead_ThenItIsKeptRatherThanDropped', () async {
       final view = PlaylistView(
@@ -120,8 +135,9 @@ void main() {
       );
       final sut = build(view: view);
 
-      final read = await sut.ref
-          .read(playlistDetailControllerProvider(playlistUuid).future);
+      final read = await sut.ref.read(
+        playlistDetailControllerProvider(playlistUuid).future,
+      );
 
       expect(read?.entries.length, 2);
       expect(read?.entries[1].missing, isTrue);
@@ -142,8 +158,9 @@ void main() {
           ],
         );
         final sut = build(view: before);
-        await sut.ref
-            .read(playlistDetailControllerProvider(playlistUuid).future);
+        await sut.ref.read(
+          playlistDetailControllerProvider(playlistUuid).future,
+        );
 
         // What the core answers after the removal: only 'e-2' remains.
         final after = PlaylistView(
@@ -182,14 +199,11 @@ void main() {
       },
     );
 
-    test(
-      'GivenAnUpwardDrag_WhenReordering_ThenNoAdjustmentIsMade',
-      () {
-        final toIndex = reorderDestinationIndex(oldIndex: 3, newIndex: 0);
+    test('GivenAnUpwardDrag_WhenReordering_ThenNoAdjustmentIsMade', () {
+      final toIndex = reorderDestinationIndex(oldIndex: 3, newIndex: 0);
 
-        expect(toIndex, 0);
-      },
-    );
+      expect(toIndex, 0);
+    });
 
     // What the screen's no-op guard exists for: crossing the midpoint of the
     // very next item fires `onReorder(oldIndex, oldIndex + 1)` even though
@@ -220,8 +234,9 @@ void main() {
           ],
         );
         final sut = build(view: before);
-        await sut.ref
-            .read(playlistDetailControllerProvider(playlistUuid).future);
+        await sut.ref.read(
+          playlistDetailControllerProvider(playlistUuid).future,
+        );
 
         // The core's real answer to "move e-1 to index 3": not the naive
         // [B, C, D, A] a local shift would produce, but an order that only
@@ -283,8 +298,9 @@ void main() {
           entries: [entry(uuid: 'e-1', position: 0, title: 'So What')],
         );
         final sut = build(view: view);
-        await sut.ref
-            .read(playlistDetailControllerProvider(playlistUuid).future);
+        await sut.ref.read(
+          playlistDetailControllerProvider(playlistUuid).future,
+        );
         sut.gateway.writeOutcomes.add(
           const PlaylistWrite.failed(
             failure: Failure.unauthorized(

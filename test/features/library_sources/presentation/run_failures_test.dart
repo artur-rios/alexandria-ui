@@ -70,47 +70,56 @@ void main() {
   AppLocalizations messages(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(LibrarySourcesScreen)));
 
-  testWidgets('GivenARunDroppedFiles_WhenTheReportIsRead_ThenTheListIsOffered', (
-    tester,
-  ) async {
-    await openScreen(tester);
+  testWidgets(
+    'GivenARunDroppedFiles_WhenTheReportIsRead_ThenTheListIsOffered',
+    (tester) async {
+      await openScreen(tester);
 
-    expect(find.text(messages(tester).runFailuresOpen), findsOneWidget);
-  });
+      expect(find.text(messages(tester).runFailuresOpen), findsOneWidget);
+    },
+  );
 
-  testWidgets('GivenARunDroppedNothing_WhenTheReportIsRead_ThenNoListIsOffered', (
-    tester,
-  ) async {
-    // The half that makes the test above mean something: a clean run has no
-    // list worth opening.
-    await openScreen(tester, failed: 0);
+  testWidgets(
+    'GivenARunDroppedNothing_WhenTheReportIsRead_ThenNoListIsOffered',
+    (tester) async {
+      // The half that makes the test above mean something: a clean run has no
+      // list worth opening.
+      await openScreen(tester, failed: 0);
 
-    expect(find.text(messages(tester).runFailuresOpen), findsNothing);
-  });
+      expect(find.text(messages(tester).runFailuresOpen), findsNothing);
+    },
+  );
 
-  testWidgets('GivenTheListIsOpened_WhenItLoads_ThenEachFileIsNamedWithItsReason', (
-    tester,
-  ) async {
-    // The whole point: a path the owner can go and look at, and the reason
-    // in the core's own words.
-    await openScreen(
-      tester,
-      failures: const RunFailuresOutcome.read(
-        failures: [
-          RunFailure(path: '/home/owner/music/locked.mp3', reason: 'permission denied'),
-          RunFailure(path: '/home/owner/music/odd.mp3', reason: 'database is locked'),
-        ],
-      ),
-    );
+  testWidgets(
+    'GivenTheListIsOpened_WhenItLoads_ThenEachFileIsNamedWithItsReason',
+    (tester) async {
+      // The whole point: a path the owner can go and look at, and the reason
+      // in the core's own words.
+      await openScreen(
+        tester,
+        failures: const RunFailuresOutcome.read(
+          failures: [
+            RunFailure(
+              path: '/home/owner/music/locked.mp3',
+              reason: 'permission denied',
+            ),
+            RunFailure(
+              path: '/home/owner/music/odd.mp3',
+              reason: 'database is locked',
+            ),
+          ],
+        ),
+      );
 
-    await tester.tap(find.text(messages(tester).runFailuresOpen));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text(messages(tester).runFailuresOpen));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(RunFailuresScreen), findsOneWidget);
-    expect(find.text('/home/owner/music/locked.mp3'), findsOneWidget);
-    expect(find.text('permission denied'), findsOneWidget);
-    expect(find.text('/home/owner/music/odd.mp3'), findsOneWidget);
-  });
+      expect(find.byType(RunFailuresScreen), findsOneWidget);
+      expect(find.text('/home/owner/music/locked.mp3'), findsOneWidget);
+      expect(find.text('permission denied'), findsOneWidget);
+      expect(find.text('/home/owner/music/odd.mp3'), findsOneWidget);
+    },
+  );
 
   testWidgets('GivenTheListIsOpened_WhenItIsAskedFor_ThenItIsThatRunsList', (
     tester,
@@ -128,78 +137,93 @@ void main() {
     expect(gateway.failuresRequested, [runId]);
   });
 
-  testWidgets('GivenTheCoreRecordedFewerThanItCounted_WhenTheListIsOpened_ThenTheGapIsNamed', (
-    tester,
-  ) async {
-    // The core bounds how many paths one run records and keeps counting past
-    // the bound, so the list is allowed to be shorter than the tally. Said
-    // out loud, or the owner reads a report of four dropped files, counts two
-    // in the list, and has no way to tell a limit from a lost file.
-    await openScreen(
-      tester,
-      failed: 4,
-      failures: const RunFailuresOutcome.read(
-        failures: [
-          RunFailure(path: '/home/owner/music/one.mp3', reason: 'permission denied'),
-          RunFailure(path: '/home/owner/music/two.mp3', reason: 'permission denied'),
-        ],
-      ),
-    );
+  testWidgets(
+    'GivenTheCoreRecordedFewerThanItCounted_WhenTheListIsOpened_ThenTheGapIsNamed',
+    (tester) async {
+      // The core bounds how many paths one run records and keeps counting past
+      // the bound, so the list is allowed to be shorter than the tally. Said
+      // out loud, or the owner reads a report of four dropped files, counts two
+      // in the list, and has no way to tell a limit from a lost file.
+      await openScreen(
+        tester,
+        failed: 4,
+        failures: const RunFailuresOutcome.read(
+          failures: [
+            RunFailure(
+              path: '/home/owner/music/one.mp3',
+              reason: 'permission denied',
+            ),
+            RunFailure(
+              path: '/home/owner/music/two.mp3',
+              reason: 'permission denied',
+            ),
+          ],
+        ),
+      );
 
-    await tester.tap(find.text(messages(tester).runFailuresOpen));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text(messages(tester).runFailuresOpen));
+      await tester.pumpAndSettle();
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(RunFailuresScreen)),
-    );
-    expect(find.text(l10n.runFailuresTruncated(2, 4)), findsOneWidget);
-  });
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(RunFailuresScreen)),
+      );
+      expect(find.text(l10n.runFailuresTruncated(2, 4)), findsOneWidget);
+    },
+  );
 
-  testWidgets('GivenEveryDroppedFileIsNamed_WhenTheListIsOpened_ThenNoGapIsClaimed', (
-    tester,
-  ) async {
-    // The half that makes the test above mean something. Saying "the first 2
-    // of 2" on a complete list would train the owner to skip the line on the
-    // one occasion it matters.
-    await openScreen(
-      tester,
-      failed: 2,
-      failures: const RunFailuresOutcome.read(
-        failures: [
-          RunFailure(path: '/home/owner/music/one.mp3', reason: 'permission denied'),
-          RunFailure(path: '/home/owner/music/two.mp3', reason: 'permission denied'),
-        ],
-      ),
-    );
+  testWidgets(
+    'GivenEveryDroppedFileIsNamed_WhenTheListIsOpened_ThenNoGapIsClaimed',
+    (tester) async {
+      // The half that makes the test above mean something. Saying "the first 2
+      // of 2" on a complete list would train the owner to skip the line on the
+      // one occasion it matters.
+      await openScreen(
+        tester,
+        failed: 2,
+        failures: const RunFailuresOutcome.read(
+          failures: [
+            RunFailure(
+              path: '/home/owner/music/one.mp3',
+              reason: 'permission denied',
+            ),
+            RunFailure(
+              path: '/home/owner/music/two.mp3',
+              reason: 'permission denied',
+            ),
+          ],
+        ),
+      );
 
-    await tester.tap(find.text(messages(tester).runFailuresOpen));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text(messages(tester).runFailuresOpen));
+      await tester.pumpAndSettle();
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(RunFailuresScreen)),
-    );
-    expect(find.text(l10n.runFailuresTruncated(2, 2)), findsNothing);
-  });
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(RunFailuresScreen)),
+      );
+      expect(find.text(l10n.runFailuresTruncated(2, 2)), findsNothing);
+    },
+  );
 
-  testWidgets('GivenTheCoreCannotAnswer_WhenTheListIsOpened_ThenItSaysSoNotEmpty', (
-    tester,
-  ) async {
-    // "Could not ask" and "nothing to show" are answers the owner would act
-    // on differently — an empty list here would say the scan was clean.
-    await openScreen(
-      tester,
-      failures: const RunFailuresOutcome.failed(
-        failure: Failure.unexpected(family: CoreStatusFamily.run, code: 9),
-      ),
-    );
+  testWidgets(
+    'GivenTheCoreCannotAnswer_WhenTheListIsOpened_ThenItSaysSoNotEmpty',
+    (tester) async {
+      // "Could not ask" and "nothing to show" are answers the owner would act
+      // on differently — an empty list here would say the scan was clean.
+      await openScreen(
+        tester,
+        failures: const RunFailuresOutcome.failed(
+          failure: Failure.unexpected(family: CoreStatusFamily.run, code: 9),
+        ),
+      );
 
-    await tester.tap(find.text(messages(tester).runFailuresOpen));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text(messages(tester).runFailuresOpen));
+      await tester.pumpAndSettle();
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(RunFailuresScreen)),
-    );
-    expect(find.text(l10n.runFailuresNone), findsNothing);
-    expect(find.text(l10n.retry), findsOneWidget);
-  });
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(RunFailuresScreen)),
+      );
+      expect(find.text(l10n.runFailuresNone), findsNothing);
+      expect(find.text(l10n.retry), findsOneWidget);
+    },
+  );
 }

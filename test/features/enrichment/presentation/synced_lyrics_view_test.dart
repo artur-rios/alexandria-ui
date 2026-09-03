@@ -169,16 +169,24 @@ void main() {
     // scroll position the owner chose survives a line change.
     final many = SyncedLyrics(
       parseLrc(
-        List.generate(40, (i) => '[00:${i.toString().padLeft(2, '0')}.00]line $i')
-            .join('\n'),
+        List.generate(
+          40,
+          (i) => '[00:${i.toString().padLeft(2, '0')}.00]line $i',
+        ).join('\n'),
       ),
     );
     final seek = await pumpLyrics(tester, subject: many);
     await seek(const Duration(seconds: 1));
 
-    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -400));
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, -400),
+    );
     await tester.pumpAndSettle();
-    final chosen = tester.widget<Scrollable>(find.byType(Scrollable)).controller!.offset;
+    final chosen = tester
+        .widget<Scrollable>(find.byType(Scrollable))
+        .controller!
+        .offset;
 
     await seek(const Duration(seconds: 2));
     expect(

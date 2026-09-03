@@ -102,13 +102,14 @@ void main() {
     });
 
     // The empty state invites making one rather than showing a bare list.
-    testWidgets('GivenNoPlaylists_WhenTheScreenOpens_ThenItInvitesCreatingOne', (
-      tester,
-    ) async {
-      await openPlaylists(tester, playlists: const []);
+    testWidgets(
+      'GivenNoPlaylists_WhenTheScreenOpens_ThenItInvitesCreatingOne',
+      (tester) async {
+        await openPlaylists(tester, playlists: const []);
 
-      expect(find.text(messages(tester).playlistsNone), findsOneWidget);
-    });
+        expect(find.text(messages(tester).playlistsNone), findsOneWidget);
+      },
+    );
 
     // Creating one adds it to the list without a manual refresh.
     testWidgets('GivenAName_WhenCreateIsAsked_ThenItAppearsAtOnce', (
@@ -329,34 +330,32 @@ void main() {
         form.editName('Second Try');
         await form.create();
 
-        expect(
-          opened.gateway.created,
-          ['Road Trip', 'Second Try'],
-          reason: 'the second attempt never reached the core',
-        );
+        expect(opened.gateway.created, [
+          'Road Trip',
+          'Second Try',
+        ], reason: 'the second attempt never reached the core');
       },
     );
   });
 
   group('opening a playlist', () {
-    testWidgets(
-      'GivenAPlaylist_WhenItsRowIsTapped_ThenItsTracksOpen',
-      (tester) async {
-        // The row is the only way into the detail screen, so without this the
-        // tracks, their order and the play action are all unreachable however
-        // well they work.
-        final opened = await openPlaylists(tester);
-        opened.gateway.reads[jazz.uuid] = const PlaylistRead.loaded(
-          view: PlaylistView(playlist: jazz, entries: []),
-        );
+    testWidgets('GivenAPlaylist_WhenItsRowIsTapped_ThenItsTracksOpen', (
+      tester,
+    ) async {
+      // The row is the only way into the detail screen, so without this the
+      // tracks, their order and the play action are all unreachable however
+      // well they work.
+      final opened = await openPlaylists(tester);
+      opened.gateway.reads[jazz.uuid] = const PlaylistRead.loaded(
+        view: PlaylistView(playlist: jazz, entries: []),
+      );
 
-        await tester.tap(find.text(jazz.name));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text(jazz.name));
+      await tester.pumpAndSettle();
 
-        expect(find.byType(PlaylistDetailScreen), findsOneWidget);
-        expect(opened.gateway.readsMade, contains(jazz.uuid));
-      },
-    );
+      expect(find.byType(PlaylistDetailScreen), findsOneWidget);
+      expect(opened.gateway.readsMade, contains(jazz.uuid));
+    });
   });
 
   group('themes and languages', () {

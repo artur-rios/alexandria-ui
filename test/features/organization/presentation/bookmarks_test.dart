@@ -114,21 +114,20 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets(
-    'GivenTheTitleField_WhenReturnIsPressed_ThenTheBookmarkIsSaved',
-    (tester) async {
-      // FR-UX-11: Return submits from any field, not only from the last one
-      // — the address field always did, and the title beside it did not.
-      final opened = await openBookmarks(tester);
-      await openForm(tester);
-      await fill(tester, title: 'Flutter', url: 'https://flutter.dev');
+  testWidgets('GivenTheTitleField_WhenReturnIsPressed_ThenTheBookmarkIsSaved', (
+    tester,
+  ) async {
+    // FR-UX-11: Return submits from any field, not only from the last one
+    // — the address field always did, and the title beside it did not.
+    final opened = await openBookmarks(tester);
+    await openForm(tester);
+    await fill(tester, title: 'Flutter', url: 'https://flutter.dev');
 
-      await tester.pressReturnIn(formFields.first);
+    await tester.pressReturnIn(formFields.first);
 
-      expect(opened.gateway.writes, hasLength(1));
-      expect(opened.gateway.writes.single.title, 'Flutter');
-    },
-  );
+    expect(opened.gateway.writes, hasLength(1));
+    expect(opened.gateway.writes.single.title, 'Flutter');
+  });
 
   group('the main flow', () {
     // Steps 1 and 2.
