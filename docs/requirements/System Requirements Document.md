@@ -238,7 +238,7 @@ replace the FFI one without touching a screen.
 | FR-VW-02 | The system shall present PDF and e-book documents with page or chapter navigation and a remembered reading position. |
 | FR-VW-03 | The system shall present a comic book page by page, reading pages from the archive without extracting it to disk. |
 | FR-VW-04 | The system shall present an image with fit-to-window and zoom controls. |
-| FR-VW-05 | The system shall render a saved HTML page as displayed content without executing any script it contains. |
+| FR-VW-05 | The system shall render a saved HTML page as displayed content without executing any script it contains. It shall render the page with its own appearance: the rules of the stylesheets the page carries — its own `<style>` blocks and the sheets saved beside it — applied to the elements they select, and the page's own folder as what its relative references resolve against, so the pictures saved with it are drawn. It shall not fetch anything over the network to do so, and shall not embed a frame the page names: an `<iframe>` is presented as a link to where it pointed, since a frame would be a browser engine inside a viewer that states it runs no script. |
 | FR-VW-06 | The system shall present a Markdown file as rendered content when it is opened for reading rather than for editing. |
 | FR-VW-07 | The system shall read a file's bytes at the moment it is opened and shall not retain them across application runs. |
 | FR-VW-08 | The system shall report a file type with no registered viewer, or a viewer whose dependency is unavailable, as a readable failure that offers the file's other actions. |

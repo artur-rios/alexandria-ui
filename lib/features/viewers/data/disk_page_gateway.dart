@@ -6,6 +6,7 @@ import 'package:xml/xml.dart';
 
 import '../domain/file_viewer.dart';
 import '../domain/page_content.dart';
+import 'page_styles.dart';
 
 /// Reads a saved page from disk (UC-25 main flow step 2, FR-VW-07).
 ///
@@ -42,21 +43,68 @@ class DiskPageGateway implements PageGateway {
       return const PageFailed(failure: ViewerFailure.unreadable);
     }
 
+    final folder = p.dirname(path);
+
     // FR-VW-06: a Markdown file opened for reading is rendered rather than
     // edited. Converting it here is what puts both through the same renderer.
+    //
+    // An HTML page is also prepared for the renderer first: its own
+    // stylesheets are folded onto the elements they style, because the
+    // renderer reads a `style` attribute and nothing else, and its head's
+    // text is dropped (`page_styles.dart`). Markdown skips that step — it was
+    // just converted from text that carries neither.
     final html = isMarkdown
         ? md.markdownToHtml(source, extensionSet: md.ExtensionSet.gitHubWeb)
-        : source;
+        : preparedForRendering(
+            source,
+            linkedStylesheet: (href) => _stylesheetAt(href, from: folder),
+          );
 
     return PageRead(
       content: PageContent(
         html: html,
+        // The folder the file came out of, so its own pictures resolve. A
+        // directory rather than the file: `Uri.resolve` against a file would
+        // take `assets/photo.jpg` as a sibling of the *page*, which is the
+        // same thing here only by accident of the page being at the root of
+        // its own folder.
+        baseUrl: Uri.directory(folder),
         isMarkdown: isMarkdown,
         hasScript: !isMarkdown && _hasScript(source),
-        missingAssets: _missingAssetsIn(html, from: p.dirname(path)),
+        // Read from the source rather than from the styled markup: the two
+        // hold the same references, and the source is the file the owner is
+        // being told about.
+        missingAssets: _missingAssetsIn(source, from: folder),
         isMalformed: !isMarkdown && !_parses(source),
       ),
     );
+  }
+
+  /// The text of a stylesheet the page links, or `null` for one this
+  /// application will not open.
+  ///
+  /// Local files only, and only ones that are there. A sheet on the network is
+  /// not fetched — a saved page is read from the disk it was saved to, and
+  /// reaching out to a site to draw a file the owner already has would be a
+  /// request they never asked for. A missing one is already named to them
+  /// (AF-02).
+  static String? _stylesheetAt(String href, {required String from}) {
+    if (href.isEmpty ||
+        href.startsWith('http') ||
+        href.startsWith('//') ||
+        href.startsWith('data:')) {
+      return null;
+    }
+
+    try {
+      final file = File(p.normalize(p.join(from, Uri.decodeFull(href))));
+
+      return file.existsSync() ? file.readAsStringSync() : null;
+    } on Object {
+      // A stylesheet that cannot be read styles nothing, which is the state
+      // the page was already in. It is not a reason to refuse the page.
+      return null;
+    }
   }
 
   /// Whether the page carries script (AF-03).

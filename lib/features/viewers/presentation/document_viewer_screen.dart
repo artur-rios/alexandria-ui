@@ -12,6 +12,7 @@ import '../../catalog/domain/catalog_file.dart';
 import '../application/document_viewer_controller.dart';
 import '../domain/document_gateway.dart';
 import '../domain/file_viewer.dart';
+import 'page_widget_factory.dart';
 import 'viewer_failure_view.dart';
 
 /// The document viewer (UC-22, FR-VW-02).
@@ -148,7 +149,13 @@ class _BookView extends ConsumerWidget {
                 // A measure rather than the window's width: a line of text
                 // running the width of a desktop display is unreadable.
                 constraints: const BoxConstraints(maxWidth: 720),
-                child: HtmlWidget(chapter?.html ?? ''),
+                child: HtmlWidget(
+                  chapter?.html ?? '',
+                  // The same renderer the saved-page viewer uses, refusing a
+                  // web view for the same reasons: an e-book's chapter is
+                  // markup from a file too.
+                  factoryBuilder: PageWidgetFactory.new,
+                ),
               ),
             ),
           ),

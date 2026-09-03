@@ -41,6 +41,64 @@ void main() {
     });
   });
 
+  group("a page's own styling (UC-25 main flow step 3)", () {
+    test('GivenALinkedSheetBesideIt_WhenItIsRead_ThenItsRulesAreApplied', () {
+      // The shape a page is actually saved in: the markup in one file and the
+      // styling in another beside it. Read from disk here rather than handed
+      // in, because finding that file is the gateway's half of the job.
+      File('${directory.path}/site.css').writeAsStringSync('p { color: red; }');
+      final path = aFileHolding(
+        '<html><head><link rel="stylesheet" href="site.css"></head>'
+        '<body><p>Words</p></body></html>',
+      );
+
+      expectLater(
+        read(path).then((content) => content.html),
+        completion(contains('style="color: red"')),
+      );
+    });
+
+    test('GivenASheetOnTheNetwork_WhenItIsRead_ThenItIsNotFetched', () async {
+      // A saved page is read from the disk it was saved to. Reaching out to a
+      // site to draw a file the owner already has would be a request they
+      // never made — and the missing-asset notice already tells them what the
+      // page is without.
+      final path = aFileHolding(
+        '<html><head>'
+        '<link rel="stylesheet" href="https://example.com/site.css">'
+        '</head><body><p>Words</p></body></html>',
+      );
+
+      final content = await read(path);
+
+      expect(content.html, contains('Words'));
+      expect(content.html, isNot(contains('style=')));
+    });
+
+    test(
+      'GivenAPage_WhenItIsRead_ThenItsFolderIsWhatReferencesResolveTo',
+      () async {
+        // Without this the renderer drops `src="assets/photo.jpg"` entirely: a
+        // relative reference with nothing to resolve against is not a reference
+        // at all, and the page draws its words with none of its pictures.
+        final path = aFileHolding('<html><body><p>x</p></body></html>');
+
+        expect((await read(path)).baseUrl, Uri.directory(directory.path));
+      },
+    );
+
+    test('GivenMarkdown_WhenItIsRead_ThenNothingIsInlined', () async {
+      // It was converted from text a moment ago; there is no stylesheet to
+      // read and no head to strip.
+      final path = aFileHolding('# Title', name: 'notes.md');
+
+      expect(
+        (await read(path, isMarkdown: true)).html,
+        isNot(contains('style=')),
+      );
+    });
+  });
+
   // FR-VW-06: a Markdown file opened for reading is rendered.
   group('a Markdown file', () {
     test('GivenMarkdown_WhenItIsRead_ThenItIsConvertedToMarkup', () async {

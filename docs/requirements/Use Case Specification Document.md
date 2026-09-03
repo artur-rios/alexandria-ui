@@ -1005,7 +1005,13 @@ graph LR
 1. The owner opens an HTML page, or opens a Markdown file for reading.
 2. The application reads the file's bytes from the on-disk path.
 3. The viewer renders the content as widgets, executing no script the page
-   contains.
+   contains, and renders it as the page was written to look: the rules of the
+   stylesheets the page carries are resolved onto the elements they select,
+   and its relative references — the pictures saved beside it — resolve
+   against the folder it was read from. What the renderer has no answer for is
+   left out rather than approximated: rules that depend on something other
+   than the document itself (`@media`, `:hover`), and properties it does not
+   draw.
 4. The owner reads, and may switch a Markdown file into the editor (UC-18).
 
 **Alternative Flows**
@@ -1016,6 +1022,8 @@ graph LR
 | AF-02 | The page references assets that are absent | The page renders without them and indicates what could not be loaded. |
 | AF-03 | The page contains script | It is rendered without executing it; the application states that scripts are not run. |
 | AF-04 | The markup is malformed | The viewer renders what it can and reports that the page may be incomplete. |
+| AF-05 | The page embeds a frame | The frame is presented as a link to where it pointed. A frame would be a browser engine inside a viewer that states it runs no script — and on this application's own platforms there is none to embed. |
+| AF-06 | A stylesheet the page names is on the network, or was not saved with it | It is not fetched, and the page is drawn with the styling it does have. A local sheet that is missing is named to the owner as any other missing asset is (AF-02). |
 
 ---
 

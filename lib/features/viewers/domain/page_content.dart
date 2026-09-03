@@ -5,6 +5,7 @@ class PageContent {
   /// Creates page content.
   const PageContent({
     required this.html,
+    this.baseUrl,
     this.isMarkdown = false,
     this.hasScript = false,
     this.missingAssets = const [],
@@ -13,6 +14,16 @@ class PageContent {
 
   /// The markup, as it will be rendered.
   final String html;
+
+  /// What the page's own relative references are relative *to* — the folder
+  /// the file was read from (UC-25 main flow step 3).
+  ///
+  /// Without it the renderer cannot resolve `src="assets/photo.jpg"` at all:
+  /// a relative reference with nothing to resolve against is dropped, and the
+  /// page draws its words with none of its pictures. `null` for content that
+  /// came from somewhere other than a folder — a Markdown file rendered from
+  /// its own text has nothing to point at.
+  final Uri? baseUrl;
 
   /// Whether it came from a Markdown file rather than an HTML one
   /// (FR-VW-06).

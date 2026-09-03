@@ -324,6 +324,71 @@ void main() {
     });
   });
 
+  group("the page's own look (main flow step 3)", () {
+    testWidgets('GivenStyledMarkup_WhenItIsShown_ThenTheStylingIsDrawn', (
+      tester,
+    ) async {
+      // The gateway folds a page's stylesheets onto its elements
+      // (`page_styles.dart`); this is the other half of that — the renderer
+      // reading them. Asserted on the painted text rather than on the markup,
+      // because an attribute nobody draws is not styling.
+      await open(
+        tester,
+        outcome: const PageRead(
+          content: PageContent(
+            html: '<p style="color: #ff0000; font-style: italic">Words</p>',
+          ),
+        ),
+      );
+
+      final text = tester.widget<RichText>(
+        find
+            .descendant(
+              of: find.byType(PageViewerScreen),
+              matching: find.byType(RichText),
+            )
+            .first,
+      );
+      expect(text.text.style?.color, const Color(0xFFFF0000));
+      expect(text.text.style?.fontStyle, FontStyle.italic);
+    });
+
+    testWidgets('GivenAnEmbeddedFrame_WhenThePageIsShown_ThenItDoesNotFail', (
+      tester,
+    ) async {
+      // An `<iframe>` used to be given a web view, and `webview_flutter` has
+      // no Linux or Windows implementation: building one raised
+      // `LateInitializationError` and left an error box in the middle of the
+      // article. A saved page with an embedded video or map is ordinary, so
+      // this is ordinary too — the frame becomes a link to where it pointed.
+      await open(
+        tester,
+        outcome: const PageRead(
+          content: PageContent(
+            html:
+                '<p>Before</p>'
+                '<iframe src="https://example.com/embed" width="560" '
+                'height="315"></iframe>'
+                '<p>After</p>',
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ErrorWidget), findsNothing);
+      expect(
+        find.textContaining('After', findRichText: true),
+        findsOneWidget,
+        reason: 'the rest of the page draws around the embed',
+      );
+      expect(
+        find.textContaining('example.com/embed', findRichText: true),
+        findsOneWidget,
+        reason: 'the frame is shown as where it pointed',
+      );
+    });
+  });
+
   group('themes and languages', () {
     for (final themeMode in [ThemeMode.light, ThemeMode.dark]) {
       testWidgets(

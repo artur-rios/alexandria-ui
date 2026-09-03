@@ -11,6 +11,7 @@ import '../../catalog/domain/catalog_file.dart';
 import '../../editing/presentation/text_editor_screen.dart';
 import '../application/page_viewer_controller.dart';
 import '../domain/file_viewer.dart';
+import 'page_widget_factory.dart';
 import 'viewer_failure_view.dart';
 
 /// The page viewer (UC-25, FR-VW-05, FR-VW-06).
@@ -136,7 +137,13 @@ class _Page extends ConsumerWidget {
                 // A measure, as in the e-book viewer: a saved article running
                 // the width of a desktop display is unreadable.
                 constraints: const BoxConstraints(maxWidth: 800),
-                child: HtmlWidget(content.html),
+                child: HtmlWidget(
+                  content.html,
+                  // What the page's own relative references resolve against,
+                  // which is what makes its pictures appear.
+                  baseUrl: content.baseUrl,
+                  factoryBuilder: PageWidgetFactory.new,
+                ),
               ),
             ),
           ),

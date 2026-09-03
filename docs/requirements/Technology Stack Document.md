@@ -101,9 +101,11 @@ them writes, re-encodes, or converts a file.
 | **pdfrx** | latest stable at implementation time | Viewers | PDF rendering, with desktop-native performance on both targets. |
 | **xml** | latest stable at implementation time | Viewers | Reads an EPUB's container and package documents. See *EPUB is read directly* below. |
 | **archive** | latest stable at implementation time | Viewers | Reads CBZ comic archives and EPUB containers — both are zip — entry by entry, without extracting them to disk. |
-| **flutter_widget_from_html** | latest stable at implementation time | Viewers | Renders saved HTML pages as widgets. Deliberately not a browser engine: no script execution, which is both a lighter dependency and a smaller trust surface for arbitrary saved pages. |
+| **flutter_widget_from_html** | latest stable at implementation time | Viewers | Renders saved HTML pages as widgets. Deliberately not a browser engine: no script execution, which is both a lighter dependency and a smaller trust surface for arbitrary saved pages. Its web view is switched off — see *a page keeps its own look* below. |
 | **flutter_markdown_plus** | latest stable at implementation time | Viewers, Editor | Renders Markdown for reading and for the editor's live preview pane. The maintained fork of `flutter_markdown` — see *the Markdown renderer moved* below. |
 | **markdown** | latest stable at implementation time | Viewers | Parses Markdown to HTML where the page renderer draws it. |
+| **html** | latest stable at implementation time | Viewers | Reads a saved page's markup so its stylesheets can be resolved onto the elements they select. |
+| **csslib** | latest stable at implementation time | Viewers | Parses those stylesheets. |
 
 Flutter's built-in `Image` decoders cover the image viewer; no additional package
 is required for it.
@@ -117,6 +119,35 @@ zip and `xml` reads the two documents, which is the whole of what a reader needs
 The chapters come out as markup and are drawn by the same renderer a saved HTML
 page uses, so the two viewers share one rendering path rather than each carrying
 its own.
+
+**A page keeps its own look.** The renderer honours an element's `style`
+attribute and nothing else: a `<style>` block is drawn as `display: none`, and
+a `<link>` to a stylesheet is a file it never opens. A saved article therefore
+arrived as unstyled text in the reader's default face, which is not "rendered
+as widgets" in any sense an owner would accept. The page is prepared before it
+is drawn (`page_styles.dart`): its own stylesheets — the blocks it carries and
+the sheets saved beside it — are parsed with `csslib`, matched against the
+document with `html`, and resolved onto the elements they select, most specific
+last and the page's own inline styles last of all. Its folder is handed to the
+renderer as the base its relative references resolve against, which is what
+makes the pictures saved with it appear.
+
+The exclusions are deliberate and each is a rule this cannot honestly keep.
+`@media` is left out because this is not the viewport those breakpoints were
+written for and a print sheet applied to a screen is worse than none. State
+pseudo-classes are left out because there is no state to match. Properties the
+renderer does not draw are dropped before matching, which is also what keeps a
+framework stylesheet's tens of thousands of rules from costing a document walk
+apiece.
+
+**No frame is embedded.** The renderer's package can give an `<iframe>` a
+`webview_flutter` web view, and this application switches that off
+(`PageWidgetFactory`). Two reasons, either sufficient: it has no Linux or
+Windows implementation, so building one raises `LateInitializationError` and
+leaves an error box in the middle of the article; and it would be a browser
+engine — running script and reaching the network for whatever URL a saved page
+names — inside a viewer whose whole claim is that it does neither. The frame is
+presented as a link to where it pointed.
 
 **The Markdown renderer moved.** `flutter_markdown` was marked discontinued
 upstream after this stack was chosen, and its own authors named
