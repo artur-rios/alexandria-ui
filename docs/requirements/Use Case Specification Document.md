@@ -1010,14 +1010,12 @@ graph LR
 
 1. The owner opens an HTML page, or opens a Markdown file for reading.
 2. The application reads the file's bytes from the on-disk path.
-3. The viewer renders the content as widgets, executing no script the page
-   contains, and renders it as the page was written to look: the rules of the
-   stylesheets the page carries are resolved onto the elements they select,
-   and its relative references — the pictures saved beside it — resolve
-   against the folder it was read from. What the renderer has no answer for is
-   left out rather than approximated: rules that depend on something other
-   than the document itself (`@media`, `:hover`), and properties it does not
-   draw.
+3. The viewer hands an HTML page to an embedded browser engine, which opens
+   the file from its own path and draws it as the browser it was saved from
+   would: its stylesheets, its layout, its media queries, its pictures, and
+   its script. A Markdown file is not given to the engine — it was converted
+   from text a moment ago and carries no styling of its own — and is drawn as
+   widgets in the application's own type.
 4. The owner reads, and may switch a Markdown file into the editor (UC-18).
 
 **Alternative Flows**
@@ -1026,9 +1024,10 @@ graph LR
 | --- | --- | --- |
 | AF-01 | The file is absent from disk | The application reports it as missing and offers a re-scan. |
 | AF-02 | The page references assets that are absent | The page renders without them and indicates what could not be loaded. |
-| AF-03 | The page contains script | It is rendered without executing it; the application states that scripts are not run. |
-| AF-04 | The markup is malformed | The viewer renders what it can and reports that the page may be incomplete. |
-| AF-05 | The page embeds a frame | The frame is presented as a link to where it pointed. A frame would be a browser engine inside a viewer that states it runs no script — and on this application's own platforms there is none to embed. |
+| AF-03 | The page contains script | The engine runs it, as a browser would. Where the engine could not be started and the markup renderer is drawing the page, nothing runs and the application says so. |
+| AF-07 | The browser engine cannot be started | The page is drawn as widgets instead — its own stylesheets resolved onto the elements they select, its folder as the base for its pictures, no script and no embedded frame. The owner reads the page rather than an error. |
+| AF-04 | The markup is malformed | The engine recovers from it, which is most of what a browser does. Where the markup renderer is drawing instead, it renders what it can and reports that the page may be incomplete. |
+| AF-05 | The page embeds a frame | The engine loads it, as a browser would. The markup renderer, where it is drawing instead, presents the frame as a link to where it pointed. |
 | AF-06 | A stylesheet the page names is on the network, or was not saved with it | It is not fetched, and the page is drawn with the styling it does have. A local sheet that is missing is named to the owner as any other missing asset is (AF-02). |
 
 ---

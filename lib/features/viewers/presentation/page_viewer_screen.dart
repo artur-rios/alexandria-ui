@@ -11,6 +11,7 @@ import '../../catalog/domain/catalog_file.dart';
 import '../../editing/presentation/text_editor_screen.dart';
 import '../application/page_viewer_controller.dart';
 import '../domain/file_viewer.dart';
+import 'chromium_page.dart';
 import 'page_widget_factory.dart';
 import 'viewer_failure_view.dart';
 
@@ -105,24 +106,57 @@ class PageViewerScreen extends ConsumerWidget {
 }
 
 /// The rendered page, and what it could not show.
-class _Page extends ConsumerWidget {
+class _Page extends ConsumerStatefulWidget {
   const _Page();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final content = ref.watch(pageViewerControllerProvider).content;
+  ConsumerState<_Page> createState() => _PageState();
+}
+
+class _PageState extends ConsumerState<_Page> {
+  /// Whether the engine refused to start for this page.
+  ///
+  /// Held here rather than asked again: once Chromium has failed on this
+  /// machine it will keep failing, and a rebuild that tried it afresh would
+  /// flicker between an empty frame and the markup.
+  bool _engineFailed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(pageViewerControllerProvider);
+    final content = state.content;
     if (content == null) return const SizedBox.shrink();
+
+    final path = state.target?.path;
+    // Markdown is never handed to the engine: it was converted from text a
+    // moment ago, carries no styling of its own, and reads better in this
+    // application's own type than in a browser's defaults. The engine is for
+    // pages somebody else wrote.
+    final byEngine =
+        ref.watch(pageEngineEnabledProvider) &&
+        !content.isMarkdown &&
+        !_engineFailed &&
+        path != null;
 
     return Column(
       children: [
-        // AF-03: nothing here runs script, and the owner is told rather than
-        // left to wonder why the page's buttons do nothing.
-        if (content.hasScript) const _Notice(kind: _NoticeKind.script),
+        // AF-03: said only when it is true. The markup renderer runs no
+        // script and the owner is told rather than left to wonder why the
+        // page's buttons do nothing; the engine runs it, so there is nothing
+        // to say.
+        if (content.hasScript && !byEngine)
+          const _Notice(kind: _NoticeKind.script),
 
         // AF-04: what could be parsed is drawn, and the rest is admitted to.
-        if (content.isMalformed) const _Notice(kind: _NoticeKind.malformed),
+        // The engine parses what no parser would call well-formed — recovering
+        // from broken markup is most of what a browser does — so the notice
+        // belongs to the renderer that really does drop what it cannot read.
+        if (content.isMalformed && !byEngine)
+          const _Notice(kind: _NoticeKind.malformed),
 
-        // AF-02: the page renders without them, and says which.
+        // AF-02: the page renders without them, and says which. True of both
+        // renderers: a picture that was never saved beside the page is not
+        // there to draw either way.
         if (content.missingAssets.isNotEmpty)
           _Notice(
             kind: _NoticeKind.missingAssets,
@@ -130,23 +164,31 @@ class _Page extends ConsumerWidget {
           ),
 
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Center(
-              child: ConstrainedBox(
-                // A measure, as in the e-book viewer: a saved article running
-                // the width of a desktop display is unreadable.
-                constraints: const BoxConstraints(maxWidth: 800),
-                child: HtmlWidget(
-                  content.html,
-                  // What the page's own relative references resolve against,
-                  // which is what makes its pictures appear.
-                  baseUrl: content.baseUrl,
-                  factoryBuilder: PageWidgetFactory.new,
+          child: byEngine
+              // The file itself, not the markup this application read: the
+              // engine opens it the way a browser would, and resolves its
+              // stylesheets and pictures from the folder it sits in.
+              ? ChromiumPage(
+                  fileUrl: Uri.file(path).toString(),
+                  onFailed: () => setState(() => _engineFailed = true),
+                )
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  child: Center(
+                    child: ConstrainedBox(
+                      // A measure, as in the e-book viewer: a saved article
+                      // running the width of a desktop display is unreadable.
+                      constraints: const BoxConstraints(maxWidth: 800),
+                      child: HtmlWidget(
+                        content.html,
+                        // What the page's own relative references resolve
+                        // against, which is what makes its pictures appear.
+                        baseUrl: content.baseUrl,
+                        factoryBuilder: PageWidgetFactory.new,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
         ),
       ],
     );

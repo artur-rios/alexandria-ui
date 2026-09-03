@@ -29,6 +29,7 @@ void main() {
   Future<({ProviderContainer container, FakePageGateway pages})> open(
     WidgetTester tester, {
     PageOutcome? outcome,
+    bool engine = false,
     FileType type = FileType.html,
     ShellDestination destination = ShellDestination.pages,
     String name = 'Article.html',
@@ -61,6 +62,9 @@ void main() {
         catalogGatewayProvider.overrideWithValue(catalog),
         pageGatewayProvider.overrideWithValue(pages),
         textContentGatewayProvider.overrideWithValue(FakeTextContentGateway()),
+        // Off for every case but the one about the engine itself: see
+        // `pageEngineEnabledProvider` and `pumpShell`.
+        pageEngineEnabledProvider.overrideWithValue(engine),
       ],
     );
 
@@ -76,7 +80,17 @@ void main() {
     // where the Open action still is, for a file that cannot just be opened.
     if (openIt) {
       await tester.tap(find.text(name).first);
-      await tester.pumpAndSettle();
+      if (engine) {
+        // Never settled with the engine switched on: the page waits behind a
+        // spinner while Chromium starts, and a spinner never idles. Pumped
+        // past the startup budget instead, which is what an owner on a
+        // machine without a working engine actually waits out.
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 11));
+        await tester.pump();
+      } else {
+        await tester.pumpAndSettle();
+      }
     } else {
       await openDetailsOf(tester, name);
     }
@@ -322,6 +336,31 @@ void main() {
         findsOneWidget,
       );
     });
+  });
+
+  group('the browser engine (AF-07)', () {
+    testWidgets(
+      'GivenTheEngineWillNotStart_WhenAPageOpens_ThenItIsStillDrawn',
+      (tester) async {
+        // There is no Chromium in a test binding, so switching the engine on
+        // here is the real thing an owner meets on a machine where it cannot
+        // start: the plugin channel answers nothing, and the viewer draws the
+        // markup itself rather than showing an empty frame over a file that is
+        // sitting right there.
+        await open(
+          tester,
+          engine: true,
+          outcome: const PageRead(
+            content: PageContent(html: '<p>A saved article.</p>'),
+          ),
+        );
+
+        expect(
+          find.textContaining('A saved article.', findRichText: true),
+          findsOneWidget,
+        );
+      },
+    );
   });
 
   group("the page's own look (main flow step 3)", () {

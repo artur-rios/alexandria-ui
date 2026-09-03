@@ -628,6 +628,18 @@ final viewerRegistryProvider = Provider<ViewerRegistry>(
   }),
 );
 
+/// Whether a saved HTML page is drawn by the browser engine (UC-25, FR-VW-05).
+///
+/// True in the application: an owner reading a page they saved wants the page,
+/// and only an engine draws one faithfully.
+///
+/// Overridden false by widget tests, which have no Chromium — the engine is a
+/// native texture behind a plugin channel, and neither exists in a test
+/// binding. What those tests exercise instead is the markup renderer, which
+/// is not a stand-in invented for them: it is the same fallback an owner gets
+/// on a machine where the engine will not start.
+final pageEngineEnabledProvider = Provider<bool>((ref) => true);
+
 /// Reads a saved page at the moment it is opened (UC-25, FR-VW-05, FR-VW-06).
 final pageGatewayProvider = Provider<PageGateway>(
   (ref) => const DiskPageGateway(),

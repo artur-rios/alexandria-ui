@@ -102,6 +102,12 @@ dependencies:
   html: ^0.15.7
   csslib: ^1.0.2
   url_launcher: ^6.3.2
+  # The browser engine saved HTML pages are drawn with (UC-25, FR-VW-05):
+  # CEF, rendered off-screen and composed into the window as a texture. The
+  # stack document records the trade — the page's script runs, and the
+  # distribution carries Chromium — and `PageViewerScreen` records what
+  # happens on a machine where it will not start.
+  webview_cef: ^0.6.2
 
 dev_dependencies:
   flutter_test:

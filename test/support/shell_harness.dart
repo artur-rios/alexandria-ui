@@ -75,6 +75,14 @@ extension PumpShell on WidgetTester {
       surfaceSize: surfaceSize,
       settings: settings,
       extraOverrides: [
+        // No Chromium in a test binding: the page engine is a native texture
+        // behind a plugin channel, and a test that pumped one would hang
+        // rather than fail. Every shell test therefore reads a saved page
+        // through the markup renderer — which is not a stand-in invented for
+        // tests, but the same fallback an owner gets when the engine will not
+        // start (`pageEngineEnabledProvider`).
+        if (!_overrides(extraOverrides, pageEngineEnabledProvider))
+          pageEngineEnabledProvider.overrideWithValue(false),
         // Task 5's add-to-playlist controls are reachable from the music
         // rows and the now-playing screen, both mounted well beyond the
         // playlists feature's own tests — so every shell test needs a

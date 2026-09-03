@@ -101,7 +101,8 @@ them writes, re-encodes, or converts a file.
 | **pdfrx** | latest stable at implementation time | Viewers | PDF rendering, with desktop-native performance on both targets. |
 | **xml** | latest stable at implementation time | Viewers | Reads an EPUB's container and package documents. See *EPUB is read directly* below. |
 | **archive** | latest stable at implementation time | Viewers | Reads CBZ comic archives and EPUB containers — both are zip — entry by entry, without extracting them to disk. |
-| **flutter_widget_from_html** | latest stable at implementation time | Viewers | Renders saved HTML pages as widgets. Deliberately not a browser engine: no script execution, which is both a lighter dependency and a smaller trust surface for arbitrary saved pages. Its web view is switched off — see *a page keeps its own look* below. |
+| **webview_cef** | latest stable at implementation time | Viewers | The browser engine a saved HTML page is drawn with: CEF (Chromium) rendered off-screen and composed into the window as a texture. See *the page viewer is a browser now* below. |
+| **flutter_widget_from_html** | latest stable at implementation time | Viewers | Draws EPUB chapters, rendered Markdown, and a saved page on a machine where the engine will not start. Not a browser engine: no script execution, and its own web view is switched off — see *a page keeps its own look* below. |
 | **flutter_markdown_plus** | latest stable at implementation time | Viewers, Editor | Renders Markdown for reading and for the editor's live preview pane. The maintained fork of `flutter_markdown` — see *the Markdown renderer moved* below. |
 | **markdown** | latest stable at implementation time | Viewers | Parses Markdown to HTML where the page renderer draws it. |
 | **html** | latest stable at implementation time | Viewers | Reads a saved page's markup so its stylesheets can be resolved onto the elements they select. |
@@ -119,6 +120,29 @@ zip and `xml` reads the two documents, which is the whole of what a reader needs
 The chapters come out as markup and are drawn by the same renderer a saved HTML
 page uses, so the two viewers share one rendering path rather than each carrying
 its own.
+
+**The page viewer is a browser now.** Saved HTML pages are drawn by CEF —
+Chromium, embedded through `webview_cef`, rendered off-screen and composed into
+the Flutter window as a texture. This reverses the original choice, and the
+reversal is the point: a widget renderer draws a page's text with some of its
+styling, and an owner opening an article they saved wants the article as it
+was. Layout, media queries, web fonts, hover, script: only an engine has them.
+
+**What it costs, stated plainly.** The engine executes the page's script and
+can reach the network for whatever the page names, which NFR-12 now describes
+rather than forbids. The page is loaded over `file:`, so Chromium's own rule
+denies it access to other local files — a saved page can act on itself, not on
+the library around it. The distribution grows by the engine: CEF's Linux
+`libcef.so` is about 1.3 GB unstripped and 245 MB stripped, plus ~50 MB of
+locales and the GPU libraries, and the first build on a machine downloads and
+unpacks about 3 GB of CEF. Packaging is where stripping belongs, and it is not
+optional at these sizes.
+
+**And what happens when it will not start.** A machine without a working CEF
+still has a library full of saved pages, so the viewer falls back to the widget
+renderer described below rather than showing an empty frame (UC-25 AF-07). The
+fallback is not a stand-in invented for tests — it is what a test binding uses
+precisely because it is what an owner in that position gets.
 
 **A page keeps its own look.** The renderer honours an element's `style`
 attribute and nothing else: a `<style>` block is drawn as `display: none`, and
