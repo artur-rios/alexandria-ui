@@ -81,19 +81,16 @@ void main() {
   /// meaningful once the walk is over. Polling until a file appears, the way
   /// the listing-shape test does, would answer the moment the first file
   /// landed and prove nothing about the second.
-  Future<void> indexAndSettle(
-    CoreClient client,
-    String credential,
-    String root,
-    String? types,
-  ) async {
-    final start = await client.indexStart(root, credential, null, types);
-    expect(
-      CoreStatusFamily.indexing.isOk(start.status),
-      isTrue,
-      reason: 'the run would not start',
-    );
-
+  /// Waits for whatever run is under way to stop cataloguing.
+  ///
+  /// Separate from starting one, because a caller that already started a run
+  /// must not start a second: two runs walking one folder at once both insert
+  /// the same file, and the one that loses the race records
+  /// `UNIQUE constraint failed: files.path` as a failure of a perfectly good
+  /// run. That is a race in the test rather than in the core — the core is
+  /// answering exactly what it was asked twice — and it is what made this file
+  /// fail on Windows and pass on Linux.
+  Future<void> settle(CoreClient client) async {
     var stable = 0;
     var last = -1;
     final deadline = DateTime.now().add(const Duration(seconds: 30));
@@ -108,6 +105,22 @@ void main() {
       stable = count == last ? stable + 1 : 0;
       last = count;
     }
+  }
+
+  Future<void> indexAndSettle(
+    CoreClient client,
+    String credential,
+    String root,
+    String? types,
+  ) async {
+    final start = await client.indexStart(root, credential, null, types);
+    expect(
+      CoreStatusFamily.indexing.isOk(start.status),
+      isTrue,
+      reason: 'the run would not start',
+    );
+
+    await settle(client);
   }
 
   Future<List<String>> namesOf(
@@ -174,49 +187,55 @@ void main() {
     expect(await namesOf(client, credential, FileType.text), ['note.md']);
     expect(await namesOf(client, credential, FileType.html), ['page.html']);
   });
-  test('GivenARunThatReadEverything_WhenItsFailuresAreRead_ThenThereAreNone', () async {
-    // The failures call across the boundary (core FR-FC-42). What it pins is
-    // the call itself — two consecutive strings, which transposed asks the
-    // core about a token — and that a clean run answers an empty list rather
-    // than an error the screen would show as "could not ask".
-    final (client, credential) = await signedInCore();
-    catalog.addFixture('note.md', '# a note');
+  test(
+    'GivenARunThatReadEverything_WhenItsFailuresAreRead_ThenThereAreNone',
+    () async {
+      // The failures call across the boundary (core FR-FC-42). What it pins is
+      // the call itself — two consecutive strings, which transposed asks the
+      // core about a token — and that a clean run answers an empty list rather
+      // than an error the screen would show as "could not ask".
+      final (client, credential) = await signedInCore();
+      catalog.addFixture('note.md', '# a note');
 
-    final start = await client.indexStart(
-      catalog.libraryDirectory.path,
-      credential,
-      null,
-      null,
-    );
-    expect(CoreStatusFamily.indexing.isOk(start.status), isTrue);
+      final start = await client.indexStart(
+        catalog.libraryDirectory.path,
+        credential,
+        null,
+        null,
+      );
+      expect(CoreStatusFamily.indexing.isOk(start.status), isTrue);
 
-    await indexAndSettle(client, credential, catalog.libraryDirectory.path, null);
+      // Settled, not started again: this test already has a run under way, and
+      // it is *that* run whose failures it goes on to read.
+      await settle(client);
 
-    final outcome = await CoreIndexGateway(client).readFailures(
-      runId: start.runId,
-      credential: credential,
-    );
+      final outcome = await CoreIndexGateway(
+        client,
+      ).readFailures(runId: start.runId, credential: credential);
 
-    expect(outcome, isA<RunFailuresRead>());
-    expect((outcome as RunFailuresRead).failures, isEmpty);
-  });
+      expect(outcome, isA<RunFailuresRead>());
+      expect((outcome as RunFailuresRead).failures, isEmpty);
+    },
+  );
 
-  test('GivenARunThatNeverRan_WhenItsFailuresAreRead_ThenItIsNotFound', () async {
-    // Not an empty list: "failed on nothing" is a different fact from "no
-    // such run", and the screen would show the first as a clean scan.
-    final (client, credential) = await signedInCore();
+  test(
+    'GivenARunThatNeverRan_WhenItsFailuresAreRead_ThenItIsNotFound',
+    () async {
+      // Not an empty list: "failed on nothing" is a different fact from "no
+      // such run", and the screen would show the first as a clean scan.
+      final (client, credential) = await signedInCore();
 
-    final outcome = await CoreIndexGateway(client).readFailures(
-      runId: '00000000-0000-4000-8000-000000000000',
-      credential: credential,
-    );
+      final outcome = await CoreIndexGateway(client).readFailures(
+        runId: '00000000-0000-4000-8000-000000000000',
+        credential: credential,
+      );
 
-    expect(outcome, isA<RunFailuresFailed>());
-    expect(
-      (outcome as RunFailuresFailed).failure,
-      isA<NotFoundFailure>(),
-      reason: 'an unknown run did not reach the application as not-found',
-    );
-  });
-
+      expect(outcome, isA<RunFailuresFailed>());
+      expect(
+        (outcome as RunFailuresFailed).failure,
+        isA<NotFoundFailure>(),
+        reason: 'an unknown run did not reach the application as not-found',
+      );
+    },
+  );
 }
