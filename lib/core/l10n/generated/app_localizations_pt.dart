@@ -1465,6 +1465,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryAdd => 'Adicionar uma biblioteca';
 
   @override
+  String get libraryScan => 'Varrer esta pasta';
+
+  @override
   String get libraryRemove => 'Remover esta biblioteca';
 
   @override
@@ -1474,7 +1477,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get libraryEmptyRoot =>
-      'Nada sob esta pasta foi indexado ainda. Faça uma varredura em Pastas da biblioteca, e o que ela contém aparecerá aqui.';
+      'Nada sob esta pasta foi indexado ainda. Faça uma varredura pela lista de bibliotecas, e o que ela contém aparecerá aqui.';
 
   @override
   String get libraryEmptyFolder => 'Nada nesta pasta.';

@@ -1461,6 +1461,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryAdd => 'Add a library';
 
   @override
+  String get libraryScan => 'Scan this folder';
+
+  @override
   String get libraryRemove => 'Remove this library';
 
   @override
@@ -1470,7 +1473,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryEmptyRoot =>
-      'Nothing under this folder has been indexed yet. Scan it from Library folders, and what it holds will appear here.';
+      'Nothing under this folder has been indexed yet. Scan it from the libraries list, and what it holds will appear here.';
 
   @override
   String get libraryEmptyFolder => 'Nothing in this folder.';

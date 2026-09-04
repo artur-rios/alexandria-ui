@@ -8,6 +8,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/presentation/file_details_view.dart';
 import '../../shell/presentation/async_state_view.dart';
+import '../../library_sources/application/index_runs_state.dart';
 import '../../library_sources/domain/folder_registration.dart';
 import '../../library_sources/presentation/index_scope_dialog.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
@@ -194,6 +195,11 @@ class LibrariesView extends ConsumerWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
+                              tooltip: l10n.libraryScan,
+                              icon: const Icon(Icons.youtube_searched_for),
+                              onPressed: () => _scan(context, ref, library),
+                            ),
+                            IconButton(
                               tooltip: l10n.libraryMove,
                               icon: const Icon(Icons.drive_file_move_outlined),
                               onPressed: () => _move(context, ref, library),
@@ -341,6 +347,77 @@ class LibrariesView extends ConsumerWidget {
     await ref
         .read(indexRunsControllerProvider.notifier)
         .startIndex(source.path);
+
+    if (!context.mounted) return;
+    final refusal = _startRefusalMessage(ref, l10n, source.path);
+    if (refusal != null) _say(context, refusal);
+  }
+
+  /// Indexes a library's folder, so what is on disk reaches the catalog and
+  /// so the library.
+  ///
+  /// The way out of an empty library, offered where the empty library is
+  /// seen. A library made before this screen registered and indexed the
+  /// folder for you — or one whose folder was registered but never
+  /// scanned — holds nothing at all, and the remedy was on another screen
+  /// entirely.
+  ///
+  /// A folder that is not a registered source is registered first, because
+  /// an index run is refused for a folder the application does not know.
+  /// The scope is asked for the same way registration asks it, and the
+  /// library question is not: this folder is already a library, and asking
+  /// again would offer to make it one twice.
+  Future<void> _scan(BuildContext context, WidgetRef ref, Library library) async {
+    final root = library.rootPath;
+    final known = ref
+        .read(librarySourcesControllerProvider)
+        .sources
+        .any((source) => source.path == root);
+
+    if (!known) {
+      final source = await ref
+          .read(librarySourcesControllerProvider.notifier)
+          .registerFolder(
+            path: root,
+            onOverlapConfirmed: (path, existing) async => true,
+            onScopeChosen: (path) async {
+              if (!context.mounted) return null;
+
+              return IndexScopeDialog.show(context);
+            },
+          );
+      if (source == null || !context.mounted) return;
+    }
+
+    await ref.read(indexRunsControllerProvider.notifier).startIndex(root);
+
+    // A run that was refused before the core was called says so here: this
+    // screen has no row to carry the notice the sources screen puts under
+    // the folder, and a scan that quietly does nothing is what sent the
+    // owner looking in the first place.
+    if (!context.mounted) return;
+    final refusal = _startRefusalMessage(ref, l10nOf(context), root);
+    if (refusal != null) _say(context, refusal);
+  }
+
+  /// The localizations, from a context this screen owns.
+  AppLocalizations l10nOf(BuildContext context) => AppLocalizations.of(context);
+
+  /// Why a run did not start, or `null` when one did.
+  String? _startRefusalMessage(
+    WidgetRef ref,
+    AppLocalizations l10n,
+    String root,
+  ) {
+    final runs = ref.read(indexRunsControllerProvider);
+    if (runs.refusedSecondRunFor == root) return l10n.librarySourcesRunRefused;
+
+    return switch (runs.startRefusalFor(root)) {
+      IndexStartRefusal.unreadableScope =>
+        l10n.librarySourcesStartUnreadableScope,
+      IndexStartRefusal.notRegistered => l10n.librarySourcesStartNotRegistered,
+      null => null,
+    };
   }
 
   /// What the registration refused, or `null` when it was cancelled.

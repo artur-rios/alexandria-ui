@@ -54,9 +54,10 @@ void main() {
     String? picked = folder,
     List<LibrarySource> registered = const [],
     List<LibraryWrite> writeOutcomes = const [],
+    List<Library> libraries = const [],
     bool folderExists = true,
   }) async {
-    final gateway = FakeLibraryGateway(libraries: const <Library>[])
+    final gateway = FakeLibraryGateway(libraries: libraries)
       ..writeOutcomes.addAll(writeOutcomes);
     final store = InMemoryLibrarySourceStore([...registered]);
     final index = FakeIndexGateway();
@@ -281,6 +282,55 @@ void main() {
         opened.store.read().single.libraryName,
         isNull,
         reason: 'a refused registration must not mark the folder',
+      );
+    });
+  });
+
+  group('scanning a library that shows nothing', () {
+    testWidgets('GivenARegisteredFolder_WhenScanned_ThenARunStarts', (
+      tester,
+    ) async {
+      // The way out of an empty library, offered where the empty library is
+      // seen: a library made before this screen indexed anything holds
+      // nothing at all, and the remedy used to be on another screen.
+      final opened = await openLibraries(
+        tester,
+        registered: [source(folder, libraryName: 'Rust course')],
+        libraries: const [
+          Library(uuid: 'lib-1', name: 'Rust course', rootPath: folder),
+        ],
+      );
+
+      await tester.tap(find.byTooltip(messages(tester).libraryScan));
+      await tester.pumpAndSettle();
+
+      expect(opened.index.starts.map((call) => call.root), [folder]);
+    });
+
+    testWidgets('GivenAFolderThatIsNotASourceYet_WhenScanned_ThenItIsRegistered', (
+      tester,
+    ) async {
+      // An index run is refused for a folder the application does not know,
+      // so the scan registers it first — asking the scope, and not asking
+      // again whether it is a library.
+      final opened = await openLibraries(
+        tester,
+        libraries: const [
+          Library(uuid: 'lib-1', name: 'Rust course', rootPath: folder),
+        ],
+      );
+
+      await tester.tap(find.byTooltip(messages(tester).libraryScan));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await acceptScope(tester);
+
+      expect(opened.store.read().single.path, folder);
+      expect(opened.index.starts.map((call) => call.root), [folder]);
+      expect(
+        opened.gateway.registered,
+        isEmpty,
+        reason: 'it is already a library — asking again would make it twice',
       );
     });
   });

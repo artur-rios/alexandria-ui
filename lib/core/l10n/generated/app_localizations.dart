@@ -2664,6 +2664,12 @@ abstract class AppLocalizations {
   /// **'Add a library'**
   String get libraryAdd;
 
+  /// Libraries design: indexes the library's folder, which is what puts its files in the catalog and so in the library. Offered on the row because an empty library is seen here, and the remedy used to be on another screen entirely.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan this folder'**
+  String get libraryScan;
+
   /// Stops treating the folder as a library.
   ///
   /// In en, this message translates to:
@@ -2679,7 +2685,7 @@ abstract class AppLocalizations {
   /// Libraries design: the top of a library with no indexed files under it. A library is browsed out of the catalog, not out of a walk of the disk, so this is what an owner sees when they made a library of a folder nobody has scanned — and it says the remedy, because "nothing in this folder" describes a disk the owner can see is not empty.
   ///
   /// In en, this message translates to:
-  /// **'Nothing under this folder has been indexed yet. Scan it from Library folders, and what it holds will appear here.'**
+  /// **'Nothing under this folder has been indexed yet. Scan it from the libraries list, and what it holds will appear here.'**
   String get libraryEmptyRoot;
 
   /// A folder with no files and no subfolders indexed under it.
