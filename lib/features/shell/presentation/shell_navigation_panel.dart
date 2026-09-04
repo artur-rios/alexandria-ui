@@ -136,6 +136,7 @@ extension ShellDestinationPresentation on ShellDestination {
     ShellDestination.pages => Icons.public_outlined,
     ShellDestination.images => Icons.image_outlined,
     ShellDestination.bookmarks => Icons.bookmark_outline,
+    ShellDestination.libraries => Icons.folder_special_outlined,
   };
 
   /// The icon shown for the selected destination.
@@ -149,6 +150,7 @@ extension ShellDestinationPresentation on ShellDestination {
     ShellDestination.pages => Icons.public,
     ShellDestination.images => Icons.image,
     ShellDestination.bookmarks => Icons.bookmark,
+    ShellDestination.libraries => Icons.folder_special,
   };
 
   /// The localized label, in the panel and as the content area's heading.
@@ -162,5 +164,6 @@ extension ShellDestinationPresentation on ShellDestination {
     ShellDestination.pages => l10n.destinationPages,
     ShellDestination.images => l10n.destinationImages,
     ShellDestination.bookmarks => l10n.destinationBookmarks,
+    ShellDestination.libraries => l10n.destinationLibraries,
   };
 }

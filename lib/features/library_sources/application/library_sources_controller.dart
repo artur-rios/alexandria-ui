@@ -58,14 +58,19 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
   /// held the same way the core holds it. `null` is the owner cancelling, and
   /// it abandons the registration entirely — a folder registered with a scope
   /// nobody chose is not what was asked for.
+  /// [path] is the folder to register, for a caller that has already picked
+  /// one. The Libraries screen has: it picks first because what it does next
+  /// depends on whether the folder is registered already, and a second
+  /// picker there would ask the owner to choose the same folder twice.
   Future<LibrarySource?> registerFolder({
     required Future<bool> Function(String path, LibrarySource existing)
     onOverlapConfirmed,
     required Future<FolderPurpose?> Function(String path) onScopeChosen,
+    String? path,
   }) async {
     if (state.registering) return null;
 
-    final path = await _picker.pickFolder();
+    path ??= await _picker.pickFolder();
     // AF-01: the owner cancelled. Nothing is registered and nothing on the
     // screen changes — including any notice already there, which was about a
     // different attempt and is not answered by this one.

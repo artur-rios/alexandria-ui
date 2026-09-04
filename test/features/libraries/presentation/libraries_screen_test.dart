@@ -5,7 +5,8 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/libraries/presentation/library_tree_screen.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,15 +37,19 @@ void main() {
       ],
     );
 
-    final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.openLibraryTool(l10n.librariesOpen);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(ShellNavigationPanel),
+        matching: find.byIcon(ShellDestination.libraries.icon),
+      ),
+    );
     await tester.pumpAndSettle();
 
     return (container: container, gateway: theGateway);
   }
 
   AppLocalizations messages(WidgetTester tester) =>
-      AppLocalizations.of(tester.element(find.byType(LibrariesScreen)));
+      AppLocalizations.of(tester.element(find.byType(LibrariesView)));
 
   testWidgets('GivenTheScreenOpens_ThenItSaysWhatALibraryHides', (
     tester,
@@ -174,6 +179,35 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(gateway.registered, hasLength(1));
+  });
+
+  testWidgets('GivenALibraryWithNothingIndexed_WhenOpened_ThenItSaysToScanIt', (
+    tester,
+  ) async {
+    // What the owner actually sees after making a library of a folder
+    // nobody has scanned: a library is browsed out of the catalog, not out
+    // of a walk of the disk. "Nothing in this folder" describes a disk they
+    // can see is not empty, so the root says the cause and the remedy.
+    final opened = await openLibraries(tester);
+    opened.gateway.reads['lib-1'] = {
+      '': const LibraryRead.loaded(
+        listing: LibraryListing(
+          library: course,
+          path: '',
+          folders: [],
+          files: [],
+        ),
+      ),
+    };
+
+    await tester.tap(find.text('Course'));
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(LibraryTreeScreen)),
+    );
+    expect(find.text(l10n.libraryEmptyRoot), findsOneWidget);
+    expect(find.text(l10n.libraryEmptyFolder), findsNothing);
   });
 
   testWidgets('GivenALibrary_WhenRemoved_ThenTheConfirmationSaysFilesReturn', (

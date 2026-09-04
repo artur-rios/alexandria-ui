@@ -10,6 +10,7 @@ import '../../catalog/domain/catalog_search.dart';
 import '../../catalog/presentation/catalog_listing.dart';
 import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
+import '../../libraries/presentation/library_tree_screen.dart';
 import '../../organization/presentation/bookmarks_view.dart';
 import '../../playback/presentation/music_library_view.dart';
 import '../../playback/presentation/now_playing_screen.dart';
@@ -151,6 +152,9 @@ class ShellContentArea extends ConsumerWidget {
               // reads which one from the shell.
               ShellDestination.home => const HomeDashboard(),
               ShellDestination.bookmarks => const BookmarksView(),
+              // Folders browsed as trees, of every type at once (libraries
+              // design) — a listing of one type is exactly what it is not.
+              ShellDestination.libraries => const LibrariesView(),
               // UC-46: audio has its own area. A listing of file names is the
               // one thing a music library should never be.
               ShellDestination.music => const MusicLibraryView(),

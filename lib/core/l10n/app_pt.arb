@@ -422,7 +422,6 @@
   "runFailuresNone": "Esta varredura leu todos os arquivos que encontrou.",
   "runFailuresTruncated": "Mostrando os primeiros {shown} de {total}. Uma varredura registra apenas um número limitado de caminhos; a contagem é o total.",
   "runFailuresOpen": "Ver quais arquivos",
-  "librariesOpen": "Bibliotecas",
   "librariesTitle": "Bibliotecas",
   "librariesNone": "Voc\u00ea ainda n\u00e3o criou uma biblioteca. Crie uma com o bot\u00e3o acima \u2014 uma pasta vira uma biblioteca, e seus arquivos aparecem l\u00e1 em vez de nos pain\u00e9is por tipo.",
   "librariesExplanation": "Uma biblioteca mantém os arquivos de uma pasta juntos e em suas pastas — um curso, com a gravação e os materiais de cada aula lado a lado. Seus arquivos aparecem aqui em vez de nos painéis por tipo, para não soterrar o resto. A busca continua encontrando-os.",
@@ -430,6 +429,7 @@
   "libraryAdd": "Adicionar uma biblioteca",
   "libraryRemove": "Remover esta biblioteca",
   "libraryRemoveMessage": "Remover {name}? Os arquivos voltam para os painéis por tipo — nada no disco é tocado e nada é excluído.",
+  "libraryEmptyRoot": "Nada sob esta pasta foi indexado ainda. Fa\u00e7a uma varredura em Pastas da biblioteca, e o que ela cont\u00e9m aparecer\u00e1 aqui.",
   "libraryEmptyFolder": "Nada nesta pasta.",
   "libraryUp": "Subir uma pasta",
   "libraryOverlaps": "Essa pasta já está dentro de outra biblioteca.",
@@ -607,5 +607,7 @@
   "musicStatsTopGenres": "G\u00eaneros mais reproduzidos",
   "musicStatsPlays": "{count, plural, =1{1 reprodu\u00e7\u00e3o} other{{count} reprodu\u00e7\u00f5es}}",
   "musicStatsArtistTracks": "{count, plural, =1{1 faixa} other{{count} faixas}}",
-  "musicStatsUntaggedNote": "Faixas sem etiquetas entram nos totais e s\u00f3 podem ser listadas pelo nome."
+  "musicStatsUntaggedNote": "Faixas sem etiquetas entram nos totais e s\u00f3 podem ser listadas pelo nome.",
+  "destinationLibraries": "Bibliotecas",
+  "libraryAlreadyOne": "Essa pasta j\u00e1 \u00e9 uma biblioteca."
 }

@@ -40,6 +40,11 @@ import '../../../support/shell_harness.dart';
 /// library tools and preferences now sit in the menu bar across the top of
 /// the shell, which these images show above the panel and the content area.
 ///
+/// And it has since gained a tenth destination: the libraries, which moved
+/// out of that tools menu and into the panel. Ten entries still fit the
+/// minimum window's height without the panel having to scroll, which these
+/// images are also the record of.
+///
 /// That note's advice — move to a file type with an empty library — was tried
 /// and rejected on the evidence: an empty `music` renders a heading, a search
 /// field, an add-folder link, a layout bar, and the empty sentence, which is

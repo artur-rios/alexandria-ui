@@ -35,8 +35,19 @@ typedef FolderPurpose = ({List<FileType> types, String? libraryName});
 /// has covers in it too. Every type is ticked by default, which is what a
 /// folder registered before this choice existed still covers.
 class IndexScopeDialog extends StatefulWidget {
-  /// Creates the dialog.
-  const IndexScopeDialog({super.key});
+  /// Creates the dialog, offering [libraryName] when the owner has already
+  /// said this folder is one.
+  const IndexScopeDialog({this.libraryName, super.key});
+
+  /// The library name to open with, or `null` when the question is still
+  /// open.
+  ///
+  /// Set when the folder is being added from the Libraries screen: the owner
+  /// pressed "Add a library", so the box is ticked and the name filled in
+  /// from the folder. Asking again there would be asking a question they
+  /// have already answered — and leaving it unticked would register the
+  /// folder as an ordinary source, which is not what they pressed.
+  final String? libraryName;
 
   /// What the owner said this folder is for.
   ///
@@ -51,11 +62,13 @@ class IndexScopeDialog extends StatefulWidget {
   /// rather than a second spelling of the same answer. `null` is the owner
   /// cancelling, in every way of declining including the escape key, so a
   /// dismissal cannot be mistaken for a choice.
-  static Future<FolderPurpose?> show(BuildContext context) =>
-      showDialog<FolderPurpose>(
-        context: context,
-        builder: (context) => const IndexScopeDialog(),
-      );
+  static Future<FolderPurpose?> show(
+    BuildContext context, {
+    String? libraryName,
+  }) => showDialog<FolderPurpose>(
+    context: context,
+    builder: (context) => IndexScopeDialog(libraryName: libraryName),
+  );
 
   @override
   State<IndexScopeDialog> createState() => _IndexScopeDialogState();
@@ -66,9 +79,11 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
   final Set<FileType> _chosen = {...FileType.values};
 
   /// Whether this folder is to be browsed as a library.
-  bool _asLibrary = false;
+  late bool _asLibrary = widget.libraryName != null;
 
-  final TextEditingController _libraryName = TextEditingController();
+  late final TextEditingController _libraryName = TextEditingController(
+    text: widget.libraryName ?? '',
+  );
 
   bool get _isEverything => _chosen.length == FileType.values.length;
 

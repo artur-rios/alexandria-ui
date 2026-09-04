@@ -1448,9 +1448,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get runFailuresOpen => 'Ver quais arquivos';
 
   @override
-  String get librariesOpen => 'Bibliotecas';
-
-  @override
   String get librariesTitle => 'Bibliotecas';
 
   @override
@@ -1474,6 +1471,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String libraryRemoveMessage(String name) {
     return 'Remover $name? Os arquivos voltam para os painéis por tipo — nada no disco é tocado e nada é excluído.';
   }
+
+  @override
+  String get libraryEmptyRoot =>
+      'Nada sob esta pasta foi indexado ainda. Faça uma varredura em Pastas da biblioteca, e o que ela contém aparecerá aqui.';
 
   @override
   String get libraryEmptyFolder => 'Nada nesta pasta.';
@@ -2200,4 +2201,10 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get musicStatsUntaggedNote =>
       'Faixas sem etiquetas entram nos totais e só podem ser listadas pelo nome.';
+
+  @override
+  String get destinationLibraries => 'Bibliotecas';
+
+  @override
+  String get libraryAlreadyOne => 'Essa pasta já é uma biblioteca.';
 }

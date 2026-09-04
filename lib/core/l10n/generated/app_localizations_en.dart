@@ -1444,9 +1444,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get runFailuresOpen => 'Show which files';
 
   @override
-  String get librariesOpen => 'Libraries';
-
-  @override
   String get librariesTitle => 'Libraries';
 
   @override
@@ -1470,6 +1467,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String libraryRemoveMessage(String name) {
     return 'Remove $name? Its files go back to the type panels — nothing on disk is touched and nothing is deleted.';
   }
+
+  @override
+  String get libraryEmptyRoot =>
+      'Nothing under this folder has been indexed yet. Scan it from Library folders, and what it holds will appear here.';
 
   @override
   String get libraryEmptyFolder => 'Nothing in this folder.';
@@ -2194,4 +2195,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get musicStatsUntaggedNote =>
       'Tracks with no tags are counted in the totals, and can only be listed by name.';
+
+  @override
+  String get destinationLibraries => 'Libraries';
+
+  @override
+  String get libraryAlreadyOne => 'That folder is already a library.';
 }

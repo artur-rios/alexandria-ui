@@ -2634,12 +2634,6 @@ abstract class AppLocalizations {
   /// **'Show which files'**
   String get runFailuresOpen;
 
-  /// Library menu entry opening the list of registered libraries.
-  ///
-  /// In en, this message translates to:
-  /// **'Libraries'**
-  String get librariesOpen;
-
   /// Title of the screen listing registered libraries.
   ///
   /// In en, this message translates to:
@@ -2681,6 +2675,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove {name}? Its files go back to the type panels — nothing on disk is touched and nothing is deleted.'**
   String libraryRemoveMessage(String name);
+
+  /// Libraries design: the top of a library with no indexed files under it. A library is browsed out of the catalog, not out of a walk of the disk, so this is what an owner sees when they made a library of a folder nobody has scanned — and it says the remedy, because "nothing in this folder" describes a disk the owner can see is not empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing under this folder has been indexed yet. Scan it from Library folders, and what it holds will appear here.'**
+  String get libraryEmptyRoot;
 
   /// A folder with no files and no subfolders indexed under it.
   ///
@@ -3749,6 +3749,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tracks with no tags are counted in the totals, and can only be listed by name.'**
   String get musicStatsUntaggedNote;
+
+  /// Navigation panel entry for the registered libraries — folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it.
+  ///
+  /// In en, this message translates to:
+  /// **'Libraries'**
+  String get destinationLibraries;
+
+  /// Libraries design: the owner picked a folder that is a library already. Said rather than silently doing nothing, because the button would otherwise look broken — the library is in the list behind the dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'That folder is already a library.'**
+  String get libraryAlreadyOne;
 }
 
 class _AppLocalizationsDelegate

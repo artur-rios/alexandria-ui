@@ -6,7 +6,6 @@ import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../organization/presentation/collections_screen.dart';
 import '../../enrichment/presentation/enrichment_sweep_screen.dart';
-import '../../libraries/presentation/library_tree_screen.dart';
 import '../../playlists/presentation/playlists_screen.dart';
 import '../../stats/presentation/music_stats_screen.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
@@ -16,9 +15,11 @@ import 'menu_entry.dart';
 /// The library-wide areas, reached from the menu bar (UC-37 main flow step 1,
 /// FR-UX-01).
 ///
-/// Seven screens that belong to no single file type — sources, collections,
-/// watchlists, reading lists, playlists, deleted items, and the missing-files
-/// review — and so are not destinations of their own (FR-CT-01). They were
+/// The screens that belong to no single file type — sources, collections,
+/// watchlists, reading lists, playlists, the music lookup, the statistics,
+/// deleted items, and the missing-files review — and so are not destinations
+/// of their own (FR-CT-01). The libraries were here too until they became
+/// one: they are somewhere the owner browses rather than something they do. They were
 /// reached from the bottom of the navigation rail, below a divider that was
 /// the only thing saying they were not destinations; a menu bar says it by
 /// construction.
@@ -64,11 +65,6 @@ class LibraryMenu extends StatelessWidget {
           icon: Icons.library_books_outlined,
           label: l10n.readingListsOpen,
           onSelected: () => ReadingListsScreen.show(context),
-        ),
-        MenuEntry(
-          icon: Icons.folder_special_outlined,
-          label: l10n.librariesOpen,
-          onSelected: () => LibrariesScreen.show(context),
         ),
         MenuEntry(
           icon: Icons.queue_music_outlined,

@@ -65,5 +65,10 @@ FileType? fileTypeFor(ShellDestination destination) =>
       ShellDestination.notes => FileType.text,
       ShellDestination.pages => FileType.html,
       ShellDestination.images => FileType.image,
-      ShellDestination.home || ShellDestination.bookmarks => null,
+      // The three that are not one type's listing: the dashboard, the
+      // bookmarks (their own entity, with their own core call), and the
+      // libraries (folders holding every type at once).
+      ShellDestination.home ||
+      ShellDestination.bookmarks ||
+      ShellDestination.libraries => null,
     };

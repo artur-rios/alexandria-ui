@@ -1937,10 +1937,6 @@
   "@runFailuresOpen": {
     "description": "Opens the list from the run report that names the count."
   },
-  "librariesOpen": "Libraries",
-  "@librariesOpen": {
-    "description": "Library menu entry opening the list of registered libraries."
-  },
   "librariesTitle": "Libraries",
   "@librariesTitle": {
     "description": "Title of the screen listing registered libraries."
@@ -1969,6 +1965,10 @@
   "@libraryRemoveMessage": {
     "description": "The confirmation. Says the files come back, because removing must not read as discarding them.",
     "placeholders": { "name": { "type": "String" } }
+  },
+  "libraryEmptyRoot": "Nothing under this folder has been indexed yet. Scan it from Library folders, and what it holds will appear here.",
+  "@libraryEmptyRoot": {
+    "description": "Libraries design: the top of a library with no indexed files under it. A library is browsed out of the catalog, not out of a walk of the disk, so this is what an owner sees when they made a library of a folder nobody has scanned — and it says the remedy, because \"nothing in this folder\" describes a disk the owner can see is not empty."
   },
   "libraryEmptyFolder": "Nothing in this folder.",
   "@libraryEmptyFolder": {
@@ -2873,5 +2873,13 @@
   "musicStatsUntaggedNote": "Tracks with no tags are counted in the totals, and can only be listed by name.",
   "@musicStatsUntaggedNote": {
     "description": "Play history design: says why the rankings below the track list can be shorter than the totals suggest, rather than leaving it looking like rows went missing."
+  },
+  "destinationLibraries": "Libraries",
+  "@destinationLibraries": {
+    "description": "Navigation panel entry for the registered libraries \u2014 folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it."
+  },
+  "libraryAlreadyOne": "That folder is already a library.",
+  "@libraryAlreadyOne": {
+    "description": "Libraries design: the owner picked a folder that is a library already. Said rather than silently doing nothing, because the button would otherwise look broken \u2014 the library is in the list behind the dialog."
   }
 }

@@ -7,7 +7,8 @@ import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/libraries/presentation/library_tree_screen.dart';
 import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -64,15 +65,19 @@ void main() {
       ],
     );
 
-    final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.openLibraryTool(l10n.librariesOpen);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(ShellNavigationPanel),
+        matching: find.byIcon(ShellDestination.libraries.icon),
+      ),
+    );
     await tester.pumpAndSettle();
 
     return (container: container, gateway: gateway, store: store);
   }
 
   AppLocalizations messages(WidgetTester tester) =>
-      AppLocalizations.of(tester.element(find.byType(LibrariesScreen)));
+      AppLocalizations.of(tester.element(find.byType(LibrariesView)));
 
   Future<void> pressMove(WidgetTester tester) async {
     await tester.tap(find.byTooltip(messages(tester).libraryMove));

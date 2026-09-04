@@ -43,12 +43,26 @@ enum ShellDestination {
   images,
 
   /// Saved links, which are the one destination holding no file on disk.
-  bookmarks;
+  bookmarks,
+
+  /// The registered libraries — folders browsed as the trees they are, whose
+  /// files are shown only there (libraries design).
+  ///
+  /// Not a file type, and the second entry that is not: a library holds
+  /// whatever its folder holds, of every type at once. It is a destination
+  /// rather than an entry in the tools menu because it is somewhere the
+  /// owner browses, like the panels above it, rather than something they do
+  /// to the library.
+  libraries;
 
   /// The destination the shell opens on, after login (UC-14 main flow step 1).
   static const ShellDestination initial = ShellDestination.home;
 
-  /// Whether this destination lists a file type, and so will carry a count and
-  /// a listing once UC-09 fills the content area.
-  bool get isFileType => this != ShellDestination.home;
+  /// Whether this destination lists a file type, and so carries a count and a
+  /// listing.
+  ///
+  /// False for [home], which is the dashboard, and for [libraries], which
+  /// lists folders rather than files of any one type.
+  bool get isFileType =>
+      this != ShellDestination.home && this != ShellDestination.libraries;
 }
