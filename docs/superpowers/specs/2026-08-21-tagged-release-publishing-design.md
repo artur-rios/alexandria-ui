@@ -133,10 +133,15 @@ the leading `v`, so the version carried by the packages is `0.0.1`.
   `ubuntu:24.04` container, because the runner has ffmpeg installed and proves
   nothing.
 
-- **The icon is a placeholder.** The repository had no icon at all, and the
-  AppImage maker requires one, so
-  `packaging/linux/io.github.artur_rios.Alexandria.png` was generated: a plain
-  lettermark, deliberately not a logo. Replacing it later is one file.
+- **The icon is the application's own.** It was a placeholder lettermark on
+  Linux and Flutter's logo everywhere on Windows — the executable, the
+  taskbar, and the MSIX's tiles, which shipped a released package badged with
+  somebody else's mark. There is now one drawing, in `tools/make-icons.py`,
+  exported to the three files each platform reads: the multi-size `.ico` the
+  Windows executable embeds and the installer wears, the 512-pixel PNG every
+  Linux package installs into the icon theme, and the square master the MSIX
+  packager derives its tiles from. Generated rather than pasted in, because
+  six files edited by hand drift into six slightly different icons.
 
 ## Still open
 

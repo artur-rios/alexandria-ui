@@ -191,4 +191,11 @@ msix_config:
   # where IR-04's resolver looks first, so it is inside the package already.
   output_name: alexandria
   capabilities: ""
+  # Every tile, the store listing's art, and the taskbar icon are derived
+  # from this one square master by the packager. Named explicitly rather
+  # than left out: with no logo the packager falls back to Flutter's own
+  # icon, which is how a released MSIX ended up badged with somebody else's
+  # logo. Drawn by tools/make-icons.py, along with the .ico and the Linux
+  # PNG — one drawing, three exports.
+  logo_path: packaging/windows/app_icon.png
   install_certificate: false

@@ -38,6 +38,10 @@ DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 OutputDir=..\..\dist
 OutputBaseFilename=alexandria-setup-{#AppVersion}
+; The wizard wears the application's own icon, rather than Inno Setup's
+; default one. The same file the executable embeds through Runner.rc, so the
+; icon the owner clicks to install is the icon they end up with.
+SetupIconFile=..\..\windows\runner\resources\app_icon.ico
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
