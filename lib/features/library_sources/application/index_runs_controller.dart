@@ -138,6 +138,31 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     }
   }
 
+  /// Starts a run for [root] unless one is already going; whether it did.
+  ///
+  /// The quiet half of [startIndex], for the callers that ask for a run the
+  /// owner did not press for: making a folder a library is a request to have
+  /// its contents in it, so both screens that do it index the folder
+  /// afterwards. For those, a run already in flight is the request being met
+  /// rather than AF-01's refusal — recording that refusal would put "a scan
+  /// is already going" on the screen as the answer to marking a library,
+  /// which reads as an error about something nobody pressed.
+  ///
+  /// `false` is that case and only that case: every other way a run does not
+  /// start is [startIndex]'s own, is recorded in the state the screens
+  /// render, and is reported as `true` here — this says whether a run was
+  /// asked for, not whether one began.
+  Future<bool> indexUnlessRunning(String root) async {
+    if (state.runFor(root)?.isInFlight ?? false) {
+      _log.info('index left to the run already in flight for $root');
+      return false;
+    }
+
+    await startIndex(root);
+
+    return true;
+  }
+
   /// The registered folder at [root], or `null` when there is none.
   LibrarySource? _sourceFor(String root) {
     for (final source in _store.read()) {

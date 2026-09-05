@@ -28,8 +28,9 @@ import '../../../support/shell_harness.dart';
 /// folder nobody has indexed makes a library that shows nothing at all — no
 /// files, and no folders either. That is what this button did when all it
 /// asked the core for was the library, and it is what these tests are mostly
-/// about: an unregistered folder is registered and indexed, and an already
-/// registered one is only marked.
+/// about: either way — an unregistered folder registered first, or one that
+/// was a source already and is only marked — the folder is indexed, because
+/// adding a library is a request to have its contents in it.
 void main() {
   const folder = '/media/courses/rust';
   final registeredAt = DateTime.utc(2026, 8, 30, 9);
@@ -222,8 +223,8 @@ void main() {
 
   group('a folder that is registered already', () {
     testWidgets('GivenItIsPicked_ThenOnlyTheNameIsAsked', (tester) async {
-      // Its files are in the catalog already, so marking it is the whole of
-      // the work — no scope to choose and nothing to index.
+      // The scope was chosen when the folder was registered and belongs to
+      // the folder, so this asks the one question that is still open.
       final opened = await openLibraries(
         tester,
         registered: [source(folder)],
@@ -236,7 +237,53 @@ void main() {
       expect(opened.gateway.registered, [
         (name: 'Rust course', rootPath: folder),
       ]);
-      expect(opened.index.starts, isEmpty);
+    });
+
+    testWidgets('GivenItIsMarked_ThenItsFolderIsIndexed', (tester) async {
+      // Registered is not the same as indexed: a folder registered before the
+      // first index happened on its own, or one whose run was cancelled, is a
+      // source with nothing of it in the catalog — and the library made of it
+      // shows nothing until something walks it. Adding a library is a request
+      // to have its contents in it, not a request to press Scan afterwards.
+      final opened = await openLibraries(
+        tester,
+        registered: [source(folder)],
+      );
+
+      await pressAdd(tester);
+      await acceptName(tester, name: 'Rust course');
+
+      expect(opened.index.starts.map((call) => call.root), [folder]);
+    });
+
+    testWidgets('GivenAScanIsAlreadyGoing_ThenNoSecondRunIsStarted', (
+      tester,
+    ) async {
+      // The contents are on their way, which is what the owner asked for. A
+      // second run would be refused anyway, and reporting that refusal reads
+      // as an error for a run they never pressed for.
+      final opened = await openLibraries(
+        tester,
+        registered: [source(folder)],
+      );
+      opened.index.readOutcomes = [runningRun(root: folder)];
+      await opened.container
+          .read(indexRunsControllerProvider.notifier)
+          .startIndex(folder);
+
+      await pressAdd(tester);
+      await acceptName(tester, name: 'Rust course');
+
+      expect(opened.index.starts.map((call) => call.root), [folder]);
+      expect(
+        find.text(messages(tester).librarySourcesRunRefused),
+        findsNothing,
+      );
+
+      // Disposed here rather than at teardown, as every test that leaves a
+      // run in flight does: the run is still being polled, and the widget
+      // tree is torn down before the container is.
+      opened.container.dispose();
     });
 
     testWidgets('GivenItIsMade_ThenItsSourceFolderIsMarked', (tester) async {
@@ -282,6 +329,11 @@ void main() {
         opened.store.read().single.libraryName,
         isNull,
         reason: 'a refused registration must not mark the folder',
+      );
+      expect(
+        opened.index.starts,
+        isEmpty,
+        reason: 'nothing became a library, so there is nothing to index for',
       );
     });
   });

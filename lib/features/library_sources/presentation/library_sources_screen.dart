@@ -790,8 +790,7 @@ class _RefusalNotice extends ConsumerWidget {
   }
 }
 
-/// The control that unregisters a folder (UC-08 main flow step 1).
-/// Marks an already-registered folder as a library.
+/// Marks an already-registered folder as a library, and indexes it.
 ///
 /// Offered only on folders that are not libraries yet. The reverse lives on
 /// the Libraries screen, beside the library itself: a library can outlive the
@@ -821,20 +820,39 @@ class _MarkAsLibraryAction extends ConsumerWidget {
     final failure = await ref
         .read(librarySourcesControllerProvider.notifier)
         .markAsLibrary(path: source.path, name: name);
-    if (failure == null || !context.mounted) return;
+    if (failure != null) {
+      if (!context.mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          failure is ConflictFailure
-              ? l10n.libraryOverlaps
-              : failure.localizedMessage(l10n),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            failure is ConflictFailure
+                ? l10n.libraryOverlaps
+                : failure.localizedMessage(l10n),
+          ),
         ),
-      ),
-    );
+      );
+      return;
+    }
+
+    // A library is browsed out of what the catalog holds beneath its root, so
+    // one made of a folder nobody has walked shows nothing at all — and being
+    // registered here is not the same as having been indexed: a folder
+    // registered before the first index happened on its own, or one whose run
+    // was cancelled, is a source with nothing of it in the catalog. Marking it
+    // is a request to have its contents in the library, so the run goes with
+    // the mark rather than waiting for the Rescan button beside it.
+    //
+    // Nothing is said about the run here: this row renders every start
+    // refusal and the run itself as it goes (`_RunReport`), which is more
+    // than a snackbar could say and is where the owner is already looking.
+    await ref
+        .read(indexRunsControllerProvider.notifier)
+        .indexUnlessRunning(source.path);
   }
 }
 
+/// The control that unregisters a folder (UC-08 main flow step 1).
 class _UnregisterAction extends ConsumerWidget {
   const _UnregisterAction({required this.source});
 

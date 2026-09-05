@@ -1,7 +1,11 @@
+import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
+import 'package:alexandria_ui/core/failures/core_status.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/library_sources/application/active_runs_controller.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
@@ -795,6 +799,86 @@ void main() {
         findsNothing,
         reason: 'a folder that is already a library cannot be marked again',
       );
+    });
+
+    /// Marks the first row's folder as [name], through the row's own action.
+    Future<void> mark(WidgetTester tester, String name) async {
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(LibrarySourcesScreen)),
+      );
+
+      await tester.tap(find.byTooltip(l10n.librarySourcesMarkAsLibrary));
+      await tester.pumpAndSettle();
+      // Scoped to the dialog: the shell behind it has a search field, and an
+      // unscoped finder matches both.
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        ),
+        name,
+      );
+      await tester.tap(
+        find.descendant(
+          of: find.byType(FilledButton),
+          matching: find.text(l10n.libraryAdd),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('GivenAMarkedFolder_WhenItIsMarked_ThenItIsIndexed', (
+      tester,
+    ) async {
+      // Registered is not the same as indexed: a folder registered before the
+      // first index happened on its own, or one whose run was cancelled, is a
+      // source with nothing of it in the catalog — and a library made of it
+      // shows nothing at all. Marking asks for the contents, so the walk goes
+      // with the mark rather than waiting for the Rescan button beside it.
+      final gateway = FakeIndexGateway();
+      await openScreen(
+        tester,
+        registered: [source('/home/owner/courses/rust')],
+        gateway: gateway,
+        extraOverrides: [
+          libraryGatewayProvider.overrideWithValue(FakeLibraryGateway()),
+        ],
+      );
+
+      await mark(tester, 'Rust course');
+
+      expect(gateway.starts.map((call) => call.root), [
+        '/home/owner/courses/rust',
+      ]);
+    });
+
+    testWidgets('GivenTheCoreRefusesTheLibrary_ThenNothingIsIndexed', (
+      tester,
+    ) async {
+      // The folder never became a library, so there is nothing to fill.
+      final gateway = FakeIndexGateway();
+      await openScreen(
+        tester,
+        registered: [source('/home/owner/courses/rust')],
+        gateway: gateway,
+        extraOverrides: [
+          libraryGatewayProvider.overrideWithValue(
+            FakeLibraryGateway()
+              ..writeOutcomes.add(
+                const LibraryWrite.failed(
+                  failure: Failure.conflict(
+                    family: CoreStatusFamily.library,
+                    code: LIBRARY_ERR_CONFLICT,
+                  ),
+                ),
+              ),
+          ),
+        ],
+      );
+
+      await mark(tester, 'Rust course');
+
+      expect(gateway.starts, isEmpty);
     });
 
     testWidgets(

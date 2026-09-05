@@ -215,6 +215,53 @@ void main() {
     });
   });
 
+  group('a run asked for by marking a library', () {
+    test('GivenNoRunInFlight_WhenIndexed_ThenARunStarts', () async {
+      // A folder becoming a library is a request to have its contents in it,
+      // and neither screen that marks one makes the owner press Rescan next.
+      final sut = build();
+      final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+
+      final asked = await controller.indexUnlessRunning(root);
+
+      expect(asked, isTrue);
+      expect(sut.gateway.starts.map((call) => call.root), [root]);
+    });
+
+    test('GivenARunInFlight_WhenIndexed_ThenNoRefusalIsRecorded', () async {
+      // The difference from `startIndex`: the run already going is the
+      // request being met, so AF-01's notice — which the folder's row
+      // renders — must not appear as the answer to marking a library.
+      final sut = build(
+        gateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+      );
+      final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+      await controller.startIndex(root);
+
+      final asked = await controller.indexUnlessRunning(root);
+
+      expect(asked, isFalse);
+      expect(sut.gateway.starts, hasLength(1));
+      expect(
+        sut.ref.read(indexRunsControllerProvider).refusedSecondRunFor,
+        isNull,
+      );
+    });
+
+    test('GivenAFinishedRun_WhenIndexed_ThenItRunsAgain', () async {
+      // Left to finish means in flight, not ever having run: a folder scanned
+      // last month and marked today is exactly the one that needs a walk.
+      final sut = build();
+      final controller = sut.ref.read(indexRunsControllerProvider.notifier);
+      await controller.startIndex(root);
+
+      final asked = await controller.indexUnlessRunning(root);
+
+      expect(asked, isTrue);
+      expect(sut.gateway.starts, hasLength(2));
+    });
+  });
+
   group('a refresh started without asking (FR-LB-21)', () {
     test(
       'GivenARefusalIsNotReported_WhenARefreshIsRefused_ThenNoMessageIsLeft',

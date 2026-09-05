@@ -232,10 +232,13 @@ class LibrariesView extends ConsumerWidget {
   /// happens next, and it is why the picker is here rather than inside
   /// `registerFolder`.
   ///
-  /// Registered already: its files are in the catalog, so marking it is the
-  /// whole of the work — the same thing the folder's own row does, through
-  /// the same call, so the core learns about the library and the folder's row
-  /// stops offering to mark it.
+  /// Registered already: it is marked — the same thing the folder's own row
+  /// does, through the same call, so the core learns about the library and
+  /// the folder's row stops offering to mark it — and then indexed. Being
+  /// registered is not the same as having been indexed: a folder registered
+  /// before the first index happened on its own, or one whose run was
+  /// cancelled or failed, is a source with nothing of it in the catalog, and
+  /// a library made of it shows nothing until something walks it.
   ///
   /// Not registered: it is registered as a source first, with the scope
   /// question every registration asks, and then indexed. The library is
@@ -277,14 +280,32 @@ class LibrariesView extends ConsumerWidget {
     final failure = await ref
         .read(librarySourcesControllerProvider.notifier)
         .markAsLibrary(path: path, name: name);
-    if (failure == null || !context.mounted) return;
+    if (failure != null) {
+      if (!context.mounted) return;
 
-    _say(
-      context,
-      failure is ConflictFailure
-          ? l10n.libraryOverlaps
-          : failure.localizedMessage(l10n),
-    );
+      _say(
+        context,
+        failure is ConflictFailure
+            ? l10n.libraryOverlaps
+            : failure.localizedMessage(l10n),
+      );
+      return;
+    }
+
+    // Adding a library is a request to have its contents in it, and the tree
+    // is built from catalog rows: a folder nobody has walked makes a library
+    // that shows nothing at all. So the run is started here rather than left
+    // to the Scan button — that button is the remedy for a library that ended
+    // up empty anyway, not a step the owner should have to know about. A run
+    // already going is that request being met, and reporting nothing is what
+    // `false` asks for.
+    final asked = await ref
+        .read(indexRunsControllerProvider.notifier)
+        .indexUnlessRunning(path);
+    if (!asked || !context.mounted) return;
+
+    final refusal = _startRefusalMessage(ref, l10n, path);
+    if (refusal != null) _say(context, refusal);
   }
 
   /// Registers [path] as a source, as a library, and indexes it.
@@ -344,11 +365,11 @@ class LibrariesView extends ConsumerWidget {
     // A source folder that is not indexed is not in the library yet — and a
     // library made of one shows nothing at all, which is the failure this
     // whole path exists to avoid.
-    await ref
+    final asked = await ref
         .read(indexRunsControllerProvider.notifier)
-        .startIndex(source.path);
+        .indexUnlessRunning(source.path);
+    if (!asked || !context.mounted) return;
 
-    if (!context.mounted) return;
     final refusal = _startRefusalMessage(ref, l10n, source.path);
     if (refusal != null) _say(context, refusal);
   }
