@@ -271,6 +271,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Sua escolha foi aplicada, mas não pôde ser salva — ela não será lembrada na próxima vez que o Alexandria iniciar.';
 
   @override
+  String get musicLookupDeferred =>
+      'Salvo. A biblioteca está sendo varrida, então isto passa a valer quando a varredura terminar.';
+
+  @override
   String get preferencesClose => 'Concluído';
 
   @override
@@ -523,11 +527,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get catalogFileMissing => 'Ausente do disco';
 
   @override
-  String catalogCount(int count) {
-    return '$count';
-  }
-
-  @override
   String get layoutList => 'Lista';
 
   @override
@@ -627,9 +626,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get detailsStateMissing => 'Ausente do disco';
-
-  @override
-  String get detailsOpen => 'Abrir';
 
   @override
   String get detailsNoViewer =>
@@ -1059,22 +1055,10 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get audioPlayer => 'Player';
-
-  @override
   String get audioOpenPlayer => 'Abrir o player';
 
   @override
   String get audioClosePlayer => 'Fechar o player';
-
-  @override
-  String get albumMediumVinyl => 'Um disco de vinil girando em uma vitrola';
-
-  @override
-  String get albumMediumTape => 'Uma fita cassete girando em um toca-fitas';
-
-  @override
-  String get albumMediumDisc => 'Um disco girando em um player';
 
   @override
   String get viewerOpen => 'Abrir';
@@ -1448,9 +1432,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get runFailuresOpen => 'Ver quais arquivos';
 
   @override
-  String get librariesTitle => 'Bibliotecas';
-
-  @override
   String get librariesNone =>
       'Você ainda não criou uma biblioteca. Crie uma com o botão acima — uma pasta vira uma biblioteca, e seus arquivos aparecem lá em vez de nos painéis por tipo.';
 
@@ -1522,9 +1503,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get enrichmentSweepFailed => 'A busca não pôde continuar.';
-
-  @override
-  String get enrichmentLyricsTitle => 'Letra';
 
   @override
   String enrichmentLyricsSource(String source) {
@@ -1932,9 +1910,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get collectionItemGone => 'ele não existe mais';
 
   @override
-  String get libraryToolsOpen => 'Ferramentas da biblioteca';
-
-  @override
   String get libraryToolsLabel => 'Biblioteca';
 
   @override
@@ -1950,6 +1925,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String artistPortraitsProgress(int done, int total) {
     return 'Buscando fotos de artistas — $done de $total';
   }
+
+  @override
+  String get artistPortraitsStopped =>
+      'Não foi possível alcançar os serviços de fotos — a busca parou';
+
+  @override
+  String get artistPortraitsRetry => 'Tentar de novo';
 
   @override
   String get activityBarLabel => 'Indexação em segundo plano';

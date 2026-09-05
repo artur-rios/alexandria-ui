@@ -271,6 +271,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.';
 
   @override
+  String get musicLookupDeferred =>
+      'Saved. The library is being scanned, so this takes effect when the scan finishes.';
+
+  @override
   String get preferencesClose => 'Done';
 
   @override
@@ -523,11 +527,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get catalogFileMissing => 'Missing from disk';
 
   @override
-  String catalogCount(int count) {
-    return '$count';
-  }
-
-  @override
   String get layoutList => 'List';
 
   @override
@@ -627,9 +626,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailsStateMissing => 'Missing from disk';
-
-  @override
-  String get detailsOpen => 'Open';
 
   @override
   String get detailsNoViewer => 'Nothing can open this kind of file yet.';
@@ -1058,22 +1054,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get audioPlayer => 'Player';
-
-  @override
   String get audioOpenPlayer => 'Open the player';
 
   @override
   String get audioClosePlayer => 'Close the player';
-
-  @override
-  String get albumMediumVinyl => 'A record turning on a turntable';
-
-  @override
-  String get albumMediumTape => 'A cassette turning in a tape deck';
-
-  @override
-  String get albumMediumDisc => 'A disc turning in a player';
 
   @override
   String get viewerOpen => 'Open';
@@ -1444,9 +1428,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get runFailuresOpen => 'Show which files';
 
   @override
-  String get librariesTitle => 'Libraries';
-
-  @override
   String get librariesNone =>
       'You have not made a library yet. Add one with the button above — a folder becomes a library, and its files are shown there instead of in the type panels.';
 
@@ -1518,9 +1499,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enrichmentSweepFailed => 'The lookup could not continue.';
-
-  @override
-  String get enrichmentLyricsTitle => 'Lyrics';
 
   @override
   String enrichmentLyricsSource(String source) {
@@ -1927,9 +1905,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get collectionItemGone => 'it no longer exists';
 
   @override
-  String get libraryToolsOpen => 'Library tools';
-
-  @override
   String get libraryToolsLabel => 'Library';
 
   @override
@@ -1945,6 +1920,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String artistPortraitsProgress(int done, int total) {
     return 'Finding artist photographs — $done of $total';
   }
+
+  @override
+  String get artistPortraitsStopped =>
+      'Could not reach the photograph services — stopped looking';
+
+  @override
+  String get artistPortraitsRetry => 'Try again';
 
   @override
   String get activityBarLabel => 'Background indexing';

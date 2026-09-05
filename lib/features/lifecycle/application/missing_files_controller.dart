@@ -32,6 +32,14 @@ class MissingFilesController extends AsyncNotifier<List<FileDetails>> {
       final listing = await catalog.listFiles(
         type: type,
         credential: credential,
+        // Reaching into libraries, for the reason the deleted-items review
+        // reaches in: the exclusion is for the queries that *browse by type*
+        // (core FR-FC-38), and a review is not one of them. A missing file
+        // inside a library is still in its tree — missing is a marking on an
+        // active record, not a state — but this screen is the only place the
+        // owner is offered anything to do about it, and without this it
+        // listed every missing file in the catalog except theirs.
+        includeLibraries: true,
       );
 
       switch (listing) {

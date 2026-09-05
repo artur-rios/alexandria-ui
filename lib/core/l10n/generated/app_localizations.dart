@@ -554,6 +554,12 @@ abstract class AppLocalizations {
   /// **'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.'**
   String get preferencesUnsaved;
 
+  /// Music enrichment design: the core will not be reconfigured while it is walking a disk — a scan already running would be left behind by the replacement — so a lookup preference changed during one is stored and applied when the scan settles. Said rather than left silent, because the alternative reads as a switch that does nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. The library is being scanned, so this takes effect when the scan finishes.'**
+  String get musicLookupDeferred;
+
   /// The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made.
   ///
   /// In en, this message translates to:
@@ -984,12 +990,6 @@ abstract class AppLocalizations {
   /// **'Missing from disk'**
   String get catalogFileMissing;
 
-  /// The item count beside a type in the navigation panel (FR-CT-01).
-  ///
-  /// In en, this message translates to:
-  /// **'{count}'**
-  String catalogCount(int count);
-
   /// The plain list layout (FR-CT-03).
   ///
   /// In en, this message translates to:
@@ -1175,12 +1175,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Missing from disk'**
   String get detailsStateMissing;
-
-  /// The action that hands the file to its viewer or player (FR-CT-12).
-  ///
-  /// In en, this message translates to:
-  /// **'Open'**
-  String get detailsOpen;
 
   /// UC-13 AF-04: no viewer is registered for the type. The other actions stay available.
   ///
@@ -1962,12 +1956,6 @@ abstract class AppLocalizations {
   /// **'You stopped this track at {position}.'**
   String audioResumePrompt(String position);
 
-  /// UC-21: the full player's heading when nothing names an album or an artist.
-  ///
-  /// In en, this message translates to:
-  /// **'Player'**
-  String get audioPlayer;
-
   /// UC-21 main flow step 2: opens the full player, where the album's medium is shown.
   ///
   /// In en, this message translates to:
@@ -1979,24 +1967,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close the player'**
   String get audioClosePlayer;
-
-  /// UC-21 / FR-PL-07: what the animation is, for a screen reader.
-  ///
-  /// In en, this message translates to:
-  /// **'A record turning on a turntable'**
-  String get albumMediumVinyl;
-
-  /// UC-21 / FR-PL-07: what the animation is, for a screen reader.
-  ///
-  /// In en, this message translates to:
-  /// **'A cassette turning in a tape deck'**
-  String get albumMediumTape;
-
-  /// UC-21 / FR-PL-07: what the animation is, for a screen reader.
-  ///
-  /// In en, this message translates to:
-  /// **'A disc turning in a player'**
-  String get albumMediumDisc;
 
   /// UC-22 main flow step 1: opens the viewer registered for this file's type.
   ///
@@ -2634,12 +2604,6 @@ abstract class AppLocalizations {
   /// **'Show which files'**
   String get runFailuresOpen;
 
-  /// Title of the screen listing registered libraries.
-  ///
-  /// In en, this message translates to:
-  /// **'Libraries'**
-  String get librariesTitle;
-
   /// Libraries design: no folder has been made into a library yet. A state, not a failure — and it points at the button on this screen rather than at another one.
   ///
   /// In en, this message translates to:
@@ -2759,12 +2723,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The lookup could not continue.'**
   String get enrichmentSweepFailed;
-
-  /// Music enrichment design: heading over the words of the track playing now, shown only when the core has some cached.
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics'**
-  String get enrichmentLyricsTitle;
 
   /// Attribution under the lyrics, naming the service that supplied them. Shown because the words are somebody's, not this application's.
   ///
@@ -3420,12 +3378,6 @@ abstract class AppLocalizations {
   /// **'it no longer exists'**
   String get collectionItemGone;
 
-  /// UC-37 main flow step 1: the navigation panel entry that reaches the library-wide areas — sources, collections, watchlists, reading lists, deleted items, and the missing-files review.
-  ///
-  /// In en, this message translates to:
-  /// **'Library tools'**
-  String get libraryToolsOpen;
-
   /// Visible label of the Library menu's trigger in the shell's menu bar, shown beside its icon at every breakpoint wider than the minimum.
   ///
   /// In en, this message translates to:
@@ -3455,6 +3407,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Finding artist photographs — {done} of {total}'**
   String artistPortraitsProgress(int done, int total);
+
+  /// FR-PL-15: the background photograph pass gave up, because several lookups in a row could not be made at all — which is what being offline looks like from here. Shown in the activity strip beside the action that starts it again.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the photograph services — stopped looking'**
+  String get artistPortraitsStopped;
+
+  /// FR-PL-15: starts the abandoned photograph pass again, for an owner whose connection has come back. Without it the pass is over until the application is restarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get artistPortraitsRetry;
 
   /// FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now.
   ///

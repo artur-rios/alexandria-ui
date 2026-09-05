@@ -1995,7 +1995,67 @@ graph LR
 > library's files. That is deliberate and is stated in FR-CT-16 so that a later
 > reader does not resolve the apparent inconsistency by hiding them everywhere.
 
----
+### UC-50: See what has been played most
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-50 |
+| **Name** | See what has been played most |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The application counts a track as played once enough of it has been heard, tells the core, and presents the rankings built from that history — most played tracks, artists, albums, and genres. |
+| **Preconditions** | An active session exists. |
+| **Postconditions** | The plays the owner has listened to are recorded, and the rankings drawn from them are on screen. |
+| **Requirements** | FR-PL-16, FR-PL-17 |
+
+**Main Flow**
+
+1. While a track plays, the application accumulates how much of it has actually
+   been *heard* — the engine's position as it advances, never the position
+   itself.
+2. Once that reaches half the track's length or four minutes, whichever comes
+   first, the application tells the core a play happened. A track heard to its
+   end counts however short it is.
+3. At most one play per time the track opened. Putting the same record on again
+   is a second play, which is the listening the rankings exist to count.
+4. The owner opens the music statistics screen from the Library menu.
+5. The application reads the summary and the four rankings from the core in one
+   call and draws them: how many plays across how many tracks, the period they
+   span, and the tracks, artists, albums, and genres in order.
+6. The owner asks for them again, and the application re-reads them.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The track was resumed, or the slider dragged, past the threshold | Nothing is counted. Reaching a position is not hearing what precedes it, and the count resumes from what is heard after the jump. |
+| AF-02 | The engine has not reported the track's length yet | Nothing counts. With no length to take half of, every rule reduces to guessing, and the status a moment later carries the real value. |
+| AF-03 | The play could not be recorded | It is logged and dropped. Interrupting the music to report that a statistic went unwritten would be a worse failure than the missing row. |
+| AF-04 | Nothing has been played yet | The screen says so, and says what counts as a play, rather than drawing four empty lists. |
+| AF-05 | The core will not answer the rankings | The screen says so and offers to read them again. A ranking is not drawn partially: a chart with a hole in it is a wrong answer presented as a confident one. |
+| AF-06 | The core rejects a call as unauthorized | The session is discarded and the owner returns to login. |
+
+> **Heard, not reached.** The threshold is the one scrobblers have used for
+> twenty years, and the thing every one of them guards against is the position
+> arriving without the listening. A track reopened where it was left is past
+> half of itself before a note has sounded, and the slider gets there with
+> nothing heard at all — so what is measured is the engine's position *as it
+> advances*, and a jump larger than a playing track could make in one status is
+> credited to nothing. This is why the rule is stated in terms of time heard
+> (FR-PL-16) rather than in terms of where the playhead is.
+>
+> **The rule lives here, not in the core.** The core cannot see what the owner
+> is hearing; it records what it is told and counts what it holds. Splitting the
+> definition across the two would mean half a rule at each end and no single
+> place to read it.
+>
+> **The screen does not follow the music.** It reads when it opens and when it
+> is asked, and not while a track plays: a chart that reordered itself under
+> the reader's eyes would be harder to read than one a minute old, and the
+> refresh is one button away.
+>
+> The core's own half of this — recording a play, and the rankings — is
+> specified in the Alexandria core's own requirements (FR-PH-01 … FR-PH-10) and
+> is not restated here.
 
 ---
 
@@ -2052,6 +2112,7 @@ graph LR
 | UC-47: Manage a playlist | FR-TR-15, FR-TR-16, FR-TR-17, FR-TR-18, FR-TR-19 |
 | UC-48: Play a playlist | FR-TR-20, FR-PL-05, FR-PL-06, FR-PL-07 |
 | UC-49: Browse a library | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
+| UC-50: See what has been played most | FR-PL-16, FR-PL-17 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) appears at least

@@ -338,6 +338,10 @@
   "@preferencesUnsaved": {
     "description": "UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered."
   },
+  "musicLookupDeferred": "Saved. The library is being scanned, so this takes effect when the scan finishes.",
+  "@musicLookupDeferred": {
+    "description": "Music enrichment design: the core will not be reconfigured while it is walking a disk — a scan already running would be left behind by the replacement — so a lookup preference changed during one is stored and applied when the scan settles. Said rather than left silent, because the alternative reads as a switch that does nothing."
+  },
   "preferencesClose": "Done",
   "@preferencesClose": {
     "description": "The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made."
@@ -677,15 +681,6 @@
   "@catalogFileMissing": {
     "description": "Marks a file the last refresh could not find on disk. The record is still active; reviewing them is UC-37."
   },
-  "catalogCount": "{count}",
-  "@catalogCount": {
-    "description": "The item count beside a type in the navigation panel (FR-CT-01).",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "layoutList": "List",
   "@layoutList": {
     "description": "The plain list layout (FR-CT-03)."
@@ -819,10 +814,6 @@
   "detailsStateMissing": "Missing from disk",
   "@detailsStateMissing": {
     "description": "UC-13 AF-03: the record is active but the file was not where the catalog says it is."
-  },
-  "detailsOpen": "Open",
-  "@detailsOpen": {
-    "description": "The action that hands the file to its viewer or player (FR-CT-12)."
   },
   "detailsNoViewer": "Nothing can open this kind of file yet.",
   "@detailsNoViewer": {
@@ -1392,10 +1383,6 @@
       }
     }
   },
-  "audioPlayer": "Player",
-  "@audioPlayer": {
-    "description": "UC-21: the full player's heading when nothing names an album or an artist."
-  },
   "audioOpenPlayer": "Open the player",
   "@audioOpenPlayer": {
     "description": "UC-21 main flow step 2: opens the full player, where the album's medium is shown."
@@ -1403,18 +1390,6 @@
   "audioClosePlayer": "Close the player",
   "@audioClosePlayer": {
     "description": "UC-21 AF-02: leaves the full player and returns to wherever the owner opened it from, without touching playback."
-  },
-  "albumMediumVinyl": "A record turning on a turntable",
-  "@albumMediumVinyl": {
-    "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
-  },
-  "albumMediumTape": "A cassette turning in a tape deck",
-  "@albumMediumTape": {
-    "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
-  },
-  "albumMediumDisc": "A disc turning in a player",
-  "@albumMediumDisc": {
-    "description": "UC-21 / FR-PL-07: what the animation is, for a screen reader."
   },
   "viewerOpen": "Open",
   "@viewerOpen": {
@@ -1937,10 +1912,6 @@
   "@runFailuresOpen": {
     "description": "Opens the list from the run report that names the count."
   },
-  "librariesTitle": "Libraries",
-  "@librariesTitle": {
-    "description": "Title of the screen listing registered libraries."
-  },
   "librariesNone": "You have not made a library yet. Add one with the button above \u2014 a folder becomes a library, and its files are shown there instead of in the type panels.",
   "@librariesNone": {
     "description": "Libraries design: no folder has been made into a library yet. A state, not a failure \u2014 and it points at the button on this screen rather than at another one."
@@ -2024,10 +1995,6 @@
   "enrichmentSweepFailed": "The lookup could not continue.",
   "@enrichmentSweepFailed": {
     "description": "A batch failed for a reason not worth retrying. What was already done is kept."
-  },
-  "enrichmentLyricsTitle": "Lyrics",
-  "@enrichmentLyricsTitle": {
-    "description": "Music enrichment design: heading over the words of the track playing now, shown only when the core has some cached."
   },
   "enrichmentLyricsSource": "Lyrics from {source}",
   "@enrichmentLyricsSource": {
@@ -2543,10 +2510,6 @@
   "@collectionItemGone": {
     "description": "UC-27 AF-04: the core rejected the item because no such item exists."
   },
-  "libraryToolsOpen": "Library tools",
-  "@libraryToolsOpen": {
-    "description": "UC-37 main flow step 1: the navigation panel entry that reaches the library-wide areas — sources, collections, watchlists, reading lists, deleted items, and the missing-files review."
-  },
   "libraryToolsLabel": "Library",
   "@libraryToolsLabel": {
     "description": "Visible label of the Library menu's trigger in the shell's menu bar, shown beside its icon at every breakpoint wider than the minimum."
@@ -2570,6 +2533,14 @@
       "done": { "type": "int" },
       "total": { "type": "int" }
     }
+  },
+  "artistPortraitsStopped": "Could not reach the photograph services — stopped looking",
+  "@artistPortraitsStopped": {
+    "description": "FR-PL-15: the background photograph pass gave up, because several lookups in a row could not be made at all — which is what being offline looks like from here. Shown in the activity strip beside the action that starts it again."
+  },
+  "artistPortraitsRetry": "Try again",
+  "@artistPortraitsRetry": {
+    "description": "FR-PL-15: starts the abandoned photograph pass again, for an owner whose connection has come back. Without it the pass is over until the application is restarted."
   },
   "activityBarLabel": "Background indexing",
   "@activityBarLabel": {

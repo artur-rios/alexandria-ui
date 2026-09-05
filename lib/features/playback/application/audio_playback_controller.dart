@@ -127,6 +127,33 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   /// passes the threshold.
   bool _playCounted = false;
 
+  /// How much of the open track has actually been heard (play history
+  /// design).
+  ///
+  /// Summed from the engine's own position as it advances, rather than read
+  /// off it. The two look alike and are not: reopening a track at the point
+  /// it was left puts the position past the threshold before a note has
+  /// sounded, and dragging the slider past the middle gets there with
+  /// nothing heard at all. Both used to record a play, which is a statistic
+  /// reporting listening that never happened — the exact failure the
+  /// threshold exists to prevent, reached from the side nobody was watching.
+  Duration _heard = Duration.zero;
+
+  /// Where the last status left playback, so the next one's advance can be
+  /// measured against it. `null` before the first status of a track and
+  /// after a seek, either of which starts a fresh stretch rather than
+  /// crediting the gap.
+  Duration? _heardFrom;
+
+  /// The largest gap between two statuses this credits as listening.
+  ///
+  /// The stream reports several times a second, so an ordinary advance is
+  /// tens of milliseconds. Two seconds is loose enough to absorb a stalled
+  /// isolate or a slow disk without losing the time that really was heard,
+  /// and far tighter than any seek an owner makes on purpose — a scrub lands
+  /// minutes away, not inside the tolerance.
+  static const Duration _heardTick = Duration(seconds: 2);
+
   /// Which run of [_openAt] is the current one.
   ///
   /// Every call takes the next number and abandons itself the moment a later
@@ -320,6 +347,12 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
       final at => at,
     };
 
+    // A fresh stretch, so the span the playhead crossed is not credited as
+    // listening. `_accumulateHeard` would already refuse a jump larger than
+    // its tolerance; saying it here covers the small nudge too, and says why
+    // rather than leaving it to a threshold to imply.
+    _heardFrom = null;
+
     await _player.seek(bounded);
     await _recordPosition(force: true);
   }
@@ -452,8 +485,6 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
           _GroupKind.artist => QueueKind.artist,
         },
         label: label,
-        // What UC-21 picks the medium from.
-        year: entry.metadata.year,
         index: startIndex < 0 ? 0 : startIndex,
       ),
       at: Duration.zero,
@@ -541,8 +572,14 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
             startAt: queue.index == index ? at : Duration.zero,
           );
           // A different track, or the same one again: either way this is a
-          // playthrough that has not been counted yet.
+          // playthrough that has not been counted yet, and nothing of it has
+          // been heard. The heard time resets with the flag — a resume opens
+          // part-way in, and starting the count anywhere but zero is how
+          // reopening a track the owner left near its end recorded a play
+          // they never listened to.
           _playCounted = false;
+          _heard = Duration.zero;
+          _heardFrom = null;
           state = state.copyWith(
             queue: queue,
             stage: AudioStage.playing,
@@ -609,13 +646,24 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
         return;
       }
 
+      // Before anything else reads it: every decision below is about how
+      // much has been heard, and this status is the only thing that knows
+      // the track moved.
+      _accumulateHeard(status);
+
       state = state.copyWith(status: status, lastSkipped: state.lastSkipped);
 
       if (status.hasEnded) {
-        // Heard to the end, so it is a play whatever its length — counted
-        // before the queue moves on, while the finished track is still the
-        // current one.
-        _countPlay();
+        // Heard to the end, so it is a play — counted before the queue moves
+        // on, while the finished track is still the current one.
+        //
+        // Through the threshold rather than around it, which is the change
+        // from counting positions. A track played through has heard time
+        // equal to its length and clears the threshold by definition, so
+        // nothing an owner actually listened to stops counting. What no
+        // longer counts is a track *dragged* to its end, which reaches this
+        // line with nothing heard at all.
+        _countPlayIfHeard(status.duration);
 
         // Step 7: a track played through leaves no position, and the queue
         // moves on — or ends.
@@ -632,15 +680,33 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
       // moved on from still counts (`countsAsPlayed`). Checked on the status
       // stream rather than only at the end, because a track skipped after
       // most of it was heard was listened to.
-      if (countsAsPlayed(
-        position: status.position,
-        duration: status.duration,
-      )) {
-        _countPlay();
-      }
+      _countPlayIfHeard(status.duration);
 
       unawaited(_recordPosition());
     });
+  }
+
+  /// Adds this status's advance to what has been heard.
+  ///
+  /// Only an advance that looks like playing is credited: forward, and no
+  /// larger than [_heardTick]. A backward jump and a long forward one are
+  /// both seeks — the owner moved the playhead rather than listened to the
+  /// span it crossed — and either starts a fresh stretch instead of
+  /// contributing to this one.
+  void _accumulateHeard(PlaybackStatus status) {
+    final from = _heardFrom;
+    _heardFrom = status.position;
+    if (from == null) return;
+
+    final advance = status.position - from;
+    if (advance <= Duration.zero || advance > _heardTick) return;
+
+    _heard += advance;
+  }
+
+  /// Records a play if enough of the track has been heard.
+  void _countPlayIfHeard(Duration? duration) {
+    if (countsAsPlayed(heard: _heard, duration: duration)) _countPlay();
   }
 
   /// Records a play of the open track, at most once per time it opened.

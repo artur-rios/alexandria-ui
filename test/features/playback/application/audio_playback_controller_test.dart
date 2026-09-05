@@ -188,7 +188,6 @@ void main() {
     final queue = container.read(audioPlaybackControllerProvider).queue;
     expect(queue.namesOwnRecord, isFalse);
     expect(queue.label, 'Road Trip');
-    expect(queue.year, isNull);
   });
 
   test(

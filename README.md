@@ -352,9 +352,9 @@ its tests before its pull request is opened.
 
 ## Roadmap
 
-Eleven milestones covering forty-six issues: one foundation issue plus one issue
-per use case. Milestones are dependency-ordered — no milestone depends on a later
-one, and every milestone after `M-01` depends on it.
+Thirteen milestones covering fifty-one issues: one foundation issue plus one
+issue per use case. Milestones are dependency-ordered — no milestone depends on
+a later one, and every milestone after `M-01` depends on it.
 
 | Milestone | Delivers | Depends on | Issues | Status |
 | --- | --- | --- | --- | --- |
@@ -363,20 +363,31 @@ one, and every milestone after `M-01` depends on it.
 | [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-ui/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 4 / 4 closed |
 | [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-ui/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 6 / 6 closed |
 | [M-05 — Metadata and content editing](https://github.com/artur-rios/alexandria-ui/milestone/5) | Music and video metadata, file names, and text content can be edited | M-04 | 4 | 4 / 4 closed |
-| [M-06 — Media playback](https://github.com/artur-rios/alexandria-ui/milestone/6) | Video plays with subtitles and audio tracks; audio plays with a queue and the album animation | M-04 | 3 | 3 / 3 closed |
+| [M-06 — Media playback](https://github.com/artur-rios/alexandria-ui/milestone/6) | Video plays with subtitles and audio tracks; audio plays with a queue, a full player, and the sound of the track drawn from the recording | M-04 | 3 | 3 / 3 closed |
 | [M-07 — Document and image viewing](https://github.com/artur-rios/alexandria-ui/milestone/7) | PDFs, e-books, comics, images, and saved pages can be read | M-04 | 4 | 4 / 4 closed |
 | [M-08 — Collections and bookmarks](https://github.com/artur-rios/alexandria-ui/milestone/8) | Files and bookmarks can be grouped, and bookmarks managed and opened | M-04 | 3 | 3 / 3 closed |
 | [M-09 — Watchlists and reading lists](https://github.com/artur-rios/alexandria-ui/milestone/9) | Movies, series, books, and comics can be tracked with per-episode and per-issue progress | M-08 | 4 | 4 / 4 closed |
 | [M-10 — Deletion lifecycle](https://github.com/artur-rios/alexandria-ui/milestone/10) | Items can be deleted, restored, purged, purged on disk, and reviewed when missing | M-04 | 5 | 5 / 5 closed |
 | [M-11 — Indexing experience](https://github.com/artur-rios/alexandria-ui/milestone/11) | A scan is visible from anywhere, controllable while it runs, and paceable; a newly registered folder indexes itself | M-03 | 3 | 3 / 3 closed |
+| M-12 — Music library and playlists | The audio library browsed by album and artist with its own photographs, playlists curated and played, and what has been played most | M-06 | 4 | 4 / 4 closed |
+| M-13 — Libraries | A folder browsed as its own tree, whose files are shown there rather than scattered across the type panels | M-04 | 1 | 1 / 1 closed |
 
 GitHub's milestone pages are the live view of progress; the counts here are as
-of the last update to this file.
+of the last update to this file. `M-12` and `M-13` carry no milestone links and
+no issue numbers, and that is honest rather than an omission: they were built
+from design documents in `docs/superpowers/specs/` rather than from the
+issue-per-use-case backlog the first eleven follow. They are specified all the
+same — `UC-46` … `UC-50` and their requirements are in the same two documents
+as everything above them.
 
-**The two repositories agree again.** `CORE_REF` tracks
-[`alexandria-api` UC-42](https://github.com/artur-rios/alexandria-api/pull/114),
-which is what the indexing experience is built on — pause, resume, cancel, live
-progress, run priority, and the outstanding-runs listing. Earlier divergences
+**The two repositories agree.** `CORE_REF` tracks the core that refuses to be
+re-initialized while it is walking a disk, which the preferences dialog reads
+to say that a lookup setting changed mid-scan takes effect when the scan
+finishes. That core also carries the review fixes this application depends on
+being there: a library that no longer claims folders differing only in case, a
+re-encoded track that no longer keeps the old recording's envelope, and an
+album ranking grouped by title *and* artist — which is what makes the
+statistics screen agree with the music browsing beside it. Earlier divergences
 are closed on both sides too:
 
 - **Account recovery is recovery codes.** The core dropped e-mail confirmation
@@ -499,6 +510,26 @@ listing, and the pause, resume, and cancel controls.
 | [#103](https://github.com/artur-rios/alexandria-ui/issues/103) | UC-43 — Follow a scan while it runs — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#104](https://github.com/artur-rios/alexandria-ui/issues/104) | UC-44 — Pause, resume, or cancel a scan — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#105](https://github.com/artur-rios/alexandria-ui/issues/105) | UC-45 — Pace a scan — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+
+### M-12 — Music library and playlists
+
+The audio library as a library rather than a file listing: browsed by album and
+artist, with the photograph the core holds for each; playlists curated and
+played; and what has been played most, counted by the player and ranked by the
+core.
+
+| Issue | Work | Spec |
+| --- | --- | --- |
+| — | UC-46 — Browse the music library — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-47 — Manage a playlist — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-48 — Play a playlist — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-50 — See what has been played most — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+
+### M-13 — Libraries
+
+| Issue | Work | Spec |
+| --- | --- | --- |
+| — | UC-49 — Browse a library — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ## Contributing
 

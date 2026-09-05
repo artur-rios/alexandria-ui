@@ -17,6 +17,18 @@
 #define INDEX_ERR_OTHER 4
 
 /**
+ * `alexandria_index_init` only: this core is executing a run, so it will not
+ * replace its services.
+ *
+ * Its own code rather than `INDEX_ERR_OTHER` because it is a "not now", not
+ * a failure: nothing is wrong with the call, and the same call after the
+ * scan settles succeeds. A caller that can tell the two apart says "this
+ * takes effect when the scan finishes" instead of reporting an error for
+ * something that is going to work.
+ */
+#define INDEX_ERR_BUSY 5
+
+/**
  * FFI status codes returned by file operations (UC-04+). Deliberately
  * separate from `INDEX_*` so a future use case can grow either set without
  * colliding; `FILE_OK == INDEX_OK == 0` by convention.
@@ -535,8 +547,19 @@ int32_t alexandria_health_status_code(void);
 
 /**
  * Initialize the FFI services against a database path (created/migrated on
- * demand). Safe to call again to point at a different database (replaces).
- * Returns 0 on success, a non-zero status otherwise.
+ * demand). Returns 0 on success, a non-zero status otherwise.
+ *
+ * **Safe to call again — except while this core is walking a disk.** A second
+ * call replaces the services wholesale, and a run already executing does not
+ * come with them: its cell lives in the old [`RunRegistry`], so pause and
+ * cancel stop reaching it and its progress stops being published, while the
+ * walk itself carries on writing. Worse, the new services reconcile on the
+ * way up (FR-FC-29) and rewrite that live run's row to `paused` on the
+ * assumption that nothing is walking it. So a call made while
+ * `alexandria_index_runs_active_json` would answer anything is refused with
+ * `INDEX_ERR_BUSY` and changes nothing; the same call after the run settles
+ * succeeds. Pointing at a *different* database is subject to the same rule,
+ * for the same reason.
  *
  * Configuration is loaded the same way `alexandria-http` loads it — from the
  * path in `ALEXANDRIA_CONFIG` (default `config.toml`), with `ALEXANDRIA_*`

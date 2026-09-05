@@ -1256,8 +1256,19 @@ class AlexandriaBindings {
       .asFunction<ffi.Pointer<ffi.Char> Function()>();
 
   /// Initialize the FFI services against a database path (created/migrated on
-  /// demand). Safe to call again to point at a different database (replaces).
-  /// Returns 0 on success, a non-zero status otherwise.
+  /// demand). Returns 0 on success, a non-zero status otherwise.
+  ///
+  /// **Safe to call again — except while this core is walking a disk.** A second
+  /// call replaces the services wholesale, and a run already executing does not
+  /// come with them: its cell lives in the old [`RunRegistry`], so pause and
+  /// cancel stop reaching it and its progress stops being published, while the
+  /// walk itself carries on writing. Worse, the new services reconcile on the
+  /// way up (FR-FC-29) and rewrite that live run's row to `paused` on the
+  /// assumption that nothing is walking it. So a call made while
+  /// `alexandria_index_runs_active_json` would answer anything is refused with
+  /// `INDEX_ERR_BUSY` and changes nothing; the same call after the run settles
+  /// succeeds. Pointing at a *different* database is subject to the same rule,
+  /// for the same reason.
   ///
   /// Configuration is loaded the same way `alexandria-http` loads it — from the
   /// path in `ALEXANDRIA_CONFIG` (default `config.toml`), with `ALEXANDRIA_*`
@@ -2695,6 +2706,8 @@ final class FileMetadataResult extends ffi.Struct {
     ..ref.status = status
     ..ref.json = json;
 }
+
+const int INDEX_ERR_BUSY = 5;
 
 const int INDEX_ERR_INVALID_INPUT = 1;
 

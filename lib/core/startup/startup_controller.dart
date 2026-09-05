@@ -14,6 +14,25 @@ import 'core_paths.dart';
 import 'core_version.dart';
 import 'startup_state.dart';
 
+/// What became of a music-lookup change handed to the core.
+enum MusicLookupApplication {
+  /// The core is running with it now.
+  applied,
+
+  /// Nothing was asked of the core: there is none yet, or the configuration
+  /// was already the one it is running with.
+  unchanged,
+
+  /// The core is scanning and will not be reconfigured until it stops. The
+  /// preference is saved; it takes effect when the scan settles, and the next
+  /// call is what applies it.
+  deferred,
+
+  /// The core refused, or could not be reached. It keeps the configuration it
+  /// started with.
+  failed,
+}
+
 /// Runs the startup sequence in Operations & Infrastructure Document §5.1
 /// (IR-04, IR-05, IR-06).
 ///
@@ -76,31 +95,51 @@ class StartupController extends Notifier<StartupState> {
   /// is no other way to apply it — and leaving it until the next launch is
   /// exactly the dead end this exists to remove: an owner who switches the
   /// lookup on, asks for lyrics, and is told the feature is switched off for
-  /// this installation. `alexandria_index_init` is documented as safe to
-  /// call again, sessions live in the database rather than in the process,
-  /// and a failed re-initialization leaves the core's existing services
-  /// exactly where they were.
+  /// this installation. `alexandria_index_init` is safe to call again while
+  /// the core is idle, sessions live in the database rather than in the
+  /// process, and a refused re-initialization leaves the core's existing
+  /// services exactly where they were.
   ///
   /// Does nothing when the configuration has not actually changed, which is
   /// every call but the one that follows a change.
-  Future<void> applyMusicLookup() async {
+  ///
+  /// Answers whether the core took it. `MusicLookupApplication.deferred` is
+  /// the one worth acting on: the core will not replace its services while it
+  /// is walking a disk, because a run already executing would be left behind
+  /// by the replacement — unpausable, uncancellable, and with its row
+  /// rewritten under it. The preference is saved either way, so this is a
+  /// "not yet" rather than a failure, and the owner is owed that sentence
+  /// rather than a switch that appears to do nothing.
+  Future<MusicLookupApplication> applyMusicLookup() async {
     final core = _core;
     final databasePath = _databasePath;
-    if (core == null || databasePath == null) return;
+    if (core == null || databasePath == null) {
+      return MusicLookupApplication.unchanged;
+    }
 
     final lookup = musicLookup;
-    if (lookup == _appliedMusicLookup) return;
+    if (lookup == _appliedMusicLookup) return MusicLookupApplication.unchanged;
 
     try {
       final status = await core.initialize(databasePath, musicLookup: lookup);
+      if (coreIsBusy(status)) {
+        // Deliberately *not* recorded as applied: leaving `_appliedMusicLookup`
+        // where it is means the next call tries again, which is what makes
+        // [PreferencesController] retrying once the scan settles work at all.
+        _log.info(
+          'the core is scanning, so the music-lookup change waits for it',
+        );
+        return MusicLookupApplication.deferred;
+      }
       if (!CoreStatusFamily.indexing.isOk(status)) {
         _log.warning(
           'the core refused to be reconfigured for music lookup '
           '(status $status); it keeps the configuration it started with',
         );
-        return;
+        return MusicLookupApplication.failed;
       }
       _appliedMusicLookup = lookup;
+      return MusicLookupApplication.applied;
     } on CoreCallException catch (error) {
       // Logged, not raised: the owner changed a preference, the preference
       // is saved, and the core carries on with what it already had. What
@@ -109,6 +148,7 @@ class StartupController extends Notifier<StartupState> {
         'the core could not be reconfigured for music lookup',
         error,
       );
+      return MusicLookupApplication.failed;
     }
   }
 

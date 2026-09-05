@@ -198,6 +198,17 @@ class _BackgroundActivityStripState
     // hiding a scan for.
     if (portraits.isRunning) return _PortraitsRow(state: portraits);
 
+    // And when it gave up. Worth saying, unlike a cancelled scan: nobody
+    // asked for this pass, so its silence is indistinguishable from a
+    // library whose artists simply have no photographs — and the owner is
+    // the only one who can tell it to try the network again.
+    if (portraits.stopped) {
+      return _PortraitsStoppedRow(
+        onRetry: () =>
+            ref.read(artistPortraitBackfillProvider.notifier).resume(),
+      );
+    }
+
     // Anything else that dropped off the list — a cancelled run — is the
     // owner's own doing rather than news, and [_syncDismissal] clears it on
     // the next turn instead of announcing it.
@@ -701,6 +712,48 @@ class _PortraitsRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The photograph pass gave up, and the way to start it again (FR-PL-15).
+///
+/// Its own row rather than a variant of [_PortraitsRow], because the two say
+/// opposite things: one reports work in progress and needs no answer, and
+/// this reports work abandoned and is only worth showing because it offers
+/// one.
+class _PortraitsStoppedRow extends StatelessWidget {
+  const _PortraitsStoppedRow({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+
+    return Row(
+      children: [
+        const SizedBox(width: AppSpacing.md),
+        Icon(
+          Icons.cloud_off_outlined,
+          size: 18,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: Text(
+            l10n.artistPortraitsStopped,
+            style: theme.textTheme.bodyMedium,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        TextButton(
+          onPressed: onRetry,
+          child: Text(l10n.artistPortraitsRetry),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+      ],
     );
   }
 }

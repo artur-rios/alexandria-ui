@@ -18,17 +18,24 @@ const double playedFraction = 0.5;
 /// The point past which the fraction stops mattering.
 const Duration playedAfter = Duration(minutes: 4);
 
-/// Whether a track heard to [position] out of [duration] counts as played.
+/// Whether [heard] of a track [duration] long counts as played.
+///
+/// [heard] is time the owner actually *heard*, not the position the engine
+/// is reporting. The two are the same for a track played straight through
+/// and nothing alike for one that was resumed or scrubbed, which is the
+/// distinction this parameter exists to keep: a track reopened at the point
+/// it was left has a position past the threshold before a second of it has
+/// been played, and dragging the slider past the middle reaches the same
+/// place with nothing heard at all. Counting either would report listening
+/// that did not happen — the failure this whole rule is here to prevent,
+/// arrived at from the other side.
 ///
 /// A [duration] the engine has not worked out yet — null, or zero — counts
 /// nothing: with no length to take half of, every rule reduces to guessing,
 /// and the status that follows a moment later carries the real value.
-bool countsAsPlayed({
-  required Duration position,
-  required Duration? duration,
-}) {
+bool countsAsPlayed({required Duration heard, required Duration? duration}) {
   if (duration == null || duration <= Duration.zero) return false;
-  if (position >= playedAfter) return true;
+  if (heard >= playedAfter) return true;
 
-  return position.inMilliseconds >= duration.inMilliseconds * playedFraction;
+  return heard.inMilliseconds >= duration.inMilliseconds * playedFraction;
 }

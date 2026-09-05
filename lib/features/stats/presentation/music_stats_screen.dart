@@ -92,13 +92,18 @@ class _Rankings extends StatelessWidget {
         ),
         // Both ends, or neither: the core answers them together, and a period
         // with one end is not a period.
+        //
+        // `toLocal` on each: the core stamps a play in UTC, and a date drawn
+        // from UTC fields is the wrong day for anyone whose evening is the
+        // next day in Greenwich. The period an owner reads is in their own
+        // calendar.
         if (first != null && last != null)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.xs),
             child: Text(
               l10n.musicStatsPeriod(
-                dates.formatMediumDate(first),
-                dates.formatMediumDate(last),
+                dates.formatMediumDate(first.toLocal()),
+                dates.formatMediumDate(last.toLocal()),
               ),
               style: theme.textTheme.bodySmall,
             ),

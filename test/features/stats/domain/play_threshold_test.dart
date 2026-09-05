@@ -10,7 +10,7 @@ void main() {
     // Forty seconds of a two-minute song is not listening to it.
     expect(
       countsAsPlayed(
-        position: const Duration(seconds: 40),
+        heard: const Duration(seconds: 40),
         duration: const Duration(minutes: 2),
       ),
       isFalse,
@@ -20,7 +20,7 @@ void main() {
   test('GivenHalfOfAShortTrack_ThenItCounts', () {
     expect(
       countsAsPlayed(
-        position: const Duration(minutes: 1),
+        heard: const Duration(minutes: 1),
         duration: const Duration(minutes: 2),
       ),
       isTrue,
@@ -32,14 +32,14 @@ void main() {
     // before the encore.
     expect(
       countsAsPlayed(
-        position: playedAfter,
+        heard: playedAfter,
         duration: const Duration(hours: 1),
       ),
       isTrue,
     );
     expect(
       countsAsPlayed(
-        position: playedAfter - const Duration(seconds: 1),
+        heard: playedAfter - const Duration(seconds: 1),
         duration: const Duration(hours: 1),
       ),
       isFalse,
@@ -51,12 +51,12 @@ void main() {
     // half of, every rule reduces to guessing — and the next status carries
     // the real value a moment later.
     expect(
-      countsAsPlayed(position: const Duration(minutes: 10), duration: null),
+      countsAsPlayed(heard: const Duration(minutes: 10), duration: null),
       isFalse,
     );
     expect(
       countsAsPlayed(
-        position: const Duration(minutes: 10),
+        heard: const Duration(minutes: 10),
         duration: Duration.zero,
       ),
       isFalse,
@@ -66,7 +66,7 @@ void main() {
   test('GivenNothingHeard_ThenItDoesNotCount', () {
     expect(
       countsAsPlayed(
-        position: Duration.zero,
+        heard: Duration.zero,
         duration: const Duration(minutes: 3),
       ),
       isFalse,

@@ -185,6 +185,47 @@ void main() {
     },
   );
 
+  test(
+    'GivenTheNetworkComesBack_WhenThePassIsResumed_ThenTheArtistsAreAskedAgain',
+    () async {
+      // Giving up is right; giving up for the session was not. A laptop that
+      // woke before its Wi-Fi did meant no photographs at all until the
+      // application was restarted — and the artists whose lookups never
+      // landed were excluded from every later pass, because the pass marks a
+      // name as asked *before* the request so a rebuild cannot ask twice.
+      // Nothing was settled by a request that never reached anyone.
+      final enrichment = FakeEnrichmentGateway()
+        ..artistLookupOutcome = ArtistImageLookup.unavailable;
+      final container = buildContainer(manyArtists(6), enrichment);
+
+      await run(container);
+      expect(container.read(artistPortraitBackfillProvider).stopped, isTrue);
+      final abandoned = [...enrichment.artistImageFetches];
+
+      // The connection is back.
+      enrichment
+        ..artistImageFetches.clear()
+        ..artistLookupOutcome = ArtistImageLookup.found;
+      container.read(artistPortraitBackfillProvider.notifier).resume();
+      for (var turn = 0; turn < 16; turn++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+
+      expect(
+        container.read(artistPortraitBackfillProvider).stopped,
+        isFalse,
+        reason: 'the pass is going again',
+      );
+      expect(
+        enrichment.artistImageFetches,
+        containsAll(abandoned),
+        reason:
+            'the artists whose lookups never landed were never asked about '
+            'again',
+      );
+    },
+  );
+
   test('GivenAPassRan_WhenItIsRead_ThenItSaysHowFarItGot', () async {
     // The indication the owner sees (FR-PL-15): a picture arriving an hour
     // into a session is inexplicable unless something says a pass is under

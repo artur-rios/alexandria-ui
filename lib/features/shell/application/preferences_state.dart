@@ -27,5 +27,15 @@ sealed class PreferencesState with _$PreferencesState {
     @Default(true) bool musicLookupEnabled,
     @Default(defaultMusicLookupContact) String musicLookupContact,
     @Default(false) bool lastChangeUnsaved,
+
+    /// Whether a music-lookup change is saved but not yet running.
+    ///
+    /// The core will not be reconfigured while it is walking a disk — a run
+    /// already executing would be left behind by the replacement — so a
+    /// switch moved during a scan is stored and applied when the scan
+    /// settles. Reported rather than left silent: the alternative is a
+    /// preference that appears to do nothing for as long as the scan lasts,
+    /// which is the reading an owner would take as a bug.
+    @Default(false) bool musicLookupDeferred,
   }) = _PreferencesState;
 }

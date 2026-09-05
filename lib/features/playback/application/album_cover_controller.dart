@@ -16,21 +16,16 @@ import 'music_library_controller.dart';
 /// (see [recordOf]).
 typedef AlbumIdentity = (Object, String);
 
-/// The record [queue] plays: its identity — what a caller pairs with
-/// [PlaybackQueue.kind] to get an [AlbumIdentity] — and the year that picks
-/// its medium.
+/// The record [queue] plays: its identity, which a caller pairs with
+/// [PlaybackQueue.kind] to get an [AlbumIdentity].
 ///
-/// Shared by `AlbumAnimationController` and `AlbumCoverController` rather
-/// than duplicated between them, because the two have to agree on when a
-/// track change is still the same record and when it is a new one: if they
-/// disagreed, a cover could swap under a case that never re-inserted, or an
-/// insertion could play under a cover left over from the record before it
-/// (Finding 2). `AlbumCoverController` only ever reads the identity half —
-/// it has no use for a year — but calls this all the same, so there is
-/// exactly one place either fact is computed.
+/// One place the rule lives, so that everything asking "is this still the
+/// same record?" gets the same answer: a cover that swapped on a different
+/// rule from whatever else watched the queue would swap under a track that
+/// had not changed record, or stay put across one that had.
 ///
-/// For an album or an artist queue, both come from the queue itself: the
-/// label alone is not enough for the identity, because `albumOf`/`artistOf`
+/// For an album or an artist queue it comes from the queue itself: the
+/// label alone is not enough, because `albumOf`/`artistOf`
 /// (`music_grouping.dart`) already treat an absent tag as "this file's own
 /// group of one" rather than as a shared value — two different untitled
 /// albums are not the same record, and folding them together here would
@@ -41,36 +36,31 @@ typedef AlbumIdentity = (Object, String);
 /// untagged records apart (their first tracks differ).
 ///
 /// For a queue that names no record of its own — a lone track, or a playlist
-/// (playlists design §6) — both are read from [library] instead, off the
-/// track *playing now*: its own album, artist and year, resolved the same way
-/// every other surface resolves a track's metadata (`MusicLibrary.entryFor`,
+/// (playlists design §6) — it is read from [library] instead, off the track
+/// *playing now*: its own album and artist, resolved the same way every
+/// other surface resolves a track's metadata (`MusicLibrary.entryFor`,
 /// design §2, §3). A track with no album tag falls back to its own uuid, the
 /// same untagged rule `albumOf` states; one with an album tag identifies by
 /// album and album artist together, since two different artists can name an
 /// album the same thing — the album artist, so that two tracks of one
 /// compilation are the same record here as they are in the browsing area
-/// rather than two records with two insertions. `library` is `null` while it
-/// has not loaded, or does not hold the track — the fallback entry that
-/// answers then has no album and no year, so the identity falls back to the
-/// uuid and the medium falls back to a disc, exactly as an unknown record
-/// does everywhere else.
+/// rather than two records. `library` is `null` while it has not loaded, or
+/// does not hold the track — the fallback entry that answers then has no
+/// album, so the identity falls back to the uuid, exactly as an unknown
+/// record does everywhere else.
 ///
 /// Reading a playlist per track is what makes crossing from one album into
-/// the next inside one insert the new medium, while moving between two tracks
-/// of the same album does not — the behaviour the design asked for, falling
-/// out of the rule already here rather than a second rule beside it. A
-/// playlist's own `label` is its name, for the bar to show, and is
-/// deliberately not read as an identity: one value standing for the whole
-/// playlist would mean no crossing inside it was ever seen.
+/// the next inside one fetch the new cover, while moving between two tracks
+/// of the same album does not. A playlist's own `label` is its name, for the
+/// bar to show, and is deliberately not read as an identity: one value
+/// standing for the whole playlist would mean no crossing inside it was ever
+/// seen.
 ///
 /// Called only once a caller has confirmed [queue] is non-empty, so the
 /// `tracks.first` fallback is safe.
-({String identity, int? year}) recordOf(
-  PlaybackQueue queue,
-  MusicLibrary? library,
-) {
+String recordOf(PlaybackQueue queue, MusicLibrary? library) {
   if (queue.namesOwnRecord) {
-    return (identity: queue.label ?? queue.tracks.first.uuid, year: queue.year);
+    return queue.label ?? queue.tracks.first.uuid;
   }
 
   // The track playing now, not `tracks.first`: for a single-track queue they
@@ -85,14 +75,11 @@ typedef AlbumIdentity = (Object, String);
       MusicEntry(file: track, metadata: const MusicMetadata());
   final album = entry.album;
 
-  return (
-    // A plain space between them: it keeps an untagged-artist album from
-    // reading as the same identity as a different, shorter album name that
-    // happens to share a prefix, without needing a character no tag could
-    // ever carry.
-    identity: album == null ? track.uuid : '$album ${entry.albumArtist ?? ''}',
-    year: entry.metadata.year,
-  );
+  // A plain space between them: it keeps an untagged-artist album from
+  // reading as the same identity as a different, shorter album name that
+  // happens to share a prefix, without needing a character no tag could
+  // ever carry.
+  return album == null ? track.uuid : '$album ${entry.albumArtist ?? ''}';
 }
 
 /// Fetches and holds the current album's cover (design section 4, UC-21,
@@ -285,13 +272,11 @@ class AlbumCoverController extends Notifier<AlbumCover> {
     state = _current;
   }
 
-  /// What identifies "which record is playing" — [recordOf], the same
-  /// top-level function `AlbumAnimationController` calls, so the two
-  /// controllers cannot silently drift apart the way two hand-copied
-  /// implementations of the same rule could (Finding 2). `library` is
-  /// watched above only for a queue that names no record of its own — a lone
-  /// track, or a playlist — exactly as `AlbumAnimationController.build`
-  /// does, since those are the only kinds [recordOf] actually reads it for.
+  /// What identifies "which record is playing" — [recordOf], kept a top-level
+  /// function so the rule has one home rather than being restated wherever it
+  /// is needed. `library` is watched above only for a queue that names no
+  /// record of its own — a lone track, or a playlist — since those are the
+  /// only kinds [recordOf] actually reads it for.
   AlbumIdentity _identityOf(PlaybackQueue queue, MusicLibrary? library) =>
-      (queue.kind, recordOf(queue, library).identity);
+      (queue.kind, recordOf(queue, library));
 }

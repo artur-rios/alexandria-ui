@@ -292,47 +292,56 @@ class _Player extends ConsumerWidget {
             // replaced had. Play used to sit between back and stop, which
             // put the stop key between the two an owner reaches for most and
             // left `next` stranded on the far side of it.
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  tooltip: l10n.audioStop,
-                  iconSize: 40,
-                  icon: const Icon(Icons.stop),
-                  onPressed: current == null
-                      ? null
-                      : () => unawaited(controller.stop()),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                IconButton(
-                  tooltip: l10n.audioPrevious,
-                  iconSize: 40,
-                  icon: const Icon(Icons.skip_previous),
-                  onPressed: state.queue.hasPrevious
-                      ? () => unawaited(controller.previous())
-                      : null,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                IconButton(
-                  tooltip: state.isPlaying ? l10n.audioPause : l10n.audioPlay,
-                  iconSize: 72,
-                  icon: Icon(
-                    state.isPlaying ? Icons.pause_circle : Icons.play_circle,
+            //
+            // Named as a group: every button here carries only an icon and a
+            // tooltip, and a tooltip is a pointer's affordance. A screen
+            // reader arriving at four unlabelled controls in a row was told
+            // what each does and never what they are.
+            Semantics(
+              container: true,
+              label: l10n.audioTransportSemantics,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    tooltip: l10n.audioStop,
+                    iconSize: 40,
+                    icon: const Icon(Icons.stop),
+                    onPressed: current == null
+                        ? null
+                        : () => unawaited(controller.stop()),
                   ),
-                  onPressed: current == null
-                      ? null
-                      : () => unawaited(controller.togglePlaying()),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                IconButton(
-                  tooltip: l10n.audioNext,
-                  iconSize: 40,
-                  icon: const Icon(Icons.skip_next),
-                  onPressed: state.queue.hasNext
-                      ? () => unawaited(controller.next())
-                      : null,
-                ),
-              ],
+                  const SizedBox(width: AppSpacing.sm),
+                  IconButton(
+                    tooltip: l10n.audioPrevious,
+                    iconSize: 40,
+                    icon: const Icon(Icons.skip_previous),
+                    onPressed: state.queue.hasPrevious
+                        ? () => unawaited(controller.previous())
+                        : null,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  IconButton(
+                    tooltip: state.isPlaying ? l10n.audioPause : l10n.audioPlay,
+                    iconSize: 72,
+                    icon: Icon(
+                      state.isPlaying ? Icons.pause_circle : Icons.play_circle,
+                    ),
+                    onPressed: current == null
+                        ? null
+                        : () => unawaited(controller.togglePlaying()),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  IconButton(
+                    tooltip: l10n.audioNext,
+                    iconSize: 40,
+                    icon: const Icon(Icons.skip_next),
+                    onPressed: state.queue.hasNext
+                        ? () => unawaited(controller.next())
+                        : null,
+                  ),
+                ],
+              ),
             ),
           ],
         ),

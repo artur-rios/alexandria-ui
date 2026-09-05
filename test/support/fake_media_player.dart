@@ -50,9 +50,31 @@ class FakeMediaPlayer implements MediaPlayer {
   }
 
   /// Reports a position, which is what a playing engine does continuously.
+  ///
+  /// One report is a *jump*, not listening. Anything asserting on how much
+  /// of a track was heard — the play history's threshold, most of all —
+  /// wants [hearUpTo] instead: a single report from zero to the middle of a
+  /// track is the shape of a seek, and the player is entitled to read it as
+  /// one.
   void reportPosition(Duration position, {Duration? duration}) => report(
     _status.copyWith(isPlaying: true, position: position, duration: duration),
   );
+
+  /// Plays from the current position up to [position], the way a real engine
+  /// does: a run of statuses, each a short step past the last.
+  ///
+  /// The step is a second, comfortably inside the tolerance the player
+  /// credits as playing, so what this reports is heard rather than jumped.
+  void hearUpTo(Duration position, {Duration? duration}) {
+    const step = Duration(seconds: 1);
+    var at = _status.position;
+
+    while (at < position) {
+      at = at + step;
+      if (at > position) at = position;
+      reportPosition(at, duration: duration);
+    }
+  }
 
   @override
   Future<void> open(String path, {Duration startAt = Duration.zero}) async {

@@ -229,6 +229,8 @@ replace the FFI one without touching a screen.
 | FR-PL-13 | The system shall present, on request, the lyrics the core has cached for the track playing — beside the player rather than over it, so that timed words can be followed while the music plays — look them up on that request when none are cached, and offer a lookup for one track or for the whole library — naming what a lookup concluded, letting a library-wide one be stopped and taken up again where it left off, and leaving the rest of the interface usable while it runs. It shall make no lookup the owner did not ask for. |
 | FR-PL-14 | The system shall group the audio library by the record's own artist, answering who that is from the track's album-artist tag, then from the same tag on any other track of that record, then from the performer most of the record's tracks name — so that a record with guests on it is listed once, under the artist whose record it is, rather than once per performer. A track that names no record answers for itself. |
 | FR-PL-15 | The system shall show, against each artist the audio library is browsed by, the photograph the core holds for that artist **under the name the list shows**, and shall fetch none while browsing. It shall instead look up, once per session and in the background, the artists it holds no photograph for — one lookup per artist, by that same name; continuing past an artist the services have no picture of, and giving up only when several lookups in a row cannot be made at all. It shall report that pass while it runs, saying how far through it is, and shall ask for nothing while music lookups are switched off. A photograph once fetched shall be kept, and an artist once looked up — found or not — shall not be looked up again. |
+| FR-PL-16 | The system shall tell the core that a track was played once enough of it has actually been *heard*: half its length, or four minutes, whichever comes first, and a track heard to its end whatever its length. The whole rule lives in the application, because the core cannot see what the owner is hearing. What is measured is time heard and never the position the engine reports — the two are the same for a track played straight through and nothing alike for one resumed or scrubbed, and counting the position recorded plays for music nobody listened to. Playing the same record again is a second play. A play that could not be recorded is dropped rather than interrupting the music. |
+| FR-PL-17 | The system shall present what the owner has played most — the totals, the period they span, and rankings of tracks, artists, albums, and genres — reading them when the screen opens and again on request, rather than keeping them live while music plays. It shall name a track by its title, or by its filename where nothing tagged it, and shall say what counts as a play where nothing has been played yet. |
 
 ### 3.6 Document, Image, and Page Viewing — `VW`
 
@@ -493,7 +495,8 @@ does not already publish.
 | File detail | Metadata, path, state, and available actions | FR-CT-05, FR-CT-18, FR-ME-01, FR-ME-02, FR-ME-04 |
 | Text editor | Markdown and text editing with live preview | FR-ME-06 … FR-ME-10 |
 | Video player | Playback with subtitle and audio tracks | FR-PL-01 … FR-PL-04, FR-PL-08 … FR-PL-10 |
-| Audio player | Persistent playback with queue, a full player showing the sleeve and the sound, and the words of the track playing | FR-PL-05 … FR-PL-15 |
+| Audio player | Persistent playback with queue, a full player showing the sleeve and the sound, and the words of the track playing | FR-PL-05 … FR-PL-16 |
+| Music statistics | What the owner has played most — totals, the period they span, and four rankings | FR-PL-16, FR-PL-17 |
 | Document viewer | PDFs and e-books | FR-VW-02, FR-VW-07, FR-VW-08 |
 | Comic viewer | Comic archives, page by page | FR-VW-03, FR-VW-07, FR-VW-08 |
 | Image viewer | Fit and zoom | FR-VW-04, FR-VW-07 |
@@ -520,6 +523,8 @@ Calls are grouped by the gateway that owns them.
 | Auth | `alexandria_auth_local_login`, `alexandria_auth_local_set_credentials` | FR-AU-01, FR-AU-04, FR-AU-10 |
 | Auth — recovery codes | `alexandria_auth_local_register`, `alexandria_auth_local_account`, `alexandria_auth_local_redeem_recovery_code`, `alexandria_auth_local_regenerate_recovery_codes` | FR-AU-02, FR-AU-12 … FR-AU-19 |
 | Indexing | `alexandria_index_start`, `alexandria_index_refresh_start`, `alexandria_index_count_files`, `alexandria_index_count_missing`, `alexandria_index_files_json` | FR-LB-05 … FR-LB-09, FR-LC-08 |
+| Indexing — following a run | `alexandria_index_run_status_json`, `alexandria_index_runs_active_json`, `alexandria_index_run_failures_json` | FR-LB-08, FR-LB-13 … FR-LB-15, FR-LB-18 |
+| Indexing — controlling a run | `alexandria_index_pause`, `alexandria_index_cancel`, `alexandria_index_resume` | FR-LB-16, FR-LB-17 |
 | Files | `alexandria_files_list`, `alexandria_file_get_by_uuid` | FR-CT-02, FR-CT-05 … FR-CT-08, FR-CT-11 |
 | File editing | `alexandria_file_edit_metadata`, `alexandria_file_rename`, `alexandria_file_read_content`, `alexandria_file_edit_content` | FR-ME-01, FR-ME-02, FR-ME-04, FR-ME-06, FR-ME-08 |
 | File lifecycle | `alexandria_file_soft_delete`, `alexandria_file_restore`, `alexandria_file_purge`, `alexandria_file_purge_on_disk` | FR-LC-01, FR-LC-04, FR-LC-05, FR-LC-06 |
@@ -528,9 +533,19 @@ Calls are grouped by the gateway that owns them.
 | Watchlists | `alexandria_watchlist_create`, `_add_video`, `alexandria_watchlists_list`, `_update_progress`, `_remove_video`, `_delete` | FR-TR-01 … FR-TR-07 |
 | Reading lists | `alexandria_reading_list_create`, `_add_item`, `alexandria_reading_lists_list`, `_update_progress`, `_remove_item`, `_delete` | FR-TR-08 … FR-TR-14 |
 | Playlists | `alexandria_playlist_create`, `_rename`, `_delete`, `alexandria_playlists_list`, `alexandria_playlist_read`, `_add_entries`, `_remove_entry`, `_move_entry` | FR-TR-15 … FR-TR-20 |
-| Music enrichment | `alexandria_enrichment_read_track`, `alexandria_enrichment_run` | FR-PL-13, FR-PL-15, FR-UX-13 |
+| Libraries | `alexandria_libraries_list`, `alexandria_library_register`, `_move`, `_browse`, `_remove` | FR-CT-16, FR-CT-17 |
+| Playback sources | `alexandria_file_playback_source`, `alexandria_file_thumbnail`, `alexandria_comic_page` | FR-PL-01, FR-PL-05, FR-VW-04 |
+| Playback — the sound of a track | `alexandria_track_energy` | FR-PL-07 |
+| Music enrichment | `alexandria_enrichment_read_track`, `alexandria_enrichment_run` | FR-PL-13, FR-UX-13 |
+| Music enrichment — artist photography | `alexandria_artist_image`, `alexandria_artist_image_fetch` | FR-PL-15, FR-UX-13 |
+| Play history | `alexandria_play_record`, `alexandria_music_stats` | FR-PL-16, FR-PL-17 |
 | Settings | `alexandria_settings_json` | FR-LC-03, FR-UX-13 |
 | Memory | `alexandria_free_string` | NFR-13 |
+
+Every operation the application calls appears above. That is a property worth
+stating, because it is the only place the application's dependency on the core
+is written down: it is what a `CORE_REF` move is checked against, and a call
+made from a gateway and named in no row here is a dependency nobody agreed to.
 
 ### 5.3 Filesystem Surface
 
@@ -687,7 +702,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | F-02 Library sources and indexing | FR-LB-01 through FR-LB-23 |
 | F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-18 |
 | F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
-| F-05 Media playback | FR-PL-01 through FR-PL-15 |
+| F-05 Media playback | FR-PL-01 through FR-PL-17 |
 | F-06 Document, image, and page viewing | FR-VW-01 through FR-VW-08 |
 | F-07 Collections and bookmarks | FR-OG-01 through FR-OG-12 |
 | F-08 Watchlists, reading lists, and playlists | FR-TR-01 through FR-TR-20 |
@@ -702,7 +717,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Library sources and indexing | `LB` | FR-LB-01 … FR-LB-23 |
 | Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-18 |
 | Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
-| Media playback | `PL` | FR-PL-01 … FR-PL-15 |
+| Media playback | `PL` | FR-PL-01 … FR-PL-17 |
 | Document, image, and page viewing | `VW` | FR-VW-01 … FR-VW-08 |
 | Collections and bookmarks | `OG` | FR-OG-01 … FR-OG-12 |
 | Watchlists, reading lists, and playlists | `TR` | FR-TR-01 … FR-TR-20 |

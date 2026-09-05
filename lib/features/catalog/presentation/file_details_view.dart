@@ -407,13 +407,19 @@ class _FileFacts extends StatelessWidget {
     return _LabelValueRows(rows: rows);
   }
 
-  /// The modification date in the owner's own locale.
+  /// The modification date in the owner's own locale and time zone.
   ///
   /// `MaterialLocalizations` rather than a raw `toString`, which would print
   /// the value as Dart's debug representation (`2026-08-19 00:00:00.000Z`)
   /// instead of a date the owner reads the way their system does.
+  ///
+  /// `toLocal` because the core answers UTC and `formatFullDate` reads the
+  /// fields it is given: a file saved at ten in the evening in Sao Paulo is
+  /// stamped one in the morning UTC, and this drew tomorrow's date on it.
+  /// A calendar day is a local idea, and the owner's calendar is the one
+  /// this is a date for.
   String _formatMoment(BuildContext context, DateTime moment) =>
-      MaterialLocalizations.of(context).formatFullDate(moment);
+      MaterialLocalizations.of(context).formatFullDate(moment.toLocal());
 }
 
 /// A column of label/value rows, shared by every section of the details

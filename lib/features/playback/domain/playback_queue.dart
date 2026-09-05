@@ -24,7 +24,6 @@ class PlaybackQueue {
     required this.tracks,
     required this.kind,
     this.label,
-    this.year,
     this.index = 0,
     this.skipped = const [],
   });
@@ -38,9 +37,7 @@ class PlaybackQueue {
   /// The tracks, in the order they will play.
   final List<CatalogFile> tracks;
 
-  /// What the owner asked for (UC-20 main flow step 1). The animation no
-  /// longer reads this to decide whether it shows (see [showsAlbumAnimation]):
-  /// a track, an album and an artist all own the same rule now.
+  /// What the owner asked for (UC-20 main flow step 1).
   final QueueKind kind;
 
   /// The album or artist name, or `null` — for a single track, where the
@@ -51,10 +48,6 @@ class PlaybackQueue {
   /// localized strings to turn that absence into a word, so this class only
   /// carries it; the presentation layer decides what to say.
   final String? label;
-
-  /// The year the album carries, which is what picks the medium the animation
-  /// shows (UC-21, FR-PL-07).
-  final int? year;
 
   /// Which track is playing.
   final int index;
@@ -85,14 +78,12 @@ class PlaybackQueue {
     List<CatalogFile>? tracks,
     QueueKind? kind,
     String? label,
-    int? year,
     int? index,
     List<CatalogFile>? skipped,
   }) => PlaybackQueue(
     tracks: tracks ?? this.tracks,
     kind: kind ?? this.kind,
     label: label ?? this.label,
-    year: year ?? this.year,
     index: index ?? this.index,
     skipped: skipped ?? this.skipped,
   );
@@ -100,16 +91,16 @@ class PlaybackQueue {
   /// Whether the record playing is the queue's own, rather than the current
   /// track's (playlists design section 6).
   ///
-  /// An album or an artist queue *is* a record: it carries the label and the
-  /// year that identify it, every track in it belongs to the same one, and
-  /// `recordOf` reads both straight off this class.
+  /// An album or an artist queue *is* a record: it carries the label that
+  /// identifies it, every track in it belongs to the same one, and `recordOf`
+  /// reads that straight off this class.
   ///
   /// A track queue and a playlist queue are not. A lone track's record is
   /// whatever that track's own tags say it is, resolved from the music
   /// library; a playlist's is the same question asked again on every track,
   /// because a playlist deliberately names no record of its own — which is
-  /// what makes crossing from one album to the next inside one insert the new
-  /// medium while skipping within an album does not. A playlist's [label] is
+  /// what makes crossing from one album to the next inside one fetch the new
+  /// cover while skipping within an album does not. A playlist's [label] is
   /// its name, for the bar to show; it is never its record's identity.
   ///
   /// Named here, once, rather than left as a `kind == QueueKind.track` check
@@ -121,14 +112,6 @@ class PlaybackQueue {
     QueueKind.album || QueueKind.artist => true,
     QueueKind.track || QueueKind.playlist => false,
   };
-
-  /// Whether this queue is one the animation belongs to (UC-21 main flow).
-  ///
-  /// Anything with tracks queued: a lone track is a record too — its own
-  /// album and artist, resolved from the music library by
-  /// `AlbumAnimationController` — so the only queue that owes no animation is
-  /// one with nothing in it at all.
-  bool get showsAlbumAnimation => tracks.isNotEmpty;
 
   /// The queue with [file] recorded as unplayable (AF-01, AF-02).
   PlaybackQueue skipping(CatalogFile file) =>

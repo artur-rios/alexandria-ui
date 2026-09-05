@@ -151,6 +151,15 @@ class PreferencesDialog extends ConsumerWidget {
                 // and MusicBrainz's requirement is about requests being made.
                 if (preferences.musicLookupEnabled)
                   _ContactField(contact: preferences.musicLookupContact),
+
+                // The core refuses to be reconfigured mid-scan, so the change
+                // is stored and waiting. Beneath the controls it is about,
+                // and phrased as a "not yet" rather than a failure — because
+                // it is one, and it clears itself when the scan settles.
+                if (preferences.musicLookupDeferred) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  _WaitingNotice(message: l10n.musicLookupDeferred),
+                ],
               ],
             ],
           ),
@@ -373,6 +382,48 @@ class PreferencesButton extends StatelessWidget {
       icon: const Icon(Icons.settings_outlined),
       tooltip: l10n.preferencesOpen,
       onPressed: () => PreferencesDialog.show(context),
+    );
+  }
+}
+
+/// A change that is saved and waiting on something before it takes effect.
+///
+/// Deliberately not [_UnsavedNotice]'s error colouring: nothing went wrong,
+/// and the preference will apply on its own. What it shares is the shape,
+/// so the two read as the same kind of aside about the control above them.
+class _WaitingNotice extends StatelessWidget {
+  const _WaitingNotice({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.schedule_outlined,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              message,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

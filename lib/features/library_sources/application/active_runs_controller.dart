@@ -282,6 +282,17 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
       // when the owner acts, and that action's own response already updates
       // the strip, so polling here would only ever read the same answer.
       _stopPolling();
+
+      // The core refuses to be reconfigured while it is walking a disk, so a
+      // music-lookup preference changed during a scan is saved and left
+      // waiting. This is the moment it can be applied, and this controller is
+      // the one thing that knows the moment arrived — nothing else watches
+      // the last run stop. A no-op unless something is actually waiting.
+      unawaited(
+        ref
+            .read(preferencesControllerProvider.notifier)
+            .retryDeferredMusicLookup(),
+      );
     }
   }
 

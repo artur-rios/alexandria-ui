@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 import '../../../core/bindings/core_environment.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/settings/settings_store.dart';
+import '../../../core/startup/startup_controller.dart';
 import '../../../core/startup/startup_state.dart';
 import 'preferences_state.dart';
 
@@ -122,8 +123,31 @@ class PreferencesController extends Notifier<PreferencesState> {
   /// Does nothing before startup has a core to reconfigure, and nothing when
   /// the configuration has not actually changed — see
   /// `StartupController.applyMusicLookup`.
-  Future<void> _applyToCore() =>
-      ref.read(startupControllerProvider.notifier).applyMusicLookup();
+  ///
+  /// A core that is scanning refuses, and the refusal is recorded rather than
+  /// swallowed: the preference is saved and will be applied, but not yet, and
+  /// the dialog says so. [retryDeferredMusicLookup] is what clears it once
+  /// the scan settles.
+  Future<void> _applyToCore() async {
+    final outcome = await ref
+        .read(startupControllerProvider.notifier)
+        .applyMusicLookup();
+
+    state = state.copyWith(
+      musicLookupDeferred: outcome == MusicLookupApplication.deferred,
+    );
+  }
+
+  /// Applies a change the core was too busy to take when it was made.
+  ///
+  /// Called when the last outstanding scan settles. A no-op unless something
+  /// is actually waiting, so the ordinary case — a scan finishing with no
+  /// preference outstanding — costs one boolean.
+  Future<void> retryDeferredMusicLookup() async {
+    if (!state.musicLookupDeferred) return;
+
+    await _applyToCore();
+  }
 
   /// Clears the unsaved notice once the owner has seen it.
   void acknowledgeUnsaved() {

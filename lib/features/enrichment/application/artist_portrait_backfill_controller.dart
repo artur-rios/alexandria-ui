@@ -161,6 +161,27 @@ class ArtistPortraitBackfillController
     );
   }
 
+  /// Starts the pass again after it gave up (FR-PL-15).
+  ///
+  /// Giving up is right — three unreachable lookups in a row is the network,
+  /// not one artist, and continuing would be hundreds of requests into a
+  /// void. Giving up *for the session* was not: a laptop that woke before its
+  /// Wi-Fi did meant no photographs until the application was restarted, with
+  /// nothing on screen saying so. This is the way back, and the strip offers
+  /// it beside the notice.
+  ///
+  /// Clearing the flag is the whole of it. `build` starts a pass whenever
+  /// there are artists outstanding and none is running, and invalidating this
+  /// provider is what makes it run again — the artists whose lookups never
+  /// landed are outstanding again, because [_walk] no longer keeps them in
+  /// [_asked].
+  void resume() {
+    if (!_stopped) return;
+
+    _stopped = false;
+    ref.invalidateSelf();
+  }
+
   /// Walks the artists, looking up the ones the core has nothing for.
   ///
   /// Checked against `ref.mounted` at every await rather than against a flag
@@ -218,6 +239,14 @@ class ArtistPortraitBackfillController
             unreachable = 0;
 
           case ArtistImageLookup.unavailable:
+            // Nothing was settled — the core stored no row, because the
+            // services could not be reached — so this artist has not been
+            // asked about in any sense that matters. Forgetting them is what
+            // makes the pass resumable: [_asked] is marked *before* the
+            // lookup so a rebuild mid-flight cannot ask twice, and leaving
+            // the mark behind on a request that never landed excluded that
+            // artist from every later pass this session.
+            _asked.remove(name);
             unreachable += 1;
             if (unreachable >= _givesUpAfter) {
               _stopped = true;

@@ -107,20 +107,28 @@ class _LayoutBar extends ConsumerWidget {
             children: [
               const _FilterControls(),
               const Spacer(),
-              SegmentedButton<ViewLayout>(
-                segments: [
-                  for (final layout in ViewLayout.values)
-                    ButtonSegment(
-                      value: layout,
-                      icon: Icon(layout.icon),
-                      tooltip: layout.label(l10n),
-                    ),
-                ],
-                selected: {chosen},
-                showSelectedIcon: false,
-                onSelectionChanged: (selection) => ref
-                    .read(layoutControllerProvider.notifier)
-                    .choose(type, selection.first),
+              // Named as a group, because the three segments carry only
+              // icons: each has a tooltip a pointer can reach, but a screen
+              // reader arriving at the control itself was told nothing about
+              // what the three choices are for.
+              Semantics(
+                container: true,
+                label: l10n.layoutLabel,
+                child: SegmentedButton<ViewLayout>(
+                  segments: [
+                    for (final layout in ViewLayout.values)
+                      ButtonSegment(
+                        value: layout,
+                        icon: Icon(layout.icon),
+                        tooltip: layout.label(l10n),
+                      ),
+                  ],
+                  selected: {chosen},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (selection) => ref
+                      .read(layoutControllerProvider.notifier)
+                      .choose(type, selection.first),
+                ),
               ),
             ],
           ),
