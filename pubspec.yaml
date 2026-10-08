@@ -101,7 +101,7 @@ dependencies:
   # and nothing else, which is why the page needs looking at first.
   html: ^0.15.7
   csslib: ^1.0.2
-  url_launcher: ^6.3.2
+  url_launcher: ^6.3.3
   # The browser engine saved HTML pages are drawn with (UC-25, FR-VW-05):
   # CEF, rendered off-screen and composed into the window as a texture. The
   # stack document records the trade — the page's script runs, and the
