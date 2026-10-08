@@ -82,6 +82,33 @@ void main() {
     });
   });
 
+  group('mapCoreStatus — the run family', () {
+    const cases = <int, Type>{
+      RUN_ERR_INVALID_INPUT: InvalidInputFailure,
+      RUN_ERR_UNAUTHORIZED: UnauthorizedFailure,
+      RUN_ERR_NOT_INITIALIZED: NotInitializedFailure,
+      RUN_ERR_NOT_FOUND: NotFoundFailure,
+      // Pausing a run that is not running, or resuming one that is not
+      // paused. The header gives it its own code precisely so a caller can
+      // tell an impossible transition from a transient failure — which an
+      // unexpected failure would erase.
+      RUN_ERR_INVALID_STATE: InvalidStateFailure,
+      RUN_ERR_OTHER: UnexpectedFailure,
+    };
+
+    cases.forEach((code, expected) {
+      test(
+        'GivenTheRunCode${code}_WhenItIsMapped_ThenTheFailureIs$expected',
+        () {
+          final failure = mapCoreStatus(CoreStatusFamily.run, code);
+
+          expect(failure.runtimeType, expected);
+          expect(failure.coreStatusCode, code);
+        },
+      );
+    });
+  });
+
   group('mapCoreStatus — the auth family', () {
     const cases = <int, Type>{
       AUTH_ERR_INVALID_INPUT: InvalidInputFailure,

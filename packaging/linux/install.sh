@@ -121,7 +121,12 @@ default_prefix() {
   if is_root; then
     printf '/opt/%s' "$LAUNCHER_NAME"
   else
-    printf '%s/.local/share/%s' "$HOME" "$LAUNCHER_NAME"
+    # Not ~/.local/share/alexandria: that is the folder path_provider_linux
+    # falls back to for the application's own data when the application-id
+    # one does not exist yet, so the catalog would be created inside the
+    # program's files — and tools/clean.sh removes that folder as a legacy
+    # one, taking the installation with it.
+    printf '%s/.local/opt/%s' "$HOME" "$LAUNCHER_NAME"
   fi
 }
 
@@ -215,10 +220,22 @@ remove_recorded_install() {
     esac
   done < "$_manifest"
 
-  if [ -n "$_recorded" ] && [ -d "$_recorded" ]; then
-    # -depth so children are considered before their parents; rmdir refuses a
-    # directory that still holds anything, which is exactly the check wanted.
-    find "$_recorded" -depth -type d -exec rmdir {} + 2> /dev/null || true
+  # Then the directories the install created, deepest first — and only those.
+  # rmdir refuses a directory that still holds anything, which is exactly the
+  # check wanted, but an empty directory the owner (or the system) had there
+  # before is not this installer's to remove: a walk of the whole prefix took
+  # /usr/local/src and /usr/local/games with it under --prefix /usr/local.
+  if grep -q '^dir=' "$_manifest" 2> /dev/null; then
+    grep '^dir=' "$_manifest" | sed 's/^dir=//' | sort -r | while IFS= read -r _dir; do
+      rmdir "$_dir" 2> /dev/null || true
+    done
+  elif [ -n "$_recorded" ] && [ -d "$_recorded" ]; then
+    # A manifest from before directories were recorded: only the bundle's own
+    # directories, and the prefix itself if that leaves it empty.
+    for _own in "$_recorded/lib" "$_recorded/data"; do
+      [ -d "$_own" ] && find "$_own" -depth -type d -exec rmdir {} + 2> /dev/null
+    done
+    rmdir "$_recorded" 2> /dev/null || true
   fi
 
   rm -f "$_manifest" || true
@@ -374,6 +391,9 @@ elif [ "$recorded_prefix" != "$prefix" ] && looks_installed "$recorded_prefix"; 
 fi
 
 log "Installing ${APP_NAME} ${VERSION} into ${prefix} ..."
+# Whether the prefix is this installer's to remove again on uninstall.
+prefix_created="no"
+[ -d "$prefix" ] || prefix_created="yes"
 listing=$(mktemp)
 trap 'rm -f "$listing"' EXIT INT TERM
 extract_payload "$prefix" "$payload_start" "$listing"
@@ -421,14 +441,19 @@ mkdir -p "$(dirname "$MANIFEST")"
 {
   printf 'version=%s\n' "$VERSION"
   printf 'prefix=%s\n' "$prefix"
-  # tar names directories with a trailing slash; those are skipped, because
-  # remove_recorded_install rmdirs empty directories anyway and a directory
-  # listed as a file would only fail to be removed.
+  # tar names directories with a trailing slash. Those are recorded apart, as
+  # dir= lines, so an uninstall removes the directories this payload made and
+  # no others — and the prefix itself only when this run created it.
+  if [ "$prefix_created" = "yes" ]; then
+    printf 'dir=%s\n' "$prefix"
+  fi
   while IFS= read -r _member; do
     _member=${_member#./}
     [ -n "$_member" ] || continue
-    case $_member in */) continue ;; esac
-    printf 'file=%s/%s\n' "$prefix" "$_member"
+    case $_member in
+      */) printf 'dir=%s/%s\n' "$prefix" "${_member%/}" ;;
+      *) printf 'file=%s/%s\n' "$prefix" "$_member" ;;
+    esac
   done < "$listing"
   printf 'file=%s\n' "$launcher"
   printf 'file=%s\n' "$desktop_entry"
@@ -445,7 +470,9 @@ if command -v update-desktop-database > /dev/null 2>&1; then
 fi
 
 if command -v gtk-update-icon-cache > /dev/null 2>&1 && [ -n "$icon_file" ]; then
-  gtk-update-icon-cache -q -t -f "$(dirname "$(dirname "$(dirname "$icondir")")")" \
+  # $icondir is <theme>/512x512/apps, so two levels up is the theme itself —
+  # hicolor, whose cache is the one that has to know about the new icon.
+  gtk-update-icon-cache -q -t -f "$(dirname "$(dirname "$icondir")")" \
     > /dev/null 2>&1 || true
 fi
 

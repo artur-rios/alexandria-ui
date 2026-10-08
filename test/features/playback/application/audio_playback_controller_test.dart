@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/features/playback/application/audio_playback_controller.dart';
+import 'package:alexandria_ui/features/playback/domain/playback_position_store.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -391,6 +392,118 @@ void main() {
         final state = container.read(audioPlaybackControllerProvider);
         expect(state.stage, AudioStage.allFailed);
         expect(state.queue.tracks, isEmpty);
+      },
+    );
+  });
+
+  // A request made while another track is playing. The state moved on to the
+  // new request; the engine has to move with it, or the bar describes one
+  // thing while the speakers play another.
+  group('a new request while a track is playing', () {
+    ({
+      ProviderContainer container,
+      FakeMediaPlayer player,
+      FakePlaybackSourceGateway source,
+    })
+    playing({FakePlaybackPositionStore? positions}) {
+      final player = FakeMediaPlayer();
+      final source = FakePlaybackSourceGateway(path: '/music/a.flac');
+      final container = ProviderContainer(
+        retry: (_, _) => null,
+        overrides: [
+          catalogGatewayProvider.overrideWithValue(FakeCatalogGateway()),
+          audioPlayerProvider.overrideWithValue(player),
+          playbackSourceGatewayProvider.overrideWithValue(source),
+          playbackPositionsProvider.overrideWithValue(
+            positions ?? FakePlaybackPositionStore(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      container
+          .read(sessionControllerProvider.notifier)
+          .establish(FakeAuthGateway.defaultSession);
+
+      return (container: container, player: player, source: source);
+    }
+
+    test(
+      'GivenATrackPlaying_WhenAMissingOneIsPlayed_ThenThePlayingOneStops',
+      () async {
+        final (:container, :player, :source) = playing();
+        final controller = container.read(
+          audioPlaybackControllerProvider.notifier,
+        );
+        await controller.playTrack(aFile(uuid: 'a', name: 'A.flac'));
+        player.reportPosition(const Duration(seconds: 30));
+
+        source.outcomes.add(FakePlaybackSourceGateway.missingOnDisk);
+        await controller.playTrack(aFile(uuid: 'b', name: 'B.flac'));
+
+        expect(
+          container.read(audioPlaybackControllerProvider).stage,
+          AudioStage.allFailed,
+        );
+        expect(
+          player.stopCount,
+          1,
+          reason: 'the bar says nothing could be played; A must not go on',
+        );
+      },
+    );
+
+    test(
+      'GivenATrackPlaying_WhenOneWithAResumePointIsPlayed_ThenTheOfferSurvivesTheNextTick',
+      () async {
+        const saved = Duration(minutes: 2);
+        final positions = FakePlaybackPositionStore({
+          'b': PlaybackPosition(
+            fileUuid: 'b',
+            position: saved,
+            updatedAt: DateTime(2026),
+          ),
+        });
+        final (:container, :player, source: _) = playing(positions: positions);
+        final controller = container.read(
+          audioPlaybackControllerProvider.notifier,
+        );
+        await controller.playTrack(aFile(uuid: 'a', name: 'A.flac'));
+        player.reportPosition(const Duration(seconds: 30));
+
+        await controller.playTrack(aFile(uuid: 'b', name: 'B.flac'));
+        // What A's engine would report next, were it still playing.
+        player.reportPosition(const Duration(seconds: 31));
+        await Future<void>.delayed(Duration.zero);
+
+        final state = container.read(audioPlaybackControllerProvider);
+        expect(state.stage, AudioStage.offeringResume);
+        expect(state.resumeFrom, saved);
+        expect(player.stopCount, 1);
+
+        await controller.resume();
+        expect(player.startedAt.last, saved);
+      },
+    );
+
+    test(
+      'GivenATrackStillOpening_WhenTheOwnerStops_ThenThePlayerStaysStopped',
+      () async {
+        final (:container, :player, source: _) = playing();
+        final controller = container.read(
+          audioPlaybackControllerProvider.notifier,
+        );
+        player.holdOpen();
+
+        final opening = controller.playTrack(aFile(uuid: 'a', name: 'A.flac'));
+        await Future<void>.delayed(Duration.zero);
+        await controller.stop();
+        player.releaseOpen();
+        await opening;
+
+        expect(
+          container.read(audioPlaybackControllerProvider).stage,
+          AudioStage.idle,
+        );
       },
     );
   });

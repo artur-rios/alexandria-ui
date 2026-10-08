@@ -44,6 +44,15 @@ class AlbumArtController extends AsyncNotifier<ui.Image?> {
     final image = await _decode(outcome.bytes);
     if (image == null) return null;
 
+    // The row may have scrolled away while the picture was read or decoded,
+    // and this provider been disposed with it. `onDispose` on an unmounted
+    // ref throws, which Riverpod swallows into a state nobody reads — and
+    // the texture would then have nothing left to release it.
+    if (!ref.mounted) {
+      image.dispose();
+      return null;
+    }
+
     // The one thing a decoded image needs that a plain value does not: the
     // texture is native memory, and a row scrolled off screen has to give it
     // back.

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:path/path.dart' as p;
@@ -211,5 +212,81 @@ void main() {
         isFalse,
       );
     });
+  });
+
+  // A retry spawns a fresh core worker, and a fresh isolate takes its own
+  // snapshot of the environment — after the previous worker wrote these
+  // variables. Read through that snapshot, the application's own earlier
+  // write looked like an operator's, and the owner's next change was skipped.
+  // Each step runs in its own isolate here for exactly that reason: it is the
+  // only way to observe what the process environment now holds.
+  group('preparing the core again from a new worker', () {
+    final launch = Map<String, String>.of(Platform.environment)
+      ..remove(coreMetadataEnabledVariable)
+      ..remove(coreMetadataContactVariable);
+
+    tearDown(() {
+      // Blank counts as unset, for the core and for these rules alike.
+      setProcessEnvironment(coreMetadataEnabledVariable, '');
+      setProcessEnvironment(coreMetadataContactVariable, '');
+    });
+
+    Future<void> prepareInNewWorker(MusicLookup lookup, String directory) =>
+        Isolate.run(
+          () => prepareCoreEnvironment(
+            databaseDirectory: directory,
+            musicLookup: lookup,
+            launchEnvironment: launch,
+          ),
+        );
+
+    Future<String?> readInNewWorker(String name) =>
+        Isolate.run(() => Platform.environment[name]);
+
+    test(
+      'GivenAnEarlierWorkerSetTheLookup_WhenTheOwnerChangesIt_ThenTheChangeIsWritten',
+      () async {
+        final directory = Directory.systemTemp.createTempSync('alexandria_env');
+        addTearDown(() => directory.deleteSync(recursive: true));
+
+        await prepareInNewWorker(
+          const MusicLookup(enabled: true, contact: 'first@example.com'),
+          directory.path,
+        );
+        await prepareInNewWorker(
+          const MusicLookup(enabled: false, contact: 'second@example.com'),
+          directory.path,
+        );
+
+        expect(await readInNewWorker(coreMetadataEnabledVariable), 'false');
+        expect(
+          await readInNewWorker(coreMetadataContactVariable),
+          'second@example.com',
+        );
+      },
+    );
+
+    test(
+      'GivenTheOperatorSetTheLookupBeforeLaunch_WhenTheCoreIsPrepared_ThenItIsLeftAlone',
+      () async {
+        final directory = Directory.systemTemp.createTempSync('alexandria_env');
+        addTearDown(() => directory.deleteSync(recursive: true));
+        setProcessEnvironment(coreMetadataEnabledVariable, 'false');
+        final configured = {...launch, coreMetadataEnabledVariable: 'false'};
+
+        await Isolate.run(
+          () => prepareCoreEnvironment(
+            databaseDirectory: directory.path,
+            musicLookup: const MusicLookup(
+              enabled: true,
+              contact: 'owner@example.com',
+            ),
+            launchEnvironment: configured,
+          ),
+        );
+
+        expect(await readInNewWorker(coreMetadataEnabledVariable), 'false');
+      },
+    );
   });
 }

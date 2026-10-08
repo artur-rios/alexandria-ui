@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
@@ -80,9 +81,16 @@ class CoreIsolate {
     final lifecycle = ReceivePort();
     final ready = Completer<SendPort>();
 
+    // The main isolate's snapshot of the environment, taken no later than
+    // here — before the first worker exists, and so before anything this
+    // application writes to the process environment. A worker's own
+    // `Platform.environment` would be taken after a previous worker's writes
+    // and read them as an operator's; see `prepareCoreEnvironment`.
+    final launchEnvironment = Map<String, String>.of(Platform.environment);
+
     final isolate = await Isolate.spawn(
       _entryPoint,
-      (responses.sendPort, libraryPath),
+      (responses.sendPort, libraryPath, launchEnvironment),
       errorsAreFatal: false,
       debugName: 'alexandria-core',
       // One port for both, told apart by what arrives on it: an uncaught
@@ -254,8 +262,8 @@ class CoreIsolate {
     _isolate.kill(priority: Isolate.immediate);
   }
 
-  static void _entryPoint((SendPort, String) parameters) {
-    final (responses, libraryPath) = parameters;
+  static void _entryPoint((SendPort, String, Map<String, String>) parameters) {
+    final (responses, libraryPath, launchEnvironment) = parameters;
     final requests = ReceivePort();
     responses.send(requests.sendPort);
 
@@ -293,7 +301,12 @@ class CoreIsolate {
       try {
         responses.send((
           id: request.id,
-          value: _handle(bindings, request.operation, request.arguments),
+          value: _handle(
+            bindings,
+            request.operation,
+            request.arguments,
+            launchEnvironment,
+          ),
           error: null,
         ));
       } on Object catch (error) {
@@ -311,6 +324,7 @@ class CoreIsolate {
     AlexandriaBindings bindings,
     String operation,
     List<Object?> arguments,
+    Map<String, String> launchEnvironment,
   ) {
     final strings = CoreStrings(bindings);
 
@@ -326,18 +340,17 @@ class CoreIsolate {
       // Anywhere earlier would be a promise about ordering; anywhere later
       // would be too late for the process.
       'init' => withNativeString(arguments.first! as String, (path) {
-        ensureLocalAuthMode();
-        // The caches go beside the database, which is the directory this
-        // application owns — see `ensureCacheDirectories`. Derived from the
-        // path rather than passed as a second argument, because "beside the
-        // catalog" is the rule, and a caller free to say otherwise is a
-        // caller that can put them somewhere the catalog does not follow.
-        ensureCacheDirectories(p.dirname(arguments.first! as String));
-        ensureMusicLookup(
-          MusicLookup(
+        // The cache directory is derived from the path rather than passed as
+        // a second argument, because "beside the catalog" is the rule, and a
+        // caller free to say otherwise is a caller that can put them
+        // somewhere the catalog does not follow.
+        prepareCoreEnvironment(
+          databaseDirectory: p.dirname(arguments.first! as String),
+          musicLookup: MusicLookup(
             enabled: arguments[1]! as bool,
             contact: arguments[2]! as String,
           ),
+          launchEnvironment: launchEnvironment,
         );
         return bindings.alexandria_index_init(path);
       }),

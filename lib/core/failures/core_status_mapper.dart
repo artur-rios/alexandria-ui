@@ -81,6 +81,13 @@ Failure _mapRun(int code) => switch (code) {
     family: CoreStatusFamily.run,
     code: code,
   ),
+  // Pausing a run that is not running, or resuming one that is not paused.
+  // Every other family maps its invalid-state code here; reading this one as
+  // unexpected told the owner something broke when the run had only moved on.
+  RUN_ERR_INVALID_STATE => Failure.invalidState(
+    family: CoreStatusFamily.run,
+    code: code,
+  ),
   _ => Failure.unexpected(family: CoreStatusFamily.run, code: code),
 };
 

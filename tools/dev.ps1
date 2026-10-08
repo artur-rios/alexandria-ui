@@ -204,7 +204,9 @@ Pass -Core <path>, set ALEXANDRIA_CORE_REPO, or clone it beside this one:
             $before = & $normalise $vendored
             $after = & $normalise $generated
 
-            if ($before -eq $after) {
+            # -ceq: PowerShell's -eq ignores case, and a header change that is
+            # only a change of case is still a change dev.sh's cmp would see.
+            if ($before -ceq $after) {
                 Write-Step 'Bindings are current'
             } else {
                 Write-Step 'The core''s header changed; regenerating the bindings'

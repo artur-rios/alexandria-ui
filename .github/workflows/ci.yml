@@ -90,6 +90,9 @@ jobs:
           dart run ffigen --config ffigen.yaml
           dart run build_runner build
           flutter gen-l10n
+          # Untracked files too: `git diff` alone never sees a generated
+          # file that was never committed.
+          git add --intent-to-add --all
           if ! git diff --exit-code; then
             echo "::error::Generated output differs from what is committed. Run the generators and commit the result."
             exit 1
