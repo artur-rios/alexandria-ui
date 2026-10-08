@@ -116,12 +116,32 @@ void main() {
       // The owner clicks the two links the page covers itself with: the left
       // half opens a new window, the right half navigates the page. Neither
       // may take the engine anywhere; both are handed to the application.
-      await tester.pump();
-      await tester.tapAt(const Offset(200, 300));
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 500)),
+      //
+      // A click is only seen once the engine has taken the widget's size and
+      // laid the page out at it, which happens asynchronously after the first
+      // frame — on a slow runner, well after the script has reported. So each
+      // link is clicked until the application hears of it, for a bounded time.
+      Future<int> clickUntilOffered(Offset at, String url) async {
+        for (var attempt = 1; attempt <= 10; attempt++) {
+          await tester.pump();
+          await tester.tapAt(at);
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(seconds: 1)),
+          );
+          if (linksRequested.contains(url)) return attempt;
+        }
+        return -1;
+      }
+
+      final popupClicks = await clickUntilOffered(
+        const Offset(200, 300),
+        'https://example.com/clicked-popup',
       );
-      await tester.tapAt(const Offset(600, 300));
+      final linkClicks = await clickUntilOffered(
+        const Offset(600, 300),
+        'https://example.com/clicked-link',
+      );
+      debugPrint('clicks until offered: popup $popupClicks, link $linkClicks');
 
       // The navigations the script and the clicks asked for are
       // asynchronous; give the engine time to have made them if it was going
@@ -173,12 +193,15 @@ void main() {
         'blocked',
         reason: 'window.open() created a window',
       );
+      // As a set: a click repeated while the engine was still getting ready
+      // may be offered twice, which is harmless. What matters is that both
+      // clicked links arrive and nothing the script opened does.
       expect(
-        linksRequested,
-        unorderedEquals([
+        linksRequested.toSet(),
+        {
           'https://example.com/clicked-popup',
           'https://example.com/clicked-link',
-        ]),
+        },
         reason:
             'only the two links the owner clicked are offered to the '
             'application; the scripted window.open() calls are not',
