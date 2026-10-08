@@ -107,7 +107,7 @@ foreach(bundled_library ${PLUGIN_BUNDLED_LIBRARIES})
 endforeach(bundled_library)
 
 # The Alexandria core, and on a release build the ffmpeg libraries that travel
-# with it, from native/linux — the same directory the README tells a developer
+# with it, from native/linux — the same directory CONTRIBUTING.md tells a developer
 # to put the core in.
 #
 # This has to be an install rule rather than a copy made afterwards. The rule
