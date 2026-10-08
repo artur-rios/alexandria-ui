@@ -10,6 +10,7 @@ import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/viewers/domain/page_content.dart';
 import 'package:alexandria_ui/features/viewers/presentation/page_viewer_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
@@ -357,6 +358,54 @@ void main() {
 
         expect(
           find.textContaining('A saved article.', findRichText: true),
+          findsOneWidget,
+        );
+        // Not the sandbox: nothing here says it was, so nothing blames it.
+        expect(
+          find.text(messages(tester).pageEngineSandboxUnavailable),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenNoChromiumSandbox_WhenAPageOpens_ThenItIsDrawnAndTheOwnerIsToldWhy',
+      (tester) async {
+        // The plugin refuses to start Chromium without its sandbox (NFR-12)
+        // and says so with its own code. The page is still drawn, and the
+        // owner learns why it is drawn without its engine — on every page,
+        // until the machine has a sandbox to offer.
+        const channel = MethodChannel('webview_cef');
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          channel,
+          (call) async => call.method == 'init'
+              ? throw PlatformException(
+                  code: 'sandbox-unavailable',
+                  message: "Chromium's sandbox does not run as root",
+                )
+              : null,
+        );
+        addTearDown(
+          () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            channel,
+            null,
+          ),
+        );
+
+        await open(
+          tester,
+          engine: true,
+          outcome: const PageRead(
+            content: PageContent(html: '<p>A saved article.</p>'),
+          ),
+        );
+
+        expect(
+          find.textContaining('A saved article.', findRichText: true),
+          findsOneWidget,
+        );
+        expect(
+          find.text(messages(tester).pageEngineSandboxUnavailable),
           findsOneWidget,
         );
       },

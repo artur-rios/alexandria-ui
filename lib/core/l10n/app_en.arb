@@ -1509,6 +1509,10 @@
   "@pageScriptsNotRun": {
     "description": "UC-25 AF-03: the renderer draws widgets and has no engine to run script in, and the owner is told rather than left wondering why the page's controls do nothing."
   },
+  "pageEngineSandboxUnavailable": "This page is drawn without its browser engine: Chromium's sandbox is not available on this computer, and the engine does not run without it.",
+  "@pageEngineSandboxUnavailable": {
+    "description": "UC-25 AF-07, NFR-12: the browser engine refused to start because the system offers no sandbox for it (running as root, user namespaces disabled or restricted, or Windows), so the page is drawn as widgets; said on every page because it is a property of the machine the owner can change."
+  },
   "pageMalformed": "This page's markup is incomplete, so some of it may be missing.",
   "@pageMalformed": {
     "description": "UC-25 AF-04: what could be parsed is drawn, and the rest is admitted to."

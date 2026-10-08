@@ -17,9 +17,10 @@ import 'viewer_failure_view.dart';
 
 /// The page viewer (UC-25, FR-VW-05, FR-VW-06).
 ///
-/// Widgets rather than a browser engine, which is what makes "executes no
-/// script" a property of the renderer instead of a setting somebody has to
-/// remember to keep off (Technology Stack Document §3.4).
+/// A saved HTML page is drawn by the browser engine, sandboxed and held to
+/// its own folder ([ChromiumPage]); a Markdown file, and a page the engine
+/// cannot draw, are drawn as widgets, which run no script (NFR-12, Technology
+/// Stack Document §3.4).
 class PageViewerScreen extends ConsumerWidget {
   /// Creates the screen.
   const PageViewerScreen({super.key});
@@ -114,12 +115,12 @@ class _Page extends ConsumerStatefulWidget {
 }
 
 class _PageState extends ConsumerState<_Page> {
-  /// Whether the engine refused to start for this page.
+  /// Why the engine did not draw this page, if it did not.
   ///
   /// Held here rather than asked again: once Chromium has failed on this
   /// machine it will keep failing, and a rebuild that tried it afresh would
   /// flicker between an empty frame and the markup.
-  bool _engineFailed = false;
+  PageEngineFailure? _engineFailure;
 
   @override
   Widget build(BuildContext context) {
@@ -135,11 +136,18 @@ class _PageState extends ConsumerState<_Page> {
     final byEngine =
         ref.watch(pageEngineEnabledProvider) &&
         !content.isMarkdown &&
-        !_engineFailed &&
+        _engineFailure == null &&
         path != null;
 
     return Column(
       children: [
+        // AF-07, NFR-12: the engine is never started without Chromium's
+        // sandbox, and an owner reading every page as widgets deserves to
+        // know that it is the machine, not the page. Other failures are a
+        // page's own and stay quiet, as AF-07 describes.
+        if (_engineFailure == PageEngineFailure.sandboxUnavailable)
+          const _Notice(kind: _NoticeKind.engineSandbox),
+
         // AF-03: said only when it is true. The markup renderer runs no
         // script and the owner is told rather than left to wonder why the
         // page's buttons do nothing; the engine runs it, so there is nothing
@@ -170,7 +178,8 @@ class _PageState extends ConsumerState<_Page> {
               // stylesheets and pictures from the folder it sits in.
               ? ChromiumPage(
                   fileUrl: Uri.file(path).toString(),
-                  onFailed: () => setState(() => _engineFailed = true),
+                  onFailed: (failure) =>
+                      setState(() => _engineFailure = failure),
                 )
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(AppSpacing.xl),
@@ -195,8 +204,8 @@ class _PageState extends ConsumerState<_Page> {
   }
 }
 
-/// Which of the three things the viewer has to say.
-enum _NoticeKind { script, malformed, missingAssets }
+/// Which of the things the viewer has to say.
+enum _NoticeKind { engineSandbox, script, malformed, missingAssets }
 
 /// A line above the page, saying what it is not showing.
 class _Notice extends StatelessWidget {
@@ -211,6 +220,7 @@ class _Notice extends StatelessWidget {
     final theme = Theme.of(context);
 
     final message = switch (kind) {
+      _NoticeKind.engineSandbox => l10n.pageEngineSandboxUnavailable,
       _NoticeKind.script => l10n.pageScriptsNotRun,
       _NoticeKind.malformed => l10n.pageMalformed,
       _NoticeKind.missingAssets => l10n.pageMissingAssets(detail ?? ''),
@@ -227,6 +237,7 @@ class _Notice extends StatelessWidget {
         children: [
           Icon(
             switch (kind) {
+              _NoticeKind.engineSandbox => Icons.shield_outlined,
               _NoticeKind.script => Icons.code_off_outlined,
               _NoticeKind.malformed => Icons.warning_amber_outlined,
               _NoticeKind.missingAssets => Icons.image_not_supported_outlined,

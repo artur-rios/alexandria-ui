@@ -1138,6 +1138,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This page is shown as content. Any script it contains is not run.';
 
   @override
+  String get pageEngineSandboxUnavailable =>
+      'This page is drawn without its browser engine: Chromium\'s sandbox is not available on this computer, and the engine does not run without it.';
+
+  @override
   String get pageMalformed =>
       'This page\'s markup is incomplete, so some of it may be missing.';
 

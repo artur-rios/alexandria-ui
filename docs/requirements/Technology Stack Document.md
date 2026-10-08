@@ -101,7 +101,7 @@ them writes, re-encodes, or converts a file.
 | **pdfrx** | latest stable at implementation time | Viewers | PDF rendering, with desktop-native performance on both targets. |
 | **xml** | latest stable at implementation time | Viewers | Reads an EPUB's container and package documents. See *EPUB is read directly* below. |
 | **archive** | latest stable at implementation time | Viewers | Reads CBZ comic archives and EPUB containers — both are zip — entry by entry, without extracting them to disk. |
-| **webview_cef** | latest stable at implementation time | Viewers | The browser engine a saved HTML page is drawn with: CEF (Chromium) rendered off-screen and composed into the window as a texture. See *the page viewer is a browser now* below. |
+| **webview_cef** | 0.6.2, vendored and patched in `third_party/webview_cef` (`FORK.md`) | Viewers | The browser engine a saved HTML page is drawn with: CEF (Chromium) rendered off-screen and composed into the window as a texture. See *the page viewer is a browser now* below. |
 | **flutter_widget_from_html** | latest stable at implementation time | Viewers | Draws EPUB chapters, rendered Markdown, and a saved page on a machine where the engine will not start. Not a browser engine: no script execution, and its own web view is switched off — see *a page keeps its own look* below. |
 | **flutter_markdown_plus** | latest stable at implementation time | Viewers, Editor | Renders Markdown for reading and for the editor's live preview pane. The maintained fork of `flutter_markdown` — see *the Markdown renderer moved* below. |
 | **markdown** | latest stable at implementation time | Viewers | Parses Markdown to HTML where the page renderer draws it. |
@@ -131,8 +131,22 @@ was. Layout, media queries, web fonts, hover, script: only an engine has them.
 **What it costs, stated plainly.** The engine executes the page's script and
 can reach the network for whatever the page names, which NFR-12 now describes
 rather than forbids. The page is loaded over `file:`, so Chromium's own rule
-denies it access to other local files — a saved page can act on itself, not on
-the library around it. The distribution grows by the engine: CEF's Linux
+denies its script access to other local files — a saved page can act on
+itself, not on the library around it. That rule only holds as configured, and
+upstream `webview_cef` configured it away: it started Chromium with web
+security and the sandbox switched off and loaded every popup into the page,
+which let a saved page read any file on the disk. So the plugin is vendored
+and patched (`third_party/webview_cef/FORK.md`). The engine starts inside
+Chromium's sandbox or does not start at all, and the page falls back to the
+widget renderer with a notice saying why. That is the case as root, on a Linux
+that does not let an ordinary user create namespaces (Ubuntu 23.10 and later
+by default, unless the setuid helper or an AppArmor profile is installed),
+in the Flatpak, and on Windows until the runner is launched through CEF's
+sandbox bootstrap. A page's files load only from its own folder. Its frame
+never leaves that folder. It opens no windows, downloads nothing, and is
+granted no permissions. A link the owner clicks to a web or mail address
+opens in the system's browser or mail client, never in the page. The
+distribution grows by the engine: CEF's Linux
 `libcef.so` is about 1.3 GB unstripped and 245 MB stripped, plus ~50 MB of
 locales and the GPU libraries, and the first build on a machine downloads and
 unpacks about 3 GB of CEF. Packaging is where stripping belongs, and it is not

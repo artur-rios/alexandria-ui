@@ -1139,6 +1139,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Esta página é exibida como conteúdo. Nenhum script contido nela é executado.';
 
   @override
+  String get pageEngineSandboxUnavailable =>
+      'Esta página é exibida sem o seu motor de navegador: o sandbox do Chromium não está disponível neste computador, e o motor não é executado sem ele.';
+
+  @override
   String get pageMalformed =>
       'A marcação desta página está incompleta, então parte dela pode estar faltando.';
 
