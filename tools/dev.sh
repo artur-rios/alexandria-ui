@@ -92,7 +92,7 @@ step "Checking the toolchain"
 
 for tool in cargo flutter; do
   command -v "$tool" > /dev/null 2>&1 \
-    || fail "$tool is not on PATH. See the Building from source section of README.md."
+    || fail "$tool is not on PATH. See the Building from source section of CONTRIBUTING.md."
 done
 
 if [ "$SKIP_CORE" = "no" ] && command -v pkg-config > /dev/null 2>&1; then

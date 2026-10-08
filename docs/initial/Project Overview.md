@@ -42,9 +42,10 @@ library.
   bookmarks — in list, detailed-list, and grid layouts.
 - **Manages the library sources**: the owner points the app at one or more
   library folders, and triggers indexing and re-scanning from the interface.
-- **Plays audio** with a persistent player, including an album/artist playback
-  animation of a disc, vinyl, or tape spinning on its device for the duration of
-  the music, pausing with the audio.
+- **Plays audio** with a persistent player and a full-window player for what is
+  playing — the album's own picture, and a moving indication of the sound drawn
+  from the recording itself. (The brainstorm's disc, vinyl, or tape animation
+  was built and then removed in 0.1.0 in favour of this player.)
 - **Plays video** with the basics — full screen, pause, seek forward and
   backward, subtitle selection, and audio-track selection.
 - **Views documents and images**: PDFs, e-books, comic books, images, HTML pages,

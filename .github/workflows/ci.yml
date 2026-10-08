@@ -9,7 +9,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [develop, main]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -121,7 +121,7 @@ jobs:
           fi
 
           case $release in
-            main | master | "")
+            main | master | develop | release/* | "")
               echo "::error::release.yml pins CORE_REF to a branch. A tag must name a commit, or the same tag can build twice and ship two different cores."
               exit 1
               ;;

@@ -134,6 +134,8 @@ alexandria-ui/
 │       ├── lifecycle/
 │       └── shell/
 ├── native/                        the core's shared library per platform
+├── third_party/webview_cef/       the page engine's plugin, vendored and patched
+│                                  (FORK.md says what changed and why)
 ├── test/
 ├── integration_test/
 ├── windows/
@@ -181,7 +183,6 @@ environment. There is no server, no connection string, and no secret to inject.
 | Log file location | Application-support directory | See §4. |
 | Owner preferences — theme, language, layout, sort, filters, library folders, window geometry | The local settings store | Owner-facing state, changed in the interface, never in a config file. |
 | Music enrichment — whether lookups may run, and the contact they carry | The local settings store, applied to the core's `ALEXANDRIA_METADATA_*` variables before it is initialized | The core's own setting, but the owner's decision: this application embeds the core, so the owner *is* the operator, and asking them to edit a `config.toml` to see a lyric would be asking them to administer their own music player. |
-
 | The core's caches — artist photographs and thumbnails | Set to directories beside the catalog, through `ALEXANDRIA_METADATA_IMAGE_CACHE_DIR` and `ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR`, before the core is initialized | Both settings default to a path relative to the process's working directory, which for an installed application is wherever the desktop started it — a directory this application does not own and often cannot write to. The catalog's own directory is the one it does. |
 
 No secret is ever written into this document, into the repository, or into a
@@ -227,8 +228,8 @@ usable, and must say so rather than crashing.
 | 1 | Resolve and load the core's shared library | Present "the Alexandria core could not be loaded", with the path attempted and a retry. |
 | 2 | Resolve the application-support directory and the database path | Present the directory that could not be created, with a retry. |
 | 3 | Load the local settings and apply the theme and language | Fall back to system theme and language — and, for the core's own configuration below, to the shipped defaults — and report that preferences could not be read. |
-| 4 | Initialize the core against the database path, with the owner's music-lookup choice | Present the core's reported reason, with a retry. |
-| 5 | Read the core's version and health status | Present an incompatible-version or unhealthy-core message, with a retry. |
+| 4 | Read the core's version and health status | Present an incompatible-version or unhealthy-core message, with a retry. |
+| 5 | Initialize the core against the database path, with the owner's music-lookup choice | Present the core's reported reason, with a retry. |
 | 6 | Determine whether an account exists, and present sign-up or login | Present the core's reason, with a retry. |
 | 7 | After signing up, present the recovery codes the core minted | Present the core's reason, with a retry. An account created without codes is said so plainly, and regenerating a set is offered. |
 
@@ -241,6 +242,14 @@ initialization would leave every such choice a launch behind the owner who
 made it. A choice changed *during* a session is applied by initializing the
 core again against the same database, which the core documents as safe and
 which leaves the session (held in the database, not in the process) intact.
+
+The version and health are read **before** the core is initialized, and that
+order is load-bearing too. Initializing is what creates and migrates the
+catalog. A core outside the supported range that got that far would already
+have rewritten the owner's database by the time it was refused — a newer one
+migrating it past what the supported core can open, an older one failing on a
+schema it does not know and reporting that instead of its version. Both
+answers are available before initialization, so nothing is risked to get them.
 
 ### 5.2 Health contract
 
@@ -301,25 +310,47 @@ stop being read.
 | Analyze | The analyzer with the project's rules | Any warning or error, including a layering violation. |
 | Localization check | Both ARB catalogs | Any key present in one language and absent from the other. |
 | Test | The unit and widget suite, with coverage | Any failing test. |
-| Integration test | The integration suite on a Windows runner and an Ubuntu runner | Any failing test on either platform. |
+| Vendored engine | `tools/check-webview-cef-fork.sh` against the upstream `webview_cef` release, and the fork's native policy tests (`third_party/webview_cef/test/native/run.sh`) | Any file differing from upstream that `FORK.md` does not list, a patched file without its fork notice, or a failing policy test. |
+| Integration test | The integration suite on a Windows runner and an Ubuntu runner. On Ubuntu, AppArmor's restriction on unprivileged user namespaces is lifted first, so the saved-page test runs the real sandboxed engine | Any failing test on either platform. |
 | Build | A release build for Windows and for Linux | Either platform failing to build. |
 
 ### 7.2 Packaging
 
-Packages are produced from the same pipeline on a tagged release, each bundling
-the Alexandria core's shared library for its platform:
+Packages are produced from the same pipeline on a tagged release — a `v<version>`
+tag on the merge commit of a `release/<version>` pull request into `main` (see
+[CONTRIBUTING.md](../../CONTRIBUTING.md#releasing)) — each bundling the
+Alexandria core's shared library for its platform, and are published as a
+GitHub Release:
 
 | Platform | Packages |
 | --- | --- |
-| Windows | An MSIX package and an installer executable. |
-| Linux | An AppImage, a `.deb`, and a Flatpak. |
+| Windows | An MSIX package, an installer executable, and a portable `.zip`. |
+| Linux | An AppImage, a `.deb`, a Flatpak, a self-extracting installer, and a portable `.tar.gz`. |
 
 **Deferred decision — signing.** Code signing for the Windows packages requires a
 certificate the project does not yet hold, and Flatpak distribution through a
 public remote requires an account that does not yet exist. Both are recorded here
 as deliberately deferred, to be settled before the first public release; until
-then, packages are produced unsigned and published as build artifacts. Neither
-blocks any use case.
+then, packages are produced unsigned, and the 0.x releases that carry them are
+published as prereleases. Neither blocks any use case.
+
+**Deferred decision — the page engine's sandbox on Linux packages.** The
+saved-page engine (UC-25) runs only inside Chromium's sandbox, and the
+application draws the page without it, as widgets, on a machine where that
+sandbox cannot run (NFR-12; `third_party/webview_cef/FORK.md`). On Linux the
+sandbox needs unprivileged user namespaces, or the setuid helper
+`lib/chrome-sandbox` installed owned by root with mode 4755. Ubuntu 23.10 and
+later — including 24.04, which the `.deb` targets — restrict user namespaces
+through AppArmor by default, so on a default Ubuntu desktop every package
+currently falls back to the widget renderer, and the viewer says why. Two fixes
+need root at install time, so they belong in the `.deb` (and the installer when
+it is run as root): an AppArmor profile granting the application `userns`, the
+way Ubuntu ships one for Chrome, or the setuid helper. Which one the project
+ships is the owner's decision; neither is in the packages yet. The Flatpak
+cannot nest user namespaces and the AppImage cannot carry a setuid helper, so
+those two rely on the host allowing user namespaces. On Windows the engine is
+not started at all until the runner is launched through CEF's sandbox
+bootstrap.
 
 ### 7.3 What is not delivered
 
@@ -348,6 +379,7 @@ nothing to uninstall separately.
 | Test infrastructure | IR-14 |
 | Continuous integration | IR-15 |
 | Packaging for both platforms | IR-16 |
+| Page engine isolation (vendored `webview_cef`, sandbox, folder confinement) | NFR-12, FR-VW-05, IR-15 |
 
 These `IR-xx` requirements are the Definition of Done for the foundation issue in
 the [README](../../README.md) backlog. They are not use cases and are not split
