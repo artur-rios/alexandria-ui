@@ -118,8 +118,32 @@ env:
   FFMPEG_LIBRARIES: avcodec avdevice avfilter avformat avutil swresample swscale
 
 jobs:
+  # Only released code is published: the tag must point at a commit that
+  # reached main through a release/* pull request. Checked first, so a tag in
+  # the wrong place fails in seconds rather than after the packages are built.
+  # A workflow_dispatch run publishes nothing and is not checked.
+  on-main:
+    name: Tagged commit is on main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          fetch-depth: 0
+
+      - name: Verify tagged commit is on main
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::${GITHUB_REF_NAME} points at $(git rev-parse --short HEAD), which is not on main. Merge the release/* pull request into main and tag the merge commit."
+            exit 1
+          fi
+
   windows:
     name: Windows packages
+    needs: [on-main]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -317,6 +341,7 @@ jobs:
 
   linux:
     name: Linux packages
+    needs: [on-main]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
