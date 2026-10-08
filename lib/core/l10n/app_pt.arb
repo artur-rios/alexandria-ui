@@ -332,6 +332,7 @@
   "imagePrevious": "Imagem anterior",
   "imageOf": "{position} de {total}",
   "pageScriptsNotRun": "Esta página é exibida como conteúdo. Nenhum script contido nela é executado.",
+  "pageEngineSandboxUnavailable": "Esta página é exibida sem o seu motor de navegador: o sandbox do Chromium não está disponível neste computador, e o motor não é executado sem ele.",
   "pageMalformed": "A marcação desta página está incompleta, então parte dela pode estar faltando.",
   "pageMissingAssets": "Estes arquivos referenciados pela página não estão no disco: {assets}",
   "bookmarkAdd": "Adicionar favorito",

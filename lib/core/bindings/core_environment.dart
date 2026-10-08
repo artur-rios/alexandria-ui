@@ -278,3 +278,30 @@ void ensureMusicLookup(MusicLookup lookup, {Map<String, String>? environment}) {
     setProcessEnvironment(coreMetadataContactVariable, contact);
   }
 }
+
+/// Puts every setting the core reads at `alexandria_index_init` in place:
+/// the auth mode, the caches beside the catalog in [databaseDirectory], and
+/// [musicLookup].
+///
+/// [launchEnvironment] is the environment as it was when the application
+/// started, before any of these were written — and it has to be passed in
+/// rather than read here. Each rule above leaves a variable alone when it is
+/// already set, because that is how a developer or packager configures the
+/// core deliberately. But `Platform.environment` is a snapshot each isolate
+/// takes the first time it asks, and a core worker spawned again by a retry
+/// takes its snapshot after the previous worker has written these variables.
+/// Read that way, the application's own earlier choice looks like an
+/// operator's, and every later change — the owner switching music lookup on
+/// or off, or naming a different contact — is skipped while the
+/// re-initialization reports it applied.
+void prepareCoreEnvironment({
+  required String databaseDirectory,
+  required MusicLookup musicLookup,
+  required Map<String, String> launchEnvironment,
+}) {
+  ensureLocalAuthMode(environment: launchEnvironment);
+  // The caches go beside the database, which is the directory this
+  // application owns — see [ensureCacheDirectories].
+  ensureCacheDirectories(databaseDirectory, environment: launchEnvironment);
+  ensureMusicLookup(musicLookup, environment: launchEnvironment);
+}

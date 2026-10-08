@@ -90,6 +90,9 @@ jobs:
           dart run ffigen --config ffigen.yaml
           dart run build_runner build
           flutter gen-l10n
+          # Untracked files too: `git diff` alone never sees a generated
+          # file that was never committed.
+          git add --intent-to-add --all
           if ! git diff --exit-code; then
             echo "::error::Generated output differs from what is committed. Run the generators and commit the result."
             exit 1
@@ -132,6 +135,21 @@ jobs:
       # load would report nothing here and look like a pass.
       - name: Layering rules
         run: dart run custom_lint
+
+      # The page viewer's browser engine is a vendored, patched webview_cef
+      # (third_party/webview_cef/FORK.md): upstream ran Chromium with web
+      # security and the sandbox off (NFR-12). This fails when the vendored
+      # copy differs from the upstream release in any file FORK.md does not
+      # list, or a patched file lacks its fork notice, so a change to the fork
+      # is always a recorded one.
+      - name: Vendored webview_cef matches its recorded patches
+        run: sh tools/check-webview-cef-fork.sh
+
+      # The fork's navigation, subresource, switch and sandbox rules, as plain
+      # C++ without a browser. The engine itself is exercised by the
+      # integration suite's saved-page test.
+      - name: Vendored webview_cef policy tests
+        run: sh third_party/webview_cef/test/native/run.sh
 
   test:
     # Both platforms, and the goldens are why. `case_painter.dart` typesets
@@ -336,6 +354,19 @@ jobs:
             libnss3 libnspr4
 
       - run: flutter pub get
+
+      # The page engine runs only inside Chromium's sandbox, and refuses to
+      # start without one (third_party/webview_cef/FORK.md). On Linux the
+      # sandbox needs unprivileged user namespaces, which Ubuntu 23.10+
+      # restricts through AppArmor by default. Lifted here, on a throwaway
+      # runner, so that integration_test/viewers/saved_page_engine_test.dart
+      # exercises the real sandboxed engine rather than its refusal.
+      - name: Let Chromium create its sandbox (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
 
       - name: Integration suite
         shell: bash

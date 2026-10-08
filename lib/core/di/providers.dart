@@ -196,6 +196,28 @@ final settingsLoaderProvider = Provider<Future<SettingsStore> Function()>(
   (ref) => SharedPreferencesSettingsStore.load,
 );
 
+/// The core the startup sequence loaded, read so that the provider asking is
+/// rebuilt when the sequence runs again.
+///
+/// A retry re-runs startup from step 1 and disposes the core it loaded before
+/// (§5.2). Read once and cached, a gateway would go on calling that disposed
+/// worker — every call failing as unexpected — until the application was
+/// restarted; the login screen's own retry is the path that reached it.
+/// Watching whether startup is ready is what invalidates the gateway when it
+/// stops being ready, so the next read builds it over the core that replaced
+/// the old one.
+CoreClient? _loadedCore(Ref ref) {
+  ref.watch(startupControllerProvider.select((state) => state is StartupReady));
+  return ref.read(startupControllerProvider.notifier).core;
+}
+
+/// The settings store the startup sequence loaded, rebuilt with it for the
+/// same reason as [_loadedCore].
+SettingsStore? _loadedSettings(Ref ref) {
+  ref.watch(startupControllerProvider.select((state) => state is StartupReady));
+  return ref.read(startupControllerProvider.notifier).settings;
+}
+
 /// Runs the startup sequence and holds its state.
 ///
 /// It reads the three providers above in its `build`, so overriding any of them
@@ -227,7 +249,7 @@ final themeModeProvider = Provider<ThemeMode>(
 /// screen is presented. A test overrides this with a fake gateway and never
 /// reaches the FFI boundary at all (Testing Specification §2.3).
 final authGatewayProvider = Provider<AuthGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the authentication gateway was read before the core was loaded',
@@ -317,7 +339,7 @@ final folderProbeProvider = Provider<FolderProbe>(
 /// once startup has reached ready — which is when the shell, and so the
 /// library-sources screen, is reachable.
 final librarySourceStoreProvider = Provider<LibrarySourceStore>((ref) {
-  final settings = ref.read(startupControllerProvider.notifier).settings;
+  final settings = _loadedSettings(ref);
   if (settings == null) {
     throw StateError(
       'the library source store was read before settings were loaded',
@@ -335,7 +357,7 @@ final librarySourcesControllerProvider =
 
 /// The core's indexing operations (UC-06).
 final indexGatewayProvider = Provider<IndexGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError('the index gateway was read before the core was loaded');
   }
@@ -370,7 +392,7 @@ final activeRunsControllerProvider =
 
 /// The core's catalog queries (UC-09).
 final catalogGatewayProvider = Provider<CatalogGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError('the catalog gateway was read before the core was loaded');
   }
@@ -454,7 +476,7 @@ final musicMetadataEditorProvider =
 
 /// Where the core says a file is, for a player to open (UC-19, FR-PL-01).
 final playbackSourceGatewayProvider = Provider<PlaybackSourceGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the playback source gateway was read before the core was loaded',
@@ -488,7 +510,7 @@ final videoSurfaceProvider = Provider<WidgetBuilder>((ref) {
 
 /// The resume positions (UC-19, FR-PL-09, System Requirements §4.10).
 final playbackPositionsProvider = Provider<PlaybackPositionStore>((ref) {
-  final settings = ref.read(startupControllerProvider.notifier).settings;
+  final settings = _loadedSettings(ref);
   if (settings == null) {
     throw StateError(
       'the playback positions were read before settings were loaded',
@@ -583,7 +605,7 @@ final playbackSessionsProvider = Provider<List<PlaybackSession>>(
 
 /// The core's text content operations (UC-18, FR-ME-06, FR-ME-08).
 final textContentGatewayProvider = Provider<TextContentGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the text content gateway was read before the core was loaded',
@@ -675,7 +697,7 @@ final documentGatewayProvider = Provider<DocumentGateway>(
 
 /// Where the owner had read to, per file (FR-VW-02).
 final readingPositionsProvider = Provider<ReadingPositionStore>((ref) {
-  final settings = ref.read(startupControllerProvider.notifier).settings;
+  final settings = _loadedSettings(ref);
   if (settings == null) {
     throw StateError(
       'the reading positions were read before settings were loaded',
@@ -687,7 +709,7 @@ final readingPositionsProvider = Provider<ReadingPositionStore>((ref) {
 
 /// Reads a comic-book archive a page at a time (UC-23, FR-VW-03).
 final comicGatewayProvider = Provider<ComicGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError('the comic gateway was read before the core was loaded');
   }
@@ -709,7 +731,7 @@ final documentViewerControllerProvider =
 
 /// The core's bookmark operations (UC-28, FR-OG-08 … FR-OG-10).
 final bookmarkGatewayProvider = Provider<BookmarkGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the bookmark gateway was read before the core was loaded',
@@ -737,7 +759,7 @@ final bookmarkFormProvider = NotifierProvider<BookmarkForm, BookmarkFormState>(
 
 /// The core's watchlist operations (UC-29, UC-30, FR-TR-01 … FR-TR-07).
 final watchlistGatewayProvider = Provider<WatchlistGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the watchlist gateway was read before the core was loaded',
@@ -771,7 +793,7 @@ final watchProgressEditorProvider =
 
 /// The core's collection operations (UC-26, UC-27, FR-OG-01 ... FR-OG-06).
 final collectionGatewayProvider = Provider<CollectionGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the collection gateway was read before the core was loaded',
@@ -847,7 +869,7 @@ final collectionsFormProvider =
 
 /// The core's deletion-lifecycle operations (UC-33, FR-LC-01).
 final lifecycleGatewayProvider = Provider<LifecycleGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the lifecycle gateway was read before the core was loaded',
@@ -880,7 +902,7 @@ final deletionControllerProvider =
 
 /// The core's settings read (UC-34, FR-LC-03).
 final retentionGatewayProvider = Provider<RetentionGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the retention gateway was read before the core was loaded',
@@ -922,7 +944,7 @@ final purgeControllerProvider = NotifierProvider<PurgeController, PurgeState>(
 
 /// The core's reading-list operations (UC-31, UC-32, FR-TR-08 ... FR-TR-14).
 final readingListGatewayProvider = Provider<ReadingListGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the reading list gateway was read before the core was loaded',
@@ -944,7 +966,7 @@ final readingListsFormProvider =
 
 /// The core's playlist operations (playlists design).
 final playlistGatewayProvider = Provider<PlaylistGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the playlist gateway was read before the core was loaded',
@@ -962,7 +984,7 @@ final playlistsControllerProvider =
 
 /// The core's music enrichment operations (music enrichment design).
 final enrichmentGatewayProvider = Provider<EnrichmentGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the enrichment gateway was read before the core was loaded',
@@ -988,7 +1010,7 @@ final trackEnrichmentControllerProvider =
 
 /// The core's energy envelopes (UC-21, FR-MP-07).
 final energyGatewayProvider = Provider<EnergyGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError('the energy gateway was read before the core was loaded');
   }
@@ -1031,7 +1053,7 @@ final artistPortraitBackfillProvider =
 
 /// The core's play history operations (play history design).
 final statsGatewayProvider = Provider<StatsGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError('the stats gateway was read before the core was loaded');
   }
@@ -1053,7 +1075,7 @@ final musicStatsControllerProvider =
 
 /// The core's library operations (libraries design).
 final libraryGatewayProvider = Provider<LibraryGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError('the library gateway was read before the core was loaded');
   }
@@ -1134,7 +1156,7 @@ final readingProgressEditorProvider =
 /// Bound here for the one question UC-16 asks of it; UC-29 and UC-30 grow it
 /// into the watchlists they present.
 final watchProgressGatewayProvider = Provider<WatchProgressGateway>((ref) {
-  final core = ref.read(startupControllerProvider.notifier).core;
+  final core = _loadedCore(ref);
   if (core == null) {
     throw StateError(
       'the watch progress gateway was read before the core was loaded',

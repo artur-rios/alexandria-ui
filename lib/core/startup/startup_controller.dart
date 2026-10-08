@@ -78,10 +78,7 @@ class StartupController extends Notifier<StartupState> {
     final settings = _settings;
 
     return settings == null
-        ? const MusicLookup(
-            enabled: true,
-            contact: defaultMusicLookupContact,
-          )
+        ? const MusicLookup(enabled: true, contact: defaultMusicLookupContact)
         : MusicLookup(
             enabled: settings.musicLookupEnabled,
             contact: settings.musicLookupContact,
@@ -179,10 +176,18 @@ class StartupController extends Notifier<StartupState> {
     // could only take effect the session after this one.
     final warning = await _step3LoadPreferences();
 
-    if (!await _step4Initialize(databasePath)) return;
-
-    final version = await _step5Verify();
+    // Verified before it is initialized, not after: initializing is what
+    // creates and migrates the catalog. A core outside the supported range
+    // that is initialized first has already rewritten the owner's database by
+    // the time it is refused — a newer one migrates it past what the
+    // supported core can open again, and an older one fails on a schema it
+    // does not know and reports that, hiding the version message this check
+    // exists to give. The version and health are both answerable before
+    // initialization.
+    final version = await _step4Verify();
     if (version == null) return;
+
+    if (!await _step5Initialize(databasePath)) return;
 
     _databasePath = databasePath;
 
@@ -240,15 +245,12 @@ class StartupController extends Notifier<StartupState> {
     }
   }
 
-  Future<bool> _step4Initialize(String databasePath) async {
+  Future<bool> _step5Initialize(String databasePath) async {
     state = const StartupState.running(step: StartupStep.initializingCore);
 
     try {
       final lookup = musicLookup;
-      final status = await _core!.initialize(
-        databasePath,
-        musicLookup: lookup,
-      );
+      final status = await _core!.initialize(databasePath, musicLookup: lookup);
       _appliedMusicLookup = lookup;
       if (CoreStatusFamily.indexing.isOk(status)) return true;
 
@@ -267,7 +269,7 @@ class StartupController extends Notifier<StartupState> {
     }
   }
 
-  Future<String?> _step5Verify() async {
+  Future<String?> _step4Verify() async {
     state = const StartupState.running(step: StartupStep.verifyingCore);
 
     try {

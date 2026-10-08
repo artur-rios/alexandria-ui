@@ -284,6 +284,10 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
       case PlaybackSourceResolved(:final source):
         _listenToEngine();
         await _player.open(source.path, startAt: at);
+        // Closed, or superseded, while the engine was opening: the state
+        // already belongs to that, and writing `playing` over it would leave
+        // the player claiming a video the owner already closed.
+        if (generation != _startGeneration) return;
         state = state.copyWith(
           stage: VideoStage.playing,
           status: _player.currentStatus,

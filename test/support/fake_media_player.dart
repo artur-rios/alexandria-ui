@@ -81,7 +81,17 @@ class FakeMediaPlayer implements MediaPlayer {
     opened.add(path);
     startedAt.add(startAt);
     _status = PlaybackStatus(isPlaying: true, position: startAt);
+    await _openGate?.future;
   }
+
+  Completer<void>? _openGate;
+
+  /// Makes the next [open] hang until [releaseOpen] — what a real engine's
+  /// open-then-seek takes long enough for the owner to act during.
+  void holdOpen() => _openGate = Completer<void>();
+
+  /// Lets a held [open] finish.
+  void releaseOpen() => _openGate?.complete();
 
   @override
   Future<void> play() async {

@@ -185,6 +185,13 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
     final resume = _positions.positionFor(file.uuid);
     if (resume != null && resume.position > Duration.zero) {
+      // Whatever is playing stops first. The question is asked before
+      // anything opens, and a track left playing under it went on ticking
+      // into this state — each tick clearing the offer it is asking about,
+      // its play credited to this file, its end forgetting this file's
+      // resume point — with no transport on screen to stop it.
+      if (state.isActive) await stop();
+
       state = AudioPlaybackState(
         queue: PlaybackQueue(tracks: [file], kind: QueueKind.track),
         stage: AudioStage.offeringResume,
@@ -386,6 +393,18 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     state = const AudioPlaybackState();
   }
 
+  /// Stops the engine and stops following it, leaving the state to the
+  /// caller.
+  ///
+  /// For the arms that end playback because the request failed. No position
+  /// is recorded: by then the queue names the track that failed, and what the
+  /// engine was still playing is a different one.
+  Future<void> _silence() async {
+    unawaited(_statuses?.cancel());
+    _statuses = null;
+    await _player.stop();
+  }
+
   /// Stops because another medium is starting (AF-05, FR-PL-08).
   Future<void> stopForOtherMedium() async {
     if (!state.isActive) return;
@@ -535,6 +554,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     // the rest of the session. The same answer the rejected-session arm below
     // gives, because it is the same situation reached a moment earlier.
     if (credential == null) {
+      await _silence();
       state = const AudioPlaybackState();
       return;
     }
@@ -571,6 +591,12 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
             source.path,
             startAt: queue.index == index ? at : Duration.zero,
           );
+          // Stopped, or superseded, while the engine was opening — a resume
+          // opens and then seeks, which is long enough for the owner to press
+          // Stop. The state already belongs to that request; writing
+          // `playing` over it would leave the bar on a track the engine is
+          // not playing, with nothing following the engine any more.
+          if (generation != _openGeneration) return;
           // A different track, or the same one again: either way this is a
           // playthrough that has not been counted yet, and nothing of it has
           // been heard. The heard time resets with the flag — a resume opens
@@ -591,6 +617,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
         // A rejected session returns the owner to login, as everywhere else.
         case PlaybackSourceFailed(failure: final UnauthorizedFailure failure):
           ref.read(sessionControllerProvider.notifier).invalidate(failure);
+          await _silence();
           state = const AudioPlaybackState();
           return;
 
@@ -607,7 +634,12 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
           if (!queue.hasNext) {
             // AF-03: nothing in the selection could be played. The queue is
-            // cleared, because there is nothing left in it to come back to.
+            // cleared, because there is nothing left in it to come back to —
+            // and the engine is stopped, because what it may still be
+            // playing is the track this request replaced, which the bar is
+            // about to stop describing.
+            await _silence();
+            if (generation != _openGeneration) return;
             state = AudioPlaybackState(
               stage: AudioStage.allFailed,
               lastSkipped: skipped,

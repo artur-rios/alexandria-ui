@@ -41,8 +41,18 @@ class PlaybackSessionActivity implements SessionActivity {
   @override
   bool get continuesInTheCore => false;
 
+  /// Stops whatever is playing, then drops the cover's memory of it.
+  ///
+  /// Sign-out's step 2 is "stop playback" (UC-03), and this is the activity
+  /// sign-out reads for it. Left running, a track went on playing over the
+  /// login screen with no bar to stop it — and a video with no surface at
+  /// all, its dialog popped by the route guard — still writing resume points
+  /// for the session that had ended.
   @override
   Future<void> end() async {
+    for (final session in _ref.read(playbackSessionsProvider)) {
+      if (session.isActive) await session.stop();
+    }
     _ref.read(albumCoverControllerProvider.notifier).forgetSession();
   }
 

@@ -20,4 +20,39 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 class PageWidgetFactory extends WidgetFactory {
   @override
   bool get webView => false;
+
+  /// Hands a tapped link to the platform's opener only when it is a web
+  /// address; an in-page anchor scrolls, and anything else does nothing.
+  ///
+  /// The renderer's own factory passes *every* link to `url_launcher`, and
+  /// a saved page, an EPUB chapter, or a Markdown note is content from
+  /// elsewhere. A relative `href="tool.bat"` resolves against the page's
+  /// folder to a `file:` URL the platform runs on one click, and a scheme
+  /// some installed program registered does whatever that program does.
+  @override
+  Future<bool> onTapUrl(String url) async {
+    if (isLinkTheViewerMayOpen(url)) return super.onTapUrl(url);
+
+    if (await onTapCallback(url)) return true;
+
+    final hash = url.indexOf('#');
+    if (hash >= 0) await onTapAnchorWrapper(url.substring(hash + 1));
+
+    // Handled either way: returning false would let the caller treat the
+    // link as unhandled, and the refusal is the handling.
+    return true;
+  }
+}
+
+/// Whether [url] may be handed to the platform's opener from a rendered
+/// page: web and mail addresses only.
+bool isLinkTheViewerMayOpen(String url) {
+  final uri = Uri.tryParse(url.trim());
+  if (uri == null) return false;
+
+  return switch (uri.scheme.toLowerCase()) {
+    'http' || 'https' => uri.host.isNotEmpty,
+    'mailto' => true,
+    _ => false,
+  };
 }

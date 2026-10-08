@@ -92,7 +92,7 @@ void main() {
     );
   });
 
-  group('step 4 — initializing the core', () {
+  group('step 5 — initializing the core', () {
     test(
       'GivenTheCoreRejectsTheDatabase_WhenStartupRuns_ThenItFailsAtStepThree',
       () async {
@@ -109,7 +109,7 @@ void main() {
     );
   });
 
-  group('step 5 — verifying health and version', () {
+  group('step 4 — verifying health and version', () {
     test(
       'GivenAnUnhealthyCore_WhenStartupRuns_ThenItFailsAtStepFour',
       () async {
@@ -145,6 +145,34 @@ void main() {
         final failure = state.failure as CoreVersionUnsupportedFailure;
         expect(failure.found, '0.9.0');
         expect(failure.required, contains(CoreVersionRange.minimum));
+      },
+    );
+
+    // Initializing is what creates and migrates the catalog. A core outside
+    // the supported range that got that far had already rewritten the
+    // owner's database by the time it was refused — a newer one migrating it
+    // past what the supported core can open, an older one failing on a schema
+    // it does not know and reporting that instead of its version.
+    test(
+      'GivenAnUnsupportedVersion_WhenStartupRuns_ThenTheCatalogIsNeverInitialized',
+      () async {
+        final core = FakeCoreClient(versionResult: '0.9.0');
+
+        final state = await runStartup(core: core);
+
+        expect(state, isA<StartupFailed>());
+        expect(core.initializedWith, isEmpty);
+      },
+    );
+
+    test(
+      'GivenAnUnhealthyCore_WhenStartupRuns_ThenTheCatalogIsNeverInitialized',
+      () async {
+        final core = FakeCoreClient(healthResult: 503);
+
+        await runStartup(core: core);
+
+        expect(core.initializedWith, isEmpty);
       },
     );
 

@@ -2094,6 +2094,12 @@ abstract class AppLocalizations {
   /// **'This page is shown as content. Any script it contains is not run.'**
   String get pageScriptsNotRun;
 
+  /// UC-25 AF-07, NFR-12: the browser engine refused to start because the system offers no sandbox for it (running as root, user namespaces disabled or restricted, or Windows), so the page is drawn as widgets; said on every page because it is a property of the machine the owner can change.
+  ///
+  /// In en, this message translates to:
+  /// **'This page is drawn without its browser engine: Chromium\'s sandbox is not available on this computer, and the engine does not run without it.'**
+  String get pageEngineSandboxUnavailable;
+
   /// UC-25 AF-04: what could be parsed is drawn, and the rest is admitted to.
   ///
   /// In en, this message translates to:

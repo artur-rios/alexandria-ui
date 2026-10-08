@@ -218,12 +218,13 @@ jobs:
           # anything else outright. Checked here rather than twenty minutes
           # later, three quarters of the way through the job, which is where a
           # dispatch run with a version like "0.0.2-test" first found out.
-          case $version in
-            *[!0-9.]* | "" | .* | *.)
-              echo "::error::version must be numeric and dotted, such as 1.2.3 — got: $version"
-              exit 1
-              ;;
-          esac
+          # Exactly three numeric parts: the MSIX step appends a fourth, and
+          # its packager refuses anything but four — so 1.2, 1.2.3.4 and 1..2
+          # have to be refused here, not twenty minutes from now.
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::version must be three numbers, such as 1.2.3 — got: $version"
+            exit 1
+          fi
 
           echo "value=$version" >> "$GITHUB_OUTPUT"
 
@@ -357,9 +358,10 @@ jobs:
         with:
           workspaces: core
 
-      # Debian's libav* are the LGPL builds; libavcodec-extra is the GPL one and
-      # is deliberately not used here, for the reason given on
-      # FFMPEG_WINDOWS_BUILD above.
+      # Ubuntu's libav* are GPL-enabled builds — libavcodec links x264, x265
+      # and xvid, and libpostproc is GPL — which is why the bundled licences
+      # name them as copyleft and the program as a whole is under the GPL.
+      # libavcodec-extra adds still more and is not needed here.
       - name: Install the ffmpeg development libraries
         run: |
           sudo apt-get update
@@ -433,12 +435,13 @@ jobs:
           # anything else outright. Checked here rather than twenty minutes
           # later, three quarters of the way through the job, which is where a
           # dispatch run with a version like "0.0.2-test" first found out.
-          case $version in
-            *[!0-9.]* | "" | .* | *.)
-              echo "::error::version must be numeric and dotted, such as 1.2.3 — got: $version"
-              exit 1
-              ;;
-          esac
+          # Exactly three numeric parts: the MSIX step appends a fourth, and
+          # its packager refuses anything but four — so 1.2, 1.2.3.4 and 1..2
+          # have to be refused here, not twenty minutes from now.
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::version must be three numbers, such as 1.2.3 — got: $version"
+            exit 1
+          fi
 
           echo "value=$version" >> "$GITHUB_OUTPUT"
 
@@ -651,8 +654,14 @@ jobs:
       # The runner itself proves nothing — it installed ffmpeg, libmpv, and GTK
       # in order to build this.
       - name: Verify the payload runs on a machine with only a desktop
+        # bash with pipefail, not the default `bash -e`: the container's output
+        # is piped through tee, and without pipefail the step sees only tee's
+        # status. A container that stopped early — apt-get failing, or ldd on a
+        # library that is not there — left a short listing with no "not found"
+        # in it, and the check below reported success.
+        shell: bash
         run: |
-          set -e
+          set -eo pipefail
           payload="$PWD/stage"
 
           echo "::group::Resolution inside ubuntu:24.04 with only a desktop added"
@@ -886,7 +895,7 @@ jobs:
 
             - **`alexandria-installer-${{ steps.version.outputs.value }}-linux-x64.sh`**
               — the installer. `chmod +x` it and run it. Defaults to
-              `~/.local/share/alexandria`, or `/opt/alexandria` as root, and
+              `~/.local/opt/alexandria`, or `/opt/alexandria` as root, and
               replaces an existing installation the same way the Windows one
               does. `--prefix DIR` and `--yes` skip the questions;
               `--uninstall` removes what it installed and nothing else.
