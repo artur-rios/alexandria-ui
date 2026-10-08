@@ -172,6 +172,10 @@ is set up so that it can be pushed to one as it is (see *Syncing upstream*).
      before they reach the platform channel. Flutter: "sent a message from
      native to Flutter on a non-platform thread … may result in data loss or
      crashes".
+   - `common/webview_handler.{h,cc}` spell the popup and open-URL disposition
+     `cef_window_open_disposition_t`. Once the handler is also a
+     `CefRequestHandler`, MSVC rejects `WindowOpenDisposition` as ambiguous
+     (C2385): both handler bases declare that typedef.
 9. **Comments and version.**
    - `windows/CMakeLists.txt`: the comment on `USE_SANDBOX OFF` is updated.
    - `pubspec.yaml`: the version is `0.6.2+alexandria.1`.

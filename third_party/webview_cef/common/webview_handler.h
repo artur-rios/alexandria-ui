@@ -99,6 +99,11 @@ public:
     virtual CefRefPtr<CefPermissionHandler> GetPermissionHandler() override { return this; }
 
     // CefRequestHandler methods (Alexandria fork):
+    //
+    // The disposition is spelled cef_window_open_disposition_t, not
+    // WindowOpenDisposition: CefRequestHandler and CefLifeSpanHandler each
+    // declare that typedef, and MSVC rejects the name as ambiguous in a class
+    // deriving from both (C2385).
     virtual bool OnBeforeBrowse(CefRefPtr<CefBrowser> browser,
                                 CefRefPtr<CefFrame> frame,
                                 CefRefPtr<CefRequest> request,
@@ -107,7 +112,7 @@ public:
     virtual bool OnOpenURLFromTab(CefRefPtr<CefBrowser> browser,
                                   CefRefPtr<CefFrame> frame,
                                   const CefString& target_url,
-                                  WindowOpenDisposition target_disposition,
+                                  cef_window_open_disposition_t target_disposition,
                                   bool user_gesture) override;
     virtual CefRefPtr<CefResourceRequestHandler> GetResourceRequestHandler(
         CefRefPtr<CefBrowser> browser,
@@ -184,7 +189,7 @@ public:
                                int popup_id,
                                const CefString& target_url,
                                const CefString& target_frame_name,
-                               WindowOpenDisposition target_disposition,
+                               cef_window_open_disposition_t target_disposition,
                                bool user_gesture,
                                const CefPopupFeatures& popupFeatures,
                                CefWindowInfo& windowInfo,
