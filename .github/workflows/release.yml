@@ -90,16 +90,18 @@ env:
   # The LGPL build, not the GPL one CI uses.
   #
   # This once said the choice was forced, because the core was proprietary and
-  # only LGPL terms could be met. That is no longer true: the project is
-  # GPL-3.0-or-later, so either variant would be lawful to ship. The LGPL build
-  # stays because it is still the better one to carry — the GPL variant adds
-  # x264 and x265, which are encoders, and nothing here re-encodes. Carrying
-  # obligations for capabilities the application does not have would be a
-  # strange thing to do deliberately.
+  # only LGPL terms could be met. That is no longer true: the source is under
+  # the Artur Rios Attribution License, which does not stop a package from being
+  # distributed under the GPL as a combined work, so either variant would be
+  # lawful to ship. The LGPL build stays because it is still the better one to
+  # carry — the GPL variant adds x264 and x265, which are encoders, and nothing
+  # here re-encodes. Carrying obligations for capabilities the application does
+  # not have would be a strange thing to do deliberately.
   #
   # Linux cannot make the same choice. It carries libmpv, which is copyleft
-  # from any distribution and is what plays the video, so the GPL applies there
-  # regardless of which ffmpeg is bundled. See the Legal section of the README.
+  # from any distribution and is what plays the video, so a Linux package is a
+  # combined work under the GPL regardless of which ffmpeg is bundled. See the
+  # Legal section of the README.
   #
   # Pinned to the same dated autobuild release CI pins, and for the same
   # reason. This used to point at the `latest` tag, whose assets rotate as new
@@ -360,7 +362,8 @@ jobs:
 
       # Ubuntu's libav* are GPL-enabled builds — libavcodec links x264, x265
       # and xvid, and libpostproc is GPL — which is why the bundled licences
-      # name them as copyleft and the program as a whole is under the GPL.
+      # name them as copyleft and a Linux package that carries them is a
+      # combined work under the GPL.
       # libavcodec-extra adds still more and is not needed here.
       - name: Install the ffmpeg development libraries
         run: |
@@ -918,24 +921,26 @@ jobs:
 
             ## Licence
 
-            Alexandria is free software under the
-            [GNU General Public License v3 or later](https://github.com/artur-rios/alexandria-ui/blob/main/LICENSE).
+            Alexandria's source code is free and open source under the
+            [Artur Rios Attribution License](https://github.com/artur-rios/alexandria-ui/blob/main/LICENSE).
             The source is [alexandria-ui](https://github.com/artur-rios/alexandria-ui)
             and [alexandria-api](https://github.com/artur-rios/alexandria-api);
             this release was built from the tag of the same name.
 
-            The Linux packages carry copyleft libraries, which is why the whole
-            program is under the GPL rather than something more permissive:
-            libmpv plays the video, and ffmpeg links the x264, x265, xvid and
-            postproc encoders whether or not anything ever encodes with them.
+            The Linux packages carry third-party copyleft libraries, each under
+            its own licence: libmpv plays the video, and ffmpeg links the x264,
+            x265, xvid and postproc encoders whether or not anything ever
+            encodes with them. A Linux package that bundles them is distributed
+            as a combined work subject to those libraries' terms (GPL-3.0). The
+            Windows packages carry an LGPL build of ffmpeg and no mpv.
 
             Every bundled library's licence travels inside the package in
             `lib/licenses`, the full list of packages is in
             `lib/licenses/PACKAGES.txt`, and the ones known to be copyleft are
             named in `lib/licenses/COPYLEFT.tsv`.
 
-            The GPL entitles you to the complete corresponding source for
-            everything here. For Alexandria that is the two repositories above.
+            For the Linux packages, the GPL entitles you to the complete
+            corresponding source. For Alexandria that is the two repositories above.
             For the bundled libraries, they are unmodified Ubuntu 24.04
             packages, and their sources are the matching `apt-get source`
             packages for the versions named in `PACKAGES.txt`; ask through the
