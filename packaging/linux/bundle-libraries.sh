@@ -297,8 +297,11 @@ directory.
 
 FFmpeg here is Ubuntu's own build, which is GPL-enabled: libavcodec links the
 x264, x265 and xvid encoders and libpostproc is GPL, so these libraries are
-used under the GPL, linked dynamically and unmodified. The application is
-itself licensed under the GPL, version 3 or later.
+used under the GPL, linked dynamically and unmodified. The application's own
+source code is licensed under the Artur Rios Attribution License
+(https://github.com/artur-rios/alexandria-ui/blob/main/LICENSE); this package,
+which bundles these libraries, is distributed as a combined work subject to
+their terms, the GPL, version 3.
 
 Replacing any of these libraries is a matter of replacing the file in the
 directory above with a compatible build of the same soname.

@@ -327,30 +327,30 @@ model and the release process are described in [CONTRIBUTING.md](./CONTRIBUTING.
 
 Copyright © 2026 Artur Rios.
 
-Alexandria UI is free software: you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the Free
-Software Foundation, either version 3 of the License, or (at your option) any
-later version. The full text is in [LICENSE](LICENSE).
+This project is licensed under the [Artur Rios Attribution License](LICENSE).
+It is free and open source: you may view, use, fork, modify, and extend it,
+provided you credit the author, Artur Rios, with a link to
+[artur-rios.tech](https://artur-rios.tech) or
+[github.com/artur-rios](https://github.com/artur-rios).
 
-It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE. See the GNU General Public License for more details.
+The same licence covers the [Alexandria core](https://github.com/artur-rios/alexandria-api),
+which this application links in process.
 
-The same terms cover the [Alexandria core](https://github.com/artur-rios/alexandria-api),
-which this application links in process. The two are one program in the sense
-the licence means, so they are licensed alike.
+### Bundled libraries
 
-### Why copyleft
+The Attribution License covers this repository's source code. The third-party
+libraries the release packages carry are not part of it: each keeps its own
+licence.
 
 The Linux packages are meant to be plug and play: unpack one on a machine with
 a desktop and it runs, with no libraries to install first. Doing that means
 carrying the libraries the program needs, and the ones a media library cannot
 do without are copyleft — `libmpv`, which plays the video, and `libx264` and
 `libx265`, which ffmpeg links whether or not anything ever encodes with them.
-Distributing those alongside the application is what puts the whole of it under
-the GPL. Every bundled library's licence travels in `lib/licenses`, and the
-ones known to be copyleft are listed in `lib/licenses/COPYLEFT.tsv`.
+Every bundled library's licence travels in `lib/licenses`, and the ones known
+to be copyleft are listed in `lib/licenses/COPYLEFT.tsv`. A Linux binary
+package that bundles them is distributed as a combined work subject to those
+libraries' terms, which means the GPL, version 3.
 
 The Windows packages carry an LGPL build of ffmpeg and no mpv, so they raise
-none of this. They are covered by the same licence regardless, because the
-program is the same program.
+none of this.
