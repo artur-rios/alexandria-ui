@@ -931,8 +931,8 @@ final sessionActivitiesProvider = Provider<List<SessionActivity>>(
     EditingSessionActivity(ref),
     // Whatever is playing, which sign-out stops (UC-03 main flow step 2).
     PlaybackSessionActivity(ref),
-    // The libraries a music-only folder left behind, which need the
-    // credential startup ran without (remove-music design).
+    // Audio taken out of the tracked folders, and the libraries of the
+    // music-only ones, which need a credential (remove-music design).
     AudioLibraryCleanupActivity(ref),
   ],
 );

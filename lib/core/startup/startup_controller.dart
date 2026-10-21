@@ -3,9 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../../features/library_sources/data/settings_library_source_store.dart';
-import '../../features/library_sources/domain/audio_scope_cleanup.dart';
-import '../../features/library_sources/domain/library_source.dart';
 import '../bindings/core_client.dart';
 import '../bindings/core_isolate.dart';
 import '../di/providers.dart';
@@ -36,7 +33,6 @@ class StartupController extends Notifier<StartupState> {
 
   CoreClient? _core;
   SettingsStore? _settings;
-  List<LibrarySource> _audioLibrariesToRemove = const [];
 
   /// The loaded core, once startup has reached [StartupReady].
   CoreClient? get core => _core;
@@ -87,8 +83,6 @@ class StartupController extends Notifier<StartupState> {
 
     if (!await _step5Initialize(databasePath)) return;
 
-    await _cleanUpAudioScopes();
-
     _log.info('startup settled; core $version, database ready');
     state = StartupState.ready(
       coreVersion: version,
@@ -99,73 +93,6 @@ class StartupController extends Notifier<StartupState> {
 
   /// Re-runs the sequence from step 1 (§5.2).
   Future<void> retry() => start();
-
-  /// The library folders this launch unregistered for tracking nothing but
-  /// audio, handed over once and then forgotten.
-  ///
-  /// Their library in the core still has to be removed, and that takes a
-  /// credential, which startup runs before there is one. The session that
-  /// follows removes them (`AudioLibraryCleanupActivity`); this only
-  /// remembers which they were until it asks.
-  List<LibrarySource> takeAudioLibrariesToRemove() {
-    final taken = _audioLibrariesToRemove;
-    _audioLibrariesToRemove = const [];
-    return taken;
-  }
-
-  /// Takes audio out of the stored tracked folders, now that it is not a type
-  /// (remove-music design, "Stored index scopes").
-  ///
-  /// Here because it is the first point that has the owner's settings and an
-  /// initialized core, and it must run before anything reads the folders.
-  /// It runs on every launch and needs no flag: once the stored folders name
-  /// no audio it finds nothing to change, and writes nothing.
-  ///
-  /// A folder that tracked only audio is unregistered the way the owner's own
-  /// Remove does it (`LibrarySourcesController.unregisterFolder`): it leaves
-  /// the stored list, and nothing in the catalog or on disk is touched. That
-  /// controller cannot be used from here — it is built over providers that
-  /// only answer once startup is ready — so the same store write is made
-  /// directly. One that was also a library is remembered for
-  /// [takeAudioLibrariesToRemove].
-  ///
-  /// Never fails the launch. Settings that cannot be written leave the
-  /// folders as they were, and the next launch tries again.
-  Future<void> _cleanUpAudioScopes() async {
-    final settings = _settings;
-    if (settings == null) return;
-
-    try {
-      final store = SettingsLibrarySourceStore(settings);
-      final sources = store.read();
-      final (:kept, :removed) = cleanUpAudioScopes(sources);
-
-      // The cleanup passes an untouched folder through as the same record,
-      // so identity is what says nothing changed.
-      var changed = removed.isNotEmpty;
-      for (var i = 0; !changed && i < kept.length; i++) {
-        changed = !identical(kept[i], sources[i]);
-      }
-      if (!changed) return;
-
-      await store.write(kept);
-
-      for (final source in removed) {
-        _log.info('music-only folder unregistered on upgrade: ${source.path}');
-      }
-      _audioLibrariesToRemove = [
-        ..._audioLibrariesToRemove,
-        for (final source in removed)
-          if (source.isLibrary) source,
-      ];
-    } on Object catch (error, stackTrace) {
-      _log.warning(
-        'audio could not be removed from the tracked folders',
-        error,
-        stackTrace,
-      );
-    }
-  }
 
   Future<String?> _step1LoadLibrary() async {
     state = const StartupState.running(step: StartupStep.loadingCore);
