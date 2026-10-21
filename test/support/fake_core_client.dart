@@ -909,6 +909,14 @@ class FakeCoreClient implements CoreClient {
   /// Every library removal asked for, in order.
   final List<({String uuid, String token})> libraryRemoveCalls = [];
 
+  /// What [libraryRemove] answers, when it should differ from
+  /// [libraryResponse].
+  ///
+  /// Its own field because a removal is read after a list: a removal the core
+  /// refuses has to follow a list it answered, and one shared response cannot
+  /// be both.
+  CoreJsonResponse? libraryRemoveResponse;
+
   /// Every library move asked for, in order.
   ///
   /// Recorded like `libraryBrowse` above and for the same reason: three
@@ -952,6 +960,6 @@ class FakeCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> libraryRemove(String uuid, String token) async {
     libraryRemoveCalls.add((uuid: uuid, token: token));
-    return libraryResponse;
+    return libraryRemoveResponse ?? libraryResponse;
   }
 }

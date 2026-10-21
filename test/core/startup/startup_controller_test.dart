@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/bindings/core_client.dart';
 import 'package:alexandria_ui/core/bindings/core_isolate.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
@@ -6,8 +9,12 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/startup/core_version.dart';
 import 'package:alexandria_ui/core/startup/startup_state.dart';
+import 'package:alexandria_ui/features/auth/application/session_state.dart';
+import 'package:alexandria_ui/features/library_sources/data/settings_library_source_store.dart';
+import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../support/fake_auth_gateway.dart';
 import '../../support/fake_core_client.dart';
 import '../../support/in_memory_settings_store.dart';
 import '../../support/test_container.dart';
@@ -279,6 +286,135 @@ void main() {
         );
       },
     );
+  });
+
+  // Audio is no longer a type, but a tracked folder stores its scope by name,
+  // so `audio` is still in an upgraded owner's settings (remove-music design,
+  // "Stored index scopes").
+  group('cleaning up audio scopes', () {
+    final registeredAt = DateTime.utc(2026, 10, 21);
+
+    InMemorySettingsStore storeHolding(List<LibrarySource> sources) =>
+        InMemorySettingsStore(
+          // Off, so signing in below starts no re-check this suite would have
+          // to answer for.
+          rechecksAtStartup: false,
+          values: {
+            SettingsLibrarySourceStore.settingsKey: jsonEncode([
+              for (final source in sources) source.toJson(),
+            ]),
+          },
+        );
+
+    final music = LibrarySource(
+      path: '/music',
+      label: 'music',
+      registeredAt: registeredAt,
+      scope: const ['audio'],
+      libraryName: 'Music',
+    );
+    final mix = LibrarySource(
+      path: '/mix',
+      label: 'mix',
+      registeredAt: registeredAt,
+      scope: const ['audio', 'video'],
+    );
+
+    // The core's library list, naming the one made of the music folder.
+    const musicLibrary =
+        '[{"uuid":"music-library","name":"Music","rootPath":"/music"}]';
+
+    test(
+      'GivenAStoredMusicOnlyFolder_WhenTheAppStarts_ThenItIsUnregisteredAndTheMixedOneLosesAudio',
+      () async {
+        final settings = storeHolding([music, mix]);
+        final core = FakeCoreClient()
+          ..libraryResponse = (status: LIBRARY_OK, json: musicLibrary);
+        final container = buildTestContainer(
+          overrides: fakeCoreOverrides(core: core, settings: settings),
+        );
+
+        await container.read(startupControllerProvider.notifier).start();
+
+        expect(container.read(startupControllerProvider), isA<StartupReady>());
+        final stored = SettingsLibrarySourceStore(settings).read();
+        expect(stored.map((source) => source.path), ['/mix']);
+        expect(stored.single.scope, ['video']);
+
+        // Removing the library needs a credential, which there is none of
+        // until the owner signs in — so that is when it goes.
+        container
+            .read(sessionControllerProvider.notifier)
+            .establish(FakeAuthGateway.defaultSession);
+        await pumpEventQueue();
+
+        expect(core.libraryRemoveCalls.map((call) => call.uuid), [
+          'music-library',
+        ]);
+      },
+    );
+
+    test(
+      'GivenTheCoreRefusesToRemoveTheLibrary_WhenTheOwnerSignsIn_ThenTheFolderStaysUnregistered',
+      () async {
+        final settings = storeHolding([music, mix]);
+        final core = FakeCoreClient()
+          ..libraryResponse = (status: LIBRARY_OK, json: musicLibrary)
+          ..libraryRemoveResponse = (status: LIBRARY_ERR_OTHER, json: null);
+        final container = buildTestContainer(
+          overrides: fakeCoreOverrides(core: core, settings: settings),
+        );
+
+        await container.read(startupControllerProvider.notifier).start();
+        container
+            .read(sessionControllerProvider.notifier)
+            .establish(FakeAuthGateway.defaultSession);
+        await pumpEventQueue();
+
+        expect(core.libraryRemoveCalls, hasLength(1));
+        expect(
+          SettingsLibrarySourceStore(
+            settings,
+          ).read().map((source) => source.path),
+          ['/mix'],
+          reason:
+              'a library the core would not remove is logged and left; the '
+              'folder still goes, or the next launch would scan music again',
+        );
+        expect(
+          container.read(sessionControllerProvider),
+          isA<SessionActive>(),
+          reason: 'a cleanup that failed must not cost the owner the session',
+        );
+      },
+    );
+
+    test('GivenACleanStore_WhenTheAppStarts_ThenItIsLeftAsStored', () async {
+      final clean = LibrarySource(
+        path: '/films',
+        label: 'films',
+        registeredAt: registeredAt,
+        scope: const ['video'],
+      );
+      final settings = storeHolding([clean]);
+      final before = settings.getString(SettingsLibrarySourceStore.settingsKey);
+      final core = FakeCoreClient();
+      final container = buildTestContainer(
+        overrides: fakeCoreOverrides(core: core, settings: settings),
+      );
+
+      await container.read(startupControllerProvider.notifier).start();
+      container
+          .read(sessionControllerProvider.notifier)
+          .establish(FakeAuthGateway.defaultSession);
+      await pumpEventQueue();
+
+      expect(
+        settings.getString(SettingsLibrarySourceStore.settingsKey),
+        same(before),
+      );
+      expect(core.libraryRemoveCalls, isEmpty);
+    });
   });
 
   test('GivenTheIndexFamily_WhenSuccessIsChecked_ThenZeroIsTheSuccessCode', () {

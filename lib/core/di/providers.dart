@@ -31,6 +31,7 @@ import '../../features/auth/application/sign_up_controller.dart';
 import '../../features/auth/application/sign_up_state.dart';
 import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
+import '../../features/library_sources/application/audio_library_cleanup_activity.dart';
 import '../../features/library_sources/application/library_sources_controller.dart';
 import '../../features/library_sources/application/library_sources_state.dart';
 import '../../features/catalog/application/dashboard_controller.dart';
@@ -937,6 +938,9 @@ final sessionActivitiesProvider = Provider<List<SessionActivity>>(
     EditingSessionActivity(ref),
     // Whatever is playing, which sign-out stops (UC-03 main flow step 2).
     PlaybackSessionActivity(ref),
+    // The libraries a music-only folder left behind, which need the
+    // credential startup ran without (remove-music design).
+    AudioLibraryCleanupActivity(ref),
   ],
 );
 
