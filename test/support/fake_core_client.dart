@@ -13,7 +13,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 class FakeCoreClient implements CoreClient {
   /// Creates a fake reporting a healthy, supported core by default.
   FakeCoreClient({
-    this.versionResult = '0.4.0',
+    this.versionResult = '0.5.0',
     int? healthResult,
     int? initializeResult,
     this.failOnVersion = false,

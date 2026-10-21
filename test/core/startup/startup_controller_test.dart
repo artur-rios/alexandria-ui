@@ -39,7 +39,7 @@ void main() {
       final state = await runStartup(core: FakeCoreClient());
 
       expect(state, isA<StartupReady>());
-      expect((state as StartupReady).coreVersion, '0.4.0');
+      expect((state as StartupReady).coreVersion, '0.5.0');
       expect(state.warning, isNull);
     },
   );

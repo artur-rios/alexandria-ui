@@ -17,7 +17,7 @@ import 'core_isolate.dart';
 /// each use case adds its own gateway over the same [CoreIsolate], rather than
 /// this class growing a method per call.
 abstract interface class CoreClient {
-  /// The core's version string, e.g. `0.4.0`.
+  /// The core's version string, e.g. `0.5.0`.
   Future<String?> version();
 
   /// The core's health status code. `200` when healthy — see

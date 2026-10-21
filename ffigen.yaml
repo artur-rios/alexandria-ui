@@ -57,21 +57,6 @@ macros:
     # The playback family covers the source, thumbnail, and comic-page calls
     # (UC-19, UC-20, UC-23, UC-24). Its own set of codes, as the run family is.
     - "PLAYBACK_.*"
-    # The playlist family (playlists Task 1 … Task 7). Its own set of codes,
-    # numerically identical to READING_LIST_'s and WATCHLIST_'s by the
-    # header's own convention, but a family of its own so the two never
-    # cross-read.
-    - "PLAYLIST_.*"
-    # Play history: recording a play and reading the rankings it feeds. Its
-    # own family, deliberately separate from PLAYLIST_ in the header -- a
-    # playlist is something the owner curates and a play is something that
-    # happened, and the calls fail for different reasons.
-    - "PLAY_.*"
-    # Music enrichment. Its own family, and the only one carrying a code for
-    # "this installation has not configured the feature" — mapped to a
-    # configuration failure rather than an invalid input, because the caller
-    # did nothing wrong.
-    - "ENRICHMENT_.*"
     # Libraries. Its own family, carrying a conflict code the others lack —
     # a folder overlapping an existing library is the catalog's state being
     # wrong, not the caller's request.
