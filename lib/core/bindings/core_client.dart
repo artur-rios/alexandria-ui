@@ -106,7 +106,7 @@ abstract interface class CoreClient {
   /// default (`"normal"`) rather than a value this client had to choose.
   ///
   /// [types] is the run's scope: the `FileType` wire names the run records,
-  /// comma-separated (`"audio,image"`). Null means every type, which is what
+  /// comma-separated (`"video,image"`). Null means every type, which is what
   /// the core reads an absent scope as — so it is passed as null and never as
   /// `""`, and a name the core does not know is refused rather than ignored.
   ///
@@ -184,7 +184,7 @@ abstract interface class CoreClient {
   /// (FR-CT-02, UC-09).
   ///
   /// [jsonFilters] is the body the core's matching HTTP route takes —
-  /// `{"type":"audio","state":"active"}`.
+  /// `{"type":"video","state":"active"}`.
   Future<CoreJsonResponse> filesList(String jsonFilters, String token);
 
   /// Reads one file by its UUID through `alexandria_file_get_by_uuid`

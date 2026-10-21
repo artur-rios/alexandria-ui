@@ -2,13 +2,10 @@ import '../../shell/domain/shell_destination.dart';
 
 /// The types the Alexandria core classifies a file into (FR-CT-02).
 ///
-/// Seven, which is the core's own `FileType` and not a reinterpretation of it.
+/// Six, which is the core's own `FileType` and not a reinterpretation of it.
 /// The navigation panel's entries map onto these; where the two disagree, the
 /// core wins, because classifying a file is domain work the core owns (BR-02).
 enum FileType {
-  /// `audio` — sound files, which no destination lists.
-  audio('audio'),
-
   /// `video` — everything filmed.
   ///
   /// The panel has one entry for this. FR-CT-01 originally listed movies and

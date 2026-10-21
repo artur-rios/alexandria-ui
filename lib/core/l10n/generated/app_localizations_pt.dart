@@ -335,7 +335,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get indexScopeBody =>
-      'O Alexandria vai catalogar apenas os tipos de arquivo que você escolher aqui. Uma pasta de música limitada a música mantém as capas fora das suas imagens.';
+      'O Alexandria vai catalogar apenas os tipos de arquivo que você escolher aqui. Uma pasta de e-books limitada a livros mantém as capas fora das suas imagens.';
 
   @override
   String get indexScopeAll => 'Todos os arquivos suportados';
@@ -366,9 +366,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String librarySourcesScopeOnly(String types) {
     return 'Somente $types';
   }
-
-  @override
-  String get fileTypeAudio => 'Música';
 
   @override
   String get fileTypeVideo => 'Vídeo';
@@ -702,56 +699,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get detailsEditMetadata => 'Editar metadados';
-
-  @override
-  String get musicMetadataTitle => 'Metadados da música';
-
-  @override
-  String get musicMetadataFieldTitle => 'Título';
-
-  @override
-  String get musicMetadataFieldArtist => 'Artista';
-
-  @override
-  String get musicMetadataFieldAlbumArtist => 'Artista do álbum';
-
-  @override
-  String get musicMetadataFieldAlbum => 'Álbum';
-
-  @override
-  String get musicMetadataFieldYear => 'Ano';
-
-  @override
-  String get musicMetadataFieldGenre => 'Gênero';
-
-  @override
-  String get musicMetadataFieldTrack => 'Número da faixa';
-
-  @override
-  String get musicMetadataSave => 'Salvar';
-
-  @override
-  String get musicMetadataCancel => 'Cancelar';
-
-  @override
-  String get musicMetadataErrorNotANumber => 'Digite um número inteiro.';
-
-  @override
-  String get musicMetadataErrorYear => 'Digite um ano com quatro dígitos.';
-
-  @override
-  String get musicMetadataErrorTrack => 'O número da faixa começa em 1.';
-
-  @override
-  String musicMetadataErrorTooLong(int max) {
-    return 'Use menos de $max caracteres.';
-  }
-
-  @override
-  String get musicUnknownTitle => 'Título desconhecido';
-
-  @override
-  String get musicUnknownArtist => 'Artista desconhecido';
 
   @override
   String get signOut => 'Sair';

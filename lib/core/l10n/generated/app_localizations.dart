@@ -665,7 +665,7 @@ abstract class AppLocalizations {
   /// Body of the scope dialog. Names the symptom the choice solves rather than restating the control (UC-05).
   ///
   /// In en, this message translates to:
-  /// **'Alexandria will catalog only the kinds of file you choose here. A music folder scoped to music keeps its cover art out of your images.'**
+  /// **'Alexandria will catalog only the kinds of file you choose here. A folder of ebooks scoped to books keeps their cover images out of your images.'**
   String get indexScopeBody;
 
   /// The scope dialog's default: every type the core supports, which is also what a folder registered before this choice existed keeps (UC-05).
@@ -715,12 +715,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only {types}'**
   String librarySourcesScopeOnly(String types);
-
-  /// The core's `audio` type, named for the owner (FR-CT-02).
-  ///
-  /// In en, this message translates to:
-  /// **'Music'**
-  String get fileTypeAudio;
 
   /// The core's `video` type, named for the owner (FR-CT-02).
   ///
@@ -1308,107 +1302,11 @@ abstract class AppLocalizations {
   /// **'The last scan was interrupted when Alexandria closed.'**
   String get dashboardLastRunInterrupted;
 
-  /// Opens the music metadata form for an audio file, from its detail view or from its row's context menu in the music area (UC-15 main flow step 1, UC-46, FR-CT-14).
+  /// Opens the video metadata form from a video's detail view (UC-16 main flow step 1).
   ///
   /// In en, this message translates to:
   /// **'Edit metadata'**
   String get detailsEditMetadata;
-
-  /// Title of the music metadata form (UC-15, FR-ME-01).
-  ///
-  /// In en, this message translates to:
-  /// **'Music metadata'**
-  String get musicMetadataTitle;
-
-  /// Label of the track title field.
-  ///
-  /// In en, this message translates to:
-  /// **'Title'**
-  String get musicMetadataFieldTitle;
-
-  /// Label of the artist field.
-  ///
-  /// In en, this message translates to:
-  /// **'Artist'**
-  String get musicMetadataFieldArtist;
-
-  /// Label of the album artist field — who the record is by, which the music area groups by (UC-46, FR-CT-13).
-  ///
-  /// In en, this message translates to:
-  /// **'Album artist'**
-  String get musicMetadataFieldAlbumArtist;
-
-  /// Label of the album field.
-  ///
-  /// In en, this message translates to:
-  /// **'Album'**
-  String get musicMetadataFieldAlbum;
-
-  /// Label of the release year field.
-  ///
-  /// In en, this message translates to:
-  /// **'Year'**
-  String get musicMetadataFieldYear;
-
-  /// Label of the genre field.
-  ///
-  /// In en, this message translates to:
-  /// **'Genre'**
-  String get musicMetadataFieldGenre;
-
-  /// Label of the track number field.
-  ///
-  /// In en, this message translates to:
-  /// **'Track number'**
-  String get musicMetadataFieldTrack;
-
-  /// Sends the edited metadata to the core (UC-15 main flow step 5).
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get musicMetadataSave;
-
-  /// Closes the metadata form without saving.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get musicMetadataCancel;
-
-  /// UC-15 AF-01: a numeric field holds something that is not a number, so the core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a whole number.'**
-  String get musicMetadataErrorNotANumber;
-
-  /// UC-15 AF-01: the year is earlier than any recording could carry, which is a typo rather than a year.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a four-digit year.'**
-  String get musicMetadataErrorYear;
-
-  /// UC-15 AF-01: the track number is zero or negative.
-  ///
-  /// In en, this message translates to:
-  /// **'A track number starts at 1.'**
-  String get musicMetadataErrorTrack;
-
-  /// UC-15 AF-01: a text field is longer than the core stores.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep this under {max} characters.'**
-  String musicMetadataErrorTooLong(int max);
-
-  /// Shown in place of a track's name when its metadata carries no title. The file's name on disk is never shown here.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown title'**
-  String get musicUnknownTitle;
-
-  /// Names the group of audio files whose metadata carries no artist.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown artist'**
-  String get musicUnknownArtist;
 
   /// UC-03 main flow step 1: ends the session without closing the application.
   ///

@@ -34,16 +34,13 @@ void main() {
     FakeLifecycleGateway? lifecycle,
     ThemeMode themeMode = ThemeMode.light,
   }) async {
-    // Filed under video rather than music: UC-46 gave audio its own browsing
-    // area, and this suite is about the details dialog in general, reached
-    // the way every other type reaches it — through the generic listing.
-    // `aFile()` defaults to audio and nothing in this file depends on that;
-    // typed explicitly as video so the fixture matches the listing it sits
-    // in.
+    // Filed under video: this suite is about the details dialog in general,
+    // reached the way every type reaches it — through the generic listing.
+    // Typed explicitly so the fixture matches the listing it sits in.
     final gateway = FakeCatalogGateway(
       listings: {
         FileType.video: loadedDetails([
-          aFile(uuid: uuid, type: FileType.video),
+          aFile(uuid: uuid, name: 'Kind of Blue.mkv', type: FileType.video),
         ]),
       },
     );
@@ -68,7 +65,7 @@ void main() {
     await tester.pumpAndSettle();
 
     if (tapRow) {
-      await openDetailsOf(tester, 'Kind of Blue.flac');
+      await openDetailsOf(tester, 'Kind of Blue.mkv');
       await tester.pumpAndSettle();
     }
 
@@ -128,8 +125,12 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, type: FileType.video),
-            metadata: const {'artist': 'Miles Davis'},
+            file: aFile(
+              uuid: uuid,
+              name: 'Kind of Blue.mkv',
+              type: FileType.video,
+            ),
+            metadata: const {'resolution': '1920x1080'},
           ),
         ),
       );
@@ -139,7 +140,7 @@ void main() {
       );
       expect(find.text(l10n.detailsPath), findsOneWidget);
       expect(find.text(l10n.detailsState), findsOneWidget);
-      expect(find.text('Miles Davis'), findsOneWidget);
+      expect(find.text('1920x1080'), findsOneWidget);
       expect(find.text(l10n.detailsStateActive), findsOneWidget);
     });
 
@@ -178,10 +179,17 @@ void main() {
     testWidgets('GivenNoViewer_WhenTheDetailsOpen_ThenTheDetailsStillShow', (
       tester,
     ) async {
-      // True of every type today: the viewers are M-07's. The details are
-      // presented and the limitation is stated rather than an action offered
-      // that would do nothing.
-      await openDetails(tester);
+      // Video is played rather than viewed, so it has no viewer registered.
+      // The details are presented and the limitation is stated rather than an
+      // action offered that would do nothing.
+      await openDetails(
+        tester,
+        outcome: FileDetailsOutcome.read(
+          details: FileDetails(
+            file: aFile(uuid: uuid, type: FileType.video),
+          ),
+        ),
+      );
 
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),

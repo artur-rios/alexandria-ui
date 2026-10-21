@@ -5,10 +5,8 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
-import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/file_details.dart';
-import '../domain/music_metadata.dart';
 import '../application/dashboard_controller.dart';
 import '../application/in_progress.dart';
 import '../domain/file_type.dart';
@@ -84,24 +82,12 @@ class _RecentSection extends ConsumerWidget {
           builder: (context, rows) => ListView.builder(
             itemCount: rows.length,
             itemBuilder: (context, index) {
-              final details = rows[index];
-              final file = details.file;
-              // FR-CT-13: an audio file is named by its metadata here too,
-              // read straight off the row this section already holds —
-              // `catalogSearchProvider`'s own listing read carried it, so
-              // naming it here asks nothing further of the core. Every other
-              // type is still called by its own name.
-              final title = file.type == FileType.audio
-                  ? tagOr(
-                      MusicMetadata.fromDetails(details.metadata).title,
-                      l10n.musicUnknownTitle,
-                    )
-                  : file.name;
+              final file = rows[index].file;
 
               return ListTile(
                 dense: true,
                 leading: const Icon(Icons.insert_drive_file_outlined),
-                title: Text(title),
+                title: Text(file.name),
                 subtitle: Text(file.type.label(l10n)),
                 // Main flow step 4: opening an item here behaves exactly as
                 // opening it from its listing, which now means the file

@@ -23,13 +23,12 @@ import '../../../support/file_row.dart';
 void main() {
   const uuid = '6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f';
 
-  FileDetails aTrack({bool isDeleted = false}) => FileDetails(
-    file: aFile(uuid: uuid, name: 'Kind of Blue.flac'),
-    metadata: const {'title': 'So What'},
+  FileDetails aNote({bool isDeleted = false}) => FileDetails(
+    file: aFile(uuid: uuid, name: 'Kind of Blue.md'),
     isDeleted: isDeleted,
   );
 
-  /// Signs in, opens the audio listing, and opens the rename dialog on the one
+  /// Signs in, opens the notes listing, and opens the rename dialog on the one
   /// file in it.
   Future<(ProviderContainer, FakeCatalogGateway)> openDialog(
     WidgetTester tester, {
@@ -39,10 +38,10 @@ void main() {
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
   }) async {
-    final loaded = details ?? aTrack();
+    final loaded = details ?? aNote();
     final gateway = FakeCatalogGateway(
       listings: {
-        FileType.audio: CatalogListing.loaded(files: [loaded]),
+        FileType.text: CatalogListing.loaded(files: [loaded]),
       },
     );
     gateway.details[loaded.file.uuid] = FileDetailsOutcome.read(
@@ -60,9 +59,8 @@ void main() {
       ],
     );
 
-    // Reached from the dashboard's recent list, which names an audio file by
-    // its metadata title rather than its file name (FR-CT-13).
-    await openDetailsOf(tester, 'So What');
+    // Reached from the dashboard's recent list.
+    await openDetailsOf(tester, 'Kind of Blue.md');
     await tester.pumpAndSettle();
 
     if (!loaded.isDeleted) {
@@ -118,7 +116,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(RenameFileDialog),
-          matching: find.text('Kind of Blue.flac'),
+          matching: find.text('Kind of Blue.md'),
         ),
         findsOneWidget,
       );
@@ -129,11 +127,11 @@ void main() {
     ) async {
       final (_, gateway) = await openDialog(tester);
 
-      await enter(tester, 'Kind of Blue (1959).flac');
+      await enter(tester, 'Kind of Blue (1959).md');
       await rename(tester);
 
       expect(gateway.renames, hasLength(1));
-      expect(gateway.renames.single.name, 'Kind of Blue (1959).flac');
+      expect(gateway.renames.single.name, 'Kind of Blue (1959).md');
       expect(gateway.renames.single.uuid, uuid);
     });
 
@@ -142,7 +140,7 @@ void main() {
     ) async {
       await openDialog(tester);
 
-      await enter(tester, 'Blue.flac');
+      await enter(tester, 'Blue.md');
       await rename(tester);
 
       expect(find.byType(RenameFileDialog), findsNothing);
@@ -156,7 +154,7 @@ void main() {
       final (_, gateway) = await openDialog(tester);
       final before = gateway.requested.length;
 
-      await enter(tester, 'Blue.flac');
+      await enter(tester, 'Blue.md');
       await rename(tester);
 
       expect(gateway.requested.length, greaterThan(before));
@@ -169,17 +167,17 @@ void main() {
       (tester) async {
         final (_, gateway) = await openDialog(tester);
 
-        await enter(tester, '  Blue.flac  ');
+        await enter(tester, '  Blue.md  ');
         await rename(tester);
 
-        expect(gateway.renames.single.name, 'Blue.flac');
+        expect(gateway.renames.single.name, 'Blue.md');
       },
     );
 
     testWidgets(
       'GivenADeletedRecord_WhenItsDetailsOpen_ThenRenamingIsNotOffered',
       (tester) async {
-        await openDialog(tester, details: aTrack(isDeleted: true));
+        await openDialog(tester, details: aNote(isDeleted: true));
 
         expect(find.byIcon(Icons.drive_file_rename_outline), findsNothing);
       },
@@ -205,7 +203,7 @@ void main() {
     ) async {
       final (_, gateway) = await openDialog(tester);
 
-      await enter(tester, 'folder/Blue.flac');
+      await enter(tester, 'folder/Blue.md');
       await rename(tester);
 
       expect(gateway.renames, isEmpty);
@@ -221,7 +219,7 @@ void main() {
         host: HostFileSystem.windows,
       );
 
-      await enter(tester, 'Blue: the album.flac');
+      await enter(tester, 'Blue: the album.md');
       await rename(tester);
 
       expect(gateway.renames, isEmpty);
@@ -233,7 +231,7 @@ void main() {
     ) async {
       final (_, gateway) = await openDialog(tester);
 
-      await enter(tester, 'Blue: the album.flac');
+      await enter(tester, 'Blue: the album.md');
       await rename(tester);
 
       expect(gateway.renames, hasLength(1));
@@ -246,7 +244,7 @@ void main() {
 
       await enter(tester, '');
       await rename(tester);
-      await enter(tester, 'Blue.flac');
+      await enter(tester, 'Blue.md');
 
       expect(find.text(messages(tester).renameErrorEmpty), findsNothing);
     });
@@ -263,7 +261,7 @@ void main() {
     ) async {
       await openDialog(tester, outcomes: const [diskFailure]);
 
-      await enter(tester, 'Blue.flac');
+      await enter(tester, 'Blue.md');
       await rename(tester);
 
       expect(find.byType(RenameFileDialog), findsOneWidget);
@@ -274,7 +272,7 @@ void main() {
       (tester) async {
         await openDialog(tester, outcomes: const [diskFailure]);
 
-        await enter(tester, 'Blue.flac');
+        await enter(tester, 'Blue.md');
         await rename(tester);
 
         expect(
@@ -292,7 +290,7 @@ void main() {
         outcomes: const [diskFailure],
       );
 
-      await enter(tester, 'Blue.flac');
+      await enter(tester, 'Blue.md');
       await rename(tester);
       await rename(tester);
 
@@ -315,7 +313,7 @@ void main() {
     ) async {
       await openDialog(tester, outcomes: const [gone]);
 
-      await enter(tester, 'Blue.flac');
+      await enter(tester, 'Blue.md');
       await rename(tester);
 
       expect(find.byType(RenameFileDialog), findsNothing);
@@ -326,7 +324,7 @@ void main() {
     ) async {
       await openDialog(tester, outcomes: const [gone]);
 
-      await enter(tester, 'Blue.flac');
+      await enter(tester, 'Blue.md');
       await rename(tester);
 
       expect(find.text(messages(tester).detailsNotFound), findsOneWidget);
@@ -373,7 +371,7 @@ void main() {
           ],
         );
 
-        await enter(tester, 'Blue.flac');
+        await enter(tester, 'Blue.md');
         await rename(tester);
 
         expect(container.read(sessionControllerProvider), isA<SessionAbsent>());
@@ -413,7 +411,7 @@ void main() {
             ],
           );
 
-          await enter(tester, 'Blue.flac');
+          await enter(tester, 'Blue.md');
           await rename(tester);
 
           expect(

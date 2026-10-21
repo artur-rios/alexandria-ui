@@ -54,9 +54,8 @@ void main() {
 
   /// Opens the shell over [gateway] and searches for [term].
   ///
-  /// Takes a whole gateway rather than [openShell]'s `listings` map, because
-  /// the audio-result tests need [FakeCatalogGateway.addAudio]'s paired
-  /// listing-and-details entry, not just a listing.
+  /// Takes a whole gateway rather than [openShell]'s `listings` map, so a
+  /// test can fill it through [FakeCatalogGateway.addDocument].
   Future<void> searchFor(
     WidgetTester tester, {
     required String term,
@@ -68,11 +67,11 @@ void main() {
     await search(tester, term);
   }
 
-  /// A library with one audio file and one image in it.
+  /// A library with two notes and one image in it.
   Map<FileType, gateway.CatalogListing> aLibrary() => {
-    FileType.audio: loadedDetails([
-      aFile(name: 'Kind of Blue.flac'),
-      aFile(uuid: 'c', name: 'Giant Steps.flac'),
+    FileType.text: loadedDetails([
+      aFile(name: 'Kind of Blue.md'),
+      aFile(uuid: 'c', name: 'Giant Steps.md'),
     ]),
     FileType.image: loadedDetails([
       aFile(uuid: 'b', name: 'blue.png', type: FileType.image),
@@ -172,16 +171,12 @@ void main() {
       tester,
     ) async {
       await openShell(tester, listings: aLibrary());
-      final l10n = localizations(tester);
 
       await search(tester, 'blue');
 
-      // The audio match still matches on its name on disk (FR-CT-06), but
-      // carries no title tag, so FR-CT-13 shows the word for that rather than
-      // the name — matching by disk name and showing it are different rules.
-      expect(find.text(l10n.musicUnknownTitle), findsOneWidget);
+      expect(find.text('Kind of Blue.md'), findsOneWidget);
       expect(find.text('blue.png'), findsOneWidget);
-      expect(find.text('Giant Steps.flac'), findsNothing);
+      expect(find.text('Giant Steps.md'), findsNothing);
     });
 
     testWidgets('GivenMatchesOfTwoTypes_WhenShown_ThenTheyAreGroupedByType', (
@@ -194,9 +189,8 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      // The group headings are the panel's own words for the types, and the
-      // index scope's for sound files, which have no destination.
-      expect(find.text(l10n.fileTypeAudio), findsWidgets);
+      // The group headings are the panel's own words for the types.
+      expect(find.text(l10n.destinationNotes), findsWidgets);
       expect(find.text(l10n.destinationImages), findsWidgets);
     });
 
@@ -324,100 +318,11 @@ void main() {
     });
   });
 
-  group('audio results (FR-CT-13)', () {
+  group('naming results', () {
     testWidgets(
-      'GivenAnAudioMatch_WhenTheResultsAreShown_ThenItReadsItsMetadataTitle',
+      'GivenAMatch_WhenTheResultsAreShown_ThenItReadsItsFileName',
       (tester) async {
-        // The rule follows the file type, not the screen: if the results
-        // showed names on disk, every file name the music area removes would
-        // come back the moment anyone searched.
-        //
-        // The search itself still matches on the name on disk (FR-CT-06 does
-        // not read metadata), so the term has to appear there for the file to
-        // be found at all — "AIR" in the disk name is what makes this a match,
-        // and "Airbag" in the title is what the row is asserted to show for it.
-        await searchFor(
-          tester,
-          term: 'air',
-          gateway: FakeCatalogGateway()
-            ..addAudio(
-              uuid: '1',
-              name: 'AIR-DISKNAME-01.flac',
-              title: 'Airbag',
-              artist: 'Radiohead',
-            ),
-        );
-
-        expect(find.textContaining('Airbag'), findsOneWidget);
-        expect(find.textContaining('DISKNAME'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenAnAudioMatch_WhenTheResultsAreShown_ThenItReadsItsArtist',
-      (tester) async {
-        // Two tracks can share a title — a remix, a live take, a duplicate
-        // rip — and the artist is what tells them apart in a result list
-        // that no longer shows the file name.
-        await searchFor(
-          tester,
-          term: 'air',
-          gateway: FakeCatalogGateway()
-            ..addAudio(
-              uuid: '1',
-              name: 'AIR-DISKNAME-01.flac',
-              title: 'Airbag',
-              artist: 'Radiohead',
-            ),
-        );
-
-        expect(find.textContaining('Radiohead'), findsOneWidget);
-        // Neither the file name nor the path it lives at is shown alongside
-        // the artist — FR-CT-13 is not satisfied by moving the leak from the
-        // title to the subtitle.
-        expect(find.textContaining('DISKNAME'), findsNothing);
-        expect(find.textContaining('/home/owner'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenAnUntaggedAudioMatch_WhenTheResultsAreShown_ThenItReadsUnknownTitle',
-      (tester) async {
-        await searchFor(
-          tester,
-          term: 'disk',
-          gateway: FakeCatalogGateway()
-            ..addAudio(uuid: '1', name: 'DISKNAME-01.flac'),
-        );
-        final l10n = localizations(tester);
-
-        expect(find.textContaining(l10n.musicUnknownTitle), findsOneWidget);
-        expect(find.textContaining('DISKNAME'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenAnUntaggedAudioMatch_WhenTheResultsAreShown_ThenItReadsUnknownArtist',
-      (tester) async {
-        await searchFor(
-          tester,
-          term: 'disk',
-          gateway: FakeCatalogGateway()
-            ..addAudio(uuid: '1', name: 'DISKNAME-01.flac'),
-        );
-        final l10n = localizations(tester);
-
-        expect(find.textContaining(l10n.musicUnknownArtist), findsOneWidget);
-        expect(find.textContaining('DISKNAME'), findsNothing);
-        expect(find.textContaining('/home/owner'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenANonAudioMatch_WhenTheResultsAreShown_ThenItStillReadsItsFileName',
-      (tester) async {
-        // Only audio has a metadata name to show instead. A document's name
-        // on disk is what it is called.
+        // A file's name on disk is what it is called.
         await searchFor(
           tester,
           term: 'notes',

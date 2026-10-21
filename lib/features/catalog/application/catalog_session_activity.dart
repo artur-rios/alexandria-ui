@@ -43,7 +43,6 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(searchTermProvider);
     _ref.invalidate(openFileProvider);
     _ref.invalidate(fileDetailsControllerProvider);
-    _ref.invalidate(musicMetadataEditorProvider);
     _ref.invalidate(videoMetadataEditorProvider);
     _ref.invalidate(fileRenameControllerProvider);
     // The bookmarks are the core's too, and just as much a trace of the

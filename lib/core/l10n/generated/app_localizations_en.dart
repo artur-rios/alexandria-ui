@@ -336,7 +336,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get indexScopeBody =>
-      'Alexandria will catalog only the kinds of file you choose here. A music folder scoped to music keeps its cover art out of your images.';
+      'Alexandria will catalog only the kinds of file you choose here. A folder of ebooks scoped to books keeps their cover images out of your images.';
 
   @override
   String get indexScopeAll => 'All supported files';
@@ -367,9 +367,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String librarySourcesScopeOnly(String types) {
     return 'Only $types';
   }
-
-  @override
-  String get fileTypeAudio => 'Music';
 
   @override
   String get fileTypeVideo => 'Video';
@@ -702,56 +699,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailsEditMetadata => 'Edit metadata';
-
-  @override
-  String get musicMetadataTitle => 'Music metadata';
-
-  @override
-  String get musicMetadataFieldTitle => 'Title';
-
-  @override
-  String get musicMetadataFieldArtist => 'Artist';
-
-  @override
-  String get musicMetadataFieldAlbumArtist => 'Album artist';
-
-  @override
-  String get musicMetadataFieldAlbum => 'Album';
-
-  @override
-  String get musicMetadataFieldYear => 'Year';
-
-  @override
-  String get musicMetadataFieldGenre => 'Genre';
-
-  @override
-  String get musicMetadataFieldTrack => 'Track number';
-
-  @override
-  String get musicMetadataSave => 'Save';
-
-  @override
-  String get musicMetadataCancel => 'Cancel';
-
-  @override
-  String get musicMetadataErrorNotANumber => 'Enter a whole number.';
-
-  @override
-  String get musicMetadataErrorYear => 'Enter a four-digit year.';
-
-  @override
-  String get musicMetadataErrorTrack => 'A track number starts at 1.';
-
-  @override
-  String musicMetadataErrorTooLong(int max) {
-    return 'Keep this under $max characters.';
-  }
-
-  @override
-  String get musicUnknownTitle => 'Unknown title';
-
-  @override
-  String get musicUnknownArtist => 'Unknown artist';
 
   @override
   String get signOut => 'Sign out';

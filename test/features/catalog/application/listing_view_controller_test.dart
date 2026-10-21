@@ -105,7 +105,7 @@ void main() {
         final controller = sut.ref.read(listingViewControllerProvider.notifier);
 
         await controller.apply(
-          FileType.audio,
+          FileType.video,
           const ListingView(sortField: SortField.indexed),
         );
         await controller.apply(
@@ -114,7 +114,7 @@ void main() {
         );
 
         final state = sut.ref.read(listingViewControllerProvider);
-        expect(state.forType(FileType.audio).sortField, SortField.indexed);
+        expect(state.forType(FileType.video).sortField, SortField.indexed);
         expect(state.forType(FileType.image).lifecycle, LifecycleFilter.all);
         expect(state.forType(FileType.text), ListingView.initial);
       },
@@ -129,7 +129,7 @@ void main() {
       await sut.ref
           .read(listingViewControllerProvider.notifier)
           .apply(
-            FileType.audio,
+            FileType.video,
             const ListingView(sortField: SortField.indexed),
           );
 
@@ -146,7 +146,7 @@ void main() {
           settings: InMemorySettingsStore(
             values: {
               ListingViewController.settingsKey:
-                  '{"audio":{"lifecycle":"all","sortField":"indexed",'
+                  '{"video":{"lifecycle":"all","sortField":"indexed",'
                   '"direction":"descending"}}',
             },
           ),
@@ -154,7 +154,7 @@ void main() {
 
         final view = sut.ref
             .read(listingViewControllerProvider)
-            .forType(FileType.audio);
+            .forType(FileType.video);
         expect(view.lifecycle, LifecycleFilter.all);
         expect(view.sortField, SortField.indexed);
         expect(view.direction, SortDirection.descending);
@@ -171,7 +171,7 @@ void main() {
         );
 
         expect(
-          sut.ref.read(listingViewControllerProvider).forType(FileType.audio),
+          sut.ref.read(listingViewControllerProvider).forType(FileType.video),
           ListingView.initial,
         );
       },
@@ -185,16 +185,16 @@ void main() {
         final sut = await started();
         final controller = sut.ref.read(listingViewControllerProvider.notifier);
         await controller.apply(
-          FileType.audio,
+          FileType.video,
           const ListingView(lifecycle: LifecycleFilter.deleted),
         );
 
-        await controller.clearFilters(FileType.audio);
+        await controller.clearFilters(FileType.video);
 
         expect(
           sut.ref
               .read(listingViewControllerProvider)
-              .forType(FileType.audio)
+              .forType(FileType.video)
               .lifecycle,
           LifecycleFilter.active,
         );
@@ -209,19 +209,19 @@ void main() {
         final sut = await started();
         final controller = sut.ref.read(listingViewControllerProvider.notifier);
         await controller.apply(
-          FileType.audio,
+          FileType.video,
           const ListingView(
             lifecycle: LifecycleFilter.deleted,
             sortField: SortField.indexed,
           ),
         );
 
-        await controller.clearFilters(FileType.audio);
+        await controller.clearFilters(FileType.video);
 
         expect(
           sut.ref
               .read(listingViewControllerProvider)
-              .forType(FileType.audio)
+              .forType(FileType.video)
               .sortField,
           SortField.indexed,
         );
@@ -276,7 +276,7 @@ void main() {
         final sut = await started();
         final controller = sut.ref.read(listingViewControllerProvider.notifier);
         await controller.revert(
-          FileType.audio,
+          FileType.video,
           const Failure.invalidInput(family: CoreStatusFamily.file, code: 1),
         );
 

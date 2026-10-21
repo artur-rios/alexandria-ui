@@ -560,7 +560,7 @@ void main() {
       await openScreen(
         tester,
         registered: [
-          scoped('/home/owner/music', const [FileType.audio]),
+          scoped('/home/owner/books', const [FileType.document]),
         ],
       );
       final l10n = AppLocalizations.of(
@@ -568,7 +568,7 @@ void main() {
       );
 
       expect(
-        find.text(l10n.librarySourcesScopeOnly(l10n.fileTypeAudio)),
+        find.text(l10n.librarySourcesScopeOnly(l10n.fileTypeDocument)),
         findsOneWidget,
       );
     });
@@ -597,7 +597,7 @@ void main() {
         tester,
         gateway: gateway,
         registered: [
-          scoped('/home/owner/music', const [FileType.audio]),
+          scoped('/home/owner/books', const [FileType.document]),
         ],
       );
       final l10n = AppLocalizations.of(
@@ -608,7 +608,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(IndexScopeDialog), findsNothing);
-      expect(gateway.starts.single.types, [FileType.audio]);
+      expect(gateway.starts.single.types, [FileType.document]);
     });
   });
 
@@ -735,10 +735,10 @@ void main() {
             registered: [
               source('/home/owner/books'),
               LibrarySource(
-                path: '/home/owner/music',
-                label: 'music',
+                path: '/home/owner/scans',
+                label: 'scans',
                 registeredAt: registeredAt,
-                scope: const ['audio'],
+                scope: const ['image'],
               ),
               LibrarySource(
                 path: '/home/owner/podcasts',
@@ -754,7 +754,7 @@ void main() {
 
           for (final label in [
             l10n.librarySourcesScopeAll,
-            l10n.librarySourcesScopeOnly(l10n.fileTypeAudio),
+            l10n.librarySourcesScopeOnly(l10n.fileTypeImage),
             l10n.librarySourcesScopeUnreadable,
           ]) {
             expect(label, isNotEmpty);

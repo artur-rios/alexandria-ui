@@ -17,7 +17,7 @@ import '../../../support/fake_library_sources.dart';
 /// when the folder is registered, and every later index of that folder uses the
 /// same answer.
 void main() {
-  const music = '/home/owner/music';
+  const books = '/home/owner/books';
   final now = DateTime.utc(2026, 8, 27, 9);
 
   ({
@@ -27,7 +27,7 @@ void main() {
     FakeFolderPicker picker,
   })
   build({
-    String? picked = music,
+    String? picked = books,
     bool exists = true,
     bool readable = true,
     InMemoryLibrarySourceStore? store,
@@ -92,7 +92,7 @@ void main() {
         await register(sut.ref);
         await sut.ref
             .read(indexRunsControllerProvider.notifier)
-            .startIndex(music);
+            .startIndex(books);
 
         // Empty is not "nothing": it is the absent scope the core reads as
         // every type, which is the same meaning on both sides of the
@@ -102,7 +102,7 @@ void main() {
     );
 
     test(
-      'GivenAFolderScopedToMusic_WhenItIsIndexed_ThenTheCoverArtIsNotCataloged',
+      'GivenAFolderScopedToBooks_WhenItIsIndexed_ThenTheCoverArtIsNotCataloged',
       () async {
         // The owner's actual symptom, as far as a fake can carry it: the
         // gateway computes what it catalogues from the `types` it was handed,
@@ -117,17 +117,17 @@ void main() {
         final gateway = _ScanningGateway();
         final sut = build(gateway: gateway);
 
-        await register(sut.ref, scope: const [FileType.audio]);
+        await register(sut.ref, scope: const [FileType.document]);
         await sut.ref
             .read(indexRunsControllerProvider.notifier)
-            .startIndex(music);
+            .startIndex(books);
 
-        expect(gateway.cataloged, contains('Kind of Blue.flac'));
+        expect(gateway.cataloged, contains('Solaris.epub'));
         expect(
           gateway.cataloged,
           isNot(contains('cover.jpg')),
           reason:
-              'a folder scoped to music must not put its cover art in the '
+              'a folder scoped to books must not put its cover art in the '
               'image library',
         );
       },
@@ -146,7 +146,7 @@ void main() {
         final second = build(store: store);
         await second.ref
             .read(indexRunsControllerProvider.notifier)
-            .startIndex(music);
+            .startIndex(books);
 
         expect(second.gateway.starts.single.types, [FileType.document]);
       },
@@ -159,15 +159,15 @@ void main() {
         // the scope existed carries no such key at all, and must keep
         // behaving exactly as it did rather than needing a migration.
         final stored = LibrarySource.fromJson({
-          'path': music,
-          'label': 'music',
+          'path': books,
+          'label': 'books',
           'registeredAt': now.toIso8601String(),
         });
         final sut = build(store: InMemoryLibrarySourceStore([stored]));
 
         await sut.ref
             .read(indexRunsControllerProvider.notifier)
-            .startIndex(music);
+            .startIndex(books);
 
         expect(stored.scope, isEmpty);
         expect(sut.gateway.starts.single.types, isEmpty);
@@ -178,8 +178,8 @@ void main() {
   group('a scope this version cannot read is refused, never widened', () {
     /// A source stored with [names] as its scope, however unlikely.
     LibrarySource stored(List<String> names) => LibrarySource(
-      path: music,
-      label: 'music',
+      path: books,
+      label: 'books',
       registeredAt: now,
       scope: names,
     );
@@ -200,7 +200,7 @@ void main() {
 
         await sut.ref
             .read(indexRunsControllerProvider.notifier)
-            .startIndex(music);
+            .startIndex(books);
 
         expect(
           sut.gateway.starts,
@@ -223,10 +223,10 @@ void main() {
 
         await sut.ref
             .read(indexRunsControllerProvider.notifier)
-            .startIndex(music);
+            .startIndex(books);
 
         expect(
-          sut.ref.read(indexRunsControllerProvider).startRefusalFor(music),
+          sut.ref.read(indexRunsControllerProvider).startRefusalFor(books),
           IndexStartRefusal.unreadableScope,
         );
       },
@@ -240,15 +240,15 @@ void main() {
         // anything.
         final sut = build(
           store: InMemoryLibrarySourceStore([
-            stored(['podcast', 'audio']),
+            stored(['podcast', 'image']),
           ]),
         );
 
         await sut.ref
             .read(indexRunsControllerProvider.notifier)
-            .startIndex(music);
+            .startIndex(books);
 
-        expect(sut.gateway.starts.single.types, [FileType.audio]);
+        expect(sut.gateway.starts.single.types, [FileType.image]);
       },
     );
 
@@ -376,7 +376,7 @@ void main() {
         // re-check routed through it would carry some folder's scope, which is
         // neither the absent scope the core wants nor an empty one.
         final sut = build();
-        await register(sut.ref, scope: const [FileType.audio]);
+        await register(sut.ref, scope: const [FileType.image]);
 
         await sut.ref.read(indexRunsControllerProvider.notifier).startRefresh();
 
@@ -393,7 +393,7 @@ void main() {
 
 /// A gateway that models which files a scoped run would record.
 ///
-/// The folder under test is a music folder with its cover art in it, which is
+/// The folder under test is a books folder with its cover art in it, which is
 /// the case the scope exists for. An empty scope records everything, exactly
 /// as the core reads an absent one.
 ///
@@ -403,8 +403,8 @@ void main() {
 /// mean is integration_test/catalog/index_scope_test.dart's question.
 class _ScanningGateway extends FakeIndexGateway {
   static const _folder = <String, FileType>{
-    'Kind of Blue.flac': FileType.audio,
-    'So What.flac': FileType.audio,
+    'Solaris.epub': FileType.document,
+    'Ubik.epub': FileType.document,
     'cover.jpg': FileType.image,
   };
 

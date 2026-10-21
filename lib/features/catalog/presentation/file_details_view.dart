@@ -11,7 +11,6 @@ import '../../shell/presentation/async_state_view.dart';
 import '../domain/file_details.dart';
 import '../domain/file_size.dart';
 import '../domain/file_type.dart';
-import 'music_metadata_form.dart';
 import '../../editing/presentation/text_editor_screen.dart';
 import '../../viewers/domain/viewer_registry.dart';
 import '../../viewers/presentation/comic_viewer_screen.dart';
@@ -494,11 +493,6 @@ Future<void> openFile(BuildContext context, WidgetRef ref, CatalogFile file) {
     case FileType.video:
       return VideoPlayerScreen.show(context, ref, file);
 
-    // Nothing plays sound files any more, so all there is to show is the
-    // record itself.
-    case FileType.audio:
-      return FileDetailsView.show(context, ref, file.uuid);
-
     case FileType.document:
     case FileType.comic:
     case FileType.image:
@@ -544,7 +538,6 @@ typedef OpenMetadataForm =
 /// layout: a type either has a form or it does not, and the answer belongs in
 /// one place (IR-02's registration rule).
 OpenMetadataForm? _metadataFormFor(FileType type) => switch (type) {
-  FileType.audio => MusicMetadataForm.show,
   FileType.video => VideoMetadataForm.show,
   FileType.document ||
   FileType.comic ||

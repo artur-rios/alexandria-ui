@@ -18,25 +18,25 @@ void main() {
         filesListResult: (
           status: 0,
           json:
-              '[{"file":{"uuid":"1","name":"Kind of Blue.flac",'
-              '"path":"/music/Kind of Blue.flac","fileType":"audio",'
+              '[{"file":{"uuid":"1","name":"Stalker.mkv",'
+              '"path":"/films/Stalker.mkv","fileType":"video",'
               '"state":"active"},'
-              '"metadata":{"type":"audio","title":"So What",'
-              '"artist":"Miles Davis"}}]',
+              '"metadata":{"type":"video","title":"Stalker",'
+              '"year":1979}}]',
         ),
       );
       final gateway = CoreCatalogGateway(core);
 
       final listing = await gateway.listFiles(
-        type: FileType.audio,
+        type: FileType.video,
         credential: 'token',
       );
 
       expect(listing, isA<CatalogListingLoaded>());
       final row = (listing as CatalogListingLoaded).files.single;
       expect(row.file.uuid, '1');
-      expect(row.metadata['title'], 'So What');
-      expect(row.metadata['artist'], 'Miles Davis');
+      expect(row.metadata['title'], 'Stalker');
+      expect(row.metadata['year'], '1979');
     },
   );
 
@@ -52,7 +52,7 @@ void main() {
       final gateway = CoreCatalogGateway(core);
 
       final listing = await gateway.listFiles(
-        type: FileType.audio,
+        type: FileType.video,
         credential: 'token',
       );
 
@@ -78,7 +78,7 @@ void main() {
       final gateway = CoreCatalogGateway(core);
 
       final listing = await gateway.listFiles(
-        type: FileType.audio,
+        type: FileType.video,
         credential: 'token',
       );
 

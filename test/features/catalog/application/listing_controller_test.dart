@@ -251,16 +251,16 @@ void main() {
         final sut = build(
           watchCounts: true,
           listings: {
-            FileType.audio: loadedDetails([
+            FileType.text: loadedDetails([
               aFile(),
-              aFile(uuid: 'b', name: 'b.flac'),
+              aFile(uuid: 'b', name: 'b.md'),
             ]),
           },
         );
 
         final counts = await sut.ref.read(typeCountsControllerProvider.future);
 
-        expect(counts[FileType.audio], 2);
+        expect(counts[FileType.text], 2);
       },
     );
 
@@ -273,7 +273,7 @@ void main() {
         final sut = build(
           watchCounts: true,
           listings: {
-            FileType.audio: const CatalogListing.failed(
+            FileType.text: const CatalogListing.failed(
               failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
             ),
           },
@@ -297,9 +297,9 @@ void main() {
         final sut = build(
           watchCounts: true,
           listings: {
-            FileType.audio: loadedDetails([
+            FileType.text: loadedDetails([
               aFile(),
-              aFile(uuid: 'b', name: 'b.flac'),
+              aFile(uuid: 'b', name: 'b.md'),
             ]),
             FileType.image: loadedDetails([
               aFile(uuid: 'c', name: 'c.png', type: FileType.image),
@@ -309,7 +309,7 @@ void main() {
 
         final counts = await sut.ref.read(typeCountsControllerProvider.future);
 
-        expect(counts[FileType.audio], 2);
+        expect(counts[FileType.text], 2);
         expect(counts[FileType.image], 1);
         expect(counts[FileType.video], 0);
       },

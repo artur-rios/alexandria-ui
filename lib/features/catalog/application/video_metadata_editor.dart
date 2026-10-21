@@ -77,8 +77,7 @@ class VideoEditorState {
 
 /// The form over one video file's metadata (UC-16, FR-ME-02, FR-ME-03).
 ///
-/// The same shape as the music form it sits beside, with one flow of its own:
-/// the movie-or-series marking is not just another field, because changing it
+/// The movie-or-series marking is not just another field, because changing it
 /// from series to movie collapses per-episode progress into single-item
 /// progress (FR-TR-07). AF-03 is why this asks the core what progress exists
 /// before it asks the owner to confirm.

@@ -172,18 +172,24 @@ void main() {
       expect(find.byIcon(Icons.edit_note_outlined), findsOneWidget);
     });
 
-    testWidgets('GivenAnAudioFile_WhenItsDetailsOpen_ThenEditingIsNotOffered', (
+    testWidgets('GivenAnImageFile_WhenItsDetailsOpen_ThenEditingIsNotOffered', (
       tester,
     ) async {
       // BR-06 and BR-09: this application writes text content, not media.
-      // Filed under audio, matching the fixture's own type: UC-46 gave audio
-      // its own browsing area whose rows play on tap rather than opening this
-      // dialog, so the dialog is opened directly the same way the
-      // application's own `FileDetailsView.show` is called.
+      // The dialog is opened directly, the same way the application's own
+      // `FileDetailsView.show` is called.
+      final image = aFile(
+        uuid: 'cover',
+        name: 'cover.png',
+        type: FileType.image,
+      );
       final catalog = FakeCatalogGateway(
         listings: {
-          FileType.audio: loadedDetails([aFile()]),
+          FileType.image: loadedDetails([image]),
         },
+      );
+      catalog.details[image.uuid] = FileDetailsOutcome.read(
+        details: FileDetails(file: image),
       );
 
       await tester.pumpShell(
@@ -194,7 +200,7 @@ void main() {
       );
       final element = tester.element(find.byType(ShellScreen));
       unawaited(
-        FileDetailsView.show(element, element as WidgetRef, aFile().uuid),
+        FileDetailsView.show(element, element as WidgetRef, image.uuid),
       );
       await tester.pumpAndSettle();
 

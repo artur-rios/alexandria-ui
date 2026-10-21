@@ -10,7 +10,6 @@ import '../domain/catalog_gateway.dart';
 import '../domain/file_details.dart';
 import '../domain/file_type.dart';
 import '../domain/listing_view.dart';
-import '../domain/music_metadata.dart';
 import '../domain/video_metadata.dart';
 import 'file_view_parser.dart';
 
@@ -119,53 +118,6 @@ class CoreCatalogGateway implements CatalogGateway {
   }
 
   @override
-  Future<MetadataEditOutcome> editMusicMetadata({
-    required String uuid,
-    required MusicMetadata metadata,
-    required String credential,
-  }) async {
-    final CoreJsonResponse response;
-    try {
-      response = await _core.fileEditMetadata(
-        uuid,
-        jsonEncode(metadata.toPatch()),
-        credential,
-      );
-    } on CoreCallException {
-      return const MetadataEditOutcome.failed(
-        failure: Failure.unexpected(
-          family: CoreStatusFamily.file,
-          code: FILE_ERR_OTHER,
-        ),
-      );
-    }
-
-    // AF-02, AF-03 and AF-05 all arrive here and are told apart by the status
-    // the mapper reads: an invalid value, a record the core does not have, and
-    // a rejected session are three different answers to the same call.
-    if (!CoreStatusFamily.file.isOk(response.status)) {
-      return MetadataEditOutcome.failed(
-        failure: mapCoreStatus(CoreStatusFamily.file, response.status),
-      );
-    }
-
-    final json = response.json;
-    if (json == null) return _unreadableEdit();
-
-    try {
-      final body = jsonDecode(json) as Map<String, dynamic>;
-
-      return MetadataEditOutcome.saved(
-        metadata: MusicMetadata.fromDetails(
-          metadataFromFileView(body['metadata']),
-        ),
-      );
-    } on Object {
-      return _unreadableEdit();
-    }
-  }
-
-  @override
   Future<VideoMetadataEditOutcome> editVideoMetadata({
     required String uuid,
     required VideoMetadata metadata,
@@ -261,13 +213,6 @@ class CoreCatalogGateway implements CatalogGateway {
           code: FILE_ERR_OTHER,
         ),
       );
-
-  MetadataEditOutcome _unreadableEdit() => const MetadataEditOutcome.failed(
-    failure: Failure.unexpected(
-      family: CoreStatusFamily.file,
-      code: FILE_ERR_OTHER,
-    ),
-  );
 
   FileDetailsOutcome _unreadableDetails() => const FileDetailsOutcome.failed(
     failure: Failure.unexpected(

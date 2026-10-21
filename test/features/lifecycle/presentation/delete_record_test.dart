@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
@@ -9,7 +7,6 @@ import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
-import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/file_hold.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
@@ -195,104 +192,6 @@ void main() {
 
       expect(opened.lifecycle.deletedBookmarks, ['bm-1']);
     });
-  });
-
-  group('deleting an audio file (FR-CT-13)', () {
-    testWidgets(
-      'GivenAnAudioFile_WhenADeleteIsAsked_ThenTheConfirmationNamesItByItsMetadata',
-      (tester) async {
-        const audioUuid = 'a1a2a3a4-5d6e-4f70-8912-a3b4c5d6e7f8';
-        final track = aFile(
-          uuid: audioUuid,
-          name: 'track-07.flac',
-          type: FileType.audio,
-        );
-        final row = FileDetails(
-          file: track,
-          metadata: const {'title': 'So What'},
-        );
-        final gateway = FakeCatalogGateway(
-          listings: {
-            FileType.audio: CatalogListing.loaded(files: [row]),
-          },
-        )..details[audioUuid] = FileDetailsOutcome.read(details: row);
-
-        await tester.pumpShell(
-          surfaceSize: const Size(1440, 1000),
-          extraOverrides: <Override>[
-            catalogGatewayProvider.overrideWithValue(gateway),
-          ],
-        );
-
-        // No destination lists audio files, so no listing row opens this
-        // dialog for one; this calls the same static `show` the application
-        // does instead.
-        final element = tester.element(find.byType(ShellScreen));
-        unawaited(
-          FileDetailsView.show(element, element as WidgetRef, audioUuid),
-        );
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text(messages(tester).deleteFile).last);
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text(messages(tester).deleteFileMessage('So What')),
-          findsOneWidget,
-        );
-        expect(
-          find.text(messages(tester).deleteFileMessage('track-07.flac')),
-          findsNothing,
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenTheAudioListingHasFailed_WhenADeleteIsAsked_ThenTheConfirmationStillOpens',
-      (tester) async {
-        // Regression coverage: the button used to read the music library's
-        // provider for the track's title, which throws when the audio listing fails —
-        // and since the button fires `_confirm` unawaited from `onPressed`,
-        // that exception would escape and the dialog would never appear. The
-        // button now reads the `FileDetails` its own detail view already
-        // holds, which this file's own `fileDetails` call answers
-        // independently of the (here, failing) audio listing.
-        const audioUuid = 'a1a2a3a4-5d6e-4f70-8912-a3b4c5d6e7f8';
-        final track = aFile(
-          uuid: audioUuid,
-          name: 'track-07.flac',
-          type: FileType.audio,
-        );
-        final row = FileDetails(
-          file: track,
-          metadata: const {'title': 'So What'},
-        );
-        final gateway = FakeCatalogGateway()
-          ..details[audioUuid] = FileDetailsOutcome.read(details: row)
-          ..failListing(type: FileType.audio);
-
-        await tester.pumpShell(
-          surfaceSize: const Size(1440, 1000),
-          extraOverrides: <Override>[
-            catalogGatewayProvider.overrideWithValue(gateway),
-          ],
-        );
-
-        final element = tester.element(find.byType(ShellScreen));
-        unawaited(
-          FileDetailsView.show(element, element as WidgetRef, audioUuid),
-        );
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text(messages(tester).deleteFile).last);
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text(messages(tester).deleteFileMessage('So What')),
-          findsOneWidget,
-        );
-      },
-    );
   });
 
   // AF-01: the owner cancels.

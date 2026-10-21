@@ -7,7 +7,6 @@ import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/data/file_view_parser.dart';
-import '../../catalog/domain/music_metadata.dart';
 import '../domain/library.dart';
 import '../domain/library_gateway.dart';
 
@@ -175,12 +174,7 @@ class CoreLibraryGateway implements LibraryGateway {
     final file = fileFromFileView(nested);
     if (file == null) return null;
 
-    final tags = metadataFromFileView(row['metadata']);
-
-    return LibraryFile(
-      file: file,
-      metadata: tags.isEmpty ? null : MusicMetadata.fromDetails(tags),
-    );
+    return LibraryFile(file: file);
   }
 
   LibraryBrowse _unreadableBrowse() => const LibraryBrowse.failed(

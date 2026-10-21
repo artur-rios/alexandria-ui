@@ -5,7 +5,6 @@ import 'catalog_file.dart';
 import 'file_details.dart';
 import 'file_type.dart';
 import 'listing_view.dart';
-import 'music_metadata.dart';
 import 'video_metadata.dart';
 
 part 'catalog_gateway.freezed.dart';
@@ -39,27 +38,7 @@ sealed class FileDetailsOutcome with _$FileDetailsOutcome {
       FileDetailsFailed;
 }
 
-/// What editing a file's metadata produced (UC-15 main flow step 6).
-@freezed
-sealed class MetadataEditOutcome with _$MetadataEditOutcome {
-  /// The core validated, persisted, and echoed what it stored.
-  ///
-  /// It carries the stored metadata rather than nothing, so the form reports
-  /// what the core holds instead of what was sent — the two agree today, and
-  /// the day they do not, this is the one that is true.
-  const factory MetadataEditOutcome.saved({required MusicMetadata metadata}) =
-      MetadataEditSaved;
-
-  /// The core refused the change (AF-02, AF-03, AF-05).
-  const factory MetadataEditOutcome.failed({required Failure failure}) =
-      MetadataEditFailed;
-}
-
 /// What editing a video file's metadata produced (UC-16 main flow step 5).
-///
-/// Its own union rather than a reuse of [MetadataEditOutcome]: the two carry
-/// different metadata shapes, and a single outcome holding either would push
-/// the "which kind is this?" question into every caller that reads a success.
 @freezed
 sealed class VideoMetadataEditOutcome with _$VideoMetadataEditOutcome {
   /// The core validated, persisted, and echoed what it stored.
@@ -125,24 +104,13 @@ abstract interface class CatalogGateway {
     required String credential,
   });
 
-  /// Replaces the music metadata of the audio file [uuid] identifies
-  /// (FR-ME-01, UC-15).
-  ///
-  /// The whole record is sent, not the fields that changed: the core's patch
-  /// is a full replace, so anything left out is cleared.
-  Future<MetadataEditOutcome> editMusicMetadata({
-    required String uuid,
-    required MusicMetadata metadata,
-    required String credential,
-  });
-
   /// Replaces the video metadata of the file [uuid] identifies (FR-ME-02,
   /// UC-16).
   ///
-  /// The same core call as the music edit, tagged `video` instead — the core
-  /// checks the tag against the file's own type and refuses a patch aimed at
-  /// the wrong one. As there, the whole record is sent, because the patch is
-  /// a full replace.
+  /// The patch is tagged `video`, and the core checks the tag against the
+  /// file's own type and refuses a patch aimed at the wrong one. The whole
+  /// record is sent, because the patch is a full replace: anything left out
+  /// is cleared.
   Future<VideoMetadataEditOutcome> editVideoMetadata({
     required String uuid,
     required VideoMetadata metadata,

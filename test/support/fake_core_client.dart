@@ -49,12 +49,11 @@ class FakeCoreClient implements CoreClient {
              // just written.
              json:
                  '{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
-                 '"name":"Kind of Blue.flac",'
-                 '"path":"/home/owner/music/Kind of Blue.flac",'
-                 '"fileType":"audio","state":"active"},'
-                 '"metadata":{"type":"audio","title":"So What",'
-                 '"artist":"Miles Davis","album":"Kind of Blue",'
-                 '"year":1959,"genre":"Jazz","track":1}}',
+                 '"name":"Kind of Blue.mkv",'
+                 '"path":"/home/owner/films/Kind of Blue.mkv",'
+                 '"fileType":"video","state":"active"},'
+                 '"metadata":{"type":"video","title":"Kind of Blue",'
+                 '"year":1959,"mediaKind":"movie"}}',
            ),
        healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
@@ -77,11 +76,11 @@ class FakeCoreClient implements CoreClient {
              // answers.
              json:
                  '{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
-                 '"name":"Kind of Blue.flac",'
-                 '"path":"/home/owner/music/Kind of Blue.flac",'
-                 '"fileType":"audio","state":"active"},'
-                 '"metadata":{"type":"audio","artist":"Miles Davis",'
-                 '"album":"Kind of Blue","year":1959}}',
+                 '"name":"Kind of Blue.mkv",'
+                 '"path":"/home/owner/films/Kind of Blue.mkv",'
+                 '"fileType":"video","state":"active"},'
+                 '"metadata":{"type":"video","title":"Kind of Blue",'
+                 '"year":1959}}',
            ),
        filesListResult =
            filesListResult ??
@@ -92,11 +91,11 @@ class FakeCoreClient implements CoreClient {
              // file record.
              json:
                  '[{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
-                 '"name":"Kind of Blue.flac",'
-                 '"path":"/home/owner/music/Kind of Blue.flac",'
-                 '"fileType":"audio","state":"active"},'
-                 '"metadata":{"type":"audio","artist":"Miles Davis",'
-                 '"album":"Kind of Blue","year":1959}}]',
+                 '"name":"Kind of Blue.mkv",'
+                 '"path":"/home/owner/films/Kind of Blue.mkv",'
+                 '"fileType":"video","state":"active"},'
+                 '"metadata":{"type":"video","title":"Kind of Blue",'
+                 '"year":1959}}]',
            ),
        indexRefreshStartResult =
            indexRefreshStartResult ??

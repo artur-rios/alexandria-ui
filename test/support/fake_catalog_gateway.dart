@@ -7,7 +7,6 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
-import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 
 /// A [CatalogGateway] that never reaches the core (Testing Specification §2.3).
@@ -40,18 +39,6 @@ class FakeCatalogGateway implements CatalogGateway {
 
   /// Every uuid asked for, in order.
   final List<String> detailsRequested = [];
-
-  /// What [editMusicMetadata] answers, in order.
-  ///
-  /// A list rather than one outcome, so a test can have the core refuse once
-  /// and accept the retry — which is the whole of AF-02: the form stays open
-  /// and the owner corrects it.
-  final List<MetadataEditOutcome> editOutcomes = [];
-
-  /// Every edit asked for, in order.
-  ///
-  /// Empty is the assertion AF-01 and AF-04 need: neither one calls the core.
-  final List<({String uuid, MusicMetadata metadata})> edits = [];
 
   /// What [editVideoMetadata] answers, in order (UC-16).
   ///
@@ -160,63 +147,10 @@ class FakeCatalogGateway implements CatalogGateway {
     );
   }
 
-  /// Adds an audio file that answers [title]/[artist]/… when its details are
-  /// read, to both the audio listing and [details] in one call.
-  ///
-  /// The two are otherwise separate maps a test has to keep in step by hand;
-  /// an audio naming test only ever wants "a file with these tags".
-  ///
-  /// [name] defaults to a name derived from [uuid]; a naming test passes
-  /// one explicitly when it needs a name unmistakable enough to prove FR-CT-13
-  /// by its absence from the screen.
-  ///
-  /// [indexedAt] lets a dashboard test (FR-CT-11, FR-CT-13) order a fixture
-  /// among recently added files without building its own [aFile].
-  void addAudio({
-    required String uuid,
-    String? name,
-    String? title,
-    String? artist,
-    String? albumArtist,
-    String? album,
-    int? year,
-    String? genre,
-    int? track,
-    DateTime? indexedAt,
-    DateTime? missingAt,
-  }) {
-    final file = aFile(
-      uuid: uuid,
-      name: name ?? '$uuid.flac',
-      indexedAt: indexedAt,
-      missingAt: missingAt,
-    );
-    final row = FileDetails(
-      file: file,
-      metadata: {
-        MusicField.title.wireName: ?title,
-        MusicField.artist.wireName: ?artist,
-        MusicField.albumArtist.wireName: ?albumArtist,
-        MusicField.album.wireName: ?album,
-        MusicField.year.wireName: ?year?.toString(),
-        MusicField.genre.wireName: ?genre,
-        MusicField.track.wireName: ?track?.toString(),
-      },
-    );
-    final existing = listings[FileType.audio];
-    final files = existing is CatalogListingLoaded
-        ? existing.files
-        : const <FileDetails>[];
-    listings[FileType.audio] = CatalogListing.loaded(files: [...files, row]);
-
-    details[uuid] = FileDetailsOutcome.read(details: row);
-  }
-
   /// Adds a file of [type] to that type's listing, named by [name] on disk.
   ///
-  /// Unlike [addAudio], nothing is added to [details]: every type but audio is
-  /// named by its file name, so a search never has a reason to read one of
-  /// these back.
+  /// Nothing is added to [details]: every type is named by its file name, so
+  /// a search never has a reason to read one of these back.
   void addFile({
     required String uuid,
     required String name,
@@ -253,28 +187,10 @@ class FakeCatalogGateway implements CatalogGateway {
   }
 
   /// Makes [type]'s listing answer a failure instead of files.
-  void failListing({FileType type = FileType.audio}) {
+  void failListing({FileType type = FileType.text}) {
     listings[type] = const CatalogListing.failed(
       failure: Failure.notFound(family: CoreStatusFamily.file, code: 4),
     );
-  }
-
-  @override
-  Future<MetadataEditOutcome> editMusicMetadata({
-    required String uuid,
-    required MusicMetadata metadata,
-    required String credential,
-  }) async {
-    edits.add((uuid: uuid, metadata: metadata));
-    credentials.add(credential);
-
-    // Accepting by echoing what was sent is what the core does on success: a
-    // patch is a full replace, so what it stored is what it was given.
-    if (editOutcomes.isEmpty) {
-      return MetadataEditOutcome.saved(metadata: metadata);
-    }
-
-    return editOutcomes.removeAt(0);
   }
 
   @override
@@ -317,9 +233,9 @@ class FakeCatalogGateway implements CatalogGateway {
 /// A file of [type], for a test that needs one in a listing.
 CatalogFile aFile({
   String uuid = '6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f',
-  String name = 'Kind of Blue.flac',
+  String name = 'Kind of Blue.md',
   String? path,
-  FileType type = FileType.audio,
+  FileType type = FileType.text,
   String contentHash = 'a-content-hash',
   int? sizeBytes,
   DateTime? mtime,
@@ -333,7 +249,7 @@ CatalogFile aFile({
   // Derived from the name unless a test says otherwise, so two fixture files
   // never share a path. A shared one makes a search match a file by a word
   // that is only in its neighbour name, which reads as a bug in the search.
-  path: path ?? '/home/owner/music/$name',
+  path: path ?? '/home/owner/notes/$name',
   type: type,
   contentHash: contentHash,
   sizeBytes: sizeBytes,
@@ -350,7 +266,7 @@ CatalogFile aFile({
 /// Most fixtures only care about the file half of a row; this is the one
 /// place a bare [CatalogFile] list becomes what the gateway actually answers,
 /// so a test that wants metadata alongside a file builds a [FileDetails]
-/// (or uses [FakeCatalogGateway.addAudio]) instead of reaching in here.
+/// instead of reaching in here.
 CatalogListing loadedDetails(List<CatalogFile> files) => CatalogListing.loaded(
   files: [for (final file in files) FileDetails(file: file)],
 );

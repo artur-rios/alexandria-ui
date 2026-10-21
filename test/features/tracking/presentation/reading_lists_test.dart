@@ -170,16 +170,22 @@ void main() {
 
     // AF-02: neither a book document nor a comic.
     testWidgets(
-      'GivenAnAudioFile_WhenItsDetailsOpen_ThenTrackingIsNotOffered',
+      'GivenAnImageFile_WhenItsDetailsOpen_ThenTrackingIsNotOffered',
       (tester) async {
-        // Filed under audio, matching the fixture's own type: UC-46 gave
-        // audio its own browsing area whose rows play on tap rather than
-        // opening this dialog, so the dialog is opened directly the same
-        // way the application's own `FileDetailsView.show` is called.
+        // The dialog is opened directly, the same way the application's own
+        // `FileDetailsView.show` is called.
+        final image = aFile(
+          uuid: 'cover',
+          name: 'cover.png',
+          type: FileType.image,
+        );
         final catalog = FakeCatalogGateway(
           listings: {
-            FileType.audio: loadedDetails([aFile()]),
+            FileType.image: loadedDetails([image]),
           },
+        );
+        catalog.details[image.uuid] = FileDetailsOutcome.read(
+          details: FileDetails(file: image),
         );
 
         await tester.pumpShell(
@@ -193,7 +199,7 @@ void main() {
         );
         final element = tester.element(find.byType(ShellScreen));
         unawaited(
-          FileDetailsView.show(element, element as WidgetRef, aFile().uuid),
+          FileDetailsView.show(element, element as WidgetRef, image.uuid),
         );
         await tester.pumpAndSettle();
 
