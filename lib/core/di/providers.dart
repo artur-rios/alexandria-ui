@@ -108,15 +108,10 @@ import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
-import '../../features/playlists/application/playlist_detail_controller.dart';
-import '../../features/playlists/application/playlists_controller.dart';
 import '../../features/libraries/application/libraries_controller.dart';
 import '../../features/libraries/data/core_library_gateway.dart';
 import '../../features/libraries/domain/library.dart';
 import '../../features/libraries/domain/library_gateway.dart';
-import '../../features/playlists/data/core_playlist_gateway.dart';
-import '../../features/playlists/domain/playlist.dart';
-import '../../features/playlists/domain/playlist_gateway.dart';
 import '../../features/shell/domain/session_activity.dart';
 import '../../features/viewers/application/comic_viewer_controller.dart';
 import '../../features/viewers/application/document_viewer_controller.dart';
@@ -952,24 +947,6 @@ final readingListsControllerProvider =
 final readingListsFormProvider =
     NotifierProvider<ReadingListsForm, ReadingListsState>(ReadingListsForm.new);
 
-/// The core's playlist operations (playlists design).
-final playlistGatewayProvider = Provider<PlaylistGateway>((ref) {
-  final core = _loadedCore(ref);
-  if (core == null) {
-    throw StateError(
-      'the playlist gateway was read before the core was loaded',
-    );
-  }
-
-  return CorePlaylistGateway(core);
-});
-
-/// The owner's playlists (playlists design).
-final playlistsControllerProvider =
-    AsyncNotifierProvider<PlaylistsController, List<Playlist>>(
-      PlaylistsController.new,
-    );
-
 /// The core's energy envelopes (UC-21, FR-MP-07).
 final energyGatewayProvider = Provider<EnergyGateway>((ref) {
   final core = _loadedCore(ref);
@@ -1019,31 +996,6 @@ final libraryTreeControllerProvider =
       LibraryListing?,
       LibraryLocation
     >(LibraryTreeController.new, isAutoDispose: true);
-
-/// The playlists screen's own state.
-final playlistsFormProvider = NotifierProvider<PlaylistsForm, PlaylistsState>(
-  PlaylistsForm.new,
-);
-
-/// One playlist and its tracks, keyed by playlist uuid (playlists design
-/// section 3).
-///
-/// Auto-disposed, which a family is not by default (`isAutoDispose` defaults
-/// to `false` in `AsyncNotifierProviderFamilyBuilder.call`). Without it the
-/// entry for every playlist ever opened is cached for the life of the
-/// container and never read again: reopening a playlist would show whatever
-/// it held the first time, so a track added from the music area — where
-/// `PlaylistsForm.addEntries` deliberately does not reload this provider —
-/// would never appear, and a rename would leave the old title in the app
-/// bar. That is also what `PlaylistDetailScreen`'s own doc promises: opened
-/// on a uuid, read afresh from the core rather than trusting a copy the
-/// caller already had.
-final playlistDetailControllerProvider =
-    AsyncNotifierProvider.family<
-      PlaylistDetailController,
-      PlaylistView?,
-      String
-    >(PlaylistDetailController.new, isAutoDispose: true);
 
 /// The tracked books' and comics' names (UC-32 main flow step 2).
 final trackedReadingItemsProvider =

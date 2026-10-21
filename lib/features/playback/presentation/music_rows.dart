@@ -9,7 +9,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/view_layout.dart';
 import '../../catalog/presentation/file_details_view.dart';
 import '../../catalog/presentation/music_metadata_form.dart';
-import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../application/audio_playback_controller.dart';
 import '../domain/music_browse.dart';
 import '../domain/music_grouping.dart';
@@ -82,7 +81,7 @@ class _GroupRows extends ConsumerWidget {
 
         return ListTile(
           leading: kind == MusicGroupKind.artist
-              ? const _ArtistPortrait(diameter: 40)
+              ? const _ArtistIcon(diameter: 40)
               // And a record is shown as its sleeve, for the same reason: a
               // generic disc glyph says an album is an album, where the
               // sleeve says which one.
@@ -93,32 +92,7 @@ class _GroupRows extends ConsumerWidget {
           subtitle: kind == MusicGroupKind.album
               ? Text(artist ?? l10n.musicUnknownArtist)
               : null,
-          // Task 5 entry point 2: every track the group holds. An album row's
-          // own `group.entries` is already track-ordered (`_inTrackOrder`),
-          // so an album is added in the order the record itself is in. An
-          // artist row's `group.entries` is not: `artistsIn` groups it with
-          // the same `_inTrackOrder`, which sorts by track number alone —
-          // with no album key, so two records interleave track-for-track
-          // rather than playing one after the other. `inArtistOrder` is the
-          // album-then-track sort that matches what "Play artist" queues and
-          // what drilling into the artist's own albums shows.
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ShuffleButton(group: group, kind: kind),
-              AddToPlaylistButton(
-                fileUuids: kind == MusicGroupKind.artist
-                    ? [
-                        for (final file in inArtistOrder(group.entries))
-                          file.uuid,
-                      ]
-                    : [for (final entry in group.entries) entry.file.uuid],
-                tooltip: kind == MusicGroupKind.album
-                    ? l10n.playlistAddAlbumTo
-                    : l10n.playlistAddArtistTo,
-              ),
-            ],
-          ),
+          trailing: _ShuffleButton(group: group, kind: kind),
           // Drilling in rather than playing: playing a whole artist or record
           // is on the submenu, where it is a decision rather than something a
           // mis-aimed click does.
@@ -196,7 +170,7 @@ class _GroupGrid extends ConsumerWidget {
                         final side = constraints.biggest.shortestSide;
 
                         return kind == MusicGroupKind.artist
-                            ? _ArtistPortrait(diameter: side)
+                            ? _ArtistIcon(diameter: side)
                             : _AlbumArt(
                                 fileUuid: _representative(group),
                                 side: side,
@@ -230,27 +204,11 @@ class _GroupGrid extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                // The same two controls the row carries, so choosing tiles
-                // costs the owner nothing they could do with rows.
+                // The same control the row carries, so choosing tiles costs
+                // the owner nothing they could do with rows.
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    _ShuffleButton(group: group, kind: kind),
-                    AddToPlaylistButton(
-                      fileUuids: kind == MusicGroupKind.artist
-                          ? [
-                              for (final file in inArtistOrder(group.entries))
-                                file.uuid,
-                            ]
-                          : [
-                              for (final entry in group.entries)
-                                entry.file.uuid,
-                            ],
-                      tooltip: kind == MusicGroupKind.album
-                          ? l10n.playlistAddAlbumTo
-                          : l10n.playlistAddArtistTo,
-                    ),
-                  ],
+                  children: [_ShuffleButton(group: group, kind: kind)],
                 ),
               ],
             ),
@@ -348,8 +306,8 @@ class _ShuffleButton extends ConsumerWidget {
 }
 
 /// The icon that stands in for an artist's face.
-class _ArtistPortrait extends StatelessWidget {
-  const _ArtistPortrait({required this.diameter});
+class _ArtistIcon extends StatelessWidget {
+  const _ArtistIcon({required this.diameter});
 
   /// The size of the icon.
   ///
@@ -617,11 +575,6 @@ class MusicRowMenu extends ConsumerWidget {
           ),
           child: Text(l10n.audioShuffleArtist),
         ),
-        // Task 5 entry point 1: the one track this row is, addressed by its
-        // own file uuid — never the album or artist it belongs to. Called
-        // with this row's own `context` and `ref`, not built as a menu-item
-        // widget of its own — see `addToPlaylistMenu`'s own doc.
-        addToPlaylistMenu(context, ref, fileUuids: [entry.file.uuid]),
         MenuItemButton(
           leadingIcon: const Icon(Icons.info_outline),
           onPressed: () => FileDetailsView.show(context, ref, entry.file.uuid),

@@ -1327,11 +1327,7 @@
   },
   "audioShuffleAllLabel": "Shuffled library",
   "@audioShuffleAllLabel": {
-    "description": "FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name, the way a playlist is."
-  },
-  "audioShufflePlaylist": "Shuffle playlist",
-  "@audioShufflePlaylist": {
-    "description": "FR-PL-06: plays the playlist's tracks in an order nobody chose, leaving the curated order untouched."
+    "description": "FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name."
   },
   "audioPlayAlbum": "Play album",
   "@audioPlayAlbum": {
@@ -1789,67 +1785,6 @@
       }
     }
   },
-  "playlistsTitle": "Playlists",
-  "@playlistsTitle": {
-    "description": "Playlists design: the playlists screen heading."
-  },
-  "playlistsOpen": "Playlists",
-  "@playlistsOpen": {
-    "description": "Opens the playlists screen from the Library menu, beside reading lists."
-  },
-  "playlistsNone": "You have not made a playlist yet.",
-  "@playlistsNone": {
-    "description": "There are no playlists, which is a state and not a failure — the empty state invites making one."
-  },
-  "playlistNameLabel": "Playlist name",
-  "@playlistNameLabel": {
-    "description": "What the new playlist is called."
-  },
-  "playlistRenameLabel": "New name",
-  "@playlistRenameLabel": {
-    "description": "What the playlist is being renamed to."
-  },
-  "playlistCreate": "Create",
-  "@playlistCreate": {
-    "description": "Sends the new playlist to the core."
-  },
-  "playlistRenameSave": "Rename",
-  "@playlistRenameSave": {
-    "description": "Sends the new name to the core."
-  },
-  "playlistRename": "Rename this playlist",
-  "@playlistRename": {
-    "description": "Opens the playlist for renaming."
-  },
-  "playlistDelete": "Delete this playlist",
-  "@playlistDelete": {
-    "description": "Deletes the playlist, after confirmation."
-  },
-  "playlistNameEmpty": "Give the playlist a name.",
-  "@playlistNameEmpty": {
-    "description": "A blank name is marked on the field rather than sent to the core."
-  },
-  "playlistNotFound": "That playlist is no longer there.",
-  "@playlistNotFound": {
-    "description": "The core has no such playlist any more, so the list is read again."
-  },
-  "playlistDeleteMessage": "Delete {name}? The tracks in it are kept — only the playlist is removed.",
-  "@playlistDeleteMessage": {
-    "description": "The confirmation names what goes and what does not: the core deletes the playlist and its entries, never the files (BR-07).",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "playlistDetailEmpty": "This playlist has no tracks yet.",
-  "@playlistDetailEmpty": {
-    "description": "Playlists design section 3: the playlist exists but holds no entries, which is a state and not a failure."
-  },
-  "playlistRemoveTrack": "Remove from playlist",
-  "@playlistRemoveTrack": {
-    "description": "Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2)."
-  },
   "indexScopeAsLibrary": "Keep this folder together as a library",
   "@indexScopeAsLibrary": {
     "description": "Libraries design: marks a source folder as a library at registration, which is the same question as the type scope above — what is this folder."
@@ -1956,26 +1891,6 @@
   "libraryOverlaps": "That folder is already inside another library.",
   "@libraryOverlaps": {
     "description": "Libraries design section 5: a file in two libraries means two answers to where it appears. Worded as a fact about the folder rather than as a mistake the owner made."
-  },
-  "playlistPlay": "Play this playlist",
-  "@playlistPlay": {
-    "description": "Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list."
-  },
-  "playlistAddTo": "Add to a playlist",
-  "@playlistAddTo": {
-    "description": "Task 5 entry points 1 and 3: adds one track — from its own context menu, or from the now-playing screen — to a playlist."
-  },
-  "playlistAddAlbumTo": "Add album to a playlist",
-  "@playlistAddAlbumTo": {
-    "description": "Task 5 entry point 2: adds every track of an album to a playlist in one call, in the album's own order."
-  },
-  "playlistAddArtistTo": "Add artist to a playlist",
-  "@playlistAddArtistTo": {
-    "description": "Task 5 entry point 2: adds every track by an artist to a playlist in one call."
-  },
-  "playlistAddCreateOne": "Make a playlist first",
-  "@playlistAddCreateOne": {
-    "description": "Task 5: the one item an add-to-playlist menu offers when the owner has no playlist yet, opening the playlists screen rather than showing an empty menu."
   },
   "readCurrentIssueLabel": "Current issue",
   "@readCurrentIssueLabel": {

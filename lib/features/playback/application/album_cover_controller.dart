@@ -35,8 +35,8 @@ typedef AlbumIdentity = (Object, String);
 /// (the uuid does not change between them) while telling two different
 /// untagged records apart (their first tracks differ).
 ///
-/// For a queue that names no record of its own — a lone track, or a playlist
-/// (playlists design §6) — it is read from [library] instead, off the track
+/// For a queue that names no record of its own — a lone track, or a shuffle —
+/// it is read from [library] instead, off the track
 /// *playing now*: its own album and artist, resolved the same way every
 /// other surface resolves a track's metadata (`MusicLibrary.entryFor`,
 /// design §2, §3). A track with no album tag falls back to its own uuid, the
@@ -49,11 +49,11 @@ typedef AlbumIdentity = (Object, String);
 /// album, so the identity falls back to the uuid, exactly as an unknown
 /// record does everywhere else.
 ///
-/// Reading a playlist per track is what makes crossing from one album into
+/// Reading a shuffle per track is what makes crossing from one album into
 /// the next inside one fetch the new cover, while moving between two tracks
-/// of the same album does not. A playlist's own `label` is its name, for the
+/// of the same album does not. A shuffle's own `label` is its name, for the
 /// bar to show, and is deliberately not read as an identity: one value
-/// standing for the whole playlist would mean no crossing inside it was ever
+/// standing for the whole shuffle would mean no crossing inside it was ever
 /// seen.
 ///
 /// Called only once a caller has confirmed [queue] is non-empty, so the
@@ -64,7 +64,7 @@ String recordOf(PlaybackQueue queue, MusicLibrary? library) {
   }
 
   // The track playing now, not `tracks.first`: for a single-track queue they
-  // are the same file, but a playlist's record changes as it plays through,
+  // are the same file, but a shuffle's record changes as it plays through,
   // and reading the first track would pin every one of its records to the
   // one it opened with. `current` is null only for an index past the end,
   // which no caller reaches here — the fallback keeps the read total rather
@@ -275,7 +275,7 @@ class AlbumCoverController extends Notifier<AlbumCover> {
   /// What identifies "which record is playing" — [recordOf], kept a top-level
   /// function so the rule has one home rather than being restated wherever it
   /// is needed. `library` is watched above only for a queue that names no
-  /// record of its own — a lone track, or a playlist — since those are the
+  /// record of its own — a lone track, or a shuffle — since those are the
   /// only kinds [recordOf] actually reads it for.
   AlbumIdentity _identityOf(PlaybackQueue queue, MusicLibrary? library) =>
       (queue.kind, recordOf(queue, library));

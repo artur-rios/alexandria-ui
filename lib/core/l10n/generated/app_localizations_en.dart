@@ -1015,9 +1015,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get audioShuffleAllLabel => 'Shuffled library';
 
   @override
-  String get audioShufflePlaylist => 'Shuffle playlist';
-
-  @override
   String get audioPlayAlbum => 'Play album';
 
   @override
@@ -1336,50 +1333,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get playlistsTitle => 'Playlists';
-
-  @override
-  String get playlistsOpen => 'Playlists';
-
-  @override
-  String get playlistsNone => 'You have not made a playlist yet.';
-
-  @override
-  String get playlistNameLabel => 'Playlist name';
-
-  @override
-  String get playlistRenameLabel => 'New name';
-
-  @override
-  String get playlistCreate => 'Create';
-
-  @override
-  String get playlistRenameSave => 'Rename';
-
-  @override
-  String get playlistRename => 'Rename this playlist';
-
-  @override
-  String get playlistDelete => 'Delete this playlist';
-
-  @override
-  String get playlistNameEmpty => 'Give the playlist a name.';
-
-  @override
-  String get playlistNotFound => 'That playlist is no longer there.';
-
-  @override
-  String playlistDeleteMessage(String name) {
-    return 'Delete $name? The tracks in it are kept — only the playlist is removed.';
-  }
-
-  @override
-  String get playlistDetailEmpty => 'This playlist has no tracks yet.';
-
-  @override
-  String get playlistRemoveTrack => 'Remove from playlist';
-
-  @override
   String get indexScopeAsLibrary => 'Keep this folder together as a library';
 
   @override
@@ -1465,21 +1418,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get libraryOverlaps =>
       'That folder is already inside another library.';
-
-  @override
-  String get playlistPlay => 'Play this playlist';
-
-  @override
-  String get playlistAddTo => 'Add to a playlist';
-
-  @override
-  String get playlistAddAlbumTo => 'Add album to a playlist';
-
-  @override
-  String get playlistAddArtistTo => 'Add artist to a playlist';
-
-  @override
-  String get playlistAddCreateOne => 'Make a playlist first';
 
   @override
   String get readCurrentIssueLabel => 'Current issue';

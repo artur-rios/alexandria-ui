@@ -91,10 +91,10 @@ class AudioPlaybackState {
 
 /// What [AudioPlaybackController._playGrouped] gathers a queue for.
 ///
-/// Not [QueueKind]: that type also has `track` and `playlist`, and
-/// [_playGrouped] is never called for either — [playTrack] and [playPlaylist]
-/// build their queues directly, from a file and from a curated order
-/// respectively, without gathering anything from the library.
+/// Not [QueueKind]: that type also has `track` and `shuffle`, and
+/// [_playGrouped] is never called for either — [playTrack] and
+/// [playEverythingShuffled] build their queues directly, from a file and from
+/// the whole library respectively, without gathering a record.
 ///
 /// A two-value type rules those arms out at the call site instead of leaving
 /// switch cases that could never run.
@@ -181,10 +181,9 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
   /// Plays the whole audio library in an order nobody chose (FR-PL-06).
   ///
-  /// [label] is what the bar calls it, passed in for the reason
-  /// [playPlaylist]'s name is: this is application code with no
-  /// `AppLocalizations` to name anything, and a label written here would be
-  /// in one language for every owner.
+  /// [label] is what the bar calls it, passed in because this is application
+  /// code with no `AppLocalizations` to name anything, and a label written
+  /// here would be in one language for every owner.
   ///
   /// Every audio file the library holds, not the view the owner is looking
   /// at: "shuffle everything" said while standing in one artist would
@@ -210,58 +209,11 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     await _playQueue(
       PlaybackQueue(
         tracks: _shuffled([for (final entry in library) entry.file]),
-        // A playlist, because that is what it is: a sequence with a name and
-        // no record of its own, so the player resolves the record from
-        // whichever track is playing rather than pinning the whole shuffle to
-        // whatever came out first.
-        kind: QueueKind.playlist,
+        // A shuffle: a sequence with a name and no record of its own, so the
+        // player resolves the record from whichever track is playing rather
+        // than pinning the whole shuffle to whatever came out first.
+        kind: QueueKind.shuffle,
         label: label,
-      ),
-      at: Duration.zero,
-    );
-  }
-
-  /// Plays [tracks], in the order given, as the playlist called [name]
-  /// (playlists design section 6).
-  ///
-  /// Not [_playGrouped]: nothing is gathered here. The order *is* the thing
-  /// the owner curated, so it is taken exactly as handed over and the music
-  /// library is never consulted to build the queue — which also means a
-  /// playlist plays even while the library listing is unavailable.
-  ///
-  /// [name] rides along as the queue's label, for the bar to show. It is not
-  /// the record's identity: a playlist names no record of its own, so
-  /// `recordOf` resolves that from whichever track is playing (see
-  /// [PlaybackQueue.namesOwnRecord]).
-  ///
-  /// No year, and no resume offer. A playlist is a sequence, and AF-04 asks
-  /// its question about one file — the same reason an album does not ask it.
-  ///
-  /// Entries whose files are missing are queued like any other: whether a
-  /// file opens is the resolve's answer, and [_openAt] already names and
-  /// steps over the ones that do not (AF-01), ending in AF-03 when none of
-  /// them does. Filtering them out here would be a second opinion about what
-  /// is playable, would disagree with a stale missing flag in both
-  /// directions, and would cost the owner the report naming which file was
-  /// stepped over.
-  Future<void> playPlaylist({
-    required String name,
-    required List<CatalogFile> tracks,
-    bool shuffled = false,
-  }) async {
-    // Nothing was asked to play, which is not AF-03 — there, tracks were
-    // tried and every one failed. Whatever is playing keeps playing, and an
-    // empty queue never reaches `_openAt`, which would otherwise leave the
-    // player parked in `starting` with nothing to open.
-    if (tracks.isEmpty) return;
-
-    await _stopOtherMedia();
-
-    await _playQueue(
-      PlaybackQueue(
-        tracks: shuffled ? _shuffled(tracks) : tracks,
-        kind: QueueKind.playlist,
-        label: name,
       ),
       at: Duration.zero,
     );
@@ -469,8 +421,8 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   /// The same tracks in an order nobody chose (FR-PL-06).
   ///
   /// A copy, never the list it was given: the caller's list is the library's
-  /// own order (or a playlist's curated one), and shuffling it in place would
-  /// reorder what every other reader of it sees.
+  /// own order, and shuffling it in place would reorder what every other
+  /// reader of it sees.
   ///
   /// The source of randomness comes from a provider so a test can pin it. A
   /// shuffle nobody can reproduce is a shuffle nobody can test: with a seeded

@@ -1016,9 +1016,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get audioShuffleAllLabel => 'Biblioteca embaralhada';
 
   @override
-  String get audioShufflePlaylist => 'Embaralhar playlist';
-
-  @override
   String get audioPlayAlbum => 'Reproduzir álbum';
 
   @override
@@ -1338,50 +1335,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get playlistsTitle => 'Playlists';
-
-  @override
-  String get playlistsOpen => 'Playlists';
-
-  @override
-  String get playlistsNone => 'Você ainda não criou uma playlist.';
-
-  @override
-  String get playlistNameLabel => 'Nome da playlist';
-
-  @override
-  String get playlistRenameLabel => 'Novo nome';
-
-  @override
-  String get playlistCreate => 'Criar';
-
-  @override
-  String get playlistRenameSave => 'Renomear';
-
-  @override
-  String get playlistRename => 'Renomear esta playlist';
-
-  @override
-  String get playlistDelete => 'Excluir esta playlist';
-
-  @override
-  String get playlistNameEmpty => 'Dê um nome à playlist.';
-
-  @override
-  String get playlistNotFound => 'Essa playlist não está mais lá.';
-
-  @override
-  String playlistDeleteMessage(String name) {
-    return 'Excluir $name? As faixas nela são mantidas — apenas a playlist é removida.';
-  }
-
-  @override
-  String get playlistDetailEmpty => 'Esta playlist ainda não tem faixas.';
-
-  @override
-  String get playlistRemoveTrack => 'Remover da playlist';
-
-  @override
   String get indexScopeAsLibrary =>
       'Manter esta pasta junta como uma biblioteca';
 
@@ -1469,21 +1422,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get libraryOverlaps =>
       'Essa pasta já está dentro de outra biblioteca.';
-
-  @override
-  String get playlistPlay => 'Reproduzir esta playlist';
-
-  @override
-  String get playlistAddTo => 'Adicionar a uma playlist';
-
-  @override
-  String get playlistAddAlbumTo => 'Adicionar álbum a uma playlist';
-
-  @override
-  String get playlistAddArtistTo => 'Adicionar artista a uma playlist';
-
-  @override
-  String get playlistAddCreateOne => 'Crie uma playlist primeiro';
 
   @override
   String get readCurrentIssueLabel => 'Edição atual';

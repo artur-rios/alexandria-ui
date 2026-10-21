@@ -21,10 +21,8 @@ import '../application/session_state.dart';
 /// fetched it.
 ///
 /// One listener rather than a rule for each screen. There is no version of
-/// this that eighteen dialogs each remember to do, and the two that noticed
-/// the problem before could only write it down (see the comment in
-/// `playlist_detail_controller.dart`, which asks for exactly this and defers
-/// it). The evidence that routes really do persist is already in the tree:
+/// this that eighteen dialogs each remember to do. The evidence that routes
+/// really do persist is already in the tree:
 /// `recovery_codes_section.dart` pops the preferences dialog by hand, because
 /// otherwise the new codes appear behind it.
 ///

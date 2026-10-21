@@ -17,8 +17,8 @@ import '../../../support/fake_catalog_gateway.dart';
 /// A library keeps its files out of the type panels so a course does not
 /// bury everything else. That is a rule about *listing* — the libraries
 /// design scopes it to "the queries that browse by type" and names search,
-/// playlists, watchlists, reading lists and collections as things it does
-/// not apply to. Reading it as a rule about the catalog has cost the owner
+/// watchlists, reading lists and collections as things it does not apply
+/// to. Reading it as a rule about the catalog has cost the owner
 /// four things so far, and each was found separately: a marked folder's files
 /// could not be found by name; a deleted one could be reached from nowhere —
 /// not its panel, not the review, and not its own library, which lists only
@@ -153,7 +153,7 @@ void main() {
     'GivenTheCollectionPicker_WhenItLoads_ThenItReachesIntoLibraries',
     () async {
       // The libraries design names collections among the things the exclusion
-      // does not apply to. Watchlists, reading lists and playlists honour that
+      // does not apply to. Watchlists and reading lists honour that
       // already, because they are reached through the file's own details
       // dialog, which a library tree opens — this picker is the only way to
       // file something into a collection, so its exclusion was the whole of

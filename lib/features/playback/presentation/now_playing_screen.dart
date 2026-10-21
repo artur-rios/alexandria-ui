@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../../shell/presentation/playback_bar.dart';
 import '../domain/album_cover.dart';
 import '../domain/media_player.dart';
@@ -82,9 +81,6 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final state = ref.watch(audioPlaybackControllerProvider);
-    final current = state.current;
-
     // The sleeve's own picture, when `AlbumCoverController` has one — `null`
     // for the designed placeholder, whether that is because the file carries
     // no picture, the call failed, or the cover has simply not arrived yet.
@@ -96,9 +92,6 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          if (current != null) ...[
-            AddToPlaylistButton(fileUuids: [current.uuid]),
-          ],
           IconButton(
             tooltip: l10n.audioClosePlayer,
             icon: const Icon(Icons.close),

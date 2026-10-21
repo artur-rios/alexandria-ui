@@ -11,9 +11,9 @@ enum QueueKind {
   /// Every track by an artist.
   artist,
 
-  /// A playlist the owner assembled, in the order they arranged it
-  /// (playlists design section 6).
-  playlist,
+  /// A named sequence in an order nobody chose, such as the whole library
+  /// shuffled (FR-PL-06).
+  shuffle,
 }
 
 /// The tracks queued for playback, and where in them playback is
@@ -89,18 +89,18 @@ class PlaybackQueue {
   );
 
   /// Whether the record playing is the queue's own, rather than the current
-  /// track's (playlists design section 6).
+  /// track's.
   ///
   /// An album or an artist queue *is* a record: it carries the label that
   /// identifies it, every track in it belongs to the same one, and `recordOf`
   /// reads that straight off this class.
   ///
-  /// A track queue and a playlist queue are not. A lone track's record is
+  /// A track queue and a shuffle queue are not. A lone track's record is
   /// whatever that track's own tags say it is, resolved from the music
-  /// library; a playlist's is the same question asked again on every track,
-  /// because a playlist deliberately names no record of its own — which is
+  /// library; a shuffle's is the same question asked again on every track,
+  /// because a shuffle deliberately names no record of its own — which is
   /// what makes crossing from one album to the next inside one fetch the new
-  /// cover while skipping within an album does not. A playlist's [label] is
+  /// cover while skipping within an album does not. A shuffle's [label] is
   /// its name, for the bar to show; it is never its record's identity.
   ///
   /// Named here, once, rather than left as a `kind == QueueKind.track` check
@@ -110,7 +110,7 @@ class PlaybackQueue {
   /// otherwise have to be remembered at every one of them.
   bool get namesOwnRecord => switch (kind) {
     QueueKind.album || QueueKind.artist => true,
-    QueueKind.track || QueueKind.playlist => false,
+    QueueKind.track || QueueKind.shuffle => false,
   };
 
   /// The queue with [file] recorded as unplayable (AF-01, AF-02).

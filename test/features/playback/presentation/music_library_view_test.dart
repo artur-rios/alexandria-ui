@@ -478,7 +478,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
 
         final queue = container.read(audioPlaybackControllerProvider).queue;
-        expect(queue.kind, QueueKind.playlist);
+        expect(queue.kind, QueueKind.shuffle);
         expect(queue.label, l10n.audioShuffleAllLabel);
         expect(queue.tracks.map((file) => file.uuid), ['1', '3', '2']);
       },

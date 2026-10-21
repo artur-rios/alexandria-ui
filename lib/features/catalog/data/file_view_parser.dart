@@ -4,10 +4,9 @@ import '../domain/file_type.dart';
 /// The `File` object [row] describes, or `null` when its type is one this
 /// application does not know.
 ///
-/// Shared by every gateway that reads a `FileView` — the catalog listing, the
-/// single-file read, and a playlist's entries all answer this same shape
-/// (playlists design section 4) — so there is one parse rather than a second
-/// copy that could drift from it.
+/// Shared by every gateway that reads a `FileView` — the catalog listing and
+/// the single-file read answer this same shape — so there is one parse rather
+/// than a second copy that could drift from it.
 ///
 /// Dropping an unrecognized type rather than guessing: a file of an
 /// unrecognized type belongs in no listing, and a core that grows a type must

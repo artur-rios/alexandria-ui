@@ -1884,17 +1884,11 @@ abstract class AppLocalizations {
   /// **'Shuffle everything'**
   String get audioShuffleAll;
 
-  /// FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name, the way a playlist is.
+  /// FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name.
   ///
   /// In en, this message translates to:
   /// **'Shuffled library'**
   String get audioShuffleAllLabel;
-
-  /// FR-PL-06: plays the playlist's tracks in an order nobody chose, leaving the curated order untouched.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle playlist'**
-  String get audioShufflePlaylist;
 
   /// UC-20 main flow steps 1 and 3: queues the album this track belongs to.
   ///
@@ -2442,90 +2436,6 @@ abstract class AppLocalizations {
   /// **'{count} tracked'**
   String readingListItemCount(int count);
 
-  /// Playlists design: the playlists screen heading.
-  ///
-  /// In en, this message translates to:
-  /// **'Playlists'**
-  String get playlistsTitle;
-
-  /// Opens the playlists screen from the Library menu, beside reading lists.
-  ///
-  /// In en, this message translates to:
-  /// **'Playlists'**
-  String get playlistsOpen;
-
-  /// There are no playlists, which is a state and not a failure — the empty state invites making one.
-  ///
-  /// In en, this message translates to:
-  /// **'You have not made a playlist yet.'**
-  String get playlistsNone;
-
-  /// What the new playlist is called.
-  ///
-  /// In en, this message translates to:
-  /// **'Playlist name'**
-  String get playlistNameLabel;
-
-  /// What the playlist is being renamed to.
-  ///
-  /// In en, this message translates to:
-  /// **'New name'**
-  String get playlistRenameLabel;
-
-  /// Sends the new playlist to the core.
-  ///
-  /// In en, this message translates to:
-  /// **'Create'**
-  String get playlistCreate;
-
-  /// Sends the new name to the core.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename'**
-  String get playlistRenameSave;
-
-  /// Opens the playlist for renaming.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename this playlist'**
-  String get playlistRename;
-
-  /// Deletes the playlist, after confirmation.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete this playlist'**
-  String get playlistDelete;
-
-  /// A blank name is marked on the field rather than sent to the core.
-  ///
-  /// In en, this message translates to:
-  /// **'Give the playlist a name.'**
-  String get playlistNameEmpty;
-
-  /// The core has no such playlist any more, so the list is read again.
-  ///
-  /// In en, this message translates to:
-  /// **'That playlist is no longer there.'**
-  String get playlistNotFound;
-
-  /// The confirmation names what goes and what does not: the core deletes the playlist and its entries, never the files (BR-07).
-  ///
-  /// In en, this message translates to:
-  /// **'Delete {name}? The tracks in it are kept — only the playlist is removed.'**
-  String playlistDeleteMessage(String name);
-
-  /// Playlists design section 3: the playlist exists but holds no entries, which is a state and not a failure.
-  ///
-  /// In en, this message translates to:
-  /// **'This playlist has no tracks yet.'**
-  String get playlistDetailEmpty;
-
-  /// Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2).
-  ///
-  /// In en, this message translates to:
-  /// **'Remove from playlist'**
-  String get playlistRemoveTrack;
-
   /// Libraries design: marks a source folder as a library at registration, which is the same question as the type scope above — what is this folder.
   ///
   /// In en, this message translates to:
@@ -2669,36 +2579,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That folder is already inside another library.'**
   String get libraryOverlaps;
-
-  /// Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list.
-  ///
-  /// In en, this message translates to:
-  /// **'Play this playlist'**
-  String get playlistPlay;
-
-  /// Task 5 entry points 1 and 3: adds one track — from its own context menu, or from the now-playing screen — to a playlist.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to a playlist'**
-  String get playlistAddTo;
-
-  /// Task 5 entry point 2: adds every track of an album to a playlist in one call, in the album's own order.
-  ///
-  /// In en, this message translates to:
-  /// **'Add album to a playlist'**
-  String get playlistAddAlbumTo;
-
-  /// Task 5 entry point 2: adds every track by an artist to a playlist in one call.
-  ///
-  /// In en, this message translates to:
-  /// **'Add artist to a playlist'**
-  String get playlistAddArtistTo;
-
-  /// Task 5: the one item an add-to-playlist menu offers when the owner has no playlist yet, opening the playlists screen rather than showing an empty menu.
-  ///
-  /// In en, this message translates to:
-  /// **'Make a playlist first'**
-  String get playlistAddCreateOne;
 
   /// UC-32 main flow step 4: which issue of the series the owner is on.
   ///

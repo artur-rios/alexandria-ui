@@ -5,7 +5,6 @@ import 'package:alexandria_ui/features/playback/presentation/sound_bars.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/presentation/now_playing_screen.dart';
-import 'package:alexandria_ui/features/playlists/domain/playlist.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -17,7 +16,6 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_media_player.dart';
 import '../../../support/fake_playback.dart';
-import '../../../support/fake_playlist_gateway.dart';
 import '../../../support/shell_harness.dart';
 
 /// The full player (UC-21, FR-PL-07, FR-CT-13).
@@ -682,52 +680,6 @@ void main() {
           findsOneWidget,
         );
         expect(find.textContaining('.flac'), findsNothing);
-      },
-    );
-  });
-
-  group('adding the current track to a playlist (Task 5)', () {
-    testWidgets(
-      'GivenThePlayerIsOpen_WhenAddToPlaylistIsChosen_ThenTheTrackIsSent',
-      (tester) async {
-        final playlists = FakePlaylistGateway(
-          playlists: [const Playlist(uuid: 'p-1', name: 'Evening')],
-        );
-        final catalog = FakeCatalogGateway()
-          ..addAudio(uuid: 'kob-1', title: 'So What', artist: 'Miles Davis');
-        final container = await tester.pumpShell(
-          extraOverrides: <Override>[
-            catalogGatewayProvider.overrideWithValue(catalog),
-            playlistGatewayProvider.overrideWithValue(playlists),
-            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
-            playbackSourceGatewayProvider.overrideWithValue(
-              FakePlaybackSourceGateway(),
-            ),
-            playbackPositionsProvider.overrideWithValue(
-              FakePlaybackPositionStore(),
-            ),
-          ],
-        );
-        await container
-            .read(audioPlaybackControllerProvider.notifier)
-            .playTrack(aFile(uuid: 'kob-1'));
-        await settle(tester);
-
-        final l10n = messages(tester);
-        await tester.tap(
-          find.descendant(
-            of: find.byType(NowPlayingScreen),
-            matching: find.byTooltip(l10n.playlistAddTo),
-          ),
-        );
-        // `settle`, never `pumpAndSettle`: the bars are running behind the
-        // menu and nothing in this tree ever settles while they are.
-        await settle(tester);
-        await tester.tap(find.text('Evening'));
-        await settle(tester);
-
-        expect(playlists.entriesAdded, isNotEmpty);
-        expect(playlists.entriesAdded.last.fileUuids, ['kob-1']);
       },
     );
   });
