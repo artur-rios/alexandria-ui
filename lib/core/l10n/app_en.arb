@@ -989,10 +989,6 @@
   "@musicUnknownArtist": {
     "description": "Names the group of audio files whose metadata carries no artist."
   },
-  "musicUnknownAlbum": "Unknown album",
-  "@musicUnknownAlbum": {
-    "description": "Names the group of audio files whose metadata carries no album."
-  },
   "signOut": "Sign out",
   "@signOut": {
     "description": "UC-03 main flow step 1: ends the session without closing the application."

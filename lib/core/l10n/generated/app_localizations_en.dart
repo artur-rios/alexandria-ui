@@ -754,9 +754,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get musicUnknownArtist => 'Unknown artist';
 
   @override
-  String get musicUnknownAlbum => 'Unknown album';
-
-  @override
   String get signOut => 'Sign out';
 
   @override

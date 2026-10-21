@@ -754,9 +754,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get musicUnknownArtist => 'Artista desconhecido';
 
   @override
-  String get musicUnknownAlbum => 'Álbum desconhecido';
-
-  @override
   String get signOut => 'Sair';
 
   @override

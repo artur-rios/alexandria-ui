@@ -1410,12 +1410,6 @@ abstract class AppLocalizations {
   /// **'Unknown artist'**
   String get musicUnknownArtist;
 
-  /// Names the group of audio files whose metadata carries no album.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown album'**
-  String get musicUnknownAlbum;
-
   /// UC-03 main flow step 1: ends the session without closing the application.
   ///
   /// In en, this message translates to:

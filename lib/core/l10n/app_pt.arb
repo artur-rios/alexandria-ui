@@ -218,7 +218,6 @@
   "musicMetadataErrorTooLong": "Use menos de {max} caracteres.",
   "musicUnknownTitle": "Título desconhecido",
   "musicUnknownArtist": "Artista desconhecido",
-  "musicUnknownAlbum": "Álbum desconhecido",
   "signOut": "Sair",
   "signOutUnsavedTitle": "Alterações não salvas",
   "signOutUnsavedMessage": "Sair agora descarta as alterações que você não salvou. Cancele para voltar e salvá-las antes.",
