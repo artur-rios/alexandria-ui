@@ -152,9 +152,9 @@ jobs:
         run: sh third_party/webview_cef/test/native/run.sh
 
   test:
-    # Both platforms, and the goldens are why. `case_painter.dart` typesets
-    # the sleeve, and text is the one thing a renderer does differently on
-    # each operating system — a golden made on one and only ever checked on
+    # Both platforms, and the goldens are why. The shell goldens hold text,
+    # and text is the one thing a renderer does differently on each
+    # operating system — a golden made on one and only ever checked on
     # the other is a golden nobody is checking. That is not hypothetical
     # here: this suite was red on Linux for three days while passing on the
     # machine the goldens came from, because nothing ran it on both.

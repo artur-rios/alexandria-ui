@@ -224,14 +224,6 @@ abstract interface class CoreClient {
   /// lets the archive be read without being extracted to disk.
   Future<CoreJsonResponse> comicPage(String uuid, int page, String token);
 
-  /// Reads the picture embedded in an audio, video, image or comic file
-  /// through `alexandria_file_thumbnail` (FR-PL-07, FR-MP-05, UC-21).
-  ///
-  /// Answers `{uuid, mimeType, bytesBase64}`. A file with no embedded picture
-  /// answers `InvalidInput`, which is common rather than exceptional — see
-  /// `AlbumCoverController`, the one caller today.
-  Future<CoreJsonResponse> fileThumbnail(String uuid, String token);
-
   /// Reads a text file's content from disk through
   /// `alexandria_file_read_content` (FR-ME-06, UC-18).
   ///
@@ -491,15 +483,6 @@ abstract interface class CoreClient {
   /// The files are kept and return to the type panels.
   Future<CoreJsonResponse> libraryRemove(String uuid, String token);
 
-  /// Reads a track's energy envelope through `alexandria_track_energy`
-  /// (UC-21, FR-MP-07).
-  ///
-  /// **The first call for a track decodes it**, which is a second or two of
-  /// the core's CPU — every call after it is a read of what was stored. It is
-  /// on the isolate like every other call, so a slow first answer costs the
-  /// interface nothing but the wait.
-  Future<CoreJsonResponse> trackEnergy(String uuid, String token);
-
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
 }
@@ -700,12 +683,6 @@ class FfiCoreClient implements CoreClient {
   ) async => _reply<CoreJsonResponse>(
     await _isolate.call('comicPage', [uuid, page, token]),
   );
-
-  @override
-  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('fileThumbnail', [uuid, token]),
-      );
 
   @override
   Future<CoreJsonResponse> fileReadContent(String uuid, String token) async =>
@@ -1003,12 +980,6 @@ class FfiCoreClient implements CoreClient {
   Future<CoreJsonResponse> libraryRemove(String uuid, String token) async =>
       _reply<CoreJsonResponse>(
         await _isolate.call('libraryRemove', [uuid, token]),
-      );
-
-  @override
-  Future<CoreJsonResponse> trackEnergy(String uuid, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('trackEnergy', [uuid, token]),
       );
 
   @override

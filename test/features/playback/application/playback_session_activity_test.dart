@@ -11,9 +11,8 @@ void main() {
   final activityProvider = Provider((ref) => PlaybackSessionActivity(ref));
 
   test(
-    'GivenSomethingPlaying_WhenTheSessionEnds_ThenEveryPlayerIsStopped',
+    'GivenAVideoPlaying_WhenTheSessionEnds_ThenOnlyTheActivePlayerIsStopped',
     () async {
-      final audio = FakePlaybackSession(medium: PlaybackMedium.audio);
       final video = FakePlaybackSession(medium: PlaybackMedium.video);
       final idle = FakePlaybackSession(
         medium: PlaybackMedium.video,
@@ -21,14 +20,13 @@ void main() {
       );
       final container = ProviderContainer(
         overrides: [
-          playbackSessionsProvider.overrideWithValue([audio, video, idle]),
+          playbackSessionsProvider.overrideWithValue([video, idle]),
         ],
       );
       addTearDown(container.dispose);
 
       await container.read(activityProvider).end();
 
-      expect(audio.stopCount, 1);
       expect(video.stopCount, 1);
       expect(idle.stopCount, 0);
     },

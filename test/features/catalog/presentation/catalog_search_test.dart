@@ -194,8 +194,9 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      // The group headings are the panel's own words for the types.
-      expect(find.text(l10n.destinationMusic), findsWidgets);
+      // The group headings are the panel's own words for the types, and the
+      // index scope's for sound files, which have no destination.
+      expect(find.text(l10n.fileTypeAudio), findsWidgets);
       expect(find.text(l10n.destinationImages), findsWidgets);
     });
 

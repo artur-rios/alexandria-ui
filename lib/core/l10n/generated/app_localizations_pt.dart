@@ -190,16 +190,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get loading => 'Carregando';
 
   @override
-  String get playbackBarLabel => 'Reprodução';
-
-  @override
-  String get playbackNothingPlaying => 'Nada em reprodução';
-
-  @override
   String get destinationHome => 'Início';
-
-  @override
-  String get destinationMusic => 'Músicas';
 
   @override
   String get destinationBooks => 'Livros';
@@ -251,13 +242,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get preferencesLanguageSystem => 'Acompanhar o sistema';
-
-  @override
-  String get playerAutoOpenLabel => 'Abrir o reprodutor ao iniciar uma faixa';
-
-  @override
-  String get playerAutoOpenDescription =>
-      'O reprodutor completo abre sozinho sempre que algo novo começa a tocar.';
 
   @override
   String get startupRecheckLabel => 'Verificar a biblioteca ao iniciar';
@@ -764,18 +748,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get musicViewArtists => 'Artistas';
-
-  @override
-  String get musicViewAlbums => 'Álbuns';
-
-  @override
-  String get musicViewSongs => 'Músicas';
-
-  @override
-  String get musicBreadcrumbRoot => 'Biblioteca de música';
-
-  @override
   String get musicUnknownTitle => 'Título desconhecido';
 
   @override
@@ -783,12 +755,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get musicUnknownAlbum => 'Álbum desconhecido';
-
-  @override
-  String get musicRowActions => 'Ações desta faixa';
-
-  @override
-  String get musicEmpty => 'Nenhum arquivo de áudio catalogado ainda.';
 
   @override
   String get signOut => 'Sair';
@@ -999,59 +965,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String videoTrackUnnamed(String id) {
     return 'Faixa $id';
   }
-
-  @override
-  String get audioPlay => 'Reproduzir';
-
-  @override
-  String get audioShuffleAlbum => 'Embaralhar álbum';
-
-  @override
-  String get audioShuffleArtist => 'Embaralhar artista';
-
-  @override
-  String get audioShuffleAll => 'Embaralhar tudo';
-
-  @override
-  String get audioShuffleAllLabel => 'Biblioteca embaralhada';
-
-  @override
-  String get audioPlayAlbum => 'Reproduzir álbum';
-
-  @override
-  String get audioPlayArtist => 'Reproduzir artista';
-
-  @override
-  String get audioPause => 'Pausar';
-
-  @override
-  String get audioNext => 'Próxima faixa';
-
-  @override
-  String get audioPrevious => 'Faixa anterior';
-
-  @override
-  String get audioStop => 'Parar';
-
-  @override
-  String get audioNothingPlayable =>
-      'Não foi possível reproduzir nada desta seleção.';
-
-  @override
-  String audioSkipped(String name) {
-    return '$name foi pulado — não foi possível reproduzi-lo.';
-  }
-
-  @override
-  String audioResumePrompt(String position) {
-    return 'Você parou esta faixa em $position.';
-  }
-
-  @override
-  String get audioOpenPlayer => 'Abrir o player';
-
-  @override
-  String get audioClosePlayer => 'Fechar o player';
 
   @override
   String get viewerOpen => 'Abrir';
@@ -1935,15 +1848,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get activityDismiss => 'Dispensar';
-
-  @override
-  String get audioSoundBarsLabel => 'Níveis de som';
-
-  @override
-  String get audioTransportSemantics => 'Controles do reprodutor';
-
-  @override
-  String get albumCoverLabel => 'Capa do álbum';
 
   @override
   String get destinationLibraries => 'Bibliotecas';

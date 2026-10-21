@@ -398,29 +398,11 @@ abstract class AppLocalizations {
   /// **'Loading'**
   String get loading;
 
-  /// Accessible label of the persistent playback bar (FR-UX-01).
-  ///
-  /// In en, this message translates to:
-  /// **'Playback'**
-  String get playbackBarLabel;
-
-  /// The playback bar's idle state (FR-UX-01). The bar is present from the first frame, so it says what it is showing rather than sitting blank.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing is playing'**
-  String get playbackNothingPlaying;
-
   /// Navigation panel entry for the dashboard the application opens on (UC-14).
   ///
   /// In en, this message translates to:
   /// **'Home'**
   String get destinationHome;
-
-  /// Navigation panel entry for audio files (FR-CT-01).
-  ///
-  /// In en, this message translates to:
-  /// **'Music'**
-  String get destinationMusic;
 
   /// Navigation panel entry for books and e-books (FR-CT-01).
   ///
@@ -523,18 +505,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Match the system'**
   String get preferencesLanguageSystem;
-
-  /// UC-21 main flow step 2: whether starting a track puts the full player on screen. What is left of the album-animation preference, which used to choose between a record, a tape and a disc — the animation is gone and the half of the choice that was about behaviour rather than decoration is this.
-  ///
-  /// In en, this message translates to:
-  /// **'Open the player when a track starts'**
-  String get playerAutoOpenLabel;
-
-  /// UC-21 main flow step 2: what the switch above does, said once.
-  ///
-  /// In en, this message translates to:
-  /// **'The full player opens by itself whenever something new begins playing.'**
-  String get playerAutoOpenDescription;
 
   /// Preference controlling whether the catalog is re-checked against the disk each time a session is established.
   ///
@@ -1428,30 +1398,6 @@ abstract class AppLocalizations {
   /// **'Keep this under {max} characters.'**
   String musicMetadataErrorTooLong(int max);
 
-  /// The music area's artists view, in its view switcher.
-  ///
-  /// In en, this message translates to:
-  /// **'Artists'**
-  String get musicViewArtists;
-
-  /// The music area's albums view, in its view switcher.
-  ///
-  /// In en, this message translates to:
-  /// **'Albums'**
-  String get musicViewAlbums;
-
-  /// The music area's songs view, listing every track.
-  ///
-  /// In en, this message translates to:
-  /// **'Songs'**
-  String get musicViewSongs;
-
-  /// The first crumb of the music area's breadcrumb, leading back to the top of the current view. Deliberately distinct from the navigation panel's own 'Music' label (destinationMusic) rather than a translation of it — the panel, the area's heading and this crumb all sit in view together, and giving this one the same word three times over would not help the owner; do not 'correct' it to match destinationMusic.
-  ///
-  /// In en, this message translates to:
-  /// **'Music library'**
-  String get musicBreadcrumbRoot;
-
   /// Shown in place of a track's name when its metadata carries no title. The file's name on disk is never shown here.
   ///
   /// In en, this message translates to:
@@ -1469,18 +1415,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unknown album'**
   String get musicUnknownAlbum;
-
-  /// Tooltip on the button that opens a track row's context menu, which right-clicking the row also opens.
-  ///
-  /// In en, this message translates to:
-  /// **'Actions for this track'**
-  String get musicRowActions;
-
-  /// The music area with nothing in it.
-  ///
-  /// In en, this message translates to:
-  /// **'No audio files are catalogued yet.'**
-  String get musicEmpty;
 
   /// UC-03 main flow step 1: ends the session without closing the application.
   ///
@@ -1859,102 +1793,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Track {id}'**
   String videoTrackUnnamed(String id);
-
-  /// UC-20 main flow step 1: plays this track on its own.
-  ///
-  /// In en, this message translates to:
-  /// **'Play'**
-  String get audioPlay;
-
-  /// FR-PL-06: plays the whole record in an order nobody chose. On the row itself, because shuffling a record is something owners do constantly and a control they have to go looking for is one they stop using.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle album'**
-  String get audioShuffleAlbum;
-
-  /// FR-PL-06: plays everything by the artist in an order nobody chose.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle artist'**
-  String get audioShuffleArtist;
-
-  /// FR-PL-06: plays the whole audio library in an order nobody chose, from wherever in the music area the owner is standing.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle everything'**
-  String get audioShuffleAll;
-
-  /// FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffled library'**
-  String get audioShuffleAllLabel;
-
-  /// UC-20 main flow steps 1 and 3: queues the album this track belongs to.
-  ///
-  /// In en, this message translates to:
-  /// **'Play album'**
-  String get audioPlayAlbum;
-
-  /// UC-20 main flow steps 1 and 3: queues everything by this track's artist.
-  ///
-  /// In en, this message translates to:
-  /// **'Play artist'**
-  String get audioPlayArtist;
-
-  /// UC-20 main flow step 6: pauses playback where it is.
-  ///
-  /// In en, this message translates to:
-  /// **'Pause'**
-  String get audioPause;
-
-  /// UC-20 main flow step 6 / FR-PL-06: skips forward within the queue.
-  ///
-  /// In en, this message translates to:
-  /// **'Next track'**
-  String get audioNext;
-
-  /// UC-20 main flow step 6 / FR-PL-06: skips back within the queue.
-  ///
-  /// In en, this message translates to:
-  /// **'Previous track'**
-  String get audioPrevious;
-
-  /// UC-20 main flow step 7: stops playback and clears the queue.
-  ///
-  /// In en, this message translates to:
-  /// **'Stop'**
-  String get audioStop;
-
-  /// UC-20 AF-03: every queued file failed, so the queue was cleared.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing in this selection could be played.'**
-  String get audioNothingPlayable;
-
-  /// UC-20 AF-01 and AF-02: which file was skipped, named rather than counted, while the queue carries on.
-  ///
-  /// In en, this message translates to:
-  /// **'Skipped {name} — it could not be played.'**
-  String audioSkipped(String name);
-
-  /// UC-20 AF-04: the resume point for a single track, offered before it starts.
-  ///
-  /// In en, this message translates to:
-  /// **'You stopped this track at {position}.'**
-  String audioResumePrompt(String position);
-
-  /// UC-21 main flow step 2: opens the full player, where the album's medium is shown.
-  ///
-  /// In en, this message translates to:
-  /// **'Open the player'**
-  String get audioOpenPlayer;
-
-  /// UC-21 AF-02: leaves the full player and returns to wherever the owner opened it from, without touching playback.
-  ///
-  /// In en, this message translates to:
-  /// **'Close the player'**
-  String get audioClosePlayer;
 
   /// UC-22 main flow step 1: opens the viewer registered for this file's type.
   ///
@@ -3192,7 +3030,7 @@ abstract class AppLocalizations {
   /// **'Review'**
   String get libraryToolsGroupReview;
 
-  /// FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now.
+  /// FR-FC-29: the accessible name of the strip along the bottom of the shell, which reports whatever the core is indexing right now.
   ///
   /// In en, this message translates to:
   /// **'Background indexing'**
@@ -3329,24 +3167,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dismiss'**
   String get activityDismiss;
-
-  /// UC-21: names the moving bars on the player screen for a screen reader. They are an instrument that runs with the music rather than a control, so the label says what they show rather than what pressing them would do.
-  ///
-  /// In en, this message translates to:
-  /// **'Sound levels'**
-  String get audioSoundBarsLabel;
-
-  /// UC-21: names the transport buttons drawn on the device in the full player, so a screen reader reaching them is told what the group of controls is.
-  ///
-  /// In en, this message translates to:
-  /// **'Player controls'**
-  String get audioTransportSemantics;
-
-  /// UC-21, FR-UX-01: what the playback bar's recess is showing when the album carries its own picture. Named for a screen reader, which would otherwise be told the recess holds a turning record when it holds a photograph of a sleeve.
-  ///
-  /// In en, this message translates to:
-  /// **'Album cover'**
-  String get albumCoverLabel;
 
   /// Navigation panel entry for the registered libraries — folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it.
   ///

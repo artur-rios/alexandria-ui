@@ -6,7 +6,7 @@ import '../../shell/domain/shell_destination.dart';
 /// The navigation panel's entries map onto these; where the two disagree, the
 /// core wins, because classifying a file is domain work the core owns (BR-02).
 enum FileType {
-  /// `audio` — the panel's music.
+  /// `audio` — sound files, which no destination lists.
   audio('audio'),
 
   /// `video` — everything filmed.
@@ -56,19 +56,17 @@ enum FileType {
 /// [ShellDestination.home] is the dashboard (UC-14) and
 /// [ShellDestination.bookmarks] is not a file listing at all — bookmarks are a
 /// separate entity with their own core call, which UC-28 owns.
-FileType? fileTypeFor(ShellDestination destination) =>
-    switch (destination) {
-      ShellDestination.music => FileType.audio,
-      ShellDestination.videos => FileType.video,
-      ShellDestination.books => FileType.document,
-      ShellDestination.comicBooks => FileType.comic,
-      ShellDestination.notes => FileType.text,
-      ShellDestination.pages => FileType.html,
-      ShellDestination.images => FileType.image,
-      // The three that are not one type's listing: the dashboard, the
-      // bookmarks (their own entity, with their own core call), and the
-      // libraries (folders holding every type at once).
-      ShellDestination.home ||
-      ShellDestination.bookmarks ||
-      ShellDestination.libraries => null,
-    };
+FileType? fileTypeFor(ShellDestination destination) => switch (destination) {
+  ShellDestination.videos => FileType.video,
+  ShellDestination.books => FileType.document,
+  ShellDestination.comicBooks => FileType.comic,
+  ShellDestination.notes => FileType.text,
+  ShellDestination.pages => FileType.html,
+  ShellDestination.images => FileType.image,
+  // The three that are not one type's listing: the dashboard, the
+  // bookmarks (their own entity, with their own core call), and the
+  // libraries (folders holding every type at once).
+  ShellDestination.home ||
+  ShellDestination.bookmarks ||
+  ShellDestination.libraries => null,
+};

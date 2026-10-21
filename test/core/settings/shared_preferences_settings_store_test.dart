@@ -23,11 +23,38 @@ void main() {
 
         expect(store.themeMode, ThemeMode.dark);
         expect(store.locale, isNull);
-        expect(store.opensPlayerOnPlay, isTrue);
         expect(store.rechecksAtStartup, isTrue);
         expect(
           store.getString('settings.musicLookupContact'),
           'owner@example.com',
+          reason: 'the stored value is left where it was, merely unread',
+        );
+      },
+    );
+
+    test(
+      'GivenStoredOpensPlayerOnPlay_WhenSettingsLoad_ThenItIsIgnored',
+      () async {
+        // Music playback was removed, and with it the preference to open the
+        // full player when a track starts. The key an earlier release wrote
+        // stays where it was; what this pins is that the rest still loads.
+        SharedPreferences.setMockInitialValues({
+          'settings.opensPlayerOnPlay': false,
+          'settings.themeMode': 'light',
+          'settings.locale': 'pt_BR',
+          'settings.rechecksAtStartup': 'false',
+        });
+
+        final store = await SharedPreferencesSettingsStore.load();
+
+        expect(store.themeMode, ThemeMode.light);
+        expect(store.locale, const Locale('pt', 'BR'));
+        expect(store.rechecksAtStartup, isFalse);
+        expect(
+          (await SharedPreferences.getInstance()).getBool(
+            'settings.opensPlayerOnPlay',
+          ),
+          isFalse,
           reason: 'the stored value is left where it was, merely unread',
         );
       },

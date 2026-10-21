@@ -190,16 +190,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loading => 'Loading';
 
   @override
-  String get playbackBarLabel => 'Playback';
-
-  @override
-  String get playbackNothingPlaying => 'Nothing is playing';
-
-  @override
   String get destinationHome => 'Home';
-
-  @override
-  String get destinationMusic => 'Music';
 
   @override
   String get destinationBooks => 'Books';
@@ -251,13 +242,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preferencesLanguageSystem => 'Match the system';
-
-  @override
-  String get playerAutoOpenLabel => 'Open the player when a track starts';
-
-  @override
-  String get playerAutoOpenDescription =>
-      'The full player opens by itself whenever something new begins playing.';
 
   @override
   String get startupRecheckLabel => 'Re-check the library at startup';
@@ -764,18 +748,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get musicViewArtists => 'Artists';
-
-  @override
-  String get musicViewAlbums => 'Albums';
-
-  @override
-  String get musicViewSongs => 'Songs';
-
-  @override
-  String get musicBreadcrumbRoot => 'Music library';
-
-  @override
   String get musicUnknownTitle => 'Unknown title';
 
   @override
@@ -783,12 +755,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get musicUnknownAlbum => 'Unknown album';
-
-  @override
-  String get musicRowActions => 'Actions for this track';
-
-  @override
-  String get musicEmpty => 'No audio files are catalogued yet.';
 
   @override
   String get signOut => 'Sign out';
@@ -998,59 +964,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String videoTrackUnnamed(String id) {
     return 'Track $id';
   }
-
-  @override
-  String get audioPlay => 'Play';
-
-  @override
-  String get audioShuffleAlbum => 'Shuffle album';
-
-  @override
-  String get audioShuffleArtist => 'Shuffle artist';
-
-  @override
-  String get audioShuffleAll => 'Shuffle everything';
-
-  @override
-  String get audioShuffleAllLabel => 'Shuffled library';
-
-  @override
-  String get audioPlayAlbum => 'Play album';
-
-  @override
-  String get audioPlayArtist => 'Play artist';
-
-  @override
-  String get audioPause => 'Pause';
-
-  @override
-  String get audioNext => 'Next track';
-
-  @override
-  String get audioPrevious => 'Previous track';
-
-  @override
-  String get audioStop => 'Stop';
-
-  @override
-  String get audioNothingPlayable =>
-      'Nothing in this selection could be played.';
-
-  @override
-  String audioSkipped(String name) {
-    return 'Skipped $name — it could not be played.';
-  }
-
-  @override
-  String audioResumePrompt(String position) {
-    return 'You stopped this track at $position.';
-  }
-
-  @override
-  String get audioOpenPlayer => 'Open the player';
-
-  @override
-  String get audioClosePlayer => 'Close the player';
 
   @override
   String get viewerOpen => 'Open';
@@ -1929,15 +1842,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activityDismiss => 'Dismiss';
-
-  @override
-  String get audioSoundBarsLabel => 'Sound levels';
-
-  @override
-  String get audioTransportSemantics => 'Player controls';
-
-  @override
-  String get albumCoverLabel => 'Album cover';
 
   @override
   String get destinationLibraries => 'Libraries';

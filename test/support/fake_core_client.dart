@@ -762,20 +762,6 @@ class FakeCoreClient implements CoreClient {
     return comicPageResponse;
   }
 
-  /// What [fileThumbnail] answers (UC-21, FR-PL-07).
-  CoreJsonResponse thumbnailResponse = (status: PLAYBACK_OK, json: null);
-
-  /// Raised by [fileThumbnail] instead of answering, when set.
-  bool failOnFileThumbnail = false;
-
-  @override
-  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async {
-    if (failOnFileThumbnail) {
-      throw const CoreCallException('file thumbnail call failed');
-    }
-    return thumbnailResponse;
-  }
-
   /// What [fileReadContent] answers (UC-18).
   CoreJsonResponse readContentResponse = (
     status: FILE_OK,
@@ -967,18 +953,5 @@ class FakeCoreClient implements CoreClient {
   Future<CoreJsonResponse> libraryRemove(String uuid, String token) async {
     libraryRemoveCalls.add((uuid: uuid, token: token));
     return libraryResponse;
-  }
-
-  /// What `trackEnergy` answers, and what it was asked for (UC-21,
-  /// FR-MP-07).
-  CoreJsonResponse energyResponse = (status: PLAYBACK_OK, json: '{}');
-
-  /// Every envelope asked for, in order.
-  final List<({String uuid, String token})> energyCalls = [];
-
-  @override
-  Future<CoreJsonResponse> trackEnergy(String uuid, String token) async {
-    energyCalls.add((uuid: uuid, token: token));
-    return energyResponse;
   }
 }

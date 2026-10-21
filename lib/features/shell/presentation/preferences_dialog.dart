@@ -36,13 +36,9 @@ class PreferencesDialog extends ConsumerWidget {
     // What the owner can act on from where they are (UC-39 AF-05).
     //
     // The theme and the language change the screen they are standing on, so
-    // they belong on the login screen as much as anywhere. The rest do not:
-    // the animation is about a player they cannot reach, the re-check is
-    // about a library that is not open, and the lookup is about music they
-    // have not signed in to. Offering them here is offering settings for a
-    // session that does not exist — and the last of the three reconfigures
-    // the core, which is a strange thing to let happen from a screen whose
-    // whole purpose is that nobody has authenticated yet.
+    // they belong on the login screen as much as anywhere. The re-check does
+    // not: it is about a library that is not open, and offering it here is
+    // offering a setting for a session that does not exist.
     final signedIn = ref.watch(sessionControllerProvider) is SessionActive;
 
     return AlertDialog(
@@ -104,19 +100,6 @@ class PreferencesDialog extends ConsumerWidget {
               ),
 
               if (signedIn) ...[
-                const SizedBox(height: AppSpacing.md),
-                // No `_GroupLabel` here, for the reason the switch below
-                // records: a group of one control restating its own name in
-                // a label above it is redundancy, not structure.
-                SwitchListTile(
-                  title: Text(l10n.playerAutoOpenLabel),
-                  subtitle: Text(l10n.playerAutoOpenDescription),
-                  value: preferences.opensPlayerOnPlay,
-                  onChanged: (value) =>
-                      unawaited(controller.setOpensPlayerOnPlay(value)),
-                  contentPadding: EdgeInsets.zero,
-                ),
-
                 const SizedBox(height: AppSpacing.md),
                 // No `_GroupLabel` here: a group of one control restating its
                 // own name in a label above it would be the same redundancy

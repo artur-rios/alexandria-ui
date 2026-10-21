@@ -652,17 +652,6 @@ class CoreIsolate {
         }),
       ),
 
-      'fileThumbnail' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_thumbnail(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
       'fileReadContent' => withNativeString(
         arguments.first! as String,
         (uuid) => withNativeString(arguments[1]! as String, (token) {
@@ -1177,17 +1166,6 @@ class CoreIsolate {
         arguments.first! as String,
         (uuid) => withNativeString(arguments[1]! as String, (token) {
           final result = bindings.alexandria_library_remove(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'trackEnergy' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_track_energy(uuid, token);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),

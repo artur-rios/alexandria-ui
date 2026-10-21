@@ -46,9 +46,10 @@ class DeleteFileButton extends ConsumerWidget {
     // FR-CT-13: the confirmation names an audio file by its own metadata,
     // already carried by the [FileDetails] this button was built from —
     // no provider, no await, and nothing that can fail independently of the
-    // detail view already on screen. `musicLibraryProvider` would throw when
-    // the audio listing fails or the session is rejected, which would leave
-    // this button dead on a press; reading straight off `details` cannot.
+    // detail view already on screen. A provider reading the audio listing
+    // would throw when that listing fails or the session is rejected, which
+    // would leave this button dead on a press; reading straight off
+    // `details` cannot.
     final name = file.type == FileType.audio
         ? tagOr(
             MusicMetadata.fromDetails(details.metadata).title,

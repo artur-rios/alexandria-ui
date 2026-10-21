@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/startup/core_unavailable_screen.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
@@ -23,7 +22,7 @@ void main() {
     'ACompactWindow': Size(1100, 700),
     'AMediumWindow': Size(1280, 800),
     'AnExpandedWindow': Size(1700, 1000),
-    // Wide enough for labels, short enough that ten of them do not fit: the
+    // Wide enough for labels, short enough that nine of them do not fit: the
     // breakpoints are widths, so this is the shape that catches a panel which
     // clips instead of adapting.
     'AWideButShortWindow': Size(1360, 640),
@@ -142,13 +141,12 @@ void main() {
 
   group('structure', () {
     testWidgets(
-      'GivenASignedInOwner_WhenTheShellOpens_ThenItHasAPanelContentAndAPlaybackBar',
+      'GivenASignedInOwner_WhenTheShellOpens_ThenItHasAPanelAndAContentArea',
       (tester) async {
         await tester.pumpShell();
 
         expect(find.byType(ShellNavigationPanel), findsOneWidget);
         expect(find.byType(ShellContentArea), findsOneWidget);
-        expect(find.byType(PlaybackBar), findsOneWidget);
       },
     );
 
@@ -171,18 +169,6 @@ void main() {
 
         expect(find.byType(ShellScreen), findsNothing);
         expect(find.byType(CoreUnavailableScreen), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenNoMediaIsPlaying_WhenTheShellOpens_ThenThePlaybackBarSaysSo',
-      (tester) async {
-        await tester.pumpShell();
-
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PlaybackBar)),
-        );
-        expect(find.text(l10n.playbackNothingPlaying), findsOneWidget);
       },
     );
   });
@@ -312,7 +298,6 @@ void main() {
           // An overflowing layout throws during paint, which the tester
           // records; reaching here with nothing recorded is the assertion.
           expect(tester.takeException(), isNull);
-          expect(find.byType(PlaybackBar), findsOneWidget);
           expect(find.byType(ShellContentArea), findsOneWidget);
         },
       );
@@ -377,7 +362,6 @@ void main() {
             expect(label, isNotEmpty);
             expect(label, isNot(contains('destination')));
           }
-          expect(find.text(l10n.playbackNothingPlaying), findsOneWidget);
           // Every destination now has content of its own — home the dashboard
           // (UC-14), bookmarks the bookmark manager (UC-28), and the rest a
           // listing — so what this checks is that the one the shell is *not*

@@ -21,8 +21,8 @@ import 'active_runs_state.dart';
 /// different question — "what is outstanding, anywhere" — and answers it the
 /// way the core itself does: by asking `listActiveRuns` rather than by
 /// reconstructing the picture from per-folder memory. A later task renders
-/// this as the strip above the playback bar; it is meant to be the one place
-/// that holds that opinion.
+/// this as the strip along the bottom of the shell; it is meant to be the one
+/// place that holds that opinion.
 class ActiveRunsController extends Notifier<ActiveRunsState> {
   static final Logger _log = Logger('library_sources');
 

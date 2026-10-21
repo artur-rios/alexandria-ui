@@ -35,7 +35,6 @@ class PreferencesController extends Notifier<PreferencesState> {
     return PreferencesState(
       themeMode: settings?.themeMode ?? ThemeMode.system,
       locale: settings?.locale,
-      opensPlayerOnPlay: settings?.opensPlayerOnPlay ?? true,
       rechecksAtStartup: settings?.rechecksAtStartup ?? true,
     );
   }
@@ -58,18 +57,6 @@ class PreferencesController extends Notifier<PreferencesState> {
   Future<void> setLocale(Locale? locale) async {
     state = state.copyWith(locale: locale, lastChangeUnsaved: false);
     await _persist((settings) => settings.setLocale(locale));
-  }
-
-  /// Applies [value] now and records it for the next launch (FR-PL-11).
-  ///
-  /// What the album-animation choice used to be. That preference picked which
-  /// medium the animation showed — a record, a tape or a disc — and the
-  /// animation is gone: what is left of the choice is the half of it that was
-  /// about behaviour rather than decoration, which is whether starting a
-  /// track puts the player on screen.
-  Future<void> setOpensPlayerOnPlay(bool value) async {
-    state = state.copyWith(opensPlayerOnPlay: value, lastChangeUnsaved: false);
-    await _persist((settings) => settings.setOpensPlayerOnPlay(value));
   }
 
   /// Applies [value] now and records it for the next launch (FR-LB-21).

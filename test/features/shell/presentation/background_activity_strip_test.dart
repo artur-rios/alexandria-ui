@@ -8,7 +8,7 @@ import 'package:alexandria_ui/features/library_sources/domain/run_estimate.dart'
 import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
 import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/background_activity_strip.dart';
-import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -84,8 +84,8 @@ void main() {
   /// Pumps the strip alone, over a controller that answers with [runs].
   ///
   /// The strip on its own rather than the whole shell: every rule here is the
-  /// strip's own, and the one thing that needs the shell — that it sits above
-  /// the playback bar — has its own test at the bottom of this file.
+  /// strip's own, and the one thing that needs the shell — that it sits below
+  /// the content area — has its own test at the bottom of this file.
   Future<RecordingActiveRunsController> pumpStrip(
     WidgetTester tester, {
     List<IndexRun> runs = const [],
@@ -696,14 +696,16 @@ void main() {
       expect(tester.getSize(find.byType(BackgroundActivityStrip)).height, 0);
     });
 
-    testWidgets('GivenTheShell_WhenBuilt_ThenTheStripSitsAboveThePlaybackBar', (
+    testWidgets('GivenTheShell_WhenBuilt_ThenTheStripSitsBelowTheContentArea', (
       tester,
     ) async {
       await tester.pumpShell();
 
       expect(
         tester.getTopLeft(find.byType(BackgroundActivityStrip)).dy,
-        lessThanOrEqualTo(tester.getTopLeft(find.byType(PlaybackBar)).dy),
+        greaterThanOrEqualTo(
+          tester.getBottomLeft(find.byType(ShellContentArea)).dy,
+        ),
       );
     });
 

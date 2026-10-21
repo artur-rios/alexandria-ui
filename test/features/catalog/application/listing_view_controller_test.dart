@@ -52,13 +52,13 @@ void main() {
         final sut = await started();
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
         await pumpEventQueue();
 
         await sut.ref
             .read(listingViewControllerProvider.notifier)
             .apply(
-              FileType.audio,
+              FileType.document,
               const ListingView(lifecycle: LifecycleFilter.deleted),
             );
         await pumpEventQueue();
@@ -72,15 +72,15 @@ void main() {
       () async {
         final sut = await started(
           listings: {
-            FileType.audio: loadedDetails([
-              aFile(uuid: '1', name: 'zebra.flac'),
-              aFile(uuid: '2', name: 'apple.flac'),
+            FileType.document: loadedDetails([
+              aFile(uuid: '1', name: 'zebra.epub', type: FileType.document),
+              aFile(uuid: '2', name: 'apple.epub', type: FileType.document),
             ]),
           },
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
         await pumpEventQueue();
 
         final ascending = sut.ref.read(listingControllerProvider).value!;
@@ -89,7 +89,7 @@ void main() {
         await sut.ref
             .read(listingViewControllerProvider.notifier)
             .apply(
-              FileType.audio,
+              FileType.document,
               const ListingView(direction: SortDirection.descending),
             );
         await pumpEventQueue();
@@ -237,10 +237,10 @@ void main() {
         // listing works, and it is the change that the core rejects.
         final sut = await started(
           listings: {
-            FileType.audio: loadedDetails([aFile()]),
+            FileType.document: loadedDetails([aFile(type: FileType.document)]),
           },
           deleted: {
-            FileType.audio: const CatalogListing.failed(
+            FileType.document: const CatalogListing.failed(
               failure: Failure.invalidInput(
                 family: CoreStatusFamily.file,
                 code: 1,
@@ -250,19 +250,22 @@ void main() {
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
         await pumpEventQueue();
 
         await sut.ref
             .read(listingViewControllerProvider.notifier)
             .apply(
-              FileType.audio,
+              FileType.document,
               const ListingView(lifecycle: LifecycleFilter.deleted),
             );
         await pumpEventQueue();
 
         final state = sut.ref.read(listingViewControllerProvider);
-        expect(state.forType(FileType.audio).lifecycle, LifecycleFilter.active);
+        expect(
+          state.forType(FileType.document).lifecycle,
+          LifecycleFilter.active,
+        );
         expect(state.rejection, isA<InvalidInputFailure>());
       },
     );

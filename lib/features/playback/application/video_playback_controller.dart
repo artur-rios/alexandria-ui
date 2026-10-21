@@ -114,11 +114,11 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
 
   /// Whether this file has played through to its end.
   ///
-  /// The engine announces the end once rather than holding the flag up — a
-  /// latched one had the audio queue advancing twice — so the fact that it
-  /// happened is kept here instead. Without it, a position tick arriving
-  /// after the end would write a resume position back at the very end of the
-  /// file, and the next opening would resume there rather than at the start.
+  /// The engine announces the end once rather than holding the flag up, so
+  /// the fact that it happened is kept here instead. Without it, a position
+  /// tick arriving after the end would write a resume position back at the
+  /// very end of the file, and the next opening would resume there rather
+  /// than at the start.
   ///
   /// Cleared by anything that means playback is somewhere other than the end:
   /// opening a file, and seeking.
@@ -150,7 +150,7 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
   Future<void> open(CatalogFile file) async {
     // Main flow step 2 / FR-PL-08: at most one playback session, so every
     // other medium stops before this one starts. Read from the registry
-    // rather than by naming the audio player, which UC-20 builds.
+    // rather than by naming another player, so none has to know this one.
     for (final session in ref.read(playbackSessionsProvider)) {
       if (session.medium != PlaybackMedium.video && session.isActive) {
         await session.stop();

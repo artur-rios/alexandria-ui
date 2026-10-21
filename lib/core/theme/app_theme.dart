@@ -35,8 +35,7 @@ abstract final class AppTheme {
       colorScheme: scheme,
       useMaterial3: true,
       // The players' surround, which is black in both brightnesses and so is
-      // not something the scheme can answer (UC-19, UC-20), and the palette
-      // the now-playing artwork paints its device from (BR-18, FR-UX-07).
+      // not something the scheme can answer (UC-19, BR-18, FR-UX-07).
       extensions: const [PlaybackColors.standard],
       visualDensity: VisualDensity.comfortable,
 

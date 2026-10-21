@@ -24,7 +24,6 @@ class SharedPreferencesSettingsStore implements SettingsStore {
 
   static const _themeModeKey = 'settings.themeMode';
   static const _localeKey = 'settings.locale';
-  static const _opensPlayerKey = 'settings.opensPlayerOnPlay';
   static const _rechecksAtStartupKey = 'settings.rechecksAtStartup';
 
   @override
@@ -66,17 +65,6 @@ class SharedPreferencesSettingsStore implements SettingsStore {
           : '${locale.languageCode}_$countryCode',
     );
   }
-
-  /// Absent reads as on: an owner who has never opened the dialog gets the
-  /// player when they start something, which is the behaviour the screen
-  /// exists for.
-  @override
-  bool get opensPlayerOnPlay =>
-      _preferences.getBool(_opensPlayerKey) ?? true;
-
-  @override
-  Future<void> setOpensPlayerOnPlay(bool value) =>
-      _preferences.setBool(_opensPlayerKey, value);
 
   /// Absent reads as on, which is the default the preference ships with: an
   /// owner who has never opened the dialog gets the re-check.

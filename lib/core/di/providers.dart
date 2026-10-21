@@ -11,8 +11,6 @@ library;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:media_kit_video/media_kit_video.dart' as mkv;
@@ -49,7 +47,6 @@ import '../../features/catalog/application/catalog_session_activity.dart';
 import '../../features/catalog/data/core_catalog_gateway.dart';
 import '../../features/catalog/domain/catalog_file.dart';
 import '../../features/catalog/domain/file_type.dart';
-import '../../features/catalog/domain/view_layout.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
 import '../../features/catalog/domain/file_name.dart';
@@ -87,23 +84,12 @@ import '../../features/organization/domain/bookmark_gateway.dart';
 import '../../features/organization/domain/collection.dart';
 import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
-import '../../features/playback/application/album_art_controller.dart';
-import '../../features/playback/application/music_layout_controller.dart';
-import '../../features/playback/application/album_cover_controller.dart';
-import '../../features/playback/application/audio_playback_controller.dart';
-import '../../features/playback/application/audio_playback_session.dart';
-import '../../features/playback/application/music_browse_controller.dart';
-import '../../features/playback/application/music_library_controller.dart';
 import '../../features/playback/application/playback_session_activity.dart';
-import '../../features/playback/application/track_energy_controller.dart';
-import '../../features/playback/data/core_energy_gateway.dart';
-import '../../features/playback/domain/track_energy.dart';
 import '../../features/playback/application/video_playback_controller.dart';
 import '../../features/playback/application/video_playback_session.dart';
 import '../../features/playback/data/core_playback_source_gateway.dart';
 import '../../features/playback/data/media_kit_player.dart';
 import '../../features/playback/data/settings_playback_position_store.dart';
-import '../../features/playback/domain/album_cover.dart';
 import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
@@ -503,74 +489,6 @@ final playbackPositionsProvider = Provider<PlaybackPositionStore>((ref) {
   return SettingsPlaybackPositionStore(settings);
 });
 
-/// The audio playback engine (UC-20).
-///
-/// Its own engine rather than the video player's: FR-PL-08 stops one when the
-/// other starts, and sharing an engine would make that rule a matter of who
-/// called `open` last rather than something the application decides.
-final audioPlayerProvider = Provider<MediaPlayer>((ref) {
-  final player = MediaKitPlayer();
-  ref.onDispose(() => unawaited(player.dispose()));
-  return player;
-});
-
-/// Every audio file with the metadata a queue is grouped by (UC-20, FR-PL-06).
-///
-/// One gateway call, listing the audio files: the core's listing now answers
-/// each row with the same metadata the single-file call does, so this reads
-/// the library whole rather than one file at a time.
-final musicLibraryProvider =
-    AsyncNotifierProvider<MusicLibraryController, MusicLibrary>(
-      MusicLibraryController.new,
-    );
-
-/// Where the owner is in the music area (UC-46).
-final musicBrowseControllerProvider =
-    NotifierProvider<MusicBrowseController, MusicBrowseState>(
-      MusicBrowseController.new,
-    );
-
-/// How the music area draws its artists and albums (UC-46, FR-CT-03).
-final musicLayoutControllerProvider =
-    NotifierProvider<MusicLayoutController, ViewLayout>(
-      MusicLayoutController.new,
-    );
-
-/// One record's sleeve, keyed by a representative track (UC-46).
-///
-/// Auto-disposed, which a family is not by default: a library of a thousand
-/// records scrolled past would otherwise hold a thousand decoded pictures for
-/// the life of the container.
-final albumArtControllerProvider =
-    AsyncNotifierProvider.family<AlbumArtController, ui.Image?, String>(
-      AlbumArtController.new,
-      isAutoDispose: true,
-    );
-
-/// Where a shuffle gets its randomness (FR-PL-06).
-///
-/// A provider rather than a `Random()` built where it is used, for one
-/// reason: a shuffle nobody can reproduce is a shuffle nobody can test. A
-/// test overrides this with a seeded source and asserts the order, where
-/// otherwise it could only assert that the same tracks came back — which a
-/// shuffle that did nothing at all would also satisfy.
-final shuffleRandomProvider = Provider<Random>((ref) => Random());
-
-/// The persistent audio player (UC-20).
-final audioPlaybackControllerProvider =
-    NotifierProvider<AudioPlaybackController, AudioPlaybackState>(
-      AudioPlaybackController.new,
-    );
-
-/// Whether the album animation owes an insertion, and what medium it would
-
-/// What the current album's case sleeve shows — its own cover, or the
-/// designed jacket (UC-21, FR-PL-07, design section 4).
-final albumCoverControllerProvider =
-    NotifierProvider<AlbumCoverController, AlbumCover>(
-      AlbumCoverController.new,
-    );
-
 /// The video player (UC-19).
 final videoPlaybackControllerProvider =
     NotifierProvider<VideoPlaybackController, VideoPlaybackState>(
@@ -579,11 +497,11 @@ final videoPlaybackControllerProvider =
 
 /// The players, of which at most one runs at a time (FR-PL-08).
 ///
-/// The registry UC-19 AF-05 and UC-20 AF-05 are both read from: a player added
-/// here is stopped by every other one starting, and neither controller has to
-/// know the other exists.
+/// The registry UC-19 AF-05 is read from, and the one sign-out stops: a player
+/// added here is stopped by every other one starting, and no controller has to
+/// know the others exist.
 final playbackSessionsProvider = Provider<List<PlaybackSession>>(
-  (ref) => [VideoPlaybackSession(ref), AudioPlaybackSession(ref)],
+  (ref) => [VideoPlaybackSession(ref)],
 );
 
 /// The core's text content operations (UC-18, FR-ME-06, FR-ME-08).
@@ -868,15 +786,11 @@ final openFileHoldsProvider =
 
 /// Everything that can be holding a file open (UC-33 AF-04).
 ///
-/// The players are always registered; a viewer or an editor joins while it is
-/// on screen. The deletion asks this list and nothing else, so neither player
-/// nor viewer has to know the deletion exists.
+/// The video player is always registered; a viewer or an editor joins while
+/// it is on screen. The deletion asks this list and nothing else, so neither
+/// player nor viewer has to know the deletion exists.
 final fileHoldsProvider = Provider<List<FileHold>>(
-  (ref) => [
-    VideoFileHold(ref),
-    AudioFileHold(ref),
-    ...ref.watch(openFileHoldsProvider),
-  ],
+  (ref) => [VideoFileHold(ref), ...ref.watch(openFileHoldsProvider)],
 );
 
 /// What a deletion is reporting (UC-33).
@@ -946,27 +860,6 @@ final readingListsControllerProvider =
 /// The reading-lists screen's own state (UC-31).
 final readingListsFormProvider =
     NotifierProvider<ReadingListsForm, ReadingListsState>(ReadingListsForm.new);
-
-/// The core's energy envelopes (UC-21, FR-MP-07).
-final energyGatewayProvider = Provider<EnergyGateway>((ref) {
-  final core = _loadedCore(ref);
-  if (core == null) {
-    throw StateError('the energy gateway was read before the core was loaded');
-  }
-
-  return CoreEnergyGateway(core);
-});
-
-/// The sound of one track, read once and held while it is on screen.
-///
-/// Auto-disposed, which a family is not by default: a player moves through a
-/// queue, and an envelope for every track ever played would be tens of
-/// kilobytes each, held for the life of the container and never read again.
-final trackEnergyControllerProvider =
-    AsyncNotifierProvider.family<TrackEnergyController, TrackEnergy?, String>(
-      TrackEnergyController.new,
-      isAutoDispose: true,
-    );
 
 /// The core's library operations (libraries design).
 final libraryGatewayProvider = Provider<LibraryGateway>((ref) {
@@ -1042,9 +935,7 @@ final sessionActivitiesProvider = Provider<List<SessionActivity>>(
     // UC-18's editor, which is the first thing in the application that can
     // hold something the owner has not saved (UC-03 AF-01).
     EditingSessionActivity(ref),
-    // The album animation's own memory of which record it has already shown
-    // an insertion for (Finding 4) — a trace of this session, not of the
-    // record itself.
+    // Whatever is playing, which sign-out stops (UC-03 main flow step 2).
     PlaybackSessionActivity(ref),
   ],
 );

@@ -5,7 +5,6 @@ import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_position_store.dart';
-import 'package:alexandria_ui/features/playback/domain/playback_session.dart';
 import 'package:alexandria_ui/features/playback/presentation/video_player_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -45,7 +44,6 @@ void main() {
   openPlayer(
     WidgetTester tester, {
     FakePlaybackPositionStore? positions,
-    List<PlaybackSession> sessions = const [],
     FakePlaybackSourceGateway? sources,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
@@ -72,8 +70,6 @@ void main() {
         playbackSourceGatewayProvider.overrideWithValue(resolved),
         playbackPositionsProvider.overrideWithValue(store),
         clockProvider.overrideWithValue(() => now),
-        if (sessions.isNotEmpty)
-          playbackSessionsProvider.overrideWithValue(sessions),
       ],
     );
 
@@ -480,32 +476,6 @@ void main() {
 
       expect(find.text(messages(tester).videoResume), findsNothing);
       expect(opened.player.opened, hasLength(1));
-    });
-  });
-
-  // AF-05 and FR-PL-08: at most one playback session.
-  group('one medium at a time', () {
-    testWidgets('GivenAudioIsPlaying_WhenAVideoStarts_ThenTheAudioStopsFirst', (
-      tester,
-    ) async {
-      final audio = FakePlaybackSession(medium: PlaybackMedium.audio);
-
-      await openPlayer(tester, sessions: [audio]);
-
-      expect(audio.stopCount, 1);
-    });
-
-    testWidgets('GivenNothingIsPlaying_WhenAVideoStarts_ThenNothingIsStopped', (
-      tester,
-    ) async {
-      final audio = FakePlaybackSession(
-        medium: PlaybackMedium.audio,
-        isActive: false,
-      );
-
-      await openPlayer(tester, sessions: [audio]);
-
-      expect(audio.stopCount, 0);
     });
   });
 

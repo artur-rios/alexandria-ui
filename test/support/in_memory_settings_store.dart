@@ -11,7 +11,6 @@ class InMemorySettingsStore implements SettingsStore {
   InMemorySettingsStore({
     ThemeMode themeMode = ThemeMode.system,
     Locale? locale,
-    bool opensPlayerOnPlay = true,
     // On, matching the real default (`SettingsStore.rechecksAtStartup`'s own
     // doc) — the honest default any owner starts a session with. This is a
     // live coupling worth knowing about: `pumpShell` (shell_harness.dart)
@@ -29,13 +28,11 @@ class InMemorySettingsStore implements SettingsStore {
     // ignore_for_file: prefer_initializing_formals
     : _themeMode = themeMode,
        _locale = locale,
-       _opensPlayerOnPlay = opensPlayerOnPlay,
        _rechecksAtStartup = rechecksAtStartup,
        _values = {...?values};
 
   ThemeMode _themeMode;
   Locale? _locale;
-  bool _opensPlayerOnPlay;
   bool _rechecksAtStartup;
   final Map<String, String> _values;
 
@@ -50,13 +47,6 @@ class InMemorySettingsStore implements SettingsStore {
 
   @override
   Future<void> setLocale(Locale? locale) async => _locale = locale;
-
-  @override
-  bool get opensPlayerOnPlay => _opensPlayerOnPlay;
-
-  @override
-  Future<void> setOpensPlayerOnPlay(bool value) async =>
-      _opensPlayerOnPlay = value;
 
   @override
   bool get rechecksAtStartup => _rechecksAtStartup;

@@ -239,9 +239,9 @@ void main() {
     testWidgets(
       'GivenAudioOutsideTheRecentList_WhenTheDashboardShows_ThenItsDetailsAreNeverRead',
       (tester) async {
-        // Naming the one audio file the dashboard actually shows reads
-        // `musicLibraryProvider`, which is one gateway listing call rather
-        // than a per-file `fileDetails` read — proved here by adding audio
+        // Naming the one audio file the dashboard actually shows reads the
+        // metadata its own listing row already carries rather than a
+        // per-file `fileDetails` read — proved here by adding audio
         // files old enough to fall outside RecentFilesController.limit and
         // asserting no file's details are ever asked for individually.
         final gateway = FakeCatalogGateway()

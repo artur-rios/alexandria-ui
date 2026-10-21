@@ -224,10 +224,9 @@ void main() {
           ],
         );
 
-        // Reached the same way `audio_player_test.dart` reaches the details
-        // dialog for an audio file: UC-46 gave audio its own browsing area
-        // whose rows do not open this dialog on tap, so this calls the same
-        // static `show` the application does rather than a listing row.
+        // No destination lists audio files, so no listing row opens this
+        // dialog for one; this calls the same static `show` the application
+        // does instead.
         final element = tester.element(find.byType(ShellScreen));
         unawaited(
           FileDetailsView.show(element, element as WidgetRef, audioUuid),
@@ -251,8 +250,8 @@ void main() {
     testWidgets(
       'GivenTheAudioListingHasFailed_WhenADeleteIsAsked_ThenTheConfirmationStillOpens',
       (tester) async {
-        // Regression coverage: the button used to read `musicLibraryProvider`
-        // for the track's title, which throws when the audio listing fails —
+        // Regression coverage: the button used to read the music library's
+        // provider for the track's title, which throws when the audio listing fails —
         // and since the button fires `_confirm` unawaited from `onPressed`,
         // that exception would escape and the dialog would never appear. The
         // button now reads the `FileDetails` its own detail view already

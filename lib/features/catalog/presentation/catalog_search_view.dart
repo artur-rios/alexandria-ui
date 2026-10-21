@@ -185,7 +185,7 @@ class _ResultRow extends ConsumerWidget {
     final isAudio = file.type == FileType.audio;
     // `tagOr` rather than a fallback written out here: that helper is the one
     // place an absent tag becomes a word, and a second copy of the rule here
-    // is exactly what would let this screen and the music area disagree. The
+    // is exactly what would let this screen and the others disagree. The
     // row's own metadata is read straight off it — the listing carries it
     // already, so there is no per-file provider to ask.
     final metadata = isAudio
@@ -390,10 +390,11 @@ class _NothingCatalogued extends StatelessWidget {
 /// What each type is called, for the search's group headings.
 ///
 /// The panel's own words, so a result group and its destination read the same.
+/// Sound files have no destination, so they take the index scope's word.
 extension FileTypeLabel on FileType {
   /// The localized name of this type.
   String label(AppLocalizations l10n) => switch (this) {
-    FileType.audio => l10n.destinationMusic,
+    FileType.audio => l10n.fileTypeAudio,
     FileType.video => l10n.destinationVideos,
     FileType.document => l10n.destinationBooks,
     FileType.comic => l10n.destinationComicBooks,

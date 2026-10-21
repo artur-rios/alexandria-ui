@@ -234,21 +234,9 @@
   "@loading": {
     "description": "Accessible label of the loading state every perceptible operation shows (FR-UX-08)."
   },
-  "playbackBarLabel": "Playback",
-  "@playbackBarLabel": {
-    "description": "Accessible label of the persistent playback bar (FR-UX-01)."
-  },
-  "playbackNothingPlaying": "Nothing is playing",
-  "@playbackNothingPlaying": {
-    "description": "The playback bar's idle state (FR-UX-01). The bar is present from the first frame, so it says what it is showing rather than sitting blank."
-  },
   "destinationHome": "Home",
   "@destinationHome": {
     "description": "Navigation panel entry for the dashboard the application opens on (UC-14)."
-  },
-  "destinationMusic": "Music",
-  "@destinationMusic": {
-    "description": "Navigation panel entry for audio files (FR-CT-01)."
   },
   "destinationBooks": "Books",
   "@destinationBooks": {
@@ -317,14 +305,6 @@
   "preferencesLanguageSystem": "Match the system",
   "@preferencesLanguageSystem": {
     "description": "Language option: follow the operating system's language when it is one of the two supported, and English otherwise (UC-39 AF-03)."
-  },
-  "playerAutoOpenLabel": "Open the player when a track starts",
-  "@playerAutoOpenLabel": {
-    "description": "UC-21 main flow step 2: whether starting a track puts the full player on screen. What is left of the album-animation preference, which used to choose between a record, a tape and a disc — the animation is gone and the half of the choice that was about behaviour rather than decoration is this."
-  },
-  "playerAutoOpenDescription": "The full player opens by itself whenever something new begins playing.",
-  "@playerAutoOpenDescription": {
-    "description": "UC-21 main flow step 2: what the switch above does, said once."
   },
   "startupRecheckLabel": "Re-check the library at startup",
   "@startupRecheckLabel": {
@@ -1001,22 +981,6 @@
       }
     }
   },
-  "musicViewArtists": "Artists",
-  "@musicViewArtists": {
-    "description": "The music area's artists view, in its view switcher."
-  },
-  "musicViewAlbums": "Albums",
-  "@musicViewAlbums": {
-    "description": "The music area's albums view, in its view switcher."
-  },
-  "musicViewSongs": "Songs",
-  "@musicViewSongs": {
-    "description": "The music area's songs view, listing every track."
-  },
-  "musicBreadcrumbRoot": "Music library",
-  "@musicBreadcrumbRoot": {
-    "description": "The first crumb of the music area's breadcrumb, leading back to the top of the current view. Deliberately distinct from the navigation panel's own 'Music' label (destinationMusic) rather than a translation of it — the panel, the area's heading and this crumb all sit in view together, and giving this one the same word three times over would not help the owner; do not 'correct' it to match destinationMusic."
-  },
   "musicUnknownTitle": "Unknown title",
   "@musicUnknownTitle": {
     "description": "Shown in place of a track's name when its metadata carries no title. The file's name on disk is never shown here."
@@ -1028,14 +992,6 @@
   "musicUnknownAlbum": "Unknown album",
   "@musicUnknownAlbum": {
     "description": "Names the group of audio files whose metadata carries no album."
-  },
-  "musicRowActions": "Actions for this track",
-  "@musicRowActions": {
-    "description": "Tooltip on the button that opens a track row's context menu, which right-clicking the row also opens."
-  },
-  "musicEmpty": "No audio files are catalogued yet.",
-  "@musicEmpty": {
-    "description": "The music area with nothing in it."
   },
   "signOut": "Sign out",
   "@signOut": {
@@ -1308,80 +1264,6 @@
         "type": "String"
       }
     }
-  },
-  "audioPlay": "Play",
-  "@audioPlay": {
-    "description": "UC-20 main flow step 1: plays this track on its own."
-  },
-  "audioShuffleAlbum": "Shuffle album",
-  "@audioShuffleAlbum": {
-    "description": "FR-PL-06: plays the whole record in an order nobody chose. On the row itself, because shuffling a record is something owners do constantly and a control they have to go looking for is one they stop using."
-  },
-  "audioShuffleArtist": "Shuffle artist",
-  "@audioShuffleArtist": {
-    "description": "FR-PL-06: plays everything by the artist in an order nobody chose."
-  },
-  "audioShuffleAll": "Shuffle everything",
-  "@audioShuffleAll": {
-    "description": "FR-PL-06: plays the whole audio library in an order nobody chose, from wherever in the music area the owner is standing."
-  },
-  "audioShuffleAllLabel": "Shuffled library",
-  "@audioShuffleAllLabel": {
-    "description": "FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name."
-  },
-  "audioPlayAlbum": "Play album",
-  "@audioPlayAlbum": {
-    "description": "UC-20 main flow steps 1 and 3: queues the album this track belongs to."
-  },
-  "audioPlayArtist": "Play artist",
-  "@audioPlayArtist": {
-    "description": "UC-20 main flow steps 1 and 3: queues everything by this track's artist."
-  },
-  "audioPause": "Pause",
-  "@audioPause": {
-    "description": "UC-20 main flow step 6: pauses playback where it is."
-  },
-  "audioNext": "Next track",
-  "@audioNext": {
-    "description": "UC-20 main flow step 6 / FR-PL-06: skips forward within the queue."
-  },
-  "audioPrevious": "Previous track",
-  "@audioPrevious": {
-    "description": "UC-20 main flow step 6 / FR-PL-06: skips back within the queue."
-  },
-  "audioStop": "Stop",
-  "@audioStop": {
-    "description": "UC-20 main flow step 7: stops playback and clears the queue."
-  },
-  "audioNothingPlayable": "Nothing in this selection could be played.",
-  "@audioNothingPlayable": {
-    "description": "UC-20 AF-03: every queued file failed, so the queue was cleared."
-  },
-  "audioSkipped": "Skipped {name} — it could not be played.",
-  "@audioSkipped": {
-    "description": "UC-20 AF-01 and AF-02: which file was skipped, named rather than counted, while the queue carries on.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "audioResumePrompt": "You stopped this track at {position}.",
-  "@audioResumePrompt": {
-    "description": "UC-20 AF-04: the resume point for a single track, offered before it starts.",
-    "placeholders": {
-      "position": {
-        "type": "String"
-      }
-    }
-  },
-  "audioOpenPlayer": "Open the player",
-  "@audioOpenPlayer": {
-    "description": "UC-21 main flow step 2: opens the full player, where the album's medium is shown."
-  },
-  "audioClosePlayer": "Close the player",
-  "@audioClosePlayer": {
-    "description": "UC-21 AF-02: leaves the full player and returns to wherever the owner opened it from, without touching playback."
   },
   "viewerOpen": "Open",
   "@viewerOpen": {
@@ -2378,7 +2260,7 @@
   },
   "activityBarLabel": "Background indexing",
   "@activityBarLabel": {
-    "description": "FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now."
+    "description": "FR-FC-29: the accessible name of the strip along the bottom of the shell, which reports whatever the core is indexing right now."
   },
   "activityDiscovering": "Scanning folders…",
   "@activityDiscovering": {
@@ -2548,18 +2430,6 @@
   "activityDismiss": "Dismiss",
   "@activityDismiss": {
     "description": "FR-FC-29: clears a failed run's report from the strip. The strip's own rather than the text editor's, so that renaming one does not silently change the other."
-  },
-  "audioSoundBarsLabel": "Sound levels",
-  "@audioSoundBarsLabel": {
-    "description": "UC-21: names the moving bars on the player screen for a screen reader. They are an instrument that runs with the music rather than a control, so the label says what they show rather than what pressing them would do."
-  },
-  "audioTransportSemantics": "Player controls",
-  "@audioTransportSemantics": {
-    "description": "UC-21: names the transport buttons drawn on the device in the full player, so a screen reader reaching them is told what the group of controls is."
-  },
-  "albumCoverLabel": "Album cover",
-  "@albumCoverLabel": {
-    "description": "UC-21, FR-UX-01: what the playback bar's recess is showing when the album carries its own picture. Named for a screen reader, which would otherwise be told the recess holds a turning record when it holds a photograph of a sleeve."
   },
   "destinationLibraries": "Libraries",
   "@destinationLibraries": {

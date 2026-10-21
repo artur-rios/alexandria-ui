@@ -75,7 +75,6 @@ void main() {
 
         expect(find.text(l10n.preferencesThemeLabel), findsOneWidget);
         expect(find.text(l10n.preferencesLanguageLabel), findsOneWidget);
-        expect(find.text(l10n.playerAutoOpenLabel), findsNothing);
         expect(find.text(l10n.startupRecheckLabel), findsNothing);
       },
     );
@@ -92,7 +91,6 @@ void main() {
 
       expect(find.text(l10n.preferencesThemeLabel), findsOneWidget);
       expect(find.text(l10n.preferencesLanguageLabel), findsOneWidget);
-      expect(find.text(l10n.playerAutoOpenLabel), findsOneWidget);
       expect(find.text(l10n.startupRecheckLabel), findsOneWidget);
     });
 
@@ -201,89 +199,7 @@ void main() {
     );
   });
 
-  group('opening the player by itself (FR-PL-11)', () {
-    testWidgets('GivenPreferences_WhenTheyOpen_ThenTheAutoOpenIsOfferedAndOn', (
-      tester,
-    ) async {
-      // What is left of the album-animation choice. That preference picked
-      // which medium an animation showed — a record, a tape or a disc —
-      // and the animation is gone; the half of it that was about behaviour
-      // rather than decoration is this switch, and it ships on.
-      await openFromShell(tester);
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(PreferencesDialog)),
-      );
-
-      final auto = find.widgetWithText(
-        SwitchListTile,
-        l10n.playerAutoOpenLabel,
-      );
-      expect(auto, findsOneWidget);
-      expect(tester.widget<SwitchListTile>(auto).value, isTrue);
-    });
-
-    testWidgets(
-      'GivenPreferences_WhenTheAutoOpenIsTurnedOff_ThenItIsAppliedAndStored',
-      (tester) async {
-        // The controller's own state holds the applied value whether or not
-        // the write reached the store — that is exactly AF-02's "applied but
-        // not saved" case. A test named "...AndStored" has to look at the
-        // store itself, or it would pass unchanged if the write silently
-        // failed.
-        final store = InMemorySettingsStore();
-        await openFromShell(tester, settings: store);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-        final container = ProviderScope.containerOf(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-
-        await tester.tap(
-          find.widgetWithText(SwitchListTile, l10n.playerAutoOpenLabel),
-        );
-        await tester.pumpAndSettle();
-
-        expect(
-          container.read(preferencesControllerProvider).opensPlayerOnPlay,
-          isFalse,
-        );
-        expect(store.opensPlayerOnPlay, isFalse);
-      },
-    );
-
-    testWidgets(
-      'GivenTheStoreRefusesAWrite_WhenTheAutoOpenIsTurnedOff_ThenTheOwnerIsTold',
-      (tester) async {
-        // UC-39 AF-02, for this preference specifically: the write-through
-        // path is shared code, and nothing exercised it for this setter.
-        await tester.pumpShellWithFailingSettings();
-        await tester.openSettingsMenuEntry(
-          AppLocalizations.of(
-            tester.element(find.byType(ShellScreen)),
-          ).preferencesLabel,
-        );
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-        final container = ProviderScope.containerOf(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-
-        await tester.tap(
-          find.widgetWithText(SwitchListTile, l10n.playerAutoOpenLabel),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text(l10n.preferencesUnsaved), findsOneWidget);
-        expect(
-          container.read(preferencesControllerProvider).opensPlayerOnPlay,
-          isFalse,
-          reason: 'AF-02: the choice applies for this session either way',
-        );
-      },
-    );
-
+  group('the minimum window (NFR-07)', () {
     testWidgets(
       'GivenTheMinimumWindow_WhenPreferencesOpen_ThenTheLastOptionIsReachable',
       (tester) async {
@@ -371,7 +287,7 @@ void main() {
       'GivenAChosenDestination_WhenTheThemeChanges_ThenTheOwnerStaysThere',
       (tester) async {
         // AF-04 names playback and an index run, neither of which exists yet
-        // (UC-19, UC-20, UC-06). The property they share with what does exist
+        // (UC-19, UC-06). The property they share with what does exist
         // is that a preference change is not a reset, and the shell's
         // destination is the state available to prove it on.
         final container = await tester.pumpShell();

@@ -1,11 +1,11 @@
 /// The areas the navigation panel offers (FR-UX-01, FR-CT-01).
 ///
-/// Eight of these are the library's types: the seven the core classifies files
-/// into, plus bookmarks, which are not files at all and are listed through
-/// their own core call (UC-28). [home] is the tenth and is not a file type — it is where UC-14's
-/// dashboard lands, and the panel carries it because "the application opens the
-/// dashboard after login" (UC-14 main flow step 1) would otherwise describe a
-/// screen the owner can never navigate back to.
+/// Seven of these are the library's types: the six of the core's file types
+/// the panel lists, plus bookmarks, which are not files at all and are listed
+/// through their own core call (UC-28). [home] is not a file type — it is
+/// where UC-14's dashboard lands, and the panel carries it because "the
+/// application opens the dashboard after login" (UC-14 main flow step 1)
+/// would otherwise describe a screen the owner can never navigate back to.
 ///
 /// The shell owns *that there is a panel and what it selects*. The item count
 /// beside each type and the listing behind it are UC-09's, and arrive as a
@@ -13,9 +13,6 @@
 enum ShellDestination {
   /// The dashboard the application opens on (UC-14).
   home,
-
-  /// Audio files.
-  music,
 
   /// Video of every kind.
   ///

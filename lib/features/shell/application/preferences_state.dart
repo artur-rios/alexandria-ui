@@ -20,7 +20,6 @@ sealed class PreferencesState with _$PreferencesState {
   const factory PreferencesState({
     @Default(ThemeMode.system) ThemeMode themeMode,
     Locale? locale,
-    @Default(true) bool opensPlayerOnPlay,
     @Default(true) bool rechecksAtStartup,
     @Default(false) bool lastChangeUnsaved,
   }) = _PreferencesState;

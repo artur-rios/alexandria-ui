@@ -20,35 +20,24 @@ import '../../library_sources/presentation/library_sources_screen.dart';
 /// that: the scan is visible from everywhere, and leaving the screen it was
 /// started from no longer hides it.
 ///
-/// Unlike the playback bar below it, this takes *no* height when nothing is
-/// running. The bar is persistent because a track can start at any moment and
-/// a bar that appeared would reflow the listing behind it; the strip appears
-/// only in answer to a scan the owner just started, so a reflow is expected
-/// rather than surprising — and the animation is what makes it read as
-/// intentional.
+/// It takes *no* height when nothing is running. The strip appears only in
+/// answer to a scan the owner just started, so a reflow is expected rather
+/// than surprising — and the animation is what makes it read as intentional.
 class BackgroundActivityStrip extends ConsumerStatefulWidget {
   /// Creates the strip.
   const BackgroundActivityStrip({super.key});
 
   /// The height the strip takes when there is nothing to report.
   ///
-  /// Zero rather than a reserved sliver: the playback bar below holds the
-  /// bottom of the shell from the first frame because a track can start at any
-  /// moment, but nobody is owed a strip they will never see. Anyone not
-  /// indexing gets the shell exactly as it was.
+  /// Zero rather than a reserved sliver: nobody is owed a strip they will
+  /// never see. Anyone not indexing gets the shell exactly as it was.
   static const double collapsedHeight = 0;
 
   /// The height of the row, in logical pixels.
   ///
-  /// One line of text with its controls, and deliberately less than the
-  /// playback bar's own `PlaybackBar.height` (80 — Task 8's visor, not the
-  /// bar's original 64): this reports on work the owner set going and left,
-  /// not something they are operating. A plain-text reference, not a
-  /// `[PlaybackBar.height]` doc link: linking it would need an import this
-  /// file has no other reason to carry, and a dartdoc `[...]` reference does
-  /// not count as a use for `unused_import` anyway, so the link would not
-  /// even keep this number honest — a human still has to notice the bar
-  /// changed and update the words here, the same as today.
+  /// One line of text with its controls, and deliberately slim: this
+  /// reports on work the owner set going and left, not something they are
+  /// operating.
   static const double expandedHeight = 40;
 
   @override

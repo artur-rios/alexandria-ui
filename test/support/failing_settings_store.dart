@@ -12,7 +12,6 @@ class FailingSettingsStore implements SettingsStore {
   FailingSettingsStore({
     ThemeMode themeMode = ThemeMode.system,
     Locale? locale,
-    bool opensPlayerOnPlay = true,
     bool rechecksAtStartup = true,
   })
     // The fields are private and a named parameter cannot be, so
@@ -23,13 +22,10 @@ class FailingSettingsStore implements SettingsStore {
        // ignore: prefer_initializing_formals
        _locale = locale,
        // ignore: prefer_initializing_formals
-       _opensPlayerOnPlay = opensPlayerOnPlay,
-       // ignore: prefer_initializing_formals
        _rechecksAtStartup = rechecksAtStartup;
 
   final ThemeMode _themeMode;
   final Locale? _locale;
-  final bool _opensPlayerOnPlay;
   final bool _rechecksAtStartup;
 
   /// Every write attempted, so a test can assert the store really was asked.
@@ -50,15 +46,6 @@ class FailingSettingsStore implements SettingsStore {
   @override
   Future<void> setLocale(Locale? locale) async {
     attempted.add('locale');
-    throw const FileSystemException('the settings file is read-only');
-  }
-
-  @override
-  bool get opensPlayerOnPlay => _opensPlayerOnPlay;
-
-  @override
-  Future<void> setOpensPlayerOnPlay(bool value) async {
-    attempted.add('opensPlayerOnPlay');
     throw const FileSystemException('the settings file is read-only');
   }
 

@@ -93,16 +93,6 @@ class FakeCatalogGateway implements CatalogGateway {
   /// shows it.
   final List<bool> libraryReaches = [];
 
-  /// Every call to [listFiles], in order. `null` is a call that asked for
-  /// every type at once.
-  ///
-  /// What the music library's "one call" assertion counts. Counts every
-  /// type asked for, not just audio — meaningful on its own only for a
-  /// fixture that lists one type, such as the music library's. The paired
-  /// `expect(gateway.detailsRequested, isEmpty)` is what actually catches a
-  /// regression to per-file reads.
-  int get listCalls => requested.length;
-
   @override
   Future<CatalogListing> listFiles({
     required String credential,
@@ -174,9 +164,9 @@ class FakeCatalogGateway implements CatalogGateway {
   /// read, to both the audio listing and [details] in one call.
   ///
   /// The two are otherwise separate maps a test has to keep in step by hand;
-  /// a music library test only ever wants "a file with these tags".
+  /// an audio naming test only ever wants "a file with these tags".
   ///
-  /// [name] defaults to a name derived from [uuid]; a music area test passes
+  /// [name] defaults to a name derived from [uuid]; a naming test passes
   /// one explicitly when it needs a name unmistakable enough to prove FR-CT-13
   /// by its absence from the screen.
   ///
@@ -321,46 +311,6 @@ class FakeCatalogGateway implements CatalogGateway {
     }
 
     return renameOutcomes.removeAt(0);
-  }
-
-  /// What [fileThumbnail] answers, keyed by uuid.
-  ///
-  /// A uuid with no entry answers `InvalidInput` — the core's own answer for
-  /// a file with no embedded picture, and the ordinary case a test does not
-  /// have to opt into.
-  final Map<String, FileThumbnailOutcome> thumbnails = {};
-
-  /// Every uuid a thumbnail was asked for, in order.
-  final List<String> thumbnailsRequested = [];
-
-  /// Held open to keep a [fileThumbnail] call in flight, so a test can
-  /// observe the case mid-fetch — in particular, a cover arriving after an
-  /// insertion has already begun (design section 4). Completed by
-  /// [releaseThumbnail].
-  Completer<void>? _thumbnailGate;
-
-  /// Makes the next [fileThumbnail] call hang until [releaseThumbnail].
-  void holdThumbnail() => _thumbnailGate = Completer<void>();
-
-  /// Lets a held [fileThumbnail] call finish.
-  void releaseThumbnail() => _thumbnailGate?.complete();
-
-  @override
-  Future<FileThumbnailOutcome> fileThumbnail({
-    required String uuid,
-    required String credential,
-  }) async {
-    thumbnailsRequested.add(uuid);
-    credentials.add(credential);
-    await _thumbnailGate?.future;
-
-    return thumbnails[uuid] ??
-        const FileThumbnailOutcome.failed(
-          failure: Failure.invalidInput(
-            family: CoreStatusFamily.playback,
-            code: 1,
-          ),
-        );
   }
 }
 

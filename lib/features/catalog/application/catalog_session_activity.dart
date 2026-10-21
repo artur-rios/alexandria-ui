@@ -46,10 +46,6 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(musicMetadataEditorProvider);
     _ref.invalidate(videoMetadataEditorProvider);
     _ref.invalidate(fileRenameControllerProvider);
-    // Read from the catalog, so it goes when the catalog does (UC-20), or the
-    // next sign-in would start out showing the library the session that just
-    // ended read.
-    _ref.invalidate(musicLibraryProvider);
     // The bookmarks are the core's too, and just as much a trace of the
     // session as the catalog (UC-28).
     _ref.invalidate(bookmarksControllerProvider);

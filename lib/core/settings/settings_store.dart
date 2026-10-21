@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 /// The owner's local preferences (IR-12, FR-UX-12).
 ///
 /// What this holds is owner-facing state changed in the interface: theme,
@@ -30,13 +29,6 @@ abstract interface class SettingsStore {
 
   /// Records the owner's language choice. Applied immediately.
   Future<void> setLocale(Locale? locale);
-
-  /// Whether the player opens itself when a track starts, or `true` when the
-  /// owner has not said (UC-21 main flow step 2, FR-PL-11).
-  bool get opensPlayerOnPlay;
-
-  /// Records [value] for the next launch.
-  Future<void> setOpensPlayerOnPlay(bool value);
 
   /// Whether the library is re-checked when a session is established, or
   /// `true` when the owner has not said (FR-LB-21).

@@ -5,7 +5,6 @@ import 'package:alexandria_ui/core/bindings/core_client.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/startup/core_paths.dart';
-import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +12,6 @@ import 'package:flutter_test/flutter_test.dart';
 // the list ProviderContainer and ProviderScope already take.
 import 'package:riverpod/misc.dart';
 
-import 'fake_auth_gateway.dart';
 import 'fake_core_client.dart';
 import 'in_memory_settings_store.dart';
 
@@ -74,31 +72,6 @@ ProviderContainer buildTestContainer({List<Override>? overrides}) {
     overrides: overrides ?? fakeCoreOverrides(),
   );
   addTearDown(container.dispose);
-  return container;
-}
-
-/// A signed-in [ProviderContainer] with [gateway] as the catalog gateway.
-///
-/// For an application-level test that only cares about the catalog: no
-/// startup sequence and no widget tree, just a session already established so
-/// a controller that reads [sessionControllerProvider] for a credential finds
-/// one.
-ProviderContainer testContainer({required CatalogGateway gateway}) {
-  final container = ProviderContainer(
-    overrides: [catalogGatewayProvider.overrideWithValue(gateway)],
-  );
-  addTearDown(container.dispose);
-
-  // No startup ever runs over this container, so it is honest about never
-  // having a core to re-check against. `establish`'s own unawaited call to
-  // `begin()` (FR-LB-21) does still reach for one that was never loaded — a
-  // scenario this helper's callers have nothing to do with — but
-  // `SessionController` now catches and logs that rather than letting it
-  // become an unhandled zone error, so nothing here needs to pre-empt it.
-  container
-      .read(sessionControllerProvider.notifier)
-      .establish(FakeAuthGateway.defaultSession);
-
   return container;
 }
 
