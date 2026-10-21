@@ -7,7 +7,6 @@
 // boundary and so is the last rule that should be switched off here. Every
 // reply the protocol guarantees goes through [_reply] instead.
 
-import 'core_environment.dart';
 import 'core_isolate.dart';
 
 /// The application's view of the Alexandria core.
@@ -27,18 +26,7 @@ abstract interface class CoreClient {
 
   /// Initializes the core against [databasePath], creating and migrating the
   /// database on demand. Returns the core's status code.
-  ///
-  /// [musicLookup] is the owner's music-enrichment choice, applied to the
-  /// core's environment immediately before the call that reads it (music
-  /// enrichment design). A parameter rather than a separate "configure" call
-  /// because the core reads its settings exactly once, at this call: anything
-  /// that has to be decided before enrichment works has to be decided here or
-  /// not at all, and a caller that could initialize without saying would be a
-  /// caller that could silently leave the feature off.
-  Future<int> initialize(
-    String databasePath, {
-    required MusicLookup musicLookup,
-  });
+  Future<int> initialize(String databasePath);
 
   /// Authenticates through `alexandria_auth_local_login` (FR-AU-04).
   ///
@@ -548,48 +536,6 @@ abstract interface class CoreClient {
   /// The files are kept and return to the type panels.
   Future<CoreJsonResponse> libraryRemove(String uuid, String token);
 
-  /// Runs music enrichment through `alexandria_enrichment_run` (music
-  /// enrichment design).
-  ///
-  /// [scopeJson] names what to enrich — an empty string sweeps everything
-  /// not yet looked up, `{"fileUuid":…}` scopes it to one track,
-  /// `{"artist":…}` to one artist.
-  ///
-  /// **The one call in this application that reaches the network**, and the
-  /// only one that is slow by design: MusicBrainz is rate-limited to one
-  /// request per second, so a sweep over a large library runs for hours.
-  /// Every other call here returns in milliseconds; this one must never be
-  /// awaited anywhere a frame is waiting on it.
-  Future<CoreJsonResponse> enrichmentRun(String scopeJson, String token);
-
-  /// Reads what enrichment stored for one track through
-  /// `alexandria_enrichment_read_track`.
-  ///
-  /// [artist] is whose image to read — the caller is already showing the
-  /// track and holding its tags, so passing the name costs nothing where
-  /// resolving it again would be a second lookup. Makes no network call and
-  /// works whether or not enrichment is switched on.
-  Future<CoreJsonResponse> enrichmentReadTrack(
-    String uuid,
-    String artist,
-    String token,
-  );
-
-  /// Reads the photograph stored for an artist, by name, through
-  /// `alexandria_artist_image` (FR-PL-15).
-  ///
-  /// A read: it never reaches the network, which is what makes it safe to
-  /// call once per row of an artists list.
-  Future<CoreJsonResponse> artistImage(String name, String token);
-
-  /// Looks an artist's photograph up through `alexandria_artist_image_fetch`
-  /// (FR-PL-15).
-  ///
-  /// **Reaches the network**, once, for one artist — and not at all for an
-  /// artist already looked up, found or not. Never awaited anywhere a frame
-  /// is waiting on it.
-  Future<CoreJsonResponse> artistImageFetch(String name, String token);
-
   /// Reads a track's energy envelope through `alexandria_track_energy`
   /// (UC-21, FR-MP-07).
   ///
@@ -703,20 +649,8 @@ class FfiCoreClient implements CoreClient {
       _reply<int>(await _isolate.call('healthStatus'));
 
   @override
-  Future<int> initialize(
-    String databasePath, {
-    required MusicLookup musicLookup,
-  }) async => _reply<int>(
-    // Sent apart rather than as one object: what crosses to the isolate is a
-    // plain list of primitives everywhere else in this class, and a value
-    // type in the middle of it would be the only thing here relying on what
-    // Dart can send between isolates.
-    await _isolate.call('init', [
-      databasePath,
-      musicLookup.enabled,
-      musicLookup.contact,
-    ]),
-  );
+  Future<int> initialize(String databasePath) async =>
+      _reply<int>(await _isolate.call('init', [databasePath]));
 
   @override
   Future<CoreJsonResponse> authLocalLogin(String jsonBody) async =>
@@ -1197,35 +1131,6 @@ class FfiCoreClient implements CoreClient {
   Future<CoreJsonResponse> libraryRemove(String uuid, String token) async =>
       _reply<CoreJsonResponse>(
         await _isolate.call('libraryRemove', [uuid, token]),
-      );
-
-  @override
-  Future<CoreJsonResponse> enrichmentRun(
-    String scopeJson,
-    String token,
-  ) async => _reply<CoreJsonResponse>(
-    await _isolate.call('enrichmentRun', [scopeJson, token]),
-  );
-
-  @override
-  Future<CoreJsonResponse> enrichmentReadTrack(
-    String uuid,
-    String artist,
-    String token,
-  ) async => _reply<CoreJsonResponse>(
-    await _isolate.call('enrichmentReadTrack', [uuid, artist, token]),
-  );
-
-  @override
-  Future<CoreJsonResponse> artistImage(String name, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('artistImage', [name, token]),
-      );
-
-  @override
-  Future<CoreJsonResponse> artistImageFetch(String name, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('artistImageFetch', [name, token]),
       );
 
   @override

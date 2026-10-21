@@ -1,5 +1,4 @@
 import 'package:alexandria_ui/core/bindings/core_client.dart';
-import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/bindings/core_isolate.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -44,31 +43,14 @@ void main() {
     client = FfiCoreClient(isolate);
   });
 
-  test(
-    'GivenAPathAndLookup_WhenInitializeIsCalled_ThenTheIsolateReceivesThemInOrder',
-    () async {
-      // The music-lookup configuration rides along with the path because the
-      // core reads its settings at this one call and nowhere else: the
-      // isolate applies it to the environment immediately before it, so the
-      // order of these three arguments is load-bearing.
-      isolate.reply = 0;
+  test('GivenAPath_WhenInitializeIsCalled_ThenTheIsolateReceivesIt', () async {
+    isolate.reply = 0;
 
-      await client.initialize(
-        'catalog.db',
-        musicLookup: const MusicLookup(
-          enabled: true,
-          contact: 'owner@example.com',
-        ),
-      );
+    await client.initialize('catalog.db');
 
-      expect(isolate.calls.single.operation, 'init');
-      expect(isolate.calls.single.arguments, [
-        'catalog.db',
-        true,
-        'owner@example.com',
-      ]);
-    },
-  );
+    expect(isolate.calls.single.operation, 'init');
+    expect(isolate.calls.single.arguments, ['catalog.db']);
+  });
 
   test(
     'GivenABodyAndToken_WhenPlaylistCreateIsCalled_ThenTheIsolateReceivesThemInOrder',

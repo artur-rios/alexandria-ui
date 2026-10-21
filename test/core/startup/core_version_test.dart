@@ -28,11 +28,10 @@ void main() {
 
   test('GivenThePreviousMinorLine_WhenItIsChecked_ThenItIsNotSupported', () {
     // The case this check earned its keep on: an owner who rebuilt one
-    // repository and not the other ran a core whose metadata stamp and
-    // lyrics fallback did not exist, and saw two features quietly do
-    // nothing. The same would now be true of a core with no way to measure
-    // a track's sound: the bars would rest for every song and nothing would
-    // say why. Refused at startup, by name and version, it is a sentence
+    // repository and not the other ran a core whose metadata stamp did not
+    // exist, and saw a feature quietly do nothing. The same would now be true
+    // of a core with no way to measure a track's sound: the bars would rest
+    // for every song and nothing would say why. Refused at startup, by name and version, it is a sentence
     // instead of a mystery.
     expect(CoreVersionRange.supports('0.3.0'), isFalse);
   });

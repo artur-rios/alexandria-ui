@@ -110,17 +110,10 @@ import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/playlists/application/playlist_detail_controller.dart';
 import '../../features/playlists/application/playlists_controller.dart';
-import '../../features/enrichment/application/artist_portrait_backfill_controller.dart';
-import '../../features/enrichment/application/enrichment_run_controller.dart';
-import '../../features/enrichment/application/enrichment_sweep_controller.dart';
-import '../../features/enrichment/application/track_enrichment_controller.dart';
-import '../../features/enrichment/domain/track_enrichment.dart';
-import '../../features/enrichment/data/core_enrichment_gateway.dart';
 import '../../features/libraries/application/libraries_controller.dart';
 import '../../features/libraries/data/core_library_gateway.dart';
 import '../../features/libraries/domain/library.dart';
 import '../../features/libraries/domain/library_gateway.dart';
-import '../../features/enrichment/domain/enrichment_gateway.dart';
 import '../../features/playlists/data/core_playlist_gateway.dart';
 import '../../features/playlists/domain/playlist.dart';
 import '../../features/playlists/domain/playlist_gateway.dart';
@@ -982,32 +975,6 @@ final playlistsControllerProvider =
       PlaylistsController.new,
     );
 
-/// The core's music enrichment operations (music enrichment design).
-final enrichmentGatewayProvider = Provider<EnrichmentGateway>((ref) {
-  final core = _loadedCore(ref);
-  if (core == null) {
-    throw StateError(
-      'the enrichment gateway was read before the core was loaded',
-    );
-  }
-
-  return CoreEnrichmentGateway(core);
-});
-
-/// What enrichment holds for one track, keyed by track and artist (music
-/// enrichment design).
-///
-/// Auto-disposed, which a family is not by default: a player moves through a
-/// queue, and without it an entry for every track ever played is held for
-/// the life of the container and never read again — so a track enriched
-/// after it was first shown would never pick that up.
-final trackEnrichmentControllerProvider =
-    AsyncNotifierProvider.family<
-      TrackEnrichmentController,
-      TrackEnrichment,
-      TrackEnrichmentKey
-    >(TrackEnrichmentController.new, isAutoDispose: true);
-
 /// The core's energy envelopes (UC-21, FR-MP-07).
 final energyGatewayProvider = Provider<EnergyGateway>((ref) {
   final core = _loadedCore(ref);
@@ -1027,28 +994,6 @@ final trackEnergyControllerProvider =
     AsyncNotifierProvider.family<TrackEnergyController, TrackEnergy?, String>(
       TrackEnergyController.new,
       isAutoDispose: true,
-    );
-
-/// The photograph stored for one artist, by name (FR-PL-15).
-///
-/// Auto-disposed, which a family is not by default: a library has hundreds of
-/// artists and a list shows a screenful, so an entry per artist ever scrolled
-/// past would be held for the life of the container and never read again.
-final artistImageControllerProvider =
-    AsyncNotifierProvider.family<ArtistImageController, ArtistImage?, String>(
-      ArtistImageController.new,
-      isAutoDispose: true,
-    );
-
-/// The startup pass that fetches the photograph of every artist that has
-/// none (FR-PL-15).
-///
-/// Kept alive by the shell rather than by whoever is looking at the artists
-/// list: it is a startup job, and an owner who never opens the music area is
-/// still an owner whose artists have faces the next time they do.
-final artistPortraitBackfillProvider =
-    NotifierProvider<ArtistPortraitBackfillController, ArtistPortraitBackfill>(
-      ArtistPortraitBackfillController.new,
     );
 
 /// The core's play history operations (play history design).
@@ -1101,18 +1046,6 @@ final libraryTreeControllerProvider =
       LibraryListing?,
       LibraryLocation
     >(LibraryTreeController.new, isAutoDispose: true);
-
-/// A library-wide lookup, walked a batch at a time.
-final enrichmentSweepControllerProvider =
-    NotifierProvider<EnrichmentSweepController, SweepState>(
-      EnrichmentSweepController.new,
-    );
-
-/// A lookup the owner asked for, and what it concluded.
-final enrichmentRunControllerProvider =
-    NotifierProvider<EnrichmentRunController, EnrichmentRunState>(
-      EnrichmentRunController.new,
-    );
 
 /// The playlists screen's own state.
 final playlistsFormProvider = NotifierProvider<PlaylistsForm, PlaylistsState>(

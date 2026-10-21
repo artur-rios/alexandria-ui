@@ -1,7 +1,6 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
-import 'package:alexandria_ui/features/enrichment/presentation/lyrics_button.dart';
 import 'package:alexandria_ui/features/playback/presentation/sound_bars.dart';
 import 'package:alexandria_ui/features/playback/presentation/album_visor.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
@@ -577,41 +576,6 @@ void main() {
         await settle(tester);
 
         expect(find.byType(NowPlayingScreen), findsOneWidget);
-      },
-    );
-  });
-
-  group('the words, beside the player (music enrichment design)', () {
-    testWidgets(
-      'GivenThePlayerIsOpen_WhenTheLyricsAreAskedFor_ThenTheyOpenBesideIt',
-      (tester) async {
-        // Beside, not over: timed lines are read while the music runs, and a
-        // sheet over the player put the screen they belong to behind them.
-        await play(tester);
-
-        await tester.tap(find.byIcon(Icons.lyrics_outlined));
-        await settle(tester);
-
-        expect(find.byType(LyricsPanel), findsOneWidget);
-        expect(
-          tester.getTopLeft(find.byType(LyricsPanel)).dx,
-          greaterThan(tester.getCenter(find.byType(SoundBars)).dx),
-          reason: 'the words take the right of the window',
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenTheWordsAreOpen_WhenTheButtonIsPressedAgain_ThenTheyClose',
-      (tester) async {
-        await play(tester);
-
-        await tester.tap(find.byIcon(Icons.lyrics_outlined));
-        await settle(tester);
-        await tester.tap(find.byIcon(Icons.lyrics));
-        await settle(tester);
-
-        expect(find.byType(LyricsPanel), findsNothing);
       },
     );
   });

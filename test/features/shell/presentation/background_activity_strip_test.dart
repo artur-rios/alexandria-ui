@@ -11,7 +11,6 @@ import 'package:alexandria_ui/features/shell/presentation/background_activity_st
 import 'package:alexandria_ui/features/shell/presentation/playback_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:alexandria_ui/features/enrichment/application/artist_portrait_backfill_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
@@ -730,95 +729,6 @@ void main() {
       },
     );
   });
-
-  group('the artist-photograph pass (FR-PL-15)', () {
-    testWidgets('GivenThePassIsRunning_WhenTheStripIsShown_ThenItSaysSo', (
-      tester,
-    ) async {
-      // The indication the owner was owed: pictures appearing an hour into a
-      // session are inexplicable unless something says a pass is under way —
-      // and a pass that never started is indistinguishable from a feature
-      // that does not work, which is exactly what it looked like.
-      await pumpStrip(
-        tester,
-        extraOverrides: [
-          artistPortraitBackfillProvider.overrideWith(
-            () => _FixedPortraits(
-              const ArtistPortraitBackfill(
-                isRunning: true,
-                considered: 12,
-                total: 40,
-                fetched: 9,
-              ),
-            ),
-          ),
-        ],
-      );
-
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(BackgroundActivityStrip)),
-      );
-      expect(find.text(l10n.artistPortraitsProgress(12, 40)), findsOneWidget);
-
-      // Turning, not filling: a determinate ring only moves when an artist
-      // is finished with, and a lookup takes a second or two — so it stood
-      // still long enough to read as a picture of a spinner. How far through
-      // it is, the words beside it say exactly.
-      final spinner = tester.widget<CircularProgressIndicator>(
-        find.byType(CircularProgressIndicator),
-      );
-      expect(spinner.value, isNull);
-    });
-
-    testWidgets('GivenThePassIsDone_WhenTheStripIsShown_ThenItTakesNoRoom', (
-      tester,
-    ) async {
-      // Nobody is owed a strip they will never see: a finished pass leaves
-      // the shell exactly as it was.
-      await pumpStrip(
-        tester,
-        extraOverrides: [
-          artistPortraitBackfillProvider.overrideWith(
-            () => _FixedPortraits(
-              const ArtistPortraitBackfill(considered: 40, total: 40),
-            ),
-          ),
-        ],
-      );
-
-      expect(
-        tester.getSize(find.byType(BackgroundActivityStrip)).height,
-        BackgroundActivityStrip.collapsedHeight,
-      );
-    });
-
-    testWidgets('GivenAScanIsRunning_WhenThePassIsToo_ThenTheScanIsShown', (
-      tester,
-    ) async {
-      // An index run is work the owner started and is waiting on; the pass is
-      // one they never asked for by name. One row, so the scan takes it.
-      await pumpStrip(
-        tester,
-        runs: [processingRun],
-        extraOverrides: [
-          artistPortraitBackfillProvider.overrideWith(
-            () => _FixedPortraits(
-              const ArtistPortraitBackfill(
-                isRunning: true,
-                considered: 1,
-                total: 9,
-              ),
-            ),
-          ),
-        ],
-      );
-
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(BackgroundActivityStrip)),
-      );
-      expect(find.text(l10n.artistPortraitsProgress(1, 9)), findsNothing);
-    });
-  });
 }
 
 /// An [ActiveRunsController] that records the control calls made on it.
@@ -870,15 +780,4 @@ class RecordingActiveRunsController extends ActiveRunsController {
   @override
   Future<void> resume(String runId, {RunPriority? priority}) async =>
       calls.add('resume:$runId:${priority?.name}');
-}
-
-/// An [ArtistPortraitBackfillController] holding a fixed state, so the strip
-/// can be shown a pass without a library or a network behind it.
-class _FixedPortraits extends ArtistPortraitBackfillController {
-  _FixedPortraits(this._state);
-
-  final ArtistPortraitBackfill _state;
-
-  @override
-  ArtistPortraitBackfill build() => _state;
 }

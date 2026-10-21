@@ -5,7 +5,6 @@ import '../../lifecycle/presentation/deleted_items_screen.dart';
 import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../organization/presentation/collections_screen.dart';
-import '../../enrichment/presentation/enrichment_sweep_screen.dart';
 import '../../playlists/presentation/playlists_screen.dart';
 import '../../stats/presentation/music_stats_screen.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
@@ -16,7 +15,7 @@ import 'menu_entry.dart';
 /// FR-UX-01).
 ///
 /// The screens that belong to no single file type — sources, collections,
-/// watchlists, reading lists, playlists, the music lookup, the statistics,
+/// watchlists, reading lists, playlists, the statistics,
 /// deleted items, and the missing-files review — and so are not destinations
 /// of their own (FR-CT-01). The libraries were here too until they became
 /// one: they are somewhere the owner browses rather than something they do. They were
@@ -71,12 +70,7 @@ class LibraryMenu extends StatelessWidget {
           label: l10n.playlistsOpen,
           onSelected: () => PlaylistsScreen.show(context),
         ),
-        MenuEntry(
-          icon: Icons.travel_explore_outlined,
-          label: l10n.enrichmentSweepOpen,
-          onSelected: () => EnrichmentSweepScreen.show(context),
-        ),
-        // Beside the playlists and the lookup, in the group that is about
+        // Beside the playlists, in the group that is about
         // what the owner does with the library rather than what is in it:
         // this is the only screen here that answers a question about the
         // owner instead of about their files.

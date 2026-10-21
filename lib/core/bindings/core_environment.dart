@@ -102,70 +102,6 @@ final int Function(Pointer<Char>, Pointer<Char>, int) _setenv =
         >('setenv')
         .asFunction();
 
-/// The core's music-enrichment switch, read at `alexandria_index_init`.
-const String coreMetadataEnabledVariable = 'ALEXANDRIA_METADATA_ENABLED';
-
-/// The core's MusicBrainz contact, read at `alexandria_index_init`.
-const String coreMetadataContactVariable = 'ALEXANDRIA_METADATA_CONTACT';
-
-/// The contact this application identifies itself to MusicBrainz with when
-/// the owner has named none of their own.
-///
-/// Not politeness and not decoration: MusicBrainz's terms require a
-/// `User-Agent` naming the application *and* carrying a way to reach whoever
-/// is responsible for the traffic, and they are entitled to block clients
-/// that supply neither — the core refuses to start a lookup while it is
-/// empty rather than send an anonymous agent string and have this software
-/// blocked for everyone using it. This is the address of whoever publishes
-/// this application, which is who MusicBrainz would be writing to about a
-/// stock installation; an owner who would rather answer for their own
-/// traffic replaces it in the preferences dialog.
-const String defaultMusicLookupContact = 'arturdev@duck.com';
-
-/// What the core is configured to do about music enrichment: whether it may
-/// run at all, and who to name as the contact when it does (music enrichment
-/// design).
-///
-/// A value rather than two loose parameters because the two travel together
-/// everywhere — into the isolate, into the settings store, and into the
-/// comparison that decides whether an already-initialized core has to be
-/// re-initialized to pick a change up.
-class MusicLookup {
-  /// Creates a configuration.
-  const MusicLookup({required this.enabled, required this.contact});
-
-  /// Enrichment switched off, which is what the core itself defaults to.
-  static const MusicLookup off = MusicLookup(enabled: false, contact: '');
-
-  /// Whether the core may reach the lookup services at all.
-  final bool enabled;
-
-  /// How MusicBrainz can reach whoever runs this installation.
-  final String contact;
-
-  /// Whether a lookup would actually be accepted — the core's own rule
-  /// (`MetadataSettings::unavailable_reason`), which refuses a switched-on
-  /// feature with no contact just as firmly as a switched-off one. Read
-  /// here so the interface can offer the lookup exactly when the core would
-  /// honour it, rather than offering it and watching every call fail.
-  bool get isAvailable => enabled && contact.trim().isNotEmpty;
-
-  @override
-  bool operator ==(Object other) =>
-      other is MusicLookup &&
-      other.enabled == enabled &&
-      other.contact == contact;
-
-  @override
-  int get hashCode => Object.hash(enabled, contact);
-
-  @override
-  String toString() => 'MusicLookup(enabled: $enabled, contact: $contact)';
-}
-
-/// Where the core keeps the artist photographs it fetches.
-const String coreImageCacheDirVariable = 'ALEXANDRIA_METADATA_IMAGE_CACHE_DIR';
-
 /// Where the core keeps the thumbnails it renders.
 const String coreThumbnailCacheDirVariable =
     'ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR';
@@ -173,16 +109,13 @@ const String coreThumbnailCacheDirVariable =
 /// Puts the core's caches inside [applicationDirectory], before it is
 /// initialized.
 ///
-/// Both settings default to a **relative** path — `artist-images` and
-/// `thumbnails` — which the core resolves against the process's working
-/// directory. For a program launched from its own source tree that is
-/// harmless and invisible; for an installed application it is wherever the
-/// desktop happened to start it, which is a directory this application does
-/// not own and often cannot write to. An artist photograph then either fails
-/// to be written at all, or is written somewhere nothing will look for it
-/// again — and the core answers the path it stored, so the player is handed
-/// `artist-images/….jpg` and finds nothing there. That is the whole of "the
-/// picture never appears".
+/// The setting defaults to a **relative** path — `thumbnails` — which the
+/// core resolves against the process's working directory. For a program
+/// launched from its own source tree that is harmless and invisible; for an
+/// installed application it is wherever the desktop happened to start it,
+/// which is a directory this application does not own and often cannot write
+/// to. A thumbnail then either fails to be written at all, or is written
+/// somewhere nothing will look for it again.
 ///
 /// The catalog's own directory is the answer, because it is the one
 /// directory this application already owns and already creates (IR-05). The
@@ -219,7 +152,6 @@ Map<String, String> cacheDirectoriesIn(String applicationDirectory) {
   final root = _withoutTrailingSeparator(applicationDirectory);
 
   return {
-    coreImageCacheDirVariable: '$root${Platform.pathSeparator}artist-images',
     coreThumbnailCacheDirVariable: '$root${Platform.pathSeparator}thumbnails',
   };
 }
@@ -239,49 +171,8 @@ String _withoutTrailingSeparator(String directory) =>
 bool shouldSetCoreVariable(Map<String, String> environment, String name) =>
     (environment[name] ?? '').trim().isEmpty;
 
-/// Puts the core's music enrichment into the state [lookup] describes,
-/// before it is initialized.
-///
-/// Configuration through the core's own documented surface, exactly as
-/// [ensureLocalAuthMode] is (BR-02): these are the variables the core reads
-/// at `alexandria_index_init`, set before it reads them rather than instead
-/// of it reading them. The difference from the auth mode is whose choice it
-/// is — local auth is the only mode this application can work in, while
-/// enrichment is the one feature that reaches the network, so what lands
-/// here is the owner's stored preference and nothing else.
-///
-/// A variable already set in the environment is left alone, so a developer
-/// or a packager who configured the core deliberately keeps what they
-/// configured.
-///
-/// Must run before `alexandria_index_init`; afterwards the settings are
-/// fixed until the core is initialized again.
-void ensureMusicLookup(MusicLookup lookup, {Map<String, String>? environment}) {
-  final current = environment ?? Platform.environment;
-
-  if (shouldSetCoreVariable(current, coreMetadataEnabledVariable)) {
-    // The core parses `true`/`1`/`yes`/`on` and their opposites; `true` and
-    // `false` are the spellings its own config file uses.
-    setProcessEnvironment(
-      coreMetadataEnabledVariable,
-      lookup.enabled ? 'true' : 'false',
-    );
-  }
-
-  // An empty contact is not written: the core reads a blank one as "no
-  // contact" and refuses to run, which is the same outcome as leaving the
-  // variable unset, and writing it would overwrite a contact a config file
-  // supplied.
-  final contact = lookup.contact.trim();
-  if (contact.isNotEmpty &&
-      shouldSetCoreVariable(current, coreMetadataContactVariable)) {
-    setProcessEnvironment(coreMetadataContactVariable, contact);
-  }
-}
-
 /// Puts every setting the core reads at `alexandria_index_init` in place:
-/// the auth mode, the caches beside the catalog in [databaseDirectory], and
-/// [musicLookup].
+/// the auth mode and the caches beside the catalog in [databaseDirectory].
 ///
 /// [launchEnvironment] is the environment as it was when the application
 /// started, before any of these were written — and it has to be passed in
@@ -291,17 +182,14 @@ void ensureMusicLookup(MusicLookup lookup, {Map<String, String>? environment}) {
 /// takes the first time it asks, and a core worker spawned again by a retry
 /// takes its snapshot after the previous worker has written these variables.
 /// Read that way, the application's own earlier choice looks like an
-/// operator's, and every later change — the owner switching music lookup on
-/// or off, or naming a different contact — is skipped while the
+/// operator's, and every later change is skipped while the
 /// re-initialization reports it applied.
 void prepareCoreEnvironment({
   required String databaseDirectory,
-  required MusicLookup musicLookup,
   required Map<String, String> launchEnvironment,
 }) {
   ensureLocalAuthMode(environment: launchEnvironment);
   // The caches go beside the database, which is the directory this
   // application owns — see [ensureCacheDirectories].
   ensureCacheDirectories(databaseDirectory, environment: launchEnvironment);
-  ensureMusicLookup(musicLookup, environment: launchEnvironment);
 }

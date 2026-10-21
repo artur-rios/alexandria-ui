@@ -338,10 +338,6 @@
   "@preferencesUnsaved": {
     "description": "UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered."
   },
-  "musicLookupDeferred": "Saved. The library is being scanned, so this takes effect when the scan finishes.",
-  "@musicLookupDeferred": {
-    "description": "Music enrichment design: the core will not be reconfigured while it is walking a disk — a scan already running would be left behind by the replacement — so a lookup preference changed during one is stored and applied when the scan settles. Said rather than left silent, because the alternative reads as a switch that does nothing."
-  },
   "preferencesClose": "Done",
   "@preferencesClose": {
     "description": "The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made."
@@ -1961,71 +1957,6 @@
   "@libraryOverlaps": {
     "description": "Libraries design section 5: a file in two libraries means two answers to where it appears. Worded as a fact about the folder rather than as a mistake the owner made."
   },
-  "enrichmentSweepOpen": "Find music info",
-  "@enrichmentSweepOpen": {
-    "description": "Library menu entry opening the library-wide lookup screen."
-  },
-  "enrichmentSweepTitle": "Find music info",
-  "@enrichmentSweepTitle": {
-    "description": "Title of the library-wide lookup screen."
-  },
-  "enrichmentSweepExplanation": "Looks up artist photography and lyrics for your music from MusicBrainz, Wikimedia Commons and LRCLIB. Nothing about you is sent — only an artist name, a track title, an album name and a duration. It is slow on purpose: those services allow one request a second, so a large library takes hours. You can stop at any time and pick up where you left off.",
-  "@enrichmentSweepExplanation": {
-    "description": "Says what the lookup does, what leaves the machine, why it is slow, and that stopping is safe. Shown before it starts, because this is the one thing in the application that reaches the network and the owner should be choosing it knowingly."
-  },
-  "enrichmentSweepStart": "Start",
-  "@enrichmentSweepStart": {
-    "description": "Begins the library-wide lookup."
-  },
-  "enrichmentSweepStop": "Stop",
-  "@enrichmentSweepStop": {
-    "description": "Stops the library-wide lookup after the batch in flight. What was done is kept."
-  },
-  "enrichmentSweepProgress": "{considered} looked up, {remaining} to go",
-  "@enrichmentSweepProgress": {
-    "description": "Progress of the library-wide lookup, counted rather than a bare spinner: an operation measured in hours needs a denominator.",
-    "placeholders": { "considered": { "type": "int" }, "remaining": { "type": "int" } }
-  },
-  "enrichmentSweepFinished": "Finished. Found something for {found} of {considered}.",
-  "@enrichmentSweepFinished": {
-    "description": "The lookup reached the end of the library.",
-    "placeholders": { "found": { "type": "int" }, "considered": { "type": "int" } }
-  },
-  "enrichmentSweepStopped": "Stopped. {considered} looked up so far — starting again picks up from here.",
-  "@enrichmentSweepStopped": {
-    "description": "The owner stopped it. Says that the work is kept, because otherwise stopping looks like it wasted everything.",
-    "placeholders": { "considered": { "type": "int" } }
-  },
-  "enrichmentSweepFailed": "The lookup could not continue.",
-  "@enrichmentSweepFailed": {
-    "description": "A batch failed for a reason not worth retrying. What was already done is kept."
-  },
-  "enrichmentLyricsSource": "Lyrics from {source}",
-  "@enrichmentLyricsSource": {
-    "description": "Attribution under the lyrics, naming the service that supplied them. Shown because the words are somebody's, not this application's.",
-    "placeholders": { "source": { "type": "String" } }
-  },
-  "enrichmentImageCredit": "Photograph: {source}",
-  "@enrichmentImageCredit": {
-    "description": "Attribution under an artist photograph. Wikimedia Commons licences require credit, so an image is shown with its source or not at all.",
-    "placeholders": { "source": { "type": "String" } }
-  },
-  "enrichmentFindForTrack": "Find lyrics and artwork",
-  "@enrichmentFindForTrack": {
-    "description": "Looks up the track playing now. Scoped to one track because that takes seconds, where a whole library takes hours at MusicBrainz's one-request-per-second limit."
-  },
-  "enrichmentLookingUp": "Looking up…",
-  "@enrichmentLookingUp": {
-    "description": "Shown while an enrichment lookup is in flight. It reaches the network, so it is not instant."
-  },
-  "enrichmentNothingFound": "Nothing found for this track.",
-  "@enrichmentNothingFound": {
-    "description": "The services answered and had nothing. An answer, not a failure — and not retried."
-  },
-  "enrichmentUnavailable": "Music lookup is switched off. You can turn it on in Preferences.",
-  "@enrichmentUnavailable": {
-    "description": "Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not an error the owner made, so it is worded as a fact and then as the one thing they can do about it — the preferences dialog is where the switch and the contact both live, and an owner told only that the feature is off has nowhere to go."
-  },
   "playlistPlay": "Play this playlist",
   "@playlistPlay": {
     "description": "Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list."
@@ -2530,22 +2461,6 @@
   "@libraryToolsGroupReview": {
     "description": "Heading over the library tools menu's third group: deleted items and the missing-files review — what has left the library or needs a look."
   },
-  "artistPortraitsProgress": "Finding artist photographs — {done} of {total}",
-  "@artistPortraitsProgress": {
-    "description": "FR-PL-15: the background pass that fetches a photograph for every artist in the library, shown in the activity strip while it runs. Counted rather than described, because an owner watching it can then tell a long pass from one that is nearly done.",
-    "placeholders": {
-      "done": { "type": "int" },
-      "total": { "type": "int" }
-    }
-  },
-  "artistPortraitsStopped": "Could not reach the photograph services — stopped looking",
-  "@artistPortraitsStopped": {
-    "description": "FR-PL-15: the background photograph pass gave up, because several lookups in a row could not be made at all — which is what being offline looks like from here. Shown in the activity strip beside the action that starts it again."
-  },
-  "artistPortraitsRetry": "Try again",
-  "@artistPortraitsRetry": {
-    "description": "FR-PL-15: starts the abandoned photograph pass again, for an owner whose connection has come back. Without it the pass is over until the application is restarted."
-  },
   "activityBarLabel": "Background indexing",
   "@activityBarLabel": {
     "description": "FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now."
@@ -2719,42 +2634,6 @@
   "@activityDismiss": {
     "description": "FR-FC-29: clears a failed run's report from the strip. The strip's own rather than the text editor's, so that renaming one does not silently change the other."
   },
-  "musicLookupLabel": "Look up music info online",
-  "@musicLookupLabel": {
-    "description": "Music enrichment design: the preference that switches music lookup on. Named as the action it permits rather than as a feature name, because what it controls is whether this application reaches the internet at all."
-  },
-  "musicLookupDescription": "Lets Alexandria fetch lyrics and artist photography from MusicBrainz, Wikimedia Commons and LRCLIB. This is the only part of Alexandria that reaches the internet, and it only does so when you ask for a lookup. Nothing about you is sent \u2014 only an artist name, a track title, an album name and a duration.",
-  "@musicLookupDescription": {
-    "description": "Music enrichment design: what the lookup preference permits, beneath its label in the preferences dialog. States the exception to the product's no-network principle in the place the owner grants it."
-  },
-  "musicLookupContactLabel": "Contact for the lookup services",
-  "@musicLookupContactLabel": {
-    "description": "Music enrichment design: the address sent to MusicBrainz in the User-Agent of every lookup. Their terms require one, and the core refuses to look anything up while it is empty."
-  },
-  "musicLookupContactHelp": "MusicBrainz requires a way to reach whoever is making the requests. Leave it as it is to use the application's own address, or put your own here.",
-  "@musicLookupContactHelp": {
-    "description": "Music enrichment design: why the contact field exists, beneath it in the preferences dialog. Not a formality: an anonymous client is one MusicBrainz is entitled to block."
-  },
-  "preferencesMusicLookupLabel": "Music info",
-  "@preferencesMusicLookupLabel": {
-    "description": "Music enrichment design: heading over the music-lookup preferences in the preferences dialog."
-  },
-  "lyricsOpen": "Lyrics",
-  "@lyricsOpen": {
-    "description": "Music enrichment design: opens the words of the track playing now. Looks them up if none are cached yet, which is what makes it worth offering for a track that has never been looked up."
-  },
-  "lyricsClose": "Hide lyrics",
-  "@lyricsClose": {
-    "description": "Music enrichment design: puts the words away again and gives the whole window back to the device. The same button that opened them, which is why it names the reverse of what it just did."
-  },
-  "lyricsNone": "No lyrics were found for this track.",
-  "@lyricsNone": {
-    "description": "Music enrichment design: the lookup finished and the services had nothing for this track. An answer, not a failure \u2014 the core records it so the same track is not asked about again."
-  },
-  "lyricsSwitchedOff": "Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.",
-  "@lyricsSwitchedOff": {
-    "description": "Music enrichment design: the owner opened the lyrics panel for a track with none cached while the lookup preference is off. Says where the switch is rather than only that the feature is unavailable."
-  },
   "audioSoundBarsLabel": "Sound levels",
   "@audioSoundBarsLabel": {
     "description": "UC-21: names the moving bars on the player screen for a screen reader. They are an instrument that runs with the music rather than a control, so the label says what they show rather than what pressing them would do."
@@ -2766,14 +2645,6 @@
   "albumCoverLabel": "Album cover",
   "@albumCoverLabel": {
     "description": "UC-21, FR-UX-01: what the playback bar's recess is showing when the album carries its own picture. Named for a screen reader, which would otherwise be told the recess holds a turning record when it holds a photograph of a sleeve."
-  },
-  "enrichmentLookupFailed": "The lookup could not be completed. The services may be unreachable \u2014 try again later.",
-  "@enrichmentLookupFailed": {
-    "description": "Music enrichment design: a run that reached the services and could not finish \u2014 the network is down, or a provider answered with an error. Distinct from the switched-off message, which is what this used to say: an owner who had just turned the feature on was being told to turn it on."
-  },
-  "enrichmentUntagged": "This track has no artist or title tag to look anything up with.",
-  "@enrichmentUntagged": {
-    "description": "Music enrichment design: the run skipped the track because the tags a lookup is built from are missing. Distinct from finding nothing \u2014 this one the owner can fix, by tagging the file."
   },
   "musicStatsOpen": "Music stats",
   "@musicStatsOpen": {

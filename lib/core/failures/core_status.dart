@@ -1,18 +1,5 @@
 import '../bindings/alexandria_bindings.dart';
 
-/// Whether [status] from `alexandria_index_init` means the core is busy.
-///
-/// Its own predicate rather than a bare comparison at the call site, for the
-/// reason every status code here is read through this file: the number is the
-/// core's and belongs where the core's header is imported, not in a
-/// controller (IR-08).
-///
-/// The core refuses to replace its services while it is walking a disk — the
-/// run already executing would be left behind by the replacement. That is a
-/// "not yet", not a failure: the same call after the scan settles succeeds,
-/// and a caller that can tell the two apart can say so.
-bool coreIsBusy(int status) => status == INDEX_ERR_BUSY;
-
 /// The families of status code the Alexandria core returns.
 ///
 /// The core deliberately keeps a separate set per area so each can grow without
@@ -50,9 +37,6 @@ enum CoreStatusFamily {
   /// reasons. The family carries no invalid-state code — there is no state
   /// for a play to be in.
   play,
-
-  /// `alexandria_enrichment_*` — see `ENRICHMENT_*` in the core's header.
-  enrichment,
 
   /// `alexandria_library_*` and `alexandria_libraries_*` — see `LIBRARY_*`.
   library,
@@ -93,7 +77,6 @@ enum CoreStatusFamily {
     CoreStatusFamily.readingList => READING_LIST_OK,
     CoreStatusFamily.playlist => PLAYLIST_OK,
     CoreStatusFamily.play => PLAY_OK,
-    CoreStatusFamily.enrichment => ENRICHMENT_OK,
     CoreStatusFamily.library => LIBRARY_OK,
     CoreStatusFamily.auth => AUTH_OK,
     CoreStatusFamily.settings => SETTINGS_OK,

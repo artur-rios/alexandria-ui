@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:math';
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -8,7 +6,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
-import 'package:alexandria_ui/features/enrichment/domain/track_enrichment.dart';
 import 'package:alexandria_ui/features/playback/domain/music_browse.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_queue.dart';
 import 'package:alexandria_ui/features/playback/presentation/music_display_name.dart';
@@ -21,7 +18,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
-import '../../../support/fake_enrichment_gateway.dart';
 import '../../../support/fake_media_player.dart';
 import '../../../support/fake_playback.dart';
 import '../../../support/fake_playlist_gateway.dart';
@@ -38,17 +34,9 @@ void main() {
   ProviderContainer buildContainer(
     FakeCatalogGateway gateway, {
     FakePlaylistGateway? playlistGateway,
-    FakeEnrichmentGateway? enrichmentGateway,
   }) {
     final container = ProviderContainer(
       overrides: [
-        // The artist rows read what enrichment cached for each artist, so
-        // every one of them is a call — faked here even when a case says
-        // nothing about photographs, because the alternative is the real
-        // core gateway.
-        enrichmentGatewayProvider.overrideWithValue(
-          enrichmentGateway ?? FakeEnrichmentGateway(),
-        ),
         catalogGatewayProvider.overrideWithValue(gateway),
         audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
         playbackSourceGatewayProvider.overrideWithValue(
@@ -93,97 +81,27 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  group('an artist row wears their face (music enrichment design)', () {
-    /// A real file on disk, because a row shows a photograph by reading the
-    /// bytes the core cached — there is no seam between this widget and the
-    /// file system, and inventing one to avoid writing eight bytes would be
-    /// testing a different application.
-    String cachedPhotograph() {
-      final directory = Directory.systemTemp.createTempSync('artist-image');
-      addTearDown(() => directory.deleteSync(recursive: true));
-      final file = File('${directory.path}/artist.png')
-        ..writeAsBytesSync(
-          base64Decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42m'
-            'P8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-          ),
-        );
+  group('an artist row', () {
+    testWidgets('GivenArtists_WhenTheyAreListed_ThenTheRowShowsTheIcon', (
+      tester,
+    ) async {
+      final gateway = FakeCatalogGateway()
+        ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
+      final container = buildContainer(gateway);
+      final library = await container.read(musicLibraryProvider.future);
 
-      return file.path;
-    }
+      await pumpRows(
+        tester,
+        container,
+        MusicGroupList(
+          groups: artistsIn(library.entries),
+          kind: MusicGroupKind.artist,
+        ),
+      );
 
-    testWidgets(
-      'GivenAPhotographWasCached_WhenTheArtistsAreListed_ThenTheRowShowsIt',
-      (tester) async {
-        // Where the photographs went. A lookup fetches the artist's picture
-        // along with the words, and for one release it was shown over the
-        // lyrics of whatever happened to be playing — the one place an owner
-        // is not looking for artists. Here it is what the list is *of*.
-        final path = cachedPhotograph();
-        final gateway = FakeCatalogGateway()
-          ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
-        // Stored under the name the row shows, which is how the row asks for
-        // it: a picture kept against whatever one file was tagged with is one
-        // this list would never find.
-        final container = buildContainer(
-          gateway,
-          enrichmentGateway: FakeEnrichmentGateway()
-            ..artistImages['Radiohead'] = ArtistImage(
-              artistName: 'Radiohead',
-              path: path,
-            ),
-        );
-        final library = await container.read(musicLibraryProvider.future);
-
-        await pumpRows(
-          tester,
-          container,
-          MusicGroupList(
-            groups: artistsIn(library.entries),
-            kind: MusicGroupKind.artist,
-          ),
-        );
-
-        final image = tester.widget<Image>(find.byType(Image));
-        expect((image.image as FileImage).file.path, path);
-        expect(
-          find.byIcon(Icons.person_outline),
-          findsNothing,
-          reason: 'the face replaces the stand-in, rather than joining it',
-        );
-      },
-    );
-
-    testWidgets(
-      'GivenNothingWasCached_WhenTheArtistsAreListed_ThenTheRowKeepsTheIcon',
-      (tester) async {
-        // A library nobody has enriched looks exactly as it did before, and
-        // listing artists never fetches anything by itself: a screenful of
-        // rows would be dozens of requests a second against services that
-        // allow one.
-        final gateway = FakeCatalogGateway()
-          ..addAudio(uuid: '1', title: 'Airbag', artist: 'Radiohead');
-        final enrichment = FakeEnrichmentGateway();
-        final container = buildContainer(
-          gateway,
-          enrichmentGateway: enrichment,
-        );
-        final library = await container.read(musicLibraryProvider.future);
-
-        await pumpRows(
-          tester,
-          container,
-          MusicGroupList(
-            groups: artistsIn(library.entries),
-            kind: MusicGroupKind.artist,
-          ),
-        );
-
-        expect(find.byIcon(Icons.person_outline), findsOneWidget);
-        expect(find.byType(Image), findsNothing);
-        expect(enrichment.artistImageFetches, isEmpty);
-      },
-    );
+      expect(find.byIcon(Icons.person_outline), findsOneWidget);
+      expect(find.byType(Image), findsNothing);
+    });
   });
 
   /// A real PNG, painted here rather than pasted: a sleeve is only a sleeve

@@ -1,4 +1,3 @@
-import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:flutter/material.dart';
 
@@ -15,8 +14,6 @@ class FailingSettingsStore implements SettingsStore {
     Locale? locale,
     bool opensPlayerOnPlay = true,
     bool rechecksAtStartup = true,
-    bool musicLookupEnabled = true,
-    String musicLookupContact = defaultMusicLookupContact,
   })
     // The fields are private and a named parameter cannot be, so
     // `this._themeMode` is not expressible. Same reason as
@@ -28,18 +25,12 @@ class FailingSettingsStore implements SettingsStore {
        // ignore: prefer_initializing_formals
        _opensPlayerOnPlay = opensPlayerOnPlay,
        // ignore: prefer_initializing_formals
-       _rechecksAtStartup = rechecksAtStartup,
-       // ignore: prefer_initializing_formals
-       _musicLookupEnabled = musicLookupEnabled,
-       // ignore: prefer_initializing_formals
-       _musicLookupContact = musicLookupContact;
+       _rechecksAtStartup = rechecksAtStartup;
 
   final ThemeMode _themeMode;
   final Locale? _locale;
   final bool _opensPlayerOnPlay;
   final bool _rechecksAtStartup;
-  final bool _musicLookupEnabled;
-  final String _musicLookupContact;
 
   /// Every write attempted, so a test can assert the store really was asked.
   final List<String> attempted = [];
@@ -77,24 +68,6 @@ class FailingSettingsStore implements SettingsStore {
   @override
   Future<void> setRechecksAtStartup(bool value) async {
     attempted.add('rechecksAtStartup');
-    throw const FileSystemException('the settings file is read-only');
-  }
-
-  @override
-  bool get musicLookupEnabled => _musicLookupEnabled;
-
-  @override
-  Future<void> setMusicLookupEnabled(bool value) async {
-    attempted.add('musicLookupEnabled');
-    throw const FileSystemException('the settings file is read-only');
-  }
-
-  @override
-  String get musicLookupContact => _musicLookupContact;
-
-  @override
-  Future<void> setMusicLookupContact(String contact) async {
-    attempted.add('musicLookupContact');
     throw const FileSystemException('the settings file is read-only');
   }
 

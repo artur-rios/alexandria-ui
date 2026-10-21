@@ -271,10 +271,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.';
 
   @override
-  String get musicLookupDeferred =>
-      'Saved. The library is being scanned, so this takes effect when the scan finishes.';
-
-  @override
   String get preferencesClose => 'Done';
 
   @override
@@ -1471,63 +1467,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'That folder is already inside another library.';
 
   @override
-  String get enrichmentSweepOpen => 'Find music info';
-
-  @override
-  String get enrichmentSweepTitle => 'Find music info';
-
-  @override
-  String get enrichmentSweepExplanation =>
-      'Looks up artist photography and lyrics for your music from MusicBrainz, Wikimedia Commons and LRCLIB. Nothing about you is sent — only an artist name, a track title, an album name and a duration. It is slow on purpose: those services allow one request a second, so a large library takes hours. You can stop at any time and pick up where you left off.';
-
-  @override
-  String get enrichmentSweepStart => 'Start';
-
-  @override
-  String get enrichmentSweepStop => 'Stop';
-
-  @override
-  String enrichmentSweepProgress(int considered, int remaining) {
-    return '$considered looked up, $remaining to go';
-  }
-
-  @override
-  String enrichmentSweepFinished(int found, int considered) {
-    return 'Finished. Found something for $found of $considered.';
-  }
-
-  @override
-  String enrichmentSweepStopped(int considered) {
-    return 'Stopped. $considered looked up so far — starting again picks up from here.';
-  }
-
-  @override
-  String get enrichmentSweepFailed => 'The lookup could not continue.';
-
-  @override
-  String enrichmentLyricsSource(String source) {
-    return 'Lyrics from $source';
-  }
-
-  @override
-  String enrichmentImageCredit(String source) {
-    return 'Photograph: $source';
-  }
-
-  @override
-  String get enrichmentFindForTrack => 'Find lyrics and artwork';
-
-  @override
-  String get enrichmentLookingUp => 'Looking up…';
-
-  @override
-  String get enrichmentNothingFound => 'Nothing found for this track.';
-
-  @override
-  String get enrichmentUnavailable =>
-      'Music lookup is switched off. You can turn it on in Preferences.';
-
-  @override
   String get playlistPlay => 'Play this playlist';
 
   @override
@@ -1921,18 +1860,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryToolsGroupReview => 'Review';
 
   @override
-  String artistPortraitsProgress(int done, int total) {
-    return 'Finding artist photographs — $done of $total';
-  }
-
-  @override
-  String get artistPortraitsStopped =>
-      'Could not reach the photograph services — stopped looking';
-
-  @override
-  String get artistPortraitsRetry => 'Try again';
-
-  @override
   String get activityBarLabel => 'Background indexing';
 
   @override
@@ -2066,36 +1993,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityDismiss => 'Dismiss';
 
   @override
-  String get musicLookupLabel => 'Look up music info online';
-
-  @override
-  String get musicLookupDescription =>
-      'Lets Alexandria fetch lyrics and artist photography from MusicBrainz, Wikimedia Commons and LRCLIB. This is the only part of Alexandria that reaches the internet, and it only does so when you ask for a lookup. Nothing about you is sent — only an artist name, a track title, an album name and a duration.';
-
-  @override
-  String get musicLookupContactLabel => 'Contact for the lookup services';
-
-  @override
-  String get musicLookupContactHelp =>
-      'MusicBrainz requires a way to reach whoever is making the requests. Leave it as it is to use the application\'s own address, or put your own here.';
-
-  @override
-  String get preferencesMusicLookupLabel => 'Music info';
-
-  @override
-  String get lyricsOpen => 'Lyrics';
-
-  @override
-  String get lyricsClose => 'Hide lyrics';
-
-  @override
-  String get lyricsNone => 'No lyrics were found for this track.';
-
-  @override
-  String get lyricsSwitchedOff =>
-      'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.';
-
-  @override
   String get audioSoundBarsLabel => 'Sound levels';
 
   @override
@@ -2103,14 +2000,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get albumCoverLabel => 'Album cover';
-
-  @override
-  String get enrichmentLookupFailed =>
-      'The lookup could not be completed. The services may be unreachable — try again later.';
-
-  @override
-  String get enrichmentUntagged =>
-      'This track has no artist or title tag to look anything up with.';
 
   @override
   String get musicStatsOpen => 'Music stats';

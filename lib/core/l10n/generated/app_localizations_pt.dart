@@ -271,10 +271,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'Sua escolha foi aplicada, mas não pôde ser salva — ela não será lembrada na próxima vez que o Alexandria iniciar.';
 
   @override
-  String get musicLookupDeferred =>
-      'Salvo. A biblioteca está sendo varrida, então isto passa a valer quando a varredura terminar.';
-
-  @override
   String get preferencesClose => 'Concluído';
 
   @override
@@ -1475,63 +1471,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'Essa pasta já está dentro de outra biblioteca.';
 
   @override
-  String get enrichmentSweepOpen => 'Buscar informações musicais';
-
-  @override
-  String get enrichmentSweepTitle => 'Buscar informações musicais';
-
-  @override
-  String get enrichmentSweepExplanation =>
-      'Busca fotografias de artistas e letras para suas músicas no MusicBrainz, no Wikimedia Commons e no LRCLIB. Nada sobre você é enviado — apenas nome do artista, título da faixa, nome do álbum e duração. É lento de propósito: esses serviços permitem uma requisição por segundo, então uma biblioteca grande leva horas. Você pode parar quando quiser e continuar de onde parou.';
-
-  @override
-  String get enrichmentSweepStart => 'Iniciar';
-
-  @override
-  String get enrichmentSweepStop => 'Parar';
-
-  @override
-  String enrichmentSweepProgress(int considered, int remaining) {
-    return '$considered buscadas, $remaining restantes';
-  }
-
-  @override
-  String enrichmentSweepFinished(int found, int considered) {
-    return 'Concluído. Encontrou algo para $found de $considered.';
-  }
-
-  @override
-  String enrichmentSweepStopped(int considered) {
-    return 'Parado. $considered buscadas até aqui — recomeçar continua deste ponto.';
-  }
-
-  @override
-  String get enrichmentSweepFailed => 'A busca não pôde continuar.';
-
-  @override
-  String enrichmentLyricsSource(String source) {
-    return 'Letra de $source';
-  }
-
-  @override
-  String enrichmentImageCredit(String source) {
-    return 'Fotografia: $source';
-  }
-
-  @override
-  String get enrichmentFindForTrack => 'Buscar letra e imagens';
-
-  @override
-  String get enrichmentLookingUp => 'Buscando…';
-
-  @override
-  String get enrichmentNothingFound => 'Nada encontrado para esta faixa.';
-
-  @override
-  String get enrichmentUnavailable =>
-      'A busca de músicas está desligada. Você pode ligá-la nas Preferências.';
-
-  @override
   String get playlistPlay => 'Reproduzir esta playlist';
 
   @override
@@ -1926,18 +1865,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryToolsGroupReview => 'Revisão';
 
   @override
-  String artistPortraitsProgress(int done, int total) {
-    return 'Buscando fotos de artistas — $done de $total';
-  }
-
-  @override
-  String get artistPortraitsStopped =>
-      'Não foi possível alcançar os serviços de fotos — a busca parou';
-
-  @override
-  String get artistPortraitsRetry => 'Tentar de novo';
-
-  @override
   String get activityBarLabel => 'Indexação em segundo plano';
 
   @override
@@ -2072,36 +1999,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get activityDismiss => 'Dispensar';
 
   @override
-  String get musicLookupLabel => 'Buscar informações musicais on-line';
-
-  @override
-  String get musicLookupDescription =>
-      'Permite que o Alexandria busque letras e fotografias de artistas no MusicBrainz, no Wikimedia Commons e no LRCLIB. Esta é a única parte do Alexandria que acessa a internet, e ela só faz isso quando você pede uma busca. Nada sobre você é enviado — apenas o nome de um artista, o título de uma faixa, o nome de um álbum e uma duração.';
-
-  @override
-  String get musicLookupContactLabel => 'Contato para os serviços de busca';
-
-  @override
-  String get musicLookupContactHelp =>
-      'O MusicBrainz exige uma forma de falar com quem faz as requisições. Deixe como está para usar o endereço do próprio aplicativo, ou coloque o seu aqui.';
-
-  @override
-  String get preferencesMusicLookupLabel => 'Informações musicais';
-
-  @override
-  String get lyricsOpen => 'Letra';
-
-  @override
-  String get lyricsClose => 'Ocultar letra';
-
-  @override
-  String get lyricsNone => 'Nenhuma letra foi encontrada para esta faixa.';
-
-  @override
-  String get lyricsSwitchedOff =>
-      'A busca de informações musicais está desligada. Ligue-a nas Preferências para buscar letras.';
-
-  @override
   String get audioSoundBarsLabel => 'Níveis de som';
 
   @override
@@ -2109,14 +2006,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get albumCoverLabel => 'Capa do álbum';
-
-  @override
-  String get enrichmentLookupFailed =>
-      'A busca não pôde ser concluída. Os serviços podem estar inacessíveis — tente novamente mais tarde.';
-
-  @override
-  String get enrichmentUntagged =>
-      'Esta faixa não tem etiqueta de artista ou de título para buscar nada com ela.';
 
   @override
   String get musicStatsOpen => 'Estatísticas musicais';

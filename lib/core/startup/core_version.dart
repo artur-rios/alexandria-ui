@@ -7,9 +7,8 @@
 ///
 /// Moved to `0.4.x` with the core that answers an artist's picture by the
 /// name a list shows (`0.3.x` brought the energy envelope, `0.2.x` the
-/// metadata stamp and the lyrics search fallback). Each is invisible from
-/// here when it is missing — an artists list quietly grouping by performer, a
-/// lyrics lookup quietly answering nothing — and an owner rebuilding one
+/// metadata stamp). Each is invisible from here when it is missing — an
+/// artists list quietly grouping by performer — and an owner rebuilding one
 /// repository and not the other met exactly that. This is the line that
 /// turns it into a sentence at startup instead.
 abstract final class CoreVersionRange {

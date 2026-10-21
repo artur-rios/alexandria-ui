@@ -335,8 +335,8 @@ class CoreIsolate {
 
       'healthStatus' => bindings.alexandria_health_status_code(),
 
-      // The auth mode and the owner's music-lookup choice are settled here,
-      // immediately before the one call that reads the core's settings.
+      // The auth mode and the caches are settled here, immediately before
+      // the one call that reads the core's settings.
       // Anywhere earlier would be a promise about ordering; anywhere later
       // would be too late for the process.
       'init' => withNativeString(arguments.first! as String, (path) {
@@ -346,10 +346,6 @@ class CoreIsolate {
         // somewhere the catalog does not follow.
         prepareCoreEnvironment(
           databaseDirectory: p.dirname(arguments.first! as String),
-          musicLookup: MusicLookup(
-            enabled: arguments[1]! as bool,
-            contact: arguments[2]! as String,
-          ),
           launchEnvironment: launchEnvironment,
         );
         return bindings.alexandria_index_init(path);
@@ -1265,61 +1261,6 @@ class CoreIsolate {
         arguments.first! as String,
         (uuid) => withNativeString(arguments[1]! as String, (token) {
           final result = bindings.alexandria_library_remove(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      // The two enrichment calls. Their argument order is the thing this
-      // mapping can get wrong silently — `enrichmentReadTrack` takes three
-      // consecutive strings — which is why the integration suite exercises
-      // both against a loaded library rather than a fake.
-      'enrichmentRun' => withNativeString(
-        arguments.first! as String,
-        (scopeJson) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_enrichment_run(scopeJson, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'enrichmentReadTrack' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (artist) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_enrichment_read_track(
-              uuid,
-              artist,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'artistImage' => withNativeString(
-        arguments.first! as String,
-        (name) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_artist_image(name, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'artistImageFetch' => withNativeString(
-        arguments.first! as String,
-        (name) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_artist_image_fetch(name, token);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),

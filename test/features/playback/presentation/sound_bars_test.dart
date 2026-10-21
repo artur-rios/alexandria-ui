@@ -107,8 +107,8 @@ void main() {
       tester,
     ) async {
       // A stopped ticker is a frame never scheduled, which is the whole
-      // reason to stop it: the player stays open while the owner reads the
-      // lyrics beside it.
+      // reason to stop it: the player stays open while the owner does
+      // something else.
       await tester.pumpWidget(bars(isPlaying: true, energy: oneFrame()));
       await tester.pump(const Duration(milliseconds: 200));
 

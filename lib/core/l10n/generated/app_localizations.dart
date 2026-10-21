@@ -554,12 +554,6 @@ abstract class AppLocalizations {
   /// **'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.'**
   String get preferencesUnsaved;
 
-  /// Music enrichment design: the core will not be reconfigured while it is walking a disk — a scan already running would be left behind by the replacement — so a lookup preference changed during one is stored and applied when the scan settles. Said rather than left silent, because the alternative reads as a switch that does nothing.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved. The library is being scanned, so this takes effect when the scan finishes.'**
-  String get musicLookupDeferred;
-
   /// The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made.
   ///
   /// In en, this message translates to:
@@ -2676,96 +2670,6 @@ abstract class AppLocalizations {
   /// **'That folder is already inside another library.'**
   String get libraryOverlaps;
 
-  /// Library menu entry opening the library-wide lookup screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Find music info'**
-  String get enrichmentSweepOpen;
-
-  /// Title of the library-wide lookup screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Find music info'**
-  String get enrichmentSweepTitle;
-
-  /// Says what the lookup does, what leaves the machine, why it is slow, and that stopping is safe. Shown before it starts, because this is the one thing in the application that reaches the network and the owner should be choosing it knowingly.
-  ///
-  /// In en, this message translates to:
-  /// **'Looks up artist photography and lyrics for your music from MusicBrainz, Wikimedia Commons and LRCLIB. Nothing about you is sent — only an artist name, a track title, an album name and a duration. It is slow on purpose: those services allow one request a second, so a large library takes hours. You can stop at any time and pick up where you left off.'**
-  String get enrichmentSweepExplanation;
-
-  /// Begins the library-wide lookup.
-  ///
-  /// In en, this message translates to:
-  /// **'Start'**
-  String get enrichmentSweepStart;
-
-  /// Stops the library-wide lookup after the batch in flight. What was done is kept.
-  ///
-  /// In en, this message translates to:
-  /// **'Stop'**
-  String get enrichmentSweepStop;
-
-  /// Progress of the library-wide lookup, counted rather than a bare spinner: an operation measured in hours needs a denominator.
-  ///
-  /// In en, this message translates to:
-  /// **'{considered} looked up, {remaining} to go'**
-  String enrichmentSweepProgress(int considered, int remaining);
-
-  /// The lookup reached the end of the library.
-  ///
-  /// In en, this message translates to:
-  /// **'Finished. Found something for {found} of {considered}.'**
-  String enrichmentSweepFinished(int found, int considered);
-
-  /// The owner stopped it. Says that the work is kept, because otherwise stopping looks like it wasted everything.
-  ///
-  /// In en, this message translates to:
-  /// **'Stopped. {considered} looked up so far — starting again picks up from here.'**
-  String enrichmentSweepStopped(int considered);
-
-  /// A batch failed for a reason not worth retrying. What was already done is kept.
-  ///
-  /// In en, this message translates to:
-  /// **'The lookup could not continue.'**
-  String get enrichmentSweepFailed;
-
-  /// Attribution under the lyrics, naming the service that supplied them. Shown because the words are somebody's, not this application's.
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics from {source}'**
-  String enrichmentLyricsSource(String source);
-
-  /// Attribution under an artist photograph. Wikimedia Commons licences require credit, so an image is shown with its source or not at all.
-  ///
-  /// In en, this message translates to:
-  /// **'Photograph: {source}'**
-  String enrichmentImageCredit(String source);
-
-  /// Looks up the track playing now. Scoped to one track because that takes seconds, where a whole library takes hours at MusicBrainz's one-request-per-second limit.
-  ///
-  /// In en, this message translates to:
-  /// **'Find lyrics and artwork'**
-  String get enrichmentFindForTrack;
-
-  /// Shown while an enrichment lookup is in flight. It reaches the network, so it is not instant.
-  ///
-  /// In en, this message translates to:
-  /// **'Looking up…'**
-  String get enrichmentLookingUp;
-
-  /// The services answered and had nothing. An answer, not a failure — and not retried.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing found for this track.'**
-  String get enrichmentNothingFound;
-
-  /// Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not an error the owner made, so it is worded as a fact and then as the one thing they can do about it — the preferences dialog is where the switch and the contact both live, and an owner told only that the feature is off has nowhere to go.
-  ///
-  /// In en, this message translates to:
-  /// **'Music lookup is switched off. You can turn it on in Preferences.'**
-  String get enrichmentUnavailable;
-
   /// Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list.
   ///
   /// In en, this message translates to:
@@ -3408,24 +3312,6 @@ abstract class AppLocalizations {
   /// **'Review'**
   String get libraryToolsGroupReview;
 
-  /// FR-PL-15: the background pass that fetches a photograph for every artist in the library, shown in the activity strip while it runs. Counted rather than described, because an owner watching it can then tell a long pass from one that is nearly done.
-  ///
-  /// In en, this message translates to:
-  /// **'Finding artist photographs — {done} of {total}'**
-  String artistPortraitsProgress(int done, int total);
-
-  /// FR-PL-15: the background photograph pass gave up, because several lookups in a row could not be made at all — which is what being offline looks like from here. Shown in the activity strip beside the action that starts it again.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not reach the photograph services — stopped looking'**
-  String get artistPortraitsStopped;
-
-  /// FR-PL-15: starts the abandoned photograph pass again, for an owner whose connection has come back. Without it the pass is over until the application is restarted.
-  ///
-  /// In en, this message translates to:
-  /// **'Try again'**
-  String get artistPortraitsRetry;
-
   /// FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now.
   ///
   /// In en, this message translates to:
@@ -3564,60 +3450,6 @@ abstract class AppLocalizations {
   /// **'Dismiss'**
   String get activityDismiss;
 
-  /// Music enrichment design: the preference that switches music lookup on. Named as the action it permits rather than as a feature name, because what it controls is whether this application reaches the internet at all.
-  ///
-  /// In en, this message translates to:
-  /// **'Look up music info online'**
-  String get musicLookupLabel;
-
-  /// Music enrichment design: what the lookup preference permits, beneath its label in the preferences dialog. States the exception to the product's no-network principle in the place the owner grants it.
-  ///
-  /// In en, this message translates to:
-  /// **'Lets Alexandria fetch lyrics and artist photography from MusicBrainz, Wikimedia Commons and LRCLIB. This is the only part of Alexandria that reaches the internet, and it only does so when you ask for a lookup. Nothing about you is sent — only an artist name, a track title, an album name and a duration.'**
-  String get musicLookupDescription;
-
-  /// Music enrichment design: the address sent to MusicBrainz in the User-Agent of every lookup. Their terms require one, and the core refuses to look anything up while it is empty.
-  ///
-  /// In en, this message translates to:
-  /// **'Contact for the lookup services'**
-  String get musicLookupContactLabel;
-
-  /// Music enrichment design: why the contact field exists, beneath it in the preferences dialog. Not a formality: an anonymous client is one MusicBrainz is entitled to block.
-  ///
-  /// In en, this message translates to:
-  /// **'MusicBrainz requires a way to reach whoever is making the requests. Leave it as it is to use the application\'s own address, or put your own here.'**
-  String get musicLookupContactHelp;
-
-  /// Music enrichment design: heading over the music-lookup preferences in the preferences dialog.
-  ///
-  /// In en, this message translates to:
-  /// **'Music info'**
-  String get preferencesMusicLookupLabel;
-
-  /// Music enrichment design: opens the words of the track playing now. Looks them up if none are cached yet, which is what makes it worth offering for a track that has never been looked up.
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics'**
-  String get lyricsOpen;
-
-  /// Music enrichment design: puts the words away again and gives the whole window back to the device. The same button that opened them, which is why it names the reverse of what it just did.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide lyrics'**
-  String get lyricsClose;
-
-  /// Music enrichment design: the lookup finished and the services had nothing for this track. An answer, not a failure — the core records it so the same track is not asked about again.
-  ///
-  /// In en, this message translates to:
-  /// **'No lyrics were found for this track.'**
-  String get lyricsNone;
-
-  /// Music enrichment design: the owner opened the lyrics panel for a track with none cached while the lookup preference is off. Says where the switch is rather than only that the feature is unavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.'**
-  String get lyricsSwitchedOff;
-
   /// UC-21: names the moving bars on the player screen for a screen reader. They are an instrument that runs with the music rather than a control, so the label says what they show rather than what pressing them would do.
   ///
   /// In en, this message translates to:
@@ -3635,18 +3467,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Album cover'**
   String get albumCoverLabel;
-
-  /// Music enrichment design: a run that reached the services and could not finish — the network is down, or a provider answered with an error. Distinct from the switched-off message, which is what this used to say: an owner who had just turned the feature on was being told to turn it on.
-  ///
-  /// In en, this message translates to:
-  /// **'The lookup could not be completed. The services may be unreachable — try again later.'**
-  String get enrichmentLookupFailed;
-
-  /// Music enrichment design: the run skipped the track because the tags a lookup is built from are missing. Distinct from finding nothing — this one the owner can fix, by tagging the file.
-  ///
-  /// In en, this message translates to:
-  /// **'This track has no artist or title tag to look anything up with.'**
-  String get enrichmentUntagged;
 
   /// Library menu entry opening what the owner has played most (play history design).
   ///

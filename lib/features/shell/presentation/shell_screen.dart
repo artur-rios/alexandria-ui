@@ -36,17 +36,6 @@ class ShellScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final destination = ref.watch(shellControllerProvider);
 
-    // FR-PL-15: the pass that gives every artist a face, kept alive from
-    // here for the whole of the session.
-    //
-    // Listened to rather than watched: this widget has no use for the pass's
-    // progress and would otherwise rebuild the entire shell once per artist
-    // fetched. What the listen actually does is hold the provider — a
-    // background job with nobody reading it is a background job that is
-    // disposed — and the shell is the right holder because the pass belongs
-    // to the session, not to whoever happens to have the artists list open.
-    ref.listen(artistPortraitBackfillProvider, (_, _) {});
-
     // UC-21 main flow step 2: the player opens itself when a track starts,
     // from wherever it was started — the shell is where every path into
     // playback converges, so a listener here is the one place that covers

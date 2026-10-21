@@ -8,8 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../enrichment/presentation/enrich_track_button.dart';
-import '../../enrichment/presentation/lyrics_button.dart';
 import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../../shell/presentation/playback_bar.dart';
 import '../domain/album_cover.dart';
@@ -33,16 +31,6 @@ import 'sound_bars.dart';
 class NowPlayingScreen extends ConsumerStatefulWidget {
   /// Creates the screen.
   const NowPlayingScreen({super.key});
-
-  /// How wide the words are, when they are open.
-  ///
-  /// A column of a fixed comfortable measure, capped at a share of the window
-  /// so a narrow one does not end up with two thin strips instead of a player
-  /// and a page of lyrics.
-  static const double _lyricsWidth = 420;
-
-  /// The most of the window the words may take.
-  static const double _lyricsShare = 0.42;
 
   /// The largest the sleeve is ever drawn, and the smallest.
   ///
@@ -79,9 +67,6 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
 }
 
 class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
-  /// Whether the words to the track are open beside the player.
-  bool _showsLyrics = false;
-
   @override
   void initState() {
     super.initState();
@@ -112,16 +97,6 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       appBar: AppBar(
         actions: [
           if (current != null) ...[
-            // Task 5 entry point 2: the words of the track playing, fetched
-            // on the press when nothing has been cached for it yet.
-            LyricsButton(
-              isOpen: _showsLyrics,
-              onPressed: () => setState(() => _showsLyrics = !_showsLyrics),
-            ),
-            EnrichTrackButton(
-              fileUuid: current.uuid,
-              artistName: musicEntryForFile(ref, current).albumArtist,
-            ),
             AddToPlaylistButton(fileUuids: [current.uuid]),
           ],
           IconButton(
@@ -132,45 +107,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         ],
       ),
       body: LayoutBuilder(
-        builder: (context, viewport) {
-          final showsLyrics = _showsLyrics && current != null;
-          final lyricsWidth = showsLyrics
-              ? math.min(
-                  NowPlayingScreen._lyricsWidth,
-                  viewport.maxWidth * NowPlayingScreen._lyricsShare,
-                )
-              : 0.0;
-
-          final player = _Player(
-            width: viewport.maxWidth - lyricsWidth,
-            height: viewport.maxHeight,
-            cover: cover,
-          );
-
-          if (!showsLyrics) return player;
-
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: player),
-              SizedBox(
-                width: lyricsWidth,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const VerticalDivider(width: 1),
-                    Expanded(
-                      child: LyricsPanel(
-                        fileUuid: current.uuid,
-                        artistName: musicEntryForFile(ref, current).albumArtist,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
+        builder: (context, viewport) => _Player(
+          width: viewport.maxWidth,
+          height: viewport.maxHeight,
+          cover: cover,
+        ),
       ),
     );
   }
@@ -185,7 +126,7 @@ class _Player extends ConsumerWidget {
     required this.cover,
   });
 
-  /// The room the player was left, once the words have taken theirs.
+  /// How wide the window is.
   final double width;
 
   /// How tall the window is.
@@ -202,7 +143,7 @@ class _Player extends ConsumerWidget {
     final controller = ref.read(audioPlaybackControllerProvider.notifier);
     final current = state.current;
 
-    // The sleeve takes what is left after the words, the bars and the
+    // The sleeve takes what is left after the bars and the
     // transport have theirs — bounded both ways, so a tall narrow window does
     // not print a postage stamp and a wide one does not blow a 300-pixel
     // picture up to fill it.

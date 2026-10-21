@@ -37,7 +37,6 @@ Failure mapCoreStatus(
     CoreStatusFamily.readingList => _mapReadingList(code),
     CoreStatusFamily.playlist => _mapPlaylist(code),
     CoreStatusFamily.play => _mapPlay(code),
-    CoreStatusFamily.enrichment => _mapEnrichment(code),
     CoreStatusFamily.library => _mapLibrary(code),
     CoreStatusFamily.auth => _mapAuth(code),
     CoreStatusFamily.playback => _mapPlayback(code),
@@ -316,37 +315,6 @@ Failure _mapPlay(int code) => switch (code) {
     code: code,
   ),
   _ => Failure.unexpected(family: CoreStatusFamily.play, code: code),
-};
-
-// The enrichment family carries one code the others do not:
-// ENRICHMENT_ERR_UNAVAILABLE, which is not something the caller did. The
-// request was well formed and this installation simply has enrichment
-// switched off, or on with no MusicBrainz contact configured. It maps to
-// `configuration` rather than `invalidState` so a surface can tell the owner
-// their administrator has not set this up, instead of implying they asked
-// for something wrong.
-Failure _mapEnrichment(int code) => switch (code) {
-  ENRICHMENT_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  ENRICHMENT_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  ENRICHMENT_ERR_NOT_INITIALIZED => Failure.notInitialized(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  ENRICHMENT_ERR_NOT_FOUND => Failure.notFound(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  ENRICHMENT_ERR_UNAVAILABLE => Failure.configuration(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  _ => Failure.unexpected(family: CoreStatusFamily.enrichment, code: code),
 };
 
 // The library family carries one code the others do not:

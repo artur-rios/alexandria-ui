@@ -1,6 +1,5 @@
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/bindings/core_client.dart';
-import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/bindings/core_isolate.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 
@@ -180,10 +179,6 @@ class FakeCoreClient implements CoreClient {
   /// Whether [authLocalLogin] throws instead of returning.
   final bool failOnAuthLocalLogin;
 
-  /// The music-lookup configurations [initialize] was called with, in order —
-  /// what the core would have been configured for (music enrichment design).
-  final List<MusicLookup> musicLookupsInitializedWith = [];
-
   /// The database paths [initialize] was called with, in order.
   final List<String> initializedWith = [];
 
@@ -298,13 +293,9 @@ class FakeCoreClient implements CoreClient {
   }
 
   @override
-  Future<int> initialize(
-    String databasePath, {
-    required MusicLookup musicLookup,
-  }) async {
+  Future<int> initialize(String databasePath) async {
     if (failOnInitialize) throw const CoreCallException('init call failed');
     initializedWith.add(databasePath);
-    musicLookupsInitializedWith.add(musicLookup);
     return initializeResult;
   }
 
@@ -1058,51 +1049,6 @@ class FakeCoreClient implements CoreClient {
     return libraryResponse;
   }
 
-  /// What the two enrichment calls answer, and what they were called with.
-  ///
-  /// The recorded arguments are the assertion that matters for
-  /// `enrichmentReadTrack`: it takes three consecutive strings, so a
-  /// transposition compiles and misbehaves silently.
-  CoreJsonResponse enrichmentResponse = (status: ENRICHMENT_OK, json: '{}');
-
-  /// Every enrichment run asked for, in order.
-  final List<({String scopeJson, String token})> enrichmentRunCalls = [];
-
-  /// Every track read asked for, in order.
-  final List<({String uuid, String artist, String token})> enrichmentReadCalls =
-      [];
-
-  /// What the two artist-image calls answer, and what they were asked
-  /// (FR-PL-15).
-  CoreJsonResponse artistImageResponse = (
-    status: ENRICHMENT_ERR_NOT_FOUND,
-    json: null,
-  );
-
-  /// See [artistImageResponse].
-  CoreJsonResponse artistImageFetchResponse = (
-    status: ENRICHMENT_OK,
-    json: '{}',
-  );
-
-  /// Every name read, in order.
-  final List<({String name, String token})> artistImageReads = [];
-
-  /// Every name looked up, in order.
-  final List<({String name, String token})> artistImageFetches = [];
-
-  @override
-  Future<CoreJsonResponse> artistImage(String name, String token) async {
-    artistImageReads.add((name: name, token: token));
-    return artistImageResponse;
-  }
-
-  @override
-  Future<CoreJsonResponse> artistImageFetch(String name, String token) async {
-    artistImageFetches.add((name: name, token: token));
-    return artistImageFetchResponse;
-  }
-
   /// What `trackEnergy` answers, and what it was asked for (UC-21,
   /// FR-MP-07).
   CoreJsonResponse energyResponse = (status: PLAYBACK_OK, json: '{}');
@@ -1114,22 +1060,6 @@ class FakeCoreClient implements CoreClient {
   Future<CoreJsonResponse> trackEnergy(String uuid, String token) async {
     energyCalls.add((uuid: uuid, token: token));
     return energyResponse;
-  }
-
-  @override
-  Future<CoreJsonResponse> enrichmentRun(String scopeJson, String token) async {
-    enrichmentRunCalls.add((scopeJson: scopeJson, token: token));
-    return enrichmentResponse;
-  }
-
-  @override
-  Future<CoreJsonResponse> enrichmentReadTrack(
-    String uuid,
-    String artist,
-    String token,
-  ) async {
-    enrichmentReadCalls.add((uuid: uuid, artist: artist, token: token));
-    return enrichmentResponse;
   }
 
   /// What [playlistAddEntries] was called with, in order.
