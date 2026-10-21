@@ -49,11 +49,11 @@ class FakeCoreClient implements CoreClient {
              // just written.
              json:
                  '{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
-                 '"name":"Kind of Blue.mkv",'
-                 '"path":"/home/owner/films/Kind of Blue.mkv",'
+                 '"name":"Deep Blue Sea.mkv",'
+                 '"path":"/home/owner/films/Deep Blue Sea.mkv",'
                  '"fileType":"video","state":"active"},'
-                 '"metadata":{"type":"video","title":"Kind of Blue",'
-                 '"year":1959,"mediaKind":"movie"}}',
+                 '"metadata":{"type":"video","title":"Deep Blue Sea",'
+                 '"year":1999,"mediaKind":"movie"}}',
            ),
        healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
@@ -76,11 +76,11 @@ class FakeCoreClient implements CoreClient {
              // answers.
              json:
                  '{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
-                 '"name":"Kind of Blue.mkv",'
-                 '"path":"/home/owner/films/Kind of Blue.mkv",'
+                 '"name":"Deep Blue Sea.mkv",'
+                 '"path":"/home/owner/films/Deep Blue Sea.mkv",'
                  '"fileType":"video","state":"active"},'
-                 '"metadata":{"type":"video","title":"Kind of Blue",'
-                 '"year":1959}}',
+                 '"metadata":{"type":"video","title":"Deep Blue Sea",'
+                 '"year":1999}}',
            ),
        filesListResult =
            filesListResult ??
@@ -91,11 +91,11 @@ class FakeCoreClient implements CoreClient {
              // file record.
              json:
                  '[{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
-                 '"name":"Kind of Blue.mkv",'
-                 '"path":"/home/owner/films/Kind of Blue.mkv",'
+                 '"name":"Deep Blue Sea.mkv",'
+                 '"path":"/home/owner/films/Deep Blue Sea.mkv",'
                  '"fileType":"video","state":"active"},'
-                 '"metadata":{"type":"video","title":"Kind of Blue",'
-                 '"year":1959}}]',
+                 '"metadata":{"type":"video","title":"Deep Blue Sea",'
+                 '"year":1999}}]',
            ),
        indexRefreshStartResult =
            indexRefreshStartResult ??

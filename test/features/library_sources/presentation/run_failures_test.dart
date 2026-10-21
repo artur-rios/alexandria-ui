@@ -21,7 +21,7 @@ import '../../../support/shell_harness.dart';
 /// the owner is told a number about files that are on disk, in no listing, in
 /// no search, and named nowhere they can reach.
 void main() {
-  const root = '/home/owner/music';
+  const root = '/home/owner/books';
   const runId = 'a-recorded-run';
   final registeredAt = DateTime.utc(2026, 8, 31, 9);
 
@@ -100,11 +100,11 @@ void main() {
         failures: const RunFailuresOutcome.read(
           failures: [
             RunFailure(
-              path: '/home/owner/music/locked.mp3',
+              path: '/home/owner/books/locked.epub',
               reason: 'permission denied',
             ),
             RunFailure(
-              path: '/home/owner/music/odd.mp3',
+              path: '/home/owner/books/odd.epub',
               reason: 'database is locked',
             ),
           ],
@@ -115,9 +115,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(RunFailuresScreen), findsOneWidget);
-      expect(find.text('/home/owner/music/locked.mp3'), findsOneWidget);
+      expect(find.text('/home/owner/books/locked.epub'), findsOneWidget);
       expect(find.text('permission denied'), findsOneWidget);
-      expect(find.text('/home/owner/music/odd.mp3'), findsOneWidget);
+      expect(find.text('/home/owner/books/odd.epub'), findsOneWidget);
     },
   );
 
@@ -150,11 +150,11 @@ void main() {
         failures: const RunFailuresOutcome.read(
           failures: [
             RunFailure(
-              path: '/home/owner/music/one.mp3',
+              path: '/home/owner/books/one.epub',
               reason: 'permission denied',
             ),
             RunFailure(
-              path: '/home/owner/music/two.mp3',
+              path: '/home/owner/books/two.epub',
               reason: 'permission denied',
             ),
           ],
@@ -183,11 +183,11 @@ void main() {
         failures: const RunFailuresOutcome.read(
           failures: [
             RunFailure(
-              path: '/home/owner/music/one.mp3',
+              path: '/home/owner/books/one.epub',
               reason: 'permission denied',
             ),
             RunFailure(
-              path: '/home/owner/music/two.mp3',
+              path: '/home/owner/books/two.epub',
               reason: 'permission denied',
             ),
           ],

@@ -70,8 +70,8 @@ void main() {
   /// A library with two notes and one image in it.
   Map<FileType, gateway.CatalogListing> aLibrary() => {
     FileType.text: loadedDetails([
-      aFile(name: 'Kind of Blue.md'),
-      aFile(uuid: 'c', name: 'Giant Steps.md'),
+      aFile(name: 'Deep Blue Sea.md'),
+      aFile(uuid: 'c', name: 'Giant Squid.md'),
     ]),
     FileType.image: loadedDetails([
       aFile(uuid: 'b', name: 'blue.png', type: FileType.image),
@@ -174,9 +174,9 @@ void main() {
 
       await search(tester, 'blue');
 
-      expect(find.text('Kind of Blue.md'), findsOneWidget);
+      expect(find.text('Deep Blue Sea.md'), findsOneWidget);
       expect(find.text('blue.png'), findsOneWidget);
-      expect(find.text('Giant Steps.md'), findsNothing);
+      expect(find.text('Giant Squid.md'), findsNothing);
     });
 
     testWidgets('GivenMatchesOfTwoTypes_WhenShown_ThenTheyAreGroupedByType', (
@@ -319,23 +319,22 @@ void main() {
   });
 
   group('naming results', () {
-    testWidgets(
-      'GivenAMatch_WhenTheResultsAreShown_ThenItReadsItsFileName',
-      (tester) async {
-        // A file's name on disk is what it is called.
-        await searchFor(
-          tester,
-          term: 'notes',
-          gateway: FakeCatalogGateway()
-            ..addDocument(uuid: '2', name: 'notes.pdf'),
-        );
+    testWidgets('GivenAMatch_WhenTheResultsAreShown_ThenItReadsItsFileName', (
+      tester,
+    ) async {
+      // A file's name on disk is what it is called.
+      await searchFor(
+        tester,
+        term: 'notes',
+        gateway: FakeCatalogGateway()
+          ..addDocument(uuid: '2', name: 'notes.pdf'),
+      );
 
-        // Exact rather than containing: the subtitle shows the file's path,
-        // which also contains "notes.pdf" as its tail, and a containing match
-        // would pass even if the title itself were never checked.
-        expect(find.text('notes.pdf'), findsOneWidget);
-      },
-    );
+      // Exact rather than containing: the subtitle shows the file's path,
+      // which also contains "notes.pdf" as its tail, and a containing match
+      // would pass even if the title itself were never checked.
+      expect(find.text('notes.pdf'), findsOneWidget);
+    });
   });
 
   for (final (name, locale) in [

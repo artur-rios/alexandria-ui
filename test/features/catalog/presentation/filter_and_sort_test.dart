@@ -173,7 +173,7 @@ void main() {
         tester,
         listings: {
           FileType.video: loadedDetails([
-            aFile(name: 'Kind of Blue.mkv', type: FileType.video),
+            aFile(name: 'Deep Blue Sea.mkv', type: FileType.video),
           ]),
         },
       );
@@ -191,7 +191,7 @@ void main() {
       await tester.tap(find.text(l10n.filtersClear).last);
       await tester.pumpAndSettle();
 
-      expect(find.text('Kind of Blue.mkv'), findsOneWidget);
+      expect(find.text('Deep Blue Sea.mkv'), findsOneWidget);
     });
   });
 

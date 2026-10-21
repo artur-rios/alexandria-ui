@@ -40,7 +40,7 @@ void main() {
     final gateway = FakeCatalogGateway(
       listings: {
         FileType.video: loadedDetails([
-          aFile(uuid: uuid, name: 'Kind of Blue.mkv', type: FileType.video),
+          aFile(uuid: uuid, name: 'Deep Blue Sea.mkv', type: FileType.video),
         ]),
       },
     );
@@ -65,7 +65,7 @@ void main() {
     await tester.pumpAndSettle();
 
     if (tapRow) {
-      await openDetailsOf(tester, 'Kind of Blue.mkv');
+      await openDetailsOf(tester, 'Deep Blue Sea.mkv');
       await tester.pumpAndSettle();
     }
 
@@ -127,7 +127,7 @@ void main() {
           details: FileDetails(
             file: aFile(
               uuid: uuid,
-              name: 'Kind of Blue.mkv',
+              name: 'Deep Blue Sea.mkv',
               type: FileType.video,
             ),
             metadata: const {'resolution': '1920x1080'},
@@ -524,12 +524,10 @@ void main() {
     testWidgets(
       'GivenAFile_WhenItsDetailsOpen_ThenItsNameSizeAndFormatAreShown',
       (tester) async {
-        // The one place the name on disk belongs, under a label saying that is
-        // what it is — FR-CT-13 keeps it out of the music area, not out of the
-        // record of what the file is.
+        // The name on disk, under a label saying that is what it is.
         await openDetailsFor(
           tester,
-          name: 'DISKNAME-01.flac',
+          name: 'DISKNAME-01.mkv',
           sizeBytes: 4922880,
         );
         final l10n = localizations(tester);
@@ -537,9 +535,9 @@ void main() {
         expect(find.text(l10n.detailsFileName), findsOneWidget);
         // Once, under its label — not also as an unlabelled heading above
         // it, which the labelled row made a duplicate of.
-        expect(find.text('DISKNAME-01.flac'), findsOneWidget);
+        expect(find.text('DISKNAME-01.mkv'), findsOneWidget);
         expect(find.text('4.7 MB'), findsOneWidget);
-        expect(find.text('FLAC'), findsOneWidget);
+        expect(find.text('MKV'), findsOneWidget);
       },
     );
 
@@ -548,7 +546,7 @@ void main() {
       (tester) async {
         // A core that answered without a size has not told us the file is
         // empty, and a row reading "0 B" would say it had.
-        await openDetailsFor(tester, name: 'DISKNAME-01.flac', sizeBytes: null);
+        await openDetailsFor(tester, name: 'DISKNAME-01.mkv', sizeBytes: null);
         final l10n = localizations(tester);
 
         expect(find.text(l10n.detailsFileSize), findsNothing);
@@ -561,7 +559,7 @@ void main() {
         // The same rule as the size row: a core that answered without an
         // mtime has not told us when the file changed, and showing an epoch
         // date would say it had.
-        await openDetailsFor(tester, name: 'DISKNAME-01.flac', mtime: null);
+        await openDetailsFor(tester, name: 'DISKNAME-01.mkv', mtime: null);
         final l10n = localizations(tester);
 
         expect(find.text(l10n.detailsFileModified), findsNothing);

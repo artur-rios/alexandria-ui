@@ -24,7 +24,7 @@ void main() {
   const uuid = '6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f';
 
   FileDetails aNote({bool isDeleted = false}) => FileDetails(
-    file: aFile(uuid: uuid, name: 'Kind of Blue.md'),
+    file: aFile(uuid: uuid, name: 'Deep Blue Sea.md'),
     isDeleted: isDeleted,
   );
 
@@ -60,7 +60,7 @@ void main() {
     );
 
     // Reached from the dashboard's recent list.
-    await openDetailsOf(tester, 'Kind of Blue.md');
+    await openDetailsOf(tester, 'Deep Blue Sea.md');
     await tester.pumpAndSettle();
 
     if (!loaded.isDeleted) {
@@ -116,7 +116,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(RenameFileDialog),
-          matching: find.text('Kind of Blue.md'),
+          matching: find.text('Deep Blue Sea.md'),
         ),
         findsOneWidget,
       );
@@ -127,11 +127,11 @@ void main() {
     ) async {
       final (_, gateway) = await openDialog(tester);
 
-      await enter(tester, 'Kind of Blue (1959).md');
+      await enter(tester, 'Deep Blue Sea (1999).md');
       await rename(tester);
 
       expect(gateway.renames, hasLength(1));
-      expect(gateway.renames.single.name, 'Kind of Blue (1959).md');
+      expect(gateway.renames.single.name, 'Deep Blue Sea (1999).md');
       expect(gateway.renames.single.uuid, uuid);
     });
 

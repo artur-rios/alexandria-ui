@@ -233,7 +233,7 @@ class FakeCatalogGateway implements CatalogGateway {
 /// A file of [type], for a test that needs one in a listing.
 CatalogFile aFile({
   String uuid = '6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f',
-  String name = 'Kind of Blue.md',
+  String name = 'Deep Blue Sea.md',
   String? path,
   FileType type = FileType.text,
   String contentHash = 'a-content-hash',

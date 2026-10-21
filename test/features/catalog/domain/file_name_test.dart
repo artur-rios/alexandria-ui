@@ -12,7 +12,7 @@ void main() {
   group('names either host accepts', () {
     for (final name in [
       'Stalker.mkv',
-      'Kind of Blue.flac',
+      'Deep Blue Sea.epub',
       'a',
       'notes-2026.md',
       'já lido.pdf',

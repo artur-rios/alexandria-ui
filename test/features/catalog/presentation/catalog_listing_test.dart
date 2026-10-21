@@ -155,14 +155,14 @@ void main() {
         tester,
         listings: {
           FileType.video: loadedDetails([
-            aFile(type: FileType.video, name: 'Kind of Blue.mp4'),
-            aFile(uuid: 'b', type: FileType.video, name: 'Blue Train.mp4'),
+            aFile(type: FileType.video, name: 'Deep Blue Sea.mp4'),
+            aFile(uuid: 'b', type: FileType.video, name: 'Blue Planet.mp4'),
           ]),
         },
       );
 
-      expect(find.text('Kind of Blue.mp4'), findsOneWidget);
-      expect(find.text('Blue Train.mp4'), findsOneWidget);
+      expect(find.text('Deep Blue Sea.mp4'), findsOneWidget);
+      expect(find.text('Blue Planet.mp4'), findsOneWidget);
     });
 
     testWidgets('GivenALargeListing_WhenItIsShown_ThenRowsAreBuiltOnDemand', (
