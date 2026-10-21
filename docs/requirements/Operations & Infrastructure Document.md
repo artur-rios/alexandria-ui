@@ -49,7 +49,7 @@ touching the shell, the bindings, or the error model.
 ```mermaid
 graph TD
     subgraph Presentation
-        SHELL[Shell<br/>navigation, breakpoints, player bar]
+        SHELL[Shell<br/>navigation, breakpoints]
         SCREENS[Feature screens<br/>and components]
         VIEWERS[Viewer registry<br/>players, readers, renderers]
     end
@@ -182,8 +182,7 @@ environment. There is no server, no connection string, and no secret to inject.
 | Log level | `--dart-define` at build time | Verbose in development, informational in release. |
 | Log file location | Application-support directory | See §4. |
 | Owner preferences — theme, language, layout, sort, filters, library folders, window geometry | The local settings store | Owner-facing state, changed in the interface, never in a config file. |
-| Music enrichment — whether lookups may run, and the contact they carry | The local settings store, applied to the core's `ALEXANDRIA_METADATA_*` variables before it is initialized | The core's own setting, but the owner's decision: this application embeds the core, so the owner *is* the operator, and asking them to edit a `config.toml` to see a lyric would be asking them to administer their own music player. |
-| The core's caches — artist photographs and thumbnails | Set to directories beside the catalog, through `ALEXANDRIA_METADATA_IMAGE_CACHE_DIR` and `ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR`, before the core is initialized | Both settings default to a path relative to the process's working directory, which for an installed application is wherever the desktop started it — a directory this application does not own and often cannot write to. The catalog's own directory is the one it does. |
+| The core's thumbnail cache | Set to a directory beside the catalog, through `ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR`, before the core is initialized | The setting defaults to a path relative to the process's working directory, which for an installed application is wherever the desktop started it — a directory this application does not own and often cannot write to. The catalog's own directory is the one it does. |
 
 No secret is ever written into this document, into the repository, or into a
 build argument. The only credential in the product is the owner's password, which
@@ -194,11 +193,8 @@ the application forwards to the core and never stores.
 ## 4. Logging & Monitoring
 
 There is no aggregator and no telemetry: this is a local application, and nothing
-it records leaves the machine. That is unchanged by music enrichment, which is
-outbound only and carries no log, no counter, and nothing identifying the owner
-or their library — an artist name, a track title, an album name and a duration,
-and only while the owner has it switched on, and only when they ask for a
-lookup.
+it records leaves the machine. Nothing about the owner or their library is
+sent anywhere.
 
 | Concern | Approach |
 | --- | --- |
@@ -229,19 +225,16 @@ usable, and must say so rather than crashing.
 | 2 | Resolve the application-support directory and the database path | Present the directory that could not be created, with a retry. |
 | 3 | Load the local settings and apply the theme and language | Fall back to system theme and language — and, for the core's own configuration below, to the shipped defaults — and report that preferences could not be read. |
 | 4 | Read the core's version and health status | Present an incompatible-version or unhealthy-core message, with a retry. |
-| 5 | Initialize the core against the database path, with the owner's music-lookup choice | Present the core's reported reason, with a retry. |
+| 5 | Initialize the core against the database path | Present the core's reported reason, with a retry. |
 | 6 | Determine whether an account exists, and present sign-up or login | Present the core's reason, with a retry. |
 | 7 | After signing up, present the recovery codes the core minted | Present the core's reason, with a retry. An account created without codes is said so plainly, and regenerating a set is offered. |
 
 The settings are read **before** the core is initialized, and that order is
 load-bearing rather than incidental. The core reads its own configuration
-exactly once, at `alexandria_index_init`, and one of those settings — whether
-music enrichment may run, and the contact it identifies itself with — is the
-owner's to make in the preferences dialog. Loading preferences after
-initialization would leave every such choice a launch behind the owner who
-made it. A choice changed *during* a session is applied by initializing the
-core again against the same database, which the core documents as safe and
-which leaves the session (held in the database, not in the process) intact.
+exactly once, at `alexandria_index_init`, so whatever this application passes it
+— the database path and the thumbnail cache directory — has to be resolved
+first. No owner preference reconfigures the core any longer, so nothing needs
+the core to be initialized a second time during a session.
 
 The version and health are read **before** the core is initialized, and that
 order is load-bearing too. Initializing is what creates and migrates the

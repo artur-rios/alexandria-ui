@@ -2,10 +2,11 @@
 
 This is the brainstorm for a desktop front-end for a project called "Alexandria".  
 
+Alexandria is for things to read and watch. Music lives in Orpheus, a separate project.
+
 ## Features
 
-- The user can view, reproduce (audio and video), edit metadata and delete:
-  - Music (audio files)
+- The user can view, reproduce (video), edit metadata and delete:
   - Movies and series (video files)
   - HTML pages
   - Markdown and text files
@@ -15,12 +16,11 @@ This is the brainstorm for a desktop front-end for a project called "Alexandria"
 
 What the user can edit?
 
-- Music metadata
 - Video metadata
 - Markdown and text files
 - Every file name
 
-So I don't want any complex operation, like audio or video editing. I just want a software that can be used to organize and show those files from disk.  
+So I don't want any complex operation, like video editing. I just want a software that can be used to organize and show those files from disk.  
 
 How the files can be organized?
 
@@ -51,11 +51,10 @@ I want to use the best practices, SOLID principles, and the latest stable versio
 - Password recovery
 - Markdown/TXT editor
 - Home screen (must be a dashboard)
-- Left panel showing the types of files in the library (music, movies, series, books, comic books, notes, text files, HTML pages, PDFs, etc)
+- Left panel showing the types of files in the library (movies, series, books, comic books, notes, text files, HTML pages, PDFs, etc)
 - File viewer, of different layouts (list, list with details and grid)
 - File search
 - Filters
 - Modals and checkboxes when needed
 - Loading when needed
 - Video reproducer with basic functions (full screen, pause, forward, backward, subtitles, audio tracks)
-- The same for music, but with an animation when an álbum or artist is played (a CD, Vinyl or Tape being introduced to the respective device they play, and a animation of a disc or vinyl spining on this player, or the tape being played, must be on the screen by the duration of the songs, and stop on pauses)

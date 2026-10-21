@@ -87,9 +87,9 @@ implementation is built in this scope.
 
 | Package | Version | Used by | Role |
 | --- | --- | --- | --- |
-| **media_kit** | latest stable at implementation time | Playback | Audio and video playback engine, libmpv-backed. Chosen over the simpler embedders because subtitle-track and audio-track selection on both Windows and Linux are hard requirements, and it plays the container and codec range a real personal library contains without transcoding. |
+| **media_kit** | latest stable at implementation time | Playback | Video playback engine, libmpv-backed. Chosen over the simpler embedders because subtitle-track and audio-track selection on both Windows and Linux are hard requirements, and it plays the container and codec range a real personal library contains without transcoding. |
 | **media_kit_video** | latest stable at implementation time | Playback | The video render surface. |
-| **media_kit_libs_video / media_kit_libs_audio** | latest stable at implementation time | Playback | The bundled native libmpv libraries for each target platform. |
+| **media_kit_libs_video** | latest stable at implementation time | Playback | The bundled native libmpv libraries for each target platform. |
 
 ### 3.4 Document, image, and page viewing
 
@@ -312,7 +312,7 @@ section is the canonical list of the tools and versions.
 | Core boundary | alexandria_ffi (native shared library) | latest stable at implementation time |
 | Playback | media_kit | latest stable at implementation time |
 | Playback | media_kit_video | latest stable at implementation time |
-| Playback | media_kit_libs_video / media_kit_libs_audio | latest stable at implementation time |
+| Playback | media_kit_libs_video | latest stable at implementation time |
 | Viewers | pdfrx | latest stable at implementation time |
 | Viewers | xml | latest stable at implementation time |
 | Viewers | archive | latest stable at implementation time |

@@ -430,7 +430,7 @@ Comment=Your personal library
 Exec=${prefix}/${EXE_NAME}
 Icon=${APP_ID}
 Terminal=false
-Categories=AudioVideo;Player;Office;Viewer;
+Categories=AudioVideo;Video;Player;Office;Viewer;
 DESKTOP
 fi
 chmod 644 "$desktop_entry"

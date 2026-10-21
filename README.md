@@ -4,11 +4,13 @@ The cross-platform desktop front-end for
 [Alexandria](https://github.com/artur-rios/alexandria-api), a personal library
 system that indexes, organizes, and surfaces a single person's on-disk media and
 documents. This application is where the owner actually sees and uses that
-library: it browses the catalog, plays audio and video, reads documents and
-comics, edits Markdown and text in place, and organizes everything into
-collections, watchlists, and reading lists. It links the Alexandria Rust core in
-process over FFI rather than talking to a server, so the whole product runs as a
-single local application with no network hop between the interface and its data.
+library: it browses the catalog, plays video, reads documents and comics, edits
+Markdown and text in place, and organizes everything into collections,
+watchlists, and reading lists. Alexandria is a library for what you read and
+watch; music lives in Orpheus, a separate project. It links the Alexandria Rust
+core in process over FFI rather than talking to a server, so the whole product
+runs as a single local application with no network hop between the interface and
+its data.
 
 > **Status:** all forty-six issues are delivered — the foundation and
 > every use case in the backlog below.
@@ -19,8 +21,8 @@ single local application with no network hop between the interface and its data.
 
 ## What it does
 
-- Browses the catalog by file type — music, movies, series, HTML pages, Markdown
-  and text notes, PDFs and e-books, comic books, images, and browser bookmarks —
+- Browses the catalog by file type — movies, series, HTML pages, Markdown and
+  text notes, PDFs and e-books, comic books, images, and browser bookmarks —
   in list, detailed-list, and grid layouts.
 - Registers one or more library folders and runs indexing and re-scans from the
   interface — indexing a folder as soon as it is added, showing live progress
@@ -28,18 +30,10 @@ single local application with no network hop between the interface and its data.
   cancelled, or paced down while it works. A folder can also be made a library
   and browsed as its own tree.
 - Plays video with full screen, seeking, subtitle tracks, and audio tracks.
-- Plays audio in a persistent player with a queue, and in a full-window player
-  showing the record's cover and bars drawn from the sound of the track.
-- Browses the music library by album artist, album, and song, and builds and
-  plays playlists. Optionally looks up a track's lyrics, which follow the music
-  as it plays, and its artist's photograph.
-- Counts what is played and ranks it — most played tracks, artists, albums,
-  and genres — where a track counts once half of it, or four minutes of it,
-  has been heard.
 - Views PDFs, e-books, comic books, images, saved HTML pages, and rendered
   Markdown.
 - Edits Markdown and text files in place, with a live preview.
-- Edits music and video metadata, and renames any file.
+- Edits video metadata, and renames any file.
 - Organizes files and bookmarks into collections, tracks movies and series in
   watchlists with per-episode progress, and tracks books and comics in reading
   lists with per-issue progress.
@@ -54,8 +48,10 @@ single local application with no network hop between the interface and its data.
 
 ## What it doesn't do
 
-- No media editing of any kind — no audio or video re-encoding, no transcoding,
-  no image manipulation.
+- No music. Audio files in a registered folder are skipped when it is scanned;
+  music belongs to Orpheus, a separate project.
+- No media editing of any kind — no video re-encoding, no transcoding, no image
+  manipulation.
 - No domain logic of its own: validation, lifecycle, and every business rule
   belong to the Alexandria core.
 - No file management — it never moves, copies, or duplicates a file, and removes
@@ -145,14 +141,14 @@ a later one, and every milestone after `M-01` depends on it.
 | [M-02 — Shell and access](https://github.com/artur-rios/alexandria-ui/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, sign in to, and recover access to | M-01 | 9 | 9 / 9 closed |
 | [M-03 — Library sources and indexing](https://github.com/artur-rios/alexandria-ui/milestone/3) | Folders can be registered, indexed, refreshed, and unregistered — the catalog gets its content | M-02 | 4 | 4 / 4 closed |
 | [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-ui/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 6 / 6 closed |
-| [M-05 — Metadata and content editing](https://github.com/artur-rios/alexandria-ui/milestone/5) | Music and video metadata, file names, and text content can be edited | M-04 | 4 | 4 / 4 closed |
-| [M-06 — Media playback](https://github.com/artur-rios/alexandria-ui/milestone/6) | Video plays with subtitles and audio tracks; audio plays with a queue, a full player, and the sound of the track drawn from the recording | M-04 | 3 | 3 / 3 closed |
+| [M-05 — Metadata and content editing](https://github.com/artur-rios/alexandria-ui/milestone/5) | Video metadata, file names, and text content can be edited | M-04 | 4 | 4 / 4 closed |
+| [M-06 — Media playback](https://github.com/artur-rios/alexandria-ui/milestone/6) | Video plays with subtitles and audio tracks | M-04 | 3 | 3 / 3 closed |
 | [M-07 — Document and image viewing](https://github.com/artur-rios/alexandria-ui/milestone/7) | PDFs, e-books, comics, images, and saved pages can be read | M-04 | 4 | 4 / 4 closed |
 | [M-08 — Collections and bookmarks](https://github.com/artur-rios/alexandria-ui/milestone/8) | Files and bookmarks can be grouped, and bookmarks managed and opened | M-04 | 3 | 3 / 3 closed |
 | [M-09 — Watchlists and reading lists](https://github.com/artur-rios/alexandria-ui/milestone/9) | Movies, series, books, and comics can be tracked with per-episode and per-issue progress | M-08 | 4 | 4 / 4 closed |
 | [M-10 — Deletion lifecycle](https://github.com/artur-rios/alexandria-ui/milestone/10) | Items can be deleted, restored, purged, purged on disk, and reviewed when missing | M-04 | 5 | 5 / 5 closed |
 | [M-11 — Indexing experience](https://github.com/artur-rios/alexandria-ui/milestone/11) | A scan is visible from anywhere, controllable while it runs, and paceable; a newly registered folder indexes itself | M-03 | 3 | 3 / 3 closed |
-| M-12 — Music library and playlists | The audio library browsed by album and artist with its own photographs, playlists curated and played, and what has been played most | M-06 | 4 | 4 / 4 closed |
+| M-12 — Music library and playlists | Removed (moved out of scope, see Orpheus) | M-06 | 4 | Removed |
 | M-13 — Libraries | A folder browsed as its own tree, whose files are shown there rather than scattered across the type panels | M-04 | 1 | 1 / 1 closed |
 
 GitHub's milestone pages are the live view of progress; the counts here are as
@@ -163,15 +159,11 @@ issue-per-use-case backlog the first eleven follow. They are specified all the
 same — `UC-46` … `UC-50` and their requirements are in the same two documents
 as everything above them.
 
-**The two repositories agree.** `CORE_REF` tracks the core that refuses to be
-re-initialized while it is walking a disk, which the preferences dialog reads
-to say that a lookup setting changed mid-scan takes effect when the scan
-finishes. That core also carries the review fixes this application depends on
-being there: a library that no longer claims folders differing only in case, a
-re-encoded track that no longer keeps the old recording's envelope, and an
-album ranking grouped by title *and* artist — which is what makes the
-statistics screen agree with the music browsing beside it. Earlier divergences
-are closed on both sides too:
+**The two repositories agree.** `CORE_REF` tracks a core that no longer has any
+notion of an audio file, and this application accepts core `>=0.5.0 <0.6.0`.
+That core also carries the review fixes this application depends on being
+there, such as a library that no longer claims folders differing only in case.
+Earlier divergences are closed on both sides too:
 
 - **Account recovery is recovery codes.** The core dropped e-mail confirmation
   and password reset and replaced them with ten single-use codes minted at
@@ -234,7 +226,7 @@ and nesting stays a change of data rather than of interface.
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#16](https://github.com/artur-rios/alexandria-ui/issues/16) | UC-15 — Edit music metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#16](https://github.com/artur-rios/alexandria-ui/issues/16) | UC-15 — Edit music metadata — Removed (moved out of scope, see Orpheus) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#17](https://github.com/artur-rios/alexandria-ui/issues/17) | UC-16 — Edit video metadata — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#18](https://github.com/artur-rios/alexandria-ui/issues/18) | UC-17 — Rename a file — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#19](https://github.com/artur-rios/alexandria-ui/issues/19) | UC-18 — Edit a Markdown or text file — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -244,8 +236,8 @@ and nesting stays a change of data rather than of interface.
 | Issue | Work | Spec |
 | --- | --- | --- |
 | [#20](https://github.com/artur-rios/alexandria-ui/issues/20) | UC-19 — Play a video — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#21](https://github.com/artur-rios/alexandria-ui/issues/21) | UC-20 — Play audio — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#22](https://github.com/artur-rios/alexandria-ui/issues/22) | UC-21 — See what is playing (specified as the album playback animation, which 0.1.0 replaced with the full player) — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#21](https://github.com/artur-rios/alexandria-ui/issues/21) | UC-20 — Play audio — Removed (moved out of scope, see Orpheus) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#22](https://github.com/artur-rios/alexandria-ui/issues/22) | UC-21 — See what is playing — Removed (moved out of scope, see Orpheus) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-07 — Document and image viewing
 
@@ -296,17 +288,16 @@ listing, and the pause, resume, and cancel controls.
 
 ### M-12 — Music library and playlists
 
-The audio library as a library rather than a file listing: browsed by album and
-artist, with the photograph the core holds for each; playlists curated and
-played; and what has been played most, counted by the player and ranked by the
-core.
+**Removed (moved out of scope, see Orpheus).** Music left Alexandria; it lives in
+Orpheus, the owner's separate project. The milestone and its use cases keep
+their numbers so that nothing else is renumbered.
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| — | UC-46 — Browse the music library — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| — | UC-47 — Manage a playlist — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| — | UC-48 — Play a playlist — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| — | UC-50 — See what has been played most — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-46 — Browse the music library — Removed (moved out of scope, see Orpheus) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-47 — Manage a playlist — Removed (moved out of scope, see Orpheus) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-48 — Play a playlist — Removed (moved out of scope, see Orpheus) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-50 — See what has been played most — Removed (moved out of scope, see Orpheus) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-13 — Libraries
 
