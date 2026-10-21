@@ -29,15 +29,6 @@ enum CoreStatusFamily {
   /// `alexandria_playlist_*` and `alexandria_playlists_*` — see `PLAYLIST_*`.
   playlist,
 
-  /// `alexandria_play_record` and `alexandria_music_stats` — see `PLAY_*`.
-  ///
-  /// Its own family rather than [CoreStatusFamily.playlist]'s, on the
-  /// header's own convention: a playlist is something the owner curates and
-  /// a play is something that happened, and the two calls fail for different
-  /// reasons. The family carries no invalid-state code — there is no state
-  /// for a play to be in.
-  play,
-
   /// `alexandria_library_*` and `alexandria_libraries_*` — see `LIBRARY_*`.
   library,
 
@@ -76,7 +67,6 @@ enum CoreStatusFamily {
     CoreStatusFamily.watchlist => WATCHLIST_OK,
     CoreStatusFamily.readingList => READING_LIST_OK,
     CoreStatusFamily.playlist => PLAYLIST_OK,
-    CoreStatusFamily.play => PLAY_OK,
     CoreStatusFamily.library => LIBRARY_OK,
     CoreStatusFamily.auth => AUTH_OK,
     CoreStatusFamily.settings => SETTINGS_OK,

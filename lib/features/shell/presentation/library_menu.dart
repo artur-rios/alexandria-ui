@@ -6,7 +6,6 @@ import '../../lifecycle/presentation/missing_files_screen.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../organization/presentation/collections_screen.dart';
 import '../../playlists/presentation/playlists_screen.dart';
-import '../../stats/presentation/music_stats_screen.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
 import 'menu_entry.dart';
@@ -15,8 +14,8 @@ import 'menu_entry.dart';
 /// FR-UX-01).
 ///
 /// The screens that belong to no single file type — sources, collections,
-/// watchlists, reading lists, playlists, the statistics,
-/// deleted items, and the missing-files review — and so are not destinations
+/// watchlists, reading lists, playlists, deleted items, and the
+/// missing-files review — and so are not destinations
 /// of their own (FR-CT-01). The libraries were here too until they became
 /// one: they are somewhere the owner browses rather than something they do. They were
 /// reached from the bottom of the navigation rail, below a divider that was
@@ -69,15 +68,6 @@ class LibraryMenu extends StatelessWidget {
           icon: Icons.queue_music_outlined,
           label: l10n.playlistsOpen,
           onSelected: () => PlaylistsScreen.show(context),
-        ),
-        // Beside the playlists, in the group that is about
-        // what the owner does with the library rather than what is in it:
-        // this is the only screen here that answers a question about the
-        // owner instead of about their files.
-        MenuEntry(
-          icon: Icons.insights_outlined,
-          label: l10n.musicStatsOpen,
-          onSelected: () => MusicStatsScreen.show(context),
         ),
         MenuGroupHeading(l10n.libraryToolsGroupReview),
         MenuEntry(
