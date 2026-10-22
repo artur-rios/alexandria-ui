@@ -196,7 +196,7 @@ abstract interface class CoreClient {
   Future<CoreJsonResponse> fileByUuid(String uuid, String token);
 
   /// Replaces the type-specific metadata of the file [uuid] identifies
-  /// (FR-ME-01, UC-15).
+  /// (FR-ME-02, UC-16).
   ///
   /// [jsonPatch] is the whole metadata object, tagged by type. The core
   /// replaces the editable columns with it rather than merging: a field the
@@ -208,7 +208,7 @@ abstract interface class CoreClient {
   );
 
   /// Resolves the file [uuid] identifies to something a local player can open,
-  /// through `alexandria_file_playback_source` (FR-PL-01, FR-PL-05).
+  /// through `alexandria_file_playback_source` (FR-PL-01).
   ///
   /// Answers `{uuid, path, mimeType, sizeBytes}`. No bytes cross the boundary:
   /// the player opens the path directly, which is what playing without

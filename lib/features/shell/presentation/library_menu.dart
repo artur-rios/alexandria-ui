@@ -13,12 +13,12 @@ import 'menu_entry.dart';
 /// FR-UX-01).
 ///
 /// The screens that belong to no single file type — sources, collections,
-/// watchlists, reading lists, deleted items, and the missing-files review —
-/// and so are not destinations of their own (FR-CT-01). The libraries were
-/// here too until they became one: they are somewhere the owner browses
-/// rather than something they do. They were reached from the bottom of the navigation rail, below a divider that was
-/// the only thing saying they were not destinations; a menu bar says it by
-/// construction.
+/// watchlists, reading lists, deleted items, and the missing-files review — and
+/// so are not destinations of their own (FR-CT-01). The libraries were here too
+/// until they became one: they are somewhere the owner browses rather than
+/// something they do. They were reached from the bottom of the navigation rail,
+/// below a divider that was the only thing saying they were not destinations; a
+/// menu bar says it by construction.
 ///
 /// Three headings inside, because a menu holding six unrelated screens
 /// cannot be read at a glance without them. The order beneath each runs from

@@ -27,9 +27,8 @@ class TrackedVideo {
 ///
 /// A watchlist carries the uuid the core tracks a video by and nothing else,
 /// so the name and the movie-or-series marking are read per video. That is a
-/// call each, once, held for the run — the same shape and the same cost as the
-/// music library's grouping, and for the same reason: the core publishes no
-/// call that answers several files at once with their metadata.
+/// call each, once, held for the run, because the core publishes no call that
+/// answers several files at once with their metadata.
 class TrackedVideosController extends AsyncNotifier<Map<String, TrackedVideo>> {
   @override
   Future<Map<String, TrackedVideo>> build() async {

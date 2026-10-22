@@ -1,12 +1,15 @@
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/features/auth/application/session_state.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
+import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_core_client.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/fake_library_sources.dart';
 import '../../../support/in_memory_settings_store.dart';
 import '../../../support/test_container.dart';
@@ -37,11 +40,13 @@ void main() {
   const musicLibrary =
       '[{"uuid":"music-library","name":"Music","rootPath":"/music"}]';
 
-  /// Runs startup over [store] and [core], with nobody signed in yet.
+  /// Runs startup over [store] and [core], with nobody signed in yet, and the
+  /// libraries answered by [gateway] instead of [core] when one is given.
   Future<ProviderContainer> started(
     InMemoryLibrarySourceStore store,
-    FakeCoreClient core,
-  ) async {
+    FakeCoreClient core, {
+    LibraryGateway? gateway,
+  }) async {
     final container = buildTestContainer(
       overrides: [
         ...fakeCoreOverrides(
@@ -51,6 +56,7 @@ void main() {
           settings: InMemorySettingsStore(rechecksAtStartup: false),
         ),
         librarySourceStoreProvider.overrideWithValue(store),
+        if (gateway != null) libraryGatewayProvider.overrideWithValue(gateway),
       ],
     );
     await container.read(startupControllerProvider.notifier).start();
@@ -103,7 +109,10 @@ void main() {
       expect(core.libraryRemoveCalls, hasLength(1));
       expect(
         store.read(),
-        [music, mix.copyWith(scope: const ['video'])],
+        [
+          music,
+          mix.copyWith(scope: const ['video']),
+        ],
         reason:
             'a folder whose library is still in the core stays as it was, '
             'where it was, so the next sign-in can retry it',
@@ -134,7 +143,10 @@ void main() {
       await signIn(container);
 
       expect(core.libraryRemoveCalls, isEmpty);
-      expect(store.read(), [music, mix.copyWith(scope: const ['video'])]);
+      expect(store.read(), [
+        music,
+        mix.copyWith(scope: const ['video']),
+      ]);
     },
   );
 
@@ -188,26 +200,23 @@ void main() {
     },
   );
 
-  test(
-    'GivenACleanStore_WhenTheOwnerSignsIn_ThenNothingIsWritten',
-    () async {
-      final store = InMemoryLibrarySourceStore([
-        LibrarySource(
-          path: '/films',
-          label: 'films',
-          registeredAt: registeredAt,
-          scope: const ['video'],
-        ),
-      ]);
-      final core = FakeCoreClient();
-      final container = await started(store, core);
+  test('GivenACleanStore_WhenTheOwnerSignsIn_ThenNothingIsWritten', () async {
+    final store = InMemoryLibrarySourceStore([
+      LibrarySource(
+        path: '/films',
+        label: 'films',
+        registeredAt: registeredAt,
+        scope: const ['video'],
+      ),
+    ]);
+    final core = FakeCoreClient();
+    final container = await started(store, core);
 
-      await signIn(container);
+    await signIn(container);
 
-      expect(store.writeCount, 0);
-      expect(core.libraryRemoveCalls, isEmpty);
-    },
-  );
+    expect(store.writeCount, 0);
+    expect(core.libraryRemoveCalls, isEmpty);
+  });
 
   test(
     'GivenTheFoldersScreenWasBuiltEarlier_WhenTheOwnerSignsIn_ThenItShowsTheCleanedFolders',
@@ -234,4 +243,82 @@ void main() {
       );
     },
   );
+
+  test(
+    'GivenTheLibrariesCallIsUnauthorized_WhenTheOwnerSignsIn_ThenTheSessionEndsAndTheFolderIsKept',
+    () async {
+      final store = InMemoryLibrarySourceStore([music, mix]);
+      final core = FakeCoreClient()
+        ..libraryResponse = (status: LIBRARY_ERR_UNAUTHORIZED, json: null);
+      final container = await started(store, core);
+
+      await signIn(container);
+
+      expect(
+        container.read(sessionControllerProvider),
+        isNot(isA<SessionActive>()),
+        reason:
+            'a rejected credential returns the owner to login, as the '
+            'Libraries screen does',
+      );
+      expect(core.libraryRemoveCalls, isEmpty);
+      expect(store.read(), [
+        music,
+        mix.copyWith(scope: const ['video']),
+      ]);
+    },
+  );
+
+  test(
+    'GivenTheFoldersChangeWhileTheCoreIsAsked_WhenTheOwnerSignsIn_ThenThoseChangesSurvive',
+    () async {
+      // The cleanup awaits the core between reading the folders and writing
+      // them back. A run outcome recorded, or a folder registered, in that
+      // window must not be overwritten by the folders as first read.
+      final films = LibrarySource(
+        path: '/films',
+        label: 'films',
+        registeredAt: registeredAt,
+        scope: const ['video'],
+      );
+      final store = InMemoryLibrarySourceStore([music, mix]);
+      final gateway = _WritingDuringBrowse(
+        libraries: const [
+          Library(uuid: 'music-library', name: 'Music', rootPath: '/music'),
+        ],
+        during: () => store.write([
+          music,
+          mix.copyWith(lastRunOutcome: 'complete'),
+          films,
+        ]),
+      );
+      final container = await started(
+        store,
+        FakeCoreClient(),
+        gateway: gateway,
+      );
+
+      await signIn(container);
+
+      expect(gateway.removed, ['music-library']);
+      expect(store.read(), [
+        mix.copyWith(scope: const ['video'], lastRunOutcome: 'complete'),
+        films,
+      ]);
+    },
+  );
+}
+
+/// A gateway that changes the stored folders while a browse is in flight,
+/// the way another write landing during the cleanup's core calls would.
+class _WritingDuringBrowse extends FakeLibraryGateway {
+  _WritingDuringBrowse({super.libraries, required this.during});
+
+  final Future<void> Function() during;
+
+  @override
+  Future<LibraryBrowse> browse({required String credential}) async {
+    await during();
+    return super.browse(credential: credential);
+  }
 }

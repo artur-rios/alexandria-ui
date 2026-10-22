@@ -339,8 +339,8 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   ///
   /// This is what `deletion_controller.dart`'s `onDone` does for a deletion —
   /// the catalog changed, so its listings, counts, search index, recent
-  /// files, open file details, and music library are all read again rather
-  /// than kept from before the run. Deliberately narrower than what signing
+  /// files, and open file details are all read again rather than kept from
+  /// before the run. Deliberately narrower than what signing
   /// out invalidates (`catalog_session_activity.dart`): a run finishing is
   /// not a session ending, so what the owner has open or typed —
   /// `openFileProvider`, `searchTermProvider`, the metadata and rename

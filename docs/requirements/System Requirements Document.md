@@ -29,12 +29,13 @@ repeated in each row:
 The application covers authentication and session handling; registering and
 indexing library folders; browsing, searching, filtering, and sorting the
 catalog; playing video; viewing documents, comic books, images, and saved HTML
-pages; editing video metadata, file names, and Markdown and text content; organizing files and bookmarks into collections; tracking
-watchlists and reading lists with per-episode and per-issue progress; carrying
-out the core's two-phase deletion lifecycle including the separate purge-on-disk;
-and the application shell that hosts all of it — responsive layout, light and
-dark themes, Brazilian Portuguese and English, and consistent loading, error, and
-confirmation presentation.
+pages; editing video metadata, file names, and Markdown and text content;
+organizing files and bookmarks into collections; tracking watchlists and reading
+lists with per-episode and per-issue progress; carrying out the core's two-phase
+deletion lifecycle including the separate purge-on-disk; and the application
+shell that hosts all of it — responsive layout, light and dark themes, Brazilian
+Portuguese and English, and consistent loading, error, and confirmation
+presentation.
 
 ### 1.3 Definitions
 
@@ -148,7 +149,7 @@ replace the FFI one without touching a screen.
 | --- | --- |
 | FR-LB-01 | The system shall allow the owner to register a library folder chosen through the platform's native folder picker. |
 | FR-LB-02 | The system shall reject a folder that does not exist, cannot be read, or is already registered, stating which condition failed. |
-| FR-LB-03 | The system shall persist the registered library folders locally — each with its label, its run history, and the file types an index of it records — so they survive a restart. A folder with no recorded types covers every supported type. On the first sign-in after the upgrade that removed audio, a folder whose recorded types were music only is unregistered, and one that mixed music with other types drops it. |
+| FR-LB-03 | The system shall persist the registered library folders locally — each with its label, its run history, and the file types an index of it records — so they survive a restart. A folder with no recorded types covers every supported type. Every sign-in takes audio out of the recorded types: a folder whose recorded types were music only is unregistered, and one that mixed music with other types drops it. A music-only folder that was also a library has its library removed first; a library the core will not remove keeps its folder, and the next sign-in tries again. Once no folder records audio, a sign-in changes nothing. |
 | FR-LB-04 | The system shall support any number of registered library folders and present their files as one merged catalog. |
 | FR-LB-05 | The system shall start an index run for a chosen library folder and retain the run identifier the core returns. |
 | FR-LB-06 | The system shall start a refresh run covering everything already cataloged, independently of any single folder. This also happens when a session is established, subject to FR-LB-21. |
@@ -527,7 +528,7 @@ Calls are grouped by the gateway that owns them.
 | Watchlists | `alexandria_watchlist_create`, `_add_video`, `alexandria_watchlists_list`, `_update_progress`, `_remove_video`, `_delete` | FR-TR-01 … FR-TR-07 |
 | Reading lists | `alexandria_reading_list_create`, `_add_item`, `alexandria_reading_lists_list`, `_update_progress`, `_remove_item`, `_delete` | FR-TR-08 … FR-TR-14 |
 | Libraries | `alexandria_libraries_list`, `alexandria_library_register`, `_move`, `_browse`, `_remove` | FR-CT-16, FR-CT-17 |
-| Playback sources | `alexandria_file_playback_source`, `alexandria_file_thumbnail`, `alexandria_comic_page` | FR-PL-01, FR-VW-04 |
+| Playback sources | `alexandria_file_playback_source`, `alexandria_comic_page` | FR-PL-01, FR-VW-04 |
 | Settings | `alexandria_settings_json` | FR-LC-03 |
 | Memory | `alexandria_free_string` | NFR-13 |
 

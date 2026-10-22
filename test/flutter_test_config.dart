@@ -49,16 +49,18 @@ class _TolerantGoldenComparator extends LocalFileComparator {
   /// The golden to compare against on this platform.
   ///
   /// A file named `shell_medium_light.windows.png` beside
-  /// `shell_medium_light.png` is used in its place when this is Windows. Most goldens need no such variant —
-  /// a painted shape rasterizes the same everywhere within tolerance — so
-  /// the base file stays the single reference for all of them, and a variant
-  /// exists only where two platforms genuinely disagree.
+  /// `shell_medium_light.png` is used in its place when this is Windows. Most
+  /// goldens need no such variant — a painted shape rasterizes the same
+  /// everywhere within tolerance — so the base file stays the single
+  /// reference for all of them, and a variant exists only where two
+  /// platforms genuinely disagree.
   ///
   /// Which is text. Two operating systems do not paint identical glyph
-  /// outlines identically: hinting, subpixel positioning and antialiasing
-  /// all differ, measured at 3.1-4.7% of the image on text-heavy goldens
-  /// even with the typeface pinned. A variant is how both platforms
-  /// get a real check instead of one of them getting none.
+  /// outlines identically: hinting, subpixel positioning and antialiasing all
+  /// differ, by 3.1-4.7% of the image on the text-heavy goldens this was
+  /// first measured on. The shell goldens hold little text and differ by
+  /// 0.15-0.26%, inside [_tolerance], so they need none. A variant is how
+  /// both platforms get a real check instead of one of them getting none.
   Uri _forThisPlatform(Uri golden) {
     final variant = _platformVariant(golden);
     if (variant == null) return golden;
@@ -125,23 +127,13 @@ class _TolerantGoldenComparator extends LocalFileComparator {
 /// Kept beside the comparator so the two are read together, and used by the
 /// golden suites rather than duplicated in each.
 ///
-/// **Linux only, and that is a conclusion rather than a preference.** These
-/// goldens draw text, and text is the one thing two operating systems will
-/// not rasterize identically — different hinting, different subpixel
-/// positioning, different antialiasing of the same outlines.
-///
-/// Pinning a typeface fixes only the half of this that is fixable: the
-/// layout. With the same face on both platforms, the same glyphs land in the
-/// same places — and still disagree, by 3.1-4.7% of the image, because the
-/// platforms paint those glyphs differently. Measured on CI, both legs.
-///
-/// So a golden holding text is a picture of one renderer, and comparing it
-/// against another renderer's output is a test of the operating system. The
-/// choices were a tolerance wide enough to swallow that — which is wide
-/// enough to swallow a moved control, the one thing these exist to catch —
-/// or one canonical platform. This is the second.
-///
-/// Both, now that each platform has its own reference where the two
-/// genuinely differ (see `_forThisPlatform`). A golden nobody compares on
-/// the platform they develop on is a golden that only CI can defend.
+/// Windows and Linux. A golden that draws text is a picture of one renderer:
+/// two operating systems do not rasterize the same glyphs identically —
+/// different hinting, different subpixel positioning, different antialiasing
+/// of the same outlines — and a tolerance wide enough to swallow that is wide
+/// enough to swallow a moved control, the one thing these exist to catch. So
+/// where the two genuinely differ, each holds its own reference (see
+/// `_forThisPlatform`) rather than one of them going unchecked. A golden
+/// nobody compares on the platform they develop on is a golden that only CI
+/// can defend.
 bool get goldensAreComparable => Platform.isWindows || Platform.isLinux;

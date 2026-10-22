@@ -30,9 +30,9 @@ mixin _$FileDetails {
  String? get libraryUuid;/// The type-specific metadata, as labelled fields.
 ///
 /// A map rather than a union per type, because this screen only reads it.
-/// Editing is UC-15's and UC-16's, and they are the use cases that should
-/// design the typed shape — building one here from a display would be
-/// guessing at what an editor needs.
+/// Editing is UC-16's, and that is the use case that should design the
+/// typed shape — building one here from a display would be guessing at
+/// what an editor needs.
  Map<String, String> get metadata;/// The pixel width the core extracted, for an image.
  int? get width;/// The pixel height the core extracted, for an image.
  int? get height;/// The page count the core extracted, for a document or a comic.
@@ -267,16 +267,16 @@ class _FileDetails extends FileDetails {
 /// The type-specific metadata, as labelled fields.
 ///
 /// A map rather than a union per type, because this screen only reads it.
-/// Editing is UC-15's and UC-16's, and they are the use cases that should
-/// design the typed shape — building one here from a display would be
-/// guessing at what an editor needs.
+/// Editing is UC-16's, and that is the use case that should design the
+/// typed shape — building one here from a display would be guessing at
+/// what an editor needs.
  final  Map<String, String> _metadata;
 /// The type-specific metadata, as labelled fields.
 ///
 /// A map rather than a union per type, because this screen only reads it.
-/// Editing is UC-15's and UC-16's, and they are the use cases that should
-/// design the typed shape — building one here from a display would be
-/// guessing at what an editor needs.
+/// Editing is UC-16's, and that is the use case that should design the
+/// typed shape — building one here from a display would be guessing at
+/// what an editor needs.
 @override@JsonKey() Map<String, String> get metadata {
   if (_metadata is EqualUnmodifiableMapView) return _metadata;
   // ignore: implicit_dynamic_type

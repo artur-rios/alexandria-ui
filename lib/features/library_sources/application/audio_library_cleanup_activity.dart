@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../core/di/providers.dart';
+import '../../../core/failures/failure.dart';
 import '../../libraries/domain/library.dart';
 import '../../libraries/domain/library_gateway.dart';
 import '../../shell/domain/session_activity.dart';
@@ -50,30 +51,45 @@ class AudioLibraryCleanupActivity implements SessionActivity {
   @override
   Future<void> begin() async {
     final store = _ref.read(librarySourceStoreProvider);
-    final sources = store.read();
-    final (:kept, :removed) = cleanUpAudioScopes(sources);
+    final (removed: first, kept: _) = cleanUpAudioScopes(store.read());
 
     // Only the libraries of folders being unregistered are asked about, so
     // clean data reaches the core with nothing at all.
-    final gone = Set<LibrarySource>.identity()..addAll(removed);
-    final retained = Set<LibrarySource>.identity()
-      ..addAll(
-        await _removeLibraries([
-          for (final source in removed)
-            if (source.isLibrary) source,
-        ]),
-      );
+    final retained = {
+      for (final source in await _removeLibraries([
+        for (final source in first)
+          if (source.isLibrary) source,
+      ]))
+        normalizeFolderPath(source.path),
+    };
+
+    // Read again rather than reusing the first read: the core calls above
+    // are awaited, and a run outcome recorded or a folder registered in the
+    // meantime would be lost by writing back what was read before them.
+    final sources = store.read();
+    final (:kept, :removed) = cleanUpAudioScopes(sources);
+
+    // A music-only library folder that only appeared in the second read was
+    // never put to the core, so it stays for the next sign-in to remove.
+    final asked = {
+      for (final source in first) normalizeFolderPath(source.path),
+    };
+    for (final source in removed) {
+      final path = normalizeFolderPath(source.path);
+      if (source.isLibrary && !asked.contains(path)) retained.add(path);
+    }
 
     // Rebuilt in the stored order: a folder whose library could not be
     // removed goes back where it was, unchanged, and every other one is the
     // cleanup's answer for it, which [kept] holds in the same order.
+    final gone = Set<LibrarySource>.identity()..addAll(removed);
     final cleaned = kept.iterator;
     final written = <LibrarySource>[];
     for (final source in sources) {
       if (!gone.contains(source)) {
         cleaned.moveNext();
         written.add(cleaned.current);
-      } else if (retained.contains(source)) {
+      } else if (retained.contains(normalizeFolderPath(source.path))) {
         written.add(source);
       }
     }
@@ -84,8 +100,10 @@ class AudioLibraryCleanupActivity implements SessionActivity {
     if (_sameRecords(written, sources)) return;
 
     await store.write(written);
-    for (final source in gone.difference(retained)) {
-      _log.info('music-only folder unregistered on upgrade: ${source.path}');
+    for (final source in removed) {
+      if (!retained.contains(normalizeFolderPath(source.path))) {
+        _log.info('music-only folder unregistered on upgrade: ${source.path}');
+      }
     }
 
     // Built before this ran, it would still hold the folders as they were,
@@ -112,6 +130,11 @@ class AudioLibraryCleanupActivity implements SessionActivity {
     switch (browse) {
       case LibraryBrowseLoaded(libraries: final listed):
         libraries = listed;
+      // A rejected session returns the owner to login, as everywhere else
+      // (`LibrariesController`). The folders wait for the next sign-in.
+      case LibraryBrowseFailed(failure: final UnauthorizedFailure failure):
+        _ref.read(sessionControllerProvider.notifier).invalidate(failure);
+        return folders;
       case LibraryBrowseFailed(:final failure):
         _log.warning(
           'music-only libraries could not be listed; their folders are kept '

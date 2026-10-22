@@ -13,7 +13,7 @@ import '../domain/listing_view.dart';
 /// The filters and sort chosen for each file type (UC-12, FR-CT-07, FR-CT-08).
 ///
 /// Per type and remembered, the same way the layout is: an owner who sorts
-/// their notes by date and their music by name is expressing two preferences.
+/// their notes by date and their videos by name is expressing two preferences.
 class ListingViewController extends Notifier<ListingViewState> {
   static final Logger _log = Logger('catalog');
 

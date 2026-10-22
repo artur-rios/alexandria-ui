@@ -131,9 +131,10 @@ from your system. The Windows archive bundles the ffmpeg DLLs the same way.
 
 ## Roadmap
 
-Thirteen milestones covering fifty-one issues: one foundation issue plus one
-issue per use case. Milestones are dependency-ordered — no milestone depends on
-a later one, and every milestone after `M-01` depends on it.
+Twelve milestones covering forty-seven issues: one foundation issue plus one
+issue per use case. `M-12` was removed with music, and its four issues are not
+counted. Milestones are dependency-ordered — no milestone depends on a later
+one, and every milestone after `M-01` depends on it.
 
 | Milestone | Delivers | Depends on | Issues | Status |
 | --- | --- | --- | --- | --- |
@@ -152,12 +153,13 @@ a later one, and every milestone after `M-01` depends on it.
 | M-13 — Libraries | A folder browsed as its own tree, whose files are shown there rather than scattered across the type panels | M-04 | 1 | 1 / 1 closed |
 
 GitHub's milestone pages are the live view of progress; the counts here are as
-of the last update to this file. `M-12` and `M-13` carry no milestone links and
-no issue numbers, and that is honest rather than an omission: they were built
-from design documents in `docs/superpowers/specs/` rather than from the
-issue-per-use-case backlog the first eleven follow. They are specified all the
-same — `UC-46` … `UC-50` and their requirements are in the same two documents
-as everything above them.
+of the last update to this file. `M-13` carries no milestone link and no issue
+number, and that is honest rather than an omission: it was built from a design
+document in `docs/superpowers/specs/` rather than from the issue-per-use-case
+backlog the first eleven follow. It is specified all the same — `UC-49` and its
+requirements are in the same two documents as everything above it. `M-12` went
+with music: `UC-46`, `UC-47`, `UC-48` and `UC-50` stay in those documents only
+as Removed stubs, so their numbers are never reused.
 
 **The two repositories agree.** `CORE_REF` tracks a core that no longer has any
 notion of an audio file, and this application accepts core `>=0.5.0 <0.6.0`.

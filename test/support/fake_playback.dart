@@ -75,11 +75,8 @@ class FakePlaybackPositionStore implements PlaybackPositionStore {
 /// Sign-out stops whatever player is running (UC-03), and this is what a test
 /// gives it to stop.
 class FakePlaybackSession implements PlaybackSession {
-  /// Creates a session of [medium], running or not.
-  FakePlaybackSession({required this.medium, this.isActive = true});
-
-  @override
-  final PlaybackMedium medium;
+  /// Creates a session, running or not.
+  FakePlaybackSession({this.isActive = true});
 
   @override
   bool isActive;

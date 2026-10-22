@@ -63,11 +63,9 @@ class StartupController extends Notifier<StartupState> {
     final databasePath = await _step2ResolvePaths();
     if (databasePath == null) return;
 
-    // Before the core is initialized, not after: the core reads its own
-    // settings exactly once, at `alexandria_index_init`, and whether it may
-    // look music up is one of them (§5.1 step 3). Loading the owner's
-    // preferences afterwards would mean the choice they made last session
-    // could only take effect the session after this one.
+    // Step 3, in the order §5.1 gives. No preference reaches the core any
+    // more — whether it could look music up was the last, and went with
+    // music — so nothing after this depends on what it reads.
     final warning = await _step3LoadPreferences();
 
     // Verified before it is initialized, not after: initializing is what
@@ -193,8 +191,7 @@ class StartupController extends Notifier<StartupState> {
   }
 
   /// Step 3 never fails the launch: unreadable preferences fall back to the
-  /// system theme and language — and, for the core's own configuration, to
-  /// the same defaults the store answers with — and are reported (§5.1).
+  /// system theme and language, and are reported (§5.1).
   Future<Failure?> _step3LoadPreferences() async {
     state = const StartupState.running(step: StartupStep.loadingPreferences);
 
