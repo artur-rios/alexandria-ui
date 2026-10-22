@@ -30,20 +30,16 @@ env:
   # commit two moves out of date, directly above the comment explaining the
   # current one. The pin's own comment moves with the pin.
   CORE_REPOSITORY: artur-rios/alexandria-api
-  # The first core that refuses to be re-initialized while it is walking a
-  # disk (its `INDEX_ERR_BUSY`), which this application's preferences dialog
-  # now reads: replacing the core's services mid-scan orphaned the scan, and
-  # the refusal is what the deferred-preference notice is built on. It also
-  # carries the review fixes this application depends on being there — a
-  # library no longer claiming folders that differ only in case, a re-encoded
-  # track no longer keeping the old recording's envelope, and the album
-  # ranking grouping by title *and* artist, which is what makes it agree with
-  # the music browsing beside it. Everything the earlier pin was chosen for
-  # still holds: it is an ancestor of this one. The pin and the vendored
-  # header move together — the drift check below is exactly the guard against
-  # them moving apart, and this core's header is byte-identical to the one
-  # committed.
-  CORE_REF: 1ce2442ac633f978490f64257200fc51bcde2d77
+  # The 0.5 core, merged as alexandria-api#137: music and audio are gone from
+  # it, so it has no playlist, play, music-stats, enrichment, artist-image or
+  # track-energy exports, rejects `audio` as a type or index scope, and its
+  # migration 25 deletes the music an older install stored. This application
+  # accepts `>=0.5.0 <0.6.0` and refuses the 0.4 core the earlier pin named.
+  # Everything that pin was chosen for still holds: it is an ancestor of this
+  # one. The pin and the vendored header move together — the drift check
+  # below is exactly the guard against them moving apart, and this core's
+  # header is byte-identical to the one committed.
+  CORE_REF: ab69754b66e54a0e6ee8fcb3959bd5c65c4904be
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned
