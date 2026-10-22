@@ -36,7 +36,7 @@ finish-args:
   - --socket=fallback-x11
   - --share=ipc
   - --device=dri
-  # Audio, because the product plays music and video.
+  # Sound, because videos have an audio track.
   - --socket=pulseaudio
   # The owner's library folders are the whole point of the application, and the
   # portal cannot express "whatever folders they register later".

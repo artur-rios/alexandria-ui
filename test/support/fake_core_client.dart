@@ -1,6 +1,5 @@
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/bindings/core_client.dart';
-import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/bindings/core_isolate.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 
@@ -14,7 +13,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 class FakeCoreClient implements CoreClient {
   /// Creates a fake reporting a healthy, supported core by default.
   FakeCoreClient({
-    this.versionResult = '0.4.0',
+    this.versionResult = '0.5.0',
     int? healthResult,
     int? initializeResult,
     this.failOnVersion = false,
@@ -50,12 +49,11 @@ class FakeCoreClient implements CoreClient {
              // just written.
              json:
                  '{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
-                 '"name":"Kind of Blue.flac",'
-                 '"path":"/home/owner/music/Kind of Blue.flac",'
-                 '"fileType":"audio","state":"active"},'
-                 '"metadata":{"type":"audio","title":"So What",'
-                 '"artist":"Miles Davis","album":"Kind of Blue",'
-                 '"year":1959,"genre":"Jazz","track":1}}',
+                 '"name":"Deep Blue Sea.mkv",'
+                 '"path":"/home/owner/films/Deep Blue Sea.mkv",'
+                 '"fileType":"video","state":"active"},'
+                 '"metadata":{"type":"video","title":"Deep Blue Sea",'
+                 '"year":1999,"mediaKind":"movie"}}',
            ),
        healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
@@ -78,11 +76,11 @@ class FakeCoreClient implements CoreClient {
              // answers.
              json:
                  '{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
-                 '"name":"Kind of Blue.flac",'
-                 '"path":"/home/owner/music/Kind of Blue.flac",'
-                 '"fileType":"audio","state":"active"},'
-                 '"metadata":{"type":"audio","artist":"Miles Davis",'
-                 '"album":"Kind of Blue","year":1959}}',
+                 '"name":"Deep Blue Sea.mkv",'
+                 '"path":"/home/owner/films/Deep Blue Sea.mkv",'
+                 '"fileType":"video","state":"active"},'
+                 '"metadata":{"type":"video","title":"Deep Blue Sea",'
+                 '"year":1999}}',
            ),
        filesListResult =
            filesListResult ??
@@ -93,11 +91,11 @@ class FakeCoreClient implements CoreClient {
              // file record.
              json:
                  '[{"file":{"uuid":"6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f",'
-                 '"name":"Kind of Blue.flac",'
-                 '"path":"/home/owner/music/Kind of Blue.flac",'
-                 '"fileType":"audio","state":"active"},'
-                 '"metadata":{"type":"audio","artist":"Miles Davis",'
-                 '"album":"Kind of Blue","year":1959}}]',
+                 '"name":"Deep Blue Sea.mkv",'
+                 '"path":"/home/owner/films/Deep Blue Sea.mkv",'
+                 '"fileType":"video","state":"active"},'
+                 '"metadata":{"type":"video","title":"Deep Blue Sea",'
+                 '"year":1999}}]',
            ),
        indexRefreshStartResult =
            indexRefreshStartResult ??
@@ -179,10 +177,6 @@ class FakeCoreClient implements CoreClient {
 
   /// Whether [authLocalLogin] throws instead of returning.
   final bool failOnAuthLocalLogin;
-
-  /// The music-lookup configurations [initialize] was called with, in order —
-  /// what the core would have been configured for (music enrichment design).
-  final List<MusicLookup> musicLookupsInitializedWith = [];
 
   /// The database paths [initialize] was called with, in order.
   final List<String> initializedWith = [];
@@ -298,13 +292,9 @@ class FakeCoreClient implements CoreClient {
   }
 
   @override
-  Future<int> initialize(
-    String databasePath, {
-    required MusicLookup musicLookup,
-  }) async {
+  Future<int> initialize(String databasePath) async {
     if (failOnInitialize) throw const CoreCallException('init call failed');
     initializedWith.add(databasePath);
-    musicLookupsInitializedWith.add(musicLookup);
     return initializeResult;
   }
 
@@ -771,20 +761,6 @@ class FakeCoreClient implements CoreClient {
     return comicPageResponse;
   }
 
-  /// What [fileThumbnail] answers (UC-21, FR-PL-07).
-  CoreJsonResponse thumbnailResponse = (status: PLAYBACK_OK, json: null);
-
-  /// Raised by [fileThumbnail] instead of answering, when set.
-  bool failOnFileThumbnail = false;
-
-  @override
-  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async {
-    if (failOnFileThumbnail) {
-      throw const CoreCallException('file thumbnail call failed');
-    }
-    return thumbnailResponse;
-  }
-
   /// What [fileReadContent] answers (UC-18).
   CoreJsonResponse readContentResponse = (
     status: FILE_OK,
@@ -915,86 +891,6 @@ class FakeCoreClient implements CoreClient {
     String token,
   ) async => watchlists;
 
-  /// What every playlist call answers, unless a test wants a failure or a
-  /// specific payload instead.
-  CoreJsonResponse playlistResponse = (status: PLAYLIST_OK, json: '{}');
-
-  /// What [playlistCreate] was called with, in order.
-  final List<({String jsonBody, String token})> playlistCreateCalls = [];
-
-  @override
-  Future<CoreJsonResponse> playlistCreate(String jsonBody, String token) async {
-    playlistCreateCalls.add((jsonBody: jsonBody, token: token));
-    return playlistResponse;
-  }
-
-  /// What [playlistRename] was called with, in order.
-  final List<({String uuid, String jsonBody, String token})>
-  playlistRenameCalls = [];
-
-  @override
-  Future<CoreJsonResponse> playlistRename(
-    String uuid,
-    String jsonBody,
-    String token,
-  ) async {
-    playlistRenameCalls.add((uuid: uuid, jsonBody: jsonBody, token: token));
-    return playlistResponse;
-  }
-
-  /// What [playlistDelete] was called with, in order.
-  final List<({String uuid, String token})> playlistDeleteCalls = [];
-
-  @override
-  Future<CoreJsonResponse> playlistDelete(String uuid, String token) async {
-    playlistDeleteCalls.add((uuid: uuid, token: token));
-    return playlistResponse;
-  }
-
-  /// What [playlistsList] was called with, in order.
-  final List<String> playlistsListCalls = [];
-
-  @override
-  Future<CoreJsonResponse> playlistsList(String token) async {
-    playlistsListCalls.add(token);
-    return playlistResponse;
-  }
-
-  /// What [playlistRead] was called with, in order.
-  final List<({String uuid, String token})> playlistReadCalls = [];
-
-  @override
-  Future<CoreJsonResponse> playlistRead(String uuid, String token) async {
-    playlistReadCalls.add((uuid: uuid, token: token));
-    return playlistResponse;
-  }
-
-  /// What both play history calls answer, and what they were called with.
-  ///
-  /// One response for the pair, as the library calls share theirs: a test
-  /// that cares about the record and a test that cares about the rankings
-  /// never run in the same act.
-  CoreJsonResponse playResponse = (status: PLAY_OK, json: '{}');
-
-  /// Every play recorded, in order.
-  final List<({String jsonBody, String token})> playRecordCalls = [];
-
-  /// Every statistics read asked for, in order — the recorded query is what
-  /// says the screen's row limit actually reached the core.
-  final List<({String jsonQuery, String token})> musicStatsCalls = [];
-
-  @override
-  Future<CoreJsonResponse> playRecord(String jsonBody, String token) async {
-    playRecordCalls.add((jsonBody: jsonBody, token: token));
-    return playResponse;
-  }
-
-  @override
-  Future<CoreJsonResponse> musicStats(String jsonQuery, String token) async {
-    musicStatsCalls.add((jsonQuery: jsonQuery, token: token));
-    return playResponse;
-  }
-
   /// What every library call answers, and what they were called with.
   ///
   /// The recorded arguments are the assertion that matters for
@@ -1011,6 +907,14 @@ class FakeCoreClient implements CoreClient {
 
   /// Every library removal asked for, in order.
   final List<({String uuid, String token})> libraryRemoveCalls = [];
+
+  /// What [libraryRemove] answers, when it should differ from
+  /// [libraryResponse].
+  ///
+  /// Its own field because a removal is read after a list: a removal the core
+  /// refuses has to follow a list it answered, and one shared response cannot
+  /// be both.
+  CoreJsonResponse? libraryRemoveResponse;
 
   /// Every library move asked for, in order.
   ///
@@ -1055,136 +959,6 @@ class FakeCoreClient implements CoreClient {
   @override
   Future<CoreJsonResponse> libraryRemove(String uuid, String token) async {
     libraryRemoveCalls.add((uuid: uuid, token: token));
-    return libraryResponse;
-  }
-
-  /// What the two enrichment calls answer, and what they were called with.
-  ///
-  /// The recorded arguments are the assertion that matters for
-  /// `enrichmentReadTrack`: it takes three consecutive strings, so a
-  /// transposition compiles and misbehaves silently.
-  CoreJsonResponse enrichmentResponse = (status: ENRICHMENT_OK, json: '{}');
-
-  /// Every enrichment run asked for, in order.
-  final List<({String scopeJson, String token})> enrichmentRunCalls = [];
-
-  /// Every track read asked for, in order.
-  final List<({String uuid, String artist, String token})> enrichmentReadCalls =
-      [];
-
-  /// What the two artist-image calls answer, and what they were asked
-  /// (FR-PL-15).
-  CoreJsonResponse artistImageResponse = (
-    status: ENRICHMENT_ERR_NOT_FOUND,
-    json: null,
-  );
-
-  /// See [artistImageResponse].
-  CoreJsonResponse artistImageFetchResponse = (
-    status: ENRICHMENT_OK,
-    json: '{}',
-  );
-
-  /// Every name read, in order.
-  final List<({String name, String token})> artistImageReads = [];
-
-  /// Every name looked up, in order.
-  final List<({String name, String token})> artistImageFetches = [];
-
-  @override
-  Future<CoreJsonResponse> artistImage(String name, String token) async {
-    artistImageReads.add((name: name, token: token));
-    return artistImageResponse;
-  }
-
-  @override
-  Future<CoreJsonResponse> artistImageFetch(String name, String token) async {
-    artistImageFetches.add((name: name, token: token));
-    return artistImageFetchResponse;
-  }
-
-  /// What `trackEnergy` answers, and what it was asked for (UC-21,
-  /// FR-MP-07).
-  CoreJsonResponse energyResponse = (status: PLAYBACK_OK, json: '{}');
-
-  /// Every envelope asked for, in order.
-  final List<({String uuid, String token})> energyCalls = [];
-
-  @override
-  Future<CoreJsonResponse> trackEnergy(String uuid, String token) async {
-    energyCalls.add((uuid: uuid, token: token));
-    return energyResponse;
-  }
-
-  @override
-  Future<CoreJsonResponse> enrichmentRun(String scopeJson, String token) async {
-    enrichmentRunCalls.add((scopeJson: scopeJson, token: token));
-    return enrichmentResponse;
-  }
-
-  @override
-  Future<CoreJsonResponse> enrichmentReadTrack(
-    String uuid,
-    String artist,
-    String token,
-  ) async {
-    enrichmentReadCalls.add((uuid: uuid, artist: artist, token: token));
-    return enrichmentResponse;
-  }
-
-  /// What [playlistAddEntries] was called with, in order.
-  final List<({String uuid, String jsonBody, String token})>
-  playlistAddEntriesCalls = [];
-
-  @override
-  Future<CoreJsonResponse> playlistAddEntries(
-    String uuid,
-    String jsonBody,
-    String token,
-  ) async {
-    playlistAddEntriesCalls.add((uuid: uuid, jsonBody: jsonBody, token: token));
-    return playlistResponse;
-  }
-
-  /// What [playlistRemoveEntry] was called with, in order.
-  ///
-  /// Kept as `entryUuid` rather than folded into a file uuid or an index: the
-  /// entry is what the core addresses, and a playlist may hold the same track
-  /// more than once.
-  final List<({String uuid, String entryUuid, String token})>
-  playlistRemoveEntryCalls = [];
-
-  @override
-  Future<CoreJsonResponse> playlistRemoveEntry(
-    String uuid,
-    String entryUuid,
-    String token,
-  ) async {
-    playlistRemoveEntryCalls.add((
-      uuid: uuid,
-      entryUuid: entryUuid,
-      token: token,
-    ));
-    return playlistResponse;
-  }
-
-  /// What [playlistMoveEntry] was called with, in order.
-  final List<({String uuid, String entryUuid, String jsonBody, String token})>
-  playlistMoveEntryCalls = [];
-
-  @override
-  Future<CoreJsonResponse> playlistMoveEntry(
-    String uuid,
-    String entryUuid,
-    String jsonBody,
-    String token,
-  ) async {
-    playlistMoveEntryCalls.add((
-      uuid: uuid,
-      entryUuid: entryUuid,
-      jsonBody: jsonBody,
-      token: token,
-    ));
-    return playlistResponse;
+    return libraryRemoveResponse ?? libraryResponse;
   }
 }

@@ -45,8 +45,12 @@ import '../../../support/shell_harness.dart';
 /// minimum window's height without the panel having to scroll, which these
 /// images are also the record of.
 ///
+/// Music playback has since been removed: the panel lost its music entry, back
+/// to nine, and the shell lost the playback bar across its bottom. Both
+/// absences are in these images.
+///
 /// That note's advice — move to a file type with an empty library — was tried
-/// and rejected on the evidence: an empty `music` renders a heading, a search
+/// and rejected on the evidence: an empty listing renders a heading, a search
 /// field, an add-folder link, a layout bar, and the empty sentence, which is
 /// more text than bookmarks carries, not less. Bookmarks remains the emptiest
 /// area there is. If it grows again, the honest next step is a golden that

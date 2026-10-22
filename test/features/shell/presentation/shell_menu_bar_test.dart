@@ -391,7 +391,7 @@ void main() {
         );
         container
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.videos);
         await tester.pumpAndSettle();
 
         await expectTheBarFitsInOneRow(tester);
@@ -406,7 +406,7 @@ void main() {
         );
         container
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.videos);
         await tester.pumpAndSettle();
 
         await expectTheBarFitsInOneRow(tester);

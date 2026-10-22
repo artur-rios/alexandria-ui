@@ -190,16 +190,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loading => 'Loading';
 
   @override
-  String get playbackBarLabel => 'Playback';
-
-  @override
-  String get playbackNothingPlaying => 'Nothing is playing';
-
-  @override
   String get destinationHome => 'Home';
-
-  @override
-  String get destinationMusic => 'Music';
 
   @override
   String get destinationBooks => 'Books';
@@ -253,13 +244,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preferencesLanguageSystem => 'Match the system';
 
   @override
-  String get playerAutoOpenLabel => 'Open the player when a track starts';
-
-  @override
-  String get playerAutoOpenDescription =>
-      'The full player opens by itself whenever something new begins playing.';
-
-  @override
   String get startupRecheckLabel => 'Re-check the library at startup';
 
   @override
@@ -269,10 +253,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get preferencesUnsaved =>
       'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.';
-
-  @override
-  String get musicLookupDeferred =>
-      'Saved. The library is being scanned, so this takes effect when the scan finishes.';
 
   @override
   String get preferencesClose => 'Done';
@@ -356,7 +336,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get indexScopeBody =>
-      'Alexandria will catalog only the kinds of file you choose here. A music folder scoped to music keeps its cover art out of your images.';
+      'Alexandria will catalog only the kinds of file you choose here. A folder of ebooks scoped to books keeps their cover images out of your images.';
 
   @override
   String get indexScopeAll => 'All supported files';
@@ -387,9 +367,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String librarySourcesScopeOnly(String types) {
     return 'Only $types';
   }
-
-  @override
-  String get fileTypeAudio => 'Music';
 
   @override
   String get fileTypeVideo => 'Video';
@@ -724,77 +701,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detailsEditMetadata => 'Edit metadata';
 
   @override
-  String get musicMetadataTitle => 'Music metadata';
-
-  @override
-  String get musicMetadataFieldTitle => 'Title';
-
-  @override
-  String get musicMetadataFieldArtist => 'Artist';
-
-  @override
-  String get musicMetadataFieldAlbumArtist => 'Album artist';
-
-  @override
-  String get musicMetadataFieldAlbum => 'Album';
-
-  @override
-  String get musicMetadataFieldYear => 'Year';
-
-  @override
-  String get musicMetadataFieldGenre => 'Genre';
-
-  @override
-  String get musicMetadataFieldTrack => 'Track number';
-
-  @override
-  String get musicMetadataSave => 'Save';
-
-  @override
-  String get musicMetadataCancel => 'Cancel';
-
-  @override
-  String get musicMetadataErrorNotANumber => 'Enter a whole number.';
-
-  @override
-  String get musicMetadataErrorYear => 'Enter a four-digit year.';
-
-  @override
-  String get musicMetadataErrorTrack => 'A track number starts at 1.';
-
-  @override
-  String musicMetadataErrorTooLong(int max) {
-    return 'Keep this under $max characters.';
-  }
-
-  @override
-  String get musicViewArtists => 'Artists';
-
-  @override
-  String get musicViewAlbums => 'Albums';
-
-  @override
-  String get musicViewSongs => 'Songs';
-
-  @override
-  String get musicBreadcrumbRoot => 'Music library';
-
-  @override
-  String get musicUnknownTitle => 'Unknown title';
-
-  @override
-  String get musicUnknownArtist => 'Unknown artist';
-
-  @override
-  String get musicUnknownAlbum => 'Unknown album';
-
-  @override
-  String get musicRowActions => 'Actions for this track';
-
-  @override
-  String get musicEmpty => 'No audio files are catalogued yet.';
-
-  @override
   String get signOut => 'Sign out';
 
   @override
@@ -1002,62 +908,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String videoTrackUnnamed(String id) {
     return 'Track $id';
   }
-
-  @override
-  String get audioPlay => 'Play';
-
-  @override
-  String get audioShuffleAlbum => 'Shuffle album';
-
-  @override
-  String get audioShuffleArtist => 'Shuffle artist';
-
-  @override
-  String get audioShuffleAll => 'Shuffle everything';
-
-  @override
-  String get audioShuffleAllLabel => 'Shuffled library';
-
-  @override
-  String get audioShufflePlaylist => 'Shuffle playlist';
-
-  @override
-  String get audioPlayAlbum => 'Play album';
-
-  @override
-  String get audioPlayArtist => 'Play artist';
-
-  @override
-  String get audioPause => 'Pause';
-
-  @override
-  String get audioNext => 'Next track';
-
-  @override
-  String get audioPrevious => 'Previous track';
-
-  @override
-  String get audioStop => 'Stop';
-
-  @override
-  String get audioNothingPlayable =>
-      'Nothing in this selection could be played.';
-
-  @override
-  String audioSkipped(String name) {
-    return 'Skipped $name — it could not be played.';
-  }
-
-  @override
-  String audioResumePrompt(String position) {
-    return 'You stopped this track at $position.';
-  }
-
-  @override
-  String get audioOpenPlayer => 'Open the player';
-
-  @override
-  String get audioClosePlayer => 'Close the player';
 
   @override
   String get viewerOpen => 'Open';
@@ -1340,50 +1190,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get playlistsTitle => 'Playlists';
-
-  @override
-  String get playlistsOpen => 'Playlists';
-
-  @override
-  String get playlistsNone => 'You have not made a playlist yet.';
-
-  @override
-  String get playlistNameLabel => 'Playlist name';
-
-  @override
-  String get playlistRenameLabel => 'New name';
-
-  @override
-  String get playlistCreate => 'Create';
-
-  @override
-  String get playlistRenameSave => 'Rename';
-
-  @override
-  String get playlistRename => 'Rename this playlist';
-
-  @override
-  String get playlistDelete => 'Delete this playlist';
-
-  @override
-  String get playlistNameEmpty => 'Give the playlist a name.';
-
-  @override
-  String get playlistNotFound => 'That playlist is no longer there.';
-
-  @override
-  String playlistDeleteMessage(String name) {
-    return 'Delete $name? The tracks in it are kept — only the playlist is removed.';
-  }
-
-  @override
-  String get playlistDetailEmpty => 'This playlist has no tracks yet.';
-
-  @override
-  String get playlistRemoveTrack => 'Remove from playlist';
-
-  @override
   String get indexScopeAsLibrary => 'Keep this folder together as a library';
 
   @override
@@ -1469,78 +1275,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get libraryOverlaps =>
       'That folder is already inside another library.';
-
-  @override
-  String get enrichmentSweepOpen => 'Find music info';
-
-  @override
-  String get enrichmentSweepTitle => 'Find music info';
-
-  @override
-  String get enrichmentSweepExplanation =>
-      'Looks up artist photography and lyrics for your music from MusicBrainz, Wikimedia Commons and LRCLIB. Nothing about you is sent — only an artist name, a track title, an album name and a duration. It is slow on purpose: those services allow one request a second, so a large library takes hours. You can stop at any time and pick up where you left off.';
-
-  @override
-  String get enrichmentSweepStart => 'Start';
-
-  @override
-  String get enrichmentSweepStop => 'Stop';
-
-  @override
-  String enrichmentSweepProgress(int considered, int remaining) {
-    return '$considered looked up, $remaining to go';
-  }
-
-  @override
-  String enrichmentSweepFinished(int found, int considered) {
-    return 'Finished. Found something for $found of $considered.';
-  }
-
-  @override
-  String enrichmentSweepStopped(int considered) {
-    return 'Stopped. $considered looked up so far — starting again picks up from here.';
-  }
-
-  @override
-  String get enrichmentSweepFailed => 'The lookup could not continue.';
-
-  @override
-  String enrichmentLyricsSource(String source) {
-    return 'Lyrics from $source';
-  }
-
-  @override
-  String enrichmentImageCredit(String source) {
-    return 'Photograph: $source';
-  }
-
-  @override
-  String get enrichmentFindForTrack => 'Find lyrics and artwork';
-
-  @override
-  String get enrichmentLookingUp => 'Looking up…';
-
-  @override
-  String get enrichmentNothingFound => 'Nothing found for this track.';
-
-  @override
-  String get enrichmentUnavailable =>
-      'Music lookup is switched off. You can turn it on in Preferences.';
-
-  @override
-  String get playlistPlay => 'Play this playlist';
-
-  @override
-  String get playlistAddTo => 'Add to a playlist';
-
-  @override
-  String get playlistAddAlbumTo => 'Add album to a playlist';
-
-  @override
-  String get playlistAddArtistTo => 'Add artist to a playlist';
-
-  @override
-  String get playlistAddCreateOne => 'Make a playlist first';
 
   @override
   String get readCurrentIssueLabel => 'Current issue';
@@ -1921,18 +1655,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryToolsGroupReview => 'Review';
 
   @override
-  String artistPortraitsProgress(int done, int total) {
-    return 'Finding artist photographs — $done of $total';
-  }
-
-  @override
-  String get artistPortraitsStopped =>
-      'Could not reach the photograph services — stopped looking';
-
-  @override
-  String get artistPortraitsRetry => 'Try again';
-
-  @override
   String get activityBarLabel => 'Background indexing';
 
   @override
@@ -2064,126 +1786,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activityDismiss => 'Dismiss';
-
-  @override
-  String get musicLookupLabel => 'Look up music info online';
-
-  @override
-  String get musicLookupDescription =>
-      'Lets Alexandria fetch lyrics and artist photography from MusicBrainz, Wikimedia Commons and LRCLIB. This is the only part of Alexandria that reaches the internet, and it only does so when you ask for a lookup. Nothing about you is sent — only an artist name, a track title, an album name and a duration.';
-
-  @override
-  String get musicLookupContactLabel => 'Contact for the lookup services';
-
-  @override
-  String get musicLookupContactHelp =>
-      'MusicBrainz requires a way to reach whoever is making the requests. Leave it as it is to use the application\'s own address, or put your own here.';
-
-  @override
-  String get preferencesMusicLookupLabel => 'Music info';
-
-  @override
-  String get lyricsOpen => 'Lyrics';
-
-  @override
-  String get lyricsClose => 'Hide lyrics';
-
-  @override
-  String get lyricsNone => 'No lyrics were found for this track.';
-
-  @override
-  String get lyricsSwitchedOff =>
-      'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.';
-
-  @override
-  String get audioSoundBarsLabel => 'Sound levels';
-
-  @override
-  String get audioTransportSemantics => 'Player controls';
-
-  @override
-  String get albumCoverLabel => 'Album cover';
-
-  @override
-  String get enrichmentLookupFailed =>
-      'The lookup could not be completed. The services may be unreachable — try again later.';
-
-  @override
-  String get enrichmentUntagged =>
-      'This track has no artist or title tag to look anything up with.';
-
-  @override
-  String get musicStatsOpen => 'Music stats';
-
-  @override
-  String get musicStatsTitle => 'Music stats';
-
-  @override
-  String get musicStatsNone =>
-      'Nothing has been counted yet. A track counts once you have heard half of it, or four minutes of it — whichever comes first.';
-
-  @override
-  String musicStatsSummary(num plays, num tracks) {
-    String _temp0 = intl.Intl.pluralLogic(
-      plays,
-      locale: localeName,
-      other: '$plays plays',
-      one: '1 play',
-    );
-    String _temp1 = intl.Intl.pluralLogic(
-      tracks,
-      locale: localeName,
-      other: '$tracks tracks',
-      one: '1 track',
-    );
-    return '$_temp0 across $_temp1';
-  }
-
-  @override
-  String musicStatsPeriod(String first, String last) {
-    return 'Counted from $first to $last';
-  }
-
-  @override
-  String get musicStatsRefresh => 'Read again';
-
-  @override
-  String get musicStatsTopTracks => 'Most played tracks';
-
-  @override
-  String get musicStatsTopArtists => 'Most played artists';
-
-  @override
-  String get musicStatsTopAlbums => 'Most played albums';
-
-  @override
-  String get musicStatsTopGenres => 'Most played genres';
-
-  @override
-  String musicStatsPlays(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count plays',
-      one: '1 play',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String musicStatsArtistTracks(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count tracks',
-      one: '1 track',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get musicStatsUntaggedNote =>
-      'Tracks with no tags are counted in the totals, and can only be listed by name.';
 
   @override
   String get destinationLibraries => 'Libraries';

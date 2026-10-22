@@ -11,10 +11,7 @@ import '../../shell/presentation/async_state_view.dart';
 import '../domain/file_details.dart';
 import '../domain/file_size.dart';
 import '../domain/file_type.dart';
-import 'music_metadata_form.dart';
 import '../../editing/presentation/text_editor_screen.dart';
-import '../../playback/application/audio_playback_controller.dart';
-import '../../playlists/presentation/add_to_playlist_button.dart';
 import '../../viewers/domain/viewer_registry.dart';
 import '../../viewers/presentation/comic_viewer_screen.dart';
 import '../../viewers/presentation/document_viewer_screen.dart';
@@ -169,12 +166,11 @@ class _Details extends ConsumerWidget {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
-              // UC-19 main flow step 1, and UC-20's three ways to queue: the
-              // ways of opening the file come first, because opening it is
-              // what the owner most often came here to do.
+              // UC-19 main flow step 1: opening the file comes first, because
+              // it is what the owner most often came here to do.
               //
-              // AF-03 disables each of them for a record whose file the last
-              // scan could not find — there is nothing to decode.
+              // AF-03 disables it for a record whose file the last scan could
+              // not find — there is nothing to decode.
               if (details.file.type == FileType.video && !details.isDeleted)
                 FilledButton.icon(
                   onPressed: details.canReachTheFile
@@ -183,47 +179,6 @@ class _Details extends ConsumerWidget {
                   icon: const Icon(Icons.play_arrow),
                   label: Text(l10n.videoPlay),
                 ),
-
-              // UC-20 main flow step 1: a track, its album, or its artist.
-              // The three are offered together because they are one decision —
-              // what to put in the queue — and the owner is looking at the
-              // track that answers it.
-              if (details.file.type == FileType.audio &&
-                  !details.isDeleted) ...[
-                FilledButton.icon(
-                  onPressed: details.canReachTheFile
-                      ? () => _startAudio(
-                          context,
-                          ref,
-                          (player) => player.playTrack(details.file),
-                        )
-                      : null,
-                  icon: const Icon(Icons.play_arrow),
-                  label: Text(l10n.audioPlay),
-                ),
-                OutlinedButton.icon(
-                  onPressed: details.canReachTheFile
-                      ? () => _startAudio(
-                          context,
-                          ref,
-                          (player) => player.playAlbum(details.file),
-                        )
-                      : null,
-                  icon: const Icon(Icons.album_outlined),
-                  label: Text(l10n.audioPlayAlbum),
-                ),
-                OutlinedButton.icon(
-                  onPressed: details.canReachTheFile
-                      ? () => _startAudio(
-                          context,
-                          ref,
-                          (player) => player.playArtist(details.file),
-                        )
-                      : null,
-                  icon: const Icon(Icons.person_outline),
-                  label: Text(l10n.audioPlayArtist),
-                ),
-              ],
 
               // UC-15 and UC-16 main flow step 1. Offered for the two types
               // there is a form for, and not for a deleted record, which the
@@ -271,14 +226,6 @@ class _Details extends ConsumerWidget {
               // cases' AF-02 asks for.
               if (details.file.type == FileType.video && !details.isDeleted)
                 AddToWatchlistButton(file: details.file),
-              // The same for a track (UC-47). Offered here as well as in the
-              // music area because that area lists no library's audio — it
-              // is a type panel, and marking a folder takes its files out of
-              // those. Without this, a track inside a library could reach a
-              // playlist only by being played first, while a video or a book
-              // in the same folder could be tracked from this very view.
-              if (details.file.type == FileType.audio && !details.isDeleted)
-                AddToPlaylistButton(fileUuids: [details.file.uuid]),
               if ((details.file.type == FileType.document ||
                       details.file.type == FileType.comic) &&
                   !details.isDeleted)
@@ -540,18 +487,11 @@ Future<void> openFile(BuildContext context, WidgetRef ref, CatalogFile file) {
   if (file.isMissing) return FileDetailsView.show(context, ref, file.uuid);
 
   // The two kinds of opening this application does. A viewer presents a file;
-  // a player starts playing one, which is why the media types are not in the
-  // viewer registry — and why a tap on them does what the music area's own
-  // rows already do rather than something a second glyph would have to
-  // explain.
+  // a player starts playing one, which is why video is not in the viewer
+  // registry.
   switch (file.type) {
     case FileType.video:
       return VideoPlayerScreen.show(context, ref, file);
-
-    case FileType.audio:
-      final player = ref.read(audioPlaybackControllerProvider.notifier);
-
-      return player.playTrack(file);
 
     case FileType.document:
     case FileType.comic:
@@ -584,20 +524,6 @@ Future<void> _showViewer(
   ViewerKind.page => PageViewerScreen.show(context, ref, file),
 };
 
-/// Starts audio playback and leaves the detail view (UC-20 main flow step 4).
-///
-/// The dialog closes because the player lives in the bar at the bottom of the
-/// shell, and a modal over it would hide the transport — and, for AF-04, the
-/// question the owner has to answer before anything plays.
-void _startAudio(
-  BuildContext context,
-  WidgetRef ref,
-  Future<void> Function(AudioPlaybackController player) play,
-) {
-  Navigator.of(context).pop();
-  unawaited(play(ref.read(audioPlaybackControllerProvider.notifier)));
-}
-
 /// How a metadata form is opened, whichever type's it is.
 typedef OpenMetadataForm =
     Future<void> Function(
@@ -612,7 +538,6 @@ typedef OpenMetadataForm =
 /// layout: a type either has a form or it does not, and the answer belongs in
 /// one place (IR-02's registration rule).
 OpenMetadataForm? _metadataFormFor(FileType type) => switch (type) {
-  FileType.audio => MusicMetadataForm.show,
   FileType.video => VideoMetadataForm.show,
   FileType.document ||
   FileType.comic ||

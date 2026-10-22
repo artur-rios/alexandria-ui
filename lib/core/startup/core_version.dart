@@ -1,23 +1,22 @@
 /// The range of Alexandria core versions this application supports (IR-06).
 ///
-/// The core is pre-1.0, so a minor bump is a breaking change: `0.4.x` is
-/// accepted and `0.5.0` is not. Widening this is a deliberate decision made
+/// The core is pre-1.0, so a minor bump is a breaking change: `0.5.x` is
+/// accepted and `0.6.0` is not. Widening this is a deliberate decision made
 /// after the FFI surface has actually been checked, not a default that drifts
 /// upward on its own.
 ///
-/// Moved to `0.4.x` with the core that answers an artist's picture by the
-/// name a list shows (`0.3.x` brought the energy envelope, `0.2.x` the
-/// metadata stamp and the lyrics search fallback). Each is invisible from
-/// here when it is missing — an artists list quietly grouping by performer, a
-/// lyrics lookup quietly answering nothing — and an owner rebuilding one
-/// repository and not the other met exactly that. This is the line that
-/// turns it into a sentence at startup instead.
+/// Moved to `0.5.x` with the core that dropped music and audio: its FFI no
+/// longer exports the playlist, play-history, music-statistics, enrichment,
+/// artist-picture or track-energy calls, and it purges stored audio on
+/// upgrade. A `0.4.x` core still holds music this build can no longer
+/// show or play, so it is refused at startup by name and version instead of
+/// misbehaving quietly.
 abstract final class CoreVersionRange {
   /// The lowest accepted version, inclusive.
-  static const String minimum = '0.4.0';
+  static const String minimum = '0.5.0';
 
   /// The lowest rejected version, exclusive upper bound.
-  static const String exclusiveMaximum = '0.5.0';
+  static const String exclusiveMaximum = '0.6.0';
 
   /// How the range reads in a failure message.
   static const String description = '>=$minimum <$exclusiveMaximum';

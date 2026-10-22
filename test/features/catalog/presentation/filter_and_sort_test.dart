@@ -19,7 +19,7 @@ import '../../../support/shell_harness.dart';
 /// Filtering and ordering a listing from the screen (UC-12).
 void main() {
   /// Signs in and opens a listing (UC-12 is generic across types; video
-  /// stands in for it now that music has its own browsing area, UC-46).
+  /// stands in for it).
   Future<ProviderContainer> openListing(
     WidgetTester tester, {
     Map<FileType, CatalogListing>? listings,
@@ -172,7 +172,9 @@ void main() {
       final container = await openListing(
         tester,
         listings: {
-          FileType.video: loadedDetails([aFile(type: FileType.video)]),
+          FileType.video: loadedDetails([
+            aFile(name: 'Deep Blue Sea.mkv', type: FileType.video),
+          ]),
         },
       );
       await container
@@ -189,7 +191,7 @@ void main() {
       await tester.tap(find.text(l10n.filtersClear).last);
       await tester.pumpAndSettle();
 
-      expect(find.text('Kind of Blue.flac'), findsOneWidget);
+      expect(find.text('Deep Blue Sea.mkv'), findsOneWidget);
     });
   });
 

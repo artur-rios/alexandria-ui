@@ -61,7 +61,7 @@ void main() {
         catalogGatewayProvider.overrideWithValue(
           FakeCatalogGateway(
             listings: {
-              FileType.audio: loadedDetails([aFile()]),
+              FileType.text: loadedDetails([aFile()]),
             },
           ),
         ),
@@ -172,7 +172,7 @@ void main() {
     ) async {
       final opened = await openCollection(tester);
 
-      await addItems(tester, ['Kind of Blue.flac']);
+      await addItems(tester, ['Deep Blue Sea.md']);
 
       // One call carrying the batch, not one call per item: the core links
       // what it can and reports each, so there is nothing left to recover by
@@ -190,10 +190,10 @@ void main() {
     ) async {
       await openCollection(tester);
 
-      await addItems(tester, ['Kind of Blue.flac']);
+      await addItems(tester, ['Deep Blue Sea.md']);
 
       expect(
-        find.text(messages(tester).collectionItemsAdded('Kind of Blue.flac')),
+        find.text(messages(tester).collectionItemsAdded('Deep Blue Sea.md')),
         findsOneWidget,
       );
     });
@@ -225,7 +225,7 @@ void main() {
       await tester.tap(find.text(messages(tester).collectionAddItems));
       await tester.pumpAndSettle();
 
-      expect(inPicker(find.text('Kind of Blue.flac')), findsOneWidget);
+      expect(inPicker(find.text('Deep Blue Sea.md')), findsOneWidget);
       expect(inPicker(find.text('A saved page')), findsNothing);
     });
 
@@ -238,7 +238,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(inPicker(find.text('A saved page')), findsOneWidget);
-        expect(inPicker(find.text('Kind of Blue.flac')), findsNothing);
+        expect(inPicker(find.text('Deep Blue Sea.md')), findsNothing);
       },
     );
   });
@@ -251,16 +251,16 @@ void main() {
       final opened = await openCollection(
         tester,
         membership: const [
-          CollectionMember(uuid: fileUuid, name: 'Kind of Blue.flac'),
+          CollectionMember(uuid: fileUuid, name: 'Deep Blue Sea.md'),
         ],
       );
 
-      await addItems(tester, ['Kind of Blue.flac']);
+      await addItems(tester, ['Deep Blue Sea.md']);
 
       expect(opened.gateway.added, isEmpty);
       expect(
         find.text(
-          messages(tester).collectionItemsAlreadyPresent('Kind of Blue.flac'),
+          messages(tester).collectionItemsAlreadyPresent('Deep Blue Sea.md'),
         ),
         findsOneWidget,
       );
@@ -300,12 +300,12 @@ void main() {
       final opened = await openCollection(tester);
       opened.gateway.rejections[fileUuid] = ItemRejection.wrongKind;
 
-      await addItems(tester, ['Kind of Blue.flac']);
+      await addItems(tester, ['Deep Blue Sea.md']);
 
       expect(
         find.text(
           messages(tester).collectionItemNotAdded(
-            'Kind of Blue.flac',
+            'Deep Blue Sea.md',
             messages(tester).collectionItemWrongKind,
           ),
         ),
@@ -321,12 +321,12 @@ void main() {
       final opened = await openCollection(tester);
       opened.gateway.rejections[fileUuid] = ItemRejection.notFound;
 
-      await addItems(tester, ['Kind of Blue.flac']);
+      await addItems(tester, ['Deep Blue Sea.md']);
 
       expect(
         find.text(
           messages(tester).collectionItemNotAdded(
-            'Kind of Blue.flac',
+            'Deep Blue Sea.md',
             messages(tester).collectionItemGone,
           ),
         ),
@@ -350,7 +350,7 @@ void main() {
           ),
         );
 
-        await addItems(tester, ['Kind of Blue.flac']);
+        await addItems(tester, ['Deep Blue Sea.md']);
 
         expect(
           opened.container.read(sessionControllerProvider),
@@ -381,7 +381,7 @@ void main() {
         (tester) async {
           await openCollection(tester, locale: locale);
 
-          await addItems(tester, ['Kind of Blue.flac']);
+          await addItems(tester, ['Deep Blue Sea.md']);
 
           expect(
             find.textContaining(RegExp('collection[A-Z]'), findRichText: true),

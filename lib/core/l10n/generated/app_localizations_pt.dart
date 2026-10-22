@@ -190,16 +190,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get loading => 'Carregando';
 
   @override
-  String get playbackBarLabel => 'Reprodução';
-
-  @override
-  String get playbackNothingPlaying => 'Nada em reprodução';
-
-  @override
   String get destinationHome => 'Início';
-
-  @override
-  String get destinationMusic => 'Músicas';
 
   @override
   String get destinationBooks => 'Livros';
@@ -253,13 +244,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get preferencesLanguageSystem => 'Acompanhar o sistema';
 
   @override
-  String get playerAutoOpenLabel => 'Abrir o reprodutor ao iniciar uma faixa';
-
-  @override
-  String get playerAutoOpenDescription =>
-      'O reprodutor completo abre sozinho sempre que algo novo começa a tocar.';
-
-  @override
   String get startupRecheckLabel => 'Verificar a biblioteca ao iniciar';
 
   @override
@@ -269,10 +253,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get preferencesUnsaved =>
       'Sua escolha foi aplicada, mas não pôde ser salva — ela não será lembrada na próxima vez que o Alexandria iniciar.';
-
-  @override
-  String get musicLookupDeferred =>
-      'Salvo. A biblioteca está sendo varrida, então isto passa a valer quando a varredura terminar.';
 
   @override
   String get preferencesClose => 'Concluído';
@@ -355,7 +335,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get indexScopeBody =>
-      'O Alexandria vai catalogar apenas os tipos de arquivo que você escolher aqui. Uma pasta de música limitada a música mantém as capas fora das suas imagens.';
+      'O Alexandria vai catalogar apenas os tipos de arquivo que você escolher aqui. Uma pasta de e-books limitada a livros mantém as capas fora das suas imagens.';
 
   @override
   String get indexScopeAll => 'Todos os arquivos suportados';
@@ -386,9 +366,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String librarySourcesScopeOnly(String types) {
     return 'Somente $types';
   }
-
-  @override
-  String get fileTypeAudio => 'Música';
 
   @override
   String get fileTypeVideo => 'Vídeo';
@@ -724,77 +701,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get detailsEditMetadata => 'Editar metadados';
 
   @override
-  String get musicMetadataTitle => 'Metadados da música';
-
-  @override
-  String get musicMetadataFieldTitle => 'Título';
-
-  @override
-  String get musicMetadataFieldArtist => 'Artista';
-
-  @override
-  String get musicMetadataFieldAlbumArtist => 'Artista do álbum';
-
-  @override
-  String get musicMetadataFieldAlbum => 'Álbum';
-
-  @override
-  String get musicMetadataFieldYear => 'Ano';
-
-  @override
-  String get musicMetadataFieldGenre => 'Gênero';
-
-  @override
-  String get musicMetadataFieldTrack => 'Número da faixa';
-
-  @override
-  String get musicMetadataSave => 'Salvar';
-
-  @override
-  String get musicMetadataCancel => 'Cancelar';
-
-  @override
-  String get musicMetadataErrorNotANumber => 'Digite um número inteiro.';
-
-  @override
-  String get musicMetadataErrorYear => 'Digite um ano com quatro dígitos.';
-
-  @override
-  String get musicMetadataErrorTrack => 'O número da faixa começa em 1.';
-
-  @override
-  String musicMetadataErrorTooLong(int max) {
-    return 'Use menos de $max caracteres.';
-  }
-
-  @override
-  String get musicViewArtists => 'Artistas';
-
-  @override
-  String get musicViewAlbums => 'Álbuns';
-
-  @override
-  String get musicViewSongs => 'Músicas';
-
-  @override
-  String get musicBreadcrumbRoot => 'Biblioteca de música';
-
-  @override
-  String get musicUnknownTitle => 'Título desconhecido';
-
-  @override
-  String get musicUnknownArtist => 'Artista desconhecido';
-
-  @override
-  String get musicUnknownAlbum => 'Álbum desconhecido';
-
-  @override
-  String get musicRowActions => 'Ações desta faixa';
-
-  @override
-  String get musicEmpty => 'Nenhum arquivo de áudio catalogado ainda.';
-
-  @override
   String get signOut => 'Sair';
 
   @override
@@ -1003,62 +909,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String videoTrackUnnamed(String id) {
     return 'Faixa $id';
   }
-
-  @override
-  String get audioPlay => 'Reproduzir';
-
-  @override
-  String get audioShuffleAlbum => 'Embaralhar álbum';
-
-  @override
-  String get audioShuffleArtist => 'Embaralhar artista';
-
-  @override
-  String get audioShuffleAll => 'Embaralhar tudo';
-
-  @override
-  String get audioShuffleAllLabel => 'Biblioteca embaralhada';
-
-  @override
-  String get audioShufflePlaylist => 'Embaralhar playlist';
-
-  @override
-  String get audioPlayAlbum => 'Reproduzir álbum';
-
-  @override
-  String get audioPlayArtist => 'Reproduzir artista';
-
-  @override
-  String get audioPause => 'Pausar';
-
-  @override
-  String get audioNext => 'Próxima faixa';
-
-  @override
-  String get audioPrevious => 'Faixa anterior';
-
-  @override
-  String get audioStop => 'Parar';
-
-  @override
-  String get audioNothingPlayable =>
-      'Não foi possível reproduzir nada desta seleção.';
-
-  @override
-  String audioSkipped(String name) {
-    return '$name foi pulado — não foi possível reproduzi-lo.';
-  }
-
-  @override
-  String audioResumePrompt(String position) {
-    return 'Você parou esta faixa em $position.';
-  }
-
-  @override
-  String get audioOpenPlayer => 'Abrir o player';
-
-  @override
-  String get audioClosePlayer => 'Fechar o player';
 
   @override
   String get viewerOpen => 'Abrir';
@@ -1342,50 +1192,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get playlistsTitle => 'Playlists';
-
-  @override
-  String get playlistsOpen => 'Playlists';
-
-  @override
-  String get playlistsNone => 'Você ainda não criou uma playlist.';
-
-  @override
-  String get playlistNameLabel => 'Nome da playlist';
-
-  @override
-  String get playlistRenameLabel => 'Novo nome';
-
-  @override
-  String get playlistCreate => 'Criar';
-
-  @override
-  String get playlistRenameSave => 'Renomear';
-
-  @override
-  String get playlistRename => 'Renomear esta playlist';
-
-  @override
-  String get playlistDelete => 'Excluir esta playlist';
-
-  @override
-  String get playlistNameEmpty => 'Dê um nome à playlist.';
-
-  @override
-  String get playlistNotFound => 'Essa playlist não está mais lá.';
-
-  @override
-  String playlistDeleteMessage(String name) {
-    return 'Excluir $name? As faixas nela são mantidas — apenas a playlist é removida.';
-  }
-
-  @override
-  String get playlistDetailEmpty => 'Esta playlist ainda não tem faixas.';
-
-  @override
-  String get playlistRemoveTrack => 'Remover da playlist';
-
-  @override
   String get indexScopeAsLibrary =>
       'Manter esta pasta junta como uma biblioteca';
 
@@ -1473,78 +1279,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get libraryOverlaps =>
       'Essa pasta já está dentro de outra biblioteca.';
-
-  @override
-  String get enrichmentSweepOpen => 'Buscar informações musicais';
-
-  @override
-  String get enrichmentSweepTitle => 'Buscar informações musicais';
-
-  @override
-  String get enrichmentSweepExplanation =>
-      'Busca fotografias de artistas e letras para suas músicas no MusicBrainz, no Wikimedia Commons e no LRCLIB. Nada sobre você é enviado — apenas nome do artista, título da faixa, nome do álbum e duração. É lento de propósito: esses serviços permitem uma requisição por segundo, então uma biblioteca grande leva horas. Você pode parar quando quiser e continuar de onde parou.';
-
-  @override
-  String get enrichmentSweepStart => 'Iniciar';
-
-  @override
-  String get enrichmentSweepStop => 'Parar';
-
-  @override
-  String enrichmentSweepProgress(int considered, int remaining) {
-    return '$considered buscadas, $remaining restantes';
-  }
-
-  @override
-  String enrichmentSweepFinished(int found, int considered) {
-    return 'Concluído. Encontrou algo para $found de $considered.';
-  }
-
-  @override
-  String enrichmentSweepStopped(int considered) {
-    return 'Parado. $considered buscadas até aqui — recomeçar continua deste ponto.';
-  }
-
-  @override
-  String get enrichmentSweepFailed => 'A busca não pôde continuar.';
-
-  @override
-  String enrichmentLyricsSource(String source) {
-    return 'Letra de $source';
-  }
-
-  @override
-  String enrichmentImageCredit(String source) {
-    return 'Fotografia: $source';
-  }
-
-  @override
-  String get enrichmentFindForTrack => 'Buscar letra e imagens';
-
-  @override
-  String get enrichmentLookingUp => 'Buscando…';
-
-  @override
-  String get enrichmentNothingFound => 'Nada encontrado para esta faixa.';
-
-  @override
-  String get enrichmentUnavailable =>
-      'A busca de músicas está desligada. Você pode ligá-la nas Preferências.';
-
-  @override
-  String get playlistPlay => 'Reproduzir esta playlist';
-
-  @override
-  String get playlistAddTo => 'Adicionar a uma playlist';
-
-  @override
-  String get playlistAddAlbumTo => 'Adicionar álbum a uma playlist';
-
-  @override
-  String get playlistAddArtistTo => 'Adicionar artista a uma playlist';
-
-  @override
-  String get playlistAddCreateOne => 'Crie uma playlist primeiro';
 
   @override
   String get readCurrentIssueLabel => 'Edição atual';
@@ -1926,18 +1660,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryToolsGroupReview => 'Revisão';
 
   @override
-  String artistPortraitsProgress(int done, int total) {
-    return 'Buscando fotos de artistas — $done de $total';
-  }
-
-  @override
-  String get artistPortraitsStopped =>
-      'Não foi possível alcançar os serviços de fotos — a busca parou';
-
-  @override
-  String get artistPortraitsRetry => 'Tentar de novo';
-
-  @override
   String get activityBarLabel => 'Indexação em segundo plano';
 
   @override
@@ -2070,126 +1792,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get activityDismiss => 'Dispensar';
-
-  @override
-  String get musicLookupLabel => 'Buscar informações musicais on-line';
-
-  @override
-  String get musicLookupDescription =>
-      'Permite que o Alexandria busque letras e fotografias de artistas no MusicBrainz, no Wikimedia Commons e no LRCLIB. Esta é a única parte do Alexandria que acessa a internet, e ela só faz isso quando você pede uma busca. Nada sobre você é enviado — apenas o nome de um artista, o título de uma faixa, o nome de um álbum e uma duração.';
-
-  @override
-  String get musicLookupContactLabel => 'Contato para os serviços de busca';
-
-  @override
-  String get musicLookupContactHelp =>
-      'O MusicBrainz exige uma forma de falar com quem faz as requisições. Deixe como está para usar o endereço do próprio aplicativo, ou coloque o seu aqui.';
-
-  @override
-  String get preferencesMusicLookupLabel => 'Informações musicais';
-
-  @override
-  String get lyricsOpen => 'Letra';
-
-  @override
-  String get lyricsClose => 'Ocultar letra';
-
-  @override
-  String get lyricsNone => 'Nenhuma letra foi encontrada para esta faixa.';
-
-  @override
-  String get lyricsSwitchedOff =>
-      'A busca de informações musicais está desligada. Ligue-a nas Preferências para buscar letras.';
-
-  @override
-  String get audioSoundBarsLabel => 'Níveis de som';
-
-  @override
-  String get audioTransportSemantics => 'Controles do reprodutor';
-
-  @override
-  String get albumCoverLabel => 'Capa do álbum';
-
-  @override
-  String get enrichmentLookupFailed =>
-      'A busca não pôde ser concluída. Os serviços podem estar inacessíveis — tente novamente mais tarde.';
-
-  @override
-  String get enrichmentUntagged =>
-      'Esta faixa não tem etiqueta de artista ou de título para buscar nada com ela.';
-
-  @override
-  String get musicStatsOpen => 'Estatísticas musicais';
-
-  @override
-  String get musicStatsTitle => 'Estatísticas musicais';
-
-  @override
-  String get musicStatsNone =>
-      'Nada foi contado ainda. Uma faixa conta quando você ouve metade dela, ou quatro minutos — o que vier primeiro.';
-
-  @override
-  String musicStatsSummary(num plays, num tracks) {
-    String _temp0 = intl.Intl.pluralLogic(
-      plays,
-      locale: localeName,
-      other: '$plays reproduções',
-      one: '1 reprodução',
-    );
-    String _temp1 = intl.Intl.pluralLogic(
-      tracks,
-      locale: localeName,
-      other: '$tracks faixas',
-      one: '1 faixa',
-    );
-    return '$_temp0 em $_temp1';
-  }
-
-  @override
-  String musicStatsPeriod(String first, String last) {
-    return 'Contado de $first até $last';
-  }
-
-  @override
-  String get musicStatsRefresh => 'Ler de novo';
-
-  @override
-  String get musicStatsTopTracks => 'Faixas mais reproduzidas';
-
-  @override
-  String get musicStatsTopArtists => 'Artistas mais reproduzidos';
-
-  @override
-  String get musicStatsTopAlbums => 'Álbuns mais reproduzidos';
-
-  @override
-  String get musicStatsTopGenres => 'Gêneros mais reproduzidos';
-
-  @override
-  String musicStatsPlays(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count reproduções',
-      one: '1 reprodução',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String musicStatsArtistTracks(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count faixas',
-      one: '1 faixa',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get musicStatsUntaggedNote =>
-      'Faixas sem etiquetas entram nos totais e só podem ser listadas pelo nome.';
 
   @override
   String get destinationLibraries => 'Bibliotecas';

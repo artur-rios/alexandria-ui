@@ -49,11 +49,11 @@ void main() {
         final sut = build();
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
 
         await sut.ref.read(listingControllerProvider.future);
 
-        expect(sut.gateway.requested, contains(FileType.audio));
+        expect(sut.gateway.requested, contains(FileType.document));
       },
     );
 
@@ -62,17 +62,19 @@ void main() {
       () async {
         final sut = build(
           listings: {
-            FileType.audio: loadedDetails([aFile()]),
+            FileType.document: loadedDetails([
+              aFile(type: FileType.document, name: 'Dune.epub'),
+            ]),
           },
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
 
         final files = await sut.ref.read(listingControllerProvider.future);
 
         expect(files, hasLength(1));
-        expect(files.single.name, 'Kind of Blue.flac');
+        expect(files.single.name, 'Dune.epub');
       },
     );
 
@@ -120,7 +122,7 @@ void main() {
         final sut = build(signedIn: false);
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
 
         await sut.ref.read(listingControllerProvider.future);
 
@@ -136,7 +138,7 @@ void main() {
         final sut = build();
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
 
         final files = await sut.ref.read(listingControllerProvider.future);
 
@@ -155,12 +157,12 @@ void main() {
         const failure = Failure.disk(family: CoreStatusFamily.file, code: 6);
         final sut = build(
           listings: {
-            FileType.audio: const CatalogListing.failed(failure: failure),
+            FileType.document: const CatalogListing.failed(failure: failure),
           },
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
 
         // The state rather than the future: the screen reads the state, and an
         // AsyncValue that settled into an error is exactly what AsyncStateView
@@ -179,7 +181,7 @@ void main() {
         // One type failing must not take the others down with it.
         final sut = build(
           listings: {
-            FileType.audio: const CatalogListing.failed(
+            FileType.document: const CatalogListing.failed(
               failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
             ),
             FileType.image: loadedDetails([
@@ -189,7 +191,7 @@ void main() {
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
         await pumpEventQueue();
 
         sut.ref
@@ -212,12 +214,12 @@ void main() {
         );
         final sut = build(
           listings: {
-            FileType.audio: const CatalogListing.failed(failure: failure),
+            FileType.document: const CatalogListing.failed(failure: failure),
           },
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.music);
+            .go(ShellDestination.books);
 
         await pumpEventQueue();
 
@@ -249,16 +251,16 @@ void main() {
         final sut = build(
           watchCounts: true,
           listings: {
-            FileType.audio: loadedDetails([
+            FileType.text: loadedDetails([
               aFile(),
-              aFile(uuid: 'b', name: 'b.flac'),
+              aFile(uuid: 'b', name: 'b.md'),
             ]),
           },
         );
 
         final counts = await sut.ref.read(typeCountsControllerProvider.future);
 
-        expect(counts[FileType.audio], 2);
+        expect(counts[FileType.text], 2);
       },
     );
 
@@ -271,7 +273,7 @@ void main() {
         final sut = build(
           watchCounts: true,
           listings: {
-            FileType.audio: const CatalogListing.failed(
+            FileType.text: const CatalogListing.failed(
               failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
             ),
           },
@@ -295,9 +297,9 @@ void main() {
         final sut = build(
           watchCounts: true,
           listings: {
-            FileType.audio: loadedDetails([
+            FileType.text: loadedDetails([
               aFile(),
-              aFile(uuid: 'b', name: 'b.flac'),
+              aFile(uuid: 'b', name: 'b.md'),
             ]),
             FileType.image: loadedDetails([
               aFile(uuid: 'c', name: 'c.png', type: FileType.image),
@@ -307,7 +309,7 @@ void main() {
 
         final counts = await sut.ref.read(typeCountsControllerProvider.future);
 
-        expect(counts[FileType.audio], 2);
+        expect(counts[FileType.text], 2);
         expect(counts[FileType.image], 1);
         expect(counts[FileType.video], 0);
       },

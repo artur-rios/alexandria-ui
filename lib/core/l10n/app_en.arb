@@ -234,21 +234,9 @@
   "@loading": {
     "description": "Accessible label of the loading state every perceptible operation shows (FR-UX-08)."
   },
-  "playbackBarLabel": "Playback",
-  "@playbackBarLabel": {
-    "description": "Accessible label of the persistent playback bar (FR-UX-01)."
-  },
-  "playbackNothingPlaying": "Nothing is playing",
-  "@playbackNothingPlaying": {
-    "description": "The playback bar's idle state (FR-UX-01). The bar is present from the first frame, so it says what it is showing rather than sitting blank."
-  },
   "destinationHome": "Home",
   "@destinationHome": {
     "description": "Navigation panel entry for the dashboard the application opens on (UC-14)."
-  },
-  "destinationMusic": "Music",
-  "@destinationMusic": {
-    "description": "Navigation panel entry for audio files (FR-CT-01)."
   },
   "destinationBooks": "Books",
   "@destinationBooks": {
@@ -318,14 +306,6 @@
   "@preferencesLanguageSystem": {
     "description": "Language option: follow the operating system's language when it is one of the two supported, and English otherwise (UC-39 AF-03)."
   },
-  "playerAutoOpenLabel": "Open the player when a track starts",
-  "@playerAutoOpenLabel": {
-    "description": "UC-21 main flow step 2: whether starting a track puts the full player on screen. What is left of the album-animation preference, which used to choose between a record, a tape and a disc — the animation is gone and the half of the choice that was about behaviour rather than decoration is this."
-  },
-  "playerAutoOpenDescription": "The full player opens by itself whenever something new begins playing.",
-  "@playerAutoOpenDescription": {
-    "description": "UC-21 main flow step 2: what the switch above does, said once."
-  },
   "startupRecheckLabel": "Re-check the library at startup",
   "@startupRecheckLabel": {
     "description": "Preference controlling whether the catalog is re-checked against the disk each time a session is established."
@@ -337,10 +317,6 @@
   "preferencesUnsaved": "Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.",
   "@preferencesUnsaved": {
     "description": "UC-39 AF-02: the settings store could not be written. The choice still applies for this session; what must not happen is the owner believing it was remembered."
-  },
-  "musicLookupDeferred": "Saved. The library is being scanned, so this takes effect when the scan finishes.",
-  "@musicLookupDeferred": {
-    "description": "Music enrichment design: the core will not be reconfigured while it is walking a disk — a scan already running would be left behind by the replacement — so a lookup preference changed during one is stored and applied when the scan settles. Said rather than left silent, because the alternative reads as a switch that does nothing."
   },
   "preferencesClose": "Done",
   "@preferencesClose": {
@@ -452,7 +428,7 @@
   "@indexScopeTitle": {
     "description": "Title of the dialog asking which kinds of file an index of the folder being registered should record (UC-05)."
   },
-  "indexScopeBody": "Alexandria will catalog only the kinds of file you choose here. A music folder scoped to music keeps its cover art out of your images.",
+  "indexScopeBody": "Alexandria will catalog only the kinds of file you choose here. A folder of ebooks scoped to books keeps their cover images out of your images.",
   "@indexScopeBody": {
     "description": "Body of the scope dialog. Names the symptom the choice solves rather than restating the control (UC-05)."
   },
@@ -492,10 +468,6 @@
         "type": "String"
       }
     }
-  },
-  "fileTypeAudio": "Music",
-  "@fileTypeAudio": {
-    "description": "The core's `audio` type, named for the owner (FR-CT-02)."
   },
   "fileTypeVideo": "Video",
   "@fileTypeVideo": {
@@ -942,104 +914,7 @@
   },
   "detailsEditMetadata": "Edit metadata",
   "@detailsEditMetadata": {
-    "description": "Opens the music metadata form for an audio file, from its detail view or from its row's context menu in the music area (UC-15 main flow step 1, UC-46, FR-CT-14)."
-  },
-  "musicMetadataTitle": "Music metadata",
-  "@musicMetadataTitle": {
-    "description": "Title of the music metadata form (UC-15, FR-ME-01)."
-  },
-  "musicMetadataFieldTitle": "Title",
-  "@musicMetadataFieldTitle": {
-    "description": "Label of the track title field."
-  },
-  "musicMetadataFieldArtist": "Artist",
-  "@musicMetadataFieldArtist": {
-    "description": "Label of the artist field."
-  },
-  "musicMetadataFieldAlbumArtist": "Album artist",
-  "@musicMetadataFieldAlbumArtist": {
-    "description": "Label of the album artist field — who the record is by, which the music area groups by (UC-46, FR-CT-13)."
-  },
-  "musicMetadataFieldAlbum": "Album",
-  "@musicMetadataFieldAlbum": {
-    "description": "Label of the album field."
-  },
-  "musicMetadataFieldYear": "Year",
-  "@musicMetadataFieldYear": {
-    "description": "Label of the release year field."
-  },
-  "musicMetadataFieldGenre": "Genre",
-  "@musicMetadataFieldGenre": {
-    "description": "Label of the genre field."
-  },
-  "musicMetadataFieldTrack": "Track number",
-  "@musicMetadataFieldTrack": {
-    "description": "Label of the track number field."
-  },
-  "musicMetadataSave": "Save",
-  "@musicMetadataSave": {
-    "description": "Sends the edited metadata to the core (UC-15 main flow step 5)."
-  },
-  "musicMetadataCancel": "Cancel",
-  "@musicMetadataCancel": {
-    "description": "Closes the metadata form without saving."
-  },
-  "musicMetadataErrorNotANumber": "Enter a whole number.",
-  "@musicMetadataErrorNotANumber": {
-    "description": "UC-15 AF-01: a numeric field holds something that is not a number, so the core is not called."
-  },
-  "musicMetadataErrorYear": "Enter a four-digit year.",
-  "@musicMetadataErrorYear": {
-    "description": "UC-15 AF-01: the year is earlier than any recording could carry, which is a typo rather than a year."
-  },
-  "musicMetadataErrorTrack": "A track number starts at 1.",
-  "@musicMetadataErrorTrack": {
-    "description": "UC-15 AF-01: the track number is zero or negative."
-  },
-  "musicMetadataErrorTooLong": "Keep this under {max} characters.",
-  "@musicMetadataErrorTooLong": {
-    "description": "UC-15 AF-01: a text field is longer than the core stores.",
-    "placeholders": {
-      "max": {
-        "type": "int"
-      }
-    }
-  },
-  "musicViewArtists": "Artists",
-  "@musicViewArtists": {
-    "description": "The music area's artists view, in its view switcher."
-  },
-  "musicViewAlbums": "Albums",
-  "@musicViewAlbums": {
-    "description": "The music area's albums view, in its view switcher."
-  },
-  "musicViewSongs": "Songs",
-  "@musicViewSongs": {
-    "description": "The music area's songs view, listing every track."
-  },
-  "musicBreadcrumbRoot": "Music library",
-  "@musicBreadcrumbRoot": {
-    "description": "The first crumb of the music area's breadcrumb, leading back to the top of the current view. Deliberately distinct from the navigation panel's own 'Music' label (destinationMusic) rather than a translation of it — the panel, the area's heading and this crumb all sit in view together, and giving this one the same word three times over would not help the owner; do not 'correct' it to match destinationMusic."
-  },
-  "musicUnknownTitle": "Unknown title",
-  "@musicUnknownTitle": {
-    "description": "Shown in place of a track's name when its metadata carries no title. The file's name on disk is never shown here."
-  },
-  "musicUnknownArtist": "Unknown artist",
-  "@musicUnknownArtist": {
-    "description": "Names the group of audio files whose metadata carries no artist."
-  },
-  "musicUnknownAlbum": "Unknown album",
-  "@musicUnknownAlbum": {
-    "description": "Names the group of audio files whose metadata carries no album."
-  },
-  "musicRowActions": "Actions for this track",
-  "@musicRowActions": {
-    "description": "Tooltip on the button that opens a track row's context menu, which right-clicking the row also opens."
-  },
-  "musicEmpty": "No audio files are catalogued yet.",
-  "@musicEmpty": {
-    "description": "The music area with nothing in it."
+    "description": "Opens the video metadata form from a video's detail view (UC-16 main flow step 1)."
   },
   "signOut": "Sign out",
   "@signOut": {
@@ -1312,84 +1187,6 @@
         "type": "String"
       }
     }
-  },
-  "audioPlay": "Play",
-  "@audioPlay": {
-    "description": "UC-20 main flow step 1: plays this track on its own."
-  },
-  "audioShuffleAlbum": "Shuffle album",
-  "@audioShuffleAlbum": {
-    "description": "FR-PL-06: plays the whole record in an order nobody chose. On the row itself, because shuffling a record is something owners do constantly and a control they have to go looking for is one they stop using."
-  },
-  "audioShuffleArtist": "Shuffle artist",
-  "@audioShuffleArtist": {
-    "description": "FR-PL-06: plays everything by the artist in an order nobody chose."
-  },
-  "audioShuffleAll": "Shuffle everything",
-  "@audioShuffleAll": {
-    "description": "FR-PL-06: plays the whole audio library in an order nobody chose, from wherever in the music area the owner is standing."
-  },
-  "audioShuffleAllLabel": "Shuffled library",
-  "@audioShuffleAllLabel": {
-    "description": "FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name, the way a playlist is."
-  },
-  "audioShufflePlaylist": "Shuffle playlist",
-  "@audioShufflePlaylist": {
-    "description": "FR-PL-06: plays the playlist's tracks in an order nobody chose, leaving the curated order untouched."
-  },
-  "audioPlayAlbum": "Play album",
-  "@audioPlayAlbum": {
-    "description": "UC-20 main flow steps 1 and 3: queues the album this track belongs to."
-  },
-  "audioPlayArtist": "Play artist",
-  "@audioPlayArtist": {
-    "description": "UC-20 main flow steps 1 and 3: queues everything by this track's artist."
-  },
-  "audioPause": "Pause",
-  "@audioPause": {
-    "description": "UC-20 main flow step 6: pauses playback where it is."
-  },
-  "audioNext": "Next track",
-  "@audioNext": {
-    "description": "UC-20 main flow step 6 / FR-PL-06: skips forward within the queue."
-  },
-  "audioPrevious": "Previous track",
-  "@audioPrevious": {
-    "description": "UC-20 main flow step 6 / FR-PL-06: skips back within the queue."
-  },
-  "audioStop": "Stop",
-  "@audioStop": {
-    "description": "UC-20 main flow step 7: stops playback and clears the queue."
-  },
-  "audioNothingPlayable": "Nothing in this selection could be played.",
-  "@audioNothingPlayable": {
-    "description": "UC-20 AF-03: every queued file failed, so the queue was cleared."
-  },
-  "audioSkipped": "Skipped {name} — it could not be played.",
-  "@audioSkipped": {
-    "description": "UC-20 AF-01 and AF-02: which file was skipped, named rather than counted, while the queue carries on.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "audioResumePrompt": "You stopped this track at {position}.",
-  "@audioResumePrompt": {
-    "description": "UC-20 AF-04: the resume point for a single track, offered before it starts.",
-    "placeholders": {
-      "position": {
-        "type": "String"
-      }
-    }
-  },
-  "audioOpenPlayer": "Open the player",
-  "@audioOpenPlayer": {
-    "description": "UC-21 main flow step 2: opens the full player, where the album's medium is shown."
-  },
-  "audioClosePlayer": "Close the player",
-  "@audioClosePlayer": {
-    "description": "UC-21 AF-02: leaves the full player and returns to wherever the owner opened it from, without touching playback."
   },
   "viewerOpen": "Open",
   "@viewerOpen": {
@@ -1793,67 +1590,6 @@
       }
     }
   },
-  "playlistsTitle": "Playlists",
-  "@playlistsTitle": {
-    "description": "Playlists design: the playlists screen heading."
-  },
-  "playlistsOpen": "Playlists",
-  "@playlistsOpen": {
-    "description": "Opens the playlists screen from the Library menu, beside reading lists."
-  },
-  "playlistsNone": "You have not made a playlist yet.",
-  "@playlistsNone": {
-    "description": "There are no playlists, which is a state and not a failure — the empty state invites making one."
-  },
-  "playlistNameLabel": "Playlist name",
-  "@playlistNameLabel": {
-    "description": "What the new playlist is called."
-  },
-  "playlistRenameLabel": "New name",
-  "@playlistRenameLabel": {
-    "description": "What the playlist is being renamed to."
-  },
-  "playlistCreate": "Create",
-  "@playlistCreate": {
-    "description": "Sends the new playlist to the core."
-  },
-  "playlistRenameSave": "Rename",
-  "@playlistRenameSave": {
-    "description": "Sends the new name to the core."
-  },
-  "playlistRename": "Rename this playlist",
-  "@playlistRename": {
-    "description": "Opens the playlist for renaming."
-  },
-  "playlistDelete": "Delete this playlist",
-  "@playlistDelete": {
-    "description": "Deletes the playlist, after confirmation."
-  },
-  "playlistNameEmpty": "Give the playlist a name.",
-  "@playlistNameEmpty": {
-    "description": "A blank name is marked on the field rather than sent to the core."
-  },
-  "playlistNotFound": "That playlist is no longer there.",
-  "@playlistNotFound": {
-    "description": "The core has no such playlist any more, so the list is read again."
-  },
-  "playlistDeleteMessage": "Delete {name}? The tracks in it are kept — only the playlist is removed.",
-  "@playlistDeleteMessage": {
-    "description": "The confirmation names what goes and what does not: the core deletes the playlist and its entries, never the files (BR-07).",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "playlistDetailEmpty": "This playlist has no tracks yet.",
-  "@playlistDetailEmpty": {
-    "description": "Playlists design section 3: the playlist exists but holds no entries, which is a state and not a failure."
-  },
-  "playlistRemoveTrack": "Remove from playlist",
-  "@playlistRemoveTrack": {
-    "description": "Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2)."
-  },
   "indexScopeAsLibrary": "Keep this folder together as a library",
   "@indexScopeAsLibrary": {
     "description": "Libraries design: marks a source folder as a library at registration, which is the same question as the type scope above — what is this folder."
@@ -1960,91 +1696,6 @@
   "libraryOverlaps": "That folder is already inside another library.",
   "@libraryOverlaps": {
     "description": "Libraries design section 5: a file in two libraries means two answers to where it appears. Worded as a fact about the folder rather than as a mistake the owner made."
-  },
-  "enrichmentSweepOpen": "Find music info",
-  "@enrichmentSweepOpen": {
-    "description": "Library menu entry opening the library-wide lookup screen."
-  },
-  "enrichmentSweepTitle": "Find music info",
-  "@enrichmentSweepTitle": {
-    "description": "Title of the library-wide lookup screen."
-  },
-  "enrichmentSweepExplanation": "Looks up artist photography and lyrics for your music from MusicBrainz, Wikimedia Commons and LRCLIB. Nothing about you is sent — only an artist name, a track title, an album name and a duration. It is slow on purpose: those services allow one request a second, so a large library takes hours. You can stop at any time and pick up where you left off.",
-  "@enrichmentSweepExplanation": {
-    "description": "Says what the lookup does, what leaves the machine, why it is slow, and that stopping is safe. Shown before it starts, because this is the one thing in the application that reaches the network and the owner should be choosing it knowingly."
-  },
-  "enrichmentSweepStart": "Start",
-  "@enrichmentSweepStart": {
-    "description": "Begins the library-wide lookup."
-  },
-  "enrichmentSweepStop": "Stop",
-  "@enrichmentSweepStop": {
-    "description": "Stops the library-wide lookup after the batch in flight. What was done is kept."
-  },
-  "enrichmentSweepProgress": "{considered} looked up, {remaining} to go",
-  "@enrichmentSweepProgress": {
-    "description": "Progress of the library-wide lookup, counted rather than a bare spinner: an operation measured in hours needs a denominator.",
-    "placeholders": { "considered": { "type": "int" }, "remaining": { "type": "int" } }
-  },
-  "enrichmentSweepFinished": "Finished. Found something for {found} of {considered}.",
-  "@enrichmentSweepFinished": {
-    "description": "The lookup reached the end of the library.",
-    "placeholders": { "found": { "type": "int" }, "considered": { "type": "int" } }
-  },
-  "enrichmentSweepStopped": "Stopped. {considered} looked up so far — starting again picks up from here.",
-  "@enrichmentSweepStopped": {
-    "description": "The owner stopped it. Says that the work is kept, because otherwise stopping looks like it wasted everything.",
-    "placeholders": { "considered": { "type": "int" } }
-  },
-  "enrichmentSweepFailed": "The lookup could not continue.",
-  "@enrichmentSweepFailed": {
-    "description": "A batch failed for a reason not worth retrying. What was already done is kept."
-  },
-  "enrichmentLyricsSource": "Lyrics from {source}",
-  "@enrichmentLyricsSource": {
-    "description": "Attribution under the lyrics, naming the service that supplied them. Shown because the words are somebody's, not this application's.",
-    "placeholders": { "source": { "type": "String" } }
-  },
-  "enrichmentImageCredit": "Photograph: {source}",
-  "@enrichmentImageCredit": {
-    "description": "Attribution under an artist photograph. Wikimedia Commons licences require credit, so an image is shown with its source or not at all.",
-    "placeholders": { "source": { "type": "String" } }
-  },
-  "enrichmentFindForTrack": "Find lyrics and artwork",
-  "@enrichmentFindForTrack": {
-    "description": "Looks up the track playing now. Scoped to one track because that takes seconds, where a whole library takes hours at MusicBrainz's one-request-per-second limit."
-  },
-  "enrichmentLookingUp": "Looking up…",
-  "@enrichmentLookingUp": {
-    "description": "Shown while an enrichment lookup is in flight. It reaches the network, so it is not instant."
-  },
-  "enrichmentNothingFound": "Nothing found for this track.",
-  "@enrichmentNothingFound": {
-    "description": "The services answered and had nothing. An answer, not a failure — and not retried."
-  },
-  "enrichmentUnavailable": "Music lookup is switched off. You can turn it on in Preferences.",
-  "@enrichmentUnavailable": {
-    "description": "Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not an error the owner made, so it is worded as a fact and then as the one thing they can do about it — the preferences dialog is where the switch and the contact both live, and an owner told only that the feature is off has nowhere to go."
-  },
-  "playlistPlay": "Play this playlist",
-  "@playlistPlay": {
-    "description": "Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list."
-  },
-  "playlistAddTo": "Add to a playlist",
-  "@playlistAddTo": {
-    "description": "Task 5 entry points 1 and 3: adds one track — from its own context menu, or from the now-playing screen — to a playlist."
-  },
-  "playlistAddAlbumTo": "Add album to a playlist",
-  "@playlistAddAlbumTo": {
-    "description": "Task 5 entry point 2: adds every track of an album to a playlist in one call, in the album's own order."
-  },
-  "playlistAddArtistTo": "Add artist to a playlist",
-  "@playlistAddArtistTo": {
-    "description": "Task 5 entry point 2: adds every track by an artist to a playlist in one call."
-  },
-  "playlistAddCreateOne": "Make a playlist first",
-  "@playlistAddCreateOne": {
-    "description": "Task 5: the one item an add-to-playlist menu offers when the owner has no playlist yet, opening the playlists screen rather than showing an empty menu."
   },
   "readCurrentIssueLabel": "Current issue",
   "@readCurrentIssueLabel": {
@@ -2530,25 +2181,9 @@
   "@libraryToolsGroupReview": {
     "description": "Heading over the library tools menu's third group: deleted items and the missing-files review — what has left the library or needs a look."
   },
-  "artistPortraitsProgress": "Finding artist photographs — {done} of {total}",
-  "@artistPortraitsProgress": {
-    "description": "FR-PL-15: the background pass that fetches a photograph for every artist in the library, shown in the activity strip while it runs. Counted rather than described, because an owner watching it can then tell a long pass from one that is nearly done.",
-    "placeholders": {
-      "done": { "type": "int" },
-      "total": { "type": "int" }
-    }
-  },
-  "artistPortraitsStopped": "Could not reach the photograph services — stopped looking",
-  "@artistPortraitsStopped": {
-    "description": "FR-PL-15: the background photograph pass gave up, because several lookups in a row could not be made at all — which is what being offline looks like from here. Shown in the activity strip beside the action that starts it again."
-  },
-  "artistPortraitsRetry": "Try again",
-  "@artistPortraitsRetry": {
-    "description": "FR-PL-15: starts the abandoned photograph pass again, for an owner whose connection has come back. Without it the pass is over until the application is restarted."
-  },
   "activityBarLabel": "Background indexing",
   "@activityBarLabel": {
-    "description": "FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now."
+    "description": "FR-FC-29: the accessible name of the strip along the bottom of the shell, which reports whatever the core is indexing right now."
   },
   "activityDiscovering": "Scanning folders…",
   "@activityDiscovering": {
@@ -2718,140 +2353,6 @@
   "activityDismiss": "Dismiss",
   "@activityDismiss": {
     "description": "FR-FC-29: clears a failed run's report from the strip. The strip's own rather than the text editor's, so that renaming one does not silently change the other."
-  },
-  "musicLookupLabel": "Look up music info online",
-  "@musicLookupLabel": {
-    "description": "Music enrichment design: the preference that switches music lookup on. Named as the action it permits rather than as a feature name, because what it controls is whether this application reaches the internet at all."
-  },
-  "musicLookupDescription": "Lets Alexandria fetch lyrics and artist photography from MusicBrainz, Wikimedia Commons and LRCLIB. This is the only part of Alexandria that reaches the internet, and it only does so when you ask for a lookup. Nothing about you is sent \u2014 only an artist name, a track title, an album name and a duration.",
-  "@musicLookupDescription": {
-    "description": "Music enrichment design: what the lookup preference permits, beneath its label in the preferences dialog. States the exception to the product's no-network principle in the place the owner grants it."
-  },
-  "musicLookupContactLabel": "Contact for the lookup services",
-  "@musicLookupContactLabel": {
-    "description": "Music enrichment design: the address sent to MusicBrainz in the User-Agent of every lookup. Their terms require one, and the core refuses to look anything up while it is empty."
-  },
-  "musicLookupContactHelp": "MusicBrainz requires a way to reach whoever is making the requests. Leave it as it is to use the application's own address, or put your own here.",
-  "@musicLookupContactHelp": {
-    "description": "Music enrichment design: why the contact field exists, beneath it in the preferences dialog. Not a formality: an anonymous client is one MusicBrainz is entitled to block."
-  },
-  "preferencesMusicLookupLabel": "Music info",
-  "@preferencesMusicLookupLabel": {
-    "description": "Music enrichment design: heading over the music-lookup preferences in the preferences dialog."
-  },
-  "lyricsOpen": "Lyrics",
-  "@lyricsOpen": {
-    "description": "Music enrichment design: opens the words of the track playing now. Looks them up if none are cached yet, which is what makes it worth offering for a track that has never been looked up."
-  },
-  "lyricsClose": "Hide lyrics",
-  "@lyricsClose": {
-    "description": "Music enrichment design: puts the words away again and gives the whole window back to the device. The same button that opened them, which is why it names the reverse of what it just did."
-  },
-  "lyricsNone": "No lyrics were found for this track.",
-  "@lyricsNone": {
-    "description": "Music enrichment design: the lookup finished and the services had nothing for this track. An answer, not a failure \u2014 the core records it so the same track is not asked about again."
-  },
-  "lyricsSwitchedOff": "Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.",
-  "@lyricsSwitchedOff": {
-    "description": "Music enrichment design: the owner opened the lyrics panel for a track with none cached while the lookup preference is off. Says where the switch is rather than only that the feature is unavailable."
-  },
-  "audioSoundBarsLabel": "Sound levels",
-  "@audioSoundBarsLabel": {
-    "description": "UC-21: names the moving bars on the player screen for a screen reader. They are an instrument that runs with the music rather than a control, so the label says what they show rather than what pressing them would do."
-  },
-  "audioTransportSemantics": "Player controls",
-  "@audioTransportSemantics": {
-    "description": "UC-21: names the transport buttons drawn on the device in the full player, so a screen reader reaching them is told what the group of controls is."
-  },
-  "albumCoverLabel": "Album cover",
-  "@albumCoverLabel": {
-    "description": "UC-21, FR-UX-01: what the playback bar's recess is showing when the album carries its own picture. Named for a screen reader, which would otherwise be told the recess holds a turning record when it holds a photograph of a sleeve."
-  },
-  "enrichmentLookupFailed": "The lookup could not be completed. The services may be unreachable \u2014 try again later.",
-  "@enrichmentLookupFailed": {
-    "description": "Music enrichment design: a run that reached the services and could not finish \u2014 the network is down, or a provider answered with an error. Distinct from the switched-off message, which is what this used to say: an owner who had just turned the feature on was being told to turn it on."
-  },
-  "enrichmentUntagged": "This track has no artist or title tag to look anything up with.",
-  "@enrichmentUntagged": {
-    "description": "Music enrichment design: the run skipped the track because the tags a lookup is built from are missing. Distinct from finding nothing \u2014 this one the owner can fix, by tagging the file."
-  },
-  "musicStatsOpen": "Music stats",
-  "@musicStatsOpen": {
-    "description": "Library menu entry opening what the owner has played most (play history design)."
-  },
-  "musicStatsTitle": "Music stats",
-  "@musicStatsTitle": {
-    "description": "Title of the screen ranking what has been played."
-  },
-  "musicStatsNone": "Nothing has been counted yet. A track counts once you have heard half of it, or four minutes of it \u2014 whichever comes first.",
-  "@musicStatsNone": {
-    "description": "Play history design: an empty state that also says what the rule is, because a chart that stays empty after a few skipped tracks is otherwise indistinguishable from one that is broken."
-  },
-  "musicStatsSummary": "{plays, plural, =1{1 play} other{{plays} plays}} across {tracks, plural, =1{1 track} other{{tracks} tracks}}",
-  "@musicStatsSummary": {
-    "description": "Play history design: the totals above the rankings. Both halves are counted over everything played, including tracks carrying no tags, which the rankings below cannot show.",
-    "placeholders": {
-      "plays": {
-        "type": "num"
-      },
-      "tracks": {
-        "type": "num"
-      }
-    }
-  },
-  "musicStatsPeriod": "Counted from {first} to {last}",
-  "@musicStatsPeriod": {
-    "description": "Play history design: what period the numbers cover, so a small total reads as a short history rather than as little listening.",
-    "placeholders": {
-      "first": {
-        "type": "String"
-      },
-      "last": {
-        "type": "String"
-      }
-    }
-  },
-  "musicStatsRefresh": "Read again",
-  "@musicStatsRefresh": {
-    "description": "Play history design: re-reads the rankings. The screen does not follow the music while it is open \u2014 a chart reordering itself under the reader would be harder to read than one a minute old."
-  },
-  "musicStatsTopTracks": "Most played tracks",
-  "@musicStatsTopTracks": {
-    "description": "Play history design: heading of the track ranking."
-  },
-  "musicStatsTopArtists": "Most played artists",
-  "@musicStatsTopArtists": {
-    "description": "Play history design: heading of the artist ranking."
-  },
-  "musicStatsTopAlbums": "Most played albums",
-  "@musicStatsTopAlbums": {
-    "description": "Play history design: heading of the album ranking."
-  },
-  "musicStatsTopGenres": "Most played genres",
-  "@musicStatsTopGenres": {
-    "description": "Play history design: heading of the genre ranking."
-  },
-  "musicStatsPlays": "{count, plural, =1{1 play} other{{count} plays}}",
-  "@musicStatsPlays": {
-    "description": "Play history design: how many times one row was played.",
-    "placeholders": {
-      "count": {
-        "type": "num"
-      }
-    }
-  },
-  "musicStatsArtistTracks": "{count, plural, =1{1 track} other{{count} tracks}}",
-  "@musicStatsArtistTracks": {
-    "description": "Play history design: how many distinct tracks of one artist's were played \u2014 what tells a deep catalogue apart from one song on repeat.",
-    "placeholders": {
-      "count": {
-        "type": "num"
-      }
-    }
-  },
-  "musicStatsUntaggedNote": "Tracks with no tags are counted in the totals, and can only be listed by name.",
-  "@musicStatsUntaggedNote": {
-    "description": "Play history design: says why the rankings below the track list can be shorter than the totals suggest, rather than leaving it looking like rows went missing."
   },
   "destinationLibraries": "Libraries",
   "@destinationLibraries": {

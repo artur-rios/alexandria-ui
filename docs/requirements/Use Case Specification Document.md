@@ -75,7 +75,6 @@ graph LR
     end
 
     subgraph "Editing (ME)"
-        UC15[UC-15: Edit music metadata]
         UC16[UC-16: Edit video metadata]
         UC17[UC-17: Rename a file]
         UC18[UC-18: Edit a text file]
@@ -83,8 +82,6 @@ graph LR
 
     subgraph "Playback (PL)"
         UC19[UC-19: Play a video]
-        UC20[UC-20: Play audio]
-        UC21[UC-21: See what is playing]
     end
 
     subgraph "Viewing (VW)"
@@ -105,8 +102,6 @@ graph LR
         UC30[UC-30: Track watch progress]
         UC31[UC-31: Manage reading lists]
         UC32[UC-32: Track reading progress]
-        UC47[UC-47: Manage a playlist]
-        UC48[UC-48: Play a playlist]
     end
 
     subgraph "Lifecycle (LC)"
@@ -125,7 +120,6 @@ graph LR
     OWNER --> UC01
     OWNER --> UC05
     OWNER --> UC09
-    OWNER --> UC15
     OWNER --> UC19
     OWNER --> UC22
     OWNER --> UC26
@@ -645,36 +639,7 @@ graph LR
 
 ### UC-15: Edit music metadata
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-15 |
-| **Name** | Edit music metadata |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner corrects an audio file's title, artist, album, year, genre, track, and the rest of its music metadata. |
-| **Preconditions** | An active session exists. The file is an active audio record. |
-| **Postconditions** | The core holds the edited metadata and every open view reflects it. |
-| **Requirements** | FR-ME-01, FR-ME-03, FR-ME-05 |
-
-**Main Flow**
-
-1. The owner opens the metadata form from an audio file's detail view.
-2. The application presents the current values.
-3. The owner edits one or more fields.
-4. The application validates the edited fields locally.
-5. The application sends the change to the core.
-6. The core validates, persists, and returns the updated metadata.
-7. The application updates the detail view and every open listing without a manual
-   refresh.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | Local validation fails | The application marks the field and does not call the core. |
-| AF-02 | The core rejects the change as invalid | The application presents the core's reason as final, keeps the form open, and leaves the stored metadata unchanged. |
-| AF-03 | The core reports the file as not found | The application says the file is no longer in the catalog and closes the form. |
-| AF-04 | Nothing was actually changed | The application closes the form without calling the core. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+**Removed (moved out of scope, see Orpheus)**
 
 ---
 
@@ -798,15 +763,14 @@ graph LR
 **Main Flow**
 
 1. The owner opens a video file.
-2. The application stops any active audio playback.
-3. The application opens the file from its on-disk path in the video player,
+2. The application opens the file from its on-disk path in the video player,
    without transcoding.
-4. The player offers pause and resume, seeking forward and backward, and
+3. The player offers pause and resume, seeking forward and backward, and
    full-screen toggling.
-5. The owner selects a subtitle track, or turns subtitles off, from those the file
+4. The owner selects a subtitle track, or turns subtitles off, from those the file
    provides.
-6. The owner selects an audio track from those the file provides.
-7. Playback stops or ends; the application records the resume position.
+5. The owner selects an audio track from those the file provides.
+6. Playback stops or ends; the application records the resume position.
 
 **Alternative Flows**
 
@@ -816,87 +780,18 @@ graph LR
 | AF-02 | The file cannot be decoded | The application reports that the format cannot be played and returns to the detail view, without terminating. |
 | AF-03 | The file carries no subtitle or no alternative audio track | Those controls state that none is available rather than being silently absent. |
 | AF-04 | A resume position exists | The application offers to resume or start over before playing. |
-| AF-05 | The owner starts audio playback while the video plays | Video playback stops first (`FR-PL-08`). |
 
 ---
 
 ### UC-20: Play audio
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-20 |
-| **Name** | Play audio |
-| **Actors** | Owner, Local filesystem |
-| **Description** | The owner listens to a track, an album, or an artist, in a player that stays available while they browse. |
-| **Preconditions** | An active session exists. The files are active audio records present on disk. |
-| **Postconditions** | Playback ran; a resume position is recorded for the last played track. |
-| **Requirements** | FR-PL-05, FR-PL-06, FR-PL-08, FR-PL-09, FR-PL-10 |
-
-**Main Flow**
-
-1. The owner plays a track, an album, or an artist.
-2. The application stops any active video playback.
-3. The application builds the playback queue — one track, an album's tracks in
-   order, or an artist's tracks.
-4. The application plays from the on-disk path in the persistent player bar.
-5. The owner navigates elsewhere in the application; playback and the player bar
-   continue.
-6. The owner pauses, resumes, and skips within the queue.
-7. Playback stops or the queue ends; the application records the resume position.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | A queued file is absent from disk | The application skips it, reports which file was skipped, and continues the queue. |
-| AF-02 | A queued file cannot be decoded | The application skips it with a readable report and continues. |
-| AF-03 | Every queued file fails | The application stops, reports that nothing in the selection could be played, and clears the queue. |
-| AF-04 | A resume position exists for a single track | The application offers to resume or start over. |
-| AF-05 | The owner starts video playback | Audio playback stops first (`FR-PL-08`). |
+**Removed (moved out of scope, see Orpheus)**
 
 ---
 
 ### UC-21: See what is playing
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-21 |
-| **Name** | See what is playing |
-| **Actors** | Owner |
-| **Description** | While audio plays, a full-window player shows the album's own picture, names the track and the record it is from, and shows the sound moving — bars that run while playback runs and settle when it stops. |
-| **Preconditions** | Audio playback is active (UC-20). |
-| **Postconditions** | The catalog is unchanged; playback is unaffected by opening or closing the player. |
-| **Requirements** | FR-PL-07, FR-PL-11, FR-PL-12, FR-PL-13 |
-
-**Main Flow**
-
-1. Audio playback begins — a track, an album, or an artist.
-2. The application opens the full-window player, on every track played
-   (AF-04 is the owner turning that off). The owner reaches it again from the
-   playback bar: from its button, or by pressing the sleeve beside it, which
-   is what they recognise.
-3. The player shows the album's own picture, the track's name, the artist
-   whose record it is, and the album — never the file's name (FR-CT-13).
-4. The bars move with the music: they are drawn from the core's own
-   measurement of the recording (api FR-MP-07), read at the position playing,
-   and they settle when playback is paused or stopped.
-5. The owner drags the position indication to move playback within the
-   track.
-6. The owner operates the transport on the player — back, play and pause,
-   stop, forward — which reaches the same queue the playback bar's controls
-   reach.
-7. The owner closes the player; playback and the bar are untouched.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | The file carries no picture of its own | The player and the bar show a placeholder in the sleeve's own shape, rather than an empty frame. |
-| AF-02 | The owner navigates to another screen | Playback and the persistent player continue; the full player is reachable again from the bar. |
-| AF-03 | The system requests reduced motion | The bars are drawn without moving: the levels of the moment playback is at, and none of the motion somebody asked the system not to show them. |
-| AF-06 | The recording has not been measured yet, or cannot be | The bars rest. The first play of a track waits while the core measures it, and a file the core cannot decode is never measured — in both cases the player shows no motion rather than inventing some. |
-| AF-04 | The owner has turned off opening the player automatically | Playback starts where the owner left the interface; the player is opened by hand from the bar. |
-| AF-05 | The owner asks for the words of the track playing | The application gives one side of the window to them and moves the player over into what is left, rather than covering it. The same control puts them away and gives the whole window back. |
+**Removed (moved out of scope, see Orpheus)**
 
 ---
 
@@ -1481,7 +1376,7 @@ graph LR
 **Main Flow**
 
 1. The application presents the shell: the library menu bar, the type
-   navigation panel, the content area, and the persistent playback bar.
+   navigation panel, and the content area.
 2. The owner navigates between areas from the panel, and by keyboard.
 3. The owner resizes the window; the shell adapts across the breakpoints,
    collapsing the navigation panel rather than clipping controls.
@@ -1535,7 +1430,7 @@ graph LR
 | AF-02 | The settings store cannot be written | The choices apply for this session and the application reports that they were not saved. |
 | AF-03 | No preference has ever been set | The application starts on the system theme and the system language when it is one of the two supported, and English otherwise. |
 | AF-04 | Playback or an index run is active | Both continue uninterrupted through a theme or language change. |
-| AF-05 | There is no session | Only the theme and the language are offered — they change the screen the owner is standing on. The choices that belong to a library nobody has opened (whether the player opens itself, the startup re-check, and music lookup, the last of which reconfigures the core) appear once they have signed in. |
+| AF-05 | There is no session | Only the theme and the language are offered — they change the screen the owner is standing on. The choices that belong to a library nobody has opened (the startup re-check) appear once they have signed in. |
 
 ---
 
@@ -1662,7 +1557,7 @@ graph LR
 **Main Flow**
 
 1. A run is outstanding, so the application shows the background activity
-   indicator above the persistent playback bar.
+   indicator in the shell.
 2. The application asks the core which runs are outstanding, and does so
    repeatedly while any of them is running.
 3. For each run the application presents its phase, how far through it is, and
@@ -1763,177 +1658,19 @@ graph LR
 
 ### UC-46: Browse the music library
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-46 |
-| **Name** | Browse the music library |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner browses the catalog's audio by artist, album, or song, named by its tags rather than by its files, and plays what they find. The artist a track is browsed and grouped under is the album's artist — who the record is by — rather than who performed that track, so a record with guests on it is one artist's record and a compilation is one album rather than one album per performer. |
-| **Preconditions** | An active session exists and the catalog holds audio files. |
-| **Postconditions** | The catalog is unchanged; a queue exists when the owner played something. |
-| **Requirements** | FR-CT-13, FR-CT-14, FR-CT-03, FR-CT-04, FR-PL-06, FR-PL-15 |
-
-**Main Flow**
-
-1. The application reads the audio library in one call, metadata included.
-2. The owner chooses artists, albums, or songs. Artists and albums are grouped
-   by the album's artist. Who performed a track is a different fact from whose
-   record it is, so the songs list names the performer of every track, and
-   inside a record it names the performers who are not the record's own
-   artist — which is what tells a compilation's twelve performers apart.
-   Whose record it is, is answered in order: the track's own album-artist tag;
-   failing that, the tag on any other track of the same record, because files
-   are half-tagged all the time; failing that, the performer most of the
-   record's tracks name, because a record whose tracks read `50 Cent`,
-   `50 Cent feat. Nate Dogg` and `Eminem, 50 Cent` is one artist's record and
-   listing every guest beside them is the defect this rule removes. A track
-   belonging to no named record answers for itself.
-3. Each artist listed is shown with the photograph the core holds for them,
-   asked for by the name the list shows. Browsing fetches nothing — a
-   screenful of rows would be dozens of requests against services that allow
-   one a second — so the pictures are fetched instead by a background pass
-   that runs once a session, one artist at a time, for the artists that have
-   none. The application says the pass is running and how far through it is
-   (AF-06).
-4. The owner drills into an artist and then an album, or straight into an
-   album, returning by the breadcrumb.
-5. The owner plays a track, an album, or an artist. An album or artist queue
-   holds every track the group listed, including the ones a guest performed.
-   Any of them can be played in an order nobody chose instead, as can the whole
-   audio library from wherever in the area the owner is standing — the same
-   tracks, queued shuffled, starting at the top of that order rather than at
-   whichever row was clicked.
-6. The owner chooses rows or a grid, and the area remembers it. Both are
-   offered over artists, albums and tracks alike: an artist is shown by their
-   photograph and a record by the picture embedded in its own files, so a grid
-   is a shelf of faces and sleeves rather than a wall of identical glyphs.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | A file's metadata names no title, artist, or album | The application shows it under the unknown names, grouped last, never under its file name. |
-| AF-02 | A file's metadata cannot be read | The file joins the library untagged rather than disappearing. |
-| AF-03 | No audio files are catalogued | The application says so. |
-| AF-04 | The audio listing fails outright | The application presents a failure view with a retry, distinct from an empty library. |
-| AF-05 | A file's metadata names no album artist | The file is grouped under its own performer instead, so a library tagged before the album artist existed browses exactly as it did. |
-| AF-06 | The background pass cannot reach the services | It continues past an artist they have no picture of, and gives up only when several lookups in a row cannot be made at all — a machine with no connection does not walk the whole library discovering that once per artist. What it fetched is kept, and the artists it never reached are asked for on the next session. |
-| AF-07 | A record's files carry no embedded picture | The row or tile keeps the glyph that stands for a record. Most of a real library is like this; it is not a failure to word. |
+**Removed (moved out of scope, see Orpheus)**
 
 ---
 
 ### UC-47: Manage a playlist
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-47 |
-| **Name** | Manage a playlist |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner creates, renames, and deletes named playlists of their own music, adds tracks to one, removes an entry, and drags the entries into the order they want. |
-| **Preconditions** | An active session exists. |
-| **Postconditions** | The core holds the playlist, its entries, and their order; the audio files themselves are untouched. |
-| **Requirements** | FR-TR-15, FR-TR-16, FR-TR-17, FR-TR-18, FR-TR-19 |
-
-**Main Flow**
-
-1. The owner opens the playlists screen from the Library menu and creates a
-   playlist with a name.
-2. The application validates the name and sends the creation to the core.
-3. The owner adds tracks — one from a track's context menu, a whole album or a
-   whole artist at once, or the track playing now — and the application sends
-   the batch to the core in one call, in the order the surface listed it.
-4. The owner opens a playlist and sees its tracks in the order the core stored
-   them, each named by its metadata.
-5. The owner drags a track to a new place; the application sends the core the
-   entry and its destination index, and presents the order the core answers.
-6. The owner removes an entry; the application sends the core that entry's own
-   identifier.
-7. The owner renames a playlist, or deletes one after a confirmation stating
-   that the tracks are kept.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | The name is blank after trimming | The application marks the field and does not call the core. |
-| AF-02 | The track is already in the playlist | It is added again, as a second entry. A playlist may hold the same track more than once, and the application invents no refusal the core does not have. |
-| AF-03 | An entry's file is missing on disk | The entry stays in the list, presented as missing, rather than being hidden or removed. |
-| AF-04 | The core reports the playlist or the entry as not found | The application says so and refreshes the screen. |
-| AF-05 | A drag ends where it began | Nothing is sent to the core. |
-| AF-06 | The core refuses a move | The row returns to where it was and the stored order is presented unchanged. |
-| AF-07 | The owner cancels a deletion | Nothing changes. |
-| AF-08 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
-
-> **An entry is addressed by its own identifier**, never by its position and
-> never by the file it points at (main flow steps 5 and 6). A playlist may hold
-> the same track three times, and only the entry's own identifier tells those
-> three apart — which is why removing "that" track is removing that entry.
->
-> **The core owns the ordering (BR-02).** The application sends "put entry X at
-> index N" and renders what comes back; it never computes positions and never
-> patches the list locally after a move. The index sent is a plain destination
-> index. Flutter's `ReorderableListView` reports an index offset by one for
-> downward moves, and that correction is made in one named place in the
-> application rather than at each call site — a correction applied twice, or
-> not at all, is the most common defect in this widget and is invisible in a
-> test that only drags upward.
->
-> The core's own half of this is specified as UC-49 in the Alexandria core's
-> use case document, and is not restated here.
+**Removed (moved out of scope, see Orpheus)**
 
 ---
 
 ### UC-48: Play a playlist
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-48 |
-| **Name** | Play a playlist |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner plays a playlist, which becomes the queue and plays in its stored order. |
-| **Preconditions** | An active session exists and the playlist holds at least one track. |
-| **Postconditions** | The playlist is the queue, playing from its first playable track. |
-| **Requirements** | FR-TR-20, FR-PL-05, FR-PL-06, FR-PL-07 |
-
-**Main Flow**
-
-1. The owner presses play on an open playlist, or shuffle beside it.
-2. The application replaces the queue with the playlist's tracks — in the order
-   shown, or in an order nobody chose when shuffle was pressed — and starts at
-   the first of that order. Shuffling plays the playlist; it never rewrites it,
-   so the stored order the screen renders is unchanged (FR-PL-06).
-3. Playback proceeds as UC-20 describes it — the same queue, the same transport,
-   the same resume behaviour — since a playlist is a queue and not a second
-   notion of what is playing.
-4. The player resolves the record from the track playing now, so crossing
-   from one album into the next changes the picture it shows and moving
-   between two tracks of one album does not (UC-21).
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | An entry's file cannot be opened | It is named and stepped over, and the next track plays. The list continues rather than stopping partway. |
-| AF-02 | No entry in the playlist could be opened | The application reports that nothing was playable, rather than appearing to play silence. |
-| AF-03 | The playlist holds no tracks | Neither play action is offered; the screen already states that the playlist is empty. |
-| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
-
-> **A playlist queue names no record of its own.** It carries the playlist's
-> name for the player to show, and nothing else — no album, no artist, no year.
-> That is what makes the player resolve the record from the current
-> track, exactly as it already does for a single track, so the behaviour in main
-> flow step 4 falls out of the rule that is already there rather than being a
-> second rule beside it. A playlist has no cover of its own either: the player
-> shows the cover of the record actually playing.
->
-> **A missing entry is played at, not filtered out.** Whether a file opens is
-> the core's answer to a resolve, not a flag the application re-decides, so
-> every entry is queued and AF-01 does the stepping over. Filtering on the
-> stored flag would disagree with it in both directions and would cost the owner
-> the report naming which file was skipped.
->
-> The core's own half of this is specified as UC-50 in the Alexandria core's
-> use case document, and is not restated here.
+**Removed (moved out of scope, see Orpheus)**
 
 ### UC-49: Browse a library
 
@@ -1998,65 +1735,7 @@ graph LR
 
 ### UC-50: See what has been played most
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-50 |
-| **Name** | See what has been played most |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The application counts a track as played once enough of it has been heard, tells the core, and presents the rankings built from that history — most played tracks, artists, albums, and genres. |
-| **Preconditions** | An active session exists. |
-| **Postconditions** | The plays the owner has listened to are recorded, and the rankings drawn from them are on screen. |
-| **Requirements** | FR-PL-16, FR-PL-17 |
-
-**Main Flow**
-
-1. While a track plays, the application accumulates how much of it has actually
-   been *heard* — the engine's position as it advances, never the position
-   itself.
-2. Once that reaches half the track's length or four minutes, whichever comes
-   first, the application tells the core a play happened. A track heard to its
-   end counts however short it is.
-3. At most one play per time the track opened. Putting the same record on again
-   is a second play, which is the listening the rankings exist to count.
-4. The owner opens the music statistics screen from the Library menu.
-5. The application reads the summary and the four rankings from the core in one
-   call and draws them: how many plays across how many tracks, the period they
-   span, and the tracks, artists, albums, and genres in order.
-6. The owner asks for them again, and the application re-reads them.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | The track was resumed, or the slider dragged, past the threshold | Nothing is counted. Reaching a position is not hearing what precedes it, and the count resumes from what is heard after the jump. |
-| AF-02 | The engine has not reported the track's length yet | Nothing counts. With no length to take half of, every rule reduces to guessing, and the status a moment later carries the real value. |
-| AF-03 | The play could not be recorded | It is logged and dropped. Interrupting the music to report that a statistic went unwritten would be a worse failure than the missing row. |
-| AF-04 | Nothing has been played yet | The screen says so, and says what counts as a play, rather than drawing four empty lists. |
-| AF-05 | The core will not answer the rankings | The screen says so and offers to read them again. A ranking is not drawn partially: a chart with a hole in it is a wrong answer presented as a confident one. |
-| AF-06 | The core rejects a call as unauthorized | The session is discarded and the owner returns to login. |
-
-> **Heard, not reached.** The threshold is the one scrobblers have used for
-> twenty years, and the thing every one of them guards against is the position
-> arriving without the listening. A track reopened where it was left is past
-> half of itself before a note has sounded, and the slider gets there with
-> nothing heard at all — so what is measured is the engine's position *as it
-> advances*, and a jump larger than a playing track could make in one status is
-> credited to nothing. This is why the rule is stated in terms of time heard
-> (FR-PL-16) rather than in terms of where the playhead is.
->
-> **The rule lives here, not in the core.** The core cannot see what the owner
-> is hearing; it records what it is told and counts what it holds. Splitting the
-> definition across the two would mean half a rule at each end and no single
-> place to read it.
->
-> **The screen does not follow the music.** It reads when it opens and when it
-> is asked, and not while a track plays: a chart that reordered itself under
-> the reader's eyes would be harder to read than one a minute old, and the
-> refresh is one button away.
->
-> The core's own half of this — recording a play, and the rankings — is
-> specified in the Alexandria core's own requirements (FR-PH-01 … FR-PH-10) and
-> is not restated here.
+**Removed (moved out of scope, see Orpheus)**
 
 ---
 
@@ -2078,13 +1757,13 @@ graph LR
 | UC-12: Filter and sort a listing | FR-CT-07, FR-CT-08 |
 | UC-13: View a file's details | FR-CT-05, FR-CT-12, FR-CT-18 |
 | UC-14: View the home dashboard | FR-CT-11 |
-| UC-15: Edit music metadata | FR-ME-01, FR-ME-03, FR-ME-05 |
+| UC-15: Edit music metadata | **Removed (moved out of scope, see Orpheus)** |
 | UC-16: Edit video metadata | FR-ME-02, FR-ME-03, FR-ME-05 |
 | UC-17: Rename a file | FR-ME-04, FR-ME-05 |
 | UC-18: Edit a Markdown or text file | FR-ME-06, FR-ME-07, FR-ME-08, FR-ME-09, FR-ME-10 |
 | UC-19: Play a video | FR-PL-01, FR-PL-02, FR-PL-03, FR-PL-04, FR-PL-08, FR-PL-10 |
-| UC-20: Play audio | FR-PL-05, FR-PL-06, FR-PL-08, FR-PL-09, FR-PL-10 |
-| UC-21: See what is playing | FR-PL-07, FR-PL-11, FR-PL-12, FR-PL-13 |
+| UC-20: Play audio | **Removed (moved out of scope, see Orpheus)** |
+| UC-21: See what is playing | **Removed (moved out of scope, see Orpheus)** |
 | UC-22: View a document | FR-VW-01, FR-VW-02, FR-VW-07, FR-VW-08 |
 | UC-23: Read a comic book | FR-VW-03, FR-VW-07, FR-VW-08 |
 | UC-24: View an image | FR-VW-04, FR-VW-07 |
@@ -2109,15 +1788,15 @@ graph LR
 | UC-43: Follow a scan while it runs | FR-LB-07, FR-LB-13, FR-LB-14, FR-LB-15, FR-LB-19, FR-LB-20, FR-UX-08 |
 | UC-44: Pause, resume, or cancel a scan | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
 | UC-45: Pace a scan | FR-LB-16, FR-LB-18 |
-| UC-46: Browse the music library | FR-CT-03, FR-CT-04, FR-CT-13, FR-CT-14, FR-PL-06, FR-PL-15 |
-| UC-47: Manage a playlist | FR-TR-15, FR-TR-16, FR-TR-17, FR-TR-18, FR-TR-19 |
-| UC-48: Play a playlist | FR-TR-20, FR-PL-05, FR-PL-06, FR-PL-07 |
+| UC-46: Browse the music library | **Removed (moved out of scope, see Orpheus)** |
+| UC-47: Manage a playlist | **Removed (moved out of scope, see Orpheus)** |
+| UC-48: Play a playlist | **Removed (moved out of scope, see Orpheus)** |
 | UC-49: Browse a library | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
-| UC-50: See what has been played most | FR-PL-16, FR-PL-17 |
+| UC-50: See what has been played most | **Removed (moved out of scope, see Orpheus)** |
 
 Every functional requirement in
-[System Requirements §3](System%20Requirements%20Document.md) appears at least
-once above.
+[System Requirements §3](System%20Requirements%20Document.md) that has not been
+removed appears at least once above.
 
 ---
 
@@ -2209,17 +1888,14 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Idle
-    Idle --> Playing : file opened (UC-19, UC-20)
+    Idle --> Playing : file opened (UC-19)
     Playing --> Paused : paused
     Paused --> Playing : resumed
-    Playing --> Idle : stopped, ended, or the other medium started
+    Playing --> Idle : stopped or ended
     Paused --> Idle : stopped
     Playing --> Failed : file missing or undecodable
     Failed --> Idle : dismissed
 ```
-
-The player's bars (UC-21) follow this machine exactly: they run in `Playing`,
-settle in `Paused`, and rest on `Idle`.
 
 ### 4.6 Text editor lifecycle
 

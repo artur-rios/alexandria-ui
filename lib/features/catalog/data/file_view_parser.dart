@@ -4,10 +4,9 @@ import '../domain/file_type.dart';
 /// The `File` object [row] describes, or `null` when its type is one this
 /// application does not know.
 ///
-/// Shared by every gateway that reads a `FileView` — the catalog listing, the
-/// single-file read, and a playlist's entries all answer this same shape
-/// (playlists design section 4) — so there is one parse rather than a second
-/// copy that could drift from it.
+/// Shared by every gateway that reads a `FileView` — the catalog listing and
+/// the single-file read answer this same shape — so there is one parse rather
+/// than a second copy that could drift from it.
 ///
 /// Dropping an unrecognized type rather than guessing: a file of an
 /// unrecognized type belongs in no listing, and a core that grows a type must
@@ -44,7 +43,7 @@ CatalogFile? fileFromFileView(Map<String, dynamic> row) {
 /// Read generically rather than per subtype: a caller displays or converts
 /// what the core sent, and a core that grows a field should show it rather
 /// than have it silently dropped by a parser that predates it. The typed
-/// shape belongs to the use cases that edit metadata (UC-15, UC-16).
+/// shape belongs to the use case that edits metadata (UC-16).
 Map<String, String> metadataFromFileView(Object? metadata) {
   if (metadata is! Map<String, dynamic>) return const {};
 

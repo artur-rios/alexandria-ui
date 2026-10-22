@@ -137,13 +137,13 @@ class LibrarySourcesController extends Notifier<LibrarySourcesState> {
     // Every type chosen is the same thing as no scope at all, and is stored
     // as the absence: the core reads them identically, and keeping one
     // spelling means a folder that covers everything reads the same whether
-    // the owner left the default alone or ticked all seven boxes.
+    // the owner left the default alone or ticked all six boxes.
     //
     // Held here even though the one caller that exists — IndexScopeDialog —
     // already collapses it. A guarantee that holds only because every caller
     // remembers to is not one, and this is what makes "a stored scope is
     // either absent or a real narrowing" true of the store rather than of one
-    // widget. `index_scope_test` calls this with all seven and asserts what
+    // widget. `index_scope_test` calls this with all six and asserts what
     // lands in the store.
     final scoped = scope.length == FileType.values.length
         ? const <FileType>[]

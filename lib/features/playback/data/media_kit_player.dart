@@ -32,9 +32,6 @@ class MediaKitPlayer implements MediaPlayer {
       // Announced once, and not kept. `hasEnded` says "this track just
       // finished", and every other listener here re-emits `_status` — so
       // latching it meant every position tick after the end carried it too.
-      // The audio controller advances its queue on that flag, so a second
-      // carrier arriving while it was still opening the next track advanced
-      // it a second time and the queue jumped a track.
       //
       // media_kit also reports `false` here when a new file starts; that is
       // the flag being cleared, which `open` below does anyway, and it is
@@ -74,9 +71,7 @@ class MediaKitPlayer implements MediaPlayer {
       // exception (FR-PL-10).
       _player.stream.error.listen((_) {
         // Not playing any more is state; failing to decode is an event, and
-        // is announced rather than kept for the reason `hasEnded` is — the
-        // audio controller steps over a failed track, and a latched flag
-        // made it step over several.
+        // is announced rather than kept for the reason `hasEnded` is.
         _update(_status.copyWith(isPlaying: false));
         _announce(_status.copyWith(failedToDecode: true));
       }),

@@ -30,7 +30,7 @@ void main() {
       final ref = await started();
 
       expect(
-        ref.read(layoutControllerProvider).chosenFor(FileType.audio),
+        ref.read(layoutControllerProvider).chosenFor(FileType.video),
         ViewLayout.list,
       );
     });
@@ -62,7 +62,7 @@ void main() {
         final layouts = ref.read(layoutControllerProvider);
         expect(layouts.chosenFor(FileType.image), ViewLayout.grid);
         expect(layouts.chosenFor(FileType.text), ViewLayout.detailedList);
-        expect(layouts.chosenFor(FileType.audio), ViewLayout.list);
+        expect(layouts.chosenFor(FileType.video), ViewLayout.list);
       },
     );
   });

@@ -7,28 +7,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Removed
+
+- Music, which has moved to Orpheus, the owner's separate project for it. Alexandria is now a library for what you read
+  and watch: text and Markdown, HTML pages, PDFs and e-books, comics, images, and video.
+- Music playback, the persistent player bar and queue, and the full-window music player.
+- The music library browsed by album artist, album, and song, and the sleeves and covers drawn for it.
+- Playlists.
+- Play history and the music statistics screen.
+- Lyrics and artist photographs, and the music lookup settings.
+- The music metadata editor.
+- The audio file type: audio files in a registered folder are skipped when it is scanned, like any other file the
+  application does not recognise.
+
+### Changed
+
+- The application needs Alexandria core 0.5 (`>=0.5.0 <0.6.0`), which no longer knows audio files.
+- On the first sign-in after upgrading, registered folders that were set to index music only are unregistered, and
+  their library is removed; a folder that mixed music with other types stays and drops music from what it indexes. Files
+  on disk are never touched.
+- Video keeps its sound and its audio-track selection; the audio-only playback libraries are no longer bundled.
+
 ### Fixed
 
 - Making a folder that is already registered into a library indexes it straight away, from either screen that does
   it, instead of leaving the library empty until Scan is pressed.
-- A play is counted only for music that was heard: resuming a track past its middle, or dragging the slider there, no
-  longer records one.
 - The missing-files review and the collection picker reach the files a library holds.
 - Dates are shown in local time rather than UTC, so a file saved late in the evening no longer shows the next day.
-- Artist photographs that could not be fetched — for example while offline — are offered again instead of being given
-  up on until a restart.
-- Changing the music lookup settings while a scan runs is saved and takes effect when the scan finishes.
 - A core of an unsupported version is refused before it opens the catalog, so it can no longer migrate the database
   past what the supported core reads, and an older core reports its version instead of a generic start-up failure.
 - Signing in after "Retry" on the sign-in or sign-up screen works; every call used to go to the core that had just been
   shut down.
-- Music lookup changes made after a start-up retry reach the core instead of being reported as applied and ignored.
 - Pausing or resuming a scan that has already moved on reports that the run is in a different state, not an unexpected
   error.
-- Playing a track that cannot be opened stops the one that was playing, instead of leaving it audible behind "nothing
-  could be played".
-- The resume offer for a track no longer disappears when another track was playing, and Resume starts where it said.
-- Signing out stops the music and any video that is playing.
+- Signing out stops any video that is playing.
 - E-books whose package document is at the root of the archive, or whose chapter names are URL-encoded, open with their
   chapters.
 - The Linux installer installs into `~/.local/opt/alexandria` by default rather than `~/.local/share/alexandria`, the

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 /// The owner's local preferences (IR-12, FR-UX-12).
 ///
 /// What this holds is owner-facing state changed in the interface: theme,
@@ -31,43 +30,12 @@ abstract interface class SettingsStore {
   /// Records the owner's language choice. Applied immediately.
   Future<void> setLocale(Locale? locale);
 
-  /// Whether the player opens itself when a track starts, or `true` when the
-  /// owner has not said (UC-21 main flow step 2, FR-PL-11).
-  bool get opensPlayerOnPlay;
-
-  /// Records [value] for the next launch.
-  Future<void> setOpensPlayerOnPlay(bool value);
-
   /// Whether the library is re-checked when a session is established, or
   /// `true` when the owner has not said (FR-LB-21).
   bool get rechecksAtStartup;
 
   /// Records [value] for the next launch.
   Future<void> setRechecksAtStartup(bool value);
-
-  /// Whether the core may look music up online, or `true` when the owner has
-  /// not said (music enrichment design).
-  ///
-  /// The one preference in this store that configures the *core* rather than
-  /// the interface: it is applied to the core's environment at startup, and
-  /// again whenever it changes, because enrichment is read from the
-  /// environment at `alexandria_index_init` and nowhere else.
-  bool get musicLookupEnabled;
-
-  /// Records [value], to be applied to the core.
-  Future<void> setMusicLookupEnabled(bool value);
-
-  /// The contact the lookup services are given, or the application's own
-  /// (`defaultMusicLookupContact` in `core_environment.dart`) when the owner
-  /// has named none.
-  ///
-  /// Stored rather than assumed, because MusicBrainz's terms are about
-  /// whoever is *making* the requests: an owner running a large sweep can
-  /// answer for their own traffic by putting their address here.
-  String get musicLookupContact;
-
-  /// Records [contact]. An empty string returns the default.
-  Future<void> setMusicLookupContact(String contact);
 
   /// Reads an arbitrary string preference.
   ///

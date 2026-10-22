@@ -78,87 +78,12 @@ void main() {
     },
   );
 
-  group('music lookup (music enrichment design)', () {
-    test(
-      'GivenNothingInTheEnvironment_WhenTheSwitchIsChecked_ThenTheApplicationSetsIt',
-      () {
-        expect(
-          shouldSetCoreVariable(const {}, coreMetadataEnabledVariable),
-          isTrue,
-        );
-      },
-    );
-
-    // A packager or a developer who configured the core deliberately keeps
-    // what they configured — the same rule the auth mode follows, and the
-    // reason this is one function rather than two.
-    test(
-      'GivenTheSwitchIsAlreadySet_WhenItIsChecked_ThenTheApplicationLeavesItAlone',
-      () {
-        expect(
-          shouldSetCoreVariable(const {
-            coreMetadataEnabledVariable: 'false',
-          }, coreMetadataEnabledVariable),
-          isFalse,
-        );
-      },
-    );
-
-    test('GivenTheSwitchIsBlank_WhenItIsChecked_ThenTheApplicationSetsIt', () {
-      expect(
-        shouldSetCoreVariable(const {
-          coreMetadataEnabledVariable: '   ',
-        }, coreMetadataEnabledVariable),
-        isTrue,
-      );
-    });
-
-    // The core refuses a switched-on lookup with no contact just as firmly
-    // as a switched-off one, so an interface that read `enabled` alone would
-    // offer a lookup that could never run.
-    test('GivenNoContact_WhenTheLookupIsRead_ThenItIsNotAvailable', () {
-      expect(
-        const MusicLookup(enabled: true, contact: '  ').isAvailable,
-        isFalse,
-      );
-    });
-
-    test('GivenAContactAndTheSwitchOn_WhenItIsRead_ThenItIsAvailable', () {
-      expect(
-        const MusicLookup(
-          enabled: true,
-          contact: defaultMusicLookupContact,
-        ).isAvailable,
-        isTrue,
-      );
-    });
-
-    test('GivenTheSwitchIsOff_WhenTheLookupIsRead_ThenItIsNotAvailable', () {
-      expect(
-        const MusicLookup(
-          enabled: false,
-          contact: defaultMusicLookupContact,
-        ).isAvailable,
-        isFalse,
-      );
-    });
-
-    // What the application ships with, named here so a change to it is a
-    // deliberate edit to a test rather than a silent one: an installation
-    // with no contact cannot look anything up at all.
-    test('GivenTheShippedContact_WhenItIsRead_ThenItIsNotEmpty', () {
-      expect(defaultMusicLookupContact.trim(), isNotEmpty);
-    });
-  });
-
-  group('the core\'s caches (music enrichment design)', () {
-    // The defect this closes: both settings default to a *relative* path,
+  group('the caches beside the catalog', () {
+    // The defect this closes: the setting defaults to a *relative* path,
     // which the core resolves against the process's working directory. For
     // an installed application that is wherever the desktop started it — a
     // directory this application does not own and often cannot write to —
-    // so an artist photograph was written somewhere nothing would look for
-    // it again, and the player was handed `artist-images/….jpg` and found
-    // nothing there.
+    // so a thumbnail was written somewhere nothing would look for it again.
     test(
       'GivenTheCatalogsDirectory_WhenTheCachesArePlaced_ThenTheyAreBesideIt',
       () {
@@ -166,11 +91,6 @@ void main() {
           '${Platform.pathSeparator}home${Platform.pathSeparator}owner',
         );
 
-        expect(
-          directories[coreImageCacheDirVariable],
-          '${Platform.pathSeparator}home${Platform.pathSeparator}owner'
-          '${Platform.pathSeparator}artist-images',
-        );
         expect(
           directories[coreThumbnailCacheDirVariable],
           '${Platform.pathSeparator}home${Platform.pathSeparator}owner'
@@ -185,9 +105,9 @@ void main() {
       );
 
       expect(
-        directories[coreImageCacheDirVariable],
+        directories[coreThumbnailCacheDirVariable],
         '${Platform.pathSeparator}data'
-        '${Platform.pathSeparator}artist-images',
+        '${Platform.pathSeparator}thumbnails',
       );
     });
 
@@ -204,11 +124,11 @@ void main() {
     });
 
     // An explicit setting is deliberate, exactly as it is for the auth mode.
-    test('GivenAnImageDirIsAlreadySet_WhenChecked_ThenItIsLeftAlone', () {
+    test('GivenAThumbnailDirIsAlreadySet_WhenChecked_ThenItIsLeftAlone', () {
       expect(
         shouldSetCoreVariable(const {
-          coreImageCacheDirVariable: '/somewhere/else',
-        }, coreImageCacheDirVariable),
+          coreThumbnailCacheDirVariable: '/somewhere/else',
+        }, coreThumbnailCacheDirVariable),
         isFalse,
       );
     });
@@ -217,75 +137,68 @@ void main() {
   // A retry spawns a fresh core worker, and a fresh isolate takes its own
   // snapshot of the environment — after the previous worker wrote these
   // variables. Read through that snapshot, the application's own earlier
-  // write looked like an operator's, and the owner's next change was skipped.
+  // write looked like an operator's, and the next change was skipped.
   // Each step runs in its own isolate here for exactly that reason: it is the
   // only way to observe what the process environment now holds.
   group('preparing the core again from a new worker', () {
     final launch = Map<String, String>.of(Platform.environment)
-      ..remove(coreMetadataEnabledVariable)
-      ..remove(coreMetadataContactVariable);
+      ..remove(coreThumbnailCacheDirVariable);
 
     tearDown(() {
       // Blank counts as unset, for the core and for these rules alike.
-      setProcessEnvironment(coreMetadataEnabledVariable, '');
-      setProcessEnvironment(coreMetadataContactVariable, '');
+      setProcessEnvironment(coreThumbnailCacheDirVariable, '');
     });
 
-    Future<void> prepareInNewWorker(MusicLookup lookup, String directory) =>
-        Isolate.run(
-          () => prepareCoreEnvironment(
-            databaseDirectory: directory,
-            musicLookup: lookup,
-            launchEnvironment: launch,
-          ),
-        );
+    Future<void> prepareInNewWorker(String directory) => Isolate.run(
+      () => prepareCoreEnvironment(
+        databaseDirectory: directory,
+        launchEnvironment: launch,
+      ),
+    );
 
     Future<String?> readInNewWorker(String name) =>
         Isolate.run(() => Platform.environment[name]);
 
     test(
-      'GivenAnEarlierWorkerSetTheLookup_WhenTheOwnerChangesIt_ThenTheChangeIsWritten',
+      'GivenAnEarlierWorkerSetTheCaches_WhenTheCatalogMoves_ThenTheChangeIsWritten',
       () async {
-        final directory = Directory.systemTemp.createTempSync('alexandria_env');
-        addTearDown(() => directory.deleteSync(recursive: true));
+        final first = Directory.systemTemp.createTempSync('alexandria_env');
+        final second = Directory.systemTemp.createTempSync('alexandria_env');
+        addTearDown(() => first.deleteSync(recursive: true));
+        addTearDown(() => second.deleteSync(recursive: true));
 
-        await prepareInNewWorker(
-          const MusicLookup(enabled: true, contact: 'first@example.com'),
-          directory.path,
-        );
-        await prepareInNewWorker(
-          const MusicLookup(enabled: false, contact: 'second@example.com'),
-          directory.path,
-        );
+        await prepareInNewWorker(first.path);
+        await prepareInNewWorker(second.path);
 
-        expect(await readInNewWorker(coreMetadataEnabledVariable), 'false');
         expect(
-          await readInNewWorker(coreMetadataContactVariable),
-          'second@example.com',
+          await readInNewWorker(coreThumbnailCacheDirVariable),
+          '${second.path}${Platform.pathSeparator}thumbnails',
         );
       },
     );
 
     test(
-      'GivenTheOperatorSetTheLookupBeforeLaunch_WhenTheCoreIsPrepared_ThenItIsLeftAlone',
+      'GivenTheOperatorSetTheCacheBeforeLaunch_WhenTheCoreIsPrepared_ThenItIsLeftAlone',
       () async {
         final directory = Directory.systemTemp.createTempSync('alexandria_env');
         addTearDown(() => directory.deleteSync(recursive: true));
-        setProcessEnvironment(coreMetadataEnabledVariable, 'false');
-        final configured = {...launch, coreMetadataEnabledVariable: 'false'};
+        setProcessEnvironment(coreThumbnailCacheDirVariable, '/operator/cache');
+        final configured = {
+          ...launch,
+          coreThumbnailCacheDirVariable: '/operator/cache',
+        };
 
         await Isolate.run(
           () => prepareCoreEnvironment(
             databaseDirectory: directory.path,
-            musicLookup: const MusicLookup(
-              enabled: true,
-              contact: 'owner@example.com',
-            ),
             launchEnvironment: configured,
           ),
         );
 
-        expect(await readInNewWorker(coreMetadataEnabledVariable), 'false');
+        expect(
+          await readInNewWorker(coreThumbnailCacheDirVariable),
+          '/operator/cache',
+        );
       },
     );
   });

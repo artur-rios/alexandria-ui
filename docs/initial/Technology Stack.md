@@ -123,19 +123,15 @@ flutter test
   the application and loaded in process. It is the only source of catalog data.
 - **The local filesystem** — every playback, view, and text edit reads or writes
   the file at the path the core reports.
-- **A media playback engine** — `media_kit` (libmpv-backed) drives both audio and
-  video, because subtitle selection and audio-track selection on Windows and
+- **A media playback engine** — `media_kit` (libmpv-backed) drives video,
+  because subtitle selection and audio-track selection on Windows and
   Linux are requirements the simpler embedders do not meet.
 - **Document and image renderers** — PDF, e-book, comic-book archive, image, and
   HTML rendering happen client-side from the on-disk bytes. Concrete packages are
   selected in Phase 2.
 
 No payments, no identity provider, no message broker, and no object storage are
-involved, and this application makes no network call of its own. The only
-network service reached anywhere in the product is outbound and belongs to the
-core: music enrichment looks artist photography and lyrics up from MusicBrainz,
-Wikidata/Wikimedia Commons and LRCLIB, and is off unless the operator turns it
-on. E-mail is involved only indirectly: the core sends confirmation and recovery
+involved, and this application makes no network call of its own. E-mail is involved only indirectly: the core sends confirmation and recovery
 messages, and the app never touches a mail transport.
 
 ## Deployment

@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../catalog/domain/catalog_file.dart';
-import '../../catalog/domain/music_metadata.dart';
 
 part 'library.freezed.dart';
 
@@ -44,12 +43,7 @@ abstract class LibraryFolder with _$LibraryFolder {
 @freezed
 abstract class LibraryFile with _$LibraryFile {
   /// Creates an entry.
-  const factory LibraryFile({
-    required CatalogFile file,
-
-    /// The track's tags, when it is audio the core has read.
-    MusicMetadata? metadata,
-  }) = _LibraryFile;
+  const factory LibraryFile({required CatalogFile file}) = _LibraryFile;
 }
 
 /// One level of a library's tree.

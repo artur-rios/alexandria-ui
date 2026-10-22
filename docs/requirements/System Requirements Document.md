@@ -28,10 +28,8 @@ repeated in each row:
 
 The application covers authentication and session handling; registering and
 indexing library folders; browsing, searching, filtering, and sorting the
-catalog; playing audio and video; looking up lyrics and artist photography for
-music when the owner asks for it; viewing documents, comic books, images, and
-saved HTML pages; editing music and video metadata, file names, and Markdown and
-text content; organizing files and bookmarks into collections; tracking
+catalog; playing video; viewing documents, comic books, images, and saved HTML
+pages; editing video metadata, file names, and Markdown and text content; organizing files and bookmarks into collections; tracking
 watchlists and reading lists with per-episode and per-issue progress; carrying
 out the core's two-phase deletion lifecycle including the separate purge-on-disk;
 and the application shell that hosts all of it — responsive layout, light and
@@ -150,7 +148,7 @@ replace the FFI one without touching a screen.
 | --- | --- |
 | FR-LB-01 | The system shall allow the owner to register a library folder chosen through the platform's native folder picker. |
 | FR-LB-02 | The system shall reject a folder that does not exist, cannot be read, or is already registered, stating which condition failed. |
-| FR-LB-03 | The system shall persist the registered library folders locally — each with its label, its run history, and the file types an index of it records — so they survive a restart. A folder with no recorded types covers every supported type. |
+| FR-LB-03 | The system shall persist the registered library folders locally — each with its label, its run history, and the file types an index of it records — so they survive a restart. A folder with no recorded types covers every supported type. On the first sign-in after the upgrade that removed audio, a folder whose recorded types were music only is unregistered, and one that mixed music with other types drops it. |
 | FR-LB-04 | The system shall support any number of registered library folders and present their files as one merged catalog. |
 | FR-LB-05 | The system shall start an index run for a chosen library folder and retain the run identifier the core returns. |
 | FR-LB-06 | The system shall start a refresh run covering everything already cataloged, independently of any single folder. This also happens when a session is established, subject to FR-LB-21. |
@@ -176,30 +174,30 @@ replace the FFI one without touching a screen.
 
 | ID | Requirement |
 | --- | --- |
-| FR-CT-01 | The system shall present a navigation panel listing every file type in the library — music, videos, books, comic books, notes and text files, HTML pages, and images — plus bookmarks, with the count of items in each. Corrected in UC-09: this originally listed movies and series separately, but the core classifies a file as `video` and carries no subtype, so the two would be the same query returning the same rows. That distinction is a watchlist's (UC-29), not the catalog's. Bookmarks are not files and are listed through their own core call (UC-28). Files belonging to a library are excluded from both the listings and the counts (FR-CT-16). Amended again: the panel also lists the libraries (FR-CT-15), which are not a file type and carry no count — a library holds whatever its folder holds, of every type at once. It sat in the tools menu until then, which is where things the owner *does* live rather than where things they *have* live, and reaching somewhere they browse took two clicks through a menu. |
+| FR-CT-01 | The system shall present a navigation panel listing every file type in the library — videos, books, comic books, notes and text files, HTML pages, and images — plus bookmarks, with the count of items in each. Corrected in UC-09: this originally listed movies and series separately, but the core classifies a file as `video` and carries no subtype, so the two would be the same query returning the same rows. That distinction is a watchlist's (UC-29), not the catalog's. Bookmarks are not files and are listed through their own core call (UC-28). Files belonging to a library are excluded from both the listings and the counts (FR-CT-16). Amended again: the panel also lists the libraries (FR-CT-15), which are not a file type and carry no count — a library holds whatever its folder holds, of every type at once. It sat in the tools menu until then, which is where things the owner *does* live rather than where things they *have* live, and reaching somewhere they browse took two clicks through a menu. |
 | FR-CT-02 | The system shall list the files of a selected type, retrieved from the core. |
-| FR-CT-03 | The system shall offer three view layouts — list, list with details, and grid — and switch between them on request, for every file type but audio, whose presentation is its own (FR-CT-13). The music area shall offer rows or a grid of its own, over artists, albums and tracks alike, and shall show a record by the picture embedded in its files rather than by a glyph standing for every record alike. |
-| FR-CT-04 | The system shall remember the chosen layout per file type across restarts, and the music area's own choice with them. |
+| FR-CT-03 | The system shall offer three view layouts — list, list with details, and grid — and switch between them on request. |
+| FR-CT-04 | The system shall remember the chosen layout per file type across restarts. |
 | FR-CT-05 | The system shall present a detail view for a single file showing its type-specific metadata, its path, and its lifecycle state. |
 | FR-CT-06 | The system shall search the catalog by file name and by type-specific metadata, and present matches across every type, including files that belong to a library (FR-CT-16). Deliberately: a library keeps its files out of the type panels so they do not bury the rest, and a search that also hid them would mean the owner could no longer find a file they know they have. |
-| FR-CT-07 | The system shall filter the listed items by type, lifecycle state, containing collection, and the type-specific attributes the core exposes, for every file type but audio, whose presentation is its own (FR-CT-13) and whose deleted records are reached through the deleted-items review (UC-34) like every other type's. |
+| FR-CT-07 | The system shall filter the listed items by type, lifecycle state, containing collection, and the type-specific attributes the core exposes. |
 | FR-CT-08 | The system shall sort the listed items by name, by date, and by the type-specific attributes the core exposes. |
 | FR-CT-09 | The system shall present an empty-result state that is visually distinct from a loading state and from an error state. |
 | FR-CT-10 | The system shall render long catalog listings without materializing every row, so that scrolling cost does not grow with the size of the library. |
 | FR-CT-11 | The system shall present a home dashboard showing recently added items, items in progress in watchlists and reading lists, per-type counts, and the outcome of the most recent index run. |
 | FR-CT-12 | The system shall open the viewer or player registered for a file's type from any listing or from the detail view. Selecting a file in a listing shall open it, and its details shall be reachable in one press from beside it; a file with no viewer, and one missing from disk, shall present their details instead, since neither can be opened. |
-| FR-CT-13 | The system shall present a track by its metadata — artist, album, or title — everywhere it is presented as music: the music browsing area, catalog-wide search results, the playback surfaces (the bar, the full player, and skip notices), and the home dashboard's recent list. The file's own name is shown deliberately in the file's own detail view, under its own label, and in the rename dialog, where it is what is being renamed. The deleted-items review and a collection's membership list are unaffected: both read records that may carry no file type, which this decision needs to tell a track from any other file. |
-| FR-CT-14 | The system shall offer, for each file in the music area, a context menu carrying the file's playback actions, its details, and its metadata editor. |
+| FR-CT-13 | **Removed (moved out of scope, see Orpheus)** |
+| FR-CT-14 | **Removed (moved out of scope, see Orpheus)** |
 | FR-CT-15 | The system shall present a library's files in their folders on disk, one level at a time, from the navigation panel's own libraries area, which lists every library. A library exists so that a folder whose structure *is* its meaning — a course, with each class's recording and handouts side by side — keeps that structure; a flat listing of its files answers a question nobody asked of it. Making one registers the folder as a source and indexes it where it is not one already: the tree is built from what the catalog holds beneath the root, not from a walk of the disk, so a library over a folder nobody has indexed shows nothing at all — no files, and no folders either. |
 | FR-CT-16 | The system shall exclude a library's files from the type-panel listings and their counts (FR-CT-01, FR-CT-02) and from the home dashboard (FR-CT-11), and shall reach into libraries for the two readings that are not browsing by type: the catalog search (FR-CT-06) and the deleted-items review (FR-LC-03). Both are built from the same core listing as the panels, so the reach is asked for per call; the core answers which library each row belongs to, which is how the dashboard leaves them out again while reading the search's own index and how a search result says where its file lives — a hit the owner then cannot find in the panel for its type is otherwise a puzzle. This is the whole point of marking a folder: three hundred class handouts otherwise bury every other document the owner has. Search (FR-CT-06), the deleted-items review (FR-LC-03), watchlists and reading lists (FR-TR-01 … FR-TR-14), and collections (FR-OG-01 … FR-OG-07) continue to reach them — a library narrows where files are *listed*, never what can be *found* or tracked, and a later reader must not "fix" that apparent inconsistency by widening the exclusion. |
 | FR-CT-17 | The system shall let the owner correct a library's folder after it moves on disk, by picking the folder it moved to. The library's files move with it and keep their identity (core FR-FC-41), so nothing that references them is lost; the registered source folder the library was made from follows the same move, or its next scan would walk a folder that is no longer there. A destination that overlaps another library, or that the catalog already holds files for, is refused in those terms rather than generically. |
-| FR-CT-18 | The system shall offer, from a file's detail view, the actions that add it to the owner's lists — a watchlist for a video, a reading list for a book or comic, a playlist for a track — so that a file inside a library, which no type panel lists, can still be added to them. |
+| FR-CT-18 | The system shall offer, from a file's detail view, the actions that add it to the owner's lists — a watchlist for a video, a reading list for a book or comic — so that a file inside a library, which no type panel lists, can still be added to them. |
 
 ### 3.4 Metadata and Content Editing — `ME`
 
 | ID | Requirement |
 | --- | --- |
-| FR-ME-01 | The system shall edit an audio file's music metadata through the core. |
+| FR-ME-01 | **Removed (moved out of scope, see Orpheus)** |
 | FR-ME-02 | The system shall edit a video file's metadata through the core, including whether it is a movie or a series. |
 | FR-ME-03 | The system shall validate editable fields before the call for immediate feedback, and shall present the core's rejection as final when it disagrees. |
 | FR-ME-04 | The system shall rename any file through the core, rejecting names containing characters the host operating system forbids before the call is made. |
@@ -218,19 +216,19 @@ replace the FFI one without touching a screen.
 | FR-PL-02 | The system shall offer full-screen toggling, pause and resume, and seeking forward and backward during video playback. |
 | FR-PL-03 | The system shall list the subtitle tracks available in a video and switch between them, including turning subtitles off. |
 | FR-PL-04 | The system shall list the audio tracks available in a video and switch between them. |
-| FR-PL-05 | The system shall play an audio file from its on-disk path in a player that remains available while the owner navigates elsewhere in the application. |
-| FR-PL-06 | The system shall queue the tracks of an album or an artist for continuous playback, and allow skipping within the queue. It shall also queue any of these — an album, an artist, a playlist, or the whole audio library — in an order nobody chose, starting at the top of that order; shuffling is a way of playing a grouping and never an edit of it, so a playlist's stored order and a record's track order are untouched by it. |
-| FR-PL-07 | The system shall present a full-window player for what is playing: the album's own picture, the track's name, the artist whose record it is, the album it is from, and a moving indication of the sound. That indication shall be drawn from the recording itself — the core's own measurement of the file (api FR-MP-07), read at the position playing — and shall show nothing at all rather than invent motion where no measurement is available. It shall show the album's own picture in the playback bar as well, and where a file carries no picture it shall show a placeholder in the sleeve's own shape rather than an empty frame. |
-| FR-PL-08 | The system shall keep at most one playback session active, stopping video playback when audio starts and the reverse. |
+| FR-PL-05 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-06 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-07 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-08 | The system shall keep at most one playback session active. |
 | FR-PL-09 | The system shall persist a resume position for a played file and offer to resume from it when the file is opened again. |
 | FR-PL-10 | The system shall report a file that is missing on disk or cannot be decoded as a readable failure, without terminating the application. |
-| FR-PL-11 | The system shall let the owner choose whether the full player opens by itself when a track starts, and shall open it on every track played while that is on. |
-| FR-PL-12 | The system shall offer, on the full player, a transport reaching the same queue the playback bar's own controls reach — previous, play and pause, stop, and next — with a control refused rather than silently ignored where the queue has nowhere to go. It shall show where the track playing has reached against how long it is, and let the owner move playback to any point in it by dragging that indication; where the engine has not yet reported a length, it shall refuse the drag rather than offer one that does nothing. |
-| FR-PL-13 | The system shall present, on request, the lyrics the core has cached for the track playing — beside the player rather than over it, so that timed words can be followed while the music plays — look them up on that request when none are cached, and offer a lookup for one track or for the whole library — naming what a lookup concluded, letting a library-wide one be stopped and taken up again where it left off, and leaving the rest of the interface usable while it runs. It shall make no lookup the owner did not ask for. |
-| FR-PL-14 | The system shall group the audio library by the record's own artist, answering who that is from the track's album-artist tag, then from the same tag on any other track of that record, then from the performer most of the record's tracks name — so that a record with guests on it is listed once, under the artist whose record it is, rather than once per performer. A track that names no record answers for itself. |
-| FR-PL-15 | The system shall show, against each artist the audio library is browsed by, the photograph the core holds for that artist **under the name the list shows**, and shall fetch none while browsing. It shall instead look up, once per session and in the background, the artists it holds no photograph for — one lookup per artist, by that same name; continuing past an artist the services have no picture of, and giving up only when several lookups in a row cannot be made at all. It shall report that pass while it runs, saying how far through it is, and shall ask for nothing while music lookups are switched off. A photograph once fetched shall be kept, and an artist once looked up — found or not — shall not be looked up again. |
-| FR-PL-16 | The system shall tell the core that a track was played once enough of it has actually been *heard*: half its length, or four minutes, whichever comes first, and a track heard to its end whatever its length. The whole rule lives in the application, because the core cannot see what the owner is hearing. What is measured is time heard and never the position the engine reports — the two are the same for a track played straight through and nothing alike for one resumed or scrubbed, and counting the position recorded plays for music nobody listened to. Playing the same record again is a second play. A play that could not be recorded is dropped rather than interrupting the music. |
-| FR-PL-17 | The system shall present what the owner has played most — the totals, the period they span, and rankings of tracks, artists, albums, and genres — reading them when the screen opens and again on request, rather than keeping them live while music plays. It shall name a track by its title, or by its filename where nothing tagged it, and shall say what counts as a play where nothing has been played yet. |
+| FR-PL-11 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-12 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-13 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-14 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-15 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-16 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-17 | **Removed (moved out of scope, see Orpheus)** |
 
 ### 3.6 Document, Image, and Page Viewing — `VW`
 
@@ -262,7 +260,7 @@ replace the FFI one without touching a screen.
 | FR-OG-11 | The system shall open a bookmark's URL in the platform's default browser. |
 | FR-OG-12 | The system shall reject a URL that does not parse, and a blank title, before calling the core. |
 
-### 3.8 Watchlists, Reading Lists, and Playlists — `TR`
+### 3.8 Watchlists and Reading Lists — `TR`
 
 | ID | Requirement |
 | --- | --- |
@@ -280,12 +278,12 @@ replace the FFI one without touching a screen.
 | FR-TR-12 | The system shall list reading lists together with each item's read state and progress. |
 | FR-TR-13 | The system shall update an item's read state through the core across the states the core defines. |
 | FR-TR-14 | The system shall record and present per-issue progress for a comic that belongs to a series, and single-item progress for a standalone book. |
-| FR-TR-15 | The system shall create, rename, and delete a named playlist through the core, deleting only after a confirmation stating that the tracks themselves are preserved. |
-| FR-TR-16 | The system shall add audio files to a playlist through the core in one call per batch, in the order the surface listed them, and shall not refuse a track the playlist already holds — a playlist may hold the same track more than once, and each occurrence is an entry of its own. |
-| FR-TR-17 | The system shall address a playlist entry by the entry's own identifier for every removal and every move, never by its position and never by the file it references. |
-| FR-TR-18 | The system shall reorder a playlist by sending the core the entry and its destination index alone, and shall present the order the core returns rather than one it computed itself. |
-| FR-TR-19 | The system shall present a playlist's tracks in the order the core stored them, named by their metadata rather than by their file names (FR-CT-13), and shall keep an entry whose file is missing in the list, presented as missing. |
-| FR-TR-20 | The system shall play a playlist as a queue in its stored order, stepping over the tracks it cannot open and naming each one it stepped over, and shall report that nothing was playable when none of them could be opened. |
+| FR-TR-15 | **Removed (moved out of scope, see Orpheus)** |
+| FR-TR-16 | **Removed (moved out of scope, see Orpheus)** |
+| FR-TR-17 | **Removed (moved out of scope, see Orpheus)** |
+| FR-TR-18 | **Removed (moved out of scope, see Orpheus)** |
+| FR-TR-19 | **Removed (moved out of scope, see Orpheus)** |
+| FR-TR-20 | **Removed (moved out of scope, see Orpheus)** |
 
 ### 3.9 Deletion Lifecycle — `LC`
 
@@ -305,7 +303,7 @@ replace the FFI one without touching a screen.
 
 | ID | Requirement |
 | --- | --- |
-| FR-UX-01 | The system shall present a single-window shell comprising the library menu bar, the type navigation panel, the content area, and the persistent playback bar. |
+| FR-UX-01 | The system shall present a single-window shell comprising the library menu bar, the type navigation panel, and the content area. |
 | FR-UX-02 | The system shall adapt the shell across the defined width breakpoints, collapsing the navigation panel and the menu bar rather than clipping or hiding any control. |
 | FR-UX-03 | The system shall enforce the minimum supported window size and shall persist and restore the window's size and position across runs. |
 | FR-UX-04 | The system shall offer light, dark, and system-matching themes, applying a change immediately without restarting. |
@@ -317,7 +315,7 @@ replace the FFI one without touching a screen.
 | FR-UX-10 | The system shall confirm every destructive action through a modal that names what will be removed and whether the on-disk file is affected. |
 | FR-UX-11 | The system shall make the primary action of every screen reachable from the keyboard: Return shall submit the form the focus is in, from any of its fields, and Tab shall move between them. Neither key shall do the other's work — a field that moves the focus on Return leaves a form that can only be sent from its last field. A field holding more than one line of text keeps Return for a new line, and is the only exception. |
 | FR-UX-12 | The system shall persist the owner's theme, language, layout, sort, and filter preferences locally and restore them at launch. |
-| FR-UX-13 | The system shall let the owner switch music information lookup on or off and record the contact address the lookup services are given, applying either to the core without restarting the application; lookup shall be on where the owner has expressed no preference, and while it is off the application shall request none. |
+| FR-UX-13 | **Removed (moved out of scope, see Orpheus)** |
 
 ---
 
@@ -492,11 +490,9 @@ does not already publish.
 | Library sources | Register, scan, refresh, pace, unregister, mark folders as libraries, and name what a run could not record | FR-LB-01 … FR-LB-23 |
 | Catalog listing | Type-filtered listing in three layouts, with search, filters, and sorting | FR-CT-01 … FR-CT-04, FR-CT-06 … FR-CT-10, FR-CT-12, FR-CT-16 |
 | Libraries | Every library, and one library's folders a level at a time | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
-| File detail | Metadata, path, state, and available actions | FR-CT-05, FR-CT-18, FR-ME-01, FR-ME-02, FR-ME-04 |
+| File detail | Metadata, path, state, and available actions | FR-CT-05, FR-CT-18, FR-ME-02, FR-ME-04 |
 | Text editor | Markdown and text editing with live preview | FR-ME-06 … FR-ME-10 |
 | Video player | Playback with subtitle and audio tracks | FR-PL-01 … FR-PL-04, FR-PL-08 … FR-PL-10 |
-| Audio player | Persistent playback with queue, a full player showing the sleeve and the sound, and the words of the track playing | FR-PL-05 … FR-PL-16 |
-| Music statistics | What the owner has played most — totals, the period they span, and four rankings | FR-PL-16, FR-PL-17 |
 | Document viewer | PDFs and e-books | FR-VW-02, FR-VW-07, FR-VW-08 |
 | Comic viewer | Comic archives, page by page | FR-VW-03, FR-VW-07, FR-VW-08 |
 | Image viewer | Fit and zoom | FR-VW-04, FR-VW-07 |
@@ -505,11 +501,9 @@ does not already publish.
 | Bookmarks | Create, update, list, and open bookmarks | FR-OG-08 … FR-OG-12 |
 | Watchlists | Lists, membership, and watch progress | FR-TR-01 … FR-TR-07 |
 | Reading lists | Lists, membership, and read progress | FR-TR-08 … FR-TR-14 |
-| Playlists | Named, ordered lists of audio, their entries, and playing one | FR-TR-15 … FR-TR-20 |
 | Deleted items | Restore and purge, with retention shown | FR-LC-02 … FR-LC-07 |
 | Missing files | Review and re-scan | FR-LC-08 |
-| Music info lookup | Look lyrics and artist photography up for the library, with progress and a stop | FR-PL-13, FR-PL-15, FR-UX-13 |
-| Preferences | Theme, language, music information lookup, and credential change | FR-AU-10, FR-UX-04, FR-UX-05, FR-UX-12, FR-UX-13 |
+| Preferences | Theme, language, and credential change | FR-AU-10, FR-UX-04, FR-UX-05, FR-UX-12 |
 
 ### 5.2 Core Call Surface
 
@@ -526,20 +520,15 @@ Calls are grouped by the gateway that owns them.
 | Indexing — following a run | `alexandria_index_run_status_json`, `alexandria_index_runs_active_json`, `alexandria_index_run_failures_json` | FR-LB-08, FR-LB-13 … FR-LB-15, FR-LB-18 |
 | Indexing — controlling a run | `alexandria_index_pause`, `alexandria_index_cancel`, `alexandria_index_resume` | FR-LB-16, FR-LB-17 |
 | Files | `alexandria_files_list`, `alexandria_file_get_by_uuid` | FR-CT-02, FR-CT-05 … FR-CT-08, FR-CT-11 |
-| File editing | `alexandria_file_edit_metadata`, `alexandria_file_rename`, `alexandria_file_read_content`, `alexandria_file_edit_content` | FR-ME-01, FR-ME-02, FR-ME-04, FR-ME-06, FR-ME-08 |
+| File editing | `alexandria_file_edit_metadata`, `alexandria_file_rename`, `alexandria_file_read_content`, `alexandria_file_edit_content` | FR-ME-02, FR-ME-04, FR-ME-06, FR-ME-08 |
 | File lifecycle | `alexandria_file_soft_delete`, `alexandria_file_restore`, `alexandria_file_purge`, `alexandria_file_purge_on_disk` | FR-LC-01, FR-LC-04, FR-LC-05, FR-LC-06 |
 | Collections | `alexandria_collections_list`, `alexandria_collection_create`, `_rename`, `_delete`, `_add_items`, `_remove_item`, `_list_items` | FR-OG-01 … FR-OG-06 |
 | Bookmarks | `alexandria_bookmark_create`, `_update`, `alexandria_bookmarks_list`, `_soft_delete`, `_restore`, `_purge` | FR-OG-08 … FR-OG-10, FR-LC-01, FR-LC-04, FR-LC-05 |
 | Watchlists | `alexandria_watchlist_create`, `_add_video`, `alexandria_watchlists_list`, `_update_progress`, `_remove_video`, `_delete` | FR-TR-01 … FR-TR-07 |
 | Reading lists | `alexandria_reading_list_create`, `_add_item`, `alexandria_reading_lists_list`, `_update_progress`, `_remove_item`, `_delete` | FR-TR-08 … FR-TR-14 |
-| Playlists | `alexandria_playlist_create`, `_rename`, `_delete`, `alexandria_playlists_list`, `alexandria_playlist_read`, `_add_entries`, `_remove_entry`, `_move_entry` | FR-TR-15 … FR-TR-20 |
 | Libraries | `alexandria_libraries_list`, `alexandria_library_register`, `_move`, `_browse`, `_remove` | FR-CT-16, FR-CT-17 |
-| Playback sources | `alexandria_file_playback_source`, `alexandria_file_thumbnail`, `alexandria_comic_page` | FR-PL-01, FR-PL-05, FR-VW-04 |
-| Playback — the sound of a track | `alexandria_track_energy` | FR-PL-07 |
-| Music enrichment | `alexandria_enrichment_read_track`, `alexandria_enrichment_run` | FR-PL-13, FR-UX-13 |
-| Music enrichment — artist photography | `alexandria_artist_image`, `alexandria_artist_image_fetch` | FR-PL-15, FR-UX-13 |
-| Play history | `alexandria_play_record`, `alexandria_music_stats` | FR-PL-16, FR-PL-17 |
-| Settings | `alexandria_settings_json` | FR-LC-03, FR-UX-13 |
+| Playback sources | `alexandria_file_playback_source`, `alexandria_file_thumbnail`, `alexandria_comic_page` | FR-PL-01, FR-VW-04 |
+| Settings | `alexandria_settings_json` | FR-LC-03 |
 | Memory | `alexandria_free_string` | NFR-13 |
 
 Every operation the application calls appears above. That is a property worth
@@ -551,9 +540,9 @@ made from a gateway and named in no row here is a dependency nobody agreed to.
 
 | Access | Purpose | Requirements |
 | --- | --- | --- |
-| Read bytes at a file's path | Playback and viewing | FR-PL-01, FR-PL-05, FR-VW-02 … FR-VW-07 |
+| Read bytes at a file's path | Playback and viewing | FR-PL-01, FR-VW-02 … FR-VW-07 |
 | Read a directory's existence and readability | Validating a library folder before registering it | FR-LB-02 |
-| Write the local settings store and the log file | Application-owned state | FR-UX-12, FR-UX-13, and [Operations & Infrastructure §4](Operations%20%26%20Infrastructure%20Document.md) |
+| Write the local settings store and the log file | Application-owned state | FR-UX-12, and [Operations & Infrastructure §4](Operations%20%26%20Infrastructure%20Document.md) |
 
 The application performs no other filesystem write. Renaming, content saving, and
 file deletion happen through the core.
@@ -701,13 +690,13 @@ Three cascade notes follow from the core's rules and bind the interface:
 | F-01 Authentication and session | FR-AU-01 through FR-AU-19 |
 | F-02 Library sources and indexing | FR-LB-01 through FR-LB-23 |
 | F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-18 |
-| F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
-| F-05 Media playback | FR-PL-01 through FR-PL-17 |
+| F-04 Metadata and content editing | FR-ME-02 through FR-ME-10 (FR-ME-01 removed) |
+| F-05 Media playback | FR-PL-01 through FR-PL-04, FR-PL-08 through FR-PL-10 (FR-PL-05 through FR-PL-07 and FR-PL-11 through FR-PL-17 removed) |
 | F-06 Document, image, and page viewing | FR-VW-01 through FR-VW-08 |
 | F-07 Collections and bookmarks | FR-OG-01 through FR-OG-12 |
-| F-08 Watchlists, reading lists, and playlists | FR-TR-01 through FR-TR-20 |
+| F-08 Watchlists and reading lists | FR-TR-01 through FR-TR-14 (FR-TR-15 through FR-TR-20 removed) |
 | F-09 Safe deletion lifecycle | FR-LC-01 through FR-LC-09 |
-| F-10 Application shell, theming, and localization | FR-UX-01 through FR-UX-13 |
+| F-10 Application shell, theming, and localization | FR-UX-01 through FR-UX-12 (FR-UX-13 removed) |
 
 ### 9.2 Domain areas to codes
 
@@ -716,13 +705,13 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Authentication and session | `AU` | FR-AU-01 … FR-AU-19 |
 | Library sources and indexing | `LB` | FR-LB-01 … FR-LB-23 |
 | Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-18 |
-| Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
-| Media playback | `PL` | FR-PL-01 … FR-PL-17 |
+| Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 (FR-ME-01 removed) |
+| Media playback | `PL` | FR-PL-01 … FR-PL-17 (FR-PL-05 … FR-PL-07 and FR-PL-11 … FR-PL-17 removed) |
 | Document, image, and page viewing | `VW` | FR-VW-01 … FR-VW-08 |
 | Collections and bookmarks | `OG` | FR-OG-01 … FR-OG-12 |
-| Watchlists, reading lists, and playlists | `TR` | FR-TR-01 … FR-TR-20 |
+| Watchlists and reading lists | `TR` | FR-TR-01 … FR-TR-20 (FR-TR-15 … FR-TR-20 removed) |
 | Deletion lifecycle | `LC` | FR-LC-01 … FR-LC-09 |
-| Application shell, theming, and localization | `UX` | FR-UX-01 … FR-UX-13 |
+| Application shell, theming, and localization | `UX` | FR-UX-01 … FR-UX-13 (FR-UX-13 removed) |
 
 ### 9.3 Business rules to requirements
 
@@ -736,7 +725,7 @@ appears exactly once.
 | BR-03 Every call carries the session | FR-AU-06, FR-AU-07 |
 | BR-04 Plaintext password never persisted or logged | FR-AU-11, FR-AU-13, NFR-11 |
 | BR-05 Session in memory for the run only | FR-AU-05, FR-AU-09 |
-| BR-06 The application writes only text content and its own settings | §5.3, FR-UX-12, FR-UX-13 |
+| BR-06 The application writes only text content and its own settings | §5.3, FR-UX-12 |
 | BR-07 Every destructive action is confirmed | FR-LC-01, FR-LC-05, FR-OG-03, FR-TR-02, FR-TR-09, FR-UX-10 |
 | BR-08 Purge-on-disk is presented distinctly | FR-LC-06 |
 | BR-09 No media editing | §1.1, FR-PL-01 |
@@ -751,7 +740,7 @@ appears exactly once.
 | BR-18 Both themes, colors from the theme | FR-UX-04, FR-UX-07, NFR-08 |
 | BR-19 Responsive to the minimum window size | FR-UX-02, FR-UX-03, NFR-07 |
 | BR-20 Loading states and readable failures | FR-UX-08, FR-UX-09, NFR-10 |
-| BR-21 The full player for what is playing | FR-PL-07 |
+| BR-21 The full player for what is playing | **Removed (moved out of scope, see Orpheus)** |
 | BR-22 One playback session at a time | FR-PL-08 |
 | BR-23 SOLID and domain-owned interfaces | NFR-17 |
 | BR-24 Single user, one account | §7, FR-AU-01, FR-AU-02 |

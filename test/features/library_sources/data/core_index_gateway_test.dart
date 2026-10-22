@@ -113,14 +113,14 @@ void main() {
       final gateway = CoreIndexGateway(fake);
 
       await gateway.startIndex(
-        root: 'D:/Music',
-        types: const [FileType.audio, FileType.image],
+        root: 'D:/Books',
+        types: const [FileType.document, FileType.image],
         credential: 't',
       );
 
       // The core's own words, comma-separated — not a second vocabulary
       // mapped onto them (BR-02).
-      expect(fake.indexStarts.single.types, 'audio,image');
+      expect(fake.indexStarts.single.types, 'document,image');
     });
 
     test(

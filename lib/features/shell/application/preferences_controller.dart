@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import '../../../core/bindings/core_environment.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/settings/settings_store.dart';
-import '../../../core/startup/startup_controller.dart';
 import '../../../core/startup/startup_state.dart';
 import 'preferences_state.dart';
 
@@ -37,11 +35,7 @@ class PreferencesController extends Notifier<PreferencesState> {
     return PreferencesState(
       themeMode: settings?.themeMode ?? ThemeMode.system,
       locale: settings?.locale,
-      opensPlayerOnPlay: settings?.opensPlayerOnPlay ?? true,
       rechecksAtStartup: settings?.rechecksAtStartup ?? true,
-      musicLookupEnabled: settings?.musicLookupEnabled ?? true,
-      musicLookupContact:
-          settings?.musicLookupContact ?? defaultMusicLookupContact,
     );
   }
 
@@ -65,88 +59,10 @@ class PreferencesController extends Notifier<PreferencesState> {
     await _persist((settings) => settings.setLocale(locale));
   }
 
-  /// Applies [value] now and records it for the next launch (FR-PL-11).
-  ///
-  /// What the album-animation choice used to be. That preference picked which
-  /// medium the animation showed — a record, a tape or a disc — and the
-  /// animation is gone: what is left of the choice is the half of it that was
-  /// about behaviour rather than decoration, which is whether starting a
-  /// track puts the player on screen.
-  Future<void> setOpensPlayerOnPlay(bool value) async {
-    state = state.copyWith(opensPlayerOnPlay: value, lastChangeUnsaved: false);
-    await _persist((settings) => settings.setOpensPlayerOnPlay(value));
-  }
-
   /// Applies [value] now and records it for the next launch (FR-LB-21).
   Future<void> setRechecksAtStartup(bool value) async {
     state = state.copyWith(rechecksAtStartup: value, lastChangeUnsaved: false);
     await _persist((settings) => settings.setRechecksAtStartup(value));
-  }
-
-  /// Applies [value] now and records it for the next launch (music
-  /// enrichment design).
-  ///
-  /// "Now" is two things, and both are needed. The interface stops offering
-  /// lookups the moment this turns false, which is what the owner asked
-  /// for; and the core is reconfigured behind it, because the core reads
-  /// this setting once at initialization and would otherwise keep answering
-  /// "switched off for this installation" to a switch the owner has just
-  /// turned on.
-  Future<void> setMusicLookupEnabled(bool value) async {
-    state = state.copyWith(musicLookupEnabled: value, lastChangeUnsaved: false);
-    await _persist((settings) => settings.setMusicLookupEnabled(value));
-    await _applyToCore();
-  }
-
-  /// Records the contact the lookup services are given, and reconfigures the
-  /// core with it.
-  ///
-  /// An empty [contact] returns the application's own, which is what the
-  /// settings store answers for a cleared preference — the state is set from
-  /// the store rather than from the argument so the field cannot show blank
-  /// while the core is using something else.
-  Future<void> setMusicLookupContact(String contact) async {
-    state = state.copyWith(
-      musicLookupContact: _contactOrDefault(contact),
-      lastChangeUnsaved: false,
-    );
-    await _persist((settings) => settings.setMusicLookupContact(contact));
-    await _applyToCore();
-  }
-
-  /// The contact a store that could not be written would have answered.
-  String _contactOrDefault(String contact) =>
-      contact.trim().isEmpty ? defaultMusicLookupContact : contact.trim();
-
-  /// Hands the core the music-lookup configuration now stored.
-  ///
-  /// Does nothing before startup has a core to reconfigure, and nothing when
-  /// the configuration has not actually changed — see
-  /// `StartupController.applyMusicLookup`.
-  ///
-  /// A core that is scanning refuses, and the refusal is recorded rather than
-  /// swallowed: the preference is saved and will be applied, but not yet, and
-  /// the dialog says so. [retryDeferredMusicLookup] is what clears it once
-  /// the scan settles.
-  Future<void> _applyToCore() async {
-    final outcome = await ref
-        .read(startupControllerProvider.notifier)
-        .applyMusicLookup();
-
-    state = state.copyWith(
-      musicLookupDeferred: outcome == MusicLookupApplication.deferred,
-    );
-  }
-
-  /// Applies a change the core was too busy to take when it was made.
-  ///
-  /// Called when the last outstanding scan settles. A no-op unless something
-  /// is actually waiting, so the ordinary case — a scan finishing with no
-  /// preference outstanding — costs one boolean.
-  Future<void> retryDeferredMusicLookup() async {
-    if (!state.musicLookupDeferred) return;
-
-    await _applyToCore();
   }
 
   /// Clears the unsaved notice once the owner has seen it.

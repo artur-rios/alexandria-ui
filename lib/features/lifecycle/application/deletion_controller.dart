@@ -68,8 +68,7 @@ class DeletionController extends Notifier<DeletionState> {
           gateway.softDeleteFile(uuid: uuid, credential: credential),
       // FR-LC-09: every listing, count, and detail view reads the core
       // again, so the record leaves the default listings without a manual
-      // refresh — the music area included, or a deleted track stays playable
-      // from there and reports itself as skipped when it is tried.
+      // refresh.
       onDone: () => invalidateCatalogProjections(ref),
     );
   }

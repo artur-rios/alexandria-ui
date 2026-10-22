@@ -7,7 +7,6 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/application/session_state.dart';
-import '../application/preferences_controller.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
 ///
@@ -37,13 +36,9 @@ class PreferencesDialog extends ConsumerWidget {
     // What the owner can act on from where they are (UC-39 AF-05).
     //
     // The theme and the language change the screen they are standing on, so
-    // they belong on the login screen as much as anywhere. The rest do not:
-    // the animation is about a player they cannot reach, the re-check is
-    // about a library that is not open, and the lookup is about music they
-    // have not signed in to. Offering them here is offering settings for a
-    // session that does not exist — and the last of the three reconfigures
-    // the core, which is a strange thing to let happen from a screen whose
-    // whole purpose is that nobody has authenticated yet.
+    // they belong on the login screen as much as anywhere. The re-check does
+    // not: it is about a library that is not open, and offering it here is
+    // offering a setting for a session that does not exist.
     final signedIn = ref.watch(sessionControllerProvider) is SessionActive;
 
     return AlertDialog(
@@ -106,19 +101,6 @@ class PreferencesDialog extends ConsumerWidget {
 
               if (signedIn) ...[
                 const SizedBox(height: AppSpacing.md),
-                // No `_GroupLabel` here, for the reason the switch below
-                // records: a group of one control restating its own name in
-                // a label above it is redundancy, not structure.
-                SwitchListTile(
-                  title: Text(l10n.playerAutoOpenLabel),
-                  subtitle: Text(l10n.playerAutoOpenDescription),
-                  value: preferences.opensPlayerOnPlay,
-                  onChanged: (value) =>
-                      unawaited(controller.setOpensPlayerOnPlay(value)),
-                  contentPadding: EdgeInsets.zero,
-                ),
-
-                const SizedBox(height: AppSpacing.md),
                 // No `_GroupLabel` here: a group of one control restating its
                 // own name in a label above it would be the same redundancy
                 // this fixes, only moved rather than removed. The switch names
@@ -131,35 +113,6 @@ class PreferencesDialog extends ConsumerWidget {
                   onChanged: (value) =>
                       unawaited(controller.setRechecksAtStartup(value)),
                 ),
-
-                const SizedBox(height: AppSpacing.md),
-                // This one *does* get a label above it, unlike the switch
-                // before it: the group is two controls, and the contact field
-                // beneath the switch would otherwise read as belonging to the
-                // preference above rather than to the lookup.
-                _GroupLabel(l10n.preferencesMusicLookupLabel),
-                SwitchListTile(
-                  title: Text(l10n.musicLookupLabel),
-                  subtitle: Text(l10n.musicLookupDescription),
-                  value: preferences.musicLookupEnabled,
-                  contentPadding: EdgeInsets.zero,
-                  onChanged: (value) =>
-                      unawaited(controller.setMusicLookupEnabled(value)),
-                ),
-                // Only while the lookup is on: an address for a service
-                // nothing is going to call is a question with no consequence,
-                // and MusicBrainz's requirement is about requests being made.
-                if (preferences.musicLookupEnabled)
-                  _ContactField(contact: preferences.musicLookupContact),
-
-                // The core refuses to be reconfigured mid-scan, so the change
-                // is stored and waiting. Beneath the controls it is about,
-                // and phrased as a "not yet" rather than a failure — because
-                // it is one, and it clears itself when the scan settles.
-                if (preferences.musicLookupDeferred) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  _WaitingNotice(message: l10n.musicLookupDeferred),
-                ],
               ],
             ],
           ),
@@ -175,82 +128,6 @@ class PreferencesDialog extends ConsumerWidget {
           child: Text(l10n.preferencesClose),
         ),
       ],
-    );
-  }
-}
-
-/// The contact every lookup identifies this installation with.
-///
-/// Stateful, and written on submit or on losing focus rather than on every
-/// keystroke: each write reconfigures the core, and a field that did that
-/// per character would re-initialize it a dozen times while an address is
-/// typed — and would hand MusicBrainz a half-typed one in between.
-class _ContactField extends ConsumerStatefulWidget {
-  const _ContactField({required this.contact});
-
-  /// What is stored now, which is what the field starts holding.
-  final String contact;
-
-  @override
-  ConsumerState<_ContactField> createState() => _ContactFieldState();
-}
-
-class _ContactFieldState extends ConsumerState<_ContactField> {
-  late final TextEditingController _text = TextEditingController(
-    text: widget.contact,
-  );
-  final FocusNode _focus = FocusNode();
-
-  /// The controller to write through, captured while this widget is still
-  /// mounted.
-  ///
-  /// Read once rather than at each write, because one of the writes happens
-  /// in [dispose] — an owner who types an address and closes the dialog has
-  /// made a choice, and losing it because the field went away first is
-  /// exactly the silent loss UC-39 AF-02 exists to prevent. `ref` is not
-  /// safe to read from there; a notifier already in hand is.
-  late final PreferencesController _preferences = ref.read(
-    preferencesControllerProvider.notifier,
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    _focus.addListener(() {
-      if (!_focus.hasFocus) _save();
-    });
-  }
-
-  @override
-  void dispose() {
-    _save();
-    _text.dispose();
-    _focus.dispose();
-    super.dispose();
-  }
-
-  /// Stores what was typed, unless it is what is already stored — a field
-  /// merely tabbed through must not cost a re-initialization of the core.
-  void _save() {
-    if (_text.text.trim() == widget.contact.trim()) return;
-
-    unawaited(_preferences.setMusicLookupContact(_text.text));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return TextField(
-      controller: _text,
-      focusNode: _focus,
-      keyboardType: TextInputType.emailAddress,
-      decoration: InputDecoration(
-        labelText: l10n.musicLookupContactLabel,
-        helperText: l10n.musicLookupContactHelp,
-        helperMaxLines: 3,
-      ),
-      onSubmitted: (_) => _save(),
     );
   }
 }
@@ -382,48 +259,6 @@ class PreferencesButton extends StatelessWidget {
       icon: const Icon(Icons.settings_outlined),
       tooltip: l10n.preferencesOpen,
       onPressed: () => PreferencesDialog.show(context),
-    );
-  }
-}
-
-/// A change that is saved and waiting on something before it takes effect.
-///
-/// Deliberately not [_UnsavedNotice]'s error colouring: nothing went wrong,
-/// and the preference will apply on its own. What it shares is the shape,
-/// so the two read as the same kind of aside about the control above them.
-class _WaitingNotice extends StatelessWidget {
-  const _WaitingNotice({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.schedule_outlined,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              message,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

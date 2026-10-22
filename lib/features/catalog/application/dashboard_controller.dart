@@ -14,11 +14,9 @@ import '../domain/listing_view.dart';
 /// would be the same work twice. It is a section in its own right, so its
 /// failure is its own and does not take the rest of the dashboard down (AF-03).
 ///
-/// Published as `List<FileDetails>`, not just the files: each row already
-/// carries the metadata `catalogSearchProvider`'s listing read, and a row
-/// that names an audio file (FR-CT-13) reads it from here rather than
-/// triggering a second, whole-library read to learn what this one already
-/// knew.
+/// Published as `List<FileDetails>`, not just the files: each row is the
+/// record `catalogSearchProvider`'s listing read, so nothing that shows one
+/// has to read it again.
 class RecentFilesController extends AsyncNotifier<List<FileDetails>> {
   /// How many files the dashboard shows.
   ///

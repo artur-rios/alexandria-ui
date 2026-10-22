@@ -35,9 +35,6 @@ Failure mapCoreStatus(
     CoreStatusFamily.bookmark => _mapBookmark(code),
     CoreStatusFamily.watchlist => _mapWatchlist(code),
     CoreStatusFamily.readingList => _mapReadingList(code),
-    CoreStatusFamily.playlist => _mapPlaylist(code),
-    CoreStatusFamily.play => _mapPlay(code),
-    CoreStatusFamily.enrichment => _mapEnrichment(code),
     CoreStatusFamily.library => _mapLibrary(code),
     CoreStatusFamily.auth => _mapAuth(code),
     CoreStatusFamily.playback => _mapPlayback(code),
@@ -264,89 +261,6 @@ Failure _mapReadingList(int code) => switch (code) {
     code: code,
   ),
   _ => Failure.unexpected(family: CoreStatusFamily.readingList, code: code),
-};
-
-// The playlist family follows the same five-plus-other shape as the reading
-// list and watchlist families beside it — confirmed against alexandria-ffi's
-// own `PLAYLIST_ERR_*` constants rather than assumed from the pattern.
-Failure _mapPlaylist(int code) => switch (code) {
-  PLAYLIST_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.playlist,
-    code: code,
-  ),
-  PLAYLIST_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.playlist,
-    code: code,
-  ),
-  PLAYLIST_ERR_NOT_INITIALIZED => Failure.notInitialized(
-    family: CoreStatusFamily.playlist,
-    code: code,
-  ),
-  PLAYLIST_ERR_NOT_FOUND => Failure.notFound(
-    family: CoreStatusFamily.playlist,
-    code: code,
-  ),
-  PLAYLIST_ERR_INVALID_STATE => Failure.invalidState(
-    family: CoreStatusFamily.playlist,
-    code: code,
-  ),
-  _ => Failure.unexpected(family: CoreStatusFamily.playlist, code: code),
-};
-
-// The play family is the playlist family minus its invalid-state code: a
-// play is recorded or it is not, and there is no state for one to be in.
-// Confirmed against alexandria-ffi's own `PLAY_ERR_*` constants rather than
-// assumed from the pattern — `PLAY_ERR_OTHER` is 9 here as it is there, with
-// 5 left unused.
-Failure _mapPlay(int code) => switch (code) {
-  PLAY_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.play,
-    code: code,
-  ),
-  PLAY_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.play,
-    code: code,
-  ),
-  PLAY_ERR_NOT_INITIALIZED => Failure.notInitialized(
-    family: CoreStatusFamily.play,
-    code: code,
-  ),
-  PLAY_ERR_NOT_FOUND => Failure.notFound(
-    family: CoreStatusFamily.play,
-    code: code,
-  ),
-  _ => Failure.unexpected(family: CoreStatusFamily.play, code: code),
-};
-
-// The enrichment family carries one code the others do not:
-// ENRICHMENT_ERR_UNAVAILABLE, which is not something the caller did. The
-// request was well formed and this installation simply has enrichment
-// switched off, or on with no MusicBrainz contact configured. It maps to
-// `configuration` rather than `invalidState` so a surface can tell the owner
-// their administrator has not set this up, instead of implying they asked
-// for something wrong.
-Failure _mapEnrichment(int code) => switch (code) {
-  ENRICHMENT_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  ENRICHMENT_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  ENRICHMENT_ERR_NOT_INITIALIZED => Failure.notInitialized(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  ENRICHMENT_ERR_NOT_FOUND => Failure.notFound(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  ENRICHMENT_ERR_UNAVAILABLE => Failure.configuration(
-    family: CoreStatusFamily.enrichment,
-    code: code,
-  ),
-  _ => Failure.unexpected(family: CoreStatusFamily.enrichment, code: code),
 };
 
 // The library family carries one code the others do not:

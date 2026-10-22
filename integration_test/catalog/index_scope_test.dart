@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:alexandria_ui/core/bindings/core_client.dart';
-import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
@@ -58,10 +57,7 @@ void main() {
     final client = await FfiCoreClient.load(libraryPath);
     addTearDown(client.dispose);
 
-    final status = await client.initialize(
-      catalog.databasePath,
-      musicLookup: MusicLookup.off,
-    );
+    final status = await client.initialize(catalog.databasePath);
     expect(CoreStatusFamily.indexing.isOk(status), isTrue);
 
     final outcome = await CoreAuthGateway(client).register(

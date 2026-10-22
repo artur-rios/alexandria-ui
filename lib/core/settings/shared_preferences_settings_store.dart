@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../bindings/core_environment.dart';
 import 'settings_store.dart';
 
 /// The [SettingsStore] backed by `shared_preferences` (IR-12).
@@ -25,10 +24,7 @@ class SharedPreferencesSettingsStore implements SettingsStore {
 
   static const _themeModeKey = 'settings.themeMode';
   static const _localeKey = 'settings.locale';
-  static const _opensPlayerKey = 'settings.opensPlayerOnPlay';
   static const _rechecksAtStartupKey = 'settings.rechecksAtStartup';
-  static const _musicLookupEnabledKey = 'settings.musicLookupEnabled';
-  static const _musicLookupContactKey = 'settings.musicLookupContact';
 
   @override
   ThemeMode get themeMode => switch (_preferences.getString(_themeModeKey)) {
@@ -70,17 +66,6 @@ class SharedPreferencesSettingsStore implements SettingsStore {
     );
   }
 
-  /// Absent reads as on: an owner who has never opened the dialog gets the
-  /// player when they start something, which is the behaviour the screen
-  /// exists for.
-  @override
-  bool get opensPlayerOnPlay =>
-      _preferences.getBool(_opensPlayerKey) ?? true;
-
-  @override
-  Future<void> setOpensPlayerOnPlay(bool value) =>
-      _preferences.setBool(_opensPlayerKey, value);
-
   /// Absent reads as on, which is the default the preference ships with: an
   /// owner who has never opened the dialog gets the re-check.
   @override
@@ -90,38 +75,6 @@ class SharedPreferencesSettingsStore implements SettingsStore {
   @override
   Future<void> setRechecksAtStartup(bool value) =>
       _preferences.setString(_rechecksAtStartupKey, value.toString());
-
-  /// Absent reads as on, the same way the re-check above does: lyrics and
-  /// artist photography are what an owner opening a music player expects to
-  /// see, and the lookup still reaches nothing until they ask for one.
-  @override
-  bool get musicLookupEnabled =>
-      _preferences.getString(_musicLookupEnabledKey) != 'false';
-
-  @override
-  Future<void> setMusicLookupEnabled(bool value) =>
-      _preferences.setString(_musicLookupEnabledKey, value.toString());
-
-  @override
-  String get musicLookupContact {
-    final stored = _preferences.getString(_musicLookupContactKey)?.trim();
-
-    return stored == null || stored.isEmpty
-        ? defaultMusicLookupContact
-        : stored;
-  }
-
-  @override
-  Future<void> setMusicLookupContact(String contact) {
-    final trimmed = contact.trim();
-
-    // Cleared rather than stored blank: an empty contact is the owner asking
-    // for the application's own again, and a stored empty string would be a
-    // second way of saying that for every later read to remember.
-    return trimmed.isEmpty
-        ? _preferences.remove(_musicLookupContactKey)
-        : _preferences.setString(_musicLookupContactKey, trimmed);
-  }
 
   @override
   String? getString(String key) => _preferences.getString(key);

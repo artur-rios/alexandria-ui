@@ -71,17 +71,17 @@ void main() {
     final files = [
       aFile(
         uuid: '1',
-        name: 'giant steps.flac',
+        name: 'giant squid.md',
         indexedAt: DateTime.utc(2026, 3),
       ),
       aFile(
         uuid: '2',
-        name: 'Blue Train.flac',
+        name: 'Blue Planet.md',
         indexedAt: DateTime.utc(2026, 1),
       ),
       aFile(
         uuid: '3',
-        name: 'Kind of Blue.flac',
+        name: 'Kelp Forest.md',
         indexedAt: DateTime.utc(2026, 2),
       ),
     ];
@@ -114,7 +114,7 @@ void main() {
 
     test('GivenAFileWithNoDate_WhenSortedByDate_ThenItIsTheOldest', () {
       // Missing information, not a reason to refuse to sort.
-      final undated = aFile(uuid: '4', name: 'undated.flac');
+      final undated = aFile(uuid: '4', name: 'undated.md');
       final sorted = sortFiles([
         ...files,
         undated,

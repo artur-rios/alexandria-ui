@@ -13,9 +13,9 @@ part 'active_runs_state.freezed.dart';
 /// question the library-sources screen asks. This is the other question —
 /// "what is running right now, anywhere" — which the core answers directly
 /// through `listActiveRuns` rather than through per-folder bookkeeping. A
-/// later task renders this as the strip above the playback bar, and it is
-/// meant to be the one place that answers that question, rather than a
-/// second opinion alongside [IndexRunsState]'s.
+/// later task renders this as the strip along the bottom of the shell, and
+/// it is meant to be the one place that answers that question, rather than
+/// a second opinion alongside [IndexRunsState]'s.
 @freezed
 abstract class ActiveRunsState with _$ActiveRunsState {
   /// Creates a state.

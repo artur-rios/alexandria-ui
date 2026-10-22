@@ -5,13 +5,11 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
-import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/async_state_view.dart';
 import '../application/search_controller.dart';
 import '../domain/catalog_search.dart';
 import '../domain/file_details.dart';
 import '../domain/file_type.dart';
-import '../domain/music_metadata.dart';
 
 /// The catalog-wide search field (UC-11 main flow step 1).
 ///
@@ -166,10 +164,7 @@ class _Matches extends StatelessWidget {
 
 /// One match (main flow step 3).
 ///
-/// An audio file is named by its metadata title, exactly as it is in the music
-/// area (FR-CT-13): the rule follows the file type, and a result list that
-/// showed names on disk would put back every file name that area removes.
-/// Every other type is named by its file name, which is what it is called.
+/// Named by its file name, which is what it is called, with its path beneath.
 class _ResultRow extends ConsumerWidget {
   const _ResultRow({required this.details, required this.term});
 
@@ -178,36 +173,15 @@ class _ResultRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
     final file = details.file;
-    final isAudio = file.type == FileType.audio;
-    // `tagOr` rather than a fallback written out here: that helper is the one
-    // place an absent tag becomes a word, and a second copy of the rule here
-    // is exactly what would let this screen and the music area disagree. The
-    // row's own metadata is read straight off it — the listing carries it
-    // already, so there is no per-file provider to ask.
-    final metadata = isAudio
-        ? MusicMetadata.fromDetails(details.metadata)
-        : null;
-    final title = isAudio
-        ? tagOr(metadata?.title, l10n.musicUnknownTitle)
-        : file.name;
 
     return ListTile(
-      leading: Icon(
-        isAudio ? Icons.music_note_outlined : Icons.insert_drive_file_outlined,
-      ),
+      leading: const Icon(Icons.insert_drive_file_outlined),
       // The term is marked in the name the row shows; marking a name the row
       // does not show would point at nothing.
-      title: _Highlighted(text: title, term: term),
-      // The artist for audio, so two identically-titled tracks — a remix, a
-      // live take, a duplicate rip — read as different rows. Never the path:
-      // it ends in the name on disk, which would put the very name FR-CT-13
-      // removed from the title back in the subtitle. Every other type is
-      // named by its file name already, so its path is no more revealing than
-      // the title above it.
+      title: _Highlighted(text: file.name, term: term),
       // Says where a hit lives when it lives in a library. Without it the
       // row is a puzzle: the owner finds the file here and then cannot find
       // it in the panel for its type, because a library's files are shown in
@@ -215,17 +189,11 @@ class _ResultRow extends ConsumerWidget {
       trailing: details.libraryUuid == null
           ? null
           : _LibraryTag(uuid: details.libraryUuid!),
-      subtitle: isAudio
-          ? Text(
-              tagOr(metadata?.artist, l10n.musicUnknownArtist),
-              style: theme.textTheme.bodySmall,
-              overflow: TextOverflow.ellipsis,
-            )
-          : Text(
-              file.path,
-              style: theme.textTheme.bodySmall,
-              overflow: TextOverflow.ellipsis,
-            ),
+      subtitle: Text(
+        file.path,
+        style: theme.textTheme.bodySmall,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 }
@@ -393,7 +361,6 @@ class _NothingCatalogued extends StatelessWidget {
 extension FileTypeLabel on FileType {
   /// The localized name of this type.
   String label(AppLocalizations l10n) => switch (this) {
-    FileType.audio => l10n.destinationMusic,
     FileType.video => l10n.destinationVideos,
     FileType.document => l10n.destinationBooks,
     FileType.comic => l10n.destinationComicBooks,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// The colors the players are drawn on (UC-19, UC-20, FR-UX-07).
+/// The colors the players are drawn on (UC-19, FR-UX-07).
 ///
 /// A theme extension rather than literals in the player, because BR-18 puts
 /// every color in `lib/core/theme/` and this one genuinely is not in the

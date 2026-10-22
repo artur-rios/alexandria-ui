@@ -7,7 +7,6 @@
 // boundary and so is the last rule that should be switched off here. Every
 // reply the protocol guarantees goes through [_reply] instead.
 
-import 'core_environment.dart';
 import 'core_isolate.dart';
 
 /// The application's view of the Alexandria core.
@@ -18,7 +17,7 @@ import 'core_isolate.dart';
 /// each use case adds its own gateway over the same [CoreIsolate], rather than
 /// this class growing a method per call.
 abstract interface class CoreClient {
-  /// The core's version string, e.g. `0.4.0`.
+  /// The core's version string, e.g. `0.5.0`.
   Future<String?> version();
 
   /// The core's health status code. `200` when healthy — see
@@ -27,18 +26,7 @@ abstract interface class CoreClient {
 
   /// Initializes the core against [databasePath], creating and migrating the
   /// database on demand. Returns the core's status code.
-  ///
-  /// [musicLookup] is the owner's music-enrichment choice, applied to the
-  /// core's environment immediately before the call that reads it (music
-  /// enrichment design). A parameter rather than a separate "configure" call
-  /// because the core reads its settings exactly once, at this call: anything
-  /// that has to be decided before enrichment works has to be decided here or
-  /// not at all, and a caller that could initialize without saying would be a
-  /// caller that could silently leave the feature off.
-  Future<int> initialize(
-    String databasePath, {
-    required MusicLookup musicLookup,
-  });
+  Future<int> initialize(String databasePath);
 
   /// Authenticates through `alexandria_auth_local_login` (FR-AU-04).
   ///
@@ -118,7 +106,7 @@ abstract interface class CoreClient {
   /// default (`"normal"`) rather than a value this client had to choose.
   ///
   /// [types] is the run's scope: the `FileType` wire names the run records,
-  /// comma-separated (`"audio,image"`). Null means every type, which is what
+  /// comma-separated (`"video,image"`). Null means every type, which is what
   /// the core reads an absent scope as — so it is passed as null and never as
   /// `""`, and a name the core does not know is refused rather than ignored.
   ///
@@ -196,7 +184,7 @@ abstract interface class CoreClient {
   /// (FR-CT-02, UC-09).
   ///
   /// [jsonFilters] is the body the core's matching HTTP route takes —
-  /// `{"type":"audio","state":"active"}`.
+  /// `{"type":"video","state":"active"}`.
   Future<CoreJsonResponse> filesList(String jsonFilters, String token);
 
   /// Reads one file by its UUID through `alexandria_file_get_by_uuid`
@@ -235,14 +223,6 @@ abstract interface class CoreClient {
   /// because it lives inside the archive, and it is bounded — which is what
   /// lets the archive be read without being extracted to disk.
   Future<CoreJsonResponse> comicPage(String uuid, int page, String token);
-
-  /// Reads the picture embedded in an audio, video, image or comic file
-  /// through `alexandria_file_thumbnail` (FR-PL-07, FR-MP-05, UC-21).
-  ///
-  /// Answers `{uuid, mimeType, bytesBase64}`. A file with no embedded picture
-  /// answers `InvalidInput`, which is common rather than exceptional — see
-  /// `AlbumCoverController`, the one caller today.
-  Future<CoreJsonResponse> fileThumbnail(String uuid, String token);
 
   /// Reads a text file's content from disk through
   /// `alexandria_file_read_content` (FR-ME-06, UC-18).
@@ -463,51 +443,6 @@ abstract interface class CoreClient {
   /// per episode — and UC-29 and UC-30 are what present it.
   Future<CoreJsonResponse> watchlistsList(String jsonFilters, String token);
 
-  /// Creates a named, empty playlist through `alexandria_playlist_create`
-  /// (playlists Task 1).
-  ///
-  /// [jsonBody] is the body the core's matching HTTP route takes — `{"name":…}`.
-  Future<CoreJsonResponse> playlistCreate(String jsonBody, String token);
-
-  /// Renames a playlist through `alexandria_playlist_rename` (playlists
-  /// Task 2). Its entries and their order are untouched.
-  Future<CoreJsonResponse> playlistRename(
-    String uuid,
-    String jsonBody,
-    String token,
-  );
-
-  /// Deletes a playlist through `alexandria_playlist_delete` (playlists
-  /// Task 3).
-  ///
-  /// Its entries go with it; the audio files they point at are preserved.
-  Future<CoreJsonResponse> playlistDelete(String uuid, String token);
-
-  /// Lists every persisted playlist, without their entries, through
-  /// `alexandria_playlists_list` (playlists Task 6). [playlistRead] is what
-  /// reads one playlist's tracks.
-  Future<CoreJsonResponse> playlistsList(String token);
-
-  /// Reads a playlist back with its entries, in position order, through
-  /// `alexandria_playlist_read` (playlists Task 6).
-  Future<CoreJsonResponse> playlistRead(String uuid, String token);
-
-  /// Records that a track was played, through `alexandria_play_record`
-  /// (play history design).
-  ///
-  /// [jsonBody] carries the `fileUuid`, and nothing else: the core stamps
-  /// the moment from its own clock, so this application says what was
-  /// played and never when.
-  Future<CoreJsonResponse> playRecord(String jsonBody, String token);
-
-  /// What was played most, through `alexandria_music_stats` (play history
-  /// design).
-  ///
-  /// [jsonQuery] carries an optional `limit` — how many rows each ranking
-  /// answers with. One call rather than one per ranking: they are read
-  /// together, and separate calls could each see a different instant.
-  Future<CoreJsonResponse> musicStats(String jsonQuery, String token);
-
   /// Treats a folder as a library through `alexandria_library_register`
   /// (libraries design).
   ///
@@ -547,95 +482,6 @@ abstract interface class CoreClient {
   ///
   /// The files are kept and return to the type panels.
   Future<CoreJsonResponse> libraryRemove(String uuid, String token);
-
-  /// Runs music enrichment through `alexandria_enrichment_run` (music
-  /// enrichment design).
-  ///
-  /// [scopeJson] names what to enrich — an empty string sweeps everything
-  /// not yet looked up, `{"fileUuid":…}` scopes it to one track,
-  /// `{"artist":…}` to one artist.
-  ///
-  /// **The one call in this application that reaches the network**, and the
-  /// only one that is slow by design: MusicBrainz is rate-limited to one
-  /// request per second, so a sweep over a large library runs for hours.
-  /// Every other call here returns in milliseconds; this one must never be
-  /// awaited anywhere a frame is waiting on it.
-  Future<CoreJsonResponse> enrichmentRun(String scopeJson, String token);
-
-  /// Reads what enrichment stored for one track through
-  /// `alexandria_enrichment_read_track`.
-  ///
-  /// [artist] is whose image to read — the caller is already showing the
-  /// track and holding its tags, so passing the name costs nothing where
-  /// resolving it again would be a second lookup. Makes no network call and
-  /// works whether or not enrichment is switched on.
-  Future<CoreJsonResponse> enrichmentReadTrack(
-    String uuid,
-    String artist,
-    String token,
-  );
-
-  /// Reads the photograph stored for an artist, by name, through
-  /// `alexandria_artist_image` (FR-PL-15).
-  ///
-  /// A read: it never reaches the network, which is what makes it safe to
-  /// call once per row of an artists list.
-  Future<CoreJsonResponse> artistImage(String name, String token);
-
-  /// Looks an artist's photograph up through `alexandria_artist_image_fetch`
-  /// (FR-PL-15).
-  ///
-  /// **Reaches the network**, once, for one artist — and not at all for an
-  /// artist already looked up, found or not. Never awaited anywhere a frame
-  /// is waiting on it.
-  Future<CoreJsonResponse> artistImageFetch(String name, String token);
-
-  /// Reads a track's energy envelope through `alexandria_track_energy`
-  /// (UC-21, FR-MP-07).
-  ///
-  /// **The first call for a track decodes it**, which is a second or two of
-  /// the core's CPU — every call after it is a read of what was stored. It is
-  /// on the isolate like every other call, so a slow first answer costs the
-  /// interface nothing but the wait.
-  Future<CoreJsonResponse> trackEnergy(String uuid, String token);
-
-  /// Appends tracks to a playlist through `alexandria_playlist_add_entries`
-  /// (playlists Task 4).
-  ///
-  /// [jsonBody] carries the file uuids, in the order they land at consecutive
-  /// positions after whatever the playlist already holds. The whole slice
-  /// succeeds or none of it does.
-  Future<CoreJsonResponse> playlistAddEntries(
-    String uuid,
-    String jsonBody,
-    String token,
-  );
-
-  /// Removes one entry from a playlist through
-  /// `alexandria_playlist_remove_entry` (playlists Task 4).
-  ///
-  /// [entryUuid] addresses the entry itself, never the file it points at or
-  /// its position: a playlist may hold the same track more than once, which
-  /// is what makes an index or a file uuid ambiguous here.
-  Future<CoreJsonResponse> playlistRemoveEntry(
-    String uuid,
-    String entryUuid,
-    String token,
-  );
-
-  /// Moves one playlist entry to a new position through
-  /// `alexandria_playlist_move_entry` (playlists Task 5), renumbering the
-  /// rest in one transaction.
-  ///
-  /// [entryUuid] addresses the entry the same way [playlistRemoveEntry]'s
-  /// does. [jsonBody] is the body the core's matching HTTP route takes —
-  /// `{"toIndex":…}`.
-  Future<CoreJsonResponse> playlistMoveEntry(
-    String uuid,
-    String entryUuid,
-    String jsonBody,
-    String token,
-  );
 
   /// Releases the worker isolate and the shared library.
   Future<void> dispose();
@@ -703,20 +549,8 @@ class FfiCoreClient implements CoreClient {
       _reply<int>(await _isolate.call('healthStatus'));
 
   @override
-  Future<int> initialize(
-    String databasePath, {
-    required MusicLookup musicLookup,
-  }) async => _reply<int>(
-    // Sent apart rather than as one object: what crosses to the isolate is a
-    // plain list of primitives everywhere else in this class, and a value
-    // type in the middle of it would be the only thing here relying on what
-    // Dart can send between isolates.
-    await _isolate.call('init', [
-      databasePath,
-      musicLookup.enabled,
-      musicLookup.contact,
-    ]),
-  );
+  Future<int> initialize(String databasePath) async =>
+      _reply<int>(await _isolate.call('init', [databasePath]));
 
   @override
   Future<CoreJsonResponse> authLocalLogin(String jsonBody) async =>
@@ -849,12 +683,6 @@ class FfiCoreClient implements CoreClient {
   ) async => _reply<CoreJsonResponse>(
     await _isolate.call('comicPage', [uuid, page, token]),
   );
-
-  @override
-  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('fileThumbnail', [uuid, token]),
-      );
 
   @override
   Future<CoreJsonResponse> fileReadContent(String uuid, String token) async =>
@@ -1119,51 +947,6 @@ class FfiCoreClient implements CoreClient {
   );
 
   @override
-  Future<CoreJsonResponse> playlistCreate(
-    String jsonBody,
-    String token,
-  ) async => _reply<CoreJsonResponse>(
-    await _isolate.call('playlistCreate', [jsonBody, token]),
-  );
-
-  @override
-  Future<CoreJsonResponse> playlistRename(
-    String uuid,
-    String jsonBody,
-    String token,
-  ) async => _reply<CoreJsonResponse>(
-    await _isolate.call('playlistRename', [uuid, jsonBody, token]),
-  );
-
-  @override
-  Future<CoreJsonResponse> playlistDelete(String uuid, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('playlistDelete', [uuid, token]),
-      );
-
-  @override
-  Future<CoreJsonResponse> playlistsList(String token) async =>
-      _reply<CoreJsonResponse>(await _isolate.call('playlistsList', [token]));
-
-  @override
-  Future<CoreJsonResponse> playlistRead(String uuid, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('playlistRead', [uuid, token]),
-      );
-
-  @override
-  Future<CoreJsonResponse> playRecord(String jsonBody, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('playRecord', [jsonBody, token]),
-      );
-
-  @override
-  Future<CoreJsonResponse> musicStats(String jsonQuery, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('musicStats', [jsonQuery, token]),
-      );
-
-  @override
   Future<CoreJsonResponse> libraryRegister(
     String jsonBody,
     String token,
@@ -1198,74 +981,6 @@ class FfiCoreClient implements CoreClient {
       _reply<CoreJsonResponse>(
         await _isolate.call('libraryRemove', [uuid, token]),
       );
-
-  @override
-  Future<CoreJsonResponse> enrichmentRun(
-    String scopeJson,
-    String token,
-  ) async => _reply<CoreJsonResponse>(
-    await _isolate.call('enrichmentRun', [scopeJson, token]),
-  );
-
-  @override
-  Future<CoreJsonResponse> enrichmentReadTrack(
-    String uuid,
-    String artist,
-    String token,
-  ) async => _reply<CoreJsonResponse>(
-    await _isolate.call('enrichmentReadTrack', [uuid, artist, token]),
-  );
-
-  @override
-  Future<CoreJsonResponse> artistImage(String name, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('artistImage', [name, token]),
-      );
-
-  @override
-  Future<CoreJsonResponse> artistImageFetch(String name, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('artistImageFetch', [name, token]),
-      );
-
-  @override
-  Future<CoreJsonResponse> trackEnergy(String uuid, String token) async =>
-      _reply<CoreJsonResponse>(
-        await _isolate.call('trackEnergy', [uuid, token]),
-      );
-
-  @override
-  Future<CoreJsonResponse> playlistAddEntries(
-    String uuid,
-    String jsonBody,
-    String token,
-  ) async => _reply<CoreJsonResponse>(
-    await _isolate.call('playlistAddEntries', [uuid, jsonBody, token]),
-  );
-
-  @override
-  Future<CoreJsonResponse> playlistRemoveEntry(
-    String uuid,
-    String entryUuid,
-    String token,
-  ) async => _reply<CoreJsonResponse>(
-    await _isolate.call('playlistRemoveEntry', [uuid, entryUuid, token]),
-  );
-
-  @override
-  Future<CoreJsonResponse> playlistMoveEntry(
-    String uuid,
-    String entryUuid,
-    String jsonBody,
-    String token,
-  ) async => _reply<CoreJsonResponse>(
-    await _isolate.call('playlistMoveEntry', [
-      uuid,
-      entryUuid,
-      jsonBody,
-      token,
-    ]),
-  );
 
   @override
   Future<void> dispose() => _isolate.dispose();
