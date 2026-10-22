@@ -512,7 +512,7 @@ struct IndexStartResult alexandria_index_refresh_start(const char *token, const 
 int64_t alexandria_index_count_files(void);
 
 /**
- * Edit a file's type-specific metadata (UC-04 / FR-FC-14..18).
+ * Edit a file's type-specific metadata (UC-04 / FR-FC-15..18).
  *
  * `uuid` is the file's public UUID string; `json_patch` is the JSON body
  * (the `SubtypeMetadata` enum, internally tagged by `type`) that HTTP would

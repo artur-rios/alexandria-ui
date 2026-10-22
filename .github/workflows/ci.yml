@@ -30,16 +30,15 @@ env:
   # commit two moves out of date, directly above the comment explaining the
   # current one. The pin's own comment moves with the pin.
   CORE_REPOSITORY: artur-rios/alexandria-api
-  # The 0.5 core, merged as alexandria-api#137: music and audio are gone from
-  # it, so it has no playlist, play, music-stats, enrichment, artist-image or
-  # track-energy exports, rejects `audio` as a type or index scope, and its
-  # migration 25 deletes the music an older install stored. This application
-  # accepts `>=0.5.0 <0.6.0` and refuses the 0.4 core the earlier pin named.
-  # Everything that pin was chosen for still holds: it is an ancestor of this
-  # one. The pin and the vendored header move together — the drift check
-  # below is exactly the guard against them moving apart, and this core's
-  # header is byte-identical to the one committed.
-  CORE_REF: ab69754b66e54a0e6ee8fcb3959bd5c65c4904be
+  # The 0.5 core with the music-removal follow-ups, merged as
+  # alexandria-api#140: its migration 26 deletes the run failures earlier runs
+  # recorded on audio files, which migration 25 left behind. The version is
+  # still 0.5.0 and no export changed; the header differs from the previous
+  # pin's (alexandria-api#137, an ancestor of this one) only in one doc
+  # comment, re-vendored here. This application accepts `>=0.5.0 <0.6.0`.
+  # The pin and the vendored header move together — the drift check below is
+  # exactly the guard against them moving apart.
+  CORE_REF: 1353826aca82db16d116483646a3c41c5a10f781
 
   # Pinned rather than "whatever stable is today", because pubspec.lock is
   # committed and is the real pin: the Flutter SDK constrains its own pinned
