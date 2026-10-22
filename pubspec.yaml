@@ -137,7 +137,7 @@ dev_dependencies:
   # sufficient -- re-checked on Dart 3.13.1, where resolution still fails, on
   # analyzer rather than on the SDK. This moves when custom_lint does.
   freezed: ^3.2.3
-  ffigen: ^21.0.0
+  ffigen: ^23.0.0
   json_serializable: ^6.11.2
 
   # Test doubles for the gateway interfaces. The only mocking library in the
