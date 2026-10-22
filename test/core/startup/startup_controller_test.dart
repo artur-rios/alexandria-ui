@@ -106,6 +106,21 @@ void main() {
         expect(state.failure.coreStatusCode, 3);
       },
     );
+
+    test(
+      'GivenTheInitializeCallThrows_WhenStartupRuns_ThenItFailsAtStepFive',
+      () async {
+        // The call itself failing, rather than answering a status: no code
+        // came back, so the failure carries -1 instead of one.
+        final state = await runStartup(
+          core: FakeCoreClient(failOnInitialize: true),
+        );
+
+        expect((state as StartupFailed).step, StartupStep.initializingCore);
+        expect(state.failure, isA<CoreInitializationFailedFailure>());
+        expect(state.failure.coreStatusCode, -1);
+      },
+    );
   });
 
   group('step 4 — verifying health and version', () {

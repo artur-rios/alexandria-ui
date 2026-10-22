@@ -165,12 +165,7 @@ class FakeCoreClient implements CoreClient {
   final bool failOnHealth;
 
   /// Whether [initialize] throws instead of returning.
-  ///
-  /// Not final, unlike its siblings: `initialize` is the one call this
-  /// application makes *twice* — once at startup and again when the owner
-  /// changes the music-lookup preference — so a test needs a core that
-  /// accepted the first and refuses the second.
-  bool failOnInitialize;
+  final bool failOnInitialize;
 
   /// What [authLocalLogin] returns. Defaults to a successful login.
   final CoreJsonResponse authLocalLoginResult;

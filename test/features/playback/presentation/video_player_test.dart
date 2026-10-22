@@ -182,6 +182,48 @@ void main() {
       expect(opened.player.seeks, [const Duration(seconds: 70)]);
     });
 
+    // Where the video has got to, beside the slider. The only assertions on
+    // this label lived in the audio player's tests, which went with audio.
+    testWidgets(
+      'GivenPlayback_WhenThePositionIsReported_ThenItAndTheLengthShow',
+      (tester) async {
+        final opened = await openPlayer(tester);
+        opened.player.reportPosition(
+          const Duration(minutes: 1, seconds: 5),
+          duration: const Duration(minutes: 4, seconds: 30),
+        );
+        await tester.pumpAndSettle();
+
+        expect(inPlayer(find.text('01:05')), findsOneWidget);
+        expect(inPlayer(find.text('04:30')), findsOneWidget);
+      },
+    );
+
+    testWidgets('GivenAVideoPastTheHour_WhenItIsPlaying_ThenTheHoursShow', (
+      tester,
+    ) async {
+      final opened = await openPlayer(tester);
+      opened.player.reportPosition(
+        const Duration(hours: 1, minutes: 2, seconds: 3),
+        duration: const Duration(hours: 2, minutes: 41),
+      );
+      await tester.pumpAndSettle();
+
+      expect(inPlayer(find.text('1:02:03')), findsOneWidget);
+      expect(inPlayer(find.text('2:41:00')), findsOneWidget);
+    });
+
+    testWidgets('GivenNoKnownLength_WhenItIsPlaying_ThenTheLengthIsBlank', (
+      tester,
+    ) async {
+      final opened = await openPlayer(tester);
+      opened.player.reportPosition(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+
+      expect(inPlayer(find.text('00:03')), findsOneWidget);
+      expect(inPlayer(find.text('--:--')), findsOneWidget);
+    });
+
     testWidgets('GivenPlaybackNearTheStart_WhenSeekingBack_ThenItStopsAtZero', (
       tester,
     ) async {
