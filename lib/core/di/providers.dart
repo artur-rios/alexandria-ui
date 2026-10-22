@@ -427,7 +427,7 @@ final runFailuresProvider =
 
 /// The most recently added files, for the dashboard (UC-14).
 final recentFilesProvider =
-    AsyncNotifierProvider<RecentFilesController, List<FileDetails>>(
+    AsyncNotifierProvider<RecentFilesController, List<CatalogFile>>(
       RecentFilesController.new,
     );
 
@@ -489,11 +489,8 @@ final videoPlaybackControllerProvider =
       VideoPlaybackController.new,
     );
 
-/// The players, of which at most one runs at a time (FR-PL-08).
-///
-/// The registry UC-19 AF-05 is read from, and the one sign-out stops: a player
-/// added here is stopped by every other one starting, and no controller has to
-/// know the others exist.
+/// The players the session can have running, which sign-out stops (UC-03
+/// main flow step 2). The video player is the only one (`PlaybackSession`).
 final playbackSessionsProvider = Provider<List<PlaybackSession>>(
   (ref) => [VideoPlaybackSession(ref)],
 );

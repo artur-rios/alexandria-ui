@@ -4,7 +4,7 @@ import '../../../core/failures/failure.dart';
 
 part 'playback_source.freezed.dart';
 
-/// Everything a local player needs to open a file (FR-PL-01, FR-PL-05).
+/// Everything a local player needs to open a file (FR-PL-01).
 ///
 /// A path rather than bytes: the core's own note on
 /// `alexandria_file_playback_source` says the FFI surface carries no stream,
@@ -30,12 +30,12 @@ sealed class PlaybackSourceOutcome with _$PlaybackSourceOutcome {
     required PlaybackSource source,
   }) = PlaybackSourceResolved;
 
-  /// The core could not (UC-19 AF-01, UC-20 AF-01).
+  /// The core could not (UC-19 AF-01).
   const factory PlaybackSourceOutcome.failed({required Failure failure}) =
       PlaybackSourceFailed;
 }
 
-/// Where a file is, for a player to open (FR-PL-01, FR-PL-05).
+/// Where a file is, for a player to open (FR-PL-01).
 abstract interface class PlaybackSourceGateway {
   /// Resolves the file [uuid] identifies to something a player can open.
   Future<PlaybackSourceOutcome> resolve({

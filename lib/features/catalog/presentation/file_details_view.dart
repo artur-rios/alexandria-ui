@@ -180,9 +180,9 @@ class _Details extends ConsumerWidget {
                   label: Text(l10n.videoPlay),
                 ),
 
-              // UC-15 and UC-16 main flow step 1. Offered for the two types
-              // there is a form for, and not for a deleted record, which the
-              // core refuses to edit until it is restored. The remaining
+              // UC-16 main flow step 1. Offered for video, the one type there
+              // is a form for, and not for a deleted record, which the core
+              // refuses to edit until it is restored. The remaining
               // editable subtypes — document, comic, image — have no use case
               // in the backlog, so they are deliberately absent rather than
               // pending.
@@ -235,7 +235,7 @@ class _Details extends ConsumerWidget {
               // to delete, which is why this is offered for an active one
               // only. Last in the group, because it is the one action here
               // that takes the file out of the library.
-              if (!details.isDeleted) DeleteFileButton(details: details),
+              if (!details.isDeleted) DeleteFileButton(file: details.file),
             ],
           ),
 

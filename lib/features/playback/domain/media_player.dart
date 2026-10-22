@@ -102,7 +102,7 @@ abstract interface class MediaPlayer {
   /// The last status the engine reported.
   PlaybackStatus get currentStatus;
 
-  /// Opens [path] and begins playing from [startAt] (FR-PL-01, FR-PL-05).
+  /// Opens [path] and begins playing from [startAt] (FR-PL-01).
   Future<void> open(String path, {Duration startAt = Duration.zero});
 
   /// Resumes (FR-PL-02).

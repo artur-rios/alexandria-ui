@@ -6,7 +6,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../library_sources/presentation/library_sources_screen.dart';
 import '../../shell/presentation/async_state_view.dart';
-import '../domain/file_details.dart';
+import '../domain/catalog_file.dart';
 import '../application/dashboard_controller.dart';
 import '../application/in_progress.dart';
 import '../domain/file_type.dart';
@@ -74,15 +74,15 @@ class _RecentSection extends ConsumerWidget {
       title: l10n.dashboardRecent,
       child: SizedBox(
         height: 220,
-        child: AsyncStateView<List<FileDetails>>(
+        child: AsyncStateView<List<CatalogFile>>(
           value: ref.watch(recentFilesProvider),
           onRetry: () => ref.read(recentFilesProvider.notifier).reload(),
-          isEmpty: (rows) => rows.isEmpty,
+          isEmpty: (files) => files.isEmpty,
           emptyBuilder: (context) => _Quiet(l10n.dashboardRecentNone),
-          builder: (context, rows) => ListView.builder(
-            itemCount: rows.length,
+          builder: (context, files) => ListView.builder(
+            itemCount: files.length,
             itemBuilder: (context, index) {
-              final file = rows[index].file;
+              final file = files[index];
 
               return ListTile(
                 dense: true,

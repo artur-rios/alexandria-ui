@@ -18,5 +18,5 @@ class VideoFileHold implements FileHold {
 
   @override
   Future<void> release() =>
-      _ref.read(videoPlaybackControllerProvider.notifier).stopForOtherMedium();
+      _ref.read(videoPlaybackControllerProvider.notifier).closeIfOpen();
 }

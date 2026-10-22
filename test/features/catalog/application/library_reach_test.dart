@@ -195,6 +195,6 @@ void main() {
 
     final recent = await sut.ref.read(recentFilesProvider.future);
 
-    expect(recent.map((row) => row.file.name), ['manual.pdf']);
+    expect(recent.map((file) => file.name), ['manual.pdf']);
   });
 }
