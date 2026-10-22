@@ -72,3 +72,48 @@ dependencies:
   # as ffmpeg, and were as absent from this list.
   - libmpv2
   - libgtk-3-0t64
+
+# The saved-page engine runs only inside Chromium's sandbox, which needs
+# unprivileged user namespaces (third_party/webview_cef/FORK.md). Ubuntu 23.10
+# and later, 24.04 included, restrict them through AppArmor, so without this
+# the engine never starts and pages are drawn as widgets. The profile grants
+# the executable user namespaces and confines nothing else, the way Ubuntu's
+# own profile does for Chrome. Written only where AppArmor 4, the release that
+# brought the restriction, is installed. install.sh writes the same profile
+# under its own name when it is run as root.
+#
+# Written by the maintainer script rather than shipped as a file because
+# flutter_distributor packages the bundle and nothing else. Each entry is shell,
+# appended to the postinst/postrm flutter_distributor generates.
+postinstall_scripts:
+  - |
+    if [ -f /etc/apparmor.d/abi/4.0 ] && command -v apparmor_parser > /dev/null 2>&1; then
+      cat > /etc/apparmor.d/alexandria <<'PROFILE'
+    # Installed by the alexandria package. Lets the saved-page engine create the
+    # user namespaces Chromium's sandbox runs in.
+    abi <abi/4.0>,
+    include <tunables/global>
+
+    profile alexandria /opt/alexandria/alexandria flags=(unconfined) {
+      userns,
+
+      include if exists <local/alexandria>
+    }
+    PROFILE
+      chmod 644 /etc/apparmor.d/alexandria
+      apparmor_parser -r -T -W /etc/apparmor.d/alexandria > /dev/null 2>&1 || true
+    fi
+
+# Only on remove and purge. On upgrade the old postrm runs first and the new
+# postinst rewrites the profile straight after, so removing it there would
+# only open a window in which it is missing.
+postuninstall_scripts:
+  - |
+    if [ "$1" = remove ] || [ "$1" = purge ]; then
+      if [ -f /etc/apparmor.d/alexandria ]; then
+        if command -v apparmor_parser > /dev/null 2>&1; then
+          apparmor_parser -R /etc/apparmor.d/alexandria > /dev/null 2>&1 || true
+        fi
+        rm -f /etc/apparmor.d/alexandria
+      fi
+    fi

@@ -64,7 +64,11 @@ Options:
 
 Default install directory:
   /opt/${LAUNCHER_NAME}                  when run as root
-  \$HOME/.local/share/${LAUNCHER_NAME}    otherwise
+  \$HOME/.local/opt/${LAUNCHER_NAME}      otherwise
+
+Run as root on Ubuntu 23.10 or later, it also installs an AppArmor profile
+letting the saved-page engine create the user namespaces its sandbox needs.
+--uninstall removes it again.
 
 An existing installation in the chosen directory is replaced. An installation
 recorded somewhere else is offered for removal, so that changing the directory
@@ -187,6 +191,72 @@ absolute_path() {
   printf '%s' "$_path"
 }
 
+# ----------------------------------------------------------------- apparmor
+
+# The saved-page engine runs only inside Chromium's sandbox, which needs
+# unprivileged user namespaces (third_party/webview_cef/FORK.md). Ubuntu 23.10
+# and later restrict those through AppArmor, so there the engine never starts
+# and pages are drawn as widgets. A profile naming the executable grants them
+# back, the way Ubuntu's own profile does for Chrome: it confines nothing and
+# only says this program may create user namespaces.
+#
+# Root only, because a profile applies to the whole machine. And only where
+# AppArmor 4 is installed, the release that brought the restriction:
+# elsewhere there is nothing to grant. The .deb writes the same profile for
+# /opt/alexandria under its own name (linux/packaging/deb/make_config.yaml).
+APPARMOR_PROFILE_NAME="${LAUNCHER_NAME}-install"
+APPARMOR_PROFILE="/etc/apparmor.d/${APPARMOR_PROFILE_NAME}"
+
+apparmor_restricts_userns() {
+  [ -f /etc/apparmor.d/abi/4.0 ] && command -v apparmor_parser > /dev/null 2>&1
+}
+
+# write_apparmor_profile EXECUTABLE
+# Writes and loads the profile for EXECUTABLE. Fails, writing nothing, when
+# not root, when AppArmor does not restrict user namespaces here, or when the
+# path holds a character AppArmor would read as a pattern.
+write_apparmor_profile() {
+  _exe=$1
+  is_root || return 1
+  apparmor_restricts_userns || return 1
+  case $_exe in
+    *\\* | *\"* | *\** | *\?* | *\[* | *\]* | *\{* | *\}* | *\^* | *@*)
+      warn "${_exe} holds a character AppArmor reads as a pattern, so no profile was written; saved pages will be drawn without the browser engine"
+      return 1
+      ;;
+  esac
+
+  cat > "$APPARMOR_PROFILE" <<PROFILE
+# Written by the ${APP_NAME} installer. Lets the saved-page engine create the
+# user namespaces Chromium's sandbox runs in. Removed by --uninstall.
+abi <abi/4.0>,
+include <tunables/global>
+
+profile ${APPARMOR_PROFILE_NAME} "${_exe}" flags=(unconfined) {
+  userns,
+
+  include if exists <local/${APPARMOR_PROFILE_NAME}>
+}
+PROFILE
+  chmod 644 "$APPARMOR_PROFILE"
+
+  # Recorded even when loading fails: the file is there, and the next boot
+  # loads it.
+  apparmor_parser -r -T -W "$APPARMOR_PROFILE" > /dev/null 2>&1 \
+    || warn "the AppArmor profile ${APPARMOR_PROFILE} was written but could not be loaded; it takes effect at the next boot"
+  return 0
+}
+
+# Takes a profile out of the kernel before its file is removed, so the
+# executable it named is restricted again straight away rather than at the
+# next boot.
+unload_apparmor_profile() {
+  [ -f "$1" ] || return 0
+  if command -v apparmor_parser > /dev/null 2>&1; then
+    apparmor_parser -R "$1" > /dev/null 2>&1 || true
+  fi
+}
+
 # ---------------------------------------------------------------- manifests
 
 # manifest_value KEY FILE
@@ -216,6 +286,10 @@ remove_recorded_install() {
 
   while IFS= read -r _line; do
     case $_line in
+      file=/etc/apparmor.d/*)
+        unload_apparmor_profile "${_line#file=}"
+        rm -f "${_line#file=}" || true
+        ;;
       file=*) rm -f "${_line#file=}" || true ;;
     esac
   done < "$_manifest"
@@ -435,6 +509,11 @@ DESKTOP
 fi
 chmod 644 "$desktop_entry"
 
+apparmor_profile=""
+if write_apparmor_profile "$prefix/$EXE_NAME"; then
+  apparmor_profile=$APPARMOR_PROFILE
+fi
+
 # Written last, and only now: a manifest recorded before the install finished
 # would claim files that a failure meant were never written.
 mkdir -p "$(dirname "$MANIFEST")"
@@ -463,6 +542,9 @@ mkdir -p "$(dirname "$MANIFEST")"
   if [ -n "$icon_file" ]; then
     printf 'file=%s\n' "$icon_file"
   fi
+  if [ -n "$apparmor_profile" ]; then
+    printf 'file=%s\n' "$apparmor_profile"
+  fi
 } > "$MANIFEST"
 
 if command -v update-desktop-database > /dev/null 2>&1; then
@@ -483,6 +565,9 @@ log "  Launcher:    ${launcher}"
 log "  Menu entry:  ${desktop_entry}"
 if [ -n "$icon_file" ]; then
   log "  Icon:        ${icon_file}"
+fi
+if [ -n "$apparmor_profile" ]; then
+  log "  AppArmor:    ${apparmor_profile}"
 fi
 log "  Record:      ${MANIFEST}"
 log ""

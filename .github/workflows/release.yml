@@ -576,7 +576,22 @@ jobs:
 
           sudo apt-get install -y "./$package"
           test -x /opt/alexandria/alexandria
+
+          # The runner is an Ubuntu that restricts user namespaces through
+          # AppArmor, so installing must have left the page engine's profile
+          # behind (make_config.yaml), in a form the parser accepts, and
+          # removing the package must take it away again.
+          test -f /etc/apparmor.d/alexandria || {
+            echo "::error::the .deb installed no AppArmor profile; saved pages would never reach the browser engine on Ubuntu"
+            exit 1
+          }
+          sudo apparmor_parser --skip-kernel-load -T /etc/apparmor.d/alexandria
+
           sudo apt-get remove -y alexandria
+          test ! -e /etc/apparmor.d/alexandria || {
+            echo "::error::removing the .deb left its AppArmor profile behind"
+            exit 1
+          }
 
       # Taken now, while the bundle is still pristine. The Flatpak is built at
       # the end of the job, by which point the directory it would otherwise
@@ -755,6 +770,16 @@ jobs:
           test -f "$prefix/unrelated.txt"
 
           rm -rf "$prefix"
+
+          # As root it also writes the page engine's AppArmor profile, which
+          # only --uninstall may take away again.
+          root_prefix=/opt/alexandria-smoke
+          sudo "./$installer" --prefix "$root_prefix" --yes
+          test -f /etc/apparmor.d/alexandria-install
+          sudo apparmor_parser --skip-kernel-load -T /etc/apparmor.d/alexandria-install
+          sudo "./$installer" --uninstall --yes
+          test ! -e /etc/apparmor.d/alexandria-install
+          test ! -e "$root_prefix/alexandria"
 
       # From the same staged payload the tarball is made from, so the two carry
       # identical contents and whatever is verified for one holds for the

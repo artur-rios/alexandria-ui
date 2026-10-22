@@ -327,21 +327,34 @@ as deliberately deferred, to be settled before the first public release; until
 then, packages are produced unsigned, and the 0.x releases that carry them are
 published as prereleases. Neither blocks any use case.
 
-**Deferred decision — the page engine's sandbox on Linux packages.** The
-saved-page engine (UC-25) runs only inside Chromium's sandbox, and the
-application draws the page without it, as widgets, on a machine where that
-sandbox cannot run (NFR-12; `third_party/webview_cef/FORK.md`). On Linux the
-sandbox needs unprivileged user namespaces, or the setuid helper
-`lib/chrome-sandbox` installed owned by root with mode 4755. Ubuntu 23.10 and
-later — including 24.04, which the `.deb` targets — restrict user namespaces
-through AppArmor by default, so on a default Ubuntu desktop every package
-currently falls back to the widget renderer, and the viewer says why. Two fixes
-need root at install time, so they belong in the `.deb` (and the installer when
-it is run as root): an AppArmor profile granting the application `userns`, the
-way Ubuntu ships one for Chrome, or the setuid helper. Which one the project
-ships is the owner's decision; neither is in the packages yet. The Flatpak
-cannot nest user namespaces and the AppImage cannot carry a setuid helper, so
-those two rely on the host allowing user namespaces. On Windows the engine is
+**The page engine's sandbox on Linux packages.** The saved-page engine (UC-25)
+runs only inside Chromium's sandbox, and the application draws the page without
+it, as widgets, on a machine where that sandbox cannot run (NFR-12;
+`third_party/webview_cef/FORK.md`). On Linux the sandbox needs unprivileged user
+namespaces, or the setuid helper `lib/chrome-sandbox` installed owned by root
+with mode 4755. Ubuntu 23.10 and later — including 24.04, which the `.deb`
+targets — restrict user namespaces through AppArmor by default.
+
+The project ships an AppArmor profile rather than the setuid helper: it grants
+the executable `userns` and confines nothing else, the way Ubuntu's own profile
+for Chrome does, and puts no setuid-root binary on the machine. Writing it needs
+root, so it is done where root is available:
+
+- The `.deb`'s postinst writes `/etc/apparmor.d/alexandria` for
+  `/opt/alexandria/alexandria` and loads it; removing or purging the package
+  unloads and deletes it (`linux/packaging/deb/make_config.yaml`).
+- The installer, run as root, writes `/etc/apparmor.d/alexandria-install` for the
+  executable in its prefix, records it in its manifest, and `--uninstall` unloads
+  and deletes it. A prefix holding a character AppArmor reads as a pattern gets
+  no profile, with a warning.
+- Both act only where AppArmor 4 (the release that brought the restriction) is
+  installed; elsewhere there is nothing to grant.
+
+The installer run as an ordinary user, the tarball and the AppImage cannot
+write a system profile, so on a restricted Ubuntu those fall back to widgets,
+and the viewer says why. The Flatpak cannot nest user namespaces at all. The
+release workflow checks that the `.deb` and the root installer leave a profile
+the parser accepts and take it away again. On Windows the engine is
 not started at all until the runner is launched through CEF's sandbox
 bootstrap.
 
