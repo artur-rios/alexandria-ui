@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   sign-in tries again. A folder that mixed music with other types stays and drops music from what it indexes. Once no
   folder names music, a sign-in changes nothing. Files on disk are never touched.
 - Video keeps its sound and its audio-track selection; the audio-only playback libraries are no longer bundled.
+- On Ubuntu 23.10 and later, saved pages open in the browser engine again when Alexandria is installed from the `.deb`
+  or by the installer run as root. Both now install an AppArmor profile that lets the engine create the user
+  namespaces its sandbox needs, as Ubuntu does for Chrome, and remove it on uninstall. Other installs on those Ubuntu
+  releases still draw saved pages without the engine.
 
 ### Removed
 

@@ -216,7 +216,7 @@ A test/native/security_test.cc
 | Where | Page engine |
 |---|---|
 | Linux as an ordinary user, with unprivileged user namespaces (Fedora, Arch, Debian 12, and most others by default) | Starts sandboxed. |
-| Ubuntu 23.10+ (`kernel.apparmor_restrict_unprivileged_userns=1` by default) | Starts only if `lib/chrome-sandbox` is root-owned with mode 4755, or an AppArmor profile grants the application `userns`. Otherwise the page is drawn as widgets, and the viewer says why. Neither is installed by the packages yet: that is a packaging decision for the owner. |
+| Ubuntu 23.10+ (`kernel.apparmor_restrict_unprivileged_userns=1` by default) | Starts sandboxed when installed from the `.deb`, or by the installer run as root: both write an AppArmor profile granting the executable `userns` (`linux/packaging/deb/make_config.yaml`, `packaging/linux/install.sh`). Any other install — the installer as an ordinary user, the tarball, the AppImage — is drawn as widgets, and the viewer says why. The setuid `lib/chrome-sandbox` would also work, and is deliberately not shipped. |
 | Linux as root, Flatpak (no nested user namespaces), containers with the default seccomp policy | Refused; drawn as widgets. |
 | Windows | Refused until the runner is started through CEF's sandbox bootstrap; drawn as widgets. |
 
