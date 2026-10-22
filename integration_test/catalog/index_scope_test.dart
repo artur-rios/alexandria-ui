@@ -27,8 +27,8 @@ import '../support/temporary_catalog.dart';
 /// everything, which looks exactly like a working scope over a folder that
 /// happened to hold nothing else.
 ///
-/// The owner's report is the assertion: cover art in a music folder stopped
-/// being catalogued. This is the smallest honest version of it.
+/// The owner's report is the assertion: a folder scoped to some types stopped
+/// cataloguing the others. This is the smallest honest version of it.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 

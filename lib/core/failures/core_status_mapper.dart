@@ -130,7 +130,7 @@ Failure _mapPlayback(int code) => switch (code) {
     family: CoreStatusFamily.playback,
     code: code,
   ),
-  // UC-19 AF-01 and UC-20 AF-01: the record is there and the file is not.
+  // UC-19 AF-01: the record is there and the file is not.
   PLAYBACK_ERR_DISK => Failure.disk(
     family: CoreStatusFamily.playback,
     code: code,

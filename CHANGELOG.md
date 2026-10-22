@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- The application needs Alexandria core 0.5 (`>=0.5.0 <0.6.0`), which no longer knows audio files.
+- Each sign-in takes music out of the registered folders. A folder set to index music only is unregistered, and if it
+  was a library, that library is removed first; a library the core will not remove keeps its folder, and the next
+  sign-in tries again. A folder that mixed music with other types stays and drops music from what it indexes. Once no
+  folder names music, a sign-in changes nothing. Files on disk are never touched.
+- Video keeps its sound and its audio-track selection; the audio-only playback libraries are no longer bundled.
+
 ### Removed
 
 - Music, which has moved to Orpheus, the owner's separate project for it. Alexandria is now a library for what you read
@@ -16,17 +25,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Playlists.
 - Play history and the music statistics screen.
 - Lyrics and artist photographs, and the music lookup settings.
+- The "Open the player when a track starts" preference.
 - The music metadata editor.
 - The audio file type: audio files in a registered folder are skipped when it is scanned, like any other file the
   application does not recognise.
-
-### Changed
-
-- The application needs Alexandria core 0.5 (`>=0.5.0 <0.6.0`), which no longer knows audio files.
-- On the first sign-in after upgrading, registered folders that were set to index music only are unregistered, and
-  their library is removed; a folder that mixed music with other types stays and drops music from what it indexes. Files
-  on disk are never touched.
-- Video keeps its sound and its audio-track selection; the audio-only playback libraries are no longer bundled.
 
 ### Fixed
 

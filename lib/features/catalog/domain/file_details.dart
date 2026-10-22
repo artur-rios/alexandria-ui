@@ -34,9 +34,9 @@ abstract class FileDetails with _$FileDetails {
     /// The type-specific metadata, as labelled fields.
     ///
     /// A map rather than a union per type, because this screen only reads it.
-    /// Editing is UC-15's and UC-16's, and they are the use cases that should
-    /// design the typed shape — building one here from a display would be
-    /// guessing at what an editor needs.
+    /// Editing is UC-16's, and that is the use case that should design the
+    /// typed shape — building one here from a display would be guessing at
+    /// what an editor needs.
     @Default(<String, String>{}) Map<String, String> metadata,
 
     /// The pixel width the core extracted, for an image.

@@ -410,8 +410,8 @@ void main() {
 
         // The group sits below the theme, language and animation groups, so
         // it is off the default surface until scrolled into view. Named
-        // rather than found by type: the music-lookup switch beneath it is a
-        // `SwitchListTile` too, and this test is about this one.
+        // rather than found by type, so the test stays about this switch
+        // whatever other `SwitchListTile` the dialog gains.
         final recheck = find.widgetWithText(
           SwitchListTile,
           AppLocalizations.of(

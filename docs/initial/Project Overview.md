@@ -6,12 +6,13 @@ Alexandria UI is the cross-platform desktop front-end for
 [Alexandria](https://github.com/artur-rios/alexandria-api), a personal library
 system that indexes, organizes, and surfaces a single person's on-disk media and
 documents — a library for what the owner reads and watches. Music is not part of
-it; that lives in Orpheus, a separate project. The desktop app is where the owner actually *sees* and *uses* that
-library: it browses the catalog, plays video, reads documents and
-comics, edits Markdown and text in place, and organizes everything into
-collections, watchlists, and reading lists. It links the Alexandria Rust core in
-process over FFI rather than talking to a server, so the whole product runs as a
-single local application with no network hop between the interface and its data.
+it; that lives in Orpheus, a separate project. The desktop app is where the
+owner actually *sees* and *uses* that library: it browses the catalog, plays
+video, reads documents and comics, edits Markdown and text in place, and
+organizes everything into collections, watchlists, and reading lists. It links
+the Alexandria Rust core in process over FFI rather than talking to a server, so
+the whole product runs as a single local application with no network hop between
+the interface and its data.
 
 ## The Problem
 

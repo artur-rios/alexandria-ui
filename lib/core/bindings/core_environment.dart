@@ -182,8 +182,8 @@ bool shouldSetCoreVariable(Map<String, String> environment, String name) =>
 /// takes the first time it asks, and a core worker spawned again by a retry
 /// takes its snapshot after the previous worker has written these variables.
 /// Read that way, the application's own earlier choice looks like an
-/// operator's, and every later change is skipped while the
-/// re-initialization reports it applied.
+/// operator's, and a retry that resolved a different database directory
+/// would leave the caches where the previous worker put them.
 void prepareCoreEnvironment({
   required String databaseDirectory,
   required Map<String, String> launchEnvironment,

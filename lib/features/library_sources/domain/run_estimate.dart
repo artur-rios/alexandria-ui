@@ -21,7 +21,7 @@ const int _minimumSamples = 3;
 /// window is called unsteady.
 ///
 /// A run's rate genuinely varies — a folder of small text files and a folder
-/// of tagged FLACs are different work — so some spread is expected. Beyond
+/// of long videos are different work — so some spread is expected. Beyond
 /// this, the estimate would swing far enough between polls to read as broken,
 /// and showing nothing is the more honest answer.
 const double _maximumRateSpread = 4.0;

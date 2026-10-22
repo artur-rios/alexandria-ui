@@ -21,7 +21,7 @@ class CatalogSessionActivity implements SessionActivity {
   final Ref _ref;
 
   /// The catalog holds nothing unsaved: the metadata form writes through the
-  /// core as it saves (UC-15), and there is no draft left behind when it
+  /// core as it saves (UC-16), and there is no draft left behind when it
   /// closes.
   @override
   bool get holdsUnsavedChanges => false;
