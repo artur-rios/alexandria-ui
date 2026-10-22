@@ -88,7 +88,7 @@ dependencies:
   media_kit: ^1.2.6
   media_kit_video: ^2.0.1
   media_kit_libs_video: ^1.0.7
-  archive: ^4.3.0
+  archive: ^4.5.2
   xml: ^7.0.1
   flutter_widget_from_html: ^0.17.4
   pdfrx: ^2.6.5
