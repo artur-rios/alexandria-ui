@@ -101,11 +101,16 @@ ldd_in_root=${VERIFY_PAYLOAD_LDD:-/usr/bin/ldd}   # overridable only to test tha
 # ldd (libc-bin, in the bare root) lists every library of a file, found or not. It must also have worked: its exit status is
 # kept for each file, its listing must contain libc.so.6 (everything dynamic links it, so a listing without it is a broken
 # loader or chroot, not a payload), and every line must be one ldd prints for a library, the loader or the vdso.
+# The one exception is a staged library with no dependencies at all, which ldd answers with "statically linked" alone: the Dart
+# snapshot libapp.so is one. Such a listing is accepted for the libraries, never for the executable or the core.
 failures=0
 resolve() {
   local file=$1 out rc=0 line
   out=$(chroot "$bare" "$ldd_in_root" "$file" 2>&1) || rc=$?
   printf '%s\n' "$out"
+  if [ "${2:-}" = library ] && [ "$rc" -eq 0 ] && [ "$(tr -d '[:space:]' <<<"$out")" = "staticallylinked" ]; then
+    return 0
+  fi
   if [ "$rc" -ne 0 ]; then
     echo "ci/verify-payload.sh: ldd exited $rc for $file" >&2
     failures=1
@@ -134,7 +139,7 @@ listing=$(mktemp)
   echo "--- every staged library ---"
   for library in "$payload"/lib/*.so*; do
     [ -e "$library" ] || continue
-    resolve "/payload/lib/$(basename "$library")"
+    resolve "/payload/lib/$(basename "$library")" library
   done
 } > "$listing"
 report < "$listing" || failures=1
