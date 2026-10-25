@@ -16,8 +16,8 @@
 #   with a Docker engine (a developer's machine)   the same `docker run`, on the pinned Ubuntu image;
 #   without one                                      a bare root file system is assembled from Ubuntu's packages with apt:
 #                                                    the base system, the desktop packages below and their dependencies,
-#                                                    nothing else. The payload's libraries are resolved with its dynamic
-#                                                    loader (what ldd runs) chrooted into it. The same set of packages,
+#                                                    nothing else. The payload's libraries are resolved with
+#                                                    `ldd` chrooted into it. The same set of packages,
 #                                                    without a container.
 set -euo pipefail
 
@@ -26,7 +26,7 @@ payload=${1:?usage: verify-payload.sh <payload-directory>}
 payload=$(cd "$payload" && pwd)
 
 # The image the docker path runs: the one yggdrasil.yml builds in.
-image=$(sed -n 's/^[[:space:]]*image:[[:space:]]*\(ubuntu:24.04@sha256:[0-9a-f]*\).*/\1/p' yggdrasil.yml | head -1)
+image=$(sed -n 's/^[[:space:]]*image:[[:space:]]*\(ubuntu:[^@]*@sha256:[0-9a-f]*\).*/\1/p' yggdrasil.yml | head -1)
 : "${image:=ubuntu:24.04}"
 
 # What a machine with a desktop and drivers has: GTK, the graphics, video and sound client libraries.
@@ -94,18 +94,36 @@ rm -rf "$debs" "$empty_status"
 # The loader finds /payload as a plain copy: a chroot cannot see outside itself, and mounting needs more than root.
 cp -a "$payload" "$bare/payload"
 
-loader=$(find "$bare/lib64" "$bare/usr/lib64" "$bare/lib/x86_64-linux-gnu" -maxdepth 1 -name 'ld-linux-x86-64.so.2' 2>/dev/null | head -1)
-[ -n "$loader" ] || { echo "ci/verify-payload.sh: the root file system has no dynamic loader" >&2; exit 1; }
-loader=/${loader#"$bare"/}
+ldd_in_root=${VERIFY_PAYLOAD_LDD:-/usr/bin/ldd}   # overridable only to test that a broken ldd fails the check
 
+# ldd (libc-bin, in the bare root) lists every library of a file, found or not. It must also have worked: its exit status is
+# kept for each file, its listing must contain libc.so.6 (everything dynamic links it, so a listing without it is a broken
+# loader or chroot, not a payload), and every line must be one ldd prints for a library, the loader or the vdso.
+failures=0
 resolve() {
-  # The loader's own listing is what ldd prints; the payload is resolved the way the executable would be run: by its
-  # RUNPATH and the default directories of the bare system.
-  # A library it cannot find ends the loader with an error; that is the finding, reported by `report`, so it does not
-  # stop the listing of the others.
-  chroot "$bare" "$loader" --list "$1" 2>&1 || true
+  local file=$1 out rc=0 line
+  out=$(chroot "$bare" "$ldd_in_root" "$file" 2>&1) || rc=$?
+  printf '%s\n' "$out"
+  if [ "$rc" -ne 0 ]; then
+    echo "ci/verify-payload.sh: ldd exited $rc for $file" >&2
+    failures=1
+  fi
+  if ! grep -q 'libc\.so\.6 =>' <<<"$out"; then
+    echo "ci/verify-payload.sh: no 'libc.so.6 =>' line in the listing of $file; the chroot or ldd is broken" >&2
+    failures=1
+  fi
+  while IFS= read -r line; do
+    case $line in
+      *"(0x"*")" | *"=> not found") ;;   # a library, the loader or the vdso; "not found" is reported below
+      *)
+        echo "ci/verify-payload.sh: unexpected output for $file: $line" >&2
+        failures=1
+        ;;
+    esac
+  done <<<"$out"
 }
 
+listing=$(mktemp)
 {
   echo "--- executable ---"
   resolve /payload/alexandria
@@ -116,4 +134,7 @@ resolve() {
     [ -e "$library" ] || continue
     resolve "/payload/lib/$(basename "$library")"
   done
-} | report
+} > "$listing"
+report < "$listing" || failures=1
+rm -f "$listing"
+[ "$failures" -eq 0 ]
