@@ -6,11 +6,14 @@
 # against the real Linux application under a virtual display. The packages the runner carried and the image does not are
 # installed with apt by ci/apt-packages.sh (as root, which is how the agents run checks).
 #
-# The old job lifted AppArmor's restriction on unprivileged user namespaces (`sysctl -w
-# kernel.apparmor_restrict_unprivileged_userns=0`) so Chromium could create its sandbox. A container cannot change a host
-# setting, so that step has no counterpart: run as root, as the agents do, the page engine's saved-page test is skipped
-# (integration_test/viewers/saved_page_engine_test.dart expects the engine to refuse to start as root), and as another
-# user it needs a host that lets Chromium create a sandbox.
+# The page engine's sandboxed test (integration_test/viewers/saved_page_engine_test.dart, the hostile saved page) does not
+# run here. The old job lifted AppArmor's restriction on unprivileged user namespaces (`sysctl -w
+# kernel.apparmor_restrict_unprivileged_userns=0`) so Chromium could create its sandbox; a container cannot change a host
+# setting, and its seccomp profile forbids the namespaces anyway. Run as root, as the agents do, the file's hostile-page test is
+# skipped (it expects the engine to refuse to start as root) and its refusal test runs instead. The security gate is the GitHub
+# Actions job `Sandboxed page engine (linux)` in .github/workflows/ci.yml, an actionsCheck, which runs the hostile-page test on
+# a throw-away runner and fails if the sandbox cannot be created. Run by hand as another user, on a host that lets Chromium
+# create a sandbox, this script runs it too.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
