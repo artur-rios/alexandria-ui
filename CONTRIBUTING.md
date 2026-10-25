@@ -260,7 +260,9 @@ Linux (the scripts of the same names under [`ci/`](ci), declared in
 half of `test`, `integration` and `build` stays a GitHub Actions job
 ([`ci.yml`](.github/workflows/ci.yml)) on the GitHub copy, whose result Jenkins
 copies to the pull request (`Unit and widget tests (windows)`,
-`Integration (windows)` and `Release build (windows)`). The `branch-policy`
+`Integration (windows)` and `Release build (windows)`), plus one more GitHub
+Actions job, `Sandboxed page engine (linux)`, which runs the page viewer's
+sandboxed-engine test that Jenkins' containers cannot. The `branch-policy`
 check enforces the model
 above: into `develop` only from `feature/` or `fix/` branches cut from
 `develop`, into `main` only from a `release/<major>.<minor>.<patch>` branch whose
@@ -299,8 +301,9 @@ does: before 1.0 a minor bump marks a breaking release — 0.1.0 renamed the
 executable and, on Linux, the application id, so an existing installation
 became a second entry instead of being upgraded — and it is also used for a
 release that adds features. A patch bump is a release of fixes and small
-changes only, such as 0.1.1's new icon. 0.x releases are published as GitHub
-prereleases.
+changes only, such as 0.1.1's new icon. A 0.x release is an ordinary release,
+not a prerelease: the release pipeline marks only a SemVer pre-release version
+(such as `1.0.0-rc.1`) as one.
 
 The version comes from the tag, and nowhere else. The release build stamps
 it into the working copy of `pubspec.yaml` before building — the `.deb` and the
@@ -357,7 +360,9 @@ for everything that builds: the Jenkins checks, the release build and both
 Windows workflows read that one value, so they cannot disagree. The `analyze`
 check fails when it names a branch or a tag instead of a commit. The same file
 pins the Flutter SDK (`FLUTTER_VERSION`, with its checksum) and the Rust
-toolchain.
+toolchain (`RUST_VERSION`): Jenkins installs it with rustup, and the workflows
+that build the core install exactly that version too, so no build floats on
+`stable`.
 
 Packages are produced unsigned. Code signing for Windows and Flatpak
 distribution through a public remote are deliberately deferred — see

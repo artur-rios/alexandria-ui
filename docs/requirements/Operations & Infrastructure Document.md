@@ -326,8 +326,9 @@ GitHub Release:
 certificate the project does not yet hold, and Flatpak distribution through a
 public remote requires an account that does not yet exist. Both are recorded here
 as deliberately deferred, to be settled before the first public release; until
-then, packages are produced unsigned, and the 0.x releases that carry them are
-published as prereleases. Neither blocks any use case.
+then, packages are produced unsigned. The 0.x releases that carry them are
+ordinary releases: the release pipeline marks only a SemVer pre-release version
+(such as `1.0.0-rc.1`) as a prerelease. Neither blocks any use case.
 
 **The page engine's sandbox on Linux packages.** The saved-page engine (UC-25)
 runs only inside Chromium's sandbox, and the application draws the page without
