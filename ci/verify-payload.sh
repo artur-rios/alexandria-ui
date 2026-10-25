@@ -42,8 +42,9 @@ report() {
     grep -E "not found|cannot open shared object file" /tmp/ldd.txt | sort -u | sed 's/^/  /' >&2
     return 1
   fi
-  echo "Everything the payload needs resolves, from itself or from a plain desktop."
 }
+
+resolved() { echo "Everything the payload needs resolves, from itself or from a plain desktop."; }
 
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   echo "-- Resolution inside $image with only a desktop added (docker)"
@@ -58,6 +59,7 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     echo '--- every staged library ---'
     for lib in /payload/lib/*.so*; do ldd \"\$lib\" 2>&1; done
   " | report
+  resolved
   exit 0
 fi
 
@@ -138,3 +140,4 @@ listing=$(mktemp)
 report < "$listing" || failures=1
 rm -f "$listing"
 [ "$failures" -eq 0 ]
+resolved
