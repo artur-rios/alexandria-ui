@@ -5,7 +5,7 @@
 # AppImage from packaging/linux/build-appimage.sh — flutter_distributor's
 # AppImage maker bundles dependencies of its own on top of the payload it is
 # given, which is not what this project wants from it. All of them are produced
-# by the same pipeline — .github/workflows/release.yml.
+# by the same pipeline — ci/release-build.sh and .github/workflows/release-windows.yml.
 
 output: dist/
 

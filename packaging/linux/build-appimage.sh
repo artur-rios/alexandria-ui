@@ -76,7 +76,15 @@ mkdir -p "$(dirname "$OUTPUT")"
 # --no-appstream because the metainfo is validated by the Flatpak build
 # already, and appstreamcli's absence on a runner should not be what decides
 # whether an AppImage can be produced.
-ARCH=x86_64 appimagetool --no-appstream "$APPDIR" "$OUTPUT"
+#
+# APPIMAGE_RUNTIME_FILE, when set, is the runtime appimagetool embeds. Left unset it
+# downloads the newest one itself, from the type2-runtime "continuous" release;
+# ci/release-build.sh sets it to a pinned, checksummed copy.
+if [ -n "${APPIMAGE_RUNTIME_FILE:-}" ]; then
+  ARCH=x86_64 appimagetool --no-appstream --runtime-file "$APPIMAGE_RUNTIME_FILE" "$APPDIR" "$OUTPUT"
+else
+  ARCH=x86_64 appimagetool --no-appstream "$APPDIR" "$OUTPUT"
+fi
 
 chmod 755 "$OUTPUT"
 echo "Built $OUTPUT ($(du -h "$OUTPUT" | cut -f1))"

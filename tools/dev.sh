@@ -8,7 +8,7 @@
 # putting its shared library where IR-04's resolver looks, keeping the generated
 # FFI bindings in step with the core's header, and only then starting the app.
 #
-# Nothing here is needed to package or ship — that is the release workflow's
+# Nothing here is needed to package or ship — that is the release build's
 # job. This is the loop for changing code and seeing the change.
 
 set -eu

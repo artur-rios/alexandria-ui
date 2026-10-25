@@ -1,8 +1,11 @@
 # IR-16: the Flatpak manifest.
 #
 # flutter_distributor covers MSIX, the Windows installer, the AppImage, and the
-# .deb, but has no Flatpak target, so this manifest and the flatpak-builder step
-# in .github/workflows/release.yml are hand-written.
+# .deb, but has no Flatpak target, so this manifest and packaging/linux/build-flatpak.sh
+# are hand-written. The release build does not run flatpak-builder (its container cannot
+# create the sandbox it needs) but build-flatpak.sh, which does what this manifest says
+# with flatpak's own commands: keep the two in step. flatpak-builder builds this manifest
+# on a machine that allows user namespaces.
 #
 # The bundle carries the Alexandria core's shared object alongside the
 # executable: nothing here installs, updates, or launches a service — the core
@@ -61,7 +64,7 @@ modules:
       - install -Dm644 io.github.artur_rios.Alexandria.png
         /app/share/icons/hicolor/512x512/apps/io.github.artur_rios.Alexandria.png
     sources:
-      # Populated by the release workflow from build/linux/x64/release/bundle.
+      # Populated by the release build from build/linux/x64/release/bundle.
       - type: dir
         path: bundle
       - type: file

@@ -11,7 +11,7 @@
 # Deliberately NOT run before the .deb or the Flatpak are built. The .deb
 # declares the distribution's ffmpeg packages as Depends and the Flatpak gets
 # them from its runtime extension; either one carrying a second copy as well
-# would be dead weight that shadows the system's. The release workflow builds
+# would be dead weight that shadows the system's. The release build builds
 # those two from a pristine bundle and only then calls this.
 #
 # Usage: bundle-libraries.sh <bundle-to-scan> <output-directory>

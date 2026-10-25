@@ -85,7 +85,7 @@ brazilianportuguese.UninstallFailed=O desinstalador da instalação anterior nã
 ; application" resolves to.
 ;
 ; Excluding the MSIX is not tidiness. `dart run msix:create` writes
-; alexandria.msix into this same directory, and the release workflow builds it
+; alexandria.msix into this same directory, and the release workflow (release-windows.yml) builds it
 ; before this installer, so without the exclusion the setup executable carries
 ; a complete second copy of the application inside itself — roughly doubling
 ; its size — and then installs that copy beside the program as a stray file.
