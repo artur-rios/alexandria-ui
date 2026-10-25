@@ -57,6 +57,7 @@ jobs:
             echo "FLUTTER_VERSION=$FLUTTER_VERSION"
             echo "CORE_REPOSITORY=$CORE_REPOSITORY"
             echo "CORE_REF=$CORE_REF"
+            echo "RUST_VERSION=$RUST_VERSION"
           } >> "$GITHUB_ENV"
 
       - uses: subosito/flutter-action@v2
@@ -90,6 +91,7 @@ jobs:
             echo "FLUTTER_VERSION=$FLUTTER_VERSION"
             echo "CORE_REPOSITORY=$CORE_REPOSITORY"
             echo "CORE_REF=$CORE_REF"
+            echo "RUST_VERSION=$RUST_VERSION"
           } >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v7
@@ -98,7 +100,10 @@ jobs:
           ref: ${{ env.CORE_REF }}
           path: core
 
-      - uses: dtolnay/rust-toolchain@stable
+      # The toolchain of ci/pins.sh, the one the Jenkins checks build the core with.
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -250,6 +255,7 @@ jobs:
             echo "FLUTTER_VERSION=$FLUTTER_VERSION"
             echo "CORE_REPOSITORY=$CORE_REPOSITORY"
             echo "CORE_REF=$CORE_REF"
+            echo "RUST_VERSION=$RUST_VERSION"
           } >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v7
@@ -258,7 +264,10 @@ jobs:
           ref: ${{ env.CORE_REF }}
           path: core
 
-      - uses: dtolnay/rust-toolchain@stable
+      # The toolchain of ci/pins.sh, the one the Jenkins checks build the core with.
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
 
       - uses: Swatinem/rust-cache@v2
         with:

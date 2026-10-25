@@ -36,8 +36,10 @@ FLUTTER_SHA256=a1d8166c0309267cb7dc99f1424eecf08b86946ad3b50723c6f59945964aea45
 CORE_REPOSITORY=artur-rios/alexandria-api
 CORE_REF=1353826aca82db16d116483646a3c41c5a10f781
 
-# The Rust toolchain that builds the core (the workflows used dtolnay/rust-toolchain@stable, which was 1.99.1). It is
-# installed with rustup (RUSTUP_VERSION's rustup-init, checked against RUSTUP_SHA256) by ci/core.sh.
+# The Rust toolchain that builds the core (the workflows used dtolnay/rust-toolchain@stable, which was 1.99.1). Jenkins
+# installs it with rustup (RUSTUP_VERSION's rustup-init, checked against RUSTUP_SHA256) in ci/core.sh; the GitHub workflows
+# that build the core (ci.yml's integration and sandboxed page engine jobs, release-windows.yml) read RUST_VERSION from here
+# and install exactly it with dtolnay/rust-toolchain, so no build floats on `stable`.
 #
 # renovate: datasource=github-tags depName=rust-lang/rust
 RUST_VERSION=1.99.1
