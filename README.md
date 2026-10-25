@@ -12,6 +12,8 @@ core in process over FFI rather than talking to a server, so the whole product
 runs as a single local application with no network hop between the interface and
 its data.
 
+This repository lives at <https://git.techcraftsmen.net/artur-rios/alexandria-ui>. GitHub is a read-only mirror.
+
 > **Status:** all forty-six issues are delivered — the foundation and
 > every use case in the backlog below.
 

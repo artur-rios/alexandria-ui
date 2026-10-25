@@ -140,7 +140,9 @@ alexandria-ui/
 ├── integration_test/
 ├── windows/
 ├── linux/
-└── .github/workflows/
+├── ci/                            the scripts of the Jenkins checks and of the release build
+├── yggdrasil.yml                  what Jenkins checks and releases
+└── .github/workflows/             the Windows jobs, which stay on GitHub Actions
 ```
 
 Each folder under `features/` holds `domain/`, `application/`, `data/`, and
@@ -353,7 +355,7 @@ root, so it is done where root is available:
 The installer run as an ordinary user, the tarball and the AppImage cannot
 write a system profile, so on a restricted Ubuntu those fall back to widgets,
 and the viewer says why. The Flatpak cannot nest user namespaces at all. The
-release workflow checks that the `.deb` and the root installer leave a profile
+release build checks that the `.deb` and the root installer leave a profile
 the parser accepts and take it away again. On Windows the engine is
 not started at all until the runner is launched through CEF's sandbox
 bootstrap.
