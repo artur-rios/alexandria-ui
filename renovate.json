@@ -9,6 +9,12 @@
       "schedule": ["on monday"]
     },
     {
+      "description": "The Ubuntu image of yggdrasil.yml is 24.04 on purpose: the release the .deb's dependency names and the bundled libraries target. Digest updates still come through; a new major or minor (another Ubuntu release) is the owner's decision.",
+      "matchDepNames": ["ubuntu"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    },
+    {
       "description": "Dependabot watched only the application's pubspec (directory /). The vendored webview_cef fork is checked against its upstream release by tools/check-webview-cef-fork.sh, and the layering-rules plugin follows custom_lint's analyzer cap (see pubspec.yaml).",
       "matchManagers": ["pub"],
       "matchFileNames": ["third_party/**", "tools/**", "analysis_test/**"],

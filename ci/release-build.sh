@@ -39,6 +39,13 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 root=$PWD
 
+# The pipeline always sets RELEASE_VERSION (with RELEASE_TAG). Under CI (CI is set, or a tag is) a missing one is an error, not a
+# 0.0.0 release; by hand it defaults to 0.0.0. Checked before ci/flutter-env.sh, which exports CI itself.
+if { [ -n "${CI:-}" ] || [ -n "${RELEASE_TAG:-}" ]; } && [ -z "${RELEASE_VERSION:-}" ]; then
+  echo "ci/release-build.sh: RELEASE_VERSION is not set; the release build needs the version of the tag" >&2
+  exit 1
+fi
+
 # shellcheck source=ci/flutter-env.sh
 . ci/flutter-env.sh
 # shellcheck source=ci/core.sh
