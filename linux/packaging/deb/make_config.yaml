@@ -18,7 +18,7 @@ maintainer:
 priority: optional
 section: video
 
-# Overwritten by the release workflow with the bundle's actual size in
+# Overwritten by the release build with the bundle's actual size in
 # kilobytes before packaging. Debian treats Installed-Size as advisory, so a
 # stale value here is cosmetic rather than a build failure — but a value
 # nobody maintains is worse than one the pipeline measures.
@@ -54,7 +54,7 @@ essential: false
 #
 # Unlike those four, this package deliberately does NOT bundle ffmpeg: asking
 # the distribution for it is the entire point of a .deb, and a bundled copy
-# would shadow the system's while going unpatched. The release workflow builds
+# would shadow the system's while going unpatched. The release build builds
 # this package from a pristine bundle, before the bundling step runs.
 #
 # Verified by installing the built package on the runner, so these names are

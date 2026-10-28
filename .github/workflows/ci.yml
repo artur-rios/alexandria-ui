@@ -1,53 +1,30 @@
-# IR-15: analysis, the unit and widget suite, and the integration suite on both
-# target platforms, failing on any analyzer warning.
+# IR-15: the unit and widget suite, the integration suite, and the release build on Windows, the platform Jenkins
+# cannot run. The Linux half of each (and the analysis, which is not platform-dependent) is a Jenkins check now:
+# yggdrasil.yml, ci/analyze.sh, ci/test.sh, ci/integration.sh and ci/build.sh.
 #
-# There is no "known warnings" list — the moment there is one, warnings stop
-# being read (Operations & Infrastructure Document §7.1).
+# A fourth job, `Sandboxed page engine (linux)`, runs the one integration test Jenkins' containers cannot: the page viewer's
+# real Chromium sandbox (see below).
+#
+# These jobs are the catalog's actionsChecks, required on develop under the names below; the first three are exactly as
+# GitHub reported them when each was a matrix of two legs. The pull requests live on Forgejo and the GitHub copy is a
+# mirror that only receives pushes, so they run on a push to any branch, and on nothing narrower: Jenkins finds a job's run
+# for a pull request's head commit by its SHA and copies the result, and a commit a filter skipped would have no run, so its
+# status would stay pending.
+#
+# There is no "known warnings" list for the analysis (Operations & Infrastructure Document §7.1), and none here.
 
 name: CI
 
 on:
-  pull_request:
   push:
-    branches: [develop, main]
+    branches: ['**']
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  # The core is a separate repository. Building it here rather than committing a
-  # binary keeps the shared library out of git history and makes a drift between
-  # the two repositories fail the build instead of going unnoticed.
-  #
-  # Pinned to a commit rather than tracking `main`, so that a core change lands
-  # here deliberately: re-vendoring the header and regenerating the bindings is
-  # part of moving this value, and a moving target would make the drift check
-  # pass against whatever the core happened to be that morning.
-  #
-  # Why each pin was chosen belongs on `CORE_REF` itself, below, not here:
-  # three paragraphs of it lived on this variable and went on describing a
-  # commit two moves out of date, directly above the comment explaining the
-  # current one. The pin's own comment moves with the pin.
-  CORE_REPOSITORY: artur-rios/alexandria-api
-  # The 0.5 core with the music-removal follow-ups, merged as
-  # alexandria-api#140: its migration 26 deletes the run failures earlier runs
-  # recorded on audio files, which migration 25 left behind. The version is
-  # still 0.5.0 and no export changed; the header differs from the previous
-  # pin's (alexandria-api#137, an ancestor of this one) only in one doc
-  # comment, re-vendored here. This application accepts `>=0.5.0 <0.6.0`.
-  # The pin and the vendored header move together — the drift check below is
-  # exactly the guard against them moving apart.
-  CORE_REF: 1353826aca82db16d116483646a3c41c5a10f781
-
-  # Pinned rather than "whatever stable is today", because pubspec.lock is
-  # committed and is the real pin: the Flutter SDK constrains its own pinned
-  # packages, so a newer SDK rewrites the lock during `flutter pub get` and the
-  # build then runs against dependencies nobody chose. This must match the SDK
-  # the committed lock was resolved with. Upgrading is a deliberate change to
-  # both, never a side effect of a fresh runner.
-  FLUTTER_VERSION: 3.47.1
-
   # The Windows ffmpeg development libraries, pinned. The 7.1 series
   # specifically — see the comment on the install step for why a newer one
   # does not build.
@@ -55,119 +32,33 @@ env:
   FFMPEG_ARCHIVE: ffmpeg-n7.1.5-12-g1fdbca85aa-win64-gpl-shared-7.1.zip
 
 jobs:
-  analyze:
-    name: Analyze and generate
-    runs-on: ubuntu-latest
+  test:
+    # Both platforms ran this suite, and the goldens are why. The shell goldens
+    # hold text, and text is the one thing a renderer does differently on each
+    # operating system — a golden made on one and only ever checked on the
+    # other is a golden nobody is checking. That is not hypothetical here: this
+    # suite was red on Linux for three days while passing on the machine the
+    # goldens came from, because nothing ran it on both.
+    #
+    # The Linux half is the `test` check on Jenkins (ci/test.sh).
+    name: Unit and widget tests (windows)
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
 
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
-
-      - name: Resolve dependencies
-        run: |
-          flutter pub get
-          dart pub get --directory tools/alexandria_lints
-
-      # The drift check lives in the integration job rather than here. The
-      # core's header is not committed — `crates/alexandria-ffi/build.rs`
-      # generates it with cbindgen and the core's .gitignore excludes it — so a
-      # clone alone never contains it, and comparing against a clone reported
-      # drift unconditionally. The integration job builds the core, which is
-      # what makes the header exist, so that is where the comparison can be
-      # honest.
-
-      - name: Regenerate and check for a diff
-        run: |
-          dart run ffigen --config ffigen.yaml
-          dart run build_runner build
-          flutter gen-l10n
-          # Untracked files too: `git diff` alone never sees a generated
-          # file that was never committed.
-          git add --intent-to-add --all
-          if ! git diff --exit-code; then
-            echo "::error::Generated output differs from what is committed. Run the generators and commit the result."
-            exit 1
-          fi
-
-      # The release workflow builds the core too, and a release that linked
-      # against a different commit than the one the integration suite ran
-      # against would ship something nothing had tested. Both files carry the
-      # value because a workflow cannot read another's env, so the two are held
-      # together here rather than by anyone remembering.
-      - name: Core pin agreement
+      # The versions come from ci/pins.sh, the file the Jenkins checks read:
+      # Flutter, and the commit of the core.
+      - name: Read the pins
+        shell: bash
         run: |
           set -e
-          pin_of() {
-            grep -E '^  CORE_REF:' "$1" | head -1 | awk '{print $2}'
-          }
-          ci=$(pin_of .github/workflows/ci.yml)
-          release=$(pin_of .github/workflows/release.yml)
-
-          echo "ci.yml:      $ci"
-          echo "release.yml: $release"
-
-          if [ "$ci" != "$release" ]; then
-            echo "::error::CORE_REF disagrees between ci.yml and release.yml. Move both together — a release must link against the commit the integration suite ran against."
-            exit 1
-          fi
-
-          case $release in
-            main | master | develop | release/* | "")
-              echo "::error::release.yml pins CORE_REF to a branch. A tag must name a commit, or the same tag can build twice and ship two different cores."
-              exit 1
-              ;;
-          esac
-
-      - name: Analyze
-        run: flutter analyze --fatal-infos --fatal-warnings
-
-      # The project's own source must be clean. The rules are proven to actually
-      # fire by the fixture suite in the `test` job — a plugin that failed to
-      # load would report nothing here and look like a pass.
-      - name: Layering rules
-        run: dart run custom_lint
-
-      # The page viewer's browser engine is a vendored, patched webview_cef
-      # (third_party/webview_cef/FORK.md): upstream ran Chromium with web
-      # security and the sandbox off (NFR-12). This fails when the vendored
-      # copy differs from the upstream release in any file FORK.md does not
-      # list, or a patched file lacks its fork notice, so a change to the fork
-      # is always a recorded one.
-      - name: Vendored webview_cef matches its recorded patches
-        run: sh tools/check-webview-cef-fork.sh
-
-      # The fork's navigation, subresource, switch and sandbox rules, as plain
-      # C++ without a browser. The engine itself is exercised by the
-      # integration suite's saved-page test.
-      - name: Vendored webview_cef policy tests
-        run: sh third_party/webview_cef/test/native/run.sh
-
-  test:
-    # Both platforms, and the goldens are why. The shell goldens hold text,
-    # and text is the one thing a renderer does differently on each
-    # operating system — a golden made on one and only ever checked on
-    # the other is a golden nobody is checking. That is not hypothetical
-    # here: this suite was red on Linux for three days while passing on the
-    # machine the goldens came from, because nothing ran it on both.
-    #
-    # Running it twice costs a few minutes; the alternative costs a
-    # regression that only one developer's machine can see.
-    name: Unit and widget tests (${{ matrix.platform }})
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            platform: windows
-          - os: ubuntu-latest
-            platform: linux
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v7
+          . ci/pins.sh
+          {
+            echo "FLUTTER_VERSION=$FLUTTER_VERSION"
+            echo "CORE_REPOSITORY=$CORE_REPOSITORY"
+            echo "CORE_REF=$CORE_REF"
+            echo "RUST_VERSION=$RUST_VERSION"
+          } >> "$GITHUB_ENV"
 
       - uses: subosito/flutter-action@v2
         with:
@@ -185,44 +76,23 @@ jobs:
       - name: Test with coverage
         run: flutter test --coverage
 
-      # IR-02: proven against the fixture package, so what runs here is the
-      # plugin itself rather than a reimplementation of its logic.
-      #
-      # Linux only. It exercises the analyzer plugin, which has no
-      # platform-dependent behaviour to catch, and running it on both would
-      # be paying twice for one answer — where the suite above genuinely
-      # answers differently per platform, which is the whole reason this job
-      # is a matrix.
-      - name: Layering rules against the fixtures
-        if: matrix.platform == 'linux'
-        run: flutter test analysis_test --timeout 5x
-
-      # One coverage report, from one platform. Two runners uploading under
-      # the same artifact name collide, and a second measurement of the same
-      # lines answers nothing new.
-      - uses: actions/upload-artifact@v7
-        if: matrix.platform == 'linux'
-        with:
-          name: coverage
-          path: coverage/lcov.info
-
   integration:
-    name: Integration (${{ matrix.platform }})
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            platform: windows
-            core_artifact: alexandria_ffi.dll
-            core_destination: native/windows
-          - os: ubuntu-latest
-            platform: linux
-            core_artifact: libalexandria_ffi.so
-            core_destination: native/linux
-    runs-on: ${{ matrix.os }}
+    name: Integration (windows)
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+
+      - name: Read the pins
+        shell: bash
+        run: |
+          set -e
+          . ci/pins.sh
+          {
+            echo "FLUTTER_VERSION=$FLUTTER_VERSION"
+            echo "CORE_REPOSITORY=$CORE_REPOSITORY"
+            echo "CORE_REF=$CORE_REF"
+            echo "RUST_VERSION=$RUST_VERSION"
+          } >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v7
         with:
@@ -230,25 +100,20 @@ jobs:
           ref: ${{ env.CORE_REF }}
           path: core
 
-      - uses: dtolnay/rust-toolchain@stable
+      # The toolchain of ci/pins.sh, the one the Jenkins checks build the core with.
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
 
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: core
 
       # alexandria-core depends on ffmpeg-next, whose ffmpeg-sys-next needs the
-      # ffmpeg C development libraries at build time. The package list mirrors
-      # the core repository's own workflow; the core builds on Linux only there,
-      # so the Windows half below is this repository's to carry.
-      - name: Install the ffmpeg development libraries (Linux)
-        if: matrix.platform == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libavformat-dev libavcodec-dev libavutil-dev \
-            libavfilter-dev libavdevice-dev libswscale-dev \
-            libswresample-dev pkg-config clang
-
+      # ffmpeg C development libraries at build time. The core builds on Linux
+      # only in its own repository's workflow, so the Windows half below is this
+      # repository's to carry.
+      #
       # ffmpeg-sys-next has no pkg-config to find on Windows, so it is pointed
       # at an unpacked release build through FFMPEG_DIR. The shared variant is
       # the one that ships headers and import libraries, and its bin directory
@@ -279,8 +144,7 @@ jobs:
       #
       # The unpacked directory carries the exact build in its name, so it is
       # discovered rather than spelled out.
-      - name: Install the ffmpeg development libraries (Windows)
-        if: matrix.platform == 'windows'
+      - name: Install the ffmpeg development libraries
         shell: bash
         # For the fallback's `gh api` call only; the pinned download needs no
         # credential.
@@ -309,24 +173,11 @@ jobs:
         working-directory: core
         run: cargo build --release -p alexandria-ffi
 
-      # Now that the core has been built, its generated header exists and can
-      # actually be compared. Linux only: the header is the same on both, and
-      # running it twice would only double the failure.
-      - name: Check the vendored header against the core's
-        if: matrix.platform == 'linux'
-        run: |
-          if ! diff -u core/crates/alexandria-ffi/src/header.h \
-                       native/include/alexandria_ffi.h; then
-            echo "::error::native/include/alexandria_ffi.h has drifted from the core's header. Re-copy it and run 'dart run ffigen --config ffigen.yaml'."
-            exit 1
-          fi
-
       - name: Bundle the core
         shell: bash
         run: |
-          mkdir -p "${{ matrix.core_destination }}"
-          cp "core/target/release/${{ matrix.core_artifact }}" \
-             "${{ matrix.core_destination }}/"
+          mkdir -p native/windows
+          cp core/target/release/alexandria_ffi.dll native/windows/
 
       - uses: subosito/flutter-action@v2
         with:
@@ -334,34 +185,7 @@ jobs:
           channel: stable
           cache: true
 
-      # libmpv is media_kit_video's build-time dependency on Linux: its
-      # CMakeLists links PkgConfig::mpv, and without the development package
-      # the desktop build fails at the generate step rather than at link time
-      # (UC-19). Windows needs no equivalent — media_kit_libs_video ships the
-      # native libraries there.
-      - name: Install the Linux desktop toolchain
-        if: matrix.platform == 'linux'
-        run: |
-          sudo apt-get update
-          # libnss3 / libnspr4: the page viewer's browser engine (webview_cef)
-          # links against them, and the runner does not carry them by default.
-          sudo apt-get install -y ninja-build libgtk-3-dev xvfb libmpv-dev mpv \
-            libnss3 libnspr4
-
       - run: flutter pub get
-
-      # The page engine runs only inside Chromium's sandbox, and refuses to
-      # start without one (third_party/webview_cef/FORK.md). On Linux the
-      # sandbox needs unprivileged user namespaces, which Ubuntu 23.10+
-      # restricts through AppArmor by default. Lifted here, on a throwaway
-      # runner, so that integration_test/viewers/saved_page_engine_test.dart
-      # exercises the real sandboxed engine rather than its refusal.
-      - name: Let Chromium create its sandbox (Linux)
-        if: matrix.platform == 'linux'
-        run: |
-          if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
-            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          fi
 
       - name: Integration suite
         shell: bash
@@ -380,28 +204,94 @@ jobs:
           set -e
           for suite in $(find integration_test -name '*_test.dart' | sort); do
             echo "::group::$suite"
-            if [ "${{ matrix.platform }}" = "linux" ]; then
-              xvfb-run -a flutter test "$suite" -d linux
-            else
-              flutter test "$suite" -d windows
-            fi
+            flutter test "$suite" -d windows
             echo "::endgroup::"
           done
 
   build:
-    name: Release build (${{ matrix.platform }})
-    needs: [analyze, test]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            platform: windows
-          - os: ubuntu-latest
-            platform: linux
-    runs-on: ${{ matrix.os }}
+    name: Release build (windows)
+    needs: [test]
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+
+      - name: Read the pins
+        shell: bash
+        run: |
+          set -e
+          . ci/pins.sh
+          echo "FLUTTER_VERSION=$FLUTTER_VERSION" >> "$GITHUB_ENV"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      # Windows needs no equivalent of the Linux desktop toolchain:
+      # media_kit_libs_video ships the native libraries there.
+      - run: flutter pub get
+
+      - run: flutter build windows --release
+
+  # integration_test/viewers/saved_page_engine_test.dart opens a hostile saved page in the real Chromium engine and asserts
+  # on what its script managed to do (UC-25, FR-VW-05, NFR-12): web security on, the sandbox on, the page held to its folder.
+  # That is a security gate, and it cannot run in Jenkins: its checks run as container root, where the engine must refuse to
+  # start and the test is skipped, and a container's seccomp profile forbids the user namespaces Chromium's sandbox needs.
+  # So it runs here, on a throw-away runner, the way the old Linux integration job ran it. The rest of the Linux integration
+  # suite is the `integration` check (ci/integration.sh).
+  sandboxed-page-engine:
+    name: Sandboxed page engine (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the pins
+        shell: bash
+        run: |
+          set -e
+          . ci/pins.sh
+          {
+            echo "FLUTTER_VERSION=$FLUTTER_VERSION"
+            echo "CORE_REPOSITORY=$CORE_REPOSITORY"
+            echo "CORE_REF=$CORE_REF"
+            echo "RUST_VERSION=$RUST_VERSION"
+          } >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ env.CORE_REPOSITORY }}
+          ref: ${{ env.CORE_REF }}
+          path: core
+
+      # The toolchain of ci/pins.sh, the one the Jenkins checks build the core with.
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+
+      # alexandria-core depends on ffmpeg-next, whose ffmpeg-sys-next needs the
+      # ffmpeg C development libraries at build time. The package list mirrors
+      # the core repository's own workflow.
+      - name: Install the ffmpeg development libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libavformat-dev libavcodec-dev libavutil-dev \
+            libavfilter-dev libavdevice-dev libswscale-dev \
+            libswresample-dev pkg-config clang
+
+      - name: Build the Alexandria core
+        working-directory: core
+        run: cargo build --release -p alexandria-ffi
+
+      - name: Bundle the core
+        run: |
+          mkdir -p native/linux
+          cp core/target/release/libalexandria_ffi.so native/linux/
 
       - uses: subosito/flutter-action@v2
         with:
@@ -412,16 +302,44 @@ jobs:
       # libmpv is media_kit_video's build-time dependency on Linux: its
       # CMakeLists links PkgConfig::mpv, and without the development package
       # the desktop build fails at the generate step rather than at link time
-      # (UC-19). Windows needs no equivalent — media_kit_libs_video ships the
-      # native libraries there.
+      # (UC-19).
       - name: Install the Linux desktop toolchain
-        if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
-          # See the integration job: the browser engine links against NSS.
-          sudo apt-get install -y ninja-build libgtk-3-dev libmpv-dev mpv \
+          # libnss3 / libnspr4: the page viewer's browser engine (webview_cef)
+          # links against them, and the runner does not carry them by default.
+          sudo apt-get install -y ninja-build libgtk-3-dev xvfb libmpv-dev mpv \
             libnss3 libnspr4
 
       - run: flutter pub get
 
-      - run: flutter build ${{ matrix.platform }} --release
+      # The page engine runs only inside Chromium's sandbox, and refuses to
+      # start without one (third_party/webview_cef/FORK.md). On Linux the
+      # sandbox needs unprivileged user namespaces, which Ubuntu 23.10+
+      # restricts through AppArmor by default. Lifted here, on a throwaway
+      # runner, so that the test exercises the real sandboxed engine rather
+      # than its refusal.
+      - name: Let Chromium create its sandbox
+        run: |
+          if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
+
+      # The hostile-page test, by name. The file's other test is the refusal
+      # test, which is skipped on purpose here (it runs only where the engine
+      # cannot start). If the sandbox cannot be created on this runner the
+      # hostile-page test FAILS ("the page engine refused to start"); the check
+      # below makes sure a skip cannot pass for a run either: this job must
+      # have run the engine. The reporter is named because on GitHub Actions
+      # flutter test picks the github one, whose summary ("🎉 1 test passed.")
+      # the check would not recognise.
+      - name: Hostile saved page against the sandboxed engine
+        run: |
+          set -o pipefail
+          xvfb-run -a flutter test integration_test/viewers/saved_page_engine_test.dart -d linux --reporter expanded \
+            --plain-name GivenAHostileSavedPage_WhenTheEngineRunsIt_ThenItReadsNoLocalFileAndStaysInItsFolder \
+            | tee engine-test.log
+          if ! grep -q '+1: All tests passed!' engine-test.log || grep -Eq '~[0-9]|All tests skipped' engine-test.log; then
+            echo "::error::the hostile-page test did not run and pass; the sandboxed engine was not exercised"
+            exit 1
+          fi

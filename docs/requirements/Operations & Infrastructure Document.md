@@ -140,7 +140,9 @@ alexandria-ui/
 ├── integration_test/
 ├── windows/
 ├── linux/
-└── .github/workflows/
+├── ci/                            the scripts of the Jenkins checks and of the release build
+├── yggdrasil.yml                  what Jenkins checks and releases
+└── .github/workflows/             the Windows jobs, which stay on GitHub Actions
 ```
 
 Each folder under `features/` holds `domain/`, `application/`, `data/`, and
@@ -324,8 +326,9 @@ GitHub Release:
 certificate the project does not yet hold, and Flatpak distribution through a
 public remote requires an account that does not yet exist. Both are recorded here
 as deliberately deferred, to be settled before the first public release; until
-then, packages are produced unsigned, and the 0.x releases that carry them are
-published as prereleases. Neither blocks any use case.
+then, packages are produced unsigned. The 0.x releases that carry them are
+ordinary releases: the release pipeline marks only a SemVer pre-release version
+(such as `1.0.0-rc.1`) as a prerelease. Neither blocks any use case.
 
 **The page engine's sandbox on Linux packages.** The saved-page engine (UC-25)
 runs only inside Chromium's sandbox, and the application draws the page without
@@ -353,7 +356,7 @@ root, so it is done where root is available:
 The installer run as an ordinary user, the tarball and the AppImage cannot
 write a system profile, so on a restricted Ubuntu those fall back to widgets,
 and the viewer says why. The Flatpak cannot nest user namespaces at all. The
-release workflow checks that the `.deb` and the root installer leave a profile
+release build checks that the `.deb` and the root installer leave a profile
 the parser accepts and take it away again. On Windows the engine is
 not started at all until the runner is launched through CEF's sandbox
 bootstrap.

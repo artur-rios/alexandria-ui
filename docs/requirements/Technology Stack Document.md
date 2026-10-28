@@ -331,7 +331,7 @@ section is the canonical list of the tools and versions.
 | Testing | lcov | latest stable at implementation time |
 | Packaging | msix | latest stable at implementation time |
 | Packaging | flutter_distributor | latest stable at implementation time |
-| CI | GitHub Actions (Windows and Ubuntu runners) | latest stable at implementation time |
+| CI | Jenkins (Ubuntu checks and the Linux release build) and GitHub Actions (Windows jobs) | latest stable at implementation time |
 
 A comic-book RAR (CBR) decoder is deliberately absent from this table; see
 [§3.4](#34-document-image-and-page-viewing).

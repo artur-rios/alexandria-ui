@@ -1,5 +1,8 @@
 # Contributing
 
+This repository lives at <https://git.techcraftsmen.net/artur-rios/alexandria-ui>. GitHub is a read-only mirror:
+open pull requests on the git server, not on GitHub.
+
 ## Building from source
 
 The product is three repositories: this one is the front end, the
@@ -30,7 +33,7 @@ Prerequisites, per the
   ```
 
 ```bash
-git clone https://github.com/artur-rios/alexandria-ui.git
+git clone https://git.techcraftsmen.net/artur-rios/alexandria-ui.git
 git clone https://github.com/artur-rios/alexandria-api.git
 cd alexandria-ui
 ```
@@ -251,10 +254,16 @@ in the
 [Development Workflow Document](docs/requirements/Development%20Workflow%20Document.md).
 
 A pull request into `develop` or `main` needs every required check green before
-it can be merged: `Analyze and generate`, `Unit and widget tests` and
-`Integration` on Linux and Windows, `Release build` on Linux and Windows, and
-`branch-policy`. The **Branch Policy** workflow
-([`branch-policy.yml`](.github/workflows/branch-policy.yml)) enforces the model
+it can be merged. Jenkins runs `analyze`, `test`, `integration` and `build` on
+Linux (the scripts of the same names under [`ci/`](ci), declared in
+[`yggdrasil.yml`](yggdrasil.yml)) and the `branch-policy` check; the Windows
+half of `test`, `integration` and `build` stays a GitHub Actions job
+([`ci.yml`](.github/workflows/ci.yml)) on the GitHub copy, whose result Jenkins
+copies to the pull request (`Unit and widget tests (windows)`,
+`Integration (windows)` and `Release build (windows)`), plus one more GitHub
+Actions job, `Sandboxed page engine (linux)`, which runs the page viewer's
+sandboxed-engine test that Jenkins' containers cannot. The `branch-policy`
+check enforces the model
 above: into `develop` only from `feature/` or `fix/` branches cut from
 `develop`, into `main` only from a `release/<major>.<minor>.<patch>` branch whose
 every commit is already on `develop` and whose version has no tag yet. Tags
@@ -292,10 +301,11 @@ does: before 1.0 a minor bump marks a breaking release — 0.1.0 renamed the
 executable and, on Linux, the application id, so an existing installation
 became a second entry instead of being upgraded — and it is also used for a
 release that adds features. A patch bump is a release of fixes and small
-changes only, such as 0.1.1's new icon. 0.x releases are published as GitHub
-prereleases.
+changes only, such as 0.1.1's new icon. A 0.x release is an ordinary release,
+not a prerelease: the release pipeline marks only a SemVer pre-release version
+(such as `1.0.0-rc.1`) as one.
 
-The version comes from the tag, and nowhere else. The release workflow stamps
+The version comes from the tag, and nowhere else. The release build stamps
 it into the working copy of `pubspec.yaml` before building — the `.deb` and the
 AppImage are named from it, and the application reports it as its own — while
 the `pubspec.yaml` in git keeps the version the project develops against
@@ -306,9 +316,12 @@ must be numeric and dotted — the MSIX packager rejects anything else.
 ## Releasing
 
 Every tag named `v<version>` on `main` builds the Windows and Linux packages and
-publishes them as a GitHub Release
-([`release.yml`](.github/workflows/release.yml)). The workflow refuses a tag
-that points at a commit not on `main`. To release `x.y.z`:
+publishes them as a release (and its GitHub copy). The Linux packages are built by Jenkins
+on the release agent ([`ci/release-build.sh`](ci/release-build.sh), `release.build` in
+[`yggdrasil.yml`](yggdrasil.yml)); the Windows ones by the `Release Windows`
+workflow ([`release-windows.yml`](.github/workflows/release-windows.yml)) on the
+GitHub copy, which Jenkins dispatches on the tag. A tag that points at a commit
+not on `main` is refused. To release `x.y.z`:
 
 1. On `develop`, through a normal `feature/` or `fix/` pull request — a release
    branch cannot carry commits of its own — rename `## [Unreleased]` in
@@ -337,12 +350,19 @@ that points at a commit not on `main`. To release `x.y.z`:
 
 The release branch is deleted after the merge.
 
-Running the workflow by hand (`workflow_dispatch`, with a version and no tag)
-builds every package as a workflow artifact without publishing a release.
+Running `release-windows.yml` by hand (`workflow_dispatch`, with an existing tag)
+builds the Windows packages as a workflow artifact without publishing a release;
+`ci/release-build.sh` run on a machine of your own does the same for the Linux
+ones (as root, with `RELEASE_VERSION` set to `x.y.z`).
 
-A release links the core at `CORE_REF`, which `ci.yml` and `release.yml` pin to
-the same alexandria-api commit. Move both together: CI fails when they disagree,
-or when `release.yml` names a branch instead of a commit.
+A release links the core at `CORE_REF`, which [`ci/pins.sh`](ci/pins.sh) holds
+for everything that builds: the Jenkins checks, the release build and both
+Windows workflows read that one value, so they cannot disagree. The `analyze`
+check fails when it names a branch or a tag instead of a commit. The same file
+pins the Flutter SDK (`FLUTTER_VERSION`, with its checksum) and the Rust
+toolchain (`RUST_VERSION`): Jenkins installs it with rustup, and the workflows
+that build the core install exactly that version too, so no build floats on
+`stable`.
 
 Packages are produced unsigned. Code signing for Windows and Flatpak
 distribution through a public remote are deliberately deferred — see
