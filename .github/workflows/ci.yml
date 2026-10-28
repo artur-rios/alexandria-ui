@@ -330,11 +330,13 @@ jobs:
       # cannot start). If the sandbox cannot be created on this runner the
       # hostile-page test FAILS ("the page engine refused to start"); the check
       # below makes sure a skip cannot pass for a run either: this job must
-      # have run the engine.
+      # have run the engine. The reporter is named because on GitHub Actions
+      # flutter test picks the github one, whose summary ("🎉 1 test passed.")
+      # the check would not recognise.
       - name: Hostile saved page against the sandboxed engine
         run: |
           set -o pipefail
-          xvfb-run -a flutter test integration_test/viewers/saved_page_engine_test.dart -d linux \
+          xvfb-run -a flutter test integration_test/viewers/saved_page_engine_test.dart -d linux --reporter expanded \
             --plain-name GivenAHostileSavedPage_WhenTheEngineRunsIt_ThenItReadsNoLocalFileAndStaysInItsFolder \
             | tee engine-test.log
           if ! grep -q '+1: All tests passed!' engine-test.log || grep -Eq '~[0-9]|All tests skipped' engine-test.log; then
