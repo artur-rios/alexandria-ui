@@ -77,7 +77,7 @@ void main() {
     await open(tester);
     final l10n = l10nOf(tester);
 
-    // Seven, which is the core's own FileType — not three buckets that
+    // Six, which is the core's own FileType — not three buckets that
     // cannot express "books but not images".
     for (final type in FileType.values) {
       expect(
@@ -214,14 +214,14 @@ void main() {
     await tester.tap(find.text(l10n.indexScopeConfirm));
     await tester.pumpAndSettle();
 
-    // Empty, not all seven listed: the absence is what the core reads as
+    // Empty, not all six listed: the absence is what the core reads as
     // every type, and one spelling means a folder that covers everything
     // reads the same however the owner got there.
     expect(answers.single?.types, isEmpty);
   });
 
   testWidgets(
-    'GivenOnlyMusicIsTicked_WhenItIsConfirmed_ThenOnlyMusicIsChosen',
+    'GivenOnlyBooksAreTicked_WhenItIsConfirmed_ThenOnlyBooksAreChosen',
     (tester) async {
       final answers = await open(tester);
       final l10n = l10nOf(tester);
@@ -229,12 +229,12 @@ void main() {
       // Clear everything through the "all" row, then tick the one type.
       await tester.tap(find.text(l10n.indexScopeAll));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(l10n.fileTypeAudio));
+      await tester.tap(find.text(l10n.fileTypeDocument));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.indexScopeConfirm));
       await tester.pumpAndSettle();
 
-      expect(answers.single?.types, [FileType.audio]);
+      expect(answers.single?.types, [FileType.document]);
     },
   );
 

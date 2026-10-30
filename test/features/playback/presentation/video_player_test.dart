@@ -5,7 +5,6 @@ import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_position_store.dart';
-import 'package:alexandria_ui/features/playback/domain/playback_session.dart';
 import 'package:alexandria_ui/features/playback/presentation/video_player_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -45,7 +44,6 @@ void main() {
   openPlayer(
     WidgetTester tester, {
     FakePlaybackPositionStore? positions,
-    List<PlaybackSession> sessions = const [],
     FakePlaybackSourceGateway? sources,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
@@ -72,8 +70,6 @@ void main() {
         playbackSourceGatewayProvider.overrideWithValue(resolved),
         playbackPositionsProvider.overrideWithValue(store),
         clockProvider.overrideWithValue(() => now),
-        if (sessions.isNotEmpty)
-          playbackSessionsProvider.overrideWithValue(sessions),
       ],
     );
 
@@ -184,6 +180,48 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(opened.player.seeks, [const Duration(seconds: 70)]);
+    });
+
+    // Where the video has got to, beside the slider. The only assertions on
+    // this label lived in the audio player's tests, which went with audio.
+    testWidgets(
+      'GivenPlayback_WhenThePositionIsReported_ThenItAndTheLengthShow',
+      (tester) async {
+        final opened = await openPlayer(tester);
+        opened.player.reportPosition(
+          const Duration(minutes: 1, seconds: 5),
+          duration: const Duration(minutes: 4, seconds: 30),
+        );
+        await tester.pumpAndSettle();
+
+        expect(inPlayer(find.text('01:05')), findsOneWidget);
+        expect(inPlayer(find.text('04:30')), findsOneWidget);
+      },
+    );
+
+    testWidgets('GivenAVideoPastTheHour_WhenItIsPlaying_ThenTheHoursShow', (
+      tester,
+    ) async {
+      final opened = await openPlayer(tester);
+      opened.player.reportPosition(
+        const Duration(hours: 1, minutes: 2, seconds: 3),
+        duration: const Duration(hours: 2, minutes: 41),
+      );
+      await tester.pumpAndSettle();
+
+      expect(inPlayer(find.text('1:02:03')), findsOneWidget);
+      expect(inPlayer(find.text('2:41:00')), findsOneWidget);
+    });
+
+    testWidgets('GivenNoKnownLength_WhenItIsPlaying_ThenTheLengthIsBlank', (
+      tester,
+    ) async {
+      final opened = await openPlayer(tester);
+      opened.player.reportPosition(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+
+      expect(inPlayer(find.text('00:03')), findsOneWidget);
+      expect(inPlayer(find.text('--:--')), findsOneWidget);
     });
 
     testWidgets('GivenPlaybackNearTheStart_WhenSeekingBack_ThenItStopsAtZero', (
@@ -480,32 +518,6 @@ void main() {
 
       expect(find.text(messages(tester).videoResume), findsNothing);
       expect(opened.player.opened, hasLength(1));
-    });
-  });
-
-  // AF-05 and FR-PL-08: at most one playback session.
-  group('one medium at a time', () {
-    testWidgets('GivenAudioIsPlaying_WhenAVideoStarts_ThenTheAudioStopsFirst', (
-      tester,
-    ) async {
-      final audio = FakePlaybackSession(medium: PlaybackMedium.audio);
-
-      await openPlayer(tester, sessions: [audio]);
-
-      expect(audio.stopCount, 1);
-    });
-
-    testWidgets('GivenNothingIsPlaying_WhenAVideoStarts_ThenNothingIsStopped', (
-      tester,
-    ) async {
-      final audio = FakePlaybackSession(
-        medium: PlaybackMedium.audio,
-        isActive: false,
-      );
-
-      await openPlayer(tester, sessions: [audio]);
-
-      expect(audio.stopCount, 0);
     });
   });
 

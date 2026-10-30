@@ -5,4 +5,4 @@ Comment=Your personal library
 Exec=alexandria
 Icon=io.github.artur_rios.Alexandria
 Terminal=false
-Categories=AudioVideo;Player;Office;Viewer;
+Categories=AudioVideo;Video;Player;Office;Viewer;

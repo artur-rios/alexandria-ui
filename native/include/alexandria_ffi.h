@@ -156,47 +156,6 @@
 #define READING_LIST_ERR_OTHER 9
 
 /**
- * FFI status codes returned by playlist operations (Tasks 1-6).
- * Deliberately separate from `READING_LIST_*` / `WATCHLIST_*` — per the
- * convention above — so playlist use cases can grow their own set without
- * colliding; `PLAYLIST_OK == READING_LIST_OK == WATCHLIST_OK == 0` by
- * convention.
- */
-#define PLAYLIST_OK 0
-
-#define PLAYLIST_ERR_INVALID_INPUT 1
-
-#define PLAYLIST_ERR_UNAUTHORIZED 2
-
-#define PLAYLIST_ERR_NOT_INITIALIZED 3
-
-#define PLAYLIST_ERR_NOT_FOUND 4
-
-#define PLAYLIST_ERR_INVALID_STATE 5
-
-#define PLAYLIST_ERR_OTHER 9
-
-/**
- * FFI status codes returned by play-history operations (play history
- * design). Deliberately separate from `PLAYLIST_*` — per the convention
- * above — even though the two families are about the same music: a
- * playlist is a thing the owner curates and a play is something that
- * happened, and the calls fail for different reasons. `PLAY_OK ==
- * PLAYLIST_OK == 0` by convention.
- */
-#define PLAY_OK 0
-
-#define PLAY_ERR_INVALID_INPUT 1
-
-#define PLAY_ERR_UNAUTHORIZED 2
-
-#define PLAY_ERR_NOT_INITIALIZED 3
-
-#define PLAY_ERR_NOT_FOUND 4
-
-#define PLAY_ERR_OTHER 9
-
-/**
  * FFI status codes returned by local-auth operations (UC-34/UC-35).
  * Deliberately separate from the other `*_OK == 0` families — per the
  * convention above — so local-auth use cases can grow their own set
@@ -280,37 +239,8 @@
 #define RUN_ERR_OTHER 9
 
 /**
- * FFI status codes returned by music enrichment (music enrichment design).
- * Its own set, per the convention above, so it can grow without colliding;
- * `ENRICHMENT_OK == PLAYLIST_OK == 0`.
- */
-#define ENRICHMENT_OK 0
-
-#define ENRICHMENT_ERR_INVALID_INPUT 1
-
-#define ENRICHMENT_ERR_UNAUTHORIZED 2
-
-#define ENRICHMENT_ERR_NOT_INITIALIZED 3
-
-#define ENRICHMENT_ERR_NOT_FOUND 4
-
-/**
- * Enrichment is switched off, or is on with no contact configured.
- *
- * Its own code rather than folded into `INVALID_INPUT`, because it is not
- * something the *caller* did: the request was well formed and the
- * installation is not configured for it. A client that can tell the two
- * apart says "your administrator has not enabled this" instead of marking
- * the owner's input wrong. `alexandria_settings_json` reports the same
- * fact up front, so a client need never discover it by being refused.
- */
-#define ENRICHMENT_ERR_UNAVAILABLE 5
-
-#define ENRICHMENT_ERR_OTHER 9
-
-/**
  * FFI status codes returned by library operations (libraries design). Its
- * own set, per the convention above; `LIBRARY_OK == PLAYLIST_OK == 0`.
+ * own set, per the convention above; `LIBRARY_OK == FILE_OK == 0`.
  */
 #define LIBRARY_OK 0
 
@@ -443,32 +373,6 @@ typedef struct ReadingListJsonResult {
 } ReadingListJsonResult;
 
 /**
- * Result of every playlist FFI function. On success `status` is
- * `PLAYLIST_OK` and `json` is a NUL-terminated JSON string of the response
- * body — byte-for-byte the same shape HTTP returns from the matching
- * `/v1/playlists*` route (FR-FC-24 / NFR-09). On failure `json` is NULL
- * and `status` carries the mapped error code. The caller must free `json`
- * with `alexandria_free_string`.
- */
-typedef struct PlaylistJsonResult {
-  int status;
-  char *json;
-} PlaylistJsonResult;
-
-/**
- * Result of every play-history FFI function. On success `status` is
- * `PLAY_OK` and `json` is a NUL-terminated JSON string of the response
- * body — byte-for-byte the same shape HTTP returns from the matching
- * `/v1/plays*` route (FR-FC-24 / NFR-09). On failure `json` is NULL and
- * `status` carries the mapped error code. The caller must free `json`
- * with `alexandria_free_string`.
- */
-typedef struct PlayJsonResult {
-  int status;
-  char *json;
-} PlayJsonResult;
-
-/**
  * Result of `alexandria_auth_local_login` / `alexandria_auth_local_set_credentials`
  * (UC-34/UC-35). On success `status` is `AUTH_OK` and `json` is a
  * NUL-terminated JSON string of the `LocalLoginResult` /
@@ -519,18 +423,6 @@ typedef struct RunJsonResult {
 } RunJsonResult;
 
 /**
- * Result of every enrichment FFI function. On success `status` is
- * `ENRICHMENT_OK` and `json` is a NUL-terminated JSON string of the
- * response body — byte-for-byte the same shape HTTP returns from the
- * matching `/v1/enrichment*` route (FR-FC-24 / NFR-09). On failure `json`
- * is NULL. The caller must free `json` with `alexandria_free_string`.
- */
-typedef struct EnrichmentJsonResult {
-  int status;
-  char *json;
-} EnrichmentJsonResult;
-
-/**
  * Result of every library FFI function. On success `status` is `LIBRARY_OK`
  * and `json` is a NUL-terminated JSON string of the same body HTTP returns
  * from the matching `/v1/libraries*` route (FR-FC-24 / NFR-09). The caller
@@ -541,6 +433,14 @@ typedef struct LibraryJsonResult {
   char *json;
 } LibraryJsonResult;
 
+/**
+ * This core's version, as a NUL-terminated string such as `"0.5.0"`.
+ *
+ * The pointer is to static storage owned by the library: it stays valid for
+ * the life of the process and must **not** be passed to
+ * `alexandria_free_string`, which would free memory this library never
+ * allocated.
+ */
 const char *alexandria_version(void);
 
 int32_t alexandria_health_status_code(void);
@@ -582,7 +482,7 @@ int alexandria_index_init(const char *db_path);
  * rather than a rejected call.
  *
  * `types` is the run's scope: a comma-separated list of the wire names
- * `FileType` reads back (`"audio,image"`), the same words the HTTP body's
+ * `FileType` reads back (`"video,image"`), the same words the HTTP body's
  * `types` array carries (FR-FC-24). NULL and the empty string are the same
  * absence and mean every type — see [`parse_scope`] for why an unrecognised
  * name is `INDEX_ERR_INVALID_INPUT` here where an unrecognised priority is
@@ -612,7 +512,7 @@ struct IndexStartResult alexandria_index_refresh_start(const char *token, const 
 int64_t alexandria_index_count_files(void);
 
 /**
- * Edit a file's type-specific metadata (UC-04 / FR-FC-14..18).
+ * Edit a file's type-specific metadata (UC-04 / FR-FC-15..18).
  *
  * `uuid` is the file's public UUID string; `json_patch` is the JSON body
  * (the `SubtypeMetadata` enum, internally tagged by `type`) that HTTP would
@@ -628,7 +528,7 @@ struct FileMetadataResult alexandria_file_edit_metadata(const char *uuid,
 /**
  * List/query files filtered by type and lifecycle state (UC-03 / FR-FC-12).
  *
- * `json_filters` is a JSON string `{"type":"audio","state":"all"}` (empty
+ * `json_filters` is a JSON string `{"type":"video","state":"all"}` (empty
  * string or NULL for defaults). `{"includeLibraries":true}` reaches into
  * libraries, which is what a caller's search and deleted-items review need
  * (libraries design / FR-FC-38); without it a library's files are absent,
@@ -673,7 +573,9 @@ struct FileJsonResult alexandria_file_read_content(const char *uuid, const char 
  * desktop, on the same machine as the file — opens that path directly.
  * Zero bytes cross this boundary. Parity with HTTP is defined on this
  * descriptor and on the authorization, state, and error decisions rather
- * than on byte transfer (FR-MP-06).
+ * than on byte transfer (FR-MP-06). A file whose path resolves outside the
+ * configured `filesystem.root` gets `PLAYBACK_ERR_INVALID_INPUT` and no
+ * descriptor (FR-FC-26), as HTTP's `400`.
  */
 struct PlaybackJsonResult alexandria_file_playback_source(const char *uuid, const char *token);
 
@@ -695,22 +597,6 @@ struct PlaybackJsonResult alexandria_comic_page(const char *uuid, uint32_t page,
  * bytes, so the same base64 rule as `alexandria_comic_page` applies.
  */
 struct PlaybackJsonResult alexandria_file_thumbnail(const char *uuid, const char *token);
-
-/**
- * UC-21 — the sound of a track, as levels a visualiser can draw.
- *
- * `uuid` is the file's public UUID (NUL-terminated string), `token` the
- * bearer auth token. On success the JSON carries the shape of the envelope
- * and the levels themselves, base64 encoded: `{"uuid":…,"bands":16,
- * "frameMs":100,"levelsBase64":"…"}` — row-major, `bands` levels per frame,
- * each 0 (silence) to 255 (the loudest moment of this track).
- *
- * **The first call for a track decodes it**, which is a second or two of CPU
- * on the blocking pool; every call after it reads what was stored. A caller
- * on a frame deadline should treat the first call as slow and draw nothing
- * until it answers, which is exactly what the player does.
- */
-struct PlaybackJsonResult alexandria_track_energy(const char *uuid, const char *token);
 
 /**
  * Write edited content back to a TextFile on disk (UC-33 / FR-TX-02,
@@ -1136,139 +1022,6 @@ struct ReadingListJsonResult alexandria_reading_list_remove_item(const char *rea
 struct ReadingListJsonResult alexandria_reading_list_delete(const char *uuid, const char *token);
 
 /**
- * Create a named, empty playlist (Task 1).
- *
- * `json_body` is the JSON body HTTP would send (`name`). The function
- * deserializes it, calls the same `CreatePlaylistHandler` the HTTP route
- * uses, and on success serializes the returned `Playlist` back to JSON —
- * so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
- */
-struct PlaylistJsonResult alexandria_playlist_create(const char *json_body, const char *token);
-
-/**
- * Rename a playlist, leaving its entries and their order untouched
- * (Task 2).
- *
- * `uuid` is the playlist's public UUID (NUL-terminated string).
- * `json_body` is the JSON body HTTP would send (`name`). Both surfaces
- * call the same `RenamePlaylistHandler` so they stay at parity (FR-FC-24 /
- * NFR-09). `token` is the bearer auth token.
- */
-struct PlaylistJsonResult alexandria_playlist_rename(const char *uuid,
-                                                     const char *json_body,
-                                                     const char *token);
-
-/**
- * Delete a playlist, removing its entries; referenced audio files are
- * preserved (Task 3).
- *
- * `uuid` is the playlist's public UUID (NUL-terminated string). On success
- * `json` carries the pre-delete `Playlist` — byte-for-byte the same shape
- * HTTP returns from `DELETE /v1/playlists/{uuid}` (parity, FR-FC-24 /
- * NFR-09). `token` is the bearer auth token.
- */
-struct PlaylistJsonResult alexandria_playlist_delete(const char *uuid, const char *token);
-
-/**
- * Every persisted playlist, without their tracks (Task 6).
- *
- * `token` is the bearer auth token. On success `json` carries a
- * `Vec<Playlist>` — byte-for-byte the same shape HTTP returns from
- * `GET /v1/playlists` (parity, FR-FC-24 / NFR-09).
- */
-struct PlaylistJsonResult alexandria_playlists_list(const char *token);
-
-/**
- * Read a playlist back with its tracks, in position order (Task 6).
- *
- * `uuid` is the playlist's public UUID (NUL-terminated string). On success
- * `json` carries a `PlaylistView` — byte-for-byte the same shape HTTP
- * returns from `GET /v1/playlists/{uuid}` (parity, FR-FC-24 / NFR-09).
- * `token` is the bearer auth token.
- */
-struct PlaylistJsonResult alexandria_playlist_read(const char *uuid, const char *token);
-
-/**
- * Append tracks to a playlist, in order, at consecutive positions after
- * whatever it already holds (Task 4). The whole slice succeeds or none of
- * it does.
- *
- * `uuid` is the playlist's public UUID (NUL-terminated string).
- * `json_body` is the JSON body HTTP would send (`fileUuids`). On success
- * `json` carries the new `Vec<PlaylistEntry>` — byte-for-byte the same
- * shape HTTP returns from `POST /v1/playlists/{uuid}/entries` (parity,
- * FR-FC-24 / NFR-09). `token` is the bearer auth token.
- */
-struct PlaylistJsonResult alexandria_playlist_add_entries(const char *uuid,
-                                                          const char *json_body,
-                                                          const char *token);
-
-/**
- * Remove one entry from a playlist, addressed by its own `entry_uuid`
- * rather than a file uuid, since a playlist may hold the same track more
- * than once (Task 4).
- *
- * `playlist_uuid` is the playlist's public UUID (NUL-terminated string);
- * `entry_uuid` is the entry's own public UUID (NUL-terminated string),
- * passed directly rather than through a body (there is nothing else to
- * carry) -- the internal rowid is never exposed on this transport, matching
- * HTTP's `{entryUuid}` path parameter (SRD §4.0). On success `json` is an
- * empty JSON object (`"{}"`) — the core handler answers
- * `Result<(), DomainError>`, nothing beyond success is available to echo
- * back, matching `DELETE /v1/playlists/{uuid}/entries/{entryUuid}`'s
- * `200 {}` exactly (parity, FR-FC-24 / NFR-09) rather than inventing an
- * FFI-only shape. `token` is the bearer auth token.
- */
-struct PlaylistJsonResult alexandria_playlist_remove_entry(const char *playlist_uuid,
-                                                           const char *entry_uuid,
-                                                           const char *token);
-
-/**
- * Move one playlist entry to a new index, renumbering the rest in one
- * transaction (Task 5), addressed by its own `entry_uuid` rather than a
- * file uuid, since a playlist may hold the same track more than once.
- *
- * `playlist_uuid` is the playlist's public UUID (NUL-terminated string);
- * `entry_uuid` is the entry's own public UUID (NUL-terminated string) —
- * the internal rowid is never exposed on this transport (SRD §4.0).
- * `json_body` is the JSON body HTTP would send (`toIndex`). On success
- * `json` carries the playlist's full new order (`Vec<PlaylistEntry>`) —
- * byte-for-byte the same shape HTTP returns from `POST
- * /v1/playlists/{uuid}/entries/{entryUuid}/move` (parity, FR-FC-24 /
- * NFR-09). `token` is the bearer auth token.
- */
-struct PlaylistJsonResult alexandria_playlist_move_entry(const char *playlist_uuid,
-                                                         const char *entry_uuid,
-                                                         const char *json_body,
-                                                         const char *token);
-
-/**
- * Record that a track was played (play history design).
- *
- * `json_body` is the JSON body HTTP would send (`fileUuid`). The function
- * deserializes it, calls the same `RecordPlayHandler` the HTTP route uses,
- * and on success serializes the returned `PlayEvent` back to JSON — so the
- * FFI and HTTP surfaces agree byte-for-byte modulo key ordering (parity,
- * FR-FC-24 / NFR-09). `token` is the bearer auth token.
- *
- * The play is stamped from the core's clock, not from anything passed
- * here: the caller says *what* was played, never *when*.
- */
-struct PlayJsonResult alexandria_play_record(const char *json_body, const char *token);
-
-/**
- * What was played most (play history design).
- *
- * `json_query` is the JSON form of the query string HTTP would send
- * (`limit`); NULL or an empty string asks for the default. On success
- * `json` carries the `MusicStats` — byte-for-byte the same shape HTTP
- * returns from `GET /v1/plays/stats` (parity, FR-FC-24 / NFR-09).
- * `token` is the bearer auth token.
- */
-struct PlayJsonResult alexandria_music_stats(const char *json_query, const char *token);
-
-/**
  * Local login (UC-34 / FR-AU-04): verify email + password and create a
  * session. `json_body` is the JSON body HTTP would send (`email`,
  * `password`). On success `json` carries the `LocalLoginResult` — the
@@ -1485,73 +1238,6 @@ struct RunJsonResult alexandria_index_runs_active_json(const char *token);
 void alexandria_free_string(char *ptr);
 
 /**
- * Run music enrichment (music enrichment design).
- *
- * `scope_json` is the JSON body `POST /v1/enrichment/runs` takes, and NULL
- * or an empty string means the same thing an absent body does there: sweep
- * everything not yet looked up. `{"fileUuid":"…"}` scopes it to one track,
- * `{"artist":"…"}` to one artist. `token` is the bearer auth token.
- *
- * **This call reaches the network** — the only FFI function in this library
- * that does — and it is slow by design: MusicBrainz is rate-limited to one
- * request per second and a sweep over a large library will take hours. A
- * caller must run it off whatever thread its interface draws on, and should
- * expect to show progress from the returned counts rather than a spinner.
- *
- * A run that reached nothing still succeeds: a service being down or having
- * no answer is counted in the report, not raised.
- */
-struct EnrichmentJsonResult alexandria_enrichment_run(const char *scope_json, const char *token);
-
-/**
- * Read what enrichment has stored for one track.
- *
- * `uuid` is the file's public UUID. `artist` is whose image to read — the
- * caller is a player already showing the track, so it is holding the tags
- * and passing the name costs nothing, where resolving it here would be a
- * second query for a fact it has. NULL means "no image wanted".
- *
- * Unlike the run above this makes **no network call** and works whether or
- * not enrichment is switched on: reading what was already cached is a plain
- * database read, so an owner who enabled it, ran it once and turned it off
- * keeps what they fetched.
- */
-struct EnrichmentJsonResult alexandria_enrichment_read_track(const char *uuid,
-                                                             const char *artist,
-                                                             const char *token);
-
-/**
- * UC-46 step 3 — the photograph stored for one artist, by name (FR-PL-15).
- *
- * A read, never a lookup: an artists list is a screenful of rows, and a call
- * per row that could reach the network would be dozens of requests a second
- * against services that allow one. `ENRICHMENT_ERR_NOT_FOUND` for an artist
- * nobody has looked up and for one looked up without success — a client has
- * nothing different to draw for the two.
- *
- * By name, not by file: a client's artists list is grouped by a name it
- * worked out itself across every track of a record, and a picture stored
- * under whatever one file happened to be tagged with is one that list will
- * never find.
- */
-struct EnrichmentJsonResult alexandria_artist_image(const char *name, const char *token);
-
-/**
- * UC-46 step 3 — look one artist's photograph up, and keep it (FR-PL-15).
- *
- * **Reaches the network**, once, for one artist: the identity service and
- * then the picture. A row already settled — found, or looked for and not
- * found — is answered from storage without a request, which is what keeps a
- * library of five hundred artists from being five hundred requests every
- * session.
- *
- * Answers the row whatever it concluded, so a caller can tell "found" from
- * "nothing to be found" and stop asking. The path is relative to the core's
- * own image cache; `alexandria_artist_image` answers it resolved.
- */
-struct EnrichmentJsonResult alexandria_artist_image_fetch(const char *name, const char *token);
-
-/**
  * Treat a folder as a library (libraries design).
  *
  * `json_body` is the JSON body `POST /v1/libraries` takes (`name`,
@@ -1568,7 +1254,8 @@ struct LibraryJsonResult alexandria_library_register(const char *json_body, cons
  * (`rootPath`). The library's files move with it, keeping their uuids and
  * everything that points at them. Answers `LIBRARY_ERR_CONFLICT` when the
  * destination overlaps another library, or when the catalog already holds
- * files there.
+ * files there, and `LIBRARY_ERR_INVALID_INPUT` when `rootPath` is blank or
+ * lies outside the configured `filesystem.root` (FR-FC-26), as HTTP's `400`.
  */
 struct LibraryJsonResult alexandria_library_move(const char *uuid,
                                                  const char *json_body,

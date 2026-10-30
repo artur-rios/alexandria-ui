@@ -19,7 +19,7 @@ dependencies:
     sdk: flutter
 
   # Composition root and state management (IR-07).
-  flutter_riverpod: ^3.0.0
+  flutter_riverpod: ^3.4.3
 
   # Immutable domain models and the typed failure union (IR-08).
   freezed_annotation: ^3.1.0
@@ -48,7 +48,7 @@ dependencies:
   path_provider: ^2.1.6
 
   # The local settings store (IR-12).
-  shared_preferences: ^2.5.5
+  shared_preferences: ^2.5.6
 
   # Structured logging (IR-13).
   logging: ^1.3.0
@@ -82,17 +82,16 @@ dependencies:
   # libmpv-backed, chosen because subtitle-track and audio-track selection on
   # both Windows and Linux are hard requirements (FR-PL-03, FR-PL-04) and it
   # plays the container and codec range a real library holds without
-  # transcoding (FR-PL-01). The `libs` packages carry the native libmpv build
+  # transcoding (FR-PL-01). The `libs` package carries the native libmpv build
   # for each target, which is what keeps the application from depending on
   # whatever mpv the owner happens to have installed.
   media_kit: ^1.2.6
   media_kit_video: ^2.0.1
   media_kit_libs_video: ^1.0.7
-  media_kit_libs_audio: ^1.0.7
-  archive: ^4.1.0
+  archive: ^4.5.2
   xml: ^7.0.1
-  flutter_widget_from_html: ^0.17.2
-  pdfrx: ^2.4.7
+  flutter_widget_from_html: ^0.17.4
+  pdfrx: ^2.6.5
   markdown: ^7.3.1
 
   # Reads a saved page's own markup and its own stylesheets, so the rules in
@@ -101,13 +100,20 @@ dependencies:
   # and nothing else, which is why the page needs looking at first.
   html: ^0.15.7
   csslib: ^1.0.2
-  url_launcher: ^6.3.2
+  url_launcher: ^6.3.3
   # The browser engine saved HTML pages are drawn with (UC-25, FR-VW-05):
   # CEF, rendered off-screen and composed into the window as a texture. The
   # stack document records the trade — the page's script runs, and the
   # distribution carries Chromium — and `PageViewerScreen` records what
   # happens on a machine where it will not start.
-  webview_cef: ^0.6.2
+  #
+  # Vendored and patched, not taken from pub.dev: upstream 0.6.2 starts
+  # Chromium with web security and the sandbox switched off and loads any
+  # popup into the page, which let a saved page's script read local files
+  # (NFR-12). third_party/webview_cef/FORK.md lists the patches and how to
+  # take a new upstream release.
+  webview_cef:
+    path: third_party/webview_cef
 
 dev_dependencies:
   flutter_test:
@@ -131,7 +137,7 @@ dev_dependencies:
   # sufficient -- re-checked on Dart 3.13.1, where resolution still fails, on
   # analyzer rather than on the SDK. This moves when custom_lint does.
   freezed: ^3.2.3
-  ffigen: ^21.0.0
+  ffigen: ^23.0.0
   json_serializable: ^6.11.2
 
   # Test doubles for the gateway interfaces. The only mocking library in the
@@ -140,46 +146,11 @@ dev_dependencies:
 
   # Windows MSIX packaging (IR-16).
   msix: ^3.18.0
-  riverpod: ^3.4.2
+  riverpod: ^3.4.3
 
 flutter:
   uses-material-design: true
   generate: true
-
-
-  # The typeface the album case is typeset in (UC-21). Bundled rather than
-  # left to the host, for two reasons that turn out to be the same reason.
-  #
-  # The case is a *designed* object — a title and an artist set on a sleeve —
-  # and a `TextStyle` naming no family takes whatever the operating system
-  # offers, so the same record was typeset in a different face on Windows
-  # than on Linux. Pinning it is what makes the drawing look the way it was
-  # drawn to look, on both targets.
-  #
-  # And it is what makes the goldens comparable at all. Measured: with the
-  # host's font the glyph boxes land one pixel wider on Linux than in the
-  # committed goldens, which across text that wide is 1.2-2.3% of the image
-  # against a 0.5% tolerance sized for a rounded corner. That is why CI had
-  # been red on every Linux run while passing on the machine the goldens were
-  # made on.
-  #
-  # The files are Roboto — Material's own default, so this pins what most
-  # platforms were already choosing rather than restyling anything. Apache
-  # 2.0; the licence ships beside the files.
-  #
-  # The FAMILY NAME is deliberately not "Roboto". Material's default
-  # typography asks for Roboto by name, so a bundled family called that is
-  # picked up by every widget in the application — measured: it moved 14
-  # unrelated screen goldens, some by 7% of the image. Naming it for the one
-  # thing that wants it keeps the pin to the sleeve, where the problem was.
-  fonts:
-    - family: AlexandriaSleeve
-      fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Roboto-Bold.ttf
-          weight: 700
 
 # IR-16: the MSIX package. Produced unsigned — code signing needs a certificate
 # the project does not hold, deferred in Operations & Infrastructure §7.2.

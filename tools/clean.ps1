@@ -15,7 +15,7 @@ target\ are left alone: this is a fresh install, not a fresh clone, and a clean
 run should not cost a full rebuild.
 
 Nothing here can reach a library source folder. The paths are fixed and none of
-them is derived from the catalog, so no indexed music, video or image is
+them is derived from the catalog, so no indexed video, document or image is
 reachable from this script.
 
 tools\dev.ps1 -Clean runs this first and then builds and starts as usual.

@@ -46,9 +46,9 @@ class CollectionCandidatesController
         // Reaching into libraries. The libraries design names collections
         // explicitly among the things the exclusion does not apply to — "a
         // lecture recording is still a video the owner may want in a
-        // watchlist" — and watchlists, reading lists and playlists all honour
-        // that already, because they are reached through the file's own
-        // details dialog, which a library's tree opens. Filing something into
+        // watchlist" — and watchlists and reading lists both honour that
+        // already, because they are reached through the file's own details
+        // dialog, which a library's tree opens. Filing something into
         // a collection is offered nowhere but this picker, so without this
         // there was no way at all to put a library's file in one.
         includeLibraries: true,

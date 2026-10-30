@@ -29,8 +29,8 @@ void main() {
     var notifications = 0;
     ref.listen(shellControllerProvider, (_, _) => notifications++);
 
-    ref.read(shellControllerProvider.notifier).go(ShellDestination.music);
-    ref.read(shellControllerProvider.notifier).go(ShellDestination.music);
+    ref.read(shellControllerProvider.notifier).go(ShellDestination.videos);
+    ref.read(shellControllerProvider.notifier).go(ShellDestination.videos);
 
     expect(notifications, 1);
   });

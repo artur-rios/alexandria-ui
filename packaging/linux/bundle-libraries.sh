@@ -11,7 +11,7 @@
 # Deliberately NOT run before the .deb or the Flatpak are built. The .deb
 # declares the distribution's ffmpeg packages as Depends and the Flatpak gets
 # them from its runtime extension; either one carrying a second copy as well
-# would be dead weight that shadows the system's. The release workflow builds
+# would be dead weight that shadows the system's. The release build builds
 # those two from a pristine bundle and only then calls this.
 #
 # Usage: bundle-libraries.sh <bundle-to-scan> <output-directory>
@@ -295,9 +295,13 @@ The libraries in the directory above, alongside the application, are unmodified
 copies taken from Ubuntu 24.04 and are covered by the licences in this
 directory.
 
-FFmpeg is used here under the LGPL: the LGPL build, not the GPL one, linked
-dynamically and unmodified. Nothing in this application re-encodes media, so
-the encoders the GPL variant adds are not needed.
+FFmpeg here is Ubuntu's own build, which is GPL-enabled: libavcodec links the
+x264, x265 and xvid encoders and libpostproc is GPL, so these libraries are
+used under the GPL, linked dynamically and unmodified. The application's own
+source code is licensed under the Artur Rios Attribution License
+(https://github.com/artur-rios/alexandria-ui/blob/main/LICENSE); this package,
+which bundles these libraries, is distributed as a combined work subject to
+their terms, the GPL, version 3.
 
 Replacing any of these libraries is a matter of replacing the file in the
 directory above with a compatible build of the same soname.

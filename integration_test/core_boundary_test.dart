@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:alexandria_ui/core/bindings/core_client.dart';
-import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/startup/core_version.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -83,10 +82,7 @@ void main() {
       final client = await FfiCoreClient.load(libraryPath);
       addTearDown(client.dispose);
 
-      final status = await client.initialize(
-        catalog.databasePath,
-        musicLookup: MusicLookup.off,
-      );
+      final status = await client.initialize(catalog.databasePath);
 
       expect(CoreStatusFamily.indexing.isOk(status), isTrue);
     },
@@ -98,10 +94,7 @@ void main() {
       final client = await FfiCoreClient.load(libraryPath);
       addTearDown(client.dispose);
 
-      await client.initialize(
-        catalog.databasePath,
-        musicLookup: MusicLookup.off,
-      );
+      await client.initialize(catalog.databasePath);
 
       expect(
         File(catalog.databasePath).existsSync(),
@@ -119,14 +112,8 @@ void main() {
       final second = TemporaryCatalog.create();
       addTearDown(second.dispose);
 
-      await client.initialize(
-        catalog.databasePath,
-        musicLookup: MusicLookup.off,
-      );
-      final status = await client.initialize(
-        second.databasePath,
-        musicLookup: MusicLookup.off,
-      );
+      await client.initialize(catalog.databasePath);
+      final status = await client.initialize(second.databasePath);
 
       expect(
         CoreStatusFamily.indexing.isOk(status),
@@ -144,10 +131,7 @@ void main() {
       final client = await FfiCoreClient.load(libraryPath);
       addTearDown(client.dispose);
 
-      await client.initialize(
-        catalog.databasePath,
-        musicLookup: MusicLookup.off,
-      );
+      await client.initialize(catalog.databasePath);
 
       expect(
         File(catalog.databasePath).lengthSync(),

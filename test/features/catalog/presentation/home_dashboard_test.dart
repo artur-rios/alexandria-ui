@@ -84,11 +84,6 @@ void main() {
   }
 
   /// A library with three documents, added on three different days.
-  ///
-  /// A non-audio type, deliberately: most of the tests below only need a
-  /// stocked catalog, and a document is named by its file name with no
-  /// metadata detour — audio's own naming (FR-CT-13) gets its own fixtures
-  /// further down, where the distinction is the point.
   Map<FileType, CatalogListing> aLibrary() => {
     FileType.document: loadedDetails([
       aFile(
@@ -177,104 +172,25 @@ void main() {
     );
   });
 
-  group('audio in the recent list (FR-CT-13)', () {
+  group('naming in the recent list', () {
     testWidgets(
-      'GivenARecentAudioFile_WhenShown_ThenItsMetadataTitleAppearsNotItsName',
+      'GivenRecentFilesOfTwoTypes_WhenShown_ThenEachIsNamedByItsFile',
       (tester) async {
         final gateway = FakeCatalogGateway()
-          ..addAudio(
+          ..addFile(
             uuid: '1',
-            name: 'track01.flac',
-            title: 'So What',
-            indexedAt: DateTime.utc(2026, 1),
-          );
-
-        await openDashboard(tester, gateway: gateway);
-
-        expect(find.text('So What'), findsOneWidget);
-        expect(find.text('track01.flac'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenARecentUntaggedAudioFile_WhenShown_ThenTheUnknownTitleWordAppears',
-      (tester) async {
-        final gateway = FakeCatalogGateway()
-          ..addAudio(
-            uuid: '1',
-            name: 'track01.flac',
-            indexedAt: DateTime.utc(2026, 1),
-          );
-
-        await openDashboard(tester, gateway: gateway);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
-
-        expect(find.text(l10n.musicUnknownTitle), findsOneWidget);
-        expect(find.text('track01.flac'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenAMixOfTypes_WhenShown_ThenOnlyTheNonAudioFileIsNamedByItsFile',
-      (tester) async {
-        final gateway = FakeCatalogGateway()
-          ..addAudio(
-            uuid: '1',
-            name: 'track01.flac',
-            title: 'So What',
+            name: 'so-what.md',
+            type: FileType.text,
             indexedAt: DateTime.utc(2026, 1),
           )
           ..addFile(uuid: '2', name: 'itinerary.pdf', type: FileType.document);
 
         await openDashboard(tester, gateway: gateway);
 
-        expect(find.text('So What'), findsOneWidget);
+        expect(find.text('so-what.md'), findsOneWidget);
         expect(find.text('itinerary.pdf'), findsOneWidget);
-        expect(find.text('track01.flac'), findsNothing);
-      },
-    );
-
-    testWidgets(
-      'GivenAudioOutsideTheRecentList_WhenTheDashboardShows_ThenItsDetailsAreNeverRead',
-      (tester) async {
-        // Naming the one audio file the dashboard actually shows reads
-        // `musicLibraryProvider`, which is one gateway listing call rather
-        // than a per-file `fileDetails` read — proved here by adding audio
-        // files old enough to fall outside RecentFilesController.limit and
-        // asserting no file's details are ever asked for individually.
-        final gateway = FakeCatalogGateway()
-          ..addAudio(
-            uuid: 'shown',
-            name: 'track01.flac',
-            title: 'So What',
-            indexedAt: DateTime.utc(2026, 1, 10),
-          )
-          ..addAudio(
-            uuid: 'buried-1',
-            name: 'old1.flac',
-            title: 'Freddie Freeloader',
-            indexedAt: DateTime.utc(2020, 1, 1),
-          )
-          ..addAudio(
-            uuid: 'buried-2',
-            name: 'old2.flac',
-            title: 'Blue in Green',
-            indexedAt: DateTime.utc(2019, 1, 1),
-          );
-        for (var i = 0; i < 8; i++) {
-          gateway.addFile(
-            uuid: 'doc-$i',
-            name: 'doc-$i.pdf',
-            type: FileType.document,
-            indexedAt: DateTime.utc(2026, 1, 5),
-          );
-        }
-
-        await openDashboard(tester, gateway: gateway);
-
-        expect(find.text('So What'), findsOneWidget);
+        // Named off the listing row the section already holds, never by a
+        // second read of each file.
         expect(gateway.detailsRequested, isEmpty);
       },
     );
@@ -437,7 +353,7 @@ void main() {
         await openDashboard(
           tester,
           listings: {
-            FileType.audio: const CatalogListing.failed(
+            FileType.text: const CatalogListing.failed(
               failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
             ),
             FileType.image: loadedDetails([
@@ -539,7 +455,7 @@ void main() {
     await openDashboard(
       tester,
       listings: {
-        FileType.audio: const CatalogListing.failed(
+        FileType.text: const CatalogListing.failed(
           failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
         ),
         FileType.image: loadedDetails([

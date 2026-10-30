@@ -42,6 +42,12 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    # The vendored, patched webview_cef (third_party/webview_cef/FORK.md). It
+    # is upstream's code held to upstream's style, so that a new release can
+    # be diffed against it; this project's rules apply to what calls it. Its
+    # own patches are covered by its native policy tests and by the
+    # integration suite's saved-page engine test.
+    - third_party/**
 
   language:
     strict-casts: true

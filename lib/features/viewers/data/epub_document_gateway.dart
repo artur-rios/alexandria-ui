@@ -97,8 +97,7 @@ class EpubDocumentGateway implements DocumentGateway {
       final href = manifest[reference.getAttribute('idref')];
       if (href == null || href.isEmpty) continue;
 
-      final entryPath = base.isEmpty ? href : p.url.join(base, href);
-      final entry = archive.findFile(entryPath);
+      final entry = archive.findFile(_entryPath(base, href));
       // A spine entry the archive does not hold is a chapter that is not
       // there. The rest of the book still reads, which is better than
       // refusing all of it over one missing file.
@@ -122,6 +121,24 @@ class EpubDocumentGateway implements DocumentGateway {
     );
   }
 
+  /// The archive entry a manifest [href] names, relative to the package
+  /// document's folder [base].
+  ///
+  /// Normalized, because the archive is looked up by its exact entry name: a
+  /// package document at the archive's root has `.` for a folder, and
+  /// `./one.xhtml` is not an entry. And decoded, because an href is a URL —
+  /// `chapter%202.xhtml` names the entry `chapter 2.xhtml`.
+  static String _entryPath(String base, String href) {
+    String decoded;
+    try {
+      decoded = Uri.decodeFull(href);
+    } on Object {
+      decoded = href;
+    }
+
+    return p.url.normalize(p.url.join(base, decoded));
+  }
+
   /// The chapter titles the book's own table of contents gives, by href.
   ///
   /// Read from the EPUB 3 navigation document where there is one and the
@@ -143,9 +160,7 @@ class EpubDocumentGateway implements DocumentGateway {
       final isNcx = href.toLowerCase().endsWith('.ncx');
       if (!isNavigation && !isNcx) continue;
 
-      final entry = archive.findFile(
-        base.isEmpty ? href : p.url.join(base, href),
-      );
+      final entry = archive.findFile(_entryPath(base, href));
       if (entry == null) continue;
 
       try {

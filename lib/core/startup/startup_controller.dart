@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../bindings/core_client.dart';
-import '../bindings/core_environment.dart';
 import '../bindings/core_isolate.dart';
 import '../di/providers.dart';
 import '../failures/core_status.dart';
@@ -13,25 +12,6 @@ import '../settings/settings_store.dart';
 import 'core_paths.dart';
 import 'core_version.dart';
 import 'startup_state.dart';
-
-/// What became of a music-lookup change handed to the core.
-enum MusicLookupApplication {
-  /// The core is running with it now.
-  applied,
-
-  /// Nothing was asked of the core: there is none yet, or the configuration
-  /// was already the one it is running with.
-  unchanged,
-
-  /// The core is scanning and will not be reconfigured until it stops. The
-  /// preference is saved; it takes effect when the scan settles, and the next
-  /// call is what applies it.
-  deferred,
-
-  /// The core refused, or could not be reached. It keeps the configuration it
-  /// started with.
-  failed,
-}
 
 /// Runs the startup sequence in Operations & Infrastructure Document §5.1
 /// (IR-04, IR-05, IR-06).
@@ -54,14 +34,6 @@ class StartupController extends Notifier<StartupState> {
   CoreClient? _core;
   SettingsStore? _settings;
 
-  /// The database the core was last initialized against, kept so
-  /// [applyMusicLookup] can initialize it again against the same one.
-  String? _databasePath;
-
-  /// What the core was last initialized with, so a preference change that
-  /// does not actually change the core's configuration costs nothing.
-  MusicLookup? _appliedMusicLookup;
-
   /// The loaded core, once startup has reached [StartupReady].
   CoreClient? get core => _core;
 
@@ -70,87 +42,6 @@ class StartupController extends Notifier<StartupState> {
   /// Non-null even when the load failed: the fallback store is still bound, so
   /// the shell has somewhere to write the owner's next choice.
   SettingsStore? get settings => _settings;
-
-  /// The music-enrichment configuration the core should be running with —
-  /// the owner's stored choice, or the shipped default when the settings
-  /// store could not be read (music enrichment design).
-  MusicLookup get musicLookup {
-    final settings = _settings;
-
-    return settings == null
-        ? const MusicLookup(
-            enabled: true,
-            contact: defaultMusicLookupContact,
-          )
-        : MusicLookup(
-            enabled: settings.musicLookupEnabled,
-            contact: settings.musicLookupContact,
-          );
-  }
-
-  /// Re-initializes the core so a music-lookup preference changed after
-  /// startup takes effect now rather than at the next launch.
-  ///
-  /// The core reads that setting once, at `alexandria_index_init`, so there
-  /// is no other way to apply it — and leaving it until the next launch is
-  /// exactly the dead end this exists to remove: an owner who switches the
-  /// lookup on, asks for lyrics, and is told the feature is switched off for
-  /// this installation. `alexandria_index_init` is safe to call again while
-  /// the core is idle, sessions live in the database rather than in the
-  /// process, and a refused re-initialization leaves the core's existing
-  /// services exactly where they were.
-  ///
-  /// Does nothing when the configuration has not actually changed, which is
-  /// every call but the one that follows a change.
-  ///
-  /// Answers whether the core took it. `MusicLookupApplication.deferred` is
-  /// the one worth acting on: the core will not replace its services while it
-  /// is walking a disk, because a run already executing would be left behind
-  /// by the replacement — unpausable, uncancellable, and with its row
-  /// rewritten under it. The preference is saved either way, so this is a
-  /// "not yet" rather than a failure, and the owner is owed that sentence
-  /// rather than a switch that appears to do nothing.
-  Future<MusicLookupApplication> applyMusicLookup() async {
-    final core = _core;
-    final databasePath = _databasePath;
-    if (core == null || databasePath == null) {
-      return MusicLookupApplication.unchanged;
-    }
-
-    final lookup = musicLookup;
-    if (lookup == _appliedMusicLookup) return MusicLookupApplication.unchanged;
-
-    try {
-      final status = await core.initialize(databasePath, musicLookup: lookup);
-      if (coreIsBusy(status)) {
-        // Deliberately *not* recorded as applied: leaving `_appliedMusicLookup`
-        // where it is means the next call tries again, which is what makes
-        // [PreferencesController] retrying once the scan settles work at all.
-        _log.info(
-          'the core is scanning, so the music-lookup change waits for it',
-        );
-        return MusicLookupApplication.deferred;
-      }
-      if (!CoreStatusFamily.indexing.isOk(status)) {
-        _log.warning(
-          'the core refused to be reconfigured for music lookup '
-          '(status $status); it keeps the configuration it started with',
-        );
-        return MusicLookupApplication.failed;
-      }
-      _appliedMusicLookup = lookup;
-      return MusicLookupApplication.applied;
-    } on CoreCallException catch (error) {
-      // Logged, not raised: the owner changed a preference, the preference
-      // is saved, and the core carries on with what it already had. What
-      // they must not get is a broken application because a switch moved.
-      _log.warning(
-        'the core could not be reconfigured for music lookup',
-        error,
-      );
-      return MusicLookupApplication.failed;
-    }
-  }
 
   @override
   StartupState build() {
@@ -172,19 +63,23 @@ class StartupController extends Notifier<StartupState> {
     final databasePath = await _step2ResolvePaths();
     if (databasePath == null) return;
 
-    // Before the core is initialized, not after: the core reads its own
-    // settings exactly once, at `alexandria_index_init`, and whether it may
-    // look music up is one of them (§5.1 step 3). Loading the owner's
-    // preferences afterwards would mean the choice they made last session
-    // could only take effect the session after this one.
+    // Step 3, in the order §5.1 gives. No preference reaches the core any
+    // more — whether it could look music up was the last, and went with
+    // music — so nothing after this depends on what it reads.
     final warning = await _step3LoadPreferences();
 
-    if (!await _step4Initialize(databasePath)) return;
-
-    final version = await _step5Verify();
+    // Verified before it is initialized, not after: initializing is what
+    // creates and migrates the catalog. A core outside the supported range
+    // that is initialized first has already rewritten the owner's database by
+    // the time it is refused — a newer one migrates it past what the
+    // supported core can open again, and an older one fails on a schema it
+    // does not know and reports that, hiding the version message this check
+    // exists to give. The version and health are both answerable before
+    // initialization.
+    final version = await _step4Verify();
     if (version == null) return;
 
-    _databasePath = databasePath;
+    if (!await _step5Initialize(databasePath)) return;
 
     _log.info('startup settled; core $version, database ready');
     state = StartupState.ready(
@@ -240,16 +135,11 @@ class StartupController extends Notifier<StartupState> {
     }
   }
 
-  Future<bool> _step4Initialize(String databasePath) async {
+  Future<bool> _step5Initialize(String databasePath) async {
     state = const StartupState.running(step: StartupStep.initializingCore);
 
     try {
-      final lookup = musicLookup;
-      final status = await _core!.initialize(
-        databasePath,
-        musicLookup: lookup,
-      );
-      _appliedMusicLookup = lookup;
+      final status = await _core!.initialize(databasePath);
       if (CoreStatusFamily.indexing.isOk(status)) return true;
 
       _fail(
@@ -267,7 +157,7 @@ class StartupController extends Notifier<StartupState> {
     }
   }
 
-  Future<String?> _step5Verify() async {
+  Future<String?> _step4Verify() async {
     state = const StartupState.running(step: StartupStep.verifyingCore);
 
     try {
@@ -301,8 +191,7 @@ class StartupController extends Notifier<StartupState> {
   }
 
   /// Step 3 never fails the launch: unreadable preferences fall back to the
-  /// system theme and language — and, for the core's own configuration, to
-  /// the same defaults the store answers with — and are reported (§5.1).
+  /// system theme and language, and are reported (§5.1).
   Future<Failure?> _step3LoadPreferences() async {
     state = const StartupState.running(step: StartupStep.loadingPreferences);
 
@@ -333,8 +222,6 @@ class StartupController extends Notifier<StartupState> {
   Future<void> _disposeCore() async {
     final core = _core;
     _core = null;
-    _databasePath = null;
-    _appliedMusicLookup = null;
     await core?.dispose();
   }
 }

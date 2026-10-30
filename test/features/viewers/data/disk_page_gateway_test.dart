@@ -4,6 +4,7 @@ import 'package:alexandria_ui/features/viewers/data/disk_page_gateway.dart';
 import 'package:alexandria_ui/features/viewers/domain/file_viewer.dart';
 import 'package:alexandria_ui/features/viewers/domain/page_content.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 
 /// Reading a saved page from disk (UC-25 main flow step 2, AF-01 … AF-04).
 void main() {
@@ -87,6 +88,37 @@ void main() {
       },
     );
 
+    // A page is content from elsewhere, and what it links is opened by
+    // this application with the owner's own permissions. A sheet outside the
+    // page's folder is any file on the disk — a device that never ends, a
+    // pipe that never answers, a key file parsed as CSS.
+    test(
+      'GivenASheetOutsideItsFolder_WhenItIsRead_ThenItIsNotOpened',
+      () async {
+        final outside = File('${directory.path}-outside.css')
+          ..writeAsStringSync('p { color: red; }');
+        addTearDown(outside.deleteSync);
+        final path = aFileHolding(
+          '<html><head><link rel="stylesheet" '
+          'href="../${p.basename(outside.path)}"></head>'
+          '<body><p>Words</p></body></html>',
+        );
+
+        expect((await read(path)).html, isNot(contains('style=')));
+      },
+    );
+
+    test('GivenASheetByAbsolutePath_WhenItIsRead_ThenItIsNotOpened', () async {
+      final sheet = File('${directory.path}/site.css')
+        ..writeAsStringSync('p { color: red; }');
+      final path = aFileHolding(
+        '<html><head><link rel="stylesheet" href="${sheet.path}"></head>'
+        '<body><p>Words</p></body></html>',
+      );
+
+      expect((await read(path)).html, isNot(contains('style=')));
+    });
+
     test('GivenMarkdown_WhenItIsRead_ThenNothingIsInlined', () async {
       // It was converted from text a moment ago; there is no stylesheet to
       // read and no head to strip.
@@ -164,6 +196,38 @@ void main() {
       'GivenARemoteAsset_WhenThePageIsRead_ThenItIsNotCalledMissing',
       () async {
         final path = aFileHolding('<img src="https://example.com/photo.png">');
+
+        expect((await read(path)).missingAssets, isEmpty);
+      },
+    );
+
+    // Probing a reference is touching the disk it names. A UNC path or a
+    // `file://host/` one is a connection to someone else's server on Windows
+    // — and the owner's credentials offered to it — just for opening a page.
+    test(
+      'GivenAReferenceOutsideTheFolder_WhenThePageIsRead_ThenItIsNotProbed',
+      () async {
+        final path = aFileHolding(
+          r'<img src="\\attacker\share\x.png">'
+          '<img src="file://attacker/share/y.png">'
+          '<img src="/etc/does-not-exist.png">'
+          '<img src="../../elsewhere.png">',
+        );
+
+        expect((await read(path)).missingAssets, isEmpty);
+      },
+    );
+
+    test(
+      'GivenAReferenceWithAQuery_WhenThePageIsRead_ThenTheFileItNamesIsChecked',
+      () async {
+        File('${directory.path}/site.css').writeAsStringSync('');
+        File('${directory.path}/icons.svg').writeAsStringSync('');
+        final path = aFileHolding(
+          '<link rel="stylesheet" href="site.css?ver=5">'
+          '<img src="icons.svg#home">'
+          '<img src="HTTPS://example.com/remote.png">',
+        );
 
         expect((await read(path)).missingAssets, isEmpty);
       },

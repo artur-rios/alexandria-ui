@@ -10,7 +10,6 @@ import '../../catalog/domain/file_type.dart';
 /// vocabulary and the domain layer does not localize (BR-02, IR-11).
 String fileTypeLabel(FileType type, AppLocalizations l10n) =>
     switch (type) {
-      FileType.audio => l10n.fileTypeAudio,
       FileType.video => l10n.fileTypeVideo,
       FileType.document => l10n.fileTypeDocument,
       FileType.comic => l10n.fileTypeComic,
@@ -30,7 +29,7 @@ typedef FolderPurpose = ({List<FileType> types, String? libraryName});
 /// Asks what a folder is for — which types an index of it records (UC-05),
 /// and whether it is browsed as a library (libraries design).
 ///
-/// The seven the core classifies into, not three buckets: "books but not
+/// The six the core classifies into, not three buckets: "books but not
 /// images" is exactly the answer the owner needs, because a folder of ebooks
 /// has covers in it too. Every type is ticked by default, which is what a
 /// folder registered before this choice existed still covers.
@@ -110,7 +109,7 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
     if (!_isAnswerable) return;
 
     Navigator.of(context).pop((
-      // Everything is the absent scope, not a list of seven: one spelling
+      // Everything is the absent scope, not a list of six: one spelling
       // on both sides of the boundary.
       types: _isEverything
           ? const <FileType>[]
@@ -128,7 +127,7 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      // Scrollable rather than sized: seven rows plus the heading do not fit
+      // Scrollable rather than sized: six rows plus the heading do not fit
       // the 640-high window NFR-07 requires the interface stay usable in, and
       // a dialog that overflows there is one the owner cannot answer.
       scrollable: true,
@@ -144,7 +143,7 @@ class _IndexScopeDialogState extends State<IndexScopeDialog> {
             CheckboxListTile(
               value: _isEverything,
               // The owner reaches "all" in one action from any state; the
-              // seven below say which "all" that is, rather than the choice
+              // six below say which "all" that is, rather than the choice
               // living in a mode they cannot see inside.
               //
               // Read before the set is touched: asking `_isEverything` after

@@ -51,13 +51,13 @@ Future<void> main() async {
 /// the window (UC-38 main flow steps 3 and 6, FR-UX-03).
 ///
 /// This runs before `runApp` and therefore before the startup sequence loads
-/// preferences at its step 5, so the settings store is loaded here in its own
+/// preferences at its step 3, so the settings store is loaded here in its own
 /// right. Deferring it would mean showing the window at the default size and
 /// then moving it once startup settled — a visible jump on every launch, to
 /// save loading a preferences file twice.
 ///
 /// Settings that will not load are not fatal, exactly as they are not fatal at
-/// startup step 5: the window opens at the default size and the owner's next
+/// startup step 3: the window opens at the default size and the owner's next
 /// choice is what gets recorded.
 Future<void> _placeWindow(ProviderContainer container) async {
   await windowManager.ensureInitialized();

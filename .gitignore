@@ -79,3 +79,16 @@ tools/alexandria_lints/pubspec.lock
 
 # Subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
+
+# The vendored webview_cef downloads the CEF distribution (about 2 GB) on its
+# first build: into third_party/webview_cef/third/cef/, which the plugin's own
+# .gitignore there keeps out, by way of a temporary archive beside the
+# platform's CMakeLists.txt.
+third_party/webview_cef/*/prebuilt.zip
+
+# What ci/release-build.sh and ci/integration.sh write: the core's checkout, the packages, and the staged payload and
+# Flatpak build.
+/core/
+/dist/
+/stage/
+/packaging/linux/bundle/

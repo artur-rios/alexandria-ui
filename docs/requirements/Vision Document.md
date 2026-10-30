@@ -21,16 +21,19 @@ the technologies in the
 Alexandria UI covers the whole owner-facing surface of the Alexandria
 product: signing the owner up, confirming their e-mail, logging them in and
 recovering their password, registering and indexing library folders,
-browsing and searching the catalog, playing audio and video, viewing documents,
-comics, images and saved pages, editing Markdown and text content, editing music
-and video metadata, renaming files, organizing files and bookmarks into
+browsing and searching the catalog, playing video, viewing documents,
+comics, images and saved pages, editing Markdown and text content, editing video
+metadata, renaming files, organizing files and bookmarks into
 collections, tracking watchlists and reading lists, and carrying out the core's
 two-phase deletion lifecycle — all in light and dark themes, in Brazilian
 Portuguese and English, on Windows and Ubuntu.
 
 It explicitly does **not** cover:
 
-- **Media editing of any kind.** No audio or video re-encoding, no transcoding,
+- **Music.** Alexandria is a library for what the owner reads and watches. Music
+  lives in Orpheus, the owner's separate project; audio files in a registered
+  folder are skipped when it is scanned.
+- **Media editing of any kind.** No video re-encoding, no transcoding,
   no image manipulation. Text content, metadata, names, and organization are the
   only things it changes.
 - **Domain logic.** Validation, lifecycle, retention, and every business rule
@@ -55,7 +58,7 @@ It explicitly does **not** cover:
 | **Owner** | The single human user. The only actor with access to any catalog operation. |
 | **Library folder** | A directory on disk the owner has registered as a source of files to index. There may be several. |
 | **Index run** | An asynchronous scan of a library folder, or a refresh of everything cataloged, started from the interface and observed to completion. |
-| **File** | A cataloged on-disk resource, addressed by a public UUID and specialized by type into audio, video, text, document, comic book, HTML page, or image. |
+| **File** | A cataloged on-disk resource, addressed by a public UUID and specialized by type into video, text, document, comic book, HTML page, or image. |
 | **Bookmark** | A cataloged browser bookmark pointing at a URL. It has no on-disk file. |
 | **Collection** | A named group of files, or of bookmarks, discriminated by its kind. |
 | **Watchlist** | A named list tracking the owner's consumption of movies and series, with per-item watch progress. |
@@ -75,9 +78,8 @@ It explicitly does **not** cover:
 
 A personal media and document library that lives on disk is unusable through a
 file manager. Directories cannot distinguish a movie from a series, cannot
-remember which episode was watched last, cannot show what album is playing,
-cannot order a reading list, and cannot search across bookmarks, PDFs, and notes
-at once. The available alternatives each solve one slice — a music player, a
+remember which episode was watched last, cannot order a reading list, and cannot search across bookmarks, PDFs, and notes
+at once. The available alternatives each solve one slice — a
 video player, an e-book reader, a bookmark manager — so the owner runs five
 applications over the same directory tree and keeps the organization in their
 head. The ones that do more usually demand the opposite trade: import the
@@ -96,7 +98,7 @@ can open.
 
 | Attribute | Description |
 | --- | --- |
-| **For** | A person whose music, films, series, books, comics, notes, saved pages, and bookmarks already live on their own disk. |
+| **For** | A person whose films, series, books, comics, notes, saved pages, and bookmarks already live on their own disk. |
 | **Who** | Wants to browse, play, read, edit, and organize all of it from one place, without importing it into somebody else's store. |
 | **The Alexandria UI application** | Is a local desktop front-end for a personal library. |
 | **That** | Turns an on-disk directory tree into a searchable, playable, trackable library — catalogued by type, organized into collections and tracking lists, and never re-encoded, duplicated, or relocated. |
@@ -149,11 +151,11 @@ the core.
 | F-01 | Authentication and session | Sign-up, recovery codes, local login, sign-out, credential change, and recovery of a forgotten password, gating every catalog operation behind an active session. |
 | F-02 | Library sources and indexing | Registering one or more library folders, starting and observing index runs, refreshing the catalog, and unregistering a folder without losing data. |
 | F-03 | Catalog browsing, search, and filtering | A type panel, three view layouts, a detail view, search across the catalog, filters and sorting, and a home dashboard. |
-| F-04 | Metadata and content editing | Editing music and video metadata, renaming any file, and editing Markdown and text content in place with a live preview. |
-| F-05 | Media playback | A video player with full screen, seeking, subtitle tracks, and audio tracks; an audio player with a queue, resume points, and a full player showing the album's picture and the sound moving. |
+| F-04 | Metadata and content editing | Editing video metadata, renaming any file, and editing Markdown and text content in place with a live preview. |
+| F-05 | Media playback | A video player with full screen, seeking, subtitle tracks, and audio tracks, and resume points. |
 | F-06 | Document, image, and page viewing | Reading PDFs and e-books, reading comic books, viewing images, and viewing saved HTML pages. |
 | F-07 | Collections and bookmarks | Creating, renaming, and deleting collections; adding and removing their members; and managing browser bookmarks within bookmark collections. |
-| F-08 | Watchlists, reading lists, and playlists | Creating and deleting watchlists and reading lists, adding and removing items, and tracking per-episode and per-issue progress; and naming, arranging, and playing playlists of the owner's own music. |
+| F-08 | Watchlists and reading lists | Creating and deleting watchlists and reading lists, adding and removing items, and tracking per-episode and per-issue progress. |
 | F-09 | Safe deletion lifecycle | Soft deletion, a restorable view of deleted items, record purging after retention, the separate explicit purge-on-disk, and a review of files missing from disk. |
 | F-10 | Application shell, theming, and localization | The responsive window shell and navigation, light and dark themes, Brazilian Portuguese and English, and consistent loading and error presentation. |
 
@@ -268,24 +270,7 @@ graph TD
   in the [Technology Stack Document](Technology%20Stack%20Document.md).
 - **In-process, offline by default, single-user.** No server, no
   synchronization, no second user, and no network call this application
-  makes at all. The one exception is outbound and lives in the core: music
-  enrichment (artist photography and lyrics) may look those up from three
-  public services. **Nothing goes out while the owner has it switched off**,
-  and one switch governs every path: the lyrics button, the per-track
-  lookup, the sweep screen, and the one pass this application starts by
-  itself — a background walk, once a session, that fetches the photograph of
-  each artist that has none, so the artists list is a shelf of faces rather
-  than a list with a few. That pass was added deliberately and it is the only
-  traffic not traceable to a press: it asks for one picture per artist, stops
-  at the first request that cannot be completed, and never runs merely
-  because a track started playing. The capability ships switched on so that
-  asking works, and the owner switches it off for good in Preferences, which
-  is where the contact the services are given also lives. Nothing about the owner is sent — the queries carry an artist name,
-  a track title, an album name and a duration — and everything fetched is
-  cached, so a lookup happens once per artist and once per recording rather
-  than once per play. This interface holds no HTTP client and contacts no
-  third party; it reads what the core cached, over the FFI, as it reads
-  everything else.
+  makes at all.
 - **The disk is the owner's.** The application writes exactly two kinds of thing:
   text-file content the owner saved, and its own local settings. Nothing else it
   does modifies the filesystem, and only an explicit confirmed purge-on-disk
@@ -308,11 +293,9 @@ graph TD
 - The owner registers a real library folder, indexes it, finds a file, opens it,
   edits its metadata, and files it into a collection — without leaving the
   application or touching a file manager.
-- Music, video, documents, comics, notes, saved pages, images, and bookmarks are
+- Video, documents, comics, notes, saved pages, images, and bookmarks are
   all reachable from one window and one search.
-- A video plays with subtitle and audio-track selection, and a track plays on a
-  full player showing its sleeve, its name, and bars that move while the audio
-  runs and settle when it pauses.
+- A video plays with subtitle and audio-track selection.
 - A Markdown file is edited and saved, and the change is visible on disk outside
   the application.
 - Every destructive action states what it will remove and whether the on-disk file

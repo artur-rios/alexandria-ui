@@ -39,7 +39,7 @@ class ShellNavigationPanel extends ConsumerWidget {
         .maybeWhen(data: (byType) => byType, orElse: () => null);
 
     // The breakpoints are widths, and a window can be wide and short: at the
-    // medium tier the ten labelled entries need more height than a 640-pixel
+    // medium tier the nine labelled entries need more height than a 640-pixel
     // window has. Scrolling is how the panel keeps every entry reachable there
     // — FR-UX-02 forbids clipping one, not making it scroll to. The
     // constrained intrinsic height is what lets the rail still fill a tall
@@ -128,7 +128,6 @@ extension ShellDestinationPresentation on ShellDestination {
   /// The icon in the navigation panel.
   IconData get icon => switch (this) {
     ShellDestination.home => Icons.home_outlined,
-    ShellDestination.music => Icons.library_music_outlined,
     ShellDestination.videos => Icons.movie_outlined,
     ShellDestination.books => Icons.menu_book_outlined,
     ShellDestination.comicBooks => Icons.auto_stories_outlined,
@@ -142,7 +141,6 @@ extension ShellDestinationPresentation on ShellDestination {
   /// The icon shown for the selected destination.
   IconData get selectedIcon => switch (this) {
     ShellDestination.home => Icons.home,
-    ShellDestination.music => Icons.library_music,
     ShellDestination.videos => Icons.movie,
     ShellDestination.books => Icons.menu_book,
     ShellDestination.comicBooks => Icons.auto_stories,
@@ -156,7 +154,6 @@ extension ShellDestinationPresentation on ShellDestination {
   /// The localized label, in the panel and as the content area's heading.
   String label(AppLocalizations l10n) => switch (this) {
     ShellDestination.home => l10n.destinationHome,
-    ShellDestination.music => l10n.destinationMusic,
     ShellDestination.videos => l10n.destinationVideos,
     ShellDestination.books => l10n.destinationBooks,
     ShellDestination.comicBooks => l10n.destinationComicBooks,

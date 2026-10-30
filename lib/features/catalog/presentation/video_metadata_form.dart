@@ -14,8 +14,8 @@ import 'file_details_view.dart';
 
 /// The video metadata form (UC-16, FR-ME-02).
 ///
-/// A dialog over the detail view it was opened from, as the music form is:
-/// the owner is correcting one record and should land back on it.
+/// A dialog over the detail view it was opened from: the owner is correcting
+/// one record and should land back on it.
 class VideoMetadataForm extends ConsumerStatefulWidget {
   /// Creates the form.
   const VideoMetadataForm({super.key});

@@ -1,5 +1,3 @@
-import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
-import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/catalog/data/core_catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
@@ -20,25 +18,25 @@ void main() {
         filesListResult: (
           status: 0,
           json:
-              '[{"file":{"uuid":"1","name":"Kind of Blue.flac",'
-              '"path":"/music/Kind of Blue.flac","fileType":"audio",'
+              '[{"file":{"uuid":"1","name":"Stalker.mkv",'
+              '"path":"/films/Stalker.mkv","fileType":"video",'
               '"state":"active"},'
-              '"metadata":{"type":"audio","title":"So What",'
-              '"artist":"Miles Davis"}}]',
+              '"metadata":{"type":"video","title":"Stalker",'
+              '"year":1979}}]',
         ),
       );
       final gateway = CoreCatalogGateway(core);
 
       final listing = await gateway.listFiles(
-        type: FileType.audio,
+        type: FileType.video,
         credential: 'token',
       );
 
       expect(listing, isA<CatalogListingLoaded>());
       final row = (listing as CatalogListingLoaded).files.single;
       expect(row.file.uuid, '1');
-      expect(row.metadata['title'], 'So What');
-      expect(row.metadata['artist'], 'Miles Davis');
+      expect(row.metadata['title'], 'Stalker');
+      expect(row.metadata['year'], '1979');
     },
   );
 
@@ -54,7 +52,7 @@ void main() {
       final gateway = CoreCatalogGateway(core);
 
       final listing = await gateway.listFiles(
-        type: FileType.audio,
+        type: FileType.video,
         credential: 'token',
       );
 
@@ -80,7 +78,7 @@ void main() {
       final gateway = CoreCatalogGateway(core);
 
       final listing = await gateway.listFiles(
-        type: FileType.audio,
+        type: FileType.video,
         credential: 'token',
       );
 
@@ -88,92 +86,4 @@ void main() {
       expect((listing as CatalogListingLoaded).files, isEmpty);
     },
   );
-  // Reading a file's embedded picture through `alexandria_file_thumbnail`
-  // (UC-21, FR-PL-07) — the core answers `{uuid, mimeType, bytesBase64}`,
-  // confirmed against `alexandria-ffi/src/lib.rs`'s own doc comment on
-  // `alexandria_file_thumbnail` (not the `bytes` the task brief paraphrased
-  // it as): the key actually on the wire is `bytesBase64`, matching
-  // `alexandria_comic_page`'s convention.
-  group('fileThumbnail', () {
-    test(
-      'GivenAPictureTheCoreAnswers_WhenReadingTheThumbnail_ThenItDecodesTheBytes',
-      () async {
-        final core = FakeCoreClient()
-          ..thumbnailResponse = (
-            status: PLAYBACK_OK,
-            json:
-                '{"uuid":"1","mimeType":"image/png","bytesBase64":"aGVsbG8="}',
-          );
-        final gateway = CoreCatalogGateway(core);
-
-        final outcome = await gateway.fileThumbnail(
-          uuid: '1',
-          credential: 'token',
-        );
-
-        expect(outcome, isA<FileThumbnailRead>());
-        expect(
-          String.fromCharCodes((outcome as FileThumbnailRead).bytes),
-          'hello',
-        );
-      },
-    );
-
-    test(
-      'GivenAFileWithNoEmbeddedPicture_WhenReadingTheThumbnail_ThenItFailsWithoutThrowing',
-      () async {
-        // The core's own answer for a file that carries no picture — common
-        // rather than exceptional (design section 4) — is `InvalidInput`,
-        // not a missing-field payload.
-        final core = FakeCoreClient()
-          ..thumbnailResponse = (
-            status: PLAYBACK_ERR_INVALID_INPUT,
-            json: null,
-          );
-        final gateway = CoreCatalogGateway(core);
-
-        final outcome = await gateway.fileThumbnail(
-          uuid: '1',
-          credential: 'token',
-        );
-
-        expect(outcome, isA<FileThumbnailFailed>());
-        expect(
-          (outcome as FileThumbnailFailed).failure,
-          isA<InvalidInputFailure>(),
-        );
-      },
-    );
-
-    test(
-      'GivenMalformedJson_WhenReadingTheThumbnail_ThenItFailsRatherThanThrowing',
-      () async {
-        final core = FakeCoreClient()
-          ..thumbnailResponse = (status: PLAYBACK_OK, json: '{"uuid":"1"}');
-        final gateway = CoreCatalogGateway(core);
-
-        final outcome = await gateway.fileThumbnail(
-          uuid: '1',
-          credential: 'token',
-        );
-
-        expect(outcome, isA<FileThumbnailFailed>());
-      },
-    );
-
-    test(
-      'GivenTheCallThrows_WhenReadingTheThumbnail_ThenItFailsRatherThanThrowing',
-      () async {
-        final core = FakeCoreClient()..failOnFileThumbnail = true;
-        final gateway = CoreCatalogGateway(core);
-
-        final outcome = await gateway.fileThumbnail(
-          uuid: '1',
-          credential: 'token',
-        );
-
-        expect(outcome, isA<FileThumbnailFailed>());
-      },
-    );
-  });
 }

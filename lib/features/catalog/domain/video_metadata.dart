@@ -34,9 +34,9 @@ enum MediaKind {
 /// A video file's editable metadata (UC-16, FR-ME-02).
 ///
 /// Four fields, which is the core's `SubtypeMetadata::Video` and not a
-/// reinterpretation of it. As with music, every field is nullable because the
-/// core's patch is a full replace: a field left out is written as NULL, which
-/// is exactly what clearing it means.
+/// reinterpretation of it. Every field is nullable because the core's patch is
+/// a full replace: a field left out is written as NULL, which is exactly what
+/// clearing it means.
 @freezed
 abstract class VideoMetadata with _$VideoMetadata {
   /// Creates a metadata record.

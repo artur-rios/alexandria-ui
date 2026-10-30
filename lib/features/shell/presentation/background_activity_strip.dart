@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../enrichment/application/artist_portrait_backfill_controller.dart';
 import '../../library_sources/application/active_runs_state.dart';
 import '../../library_sources/domain/index_run.dart';
 import '../../library_sources/domain/run_estimate.dart';
@@ -21,35 +20,24 @@ import '../../library_sources/presentation/library_sources_screen.dart';
 /// that: the scan is visible from everywhere, and leaving the screen it was
 /// started from no longer hides it.
 ///
-/// Unlike the playback bar below it, this takes *no* height when nothing is
-/// running. The bar is persistent because a track can start at any moment and
-/// a bar that appeared would reflow the listing behind it; the strip appears
-/// only in answer to a scan the owner just started, so a reflow is expected
-/// rather than surprising — and the animation is what makes it read as
-/// intentional.
+/// It takes *no* height when nothing is running. The strip appears only in
+/// answer to a scan the owner just started, so a reflow is expected rather
+/// than surprising — and the animation is what makes it read as intentional.
 class BackgroundActivityStrip extends ConsumerStatefulWidget {
   /// Creates the strip.
   const BackgroundActivityStrip({super.key});
 
   /// The height the strip takes when there is nothing to report.
   ///
-  /// Zero rather than a reserved sliver: the playback bar below holds the
-  /// bottom of the shell from the first frame because a track can start at any
-  /// moment, but nobody is owed a strip they will never see. Anyone not
-  /// indexing gets the shell exactly as it was.
+  /// Zero rather than a reserved sliver: nobody is owed a strip they will
+  /// never see. Anyone not indexing gets the shell exactly as it was.
   static const double collapsedHeight = 0;
 
   /// The height of the row, in logical pixels.
   ///
-  /// One line of text with its controls, and deliberately less than the
-  /// playback bar's own `PlaybackBar.height` (80 — Task 8's visor, not the
-  /// bar's original 64): this reports on work the owner set going and left,
-  /// not something they are operating. A plain-text reference, not a
-  /// `[PlaybackBar.height]` doc link: linking it would need an import this
-  /// file has no other reason to carry, and a dartdoc `[...]` reference does
-  /// not count as a use for `unused_import` anyway, so the link would not
-  /// even keep this number honest — a human still has to notice the bar
-  /// changed and update the words here, the same as today.
+  /// One line of text with its controls, and deliberately slim: this
+  /// reports on work the owner set going and left, not something they are
+  /// operating.
   static const double expandedHeight = 40;
 
   @override
@@ -103,13 +91,6 @@ class _BackgroundActivityStripState
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final state = ref.watch(activeRunsControllerProvider);
-    // The other background job an owner has running without having asked for
-    // it by name (FR-PL-15). Watched here rather than held somewhere quieter
-    // because this strip is the application's one answer to "what is it
-    // doing?" — and a pass nobody can see is a pass nobody can tell apart
-    // from a feature that does not work, which is exactly what it looked
-    // like.
-    final portraits = ref.watch(artistPortraitBackfillProvider);
 
     // Both of these act on a *change* rather than on a frame, and neither
     // belongs in a build: one starts and cancels a timer, the other calls
@@ -119,7 +100,7 @@ class _BackgroundActivityStripState
       _syncDismissal(next.justFinished);
     });
 
-    final row = _row(state, portraits);
+    final row = _row(state);
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 200),
@@ -142,7 +123,7 @@ class _BackgroundActivityStripState
   }
 
   /// What the strip has to say, or null when it has nothing.
-  Widget? _row(ActiveRunsState state, ArtistPortraitBackfill portraits) {
+  Widget? _row(ActiveRunsState state) {
     // A failure outranks everything, including work still in flight. The strip
     // is one row, so with two folders indexing and one of them failing, the
     // other ordering drops the failure on the floor — and a failure the owner
@@ -189,24 +170,6 @@ class _BackgroundActivityStripState
     if (state.justFinished case final finished?
         when finished.status == IndexRunStatus.complete) {
       return _OutcomeRow(run: finished, failed: false);
-    }
-
-    // Last, and only when the scan has nothing to say: an index run is work
-    // the owner started and is waiting on, where this is a background pass
-    // they never asked for by name. It is worth showing — a picture arriving
-    // an hour into a session is otherwise inexplicable — but never worth
-    // hiding a scan for.
-    if (portraits.isRunning) return _PortraitsRow(state: portraits);
-
-    // And when it gave up. Worth saying, unlike a cancelled scan: nobody
-    // asked for this pass, so its silence is indistinguishable from a
-    // library whose artists simply have no photographs — and the owner is
-    // the only one who can tell it to try the network again.
-    if (portraits.stopped) {
-      return _PortraitsStoppedRow(
-        onRetry: () =>
-            ref.read(artistPortraitBackfillProvider.notifier).resume(),
-      );
     }
 
     // Anything else that dropped off the list — a cancelled run — is the
@@ -669,91 +632,4 @@ String _formatEstimate(BuildContext context, Duration remaining) {
   }
 
   return l10n.activityDurationHours((remaining.inMinutes / 60).round());
-}
-
-/// What the artist-photograph pass is doing (FR-PL-15).
-///
-/// Progress against a total, because the total is knowable: the pass walks
-/// the artists the library holds, and an owner watching a bar fill can tell
-/// "this will be a while" from "this is nearly done". No control beside it —
-/// there is nothing to pause or cancel that switching music lookup off in
-/// Preferences would not do better and more permanently.
-class _PortraitsRow extends StatelessWidget {
-  const _PortraitsRow({required this.state});
-
-  final ArtistPortraitBackfill state;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Row(
-        children: [
-          // Turning, not filling. A determinate arc was what this had, and
-          // it never moved: `value` only changes when an artist is finished
-          // with, a lookup takes a second or two, and a ring frozen at
-          // three-tenths for seconds at a time reads as a picture of a
-          // spinner rather than as work in progress. How far through it is
-          // belongs in the words beside it, which can say it exactly.
-          const SizedBox.square(
-            dimension: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              l10n.artistPortraitsProgress(state.considered, state.total),
-              style: theme.textTheme.bodyMedium,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The photograph pass gave up, and the way to start it again (FR-PL-15).
-///
-/// Its own row rather than a variant of [_PortraitsRow], because the two say
-/// opposite things: one reports work in progress and needs no answer, and
-/// this reports work abandoned and is only worth showing because it offers
-/// one.
-class _PortraitsStoppedRow extends StatelessWidget {
-  const _PortraitsStoppedRow({required this.onRetry});
-
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-
-    return Row(
-      children: [
-        const SizedBox(width: AppSpacing.md),
-        Icon(
-          Icons.cloud_off_outlined,
-          size: 18,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Text(
-            l10n.artistPortraitsStopped,
-            style: theme.textTheme.bodyMedium,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        TextButton(
-          onPressed: onRetry,
-          child: Text(l10n.artistPortraitsRetry),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-      ],
-    );
-  }
 }

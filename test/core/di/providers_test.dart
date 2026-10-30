@@ -1,8 +1,10 @@
+import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/bindings/core_client.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/startup/core_paths.dart';
 import 'package:alexandria_ui/core/startup/startup_state.dart';
+import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -118,6 +120,40 @@ void main() {
 
       expect(loader, isNotNull);
       expect(settings, isNotNull);
+    },
+  );
+
+  // The retry re-runs startup from step 1 and disposes the core it loaded the
+  // first time. A gateway built over that core and cached by the graph would
+  // go on talking to a worker that has been shut down: the login screen's own
+  // retry (UC-02 AF-05) would leave the owner unable to sign in until the
+  // application was restarted.
+  test(
+    'GivenStartupWasRetried_WhenAGatewayIsReadAgain_ThenItIsBuiltOverTheNewCore',
+    () async {
+      final first = FakeCoreClient(
+        authLocalLoginResult: (status: AUTH_ERR_NOT_INITIALIZED, json: null),
+      );
+      final second = FakeCoreClient();
+      final cores = [first, second];
+      final container = buildTestContainer(
+        overrides: fakeCoreOverrides(loadCore: (_) async => cores.removeAt(0)),
+      );
+      final startup = container.read(startupControllerProvider.notifier);
+
+      await startup.start();
+      final before = await container
+          .read(authGatewayProvider)
+          .logIn(email: 'owner@example.com', password: 'a long passphrase');
+      expect(before, isA<FailedOutcome>());
+
+      await startup.retry();
+      expect(first.disposeCount, 1);
+
+      final after = await container
+          .read(authGatewayProvider)
+          .logIn(email: 'owner@example.com', password: 'a long passphrase');
+      expect(after, isNot(isA<FailedOutcome>()));
     },
   );
 }

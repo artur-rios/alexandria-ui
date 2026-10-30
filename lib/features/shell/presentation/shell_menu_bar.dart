@@ -12,10 +12,11 @@ import 'settings_menu.dart';
 /// The shell's menu bar (FR-UX-01, FR-UX-02).
 ///
 /// The library-wide menus across the top, above the rail and the content area.
-/// A frame element in the sense the playback bar is: it does not know which
-/// destination is showing beyond what it needs to decide whether the catalog
-/// search belongs there, and it holds no feature logic of its own, which is
-/// what keeps it from becoming the file every later use case has to edit.
+/// A frame element in the sense the navigation panel is: it does not know
+/// which destination is showing beyond what it needs to decide whether the
+/// catalog search belongs there, and it holds no feature logic of its own,
+/// which is what keeps it from becoming the file every later use case has to
+/// edit.
 class ShellMenuBar extends ConsumerWidget {
   /// Creates the bar.
   const ShellMenuBar({super.key});

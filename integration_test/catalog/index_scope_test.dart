@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:alexandria_ui/core/bindings/core_client.dart';
-import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
@@ -28,8 +27,8 @@ import '../support/temporary_catalog.dart';
 /// everything, which looks exactly like a working scope over a folder that
 /// happened to hold nothing else.
 ///
-/// The owner's report is the assertion: cover art in a music folder stopped
-/// being catalogued. This is the smallest honest version of it.
+/// The owner's report is the assertion: a folder scoped to some types stopped
+/// cataloguing the others. This is the smallest honest version of it.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -58,10 +57,7 @@ void main() {
     final client = await FfiCoreClient.load(libraryPath);
     addTearDown(client.dispose);
 
-    final status = await client.initialize(
-      catalog.databasePath,
-      musicLookup: MusicLookup.off,
-    );
+    final status = await client.initialize(catalog.databasePath);
     expect(CoreStatusFamily.indexing.isOk(status), isTrue);
 
     final outcome = await CoreAuthGateway(client).register(

@@ -2,55 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart' show FontLoader;
 import 'package:flutter_test/flutter_test.dart';
-
-/// The typeface every golden is rendered with (Testing Specification §7.1).
-///
-/// Loaded rather than left to the host, and that is the whole point. Without
-/// it a `TextPainter` with no `fontFamily` — which is what
-/// `case_painter.dart` uses — takes whatever the operating system offers,
-/// and Windows and Linux do not offer the same thing: the same string wraps
-/// at a different point, which moves several percent of the image where the
-/// tolerance below allows half of one. That is not a rounding difference the
-/// comparator can absorb; it is a different picture, and it is why these
-/// goldens failed on every Linux run while passing on the machine they were
-/// made on.
-///
-/// The files are Roboto — what Material already draws with, so pinning it
-/// changes nothing about how the application looks. Apache-2.0, and the
-/// licence travels with the files in `assets/fonts/`.
-///
-/// Registered under this application's own family name rather than
-/// "Roboto": Material's default typography asks for Roboto by name, so a
-/// family called that would be picked up by every widget here and restyle
-/// screens this has no business touching.
-Future<void> _loadGoldenFont() async {
-  const family = 'AlexandriaSleeve';
-  const faces = [
-    'assets/fonts/Roboto-Regular.ttf',
-    'assets/fonts/Roboto-Medium.ttf',
-    'assets/fonts/Roboto-Bold.ttf',
-  ];
-
-  final loader = FontLoader(family);
-  for (final path in faces) {
-    loader.addFont(
-      File(path).readAsBytes().then((bytes) => ByteData.view(bytes.buffer)),
-    );
-  }
-  await loader.load();
-}
 
 /// Runs before every test in `test/` and installs the golden comparator
 /// (Testing Specification §7.1).
 ///
 /// Flutter picks this file up by name; nothing imports it.
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
-  // Before anything renders: a golden compared against text laid out with a
-  // different font is comparing two different pictures.
   TestWidgetsFlutterBinding.ensureInitialized();
-  await _loadGoldenFont();
 
   // The framework installs a LocalFileComparator per suite, whose basedir is
   // the directory of the test file being run. That base is kept — only the
@@ -89,17 +48,19 @@ class _TolerantGoldenComparator extends LocalFileComparator {
 
   /// The golden to compare against on this platform.
   ///
-  /// A file named `case-vinyl.windows.png` beside `case-vinyl.png` is used
-  /// in its place when this is Windows. Most goldens need no such variant —
-  /// a painted shape rasterizes the same everywhere within tolerance — so
-  /// the base file stays the single reference for all of them, and a variant
-  /// exists only where two platforms genuinely disagree.
+  /// A file named `shell_medium_light.windows.png` beside
+  /// `shell_medium_light.png` is used in its place when this is Windows. Most
+  /// goldens need no such variant — a painted shape rasterizes the same
+  /// everywhere within tolerance — so the base file stays the single
+  /// reference for all of them, and a variant exists only where two
+  /// platforms genuinely disagree.
   ///
   /// Which is text. Two operating systems do not paint identical glyph
-  /// outlines identically: hinting, subpixel positioning and antialiasing
-  /// all differ, measured at 3.1-4.7% of the image on the sleeve goldens
-  /// after the typeface itself was pinned. A variant is how both platforms
-  /// get a real check instead of one of them getting none.
+  /// outlines identically: hinting, subpixel positioning and antialiasing all
+  /// differ, by 3.1-4.7% of the image on the text-heavy goldens this was
+  /// first measured on. The shell goldens hold little text and differ by
+  /// 0.15-0.26%, inside [_tolerance], so they need none. A variant is how
+  /// both platforms get a real check instead of one of them getting none.
   Uri _forThisPlatform(Uri golden) {
     final variant = _platformVariant(golden);
     if (variant == null) return golden;
@@ -109,7 +70,8 @@ class _TolerantGoldenComparator extends LocalFileComparator {
         : golden;
   }
 
-  /// `goldens/case-vinyl.png` → `goldens/case-vinyl.windows.png`, or `null`
+  /// `goldens/shell_medium_light.png` →
+  /// `goldens/shell_medium_light.windows.png`, or `null`
   /// on the platform whose renderer the base files hold.
   Uri? _platformVariant(Uri golden) {
     if (Platform.isLinux) return null;
@@ -165,25 +127,13 @@ class _TolerantGoldenComparator extends LocalFileComparator {
 /// Kept beside the comparator so the two are read together, and used by the
 /// golden suites rather than duplicated in each.
 ///
-/// **Linux only, and that is a conclusion rather than a preference.** These
-/// goldens draw text, and text is the one thing two operating systems will
-/// not rasterize identically — different hinting, different subpixel
-/// positioning, different antialiasing of the same outlines.
-///
-/// Pinning the typeface (`pubspec.yaml`'s `fonts:` block) fixed the half of
-/// this that *was* fixable: the layout. Before it, the sleeve was set in a
-/// different face on each platform and the same string wrapped at a
-/// different point. After it, both platforms lay the same glyphs out in the
-/// same places — and still disagree, by 3.1-4.7% of the image, because they
-/// paint those glyphs differently. Measured on CI, both legs, after the pin.
-///
-/// So a golden holding text is a picture of one renderer, and comparing it
-/// against another renderer's output is a test of the operating system. The
-/// choices were a tolerance wide enough to swallow that — which is wide
-/// enough to swallow a moved control, the one thing these exist to catch —
-/// or one canonical platform. This is the second.
-///
-/// Both, now that each platform has its own reference where the two
-/// genuinely differ (see `_forThisPlatform`). A golden nobody compares on
-/// the platform they develop on is a golden that only CI can defend.
+/// Windows and Linux. A golden that draws text is a picture of one renderer:
+/// two operating systems do not rasterize the same glyphs identically —
+/// different hinting, different subpixel positioning, different antialiasing
+/// of the same outlines — and a tolerance wide enough to swallow that is wide
+/// enough to swallow a moved control, the one thing these exist to catch. So
+/// where the two genuinely differ, each holds its own reference (see
+/// `_forThisPlatform`) rather than one of them going unchecked. A golden
+/// nobody compares on the platform they develop on is a golden that only CI
+/// can defend.
 bool get goldensAreComparable => Platform.isWindows || Platform.isLinux;

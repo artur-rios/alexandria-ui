@@ -21,8 +21,8 @@ import 'active_runs_state.dart';
 /// different question — "what is outstanding, anywhere" — and answers it the
 /// way the core itself does: by asking `listActiveRuns` rather than by
 /// reconstructing the picture from per-folder memory. A later task renders
-/// this as the strip above the playback bar; it is meant to be the one place
-/// that holds that opinion.
+/// this as the strip along the bottom of the shell; it is meant to be the one
+/// place that holds that opinion.
 class ActiveRunsController extends Notifier<ActiveRunsState> {
   static final Logger _log = Logger('library_sources');
 
@@ -282,17 +282,6 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
       // when the owner acts, and that action's own response already updates
       // the strip, so polling here would only ever read the same answer.
       _stopPolling();
-
-      // The core refuses to be reconfigured while it is walking a disk, so a
-      // music-lookup preference changed during a scan is saved and left
-      // waiting. This is the moment it can be applied, and this controller is
-      // the one thing that knows the moment arrived — nothing else watches
-      // the last run stop. A no-op unless something is actually waiting.
-      unawaited(
-        ref
-            .read(preferencesControllerProvider.notifier)
-            .retryDeferredMusicLookup(),
-      );
     }
   }
 
@@ -350,8 +339,8 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   ///
   /// This is what `deletion_controller.dart`'s `onDone` does for a deletion —
   /// the catalog changed, so its listings, counts, search index, recent
-  /// files, open file details, and music library are all read again rather
-  /// than kept from before the run. Deliberately narrower than what signing
+  /// files, and open file details are all read again rather than kept from
+  /// before the run. Deliberately narrower than what signing
   /// out invalidates (`catalog_session_activity.dart`): a run finishing is
   /// not a session ending, so what the owner has open or typed —
   /// `openFileProvider`, `searchTermProvider`, the metadata and rename

@@ -27,7 +27,7 @@ void main() {
     test('GivenANameContainingTheTerm_WhenMatched_ThenItMatches', () {
       expect(
         matchesSearch(
-          FileDetails(file: aFile(name: 'Kind of Blue.flac')),
+          FileDetails(file: aFile(name: 'Deep Blue Sea.md')),
           'blue',
         ),
         isTrue,
@@ -37,7 +37,7 @@ void main() {
     test('GivenADifferentCase_WhenMatched_ThenItStillMatches', () {
       expect(
         matchesSearch(
-          FileDetails(file: aFile(name: 'Kind of Blue.flac')),
+          FileDetails(file: aFile(name: 'Deep Blue Sea.md')),
           'BLUE',
         ),
         isTrue,
@@ -49,11 +49,11 @@ void main() {
         matchesSearch(
           FileDetails(
             file: aFile(
-              name: 'track01.flac',
-              path: '/home/owner/jazz/track01.flac',
+              name: 'notes01.md',
+              path: '/home/owner/ocean/notes01.md',
             ),
           ),
-          'jazz',
+          'ocean',
         ),
         isTrue,
       );
@@ -62,7 +62,7 @@ void main() {
     test('GivenNoOccurrence_WhenMatched_ThenItDoesNotMatch', () {
       expect(
         matchesSearch(
-          FileDetails(file: aFile(name: 'Kind of Blue.flac')),
+          FileDetails(file: aFile(name: 'Deep Blue Sea.md')),
           'reggae',
         ),
         isFalse,
@@ -78,31 +78,31 @@ void main() {
   group('matching the metadata (FR-CT-06)', () {
     test('GivenATermInTheMetadata_WhenMatched_ThenItMatches', () {
       // The row carries its metadata already — this is what a listing now
-      // answers, so an owner searching a track's title finds it.
+      // answers, so an owner searching a film's title finds it.
       expect(
         matchesSearch(
           FileDetails(
-            file: aFile(name: 'DISKNAME-01.flac'),
-            metadata: const {'title': 'Airbag'},
+            file: aFile(name: 'DISKNAME-01.mkv'),
+            metadata: const {'title': 'Solaris'},
           ),
-          'airbag',
+          'solaris',
         ),
         isTrue,
       );
     });
 
     test(
-      'GivenATermMatchingOnlyAnArtistTag_WhenAnUnrelatedFileNameIsSearched_ThenItStillMatches',
+      'GivenATermMatchingOnlyOneTag_WhenAnUnrelatedFileNameIsSearched_ThenItStillMatches',
       () {
-        // The rip's file name shares nothing with the tag, and it still
-        // matches: the metadata alone is enough.
+        // The file name shares nothing with the tag, and it still matches:
+        // the metadata alone is enough.
         expect(
           matchesSearch(
             FileDetails(
-              file: aFile(name: 'DISKNAME-01.flac'),
-              metadata: const {'artist': 'Radiohead'},
+              file: aFile(name: 'DISKNAME-01.mkv'),
+              metadata: const {'resolution': 'Widescreen'},
             ),
-            'radiohead',
+            'widescreen',
           ),
           isTrue,
         );
@@ -115,8 +115,8 @@ void main() {
         expect(
           matchesSearch(
             FileDetails(
-              file: aFile(name: 'DISKNAME-01.flac'),
-              metadata: const {'title': 'Airbag', 'artist': 'Radiohead'},
+              file: aFile(name: 'DISKNAME-01.mkv'),
+              metadata: const {'title': 'Solaris', 'resolution': 'Widescreen'},
             ),
             'reggae',
           ),
@@ -129,13 +129,13 @@ void main() {
   group('results', () {
     final files = [
       FileDetails(
-        file: aFile(uuid: '1', name: 'Kind of Blue.flac'),
+        file: aFile(uuid: '1', name: 'Deep Blue Sea.md'),
       ),
       FileDetails(
-        file: aFile(uuid: '2', name: 'Blue Train.flac'),
+        file: aFile(uuid: '2', name: 'Blue Planet.md'),
       ),
       FileDetails(
-        file: aFile(uuid: '3', name: 'Giant Steps.flac'),
+        file: aFile(uuid: '3', name: 'Giant Squid.md'),
       ),
       FileDetails(
         file: aFile(uuid: '4', name: 'blue.png', type: FileType.image),
@@ -163,13 +163,13 @@ void main() {
 
   group('highlighting (main flow step 3)', () {
     test('GivenTheTermInTheName_WhenItIsHighlighted_ThenTheSpanIsFound', () {
-      expect(highlightRange('Kind of Blue.flac', 'blue'), (start: 8, end: 12));
+      expect(highlightRange('Deep Blue Sea.md', 'blue'), (start: 5, end: 9));
     });
 
     test('GivenTheTermIsNotInTheText_WhenHighlighted_ThenThereIsNoSpan', () {
       // Matched on its path rather than its name: there is nothing in the
       // name to mark, and inventing a mark would point at the wrong thing.
-      expect(highlightRange('track01.flac', 'jazz'), isNull);
+      expect(highlightRange('notes01.md', 'ocean'), isNull);
     });
 
     test('GivenABlankTerm_WhenHighlighted_ThenThereIsNoSpan', () {

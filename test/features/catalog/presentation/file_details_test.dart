@@ -34,16 +34,13 @@ void main() {
     FakeLifecycleGateway? lifecycle,
     ThemeMode themeMode = ThemeMode.light,
   }) async {
-    // Filed under video rather than music: UC-46 gave audio its own browsing
-    // area, and this suite is about the details dialog in general, reached
-    // the way every other type reaches it — through the generic listing.
-    // `aFile()` defaults to audio and nothing in this file depends on that;
-    // typed explicitly as video so the fixture matches the listing it sits
-    // in.
+    // Filed under video: this suite is about the details dialog in general,
+    // reached the way every type reaches it — through the generic listing.
+    // Typed explicitly so the fixture matches the listing it sits in.
     final gateway = FakeCatalogGateway(
       listings: {
         FileType.video: loadedDetails([
-          aFile(uuid: uuid, type: FileType.video),
+          aFile(uuid: uuid, name: 'Deep Blue Sea.mkv', type: FileType.video),
         ]),
       },
     );
@@ -68,7 +65,7 @@ void main() {
     await tester.pumpAndSettle();
 
     if (tapRow) {
-      await openDetailsOf(tester, 'Kind of Blue.flac');
+      await openDetailsOf(tester, 'Deep Blue Sea.mkv');
       await tester.pumpAndSettle();
     }
 
@@ -128,8 +125,12 @@ void main() {
         tester,
         outcome: FileDetailsOutcome.read(
           details: FileDetails(
-            file: aFile(uuid: uuid, type: FileType.video),
-            metadata: const {'artist': 'Miles Davis'},
+            file: aFile(
+              uuid: uuid,
+              name: 'Deep Blue Sea.mkv',
+              type: FileType.video,
+            ),
+            metadata: const {'resolution': '1920x1080'},
           ),
         ),
       );
@@ -139,7 +140,7 @@ void main() {
       );
       expect(find.text(l10n.detailsPath), findsOneWidget);
       expect(find.text(l10n.detailsState), findsOneWidget);
-      expect(find.text('Miles Davis'), findsOneWidget);
+      expect(find.text('1920x1080'), findsOneWidget);
       expect(find.text(l10n.detailsStateActive), findsOneWidget);
     });
 
@@ -178,10 +179,17 @@ void main() {
     testWidgets('GivenNoViewer_WhenTheDetailsOpen_ThenTheDetailsStillShow', (
       tester,
     ) async {
-      // True of every type today: the viewers are M-07's. The details are
-      // presented and the limitation is stated rather than an action offered
-      // that would do nothing.
-      await openDetails(tester);
+      // Video is played rather than viewed, so it has no viewer registered.
+      // The details are presented and the limitation is stated rather than an
+      // action offered that would do nothing.
+      await openDetails(
+        tester,
+        outcome: FileDetailsOutcome.read(
+          details: FileDetails(
+            file: aFile(uuid: uuid, type: FileType.video),
+          ),
+        ),
+      );
 
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
@@ -516,12 +524,10 @@ void main() {
     testWidgets(
       'GivenAFile_WhenItsDetailsOpen_ThenItsNameSizeAndFormatAreShown',
       (tester) async {
-        // The one place the name on disk belongs, under a label saying that is
-        // what it is — FR-CT-13 keeps it out of the music area, not out of the
-        // record of what the file is.
+        // The name on disk, under a label saying that is what it is.
         await openDetailsFor(
           tester,
-          name: 'DISKNAME-01.flac',
+          name: 'DISKNAME-01.mkv',
           sizeBytes: 4922880,
         );
         final l10n = localizations(tester);
@@ -529,9 +535,9 @@ void main() {
         expect(find.text(l10n.detailsFileName), findsOneWidget);
         // Once, under its label — not also as an unlabelled heading above
         // it, which the labelled row made a duplicate of.
-        expect(find.text('DISKNAME-01.flac'), findsOneWidget);
+        expect(find.text('DISKNAME-01.mkv'), findsOneWidget);
         expect(find.text('4.7 MB'), findsOneWidget);
-        expect(find.text('FLAC'), findsOneWidget);
+        expect(find.text('MKV'), findsOneWidget);
       },
     );
 
@@ -540,7 +546,7 @@ void main() {
       (tester) async {
         // A core that answered without a size has not told us the file is
         // empty, and a row reading "0 B" would say it had.
-        await openDetailsFor(tester, name: 'DISKNAME-01.flac', sizeBytes: null);
+        await openDetailsFor(tester, name: 'DISKNAME-01.mkv', sizeBytes: null);
         final l10n = localizations(tester);
 
         expect(find.text(l10n.detailsFileSize), findsNothing);
@@ -553,7 +559,7 @@ void main() {
         // The same rule as the size row: a core that answered without an
         // mtime has not told us when the file changed, and showing an epoch
         // date would say it had.
-        await openDetailsFor(tester, name: 'DISKNAME-01.flac', mtime: null);
+        await openDetailsFor(tester, name: 'DISKNAME-01.mkv', mtime: null);
         final l10n = localizations(tester);
 
         expect(find.text(l10n.detailsFileModified), findsNothing);
@@ -579,73 +585,5 @@ void main() {
         },
       );
     }
-  });
-  group('adding a track to a playlist', () {
-    // The music area is a type panel, so it lists no library's audio. Without
-    // this control a track inside a library could reach a playlist only by
-    // being played first — while a video or a book in the same folder can be
-    // tracked from this very view.
-    testWidgets('GivenAnAudioFile_WhenItsDetailsOpen_ThenItCanJoinAPlaylist', (
-      tester,
-    ) async {
-      await openDetails(
-        tester,
-        outcome: FileDetailsOutcome.read(
-          details: FileDetails(
-            file: aFile(uuid: uuid, type: FileType.audio),
-            libraryUuid: 'lib-1',
-          ),
-        ),
-      );
-
-      expect(
-        find.byTooltip(localizations(tester).playlistAddTo),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets(
-      'GivenAVideo_WhenItsDetailsOpen_ThenNoPlaylistActionIsOffered',
-      (tester) async {
-        // Offered for its own type and nothing else, like the two tracking
-        // controls beside it: a playlist holds audio.
-        //
-        // The outcome is spelled out because the fake gateway answers
-        // `aFile(uuid)` when a test does not, and that helper defaults to
-        // audio — so `openDetails(tester)` alone would show an audio dialog
-        // and pass this for the wrong reason.
-        await openDetails(
-          tester,
-          outcome: FileDetailsOutcome.read(
-            details: FileDetails(
-              file: aFile(uuid: uuid, type: FileType.video),
-            ),
-          ),
-        );
-
-        expect(
-          find.byTooltip(localizations(tester).playlistAddTo),
-          findsNothing,
-        );
-      },
-    );
-
-    testWidgets('GivenADeletedTrack_WhenItsDetailsOpen_ThenItCannotJoinOne', (
-      tester,
-    ) async {
-      // A deleted record is not a track to queue; the same rule the tracking
-      // controls and the delete action already follow.
-      await openDetails(
-        tester,
-        outcome: FileDetailsOutcome.read(
-          details: FileDetails(
-            file: aFile(uuid: uuid, type: FileType.audio, isDeleted: true),
-            isDeleted: true,
-          ),
-        ),
-      );
-
-      expect(find.byTooltip(localizations(tester).playlistAddTo), findsNothing);
-    });
   });
 }

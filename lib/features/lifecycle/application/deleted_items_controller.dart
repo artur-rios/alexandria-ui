@@ -187,8 +187,7 @@ class RestoreController
   Future<void> _refresh() async {
     // The details view offers the restore too (UC-13 AF-02), and a record
     // that came back has to stop reading as deleted in the dialog that
-    // restored it — which the shared set covers, along with the music area a
-    // restored track has to reappear in.
+    // restored it — which the shared set covers.
     invalidateCatalogProjections(ref);
     // A restore can bring back a bookmark record as well as a file.
     ref.invalidate(bookmarksControllerProvider);

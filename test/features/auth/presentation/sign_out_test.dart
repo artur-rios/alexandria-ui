@@ -110,13 +110,13 @@ void main() {
         await tester.tap(
           find.descendant(
             of: find.byType(ShellNavigationPanel),
-            matching: find.byIcon(Icons.library_music_outlined),
+            matching: find.byIcon(Icons.menu_book_outlined),
           ),
         );
         await tester.pumpAndSettle();
 
         final readWhileSignedIn = gateway.requested
-            .where((type) => type == FileType.audio)
+            .where((type) => type == FileType.document)
             .length;
         expect(readWhileSignedIn, greaterThan(0));
 
@@ -131,7 +131,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          gateway.requested.where((type) => type == FileType.audio).length,
+          gateway.requested.where((type) => type == FileType.document).length,
           greaterThan(readWhileSignedIn),
         );
       },

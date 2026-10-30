@@ -8,7 +8,7 @@
 # putting its shared library where IR-04's resolver looks, keeping the generated
 # FFI bindings in step with the core's header, and only then starting the app.
 #
-# Nothing here is needed to package or ship — that is the release workflow's
+# Nothing here is needed to package or ship — that is the release build's
 # job. This is the loop for changing code and seeing the change.
 
 set -eu
@@ -92,7 +92,7 @@ step "Checking the toolchain"
 
 for tool in cargo flutter; do
   command -v "$tool" > /dev/null 2>&1 \
-    || fail "$tool is not on PATH. See the Building from source section of README.md."
+    || fail "$tool is not on PATH. See the Building from source section of CONTRIBUTING.md."
 done
 
 if [ "$SKIP_CORE" = "no" ] && command -v pkg-config > /dev/null 2>&1; then

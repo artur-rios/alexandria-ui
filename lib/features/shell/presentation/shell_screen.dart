@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,22 +10,19 @@ import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
 import '../../libraries/presentation/library_tree_screen.dart';
 import '../../organization/presentation/bookmarks_view.dart';
-import '../../playback/presentation/music_library_view.dart';
-import '../../playback/presentation/now_playing_screen.dart';
 import '../domain/shell_destination.dart';
 import 'background_activity_strip.dart';
-import 'playback_bar.dart';
 import 'shell_menu_bar.dart';
 import 'shell_navigation_panel.dart';
 
 /// The application shell (UC-38, FR-UX-01, FR-UX-02).
 ///
-/// Four regions and nothing else: the menu bar across the top, the navigation
-/// panel down the left, the content area beside it, and the playback bar
-/// across the bottom. Everything the owner does happens inside the content
-/// area, which is why this widget stays this small — it is a frame, and a
-/// frame that grew feature logic would be the thing every later use case has
-/// to edit.
+/// Three regions and nothing else: the menu bar across the top, the
+/// navigation panel down the left, and the content area beside it, with the
+/// indexing strip below them while a scan runs. Everything the owner does
+/// happens inside the content area, which is why this widget stays this
+/// small — it is a frame, and a frame that grew feature logic would be the
+/// thing every later use case has to edit.
 class ShellScreen extends ConsumerWidget {
   /// Creates the shell.
   const ShellScreen({super.key});
@@ -35,45 +30,6 @@ class ShellScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final destination = ref.watch(shellControllerProvider);
-
-    // FR-PL-15: the pass that gives every artist a face, kept alive from
-    // here for the whole of the session.
-    //
-    // Listened to rather than watched: this widget has no use for the pass's
-    // progress and would otherwise rebuild the entire shell once per artist
-    // fetched. What the listen actually does is hold the provider — a
-    // background job with nobody reading it is a background job that is
-    // disposed — and the shell is the right holder because the pass belongs
-    // to the session, not to whoever happens to have the artists list open.
-    ref.listen(artistPortraitBackfillProvider, (_, _) {});
-
-    // UC-21 main flow step 2: the player opens itself when a track starts,
-    // from wherever it was started — the shell is where every path into
-    // playback converges, so a listener here is the one place that covers
-    // all of them without any call site having to remember to open it.
-    //
-    // Keyed on the track playing rather than on the record: the owner asked
-    // for the player on every track, and the album animation this listener
-    // used to edge-trigger on — which owed an insertion once per record and
-    // had a whole controller to say when — is gone. What is left is the fact
-    // that decides it, which the queue has always carried.
-    //
-    // `ref.listen` rather than reading the queue in `build` and pushing from
-    // inside it: a route push is a side effect, and Riverpod only calls a
-    // widget's `listen` callback once the state change has been committed —
-    // after this build, not during it — which is what lets
-    // `Navigator.of(context).push` run here safely. `NowPlayingScreen.show`
-    // declines to stack a second player on one already open, so there is
-    // nothing left to guard here.
-    ref.listen(audioPlaybackControllerProvider, (previous, next) {
-      final started = next.current?.uuid;
-      if (started == null || started == previous?.current?.uuid) return;
-      // The owner's own switch: off means a track starts where they left the
-      // player, rather than in front of it.
-      if (!ref.read(preferencesControllerProvider).opensPlayerOnPlay) return;
-
-      unawaited(NowPlayingScreen.show(context));
-    });
 
     return Scaffold(
       body: Column(
@@ -94,12 +50,10 @@ class ShellScreen extends ConsumerWidget {
               ],
             ),
           ),
-          // FR-LB-15: whatever the core is indexing, above the playback bar
-          // and below everything else. It takes no height when nothing is
-          // running, so the shell is unchanged for anyone not indexing.
+          // FR-LB-15: whatever the core is indexing, below everything else.
+          // It takes no height when nothing is running, so the shell is
+          // unchanged for anyone not indexing.
           const BackgroundActivityStrip(),
-          const Divider(height: 1, thickness: 1),
-          const PlaybackBar(),
         ],
       ),
     );
@@ -155,9 +109,6 @@ class ShellContentArea extends ConsumerWidget {
               // Folders browsed as trees, of every type at once (libraries
               // design) — a listing of one type is exactly what it is not.
               ShellDestination.libraries => const LibrariesView(),
-              // UC-46: audio has its own area. A listing of file names is the
-              // one thing a music library should never be.
-              ShellDestination.music => const MusicLibraryView(),
               _ => const CatalogListing(),
             },
           ),

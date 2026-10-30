@@ -1,0 +1,53 @@
+# What Jenkins checks and releases for alexandria-ui, read by the pipeline of the yggdrasil installation that deploys it
+# (yggdrasil's docs/catalog.md, "Repository pipeline file", has every field). It is data: images, commands, globs and the
+# names of Jenkins credentials. The commands are scripts under ci/ that run from the repository's root, so they can be run
+# by hand too. On Forgejo only the owner merges a change to this file into develop.
+#
+# Check it in the yggdrasil checkout:
+#   python3 scripts/pipeline_config.py describe alexandria-ui <this repository's checkout>
+#
+# One image for everything: Ubuntu 24.04, the release the runners were (ubuntu-latest), and the one the .deb's
+# dependency names and the bundled libraries target. It carries none of the tools: the scripts install the packages they
+# need with apt when they run as root (ci/apt-packages.sh), fetch the Flutter SDK (ci/flutter-env.sh, checksummed) and, for
+# the core, the Rust toolchain (ci/core.sh, checksummed). The versions are in ci/pins.sh.
+#
+# The Windows legs of the old ci.yml (Unit and widget tests, Integration, Release build) stay GitHub Actions jobs, the
+# catalog's actionsChecks; the Windows packages of a release are the release-windows.yml workflow.
+
+checks:
+  analyze:                               # ci.yml / analyze: generated files in sync, analysis, layering rules, the webview_cef fork
+    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    run: ci/analyze.sh
+  test:                                  # ci.yml / test, Linux leg: the unit and widget suite with coverage, the fixtures for the layering rules
+    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    run: ci/test.sh
+    archive: "coverage/lcov.info"        # read, not gated: there is no coverage threshold
+  integration:                           # ci.yml / integration, Linux leg: the core is built and every file of integration_test/ runs against the application
+    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    run: ci/integration.sh
+  build:                                 # ci.yml / build, Linux leg: flutter build linux --release
+    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    run: ci/build.sh
+
+release:
+  # release.yml's Linux job and the release notes' downloads, on the release agent from the release's tag: the portable
+  # archive, the installer, the AppImage, the .deb and the Flatpak. Nothing is signed, as before, so there are no
+  # credentials. The version of the packages is the tag without its v (RELEASE_VERSION).
+  build:
+    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    run: ci/release-build.sh
+    files:
+      - "dist/*.tar.gz"
+      - "dist/*.sh"
+      - "dist/*.AppImage"
+      - "dist/*.deb"
+      - "dist/*.flatpak"
+      - "dist/*.md"
+  # release.yml's Windows job, on GitHub Actions: dispatched on the tag, with tag=<tag>. The artifact is named
+  # alexandria-ui-windows, and holds the installer, the portable archive and the MSIX side by side.
+  windows:
+    workflow: release-windows.yml
+    files:
+      - "alexandria-ui-windows/*.exe"
+      - "alexandria-ui-windows/*.zip"
+      - "alexandria-ui-windows/*.msix"

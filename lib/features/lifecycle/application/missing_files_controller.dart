@@ -13,10 +13,8 @@ import '../../catalog/domain/file_type.dart';
 /// marking. The core is what decides which those are — nothing here infers it
 /// from the filesystem (BR-16, FR-LC-08).
 ///
-/// Published as `List<FileDetails>`, not just the files: each row already
-/// carries the metadata the listing read, and an audio row names itself from
-/// it (FR-CT-13) rather than triggering a second, whole-library read for data
-/// this one already had.
+/// Published as `List<FileDetails>`, not just the files: each row is the
+/// record the listing read, so nothing that shows one has to read it again.
 class MissingFilesController extends AsyncNotifier<List<FileDetails>> {
   @override
   Future<List<FileDetails>> build() async {

@@ -18,7 +18,6 @@ and never treats its in-memory copy as authoritative.
 | Entity | Represents in the app |
 | --- | --- |
 | **File** | A cataloged on-disk resource, with its public UUID, name, path, type, and lifecycle state. The unit everything else in the interface is built around. |
-| **AudioFile** | A `File` of type audio, carrying editable music metadata and playable by the audio player. |
 | **VideoFile** | A `File` of type video, marked movie or series, playable by the video player and eligible for watchlists. |
 | **TextFile** | A Markdown or plain-text `File` whose content the app can read from and write back to disk through the core. |
 | **Document** | A PDF or e-book `File`. Viewable, metadata-only, eligible for reading lists. |
@@ -39,7 +38,7 @@ and never treats its in-memory copy as authoritative.
 | **IndexRun** | An in-flight or finished index/refresh run started from the interface, identified by the run identifier the core returns, with its observed progress and result. |
 | **Session** | The authenticated owner's session for the current run of the app: the credential material the core returned at login, held in memory only. |
 | **AppSettings** | The owner's local preferences: theme, language, default view layout, per-type sort and filter defaults, and window geometry. |
-| **PlaybackState** | What is currently playing, its position, and its queue. Persisted per file as a resume point. |
+| **PlaybackState** | What is currently playing and its position. Persisted per file as a resume point. |
 | **ViewerRegistration** | The binding from a file type to the viewer or player that can present it, and whether that viewer is currently available. |
 
 ## Relationships
@@ -81,8 +80,8 @@ rather than a rewrite (see **BR-14**).
 | **BR-18** | Every screen is usable in light and dark themes, and colors come from the theme, never from literals in a widget. | Theming is scope, and hard-coded colors are how it breaks. |
 | **BR-19** | Every screen adapts to window resizing down to the minimum supported window size without clipping or hiding a control behind an unreachable overflow. | Responsiveness without loss of usability is a stated product goal. |
 | **BR-20** | Every operation that can take perceptible time shows a loading state, and every failure shows a human-readable message derived from the core's status code — never a raw code, and never a silent no-op. | Stated requirement for loading and modal feedback; silent failure is the worst outcome for a local app. |
-| **BR-21** | Playback of an album or artist shows the disc, vinyl, or tape animation for the duration of the audio; it spins while playing and stops on pause. | Explicit product requirement from the brainstorm. |
-| **BR-22** | Only one playback session is active at a time. Starting audio stops video and vice versa. | Two audio sources at once is never what the owner meant. |
+| **BR-21** | **Removed (moved out of scope, see Orpheus)** | Music lives in Orpheus, so there is no full-window player for it. The number stays so that other references stay valid. |
+| **BR-22** | Only one playback session is active at a time. | Two videos at once is never what the owner meant. |
 | **BR-23** | SOLID and feature-first layering are the baseline. The domain layer declares the interfaces; the FFI gateway, filesystem access, players, and local storage implement them and are injected. | Mandated design approach, and what makes a later HTTP transport a substitution rather than a rewrite. |
 | **BR-24** | The app is single-user. One account exists; there is no sharing, no profile switching, and no per-user data partition. Signing up creates that one account, and it is the only account there will ever be. | Inherited from the core (`BR-01` back-end). |
 | **BR-25** | The recovery codes a new account receives are shown once, in place of the catalog, until the owner confirms having stored them. The app keeps none of them and offers no way back to a dismissed set. | They are the only way back into a library that sits on the owner's own disk, and the core keeps only their hashes — so the single moment they exist is the only moment to record them. |
@@ -188,7 +187,7 @@ changes a preference, and applied immediately without a restart.
 - Reaching the catalog before a new account's recovery codes are acknowledged.
 - Deleting or moving any file on disk except through the core's explicit
   purge-on-disk operation, confirmed by the owner.
-- Re-encoding, transcoding, or otherwise rewriting audio, video, or image bytes.
+- Re-encoding, transcoding, or otherwise rewriting video or image bytes.
 - Caching file bytes across sessions, or serving stale content after the file
   changed on disk.
 - Shipping a user-visible string that exists in only one of the two supported

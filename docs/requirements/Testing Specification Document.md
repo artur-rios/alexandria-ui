@@ -255,6 +255,7 @@ FFI, entering through the same screens the owner uses.
 | The library folder | A fixture directory of small sample files created per test run, never a real library. |
 | Credentials | Set through the core's own set-credentials call at the start of the run. |
 | The settings store | Pointed at a temporary directory, so no test can read or write the developer's own settings. |
+| The page engine (Chromium, through the vendored `webview_cef`) | The real engine, sandboxed, opening a hostile page written to a temporary folder (`integration_test/viewers/saved_page_engine_test.dart`, NFR-12). It needs a machine where Chromium's sandbox can run: an ordinary user with unprivileged user namespaces, or the setuid helper. CI lifts Ubuntu's AppArmor restriction for it. As root, and on Windows, where the engine must refuse to start, the same file asserts the refusal instead. The fork's own rules are also unit-tested without a browser by `third_party/webview_cef/test/native/run.sh`. |
 
 A test that would touch a real library folder, the real application-support
 directory, or the developer's catalog is a defect in the test, not a
@@ -304,6 +305,7 @@ flutter test
 | Regenerate golden files | `flutter test --update-goldens` |
 | Integration, on Windows | `flutter test integration_test -d windows` |
 | Integration, on Linux | `flutter test integration_test -d linux` |
+| The page engine's fork: patch list and policy rules | `sh tools/check-webview-cef-fork.sh` and `sh third_party/webview_cef/test/native/run.sh` |
 
 The separation is structural rather than tag-based: `test/` holds everything that
 runs without the native library, and `integration_test/` holds everything that

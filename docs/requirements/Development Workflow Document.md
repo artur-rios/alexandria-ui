@@ -30,7 +30,7 @@ flowchart TD
     A2 --> A3["Refine design and plan"]
     A3 --> A4{Approved?}
     A4 -->|Changes requested| A3
-    A4 -->|Yes| B["Create branch from main<br/>feature/uc-##-use-case-name"]
+    A4 -->|Yes| B["Create branch from develop<br/>feature/uc-##-use-case-name"]
     B --> C["Move issue → In Progress"]
     C --> D["Implement main flow<br/>+ every alternative flow"]
     D --> D2{Approved?}
@@ -47,7 +47,7 @@ flowchart TD
     J --> K["Human review"]
     K --> L{Approved?}
     L -->|Changes requested| I
-    L -->|Yes| M["Human merges to main<br/>and deletes the branch"]
+    L -->|Yes| M["Human merges to develop<br/>and deletes the branch"]
     M --> N["Move issue → Done and close it"]
 ```
 
@@ -108,13 +108,14 @@ sequenced test-first.
 
 **Gate 1.** Present the design and plan; write no code until it is approved.
 
-### Step 3 — Branch from the main branch
+### Step 3 — Branch from develop
 
 Every use case is implemented on its own branch, created from an up-to-date
-`main`:
+`develop` — the integration branch every use case lands on. `main` holds only
+released code and is never branched from for a use case:
 
 ```bash
-git switch main && git pull
+git switch develop && git pull
 git switch -c feature/uc-01-sign-up
 ```
 
@@ -175,9 +176,13 @@ A use case does not leave the Testing stage until the full suite is green.
 
 ### Step 7 — Open a pull request
 
-Once approved, push the branch and open a pull request into `main`. The
+Once approved, push the branch and open a pull request into `develop`. The
 description references the use case and its issue (e.g. `Closes #<issue-number>`)
 and states which alternative flows were implemented and tested.
+
+The pull request cannot be merged until every CI check and the `branch-policy`
+check are green. The latter refuses a branch that is not named `feature/<name>`
+or `fix/<name>`, or that was cut from `main` instead of `develop`.
 
 ### Step 8 — Human review and merge
 
@@ -196,18 +201,27 @@ and states which alternative flows were implemented and tested.
 
 A use case is done only when **all** of the following hold:
 
-- [ ] Implemented on a `feature/uc-##-use-case-name` branch created from `main`.
+- [ ] Implemented on a `feature/uc-##-use-case-name` branch created from `develop`.
 - [ ] Main flow and every alternative flow from the specification are implemented.
 - [ ] Every user-visible string is localized in both supported languages.
 - [ ] The screens work in light and dark themes and across the supported window
       sizes, down to the minimum.
 - [ ] Tests cover the use case per the Testing Specification.
 - [ ] The full test suite passes (`flutter test`).
-- [ ] A pull request was reviewed by a human and merged.
+- [ ] A pull request was reviewed by a human and merged into `develop`.
 - [ ] The branch was deleted.
 - [ ] The issue is in **Done** and closed.
 
-## 7. References
+## 7. Releases
+
+A use case is done when it is merged into `develop`; it reaches `main`, and an
+owner, with the next release. Releasing is a separate step from delivering a use
+case: the changelog is finalized on `develop`, a `release/x.y.z` branch is cut
+from it and merged into `main`, and the merge commit is tagged `vx.y.z`, which
+builds and publishes the packages. The procedure, and the versioning policy that
+decides `x.y.z`, are in [CONTRIBUTING.md](../../CONTRIBUTING.md#releasing).
+
+## 8. References
 
 - [`initial/Workflow.md`](../initial/Workflow.md) — the operational form of this process, and the authority where the two could differ.
 - [Use Case Specification Document](Use%20Case%20Specification%20Document.md) — the use case definitions and their flows.

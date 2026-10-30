@@ -398,29 +398,11 @@ abstract class AppLocalizations {
   /// **'Loading'**
   String get loading;
 
-  /// Accessible label of the persistent playback bar (FR-UX-01).
-  ///
-  /// In en, this message translates to:
-  /// **'Playback'**
-  String get playbackBarLabel;
-
-  /// The playback bar's idle state (FR-UX-01). The bar is present from the first frame, so it says what it is showing rather than sitting blank.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing is playing'**
-  String get playbackNothingPlaying;
-
   /// Navigation panel entry for the dashboard the application opens on (UC-14).
   ///
   /// In en, this message translates to:
   /// **'Home'**
   String get destinationHome;
-
-  /// Navigation panel entry for audio files (FR-CT-01).
-  ///
-  /// In en, this message translates to:
-  /// **'Music'**
-  String get destinationMusic;
 
   /// Navigation panel entry for books and e-books (FR-CT-01).
   ///
@@ -524,18 +506,6 @@ abstract class AppLocalizations {
   /// **'Match the system'**
   String get preferencesLanguageSystem;
 
-  /// UC-21 main flow step 2: whether starting a track puts the full player on screen. What is left of the album-animation preference, which used to choose between a record, a tape and a disc — the animation is gone and the half of the choice that was about behaviour rather than decoration is this.
-  ///
-  /// In en, this message translates to:
-  /// **'Open the player when a track starts'**
-  String get playerAutoOpenLabel;
-
-  /// UC-21 main flow step 2: what the switch above does, said once.
-  ///
-  /// In en, this message translates to:
-  /// **'The full player opens by itself whenever something new begins playing.'**
-  String get playerAutoOpenDescription;
-
   /// Preference controlling whether the catalog is re-checked against the disk each time a session is established.
   ///
   /// In en, this message translates to:
@@ -553,12 +523,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your choice is applied, but it could not be saved — it will not be remembered the next time Alexandria starts.'**
   String get preferencesUnsaved;
-
-  /// Music enrichment design: the core will not be reconfigured while it is walking a disk — a scan already running would be left behind by the replacement — so a lookup preference changed during one is stored and applied when the scan settles. Said rather than left silent, because the alternative reads as a switch that does nothing.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved. The library is being scanned, so this takes effect when the scan finishes.'**
-  String get musicLookupDeferred;
 
   /// The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made.
   ///
@@ -701,7 +665,7 @@ abstract class AppLocalizations {
   /// Body of the scope dialog. Names the symptom the choice solves rather than restating the control (UC-05).
   ///
   /// In en, this message translates to:
-  /// **'Alexandria will catalog only the kinds of file you choose here. A music folder scoped to music keeps its cover art out of your images.'**
+  /// **'Alexandria will catalog only the kinds of file you choose here. A folder of ebooks scoped to books keeps their cover images out of your images.'**
   String get indexScopeBody;
 
   /// The scope dialog's default: every type the core supports, which is also what a folder registered before this choice existed keeps (UC-05).
@@ -751,12 +715,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only {types}'**
   String librarySourcesScopeOnly(String types);
-
-  /// The core's `audio` type, named for the owner (FR-CT-02).
-  ///
-  /// In en, this message translates to:
-  /// **'Music'**
-  String get fileTypeAudio;
 
   /// The core's `video` type, named for the owner (FR-CT-02).
   ///
@@ -1344,149 +1302,11 @@ abstract class AppLocalizations {
   /// **'The last scan was interrupted when Alexandria closed.'**
   String get dashboardLastRunInterrupted;
 
-  /// Opens the music metadata form for an audio file, from its detail view or from its row's context menu in the music area (UC-15 main flow step 1, UC-46, FR-CT-14).
+  /// Opens the video metadata form from a video's detail view (UC-16 main flow step 1).
   ///
   /// In en, this message translates to:
   /// **'Edit metadata'**
   String get detailsEditMetadata;
-
-  /// Title of the music metadata form (UC-15, FR-ME-01).
-  ///
-  /// In en, this message translates to:
-  /// **'Music metadata'**
-  String get musicMetadataTitle;
-
-  /// Label of the track title field.
-  ///
-  /// In en, this message translates to:
-  /// **'Title'**
-  String get musicMetadataFieldTitle;
-
-  /// Label of the artist field.
-  ///
-  /// In en, this message translates to:
-  /// **'Artist'**
-  String get musicMetadataFieldArtist;
-
-  /// Label of the album artist field — who the record is by, which the music area groups by (UC-46, FR-CT-13).
-  ///
-  /// In en, this message translates to:
-  /// **'Album artist'**
-  String get musicMetadataFieldAlbumArtist;
-
-  /// Label of the album field.
-  ///
-  /// In en, this message translates to:
-  /// **'Album'**
-  String get musicMetadataFieldAlbum;
-
-  /// Label of the release year field.
-  ///
-  /// In en, this message translates to:
-  /// **'Year'**
-  String get musicMetadataFieldYear;
-
-  /// Label of the genre field.
-  ///
-  /// In en, this message translates to:
-  /// **'Genre'**
-  String get musicMetadataFieldGenre;
-
-  /// Label of the track number field.
-  ///
-  /// In en, this message translates to:
-  /// **'Track number'**
-  String get musicMetadataFieldTrack;
-
-  /// Sends the edited metadata to the core (UC-15 main flow step 5).
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get musicMetadataSave;
-
-  /// Closes the metadata form without saving.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get musicMetadataCancel;
-
-  /// UC-15 AF-01: a numeric field holds something that is not a number, so the core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a whole number.'**
-  String get musicMetadataErrorNotANumber;
-
-  /// UC-15 AF-01: the year is earlier than any recording could carry, which is a typo rather than a year.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a four-digit year.'**
-  String get musicMetadataErrorYear;
-
-  /// UC-15 AF-01: the track number is zero or negative.
-  ///
-  /// In en, this message translates to:
-  /// **'A track number starts at 1.'**
-  String get musicMetadataErrorTrack;
-
-  /// UC-15 AF-01: a text field is longer than the core stores.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep this under {max} characters.'**
-  String musicMetadataErrorTooLong(int max);
-
-  /// The music area's artists view, in its view switcher.
-  ///
-  /// In en, this message translates to:
-  /// **'Artists'**
-  String get musicViewArtists;
-
-  /// The music area's albums view, in its view switcher.
-  ///
-  /// In en, this message translates to:
-  /// **'Albums'**
-  String get musicViewAlbums;
-
-  /// The music area's songs view, listing every track.
-  ///
-  /// In en, this message translates to:
-  /// **'Songs'**
-  String get musicViewSongs;
-
-  /// The first crumb of the music area's breadcrumb, leading back to the top of the current view. Deliberately distinct from the navigation panel's own 'Music' label (destinationMusic) rather than a translation of it — the panel, the area's heading and this crumb all sit in view together, and giving this one the same word three times over would not help the owner; do not 'correct' it to match destinationMusic.
-  ///
-  /// In en, this message translates to:
-  /// **'Music library'**
-  String get musicBreadcrumbRoot;
-
-  /// Shown in place of a track's name when its metadata carries no title. The file's name on disk is never shown here.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown title'**
-  String get musicUnknownTitle;
-
-  /// Names the group of audio files whose metadata carries no artist.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown artist'**
-  String get musicUnknownArtist;
-
-  /// Names the group of audio files whose metadata carries no album.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown album'**
-  String get musicUnknownAlbum;
-
-  /// Tooltip on the button that opens a track row's context menu, which right-clicking the row also opens.
-  ///
-  /// In en, this message translates to:
-  /// **'Actions for this track'**
-  String get musicRowActions;
-
-  /// The music area with nothing in it.
-  ///
-  /// In en, this message translates to:
-  /// **'No audio files are catalogued yet.'**
-  String get musicEmpty;
 
   /// UC-03 main flow step 1: ends the session without closing the application.
   ///
@@ -1866,108 +1686,6 @@ abstract class AppLocalizations {
   /// **'Track {id}'**
   String videoTrackUnnamed(String id);
 
-  /// UC-20 main flow step 1: plays this track on its own.
-  ///
-  /// In en, this message translates to:
-  /// **'Play'**
-  String get audioPlay;
-
-  /// FR-PL-06: plays the whole record in an order nobody chose. On the row itself, because shuffling a record is something owners do constantly and a control they have to go looking for is one they stop using.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle album'**
-  String get audioShuffleAlbum;
-
-  /// FR-PL-06: plays everything by the artist in an order nobody chose.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle artist'**
-  String get audioShuffleArtist;
-
-  /// FR-PL-06: plays the whole audio library in an order nobody chose, from wherever in the music area the owner is standing.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle everything'**
-  String get audioShuffleAll;
-
-  /// FR-PL-06: what the playback bar calls the queue a library-wide shuffle builds. It is a sequence with a name, the way a playlist is.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffled library'**
-  String get audioShuffleAllLabel;
-
-  /// FR-PL-06: plays the playlist's tracks in an order nobody chose, leaving the curated order untouched.
-  ///
-  /// In en, this message translates to:
-  /// **'Shuffle playlist'**
-  String get audioShufflePlaylist;
-
-  /// UC-20 main flow steps 1 and 3: queues the album this track belongs to.
-  ///
-  /// In en, this message translates to:
-  /// **'Play album'**
-  String get audioPlayAlbum;
-
-  /// UC-20 main flow steps 1 and 3: queues everything by this track's artist.
-  ///
-  /// In en, this message translates to:
-  /// **'Play artist'**
-  String get audioPlayArtist;
-
-  /// UC-20 main flow step 6: pauses playback where it is.
-  ///
-  /// In en, this message translates to:
-  /// **'Pause'**
-  String get audioPause;
-
-  /// UC-20 main flow step 6 / FR-PL-06: skips forward within the queue.
-  ///
-  /// In en, this message translates to:
-  /// **'Next track'**
-  String get audioNext;
-
-  /// UC-20 main flow step 6 / FR-PL-06: skips back within the queue.
-  ///
-  /// In en, this message translates to:
-  /// **'Previous track'**
-  String get audioPrevious;
-
-  /// UC-20 main flow step 7: stops playback and clears the queue.
-  ///
-  /// In en, this message translates to:
-  /// **'Stop'**
-  String get audioStop;
-
-  /// UC-20 AF-03: every queued file failed, so the queue was cleared.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing in this selection could be played.'**
-  String get audioNothingPlayable;
-
-  /// UC-20 AF-01 and AF-02: which file was skipped, named rather than counted, while the queue carries on.
-  ///
-  /// In en, this message translates to:
-  /// **'Skipped {name} — it could not be played.'**
-  String audioSkipped(String name);
-
-  /// UC-20 AF-04: the resume point for a single track, offered before it starts.
-  ///
-  /// In en, this message translates to:
-  /// **'You stopped this track at {position}.'**
-  String audioResumePrompt(String position);
-
-  /// UC-21 main flow step 2: opens the full player, where the album's medium is shown.
-  ///
-  /// In en, this message translates to:
-  /// **'Open the player'**
-  String get audioOpenPlayer;
-
-  /// UC-21 AF-02: leaves the full player and returns to wherever the owner opened it from, without touching playback.
-  ///
-  /// In en, this message translates to:
-  /// **'Close the player'**
-  String get audioClosePlayer;
-
   /// UC-22 main flow step 1: opens the viewer registered for this file's type.
   ///
   /// In en, this message translates to:
@@ -2093,6 +1811,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This page is shown as content. Any script it contains is not run.'**
   String get pageScriptsNotRun;
+
+  /// UC-25 AF-07, NFR-12: the browser engine refused to start because the system offers no sandbox for it (running as root, user namespaces disabled or restricted, or Windows), so the page is drawn as widgets; said on every page because it is a property of the machine the owner can change.
+  ///
+  /// In en, this message translates to:
+  /// **'This page is drawn without its browser engine: Chromium\'s sandbox is not available on this computer, and the engine does not run without it.'**
+  String get pageEngineSandboxUnavailable;
 
   /// UC-25 AF-04: what could be parsed is drawn, and the rest is admitted to.
   ///
@@ -2442,90 +2166,6 @@ abstract class AppLocalizations {
   /// **'{count} tracked'**
   String readingListItemCount(int count);
 
-  /// Playlists design: the playlists screen heading.
-  ///
-  /// In en, this message translates to:
-  /// **'Playlists'**
-  String get playlistsTitle;
-
-  /// Opens the playlists screen from the Library menu, beside reading lists.
-  ///
-  /// In en, this message translates to:
-  /// **'Playlists'**
-  String get playlistsOpen;
-
-  /// There are no playlists, which is a state and not a failure — the empty state invites making one.
-  ///
-  /// In en, this message translates to:
-  /// **'You have not made a playlist yet.'**
-  String get playlistsNone;
-
-  /// What the new playlist is called.
-  ///
-  /// In en, this message translates to:
-  /// **'Playlist name'**
-  String get playlistNameLabel;
-
-  /// What the playlist is being renamed to.
-  ///
-  /// In en, this message translates to:
-  /// **'New name'**
-  String get playlistRenameLabel;
-
-  /// Sends the new playlist to the core.
-  ///
-  /// In en, this message translates to:
-  /// **'Create'**
-  String get playlistCreate;
-
-  /// Sends the new name to the core.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename'**
-  String get playlistRenameSave;
-
-  /// Opens the playlist for renaming.
-  ///
-  /// In en, this message translates to:
-  /// **'Rename this playlist'**
-  String get playlistRename;
-
-  /// Deletes the playlist, after confirmation.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete this playlist'**
-  String get playlistDelete;
-
-  /// A blank name is marked on the field rather than sent to the core.
-  ///
-  /// In en, this message translates to:
-  /// **'Give the playlist a name.'**
-  String get playlistNameEmpty;
-
-  /// The core has no such playlist any more, so the list is read again.
-  ///
-  /// In en, this message translates to:
-  /// **'That playlist is no longer there.'**
-  String get playlistNotFound;
-
-  /// The confirmation names what goes and what does not: the core deletes the playlist and its entries, never the files (BR-07).
-  ///
-  /// In en, this message translates to:
-  /// **'Delete {name}? The tracks in it are kept — only the playlist is removed.'**
-  String playlistDeleteMessage(String name);
-
-  /// Playlists design section 3: the playlist exists but holds no entries, which is a state and not a failure.
-  ///
-  /// In en, this message translates to:
-  /// **'This playlist has no tracks yet.'**
-  String get playlistDetailEmpty;
-
-  /// Removes one entry from the playlist detail screen, addressed by the entry's own uuid rather than by the track (playlists design section 2).
-  ///
-  /// In en, this message translates to:
-  /// **'Remove from playlist'**
-  String get playlistRemoveTrack;
-
   /// Libraries design: marks a source folder as a library at registration, which is the same question as the type scope above — what is this folder.
   ///
   /// In en, this message translates to:
@@ -2669,126 +2309,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That folder is already inside another library.'**
   String get libraryOverlaps;
-
-  /// Library menu entry opening the library-wide lookup screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Find music info'**
-  String get enrichmentSweepOpen;
-
-  /// Title of the library-wide lookup screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Find music info'**
-  String get enrichmentSweepTitle;
-
-  /// Says what the lookup does, what leaves the machine, why it is slow, and that stopping is safe. Shown before it starts, because this is the one thing in the application that reaches the network and the owner should be choosing it knowingly.
-  ///
-  /// In en, this message translates to:
-  /// **'Looks up artist photography and lyrics for your music from MusicBrainz, Wikimedia Commons and LRCLIB. Nothing about you is sent — only an artist name, a track title, an album name and a duration. It is slow on purpose: those services allow one request a second, so a large library takes hours. You can stop at any time and pick up where you left off.'**
-  String get enrichmentSweepExplanation;
-
-  /// Begins the library-wide lookup.
-  ///
-  /// In en, this message translates to:
-  /// **'Start'**
-  String get enrichmentSweepStart;
-
-  /// Stops the library-wide lookup after the batch in flight. What was done is kept.
-  ///
-  /// In en, this message translates to:
-  /// **'Stop'**
-  String get enrichmentSweepStop;
-
-  /// Progress of the library-wide lookup, counted rather than a bare spinner: an operation measured in hours needs a denominator.
-  ///
-  /// In en, this message translates to:
-  /// **'{considered} looked up, {remaining} to go'**
-  String enrichmentSweepProgress(int considered, int remaining);
-
-  /// The lookup reached the end of the library.
-  ///
-  /// In en, this message translates to:
-  /// **'Finished. Found something for {found} of {considered}.'**
-  String enrichmentSweepFinished(int found, int considered);
-
-  /// The owner stopped it. Says that the work is kept, because otherwise stopping looks like it wasted everything.
-  ///
-  /// In en, this message translates to:
-  /// **'Stopped. {considered} looked up so far — starting again picks up from here.'**
-  String enrichmentSweepStopped(int considered);
-
-  /// A batch failed for a reason not worth retrying. What was already done is kept.
-  ///
-  /// In en, this message translates to:
-  /// **'The lookup could not continue.'**
-  String get enrichmentSweepFailed;
-
-  /// Attribution under the lyrics, naming the service that supplied them. Shown because the words are somebody's, not this application's.
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics from {source}'**
-  String enrichmentLyricsSource(String source);
-
-  /// Attribution under an artist photograph. Wikimedia Commons licences require credit, so an image is shown with its source or not at all.
-  ///
-  /// In en, this message translates to:
-  /// **'Photograph: {source}'**
-  String enrichmentImageCredit(String source);
-
-  /// Looks up the track playing now. Scoped to one track because that takes seconds, where a whole library takes hours at MusicBrainz's one-request-per-second limit.
-  ///
-  /// In en, this message translates to:
-  /// **'Find lyrics and artwork'**
-  String get enrichmentFindForTrack;
-
-  /// Shown while an enrichment lookup is in flight. It reaches the network, so it is not instant.
-  ///
-  /// In en, this message translates to:
-  /// **'Looking up…'**
-  String get enrichmentLookingUp;
-
-  /// The services answered and had nothing. An answer, not a failure — and not retried.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing found for this track.'**
-  String get enrichmentNothingFound;
-
-  /// Music enrichment design: the core reports the feature as unavailable, either not enabled or enabled with no MusicBrainz contact configured. Not an error the owner made, so it is worded as a fact and then as the one thing they can do about it — the preferences dialog is where the switch and the contact both live, and an owner told only that the feature is off has nowhere to go.
-  ///
-  /// In en, this message translates to:
-  /// **'Music lookup is switched off. You can turn it on in Preferences.'**
-  String get enrichmentUnavailable;
-
-  /// Playlists design section 6: plays the whole playlist in order, replacing whatever was queued. Missing entries are stepped over rather than stopping the list.
-  ///
-  /// In en, this message translates to:
-  /// **'Play this playlist'**
-  String get playlistPlay;
-
-  /// Task 5 entry points 1 and 3: adds one track — from its own context menu, or from the now-playing screen — to a playlist.
-  ///
-  /// In en, this message translates to:
-  /// **'Add to a playlist'**
-  String get playlistAddTo;
-
-  /// Task 5 entry point 2: adds every track of an album to a playlist in one call, in the album's own order.
-  ///
-  /// In en, this message translates to:
-  /// **'Add album to a playlist'**
-  String get playlistAddAlbumTo;
-
-  /// Task 5 entry point 2: adds every track by an artist to a playlist in one call.
-  ///
-  /// In en, this message translates to:
-  /// **'Add artist to a playlist'**
-  String get playlistAddArtistTo;
-
-  /// Task 5: the one item an add-to-playlist menu offers when the owner has no playlist yet, opening the playlists screen rather than showing an empty menu.
-  ///
-  /// In en, this message translates to:
-  /// **'Make a playlist first'**
-  String get playlistAddCreateOne;
 
   /// UC-32 main flow step 4: which issue of the series the owner is on.
   ///
@@ -3402,25 +2922,7 @@ abstract class AppLocalizations {
   /// **'Review'**
   String get libraryToolsGroupReview;
 
-  /// FR-PL-15: the background pass that fetches a photograph for every artist in the library, shown in the activity strip while it runs. Counted rather than described, because an owner watching it can then tell a long pass from one that is nearly done.
-  ///
-  /// In en, this message translates to:
-  /// **'Finding artist photographs — {done} of {total}'**
-  String artistPortraitsProgress(int done, int total);
-
-  /// FR-PL-15: the background photograph pass gave up, because several lookups in a row could not be made at all — which is what being offline looks like from here. Shown in the activity strip beside the action that starts it again.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not reach the photograph services — stopped looking'**
-  String get artistPortraitsStopped;
-
-  /// FR-PL-15: starts the abandoned photograph pass again, for an owner whose connection has come back. Without it the pass is over until the application is restarted.
-  ///
-  /// In en, this message translates to:
-  /// **'Try again'**
-  String get artistPortraitsRetry;
-
-  /// FR-FC-29: the accessible name of the strip above the playback bar, which reports whatever the core is indexing right now.
+  /// FR-FC-29: the accessible name of the strip along the bottom of the shell, which reports whatever the core is indexing right now.
   ///
   /// In en, this message translates to:
   /// **'Background indexing'**
@@ -3557,168 +3059,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dismiss'**
   String get activityDismiss;
-
-  /// Music enrichment design: the preference that switches music lookup on. Named as the action it permits rather than as a feature name, because what it controls is whether this application reaches the internet at all.
-  ///
-  /// In en, this message translates to:
-  /// **'Look up music info online'**
-  String get musicLookupLabel;
-
-  /// Music enrichment design: what the lookup preference permits, beneath its label in the preferences dialog. States the exception to the product's no-network principle in the place the owner grants it.
-  ///
-  /// In en, this message translates to:
-  /// **'Lets Alexandria fetch lyrics and artist photography from MusicBrainz, Wikimedia Commons and LRCLIB. This is the only part of Alexandria that reaches the internet, and it only does so when you ask for a lookup. Nothing about you is sent — only an artist name, a track title, an album name and a duration.'**
-  String get musicLookupDescription;
-
-  /// Music enrichment design: the address sent to MusicBrainz in the User-Agent of every lookup. Their terms require one, and the core refuses to look anything up while it is empty.
-  ///
-  /// In en, this message translates to:
-  /// **'Contact for the lookup services'**
-  String get musicLookupContactLabel;
-
-  /// Music enrichment design: why the contact field exists, beneath it in the preferences dialog. Not a formality: an anonymous client is one MusicBrainz is entitled to block.
-  ///
-  /// In en, this message translates to:
-  /// **'MusicBrainz requires a way to reach whoever is making the requests. Leave it as it is to use the application\'s own address, or put your own here.'**
-  String get musicLookupContactHelp;
-
-  /// Music enrichment design: heading over the music-lookup preferences in the preferences dialog.
-  ///
-  /// In en, this message translates to:
-  /// **'Music info'**
-  String get preferencesMusicLookupLabel;
-
-  /// Music enrichment design: opens the words of the track playing now. Looks them up if none are cached yet, which is what makes it worth offering for a track that has never been looked up.
-  ///
-  /// In en, this message translates to:
-  /// **'Lyrics'**
-  String get lyricsOpen;
-
-  /// Music enrichment design: puts the words away again and gives the whole window back to the device. The same button that opened them, which is why it names the reverse of what it just did.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide lyrics'**
-  String get lyricsClose;
-
-  /// Music enrichment design: the lookup finished and the services had nothing for this track. An answer, not a failure — the core records it so the same track is not asked about again.
-  ///
-  /// In en, this message translates to:
-  /// **'No lyrics were found for this track.'**
-  String get lyricsNone;
-
-  /// Music enrichment design: the owner opened the lyrics panel for a track with none cached while the lookup preference is off. Says where the switch is rather than only that the feature is unavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Music info lookup is switched off. Turn it on in Preferences to fetch lyrics.'**
-  String get lyricsSwitchedOff;
-
-  /// UC-21: names the moving bars on the player screen for a screen reader. They are an instrument that runs with the music rather than a control, so the label says what they show rather than what pressing them would do.
-  ///
-  /// In en, this message translates to:
-  /// **'Sound levels'**
-  String get audioSoundBarsLabel;
-
-  /// UC-21: names the transport buttons drawn on the device in the full player, so a screen reader reaching them is told what the group of controls is.
-  ///
-  /// In en, this message translates to:
-  /// **'Player controls'**
-  String get audioTransportSemantics;
-
-  /// UC-21, FR-UX-01: what the playback bar's recess is showing when the album carries its own picture. Named for a screen reader, which would otherwise be told the recess holds a turning record when it holds a photograph of a sleeve.
-  ///
-  /// In en, this message translates to:
-  /// **'Album cover'**
-  String get albumCoverLabel;
-
-  /// Music enrichment design: a run that reached the services and could not finish — the network is down, or a provider answered with an error. Distinct from the switched-off message, which is what this used to say: an owner who had just turned the feature on was being told to turn it on.
-  ///
-  /// In en, this message translates to:
-  /// **'The lookup could not be completed. The services may be unreachable — try again later.'**
-  String get enrichmentLookupFailed;
-
-  /// Music enrichment design: the run skipped the track because the tags a lookup is built from are missing. Distinct from finding nothing — this one the owner can fix, by tagging the file.
-  ///
-  /// In en, this message translates to:
-  /// **'This track has no artist or title tag to look anything up with.'**
-  String get enrichmentUntagged;
-
-  /// Library menu entry opening what the owner has played most (play history design).
-  ///
-  /// In en, this message translates to:
-  /// **'Music stats'**
-  String get musicStatsOpen;
-
-  /// Title of the screen ranking what has been played.
-  ///
-  /// In en, this message translates to:
-  /// **'Music stats'**
-  String get musicStatsTitle;
-
-  /// Play history design: an empty state that also says what the rule is, because a chart that stays empty after a few skipped tracks is otherwise indistinguishable from one that is broken.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing has been counted yet. A track counts once you have heard half of it, or four minutes of it — whichever comes first.'**
-  String get musicStatsNone;
-
-  /// Play history design: the totals above the rankings. Both halves are counted over everything played, including tracks carrying no tags, which the rankings below cannot show.
-  ///
-  /// In en, this message translates to:
-  /// **'{plays, plural, =1{1 play} other{{plays} plays}} across {tracks, plural, =1{1 track} other{{tracks} tracks}}'**
-  String musicStatsSummary(num plays, num tracks);
-
-  /// Play history design: what period the numbers cover, so a small total reads as a short history rather than as little listening.
-  ///
-  /// In en, this message translates to:
-  /// **'Counted from {first} to {last}'**
-  String musicStatsPeriod(String first, String last);
-
-  /// Play history design: re-reads the rankings. The screen does not follow the music while it is open — a chart reordering itself under the reader would be harder to read than one a minute old.
-  ///
-  /// In en, this message translates to:
-  /// **'Read again'**
-  String get musicStatsRefresh;
-
-  /// Play history design: heading of the track ranking.
-  ///
-  /// In en, this message translates to:
-  /// **'Most played tracks'**
-  String get musicStatsTopTracks;
-
-  /// Play history design: heading of the artist ranking.
-  ///
-  /// In en, this message translates to:
-  /// **'Most played artists'**
-  String get musicStatsTopArtists;
-
-  /// Play history design: heading of the album ranking.
-  ///
-  /// In en, this message translates to:
-  /// **'Most played albums'**
-  String get musicStatsTopAlbums;
-
-  /// Play history design: heading of the genre ranking.
-  ///
-  /// In en, this message translates to:
-  /// **'Most played genres'**
-  String get musicStatsTopGenres;
-
-  /// Play history design: how many times one row was played.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 play} other{{count} plays}}'**
-  String musicStatsPlays(num count);
-
-  /// Play history design: how many distinct tracks of one artist's were played — what tells a deep catalogue apart from one song on repeat.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 track} other{{count} tracks}}'**
-  String musicStatsArtistTracks(num count);
-
-  /// Play history design: says why the rankings below the track list can be shorter than the totals suggest, rather than leaving it looking like rows went missing.
-  ///
-  /// In en, this message translates to:
-  /// **'Tracks with no tags are counted in the totals, and can only be listed by name.'**
-  String get musicStatsUntaggedNote;
 
   /// Navigation panel entry for the registered libraries — folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it.
   ///

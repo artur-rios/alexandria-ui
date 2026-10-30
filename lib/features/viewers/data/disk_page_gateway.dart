@@ -89,22 +89,59 @@ class DiskPageGateway implements PageGateway {
   /// request they never asked for. A missing one is already named to them
   /// (AF-02).
   static String? _stylesheetAt(String href, {required String from}) {
-    if (href.isEmpty ||
-        href.startsWith('http') ||
-        href.startsWith('//') ||
-        href.startsWith('data:')) {
-      return null;
-    }
+    final resolved = _localReference(href, from: from);
+    if (resolved == null) return null;
 
     try {
-      final file = File(p.normalize(p.join(from, Uri.decodeFull(href))));
+      // A regular file, and only one: `existsSync` is true of a device or a
+      // pipe too, and reading `/dev/zero` as a stylesheet never ends.
+      if (FileSystemEntity.typeSync(resolved) != FileSystemEntityType.file) {
+        return null;
+      }
 
-      return file.existsSync() ? file.readAsStringSync() : null;
+      return File(resolved).readAsStringSync();
     } on Object {
       // A stylesheet that cannot be read styles nothing, which is the state
       // the page was already in. It is not a reason to refuse the page.
       return null;
     }
+  }
+
+  /// The file [reference] names inside the page's folder [from], or `null`
+  /// for one this application will not touch.
+  ///
+  /// A page is content from elsewhere, and whatever it references is opened
+  /// with the owner's permissions. So only a relative reference that stays
+  /// inside the folder the page was saved in is followed: one with a scheme
+  /// (`https:`, `file:`, `data:`, in any case) or a host (`//host/…`) is not
+  /// a file beside the page, an absolute path is any file on the disk, and a
+  /// UNC path (`\\host\share`) is a connection to someone else's server on
+  /// Windows — with the owner's credentials offered to it — merely for
+  /// opening a page. The query and fragment are not part of the file's name.
+  static String? _localReference(String reference, {required String from}) {
+    final trimmed = reference.trim();
+    if (trimmed.isEmpty ||
+        trimmed.startsWith('/') ||
+        trimmed.startsWith(r'\')) {
+      return null;
+    }
+
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || uri.hasScheme || uri.hasAuthority) return null;
+
+    final String path;
+    try {
+      path = Uri.decodeFull(uri.path);
+    } on Object {
+      return null;
+    }
+    if (path.isEmpty || p.isAbsolute(path) || p.rootPrefix(path).isNotEmpty) {
+      return null;
+    }
+
+    final resolved = p.normalize(p.join(from, path));
+
+    return p.isWithin(p.normalize(from), resolved) ? resolved : null;
   }
 
   /// Whether the page carries script (AF-03).
@@ -149,13 +186,12 @@ class DiskPageGateway implements PageGateway {
       for (final match in pattern.allMatches(html)) {
         final reference = match.group(1);
         if (reference == null) continue;
-        if (reference.startsWith('http') ||
-            reference.startsWith('data:') ||
-            reference.startsWith('//')) {
-          continue;
-        }
 
-        final resolved = p.normalize(p.join(from, Uri.decodeFull(reference)));
+        // Only what lies in the page's own folder is checked — see
+        // [_localReference] for why nothing else is touched.
+        final resolved = _localReference(reference, from: from);
+        if (resolved == null) continue;
+
         if (!File(resolved).existsSync()) missing.add(reference);
       }
     }

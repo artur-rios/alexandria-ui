@@ -112,7 +112,7 @@ try {
 
     foreach ($tool in 'cargo', 'flutter') {
         if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) {
-            Fail "$tool is not on PATH. See the Building from source section of README.md."
+            Fail "$tool is not on PATH. See the Building from source section of CONTRIBUTING.md."
         }
     }
 
@@ -122,7 +122,7 @@ try {
 FFMPEG_DIR is not set, and the core cannot build without ffmpeg's headers and
 import libraries. It must point at a directory holding include\, lib\ and bin\
 together — a "shared" or "dev" build, not one that only ships ffmpeg.exe. The
-core repository's README walks through installing one.
+core repository's CONTRIBUTING.md walks through installing one.
 '@
         }
         if (-not (Test-Path (Join-Path $env:FFMPEG_DIR 'include'))) {
@@ -204,7 +204,9 @@ Pass -Core <path>, set ALEXANDRIA_CORE_REPO, or clone it beside this one:
             $before = & $normalise $vendored
             $after = & $normalise $generated
 
-            if ($before -eq $after) {
+            # -ceq: PowerShell's -eq ignores case, and a header change that is
+            # only a change of case is still a change dev.sh's cmp would see.
+            if ($before -ceq $after) {
                 Write-Step 'Bindings are current'
             } else {
                 Write-Step 'The core''s header changed; regenerating the bindings'

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
@@ -7,7 +5,6 @@ import 'catalog_file.dart';
 import 'file_details.dart';
 import 'file_type.dart';
 import 'listing_view.dart';
-import 'music_metadata.dart';
 import 'video_metadata.dart';
 
 part 'catalog_gateway.freezed.dart';
@@ -41,27 +38,7 @@ sealed class FileDetailsOutcome with _$FileDetailsOutcome {
       FileDetailsFailed;
 }
 
-/// What editing a file's metadata produced (UC-15 main flow step 6).
-@freezed
-sealed class MetadataEditOutcome with _$MetadataEditOutcome {
-  /// The core validated, persisted, and echoed what it stored.
-  ///
-  /// It carries the stored metadata rather than nothing, so the form reports
-  /// what the core holds instead of what was sent — the two agree today, and
-  /// the day they do not, this is the one that is true.
-  const factory MetadataEditOutcome.saved({required MusicMetadata metadata}) =
-      MetadataEditSaved;
-
-  /// The core refused the change (AF-02, AF-03, AF-05).
-  const factory MetadataEditOutcome.failed({required Failure failure}) =
-      MetadataEditFailed;
-}
-
 /// What editing a video file's metadata produced (UC-16 main flow step 5).
-///
-/// Its own union rather than a reuse of [MetadataEditOutcome]: the two carry
-/// different metadata shapes, and a single outcome holding either would push
-/// the "which kind is this?" question into every caller that reads a success.
 @freezed
 sealed class VideoMetadataEditOutcome with _$VideoMetadataEditOutcome {
   /// The core validated, persisted, and echoed what it stored.
@@ -87,32 +64,6 @@ sealed class FileRenameOutcome with _$FileRenameOutcome {
   /// The core refused, or the disk did (AF-02, AF-03, AF-05).
   const factory FileRenameOutcome.failed({required Failure failure}) =
       FileRenameFailed;
-}
-
-/// What reading a file's embedded picture produced (UC-21, FR-PL-07,
-/// FR-MP-05).
-@freezed
-sealed class FileThumbnailOutcome with _$FileThumbnailOutcome {
-  /// The core answered with the picture.
-  ///
-  /// Carries [bytes] alone — the core's own `mimeType` field is dropped
-  /// rather than threaded through: nothing downstream reads it, since
-  /// `ui.instantiateImageCodec` sniffs the format from the bytes
-  /// themselves, and requiring it here would reject an otherwise
-  /// perfectly decodable picture were the core ever to omit it.
-  const factory FileThumbnailOutcome.read({required Uint8List bytes}) =
-      FileThumbnailRead;
-
-  /// The core could not answer.
-  ///
-  /// Carries a plain [Failure] rather than distinguishing "no picture
-  /// embedded" from any other reason — a file with none answers
-  /// `InvalidInput`, which is common enough that the caller (Task 4's
-  /// `AlbumCoverController`) treats every member of this variant, whatever
-  /// the code, as "show the designed jacket instead" rather than as
-  /// something worth telling the owner about.
-  const factory FileThumbnailOutcome.failed({required Failure failure}) =
-      FileThumbnailFailed;
 }
 
 /// The application's view of the core's catalog queries (IR-02, NFR-17).
@@ -153,24 +104,13 @@ abstract interface class CatalogGateway {
     required String credential,
   });
 
-  /// Replaces the music metadata of the audio file [uuid] identifies
-  /// (FR-ME-01, UC-15).
-  ///
-  /// The whole record is sent, not the fields that changed: the core's patch
-  /// is a full replace, so anything left out is cleared.
-  Future<MetadataEditOutcome> editMusicMetadata({
-    required String uuid,
-    required MusicMetadata metadata,
-    required String credential,
-  });
-
   /// Replaces the video metadata of the file [uuid] identifies (FR-ME-02,
   /// UC-16).
   ///
-  /// The same core call as the music edit, tagged `video` instead — the core
-  /// checks the tag against the file's own type and refuses a patch aimed at
-  /// the wrong one. As there, the whole record is sent, because the patch is
-  /// a full replace.
+  /// The patch is tagged `video`, and the core checks the tag against the
+  /// file's own type and refuses a patch aimed at the wrong one. The whole
+  /// record is sent, because the patch is a full replace: anything left out
+  /// is cleared.
   Future<VideoMetadataEditOutcome> editVideoMetadata({
     required String uuid,
     required VideoMetadata metadata,
@@ -186,17 +126,6 @@ abstract interface class CatalogGateway {
   Future<FileRenameOutcome> renameFile({
     required String uuid,
     required String name,
-    required String credential,
-  });
-
-  /// The picture embedded in the file [uuid] identifies, if it carries one
-  /// (FR-PL-07, UC-21).
-  ///
-  /// A file with none answers `InvalidInput` — common, not exceptional — so
-  /// this is not named `thumbnailOrFail`: refusing is as normal an answer as
-  /// reading the bytes.
-  Future<FileThumbnailOutcome> fileThumbnail({
-    required String uuid,
     required String credential,
   });
 }

@@ -84,6 +84,37 @@ void main() {
       expect(book.chapters.last.html, contains('Second'));
     });
 
+    // `dirname` of a package document at the archive's root is `.`, not
+    // empty, and the archive holds `one.xhtml` rather than `./one.xhtml`.
+    test(
+      'GivenAPackageDocumentAtTheRoot_WhenItIsOpened_ThenItsChaptersAreFound',
+      () async {
+        const package =
+            '<?xml version="1.0"?>'
+            '<package xmlns:dc="http://purl.org/dc/elements/1.1/">'
+            '<manifest><item id="one" href="one.xhtml"/>'
+            '<item id="two" href="Text/chapter%202.xhtml"/></manifest>'
+            '<spine><itemref idref="one"/><itemref idref="two"/></spine>'
+            '</package>';
+        final path = anEpub({
+          'META-INF/container.xml':
+              '<?xml version="1.0"?><container><rootfiles>'
+              '<rootfile full-path="content.opf"/>'
+              '</rootfiles></container>',
+          'content.opf': package,
+          'one.xhtml': '<html><body><p>First</p></body></html>',
+          'Text/chapter 2.xhtml': '<html><body><p>Second</p></body></html>',
+        });
+
+        final outcome = await gateway.open(path);
+
+        expect(outcome, isA<DocumentIsBook>());
+        final book = outcome as DocumentIsBook;
+        expect(book.chapters, hasLength(2));
+        expect(book.chapters.last.html, contains('Second'));
+      },
+    );
+
     test('GivenAnEpub_WhenItIsOpened_ThenItsTitleIsRead', () async {
       final path = anEpub({
         ...shell(

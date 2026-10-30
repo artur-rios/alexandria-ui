@@ -21,7 +21,7 @@ class CatalogSessionActivity implements SessionActivity {
   final Ref _ref;
 
   /// The catalog holds nothing unsaved: the metadata form writes through the
-  /// core as it saves (UC-15), and there is no draft left behind when it
+  /// core as it saves (UC-16), and there is no draft left behind when it
   /// closes.
   @override
   bool get holdsUnsavedChanges => false;
@@ -43,13 +43,8 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(searchTermProvider);
     _ref.invalidate(openFileProvider);
     _ref.invalidate(fileDetailsControllerProvider);
-    _ref.invalidate(musicMetadataEditorProvider);
     _ref.invalidate(videoMetadataEditorProvider);
     _ref.invalidate(fileRenameControllerProvider);
-    // Read from the catalog, so it goes when the catalog does (UC-20), or the
-    // next sign-in would start out showing the library the session that just
-    // ended read.
-    _ref.invalidate(musicLibraryProvider);
     // The bookmarks are the core's too, and just as much a trace of the
     // session as the catalog (UC-28).
     _ref.invalidate(bookmarksControllerProvider);
@@ -72,13 +67,6 @@ class CatalogSessionActivity implements SessionActivity {
     _ref.invalidate(readingListsFormProvider);
     _ref.invalidate(trackedReadingItemsProvider);
     _ref.invalidate(readingProgressEditorProvider);
-    // The playlists are the core's too, and the same trace of the session
-    // (UC-47). The form especially: it is not auto-disposed, so its
-    // in-flight flag and whatever the core last refused would otherwise
-    // outlive the owner they belong to.
-    _ref.invalidate(playlistsControllerProvider);
-    _ref.invalidate(playlistsFormProvider);
-    _ref.invalidate(playlistDetailControllerProvider);
     _ref.invalidate(deletionControllerProvider);
     _ref.invalidate(openFileHoldsProvider);
     _ref.invalidate(deletedItemsControllerProvider);

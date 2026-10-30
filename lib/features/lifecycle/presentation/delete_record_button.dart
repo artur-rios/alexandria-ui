@@ -5,21 +5,18 @@ import '../../../core/di/providers.dart';
 import '../../../core/failures/failure_messages.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../catalog/domain/file_details.dart';
-import '../../catalog/domain/file_type.dart';
-import '../../catalog/domain/music_metadata.dart';
+import '../../catalog/domain/catalog_file.dart';
 import '../../organization/domain/bookmark.dart';
-import '../../playback/presentation/music_display_name.dart' show tagOr;
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/deletion_controller.dart';
 
 /// Deletes a file from its detail view (UC-33 main flow step 1).
 class DeleteFileButton extends ConsumerWidget {
-  /// Creates the button for [details].
-  const DeleteFileButton({required this.details, super.key});
+  /// Creates the button for [file].
+  const DeleteFileButton({required this.file, super.key});
 
-  /// The file to hide, with the metadata its own detail read already carries.
-  final FileDetails details;
+  /// The file to hide.
+  final CatalogFile file;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,21 +37,8 @@ class DeleteFileButton extends ConsumerWidget {
   Future<void> _confirm(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     final deletion = ref.read(deletionControllerProvider.notifier);
-    final file = details.file;
     final isOpen = deletion.holdsOn(file.uuid).isNotEmpty;
-
-    // FR-CT-13: the confirmation names an audio file by its own metadata,
-    // already carried by the [FileDetails] this button was built from —
-    // no provider, no await, and nothing that can fail independently of the
-    // detail view already on screen. `musicLibraryProvider` would throw when
-    // the audio listing fails or the session is rejected, which would leave
-    // this button dead on a press; reading straight off `details` cannot.
-    final name = file.type == FileType.audio
-        ? tagOr(
-            MusicMetadata.fromDetails(details.metadata).title,
-            l10n.musicUnknownTitle,
-          )
-        : file.name;
+    final name = file.name;
 
     final confirmed = await ConfirmationDialog.show(
       context,

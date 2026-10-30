@@ -10,9 +10,7 @@ import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 
 import 'failing_settings_store.dart';
 import 'fake_auth_gateway.dart';
-import 'fake_enrichment_gateway.dart';
 import 'fake_library_gateway.dart';
-import 'fake_playlist_gateway.dart';
 import 'login_harness.dart';
 
 /// Whether [overrides] already replaces [provider], so [pumpShell]'s own
@@ -39,16 +37,6 @@ extension PumpShell on WidgetTester {
   /// because the layout adapts. The device pixel ratio is pinned to 1 so the
   /// logical and physical sizes agree and a golden comes out at the size it
   /// says it is.
-  ///
-  /// [reduceMotion] defaults to `false` — the real, untouched default any
-  /// owner starts a session with — so a test built on this harness exercises
-  /// real motion unless it deliberately asks not to. UC-21's album animation
-  /// (Task 7) spins for as long as something plays, which is forever from
-  /// `pumpAndSettle`'s point of view; a caller whose own assertions do not
-  /// depend on that motion should let it play and step past it with a bounded
-  /// `pump(duration)` rather than flipping this flag — turning it on suite-
-  /// wide once made every other suite's coverage of `AlbumStage` motionless
-  /// by accident, which is exactly what this default now avoids.
   Future<ProviderContainer> pumpShell({
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
@@ -56,17 +44,10 @@ extension PumpShell on WidgetTester {
     SettingsStore? settings,
     FakeAuthGateway? gateway,
     List<Override> extraOverrides = const [],
-    bool reduceMotion = false,
   }) async {
     view.devicePixelRatio = 1;
     view.physicalSize = surfaceSize;
     addTearDown(view.reset);
-
-    if (reduceMotion) {
-      platformDispatcher.accessibilityFeaturesTestValue =
-          const FakeAccessibilityFeatures(disableAnimations: true);
-      addTearDown(platformDispatcher.clearAccessibilityFeaturesTestValue);
-    }
 
     final container = await pumpLoginScreen(
       gateway: gateway ?? FakeAuthGateway(),
@@ -83,23 +64,6 @@ extension PumpShell on WidgetTester {
         // start (`pageEngineEnabledProvider`).
         if (!_overrides(extraOverrides, pageEngineEnabledProvider))
           pageEngineEnabledProvider.overrideWithValue(false),
-        // Task 5's add-to-playlist controls are reachable from the music
-        // rows and the now-playing screen, both mounted well beyond the
-        // playlists feature's own tests — so every shell test needs a
-        // playlist gateway that answers cleanly by default, the same way the
-        // catalog and auth gateways already do here. Skipped when a caller's
-        // own `extraOverrides` already replaces it (the playlists tests'
-        // own `FakePlaylistGateway`), since Riverpod rejects overriding the
-        // same provider twice in one container.
-        if (!_overrides(extraOverrides, playlistGatewayProvider))
-          playlistGatewayProvider.overrideWithValue(FakePlaylistGateway()),
-        // The now-playing screen reads a track's cached enrichment, so every
-        // shell test that opens it needs a gateway — the real one throws
-        // when read before a core is loaded. Answers "nothing stored" by
-        // default, which is what most of a library holds and what a test
-        // about something else should see.
-        if (!_overrides(extraOverrides, enrichmentGatewayProvider))
-          enrichmentGatewayProvider.overrideWithValue(FakeEnrichmentGateway()),
         // The Library menu builds its entries whether or not a test opens
         // them, and the real gateway throws when read before a core exists.
         if (!_overrides(extraOverrides, libraryGatewayProvider))

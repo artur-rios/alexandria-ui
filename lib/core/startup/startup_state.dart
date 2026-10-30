@@ -17,14 +17,14 @@ enum StartupStep {
   /// Resolve the application-support directory and the database path.
   resolvingPaths,
 
-  /// Initialize the core against the database path.
-  initializingCore,
+  /// Load the local settings and apply the theme and language.
+  loadingPreferences,
 
   /// Read the core's version and health status.
   verifyingCore,
 
-  /// Load the local settings and apply the theme and language.
-  loadingPreferences,
+  /// Initialize the core against the database path.
+  initializingCore,
 }
 
 /// Where the application is in its startup sequence (IR-06).

@@ -1,5 +1,4 @@
 import 'package:alexandria_ui/core/bindings/core_client.dart';
-import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:alexandria_ui/core/bindings/core_isolate.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
@@ -40,7 +39,7 @@ void main() {
       final state = await runStartup(core: FakeCoreClient());
 
       expect(state, isA<StartupReady>());
-      expect((state as StartupReady).coreVersion, '0.4.0');
+      expect((state as StartupReady).coreVersion, '0.5.0');
       expect(state.warning, isNull);
     },
   );
@@ -92,7 +91,7 @@ void main() {
     );
   });
 
-  group('step 4 — initializing the core', () {
+  group('step 5 — initializing the core', () {
     test(
       'GivenTheCoreRejectsTheDatabase_WhenStartupRuns_ThenItFailsAtStepThree',
       () async {
@@ -107,9 +106,24 @@ void main() {
         expect(state.failure.coreStatusCode, 3);
       },
     );
+
+    test(
+      'GivenTheInitializeCallThrows_WhenStartupRuns_ThenItFailsAtStepFive',
+      () async {
+        // The call itself failing, rather than answering a status: no code
+        // came back, so the failure carries -1 instead of one.
+        final state = await runStartup(
+          core: FakeCoreClient(failOnInitialize: true),
+        );
+
+        expect((state as StartupFailed).step, StartupStep.initializingCore);
+        expect(state.failure, isA<CoreInitializationFailedFailure>());
+        expect(state.failure.coreStatusCode, -1);
+      },
+    );
   });
 
-  group('step 5 — verifying health and version', () {
+  group('step 4 — verifying health and version', () {
     test(
       'GivenAnUnhealthyCore_WhenStartupRuns_ThenItFailsAtStepFour',
       () async {
@@ -145,6 +159,34 @@ void main() {
         final failure = state.failure as CoreVersionUnsupportedFailure;
         expect(failure.found, '0.9.0');
         expect(failure.required, contains(CoreVersionRange.minimum));
+      },
+    );
+
+    // Initializing is what creates and migrates the catalog. A core outside
+    // the supported range that got that far had already rewritten the
+    // owner's database by the time it was refused — a newer one migrating it
+    // past what the supported core can open, an older one failing on a schema
+    // it does not know and reporting that instead of its version.
+    test(
+      'GivenAnUnsupportedVersion_WhenStartupRuns_ThenTheCatalogIsNeverInitialized',
+      () async {
+        final core = FakeCoreClient(versionResult: '0.9.0');
+
+        final state = await runStartup(core: core);
+
+        expect(state, isA<StartupFailed>());
+        expect(core.initializedWith, isEmpty);
+      },
+    );
+
+    test(
+      'GivenAnUnhealthyCore_WhenStartupRuns_ThenTheCatalogIsNeverInitialized',
+      () async {
+        final core = FakeCoreClient(healthResult: 503);
+
+        await runStartup(core: core);
+
+        expect(core.initializedWith, isEmpty);
       },
     );
 
@@ -198,161 +240,6 @@ void main() {
         expect(
           container.read(startupControllerProvider.notifier).settings,
           same(settings),
-        );
-      },
-    );
-  });
-
-  group('music lookup (music enrichment design)', () {
-    test(
-      'GivenTheShippedDefaults_WhenStartupRuns_ThenTheCoreIsInitializedWithLookupOn',
-      () async {
-        // The complaint this answers: the feature could not be switched on
-        // from anywhere in the application, because nothing ever told the
-        // core about it. The core's own default is off, so a core
-        // initialized with nothing said is a core that refuses every lookup.
-        final core = FakeCoreClient();
-
-        await runStartup(core: core);
-
-        expect(core.musicLookupsInitializedWith, hasLength(1));
-        final lookup = core.musicLookupsInitializedWith.single;
-        expect(lookup.enabled, isTrue);
-        expect(lookup.contact, defaultMusicLookupContact);
-        expect(
-          lookup.isAvailable,
-          isTrue,
-          reason: 'a contact is half of what makes a lookup possible at all',
-        );
-      },
-    );
-
-    test(
-      'GivenTheOwnerSwitchedItOff_WhenStartupRuns_ThenTheCoreIsInitializedWithItOff',
-      () async {
-        final core = FakeCoreClient();
-        final container = buildTestContainer(
-          overrides: fakeCoreOverrides(
-            core: core,
-            settings: InMemorySettingsStore(musicLookupEnabled: false),
-          ),
-        );
-
-        await container.read(startupControllerProvider.notifier).start();
-
-        expect(core.musicLookupsInitializedWith.single.enabled, isFalse);
-      },
-    );
-
-    test(
-      'GivenTheOwnersOwnContact_WhenStartupRuns_ThenTheCoreIsGivenIt',
-      () async {
-        final core = FakeCoreClient();
-        final container = buildTestContainer(
-          overrides: fakeCoreOverrides(
-            core: core,
-            settings: InMemorySettingsStore(
-              musicLookupContact: 'someone@example.com',
-            ),
-          ),
-        );
-
-        await container.read(startupControllerProvider.notifier).start();
-
-        expect(
-          core.musicLookupsInitializedWith.single.contact,
-          'someone@example.com',
-        );
-      },
-    );
-
-    test(
-      'GivenUnreadablePreferences_WhenStartupRuns_ThenTheCoreStillGetsTheDefaults',
-      () async {
-        // Step 3 failing must not take the lookup down with it: the store is
-        // where the *choice* lives, and an owner who has never made one gets
-        // the shipped default either way.
-        final core = FakeCoreClient();
-        final container = buildTestContainer(
-          overrides: fakeCoreOverrides(
-            core: core,
-            loadSettings: () async => throw const FileSystemFailure(),
-          ),
-        );
-
-        await container.read(startupControllerProvider.notifier).start();
-
-        expect(core.musicLookupsInitializedWith.single.enabled, isTrue);
-      },
-    );
-
-    test(
-      'GivenTheLookupIsSwitchedOffAfterStartup_WhenItIsApplied_ThenTheCoreIsInitializedAgain',
-      () async {
-        // The core reads this setting once, at initialization. Applying a
-        // change is re-initializing it, or the owner would be told the
-        // feature is switched off for this installation by a core still
-        // running last launch's configuration.
-        final core = FakeCoreClient();
-        final settings = InMemorySettingsStore();
-        final container = buildTestContainer(
-          overrides: fakeCoreOverrides(core: core, settings: settings),
-        );
-        final startup = container.read(startupControllerProvider.notifier);
-        await startup.start();
-
-        await settings.setMusicLookupEnabled(false);
-        await startup.applyMusicLookup();
-
-        expect(core.initializedWith, hasLength(2));
-        expect(core.initializedWith.last, core.initializedWith.first);
-        expect(core.musicLookupsInitializedWith.last.enabled, isFalse);
-      },
-    );
-
-    test(
-      'GivenNothingChanged_WhenTheLookupIsApplied_ThenTheCoreIsLeftAlone',
-      () async {
-        final core = FakeCoreClient();
-        final container = buildTestContainer(
-          overrides: fakeCoreOverrides(core: core),
-        );
-        final startup = container.read(startupControllerProvider.notifier);
-        await startup.start();
-
-        await startup.applyMusicLookup();
-
-        expect(
-          core.initializedWith,
-          hasLength(1),
-          reason:
-              're-initializing the core for a preference that did not move '
-              'would rebuild its services for nothing',
-        );
-      },
-    );
-
-    test(
-      'GivenTheCoreRefusesTheChange_WhenTheLookupIsApplied_ThenStartupStaysReady',
-      () async {
-        final core = FakeCoreClient();
-        final settings = InMemorySettingsStore();
-        final container = buildTestContainer(
-          overrides: fakeCoreOverrides(core: core, settings: settings),
-        );
-        final startup = container.read(startupControllerProvider.notifier);
-        await startup.start();
-
-        core.failOnInitialize = true;
-        await settings.setMusicLookupEnabled(false);
-        await startup.applyMusicLookup();
-
-        expect(
-          container.read(startupControllerProvider),
-          isA<StartupReady>(),
-          reason:
-              'a preference that could not be handed to the core is not a '
-              'reason to take the application back to a startup screen',
         );
       },
     );

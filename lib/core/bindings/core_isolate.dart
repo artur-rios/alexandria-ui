@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
@@ -80,9 +81,16 @@ class CoreIsolate {
     final lifecycle = ReceivePort();
     final ready = Completer<SendPort>();
 
+    // The main isolate's snapshot of the environment, taken no later than
+    // here — before the first worker exists, and so before anything this
+    // application writes to the process environment. A worker's own
+    // `Platform.environment` would be taken after a previous worker's writes
+    // and read them as an operator's; see `prepareCoreEnvironment`.
+    final launchEnvironment = Map<String, String>.of(Platform.environment);
+
     final isolate = await Isolate.spawn(
       _entryPoint,
-      (responses.sendPort, libraryPath),
+      (responses.sendPort, libraryPath, launchEnvironment),
       errorsAreFatal: false,
       debugName: 'alexandria-core',
       // One port for both, told apart by what arrives on it: an uncaught
@@ -254,8 +262,8 @@ class CoreIsolate {
     _isolate.kill(priority: Isolate.immediate);
   }
 
-  static void _entryPoint((SendPort, String) parameters) {
-    final (responses, libraryPath) = parameters;
+  static void _entryPoint((SendPort, String, Map<String, String>) parameters) {
+    final (responses, libraryPath, launchEnvironment) = parameters;
     final requests = ReceivePort();
     responses.send(requests.sendPort);
 
@@ -293,7 +301,12 @@ class CoreIsolate {
       try {
         responses.send((
           id: request.id,
-          value: _handle(bindings, request.operation, request.arguments),
+          value: _handle(
+            bindings,
+            request.operation,
+            request.arguments,
+            launchEnvironment,
+          ),
           error: null,
         ));
       } on Object catch (error) {
@@ -311,6 +324,7 @@ class CoreIsolate {
     AlexandriaBindings bindings,
     String operation,
     List<Object?> arguments,
+    Map<String, String> launchEnvironment,
   ) {
     final strings = CoreStrings(bindings);
 
@@ -321,23 +335,18 @@ class CoreIsolate {
 
       'healthStatus' => bindings.alexandria_health_status_code(),
 
-      // The auth mode and the owner's music-lookup choice are settled here,
-      // immediately before the one call that reads the core's settings.
+      // The auth mode and the caches are settled here, immediately before
+      // the one call that reads the core's settings.
       // Anywhere earlier would be a promise about ordering; anywhere later
       // would be too late for the process.
       'init' => withNativeString(arguments.first! as String, (path) {
-        ensureLocalAuthMode();
-        // The caches go beside the database, which is the directory this
-        // application owns — see `ensureCacheDirectories`. Derived from the
-        // path rather than passed as a second argument, because "beside the
-        // catalog" is the rule, and a caller free to say otherwise is a
-        // caller that can put them somewhere the catalog does not follow.
-        ensureCacheDirectories(p.dirname(arguments.first! as String));
-        ensureMusicLookup(
-          MusicLookup(
-            enabled: arguments[1]! as bool,
-            contact: arguments[2]! as String,
-          ),
+        // The cache directory is derived from the path rather than passed as
+        // a second argument, because "beside the catalog" is the rule, and a
+        // caller free to say otherwise is a caller that can put them
+        // somewhere the catalog does not follow.
+        prepareCoreEnvironment(
+          databaseDirectory: p.dirname(arguments.first! as String),
+          launchEnvironment: launchEnvironment,
         );
         return bindings.alexandria_index_init(path);
       }),
@@ -636,17 +645,6 @@ class CoreIsolate {
             arguments[1]! as int,
             token,
           );
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'fileThumbnail' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_thumbnail(uuid, token);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
@@ -1106,90 +1104,6 @@ class CoreIsolate {
         }),
       ),
 
-      'playlistCreate' => withNativeString(
-        arguments.first! as String,
-        (body) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_playlist_create(body, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'playlistRename' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (body) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_playlist_rename(
-              uuid,
-              body,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'playlistDelete' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_playlist_delete(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'playlistsList' => withNativeString(arguments.first! as String, (token) {
-        final result = bindings.alexandria_playlists_list(token);
-        return (
-          status: result.status,
-          json: strings.consume(result.json, (json) => json),
-        );
-      }),
-
-      'playlistRead' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_playlist_read(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      // The play history calls (play history design). Both take a JSON
-      // payload and the token, the shape every other two-string call here
-      // uses.
-      'playRecord' => withNativeString(
-        arguments.first! as String,
-        (jsonBody) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_play_record(jsonBody, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'musicStats' => withNativeString(
-        arguments.first! as String,
-        (jsonQuery) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_music_stats(jsonQuery, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
       // The library calls. `libraryBrowse` takes three consecutive strings,
       // which is the mapping a transposition breaks silently — the uuid
       // would be read as a folder path and answer nothing.
@@ -1257,137 +1171,6 @@ class CoreIsolate {
             json: strings.consume(result.json, (json) => json),
           );
         }),
-      ),
-
-      // The two enrichment calls. Their argument order is the thing this
-      // mapping can get wrong silently — `enrichmentReadTrack` takes three
-      // consecutive strings — which is why the integration suite exercises
-      // both against a loaded library rather than a fake.
-      'enrichmentRun' => withNativeString(
-        arguments.first! as String,
-        (scopeJson) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_enrichment_run(scopeJson, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'enrichmentReadTrack' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (artist) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_enrichment_read_track(
-              uuid,
-              artist,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'artistImage' => withNativeString(
-        arguments.first! as String,
-        (name) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_artist_image(name, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'artistImageFetch' => withNativeString(
-        arguments.first! as String,
-        (name) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_artist_image_fetch(name, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'trackEnergy' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_track_energy(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'playlistAddEntries' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (body) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_playlist_add_entries(
-              uuid,
-              body,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      // entryUuid addresses the entry itself, never a file uuid and never a
-      // position: a playlist may hold the same track more than once, which
-      // is what makes either of those ambiguous (playlists Task 4).
-      'playlistRemoveEntry' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (entryUuid) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_playlist_remove_entry(
-              uuid,
-              entryUuid,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      // Four strings, so four nestings: each pointer stays alive for the
-      // whole call and is freed on the way out, in the order it was taken.
-      // entryUuid addresses the entry the same way playlistRemoveEntry's does
-      // (playlists Task 5).
-      'playlistMoveEntry' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (entryUuid) => withNativeString(
-            arguments[2]! as String,
-            (body) => withNativeString(arguments[3]! as String, (token) {
-              final result = bindings.alexandria_playlist_move_entry(
-                uuid,
-                entryUuid,
-                body,
-                token,
-              );
-              return (
-                status: result.status,
-                json: strings.consume(result.json, (json) => json),
-              );
-            }),
-          ),
-        ),
       ),
 
       _ => throw CoreCallException('unknown core operation "$operation"'),

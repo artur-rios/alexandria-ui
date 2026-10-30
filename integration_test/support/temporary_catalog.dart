@@ -78,4 +78,4 @@ String? resolveRealCoreLibrary() =>
 String get missingCoreReason =>
     'the Alexandria core was not found on any of '
     '${CorePaths.fromPlatform().librarySearchPaths.join(', ')}. '
-    'Build alexandria-ffi and place it in native/, per the README.';
+    'Build alexandria-ffi and place it in native/, per CONTRIBUTING.md.';

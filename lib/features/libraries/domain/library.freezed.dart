@@ -551,8 +551,7 @@ as String,
 /// @nodoc
 mixin _$LibraryFile {
 
- CatalogFile get file;/// The track's tags, when it is audio the core has read.
- MusicMetadata? get metadata;
+ CatalogFile get file;
 /// Create a copy of LibraryFile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -563,16 +562,16 @@ $LibraryFileCopyWith<LibraryFile> get copyWith => _$LibraryFileCopyWithImpl<Libr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LibraryFile&&(identical(other.file, file) || other.file == file)&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LibraryFile&&(identical(other.file, file) || other.file == file));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,file,metadata);
+int get hashCode => Object.hash(runtimeType,file);
 
 @override
 String toString() {
-  return 'LibraryFile(file: $file, metadata: $metadata)';
+  return 'LibraryFile(file: $file)';
 }
 
 
@@ -583,11 +582,11 @@ abstract mixin class $LibraryFileCopyWith<$Res>  {
   factory $LibraryFileCopyWith(LibraryFile value, $Res Function(LibraryFile) _then) = _$LibraryFileCopyWithImpl;
 @useResult
 $Res call({
- CatalogFile file, MusicMetadata? metadata
+ CatalogFile file
 });
 
 
-$CatalogFileCopyWith<$Res> get file;$MusicMetadataCopyWith<$Res>? get metadata;
+$CatalogFileCopyWith<$Res> get file;
 
 }
 /// @nodoc
@@ -600,11 +599,10 @@ class _$LibraryFileCopyWithImpl<$Res>
 
 /// Create a copy of LibraryFile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? file = null,Object? metadata = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? file = null,}) {
   return _then(_self.copyWith(
 file: null == file ? _self.file : file // ignore: cast_nullable_to_non_nullable
-as CatalogFile,metadata: freezed == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
-as MusicMetadata?,
+as CatalogFile,
   ));
 }
 /// Create a copy of LibraryFile
@@ -615,18 +613,6 @@ $CatalogFileCopyWith<$Res> get file {
   
   return $CatalogFileCopyWith<$Res>(_self.file, (value) {
     return _then(_self.copyWith(file: value));
-  });
-}/// Create a copy of LibraryFile
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$MusicMetadataCopyWith<$Res>? get metadata {
-    if (_self.metadata == null) {
-    return null;
-  }
-
-  return $MusicMetadataCopyWith<$Res>(_self.metadata!, (value) {
-    return _then(_self.copyWith(metadata: value));
   });
 }
 }
@@ -710,10 +696,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( CatalogFile file,  MusicMetadata? metadata)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( CatalogFile file)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LibraryFile() when $default != null:
-return $default(_that.file,_that.metadata);case _:
+return $default(_that.file);case _:
   return orElse();
 
 }
@@ -731,10 +717,10 @@ return $default(_that.file,_that.metadata);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( CatalogFile file,  MusicMetadata? metadata)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( CatalogFile file)  $default,) {final _that = this;
 switch (_that) {
 case _LibraryFile():
-return $default(_that.file,_that.metadata);case _:
+return $default(_that.file);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -751,10 +737,10 @@ return $default(_that.file,_that.metadata);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( CatalogFile file,  MusicMetadata? metadata)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( CatalogFile file)?  $default,) {final _that = this;
 switch (_that) {
 case _LibraryFile() when $default != null:
-return $default(_that.file,_that.metadata);case _:
+return $default(_that.file);case _:
   return null;
 
 }
@@ -766,12 +752,10 @@ return $default(_that.file,_that.metadata);case _:
 
 
 class _LibraryFile implements LibraryFile {
-  const _LibraryFile({required this.file, this.metadata});
+  const _LibraryFile({required this.file});
   
 
 @override final  CatalogFile file;
-/// The track's tags, when it is audio the core has read.
-@override final  MusicMetadata? metadata;
 
 /// Create a copy of LibraryFile
 /// with the given fields replaced by the non-null parameter values.
@@ -783,16 +767,16 @@ _$LibraryFileCopyWith<_LibraryFile> get copyWith => __$LibraryFileCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LibraryFile&&(identical(other.file, file) || other.file == file)&&(identical(other.metadata, metadata) || other.metadata == metadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LibraryFile&&(identical(other.file, file) || other.file == file));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,file,metadata);
+int get hashCode => Object.hash(runtimeType,file);
 
 @override
 String toString() {
-  return 'LibraryFile(file: $file, metadata: $metadata)';
+  return 'LibraryFile(file: $file)';
 }
 
 
@@ -803,11 +787,11 @@ abstract mixin class _$LibraryFileCopyWith<$Res> implements $LibraryFileCopyWith
   factory _$LibraryFileCopyWith(_LibraryFile value, $Res Function(_LibraryFile) _then) = __$LibraryFileCopyWithImpl;
 @override @useResult
 $Res call({
- CatalogFile file, MusicMetadata? metadata
+ CatalogFile file
 });
 
 
-@override $CatalogFileCopyWith<$Res> get file;@override $MusicMetadataCopyWith<$Res>? get metadata;
+@override $CatalogFileCopyWith<$Res> get file;
 
 }
 /// @nodoc
@@ -820,11 +804,10 @@ class __$LibraryFileCopyWithImpl<$Res>
 
 /// Create a copy of LibraryFile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? file = null,Object? metadata = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? file = null,}) {
   return _then(_LibraryFile(
 file: null == file ? _self.file : file // ignore: cast_nullable_to_non_nullable
-as CatalogFile,metadata: freezed == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
-as MusicMetadata?,
+as CatalogFile,
   ));
 }
 
@@ -836,18 +819,6 @@ $CatalogFileCopyWith<$Res> get file {
   
   return $CatalogFileCopyWith<$Res>(_self.file, (value) {
     return _then(_self.copyWith(file: value));
-  });
-}/// Create a copy of LibraryFile
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$MusicMetadataCopyWith<$Res>? get metadata {
-    if (_self.metadata == null) {
-    return null;
-  }
-
-  return $MusicMetadataCopyWith<$Res>(_self.metadata!, (value) {
-    return _then(_self.copyWith(metadata: value));
   });
 }
 }

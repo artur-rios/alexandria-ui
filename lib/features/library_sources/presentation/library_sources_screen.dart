@@ -131,7 +131,7 @@ class _LibrarySourcesScreenState extends ConsumerState<LibrarySourcesScreen> {
 
   /// Opens the picker, answering AF-04's question through the shell's
   /// confirmation modal when it is asked, and the scope question through the
-  /// dialog that offers the seven types (main flow step 4).
+  /// dialog that offers the six types (main flow step 4).
   Future<void> _addFolder(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
 

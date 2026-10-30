@@ -5,20 +5,22 @@
 Alexandria UI is the cross-platform desktop front-end for
 [Alexandria](https://github.com/artur-rios/alexandria-api), a personal library
 system that indexes, organizes, and surfaces a single person's on-disk media and
-documents. The desktop app is where the owner actually *sees* and *uses* that
-library: it browses the catalog, plays audio and video, reads documents and
-comics, edits Markdown and text in place, and organizes everything into
-collections, watchlists, and reading lists. It links the Alexandria Rust core in
-process over FFI rather than talking to a server, so the whole product runs as a
-single local application with no network hop between the interface and its data.
+documents — a library for what the owner reads and watches. Music is not part of
+it; that lives in Orpheus, a separate project. The desktop app is where the
+owner actually *sees* and *uses* that library: it browses the catalog, plays
+video, reads documents and comics, edits Markdown and text in place, and
+organizes everything into collections, watchlists, and reading lists. It links
+the Alexandria Rust core in process over FFI rather than talking to a server, so
+the whole product runs as a single local application with no network hop between
+the interface and its data.
 
 ## The Problem
 
 A personal media and document library that lives on disk is unusable through a
 file manager. Folders cannot tell a movie from a series, cannot remember which
-episode was watched last, cannot show album art while a song plays, cannot rank a
+episode was watched last, cannot rank a
 reading list, and cannot search across bookmarks and PDFs and notes at once. The
-existing alternatives each solve one slice — a music player, a video player, an
+existing alternatives each solve one slice — a video player, an
 e-book reader, a bookmark manager — leaving the owner to run five applications
 over the same directory tree and keep the organization in their head.
 
@@ -37,20 +39,17 @@ library.
 
 ## What It Does
 
-- **Browses the catalog** by file type — music, movies, series, HTML pages,
+- **Browses the catalog** by file type — movies, series, HTML pages,
   Markdown and text notes, PDFs and e-books, comic books, images, and browser
   bookmarks — in list, detailed-list, and grid layouts.
 - **Manages the library sources**: the owner points the app at one or more
   library folders, and triggers indexing and re-scanning from the interface.
-- **Plays audio** with a persistent player, including an album/artist playback
-  animation of a disc, vinyl, or tape spinning on its device for the duration of
-  the music, pausing with the audio.
 - **Plays video** with the basics — full screen, pause, seek forward and
   backward, subtitle selection, and audio-track selection.
 - **Views documents and images**: PDFs, e-books, comic books, images, HTML pages,
   and rendered Markdown.
 - **Edits Markdown and text files** in place, writing content back to disk.
-- **Edits metadata** for music and video, and renames any file.
+- **Edits metadata** for video, and renames any file.
 - **Organizes** files and bookmarks into collections, tracks movies and series in
   watchlists with per-episode progress, and tracks books and comics in reading
   lists with per-issue progress.
@@ -65,7 +64,7 @@ library.
 
 ## What It Doesn't Do
 
-- **No media editing.** No audio re-encoding, no video re-encoding, no image
+- **No media editing.** No video re-encoding, no image
   manipulation, no transcoding. Text content, metadata, names, and organization
   are the only things the app changes.
 - **No file management beyond the catalog.** The app does not move, copy, or
@@ -91,7 +90,7 @@ library.
 | Outcome | How you would know |
 | --- | --- |
 | The library is usable end to end | The owner indexes a real library folder, finds a file, plays or reads it, edits its metadata, and organizes it — without leaving the app or touching a file manager. |
-| It replaces the five-app workflow | Music, video, documents, notes, and bookmarks are all reachable from one window with one search. |
+| It replaces the five-app workflow | Video, documents, notes, and bookmarks are all reachable from one window with one search. |
 | It feels light | The app starts, opens a large library, and scrolls it without perceptible stutter on ordinary desktop hardware. |
 | It respects the disk | No file is ever modified or removed except by an explicit, confirmed action the owner initiated. |
 | It fits the screen | Every screen remains usable from a small window to a maximized 4K display, with no clipped or unreachable controls. |

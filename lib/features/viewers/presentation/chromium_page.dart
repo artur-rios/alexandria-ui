@@ -1,8 +1,30 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_cef/webview_cef.dart';
+
+import 'page_widget_factory.dart';
+
+/// Why the engine did not draw a page.
+enum PageEngineFailure {
+  /// This machine has no Chromium sandbox for the engine to run in, and the
+  /// engine does not run without one (NFR-12): running as root, a kernel or
+  /// container that forbids unprivileged user namespaces, Ubuntu's AppArmor
+  /// restriction on them, or Windows (third_party/webview_cef/FORK.md). Worth
+  /// telling the owner, because it is the same on every page and they can do
+  /// something about it.
+  sandboxUnavailable,
+
+  /// Anything else: the engine would not start, or started and could not
+  /// read the file.
+  other,
+}
+
+/// Opens a link the owner clicked in a page, outside the engine.
+typedef PageLinkOpener = Future<void> Function(Uri link);
 
 /// A saved page drawn by Chromium (UC-25, FR-VW-05).
 ///
@@ -15,21 +37,34 @@ import 'package:webview_cef/webview_cef.dart';
 ///
 /// **It runs the page's script.** That is what an engine is, and it is the
 /// trade this application made deliberately when it chose one; the stack
-/// document records the reasoning. A page is loaded over `file:` from the
-/// owner's own disk, which is the one thing that keeps the blast radius
-/// sensible: Chromium refuses a `file:` document access to other local files,
-/// so a saved page can act on itself and reach the network, and cannot read
-/// the library around it.
+/// document records the reasoning. What keeps the blast radius sensible is
+/// the engine's configuration, which is this application's own: `webview_cef`
+/// is vendored and patched (third_party/webview_cef/FORK.md) because upstream
+/// switched web security and the sandbox off. As patched, the page runs in
+/// Chromium's sandbox or not at all; it is loaded over `file:`, so its script
+/// cannot read local files; it may load files only from its own folder, and
+/// its frame never leaves that folder; and it opens no windows. A link the
+/// owner clicks to a web or mail address is handed back here, to be opened
+/// in the system's browser or mail client — the page's own frame never goes
+/// there. It can reach the network for its pictures, stylesheets and script,
+/// as it would in a browser (NFR-12).
 class ChromiumPage extends StatefulWidget {
   /// Draws the page at [fileUrl], which must be a `file:` URL.
+  ///
+  /// [openLink] is what a clicked web or mail link is handed to; the system's
+  /// opener unless a test supplies its own.
   const ChromiumPage({
     required this.fileUrl,
     required this.onFailed,
+    this.openLink = openOutsideTheEngine,
     super.key,
   });
 
   /// What to load.
   final String fileUrl;
+
+  /// Opens a link the owner clicked in the page.
+  final PageLinkOpener openLink;
 
   /// Called when the engine could not be started, or started and then never
   /// read the file.
@@ -42,7 +77,7 @@ class ChromiumPage extends StatefulWidget {
   /// What it cannot answer for is an engine that reads the file and then draws
   /// nothing: `webview_cef` reports a load, and reports no frame. A page whose
   /// texture stays empty is a page this callback never hears about.
-  final VoidCallback onFailed;
+  final void Function(PageEngineFailure failure) onFailed;
 
   @override
   State<ChromiumPage> createState() => _ChromiumPageState();
@@ -93,6 +128,15 @@ class _ChromiumPageState extends State<ChromiumPage> {
           _loadDeadline?.cancel();
           _loadDeadline = null;
         },
+        // The page itself could not be read: there is nothing to wait for,
+        // and the markup renderer will say what is missing.
+        onLoadError: (_, url, errorCode, errorText) {
+          _log.warning('the page engine could not load $url: $errorText');
+          _loadDeadline?.cancel();
+          _loadDeadline = null;
+          _fail(PageEngineFailure.other);
+        },
+        onOpenLinkRequested: _openLink,
       ),
     );
     unawaited(_start());
@@ -116,8 +160,15 @@ class _ChromiumPageState extends State<ChromiumPage> {
       // Not raised: a page that cannot be drawn by the engine is a page this
       // application can still draw itself, and that is a better answer than a
       // failure view over a file that is sitting right there.
+      //
+      // The plugin's message says exactly why — the sandbox it could not
+      // find, the switch it refused — and the log is where it is kept.
       _log.warning('the page engine would not start', error);
-      if (mounted) widget.onFailed();
+      final failure =
+          error is PlatformException && error.code == 'sandbox-unavailable'
+          ? PageEngineFailure.sandboxUnavailable
+          : PageEngineFailure.other;
+      _fail(failure);
     }
   }
 
@@ -136,11 +187,35 @@ class _ChromiumPageState extends State<ChromiumPage> {
     super.dispose();
   }
 
-  /// Hands the page back to the markup renderer, once.
+  /// Whether the page has already been handed back.
+  bool _failed = false;
+
+  /// Hands the page back to the markup renderer because the engine did not
+  /// read it in time.
   void _giveUp() {
     _loadDeadline = null;
     _log.warning('the page engine did not read the file in $_loadBudget');
-    if (mounted) widget.onFailed();
+    _fail(PageEngineFailure.other);
+  }
+
+  /// Hands the page back to the markup renderer, once.
+  void _fail(PageEngineFailure failure) {
+    if (_failed || !mounted) return;
+    _failed = true;
+    widget.onFailed(failure);
+  }
+
+  /// A link the owner clicked, which the engine would not follow itself.
+  ///
+  /// The plugin only offers web and mail addresses; the same rule the markup
+  /// renderer applies to its links is applied again here, so that what this
+  /// application hands to the system does not rest on the plugin alone.
+  void _openLink(String url) {
+    if (!isLinkTheViewerMayOpen(url)) {
+      _log.warning('a page asked to open a link that is not a web address');
+      return;
+    }
+    unawaited(widget.openLink(Uri.parse(url.trim())));
   }
 
   Future<void> _close() async {
@@ -159,4 +234,18 @@ class _ChromiumPageState extends State<ChromiumPage> {
     builder: (context, ready, _) =>
         ready ? _controller.webviewWidget : _controller.loadingWidget,
   );
+}
+
+/// Opens [link] in the system's browser or mail client.
+///
+/// Never in this application, and never in the engine: the page's own frame
+/// stays on the page.
+Future<void> openOutsideTheEngine(Uri link) async {
+  try {
+    await launchUrl(link, mode: LaunchMode.externalApplication);
+  } on Object catch (error) {
+    // Nobody to tell but the log: the click simply does nothing, as a link
+    // with nowhere to go does in a browser.
+    Logger('viewers').warning('a link from a page could not be opened', error);
+  }
 }

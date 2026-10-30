@@ -70,16 +70,13 @@ class FakePlaybackPositionStore implements PlaybackPositionStore {
   }
 }
 
-/// A [PlaybackSession] a test registers to stand in for the other medium.
+/// A [PlaybackSession] a test registers to stand in for a player.
 ///
-/// UC-19 AF-05 is about the *other* player stopping, and until UC-20 builds
-/// one this is what there is to stop.
+/// Sign-out stops whatever player is running (UC-03), and this is what a test
+/// gives it to stop.
 class FakePlaybackSession implements PlaybackSession {
-  /// Creates a session of [medium], running or not.
-  FakePlaybackSession({required this.medium, this.isActive = true});
-
-  @override
-  final PlaybackMedium medium;
+  /// Creates a session, running or not.
+  FakePlaybackSession({this.isActive = true});
 
   @override
   bool isActive;

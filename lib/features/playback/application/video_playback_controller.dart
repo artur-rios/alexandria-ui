@@ -9,7 +9,6 @@ import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_file.dart';
 import '../domain/media_player.dart';
 import '../domain/playback_position_store.dart';
-import '../domain/playback_session.dart';
 import '../domain/playback_source.dart';
 
 /// Where video playback is (UC-19).
@@ -114,11 +113,11 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
 
   /// Whether this file has played through to its end.
   ///
-  /// The engine announces the end once rather than holding the flag up — a
-  /// latched one had the audio queue advancing twice — so the fact that it
-  /// happened is kept here instead. Without it, a position tick arriving
-  /// after the end would write a resume position back at the very end of the
-  /// file, and the next opening would resume there rather than at the start.
+  /// The engine announces the end once rather than holding the flag up, so
+  /// the fact that it happened is kept here instead. Without it, a position
+  /// tick arriving after the end would write a resume position back at the
+  /// very end of the file, and the next opening would resume there rather
+  /// than at the start.
   ///
   /// Cleared by anything that means playback is somewhere other than the end:
   /// opening a file, and seeking.
@@ -148,15 +147,6 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
   /// AF-04: a resume position stops here and asks first, because the answer
   /// decides where the file is opened at.
   Future<void> open(CatalogFile file) async {
-    // Main flow step 2 / FR-PL-08: at most one playback session, so every
-    // other medium stops before this one starts. Read from the registry
-    // rather than by naming the audio player, which UC-20 builds.
-    for (final session in ref.read(playbackSessionsProvider)) {
-      if (session.medium != PlaybackMedium.video && session.isActive) {
-        await session.stop();
-      }
-    }
-
     final resume = _positions.positionFor(file.uuid);
     if (resume != null && resume.position > Duration.zero) {
       state = VideoPlaybackState(
@@ -253,8 +243,9 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
     state = const VideoPlaybackState();
   }
 
-  /// Stops because another medium is starting (AF-05, FR-PL-08).
-  Future<void> stopForOtherMedium() async {
+  /// Closes the player if it holds a file: what signing out and deleting the
+  /// playing file ask for (UC-03 main flow step 2, UC-33 AF-04).
+  Future<void> closeIfOpen() async {
     if (!state.isOpen) return;
     await close();
   }
@@ -284,6 +275,10 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
       case PlaybackSourceResolved(:final source):
         _listenToEngine();
         await _player.open(source.path, startAt: at);
+        // Closed, or superseded, while the engine was opening: the state
+        // already belongs to that, and writing `playing` over it would leave
+        // the player claiming a video the owner already closed.
+        if (generation != _startGeneration) return;
         state = state.copyWith(
           stage: VideoStage.playing,
           status: _player.currentStatus,

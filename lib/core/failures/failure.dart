@@ -149,12 +149,11 @@ sealed class Failure with _$Failure implements Exception {
     required String path,
   }) = ApplicationDirectoryUnavailableFailure;
 
-  /// `alexandria_index_init` returned a non-success code (startup step 3).
+  /// `alexandria_index_init` returned a non-success code (startup step 5).
   const factory Failure.coreInitializationFailed({required int code}) =
       CoreInitializationFailedFailure;
 
-  /// The core loaded and initialized but reports itself unhealthy
-  /// (startup step 4).
+  /// The core loaded but reports itself unhealthy (startup step 4).
   const factory Failure.coreUnhealthy({required int code}) =
       CoreUnhealthyFailure;
 
@@ -168,7 +167,7 @@ sealed class Failure with _$Failure implements Exception {
     required String required,
   }) = CoreVersionUnsupportedFailure;
 
-  /// The local settings could not be read (startup step 5).
+  /// The local settings could not be read (startup step 3).
   ///
   /// Startup continues on the system theme and language; this is reported, not
   /// fatal.
