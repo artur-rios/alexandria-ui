@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-30
+
 ### Changed
 
 - The application needs Alexandria core 0.5 (`>=0.5.0 <0.6.0`), which no longer knows audio files.
@@ -151,7 +153,8 @@ First tagged release, published as a prerelease to exercise the release pipeline
 - Windows packages — an installer, an MSIX, and a portable zip — and Linux packages — a self-extracting installer and a
   portable tarball, which need the distribution's ffmpeg libraries installed.
 
-[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/artur-rios/alexandria-ui/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/artur-rios/alexandria-ui/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/artur-rios/alexandria-ui/compare/v0.0.2...v0.1.0
 [0.0.2]: https://github.com/artur-rios/alexandria-ui/compare/v0.0.1...v0.0.2
