@@ -1,11 +1,5 @@
 # Alexandria UI
 
-> [!NOTE]
-> This is the real, open-source code of alexandria-ui. Its home is Forgejo, at
-> https://git.techcraftsmen.net/artur-rios/alexandria-ui; the copy on GitHub is a read-only mirror, for viewing only, and
-> its issues and pull requests are not followed. If you want to contribute, email me at
-> arturdev@duck.com.
-
 The cross-platform desktop front-end for
 [Alexandria](https://github.com/artur-rios/alexandria-api), a personal library
 system that indexes, organizes, and surfaces a single person's on-disk media and
@@ -17,8 +11,6 @@ watch; music lives in Orpheus, a separate project. It links the Alexandria Rust
 core in process over FFI rather than talking to a server, so the whole product
 runs as a single local application with no network hop between the interface and
 its data.
-
-This repository lives at <https://git.techcraftsmen.net/artur-rios/alexandria-ui>. GitHub is a read-only mirror.
 
 > **Status:** all forty-six issues are delivered — the foundation and
 > every use case in the backlog below.
@@ -323,6 +315,9 @@ Notable changes in each release are recorded in [CHANGELOG.md](./CHANGELOG.md).
 
 Building from source, the development loop, running the tests, the branching
 model and the release process are described in [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+The GitHub repository is a read-only mirror for the real, open-source code of alexandria-ui. Its home is Forgejo, at
+https://git.techcraftsmen.net/artur-rios/alexandria-ui. If you want to contribute, e-mail me at arturdev@duck.com.
 
 ## Legal
 
