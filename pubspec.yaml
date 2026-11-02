@@ -59,7 +59,7 @@ dependencies:
   # The desktop shell (Technology Stack Document §3.5). Enforces the minimum
   # window size and reads and writes the window's geometry, which is what
   # UC-38's FR-UX-03 persists across runs.
-  window_manager: ^0.5.2
+  window_manager: ^0.6.0
 
   # The connected displays, declared directly rather than leaned on as a
   # transitive dependency of window_manager. UC-38 AF-02 needs to know whether
