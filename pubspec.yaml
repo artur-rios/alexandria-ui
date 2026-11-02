@@ -65,7 +65,7 @@ dependencies:
   # transitive dependency of window_manager. UC-38 AF-02 needs to know whether
   # stored geometry still lands on a display that exists, and window_manager
   # itself reports the window, not the screens.
-  screen_retriever: ^0.2.2
+  screen_retriever: ^0.3.0
 
   # The platform's native folder picker (Technology Stack Document §3.5).
   # FR-LB-01 asks for the native one specifically: a folder chosen through a
