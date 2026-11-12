@@ -1,6 +1,6 @@
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Opens the details of the row named [name] (UC-13 main flow step 1).
 ///

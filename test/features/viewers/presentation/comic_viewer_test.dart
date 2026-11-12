@@ -9,9 +9,9 @@ import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/viewers/application/comic_viewer_controller.dart';
 import 'package:alexandria_ui/features/viewers/domain/file_viewer.dart';
 import 'package:alexandria_ui/features/viewers/presentation/comic_viewer_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';

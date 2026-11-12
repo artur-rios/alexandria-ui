@@ -9,9 +9,9 @@ import 'package:alexandria_ui/features/library_sources/domain/folder_registratio
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_library_gateway.dart';
