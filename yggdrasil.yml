@@ -16,17 +16,17 @@
 
 checks:
   analyze:                               # ci.yml / analyze: generated files in sync, analysis, layering rules, the webview_cef fork
-    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    image: ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
     run: ci/analyze.sh
   test:                                  # ci.yml / test, Linux leg: the unit and widget suite with coverage, the fixtures for the layering rules
-    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    image: ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
     run: ci/test.sh
     archive: "coverage/lcov.info"        # read, not gated: there is no coverage threshold
   integration:                           # ci.yml / integration, Linux leg: the core is built and every file of integration_test/ runs against the application
-    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    image: ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
     run: ci/integration.sh
   build:                                 # ci.yml / build, Linux leg: flutter build linux --release
-    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    image: ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
     run: ci/build.sh
 
 release:
@@ -34,7 +34,7 @@ release:
   # archive, the installer, the AppImage, the .deb and the Flatpak. Nothing is signed, as before, so there are no
   # credentials. The version of the packages is the tag without its v (RELEASE_VERSION).
   build:
-    image: ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+    image: ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
     run: ci/release-build.sh
     files:
       - "dist/*.tar.gz"
