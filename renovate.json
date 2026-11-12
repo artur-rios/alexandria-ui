@@ -21,6 +21,12 @@
       "enabled": false
     },
     {
+      "description": "freezed 4 needs analyzer ^13, and analyzer here cannot pass 8 while custom_lint (0.8.1, its latest) requires analyzer ^8 (see pubspec.yaml's comment on freezed). Hold freezed and freezed_annotation below 4 until custom_lint ships a release on a newer analyzer; remove this rule then.",
+      "matchManagers": ["pub"],
+      "matchPackageNames": ["freezed", "freezed_annotation"],
+      "allowedVersions": "<4.0.0"
+    },
+    {
       "description": "The workflow actions weekly and in one pull request, as Dependabot did.",
       "matchManagers": ["github-actions"],
       "groupName": "github-actions",
