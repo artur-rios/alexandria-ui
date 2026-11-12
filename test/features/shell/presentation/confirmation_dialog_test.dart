@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The modal every destructive action goes through (FR-UX-10, UC-38 AF-05).
 void main() {
@@ -33,9 +32,7 @@ void main() {
         themeMode: themeMode,
         localizationsDelegates: const [
           AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
         ],
         supportedLocales: const [Locale('en'), Locale('pt', 'BR')],
         home: Builder(

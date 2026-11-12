@@ -272,7 +272,7 @@ a rewrite.
 | Configuration | Dart compile-time environment values plus the local settings store | — | See [Operations & Infrastructure §3](Operations%20%26%20Infrastructure%20Document.md). |
 | Dependency injection | **flutter_riverpod** providers | latest stable at implementation time | The provider graph is the composition root; tests override providers rather than patching globals. |
 | Localization | **flutter_localizations** + **intl** with ARB files | latest stable at implementation time | Both locales are complete before a use case is done; a missing key fails the analyzer, not the user. |
-| Theming | Flutter `ThemeData` (Material 3), light and dark | — | Colors, spacing, and typography come from the theme; literals in widgets are prohibited by [BR-18](../initial/Business%20Rules.md). |
+| Theming | `ThemeData` (Material 3) from **material_ui**, light and dark | latest stable at implementation time | `package:material_ui` replaces the SDK's `package:flutter/material.dart`, deprecated in Flutter 3.50. Colors, spacing, and typography come from the theme; literals in widgets are prohibited by [BR-18](../initial/Business%20Rules.md). |
 
 ---
 

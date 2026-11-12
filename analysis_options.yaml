@@ -15,6 +15,15 @@ analyzer:
     # translation is a build failure, not a string that renders as its key.
     missing_required_param: error
     missing_return: error
+    # Dart 3.14 (Flutter 3.50) warns that `plugins:` above uses the legacy
+    # analyzer plugin system, which fails `flutter analyze --fatal-warnings`.
+    # custom_lint is such a plugin and is enabled only through that entry;
+    # it still loads and runs under 3.14 (`dart run custom_lint`, and the
+    # fixture suite proves its rules fire). Moving the rules to the new plugin
+    # system needs a newer analyzer than custom_lint 0.8.1 allows (the cap in
+    # pubspec.yaml), so this one warning is silenced until custom_lint moves,
+    # rather than every analysis failing on something nothing here can fix.
+    analysis_options_deprecated_plugins: ignore
 
   exclude:
     # Generated output is not hand-edited and is not held to the project's

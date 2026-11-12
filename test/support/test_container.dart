@@ -5,9 +5,9 @@ import 'package:alexandria_ui/core/bindings/core_client.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/startup/core_paths.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 // Riverpod 3 moved `Override` out of the main export surface; it is the type of
 // the list ProviderContainer and ProviderScope already take.
 import 'package:riverpod/misc.dart';

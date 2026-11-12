@@ -2,10 +2,10 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';

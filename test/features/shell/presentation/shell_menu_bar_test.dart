@@ -13,8 +13,8 @@ import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_menu_bar.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../support/shell_harness.dart';
 

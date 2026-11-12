@@ -72,6 +72,10 @@ dependencies:
   # as ffmpeg, and were as absent from this list.
   - libmpv2
   - libgtk-3-0t64
+  # nativeapi's core (window_manager, screen_retriever) links X11 and Xi
+  # itself, not only through GTK.
+  - libx11-6
+  - libxi6
 
 # The saved-page engine runs only inside Chromium's sandbox, which needs
 # unprivileged user namespaces (third_party/webview_cef/FORK.md). Ubuntu 23.10

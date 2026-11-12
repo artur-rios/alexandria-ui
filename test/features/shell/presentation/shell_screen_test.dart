@@ -7,9 +7,9 @@ import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../support/login_harness.dart';
 import '../../../support/shell_harness.dart';

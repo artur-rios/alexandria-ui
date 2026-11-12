@@ -18,6 +18,13 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+  # Material Design (IR-10). Flutter 3.50 deprecates the SDK's own
+  # `package:flutter/material.dart` in favour of this package, which is the
+  # same library moved out of the framework. Its `Theme` and
+  # `MaterialLocalizations` are classes of its own, so the dependencies below
+  # that still draw with the SDK's copy are bridged in `lib/app.dart`.
+  material_ui: ^1.11.0
+
   # Composition root and state management (IR-07).
   flutter_riverpod: ^3.4.3
 
@@ -59,13 +66,13 @@ dependencies:
   # The desktop shell (Technology Stack Document §3.5). Enforces the minimum
   # window size and reads and writes the window's geometry, which is what
   # UC-38's FR-UX-03 persists across runs.
-  window_manager: ^0.5.2
+  window_manager: ^0.7.0
 
   # The connected displays, declared directly rather than leaned on as a
   # transitive dependency of window_manager. UC-38 AF-02 needs to know whether
   # stored geometry still lands on a display that exists, and window_manager
   # itself reports the window, not the screens.
-  screen_retriever: ^0.2.2
+  screen_retriever: ^0.4.0
 
   # The platform's native folder picker (Technology Stack Document §3.5).
   # FR-LB-01 asks for the native one specifically: a folder chosen through a

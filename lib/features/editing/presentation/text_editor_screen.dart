@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../lifecycle/application/open_file_holds.dart';
 import '../../../core/di/providers.dart';
@@ -276,8 +276,10 @@ class _Preview extends ConsumerWidget {
       data: content,
       padding: const EdgeInsets.all(AppSpacing.md),
       // Every colour and size comes from the theme, so the preview reads in
-      // both of them (IR-10).
-      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)),
+      // both of them (IR-10). No style sheet is passed: the package builds its
+      // own from the SDK Material theme, which is a different `ThemeData` from
+      // material_ui's and which the compatibility bridge in `lib/app.dart`
+      // fills from this application's theme.
       selectable: true,
     );
   }
