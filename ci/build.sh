@@ -12,8 +12,10 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 # libmpv is media_kit_video's build-time dependency on Linux: its CMakeLists links PkgConfig::mpv, and without the
 # development package the desktop build fails at the generate step rather than at link time (UC-19). The browser engine
-# links against NSS. build-essential: Flutter's CMake looks for `cc` and `c++`, which clang alone does not provide.
-ensure_packages build-essential clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv libnss3 libnspr4
+# links against NSS. build-essential: Flutter's CMake looks for `cc` and `c++`, which clang alone does not provide. The X11
+# and Xi headers: nativeapi's build hook (window_manager, screen_retriever) compiles its core against them.
+ensure_packages build-essential clang cmake ninja-build pkg-config libgtk-3-dev libx11-dev libxi-dev liblzma-dev libmpv-dev \
+  mpv libnss3 libnspr4
 
 flutter pub get
 

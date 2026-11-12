@@ -283,7 +283,7 @@ final shellControllerProvider =
 /// rule is exercised without a desktop window; the application binds the
 /// implementation over `window_manager`.
 final windowPlacementProvider = Provider<WindowPlacement>(
-  (ref) => const DesktopWindowPlacement(),
+  (ref) => DesktopWindowPlacement(),
 );
 
 /// The clock (Testing Specification §6.2).

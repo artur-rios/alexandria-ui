@@ -12,6 +12,10 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 # shellcheck source=ci/flutter-env.sh
 . ci/flutter-env.sh
 
+# window_manager and screen_retriever are bindings to nativeapi, whose C++ core is compiled by a build hook the first
+# time `flutter test` runs: it needs a C++ compiler, pkg-config and the GTK, X11 and Xi headers.
+ensure_packages clang g++ pkg-config libgtk-3-dev libx11-dev libxi-dev
+
 flutter pub get
 
 # IR-11: a key present in one language and absent from the other fails the build. The parity test in test/core/l10n is
