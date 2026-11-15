@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'core/di/providers.dart';
 import 'core/l10n/generated/app_localizations.dart';
@@ -50,10 +49,18 @@ class AlexandriaApp extends ConsumerWidget {
       supportedLocales: supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
       ],
+
+      // The Markdown preview, the HTML reader, the video controls and the
+      // vendored page engine still draw with the SDK's
+      // `package:flutter/material.dart`, whose `Theme` and
+      // `MaterialLocalizations` are other classes than material_ui's. The
+      // bridge hands them this application's theme and localizations, so they
+      // keep its colours and find their strings. material_ui deprecates it on
+      // purpose, as a migration aid; it goes when those packages move.
+      // ignore: deprecated_member_use
+      builder: (context, child) => MaterialUiCompatibilityBridge(child: child!),
 
       // Wrapped rather than switched on here: what it does is close the
       // routes stacked *above* `home` when a session ends, which is not

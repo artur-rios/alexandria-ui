@@ -9,9 +9,9 @@ import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_index_gateway.dart';

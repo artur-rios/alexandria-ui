@@ -13,9 +13,9 @@ import 'package:alexandria_ui/features/lifecycle/application/missing_files_contr
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';

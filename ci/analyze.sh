@@ -4,14 +4,15 @@
 #
 # Flutter comes from ci/flutter-env.sh. The packages the runner carried and the image does not are installed with apt
 # by ci/apt-packages.sh (as root, which is how the agents run checks): clang and libclang for ffigen, and a C++
-# compiler for the fork's native policy tests.
+# compiler for the fork's native policy tests. pkg-config and the GTK, X11 and Xi headers are what nativeapi's build
+# hook (window_manager and screen_retriever) needs, should a `dart run` below compile it.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 # shellcheck source=ci/flutter-env.sh
 . ci/flutter-env.sh
 
-ensure_packages clang libclang-dev g++
+ensure_packages clang libclang-dev g++ pkg-config libgtk-3-dev libx11-dev libxi-dev
 
 flutter pub get
 dart pub get --directory tools/alexandria_lints

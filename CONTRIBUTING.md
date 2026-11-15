@@ -23,11 +23,11 @@ Prerequisites, per the
   `ffmpeg.exe`. The core repository's
   [CONTRIBUTING.md](https://github.com/artur-rios/alexandria-api/blob/develop/CONTRIBUTING.md#windows)
   walks through installing one.
-- **Linux:** Ubuntu LTS x64, with the GTK, ffmpeg, and libmpv development
-  packages:
+- **Linux:** Ubuntu LTS x64, with the GTK, X11, Xi, ffmpeg, and libmpv
+  development packages:
 
   ```bash
-  sudo apt-get install ninja-build libgtk-3-dev libmpv-dev mpv \
+  sudo apt-get install ninja-build libgtk-3-dev libx11-dev libxi-dev libmpv-dev mpv \
     libavformat-dev libavcodec-dev libavutil-dev libavfilter-dev \
     libavdevice-dev libswscale-dev libswresample-dev pkg-config clang
   ```

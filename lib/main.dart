@@ -1,11 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path/path.dart' as p;
-import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
 import 'core/di/providers.dart';
@@ -60,8 +59,6 @@ Future<void> main() async {
 /// startup step 3: the window opens at the default size and the owner's next
 /// choice is what gets recorded.
 Future<void> _placeWindow(ProviderContainer container) async {
-  await windowManager.ensureInitialized();
-
   SettingsStore? settings;
   try {
     settings = await container.read(settingsLoaderProvider)();

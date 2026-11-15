@@ -5,11 +5,9 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
   media_kit_libs_windows_video
-  media_kit_video
-  screen_retriever_windows
   url_launcher_windows
+  media_kit_video
   webview_cef
-  window_manager
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

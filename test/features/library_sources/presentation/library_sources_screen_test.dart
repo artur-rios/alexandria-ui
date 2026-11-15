@@ -14,9 +14,9 @@ import 'package:alexandria_ui/features/library_sources/presentation/index_scope_
 import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_index_gateway.dart';

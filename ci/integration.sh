@@ -38,9 +38,10 @@ cp "${CORE_DIR:-core}/target/release/libalexandria_ffi.so" native/linux/
 # libmpv is media_kit_video's build-time dependency on Linux: its CMakeLists links PkgConfig::mpv, and without the
 # development package the desktop build fails at the generate step rather than at link time (UC-19).
 # libnss3 / libnspr4: the page viewer's browser engine (webview_cef) links against them. xvfb: the display the suite
-# runs under. libsqlite3-0 and libglu1-mesa: the shared libraries the test binary loads.
-ensure_packages clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev xvfb xauth libmpv-dev mpv \
-  libnss3 libnspr4 libsqlite3-0 libglu1-mesa
+# runs under. libsqlite3-0 and libglu1-mesa: the shared libraries the test binary loads. libx11-dev and libxi-dev:
+# nativeapi's build hook (window_manager, screen_retriever) compiles its core against them.
+ensure_packages clang cmake ninja-build pkg-config libgtk-3-dev libx11-dev libxi-dev liblzma-dev xvfb xauth libmpv-dev \
+  mpv libnss3 libnspr4 libsqlite3-0 libglu1-mesa
 
 flutter pub get
 

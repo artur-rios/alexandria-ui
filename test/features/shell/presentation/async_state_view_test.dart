@@ -4,11 +4,10 @@ import 'package:alexandria_ui/core/failures/failure_messages.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/app_theme.dart';
 import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The shell's loading, failure, and loaded states
 /// (FR-UX-08, FR-UX-09, UC-38 AF-03).
@@ -33,9 +32,7 @@ void main() {
         themeMode: themeMode,
         localizationsDelegates: const [
           AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
         ],
         supportedLocales: const [Locale('en'), Locale('pt', 'BR')],
         home: Scaffold(

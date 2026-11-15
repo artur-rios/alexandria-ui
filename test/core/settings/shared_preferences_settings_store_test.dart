@@ -1,6 +1,6 @@
 import 'package:alexandria_ui/core/settings/shared_preferences_settings_store.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// IR-12: the store a real installation reads, over keys an older release

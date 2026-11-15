@@ -5,8 +5,8 @@ import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/startup/core_paths.dart';
 import 'package:alexandria_ui/core/startup/startup_state.dart';
 import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../support/fake_core_client.dart';
 import '../../support/in_memory_settings_store.dart';

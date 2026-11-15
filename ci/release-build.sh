@@ -87,9 +87,10 @@ echo "== Build the Alexandria core"
 build_core
 
 echo "== Install the packaging toolchain"
-# apparmor: apparmor_parser, which checks the profiles the .deb and the installer write.
-ensure_packages clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv libnss3 libnspr4 \
-  flatpak appstream libfuse2t64 fakeroot patchelf apparmor squashfs-tools file
+# apparmor: apparmor_parser, which checks the profiles the .deb and the installer write. libx11-dev and libxi-dev:
+# nativeapi's build hook (window_manager, screen_retriever) compiles its core against them.
+ensure_packages clang cmake ninja-build pkg-config libgtk-3-dev libx11-dev libxi-dev liblzma-dev libmpv-dev mpv \
+  libnss3 libnspr4 flatpak appstream libfuse2t64 fakeroot patchelf apparmor squashfs-tools file
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak install --system -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
 
