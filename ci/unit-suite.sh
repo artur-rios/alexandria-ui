@@ -14,9 +14,12 @@
 # depend on running alone, so this is also a check that no test leaks into the next. `flutter test <file>` still runs
 # one file in its own process, which is the loop for one area.
 #
-# The golden suites are not bundled. A golden's path is resolved against the directory of the entry point being run, and
-# test/flutter_test_config.dart, which installs the tolerant comparator, applies only to entry points under test/. So
-# they stay entry points of their own.
+# Two kinds of file are not bundled, and stay entry points of their own:
+# - The golden suites. A golden's path is resolved against the directory of the entry point being run, and
+#   test/flutter_test_config.dart, which installs the tolerant comparator, applies only to entry points under test/.
+# - The files that drive the page engine's plugin (they name its `webview_cef` channel). Its WebviewManager is a
+#   process-wide singleton that remembers it was initialized and cannot be reset, so a file that starts it would leave
+#   the next one unable to see a refused start.
 #
 # The localization parity test (IR-11) is part of the suite, and a parity failure fails the run by name.
 # coverage/lcov.info is written as before.
@@ -26,10 +29,15 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 count=${1:-4}
 directory=build/test-bundles
 
-mapfile -t alone < <(find test -name '*_golden_test.dart' | sort)
+mapfile -t alone < <({
+  find test -name '*_golden_test.dart'
+  grep -rl --include='*_test.dart' webview_cef test
+} | sort -u)
 # Size, then path, for every file that is bundled; largest first.
-mapfile -t sized < <(find test -name '*_test.dart' ! -name '*_golden_test.dart' -exec wc -c {} + |
-  awk '$2 != "total" { print $1 "\t" $2 }' | sort -k1,1nr -k2,2)
+mapfile -t sized < <(find test -name '*_test.dart' -exec wc -c {} + |
+  awk '$2 != "total" { print $1 "\t" $2 }' |
+  grep -v -F -f <(printf '\t%s\n' "${alone[@]}") |
+  sort -k1,1nr -k2,2)
 if [ "${#sized[@]}" -eq 0 ]; then
   echo "ci/unit-suite.sh: no test files under test/" >&2
   exit 1
@@ -74,6 +82,6 @@ for ((i = 0; i < count; i++)); do
 done
 entries+=("${alone[@]}")
 
-echo "== Unit and widget suite: ${#sized[@]} files in ${#entries[@]} entry points"
+echo "== Unit and widget suite: ${#sized[@]} files in $((${#entries[@]} - ${#alone[@]})) bundles, ${#alone[@]} on their own"
 printf '   %s\n' "${entries[@]}"
 flutter test --coverage --concurrency="$count" "${entries[@]}"
