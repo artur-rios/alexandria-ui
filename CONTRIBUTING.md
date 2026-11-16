@@ -183,12 +183,18 @@ integration suite drives the real Alexandria core over FFI and needs a desktop
 device:
 
 ```bash
-flutter test integration_test -d windows
+bash ci/integration-suite.sh windows
 ```
 
 ```bash
-flutter test integration_test -d linux
+xvfb-run -a bash ci/integration-suite.sh linux   # or without xvfb-run, on a desktop session
 ```
+
+The script gathers every file into one generated entry point and starts the
+application once for all of them, plus once for the page engine's test, which
+needs a process of its own. `flutter test integration_test -d <device>` does
+not work on desktop: the second file of one invocation fails to launch. One
+file on its own still runs as `flutter test integration_test/<file> -d <device>`.
 
 The layering rules — Presentation and Application never importing Data, and
 Domain importing nothing outward — are analyzer rules in `tools/alexandria_lints`
