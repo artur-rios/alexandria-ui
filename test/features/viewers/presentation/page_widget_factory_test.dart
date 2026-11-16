@@ -8,7 +8,7 @@ void main() {
     'HTTP://example.com/',
     'mailto:owner@example.com',
   ]) {
-    test('GivenAWebOrMailAddress_WhenTapped_ThenItMayBeOpened: $url', () {
+    test('GivenTheWebOrMailAddress"$url"_WhenTapped_ThenItMayBeOpened', () {
       expect(isLinkTheViewerMayOpen(url), isTrue);
     });
   }
@@ -23,7 +23,7 @@ void main() {
     'javascript:alert(1)',
     'file:///home/owner/pages/#section',
   ]) {
-    test('GivenAnythingElse_WhenTapped_ThenItIsNotOpened: $url', () {
+    test('GivenTheOtherAddress"$url"_WhenTapped_ThenItIsNotOpened', () {
       expect(isLinkTheViewerMayOpen(url), isFalse);
     });
   }
