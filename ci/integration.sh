@@ -45,16 +45,11 @@ ensure_packages clang cmake ninja-build pkg-config libgtk-3-dev libx11-dev libxi
 
 flutter pub get
 
-# One file per invocation, deliberately. On desktop, `flutter test` starts the application once per run, and the second
-# file in a single invocation fails to launch with "Unable to start the app on the device", whichever file that happens to
-# be. Looping is what lets the suite hold more than one file.
+# Every file in one launch of the application, and the page engine's file in a second (ci/integration-suite.sh says why):
+# each `flutter test` on desktop builds and starts the application again, which a loop of one file per invocation paid for
+# once per file.
 #
 # ALEXANDRIA_AUTH_MODE is deliberately not set. The application puts the core into local auth mode itself, before
 # initializing it, and a runner that set the variable would hide a regression in that: the suite would pass on the
 # runner's configuration rather than on the application's.
-echo "== Integration suite"
-mapfile -t suites < <(find integration_test -name '*_test.dart' | sort)
-for suite in "${suites[@]}"; do
-  echo "== $suite"
-  xvfb-run -a flutter test "$suite" -d linux
-done
+bash ci/integration-suite.sh linux xvfb-run -a

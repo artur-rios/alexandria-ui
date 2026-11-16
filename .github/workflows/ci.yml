@@ -187,24 +187,19 @@ jobs:
 
       - name: Integration suite
         shell: bash
-        # One file per invocation, deliberately. On desktop, `flutter test`
-        # starts the application once per run, and the second file in a single
-        # invocation fails to launch with "Unable to start the app on the
-        # device" — whichever file that happens to be. Looping is what lets the
-        # suite hold more than one file.
+        # The same script as the Linux leg (ci/integration.sh): every file in
+        # one launch of the application, and the page engine's file in a
+        # second. Each `flutter test` on desktop builds and starts the
+        # application again, and the second file of one invocation fails to
+        # launch, so the files are gathered into one generated entry point
+        # rather than looped over one invocation each.
         #
         # ALEXANDRIA_AUTH_MODE is deliberately not set. The application puts
         # the core into local auth mode itself, before initializing it, and a
         # runner that set the variable would hide a regression in that: the
         # suite would pass on the runner's configuration rather than on the
         # application's.
-        run: |
-          set -e
-          for suite in $(find integration_test -name '*_test.dart' | sort); do
-            echo "::group::$suite"
-            flutter test "$suite" -d windows
-            echo "::endgroup::"
-          done
+        run: bash ci/integration-suite.sh windows
 
   build:
     name: Release build (windows)
