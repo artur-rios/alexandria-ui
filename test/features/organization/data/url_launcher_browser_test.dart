@@ -31,12 +31,9 @@ void main() {
     'ms-msdt://id/PCWDiagnostic',
     'javascript://example.com/%0Aalert(1)',
   ]) {
-    test(
-      'GivenABookmarkThatIsNotAWebPage_WhenItIsOpened_ThenNothingIsLaunched: $url',
-      () async {
-        expect(await browser.open(url), isFalse);
-        expect(launched, isEmpty);
-      },
-    );
+    test('Given"$url"_WhenTheBookmarkIsOpened_ThenNothingIsLaunched', () async {
+      expect(await browser.open(url), isFalse);
+      expect(launched, isEmpty);
+    });
   }
 }

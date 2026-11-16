@@ -92,3 +92,7 @@ third_party/webview_cef/*/prebuilt.zip
 /dist/
 /stage/
 /packaging/linux/bundle/
+
+# The integration suite's generated entry point: ci/integration-suite.sh writes it
+# from the directory on every run, so it is never committed.
+/integration_test/all_suites.g.dart

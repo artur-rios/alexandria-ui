@@ -69,12 +69,13 @@ jobs:
       - run: flutter pub get
 
       # IR-11: a key present in one language and absent from the other fails the
-      # build. The parity test in test/core/l10n is what enforces it.
-      - name: Localization parity
-        run: flutter test test/core/l10n
-
-      - name: Test with coverage
-        run: flutter test --coverage
+      # build. The parity test in test/core/l10n is what enforces it, and it
+      # runs as part of the suite below rather than in a run of its own first.
+      # The same script as the Linux leg (ci/test.sh): the suite in four
+      # bundles, compiled once each, rather than one entry point per file.
+      - name: Test with coverage (localization parity included)
+        shell: bash
+        run: bash ci/unit-suite.sh
 
   integration:
     name: Integration (windows)
@@ -189,24 +190,19 @@ jobs:
 
       - name: Integration suite
         shell: bash
-        # One file per invocation, deliberately. On desktop, `flutter test`
-        # starts the application once per run, and the second file in a single
-        # invocation fails to launch with "Unable to start the app on the
-        # device" — whichever file that happens to be. Looping is what lets the
-        # suite hold more than one file.
+        # The same script as the Linux leg (ci/integration.sh): every file in
+        # one launch of the application, and the page engine's file in a
+        # second. Each `flutter test` on desktop builds and starts the
+        # application again, and the second file of one invocation fails to
+        # launch, so the files are gathered into one generated entry point
+        # rather than looped over one invocation each.
         #
         # ALEXANDRIA_AUTH_MODE is deliberately not set. The application puts
         # the core into local auth mode itself, before initializing it, and a
         # runner that set the variable would hide a regression in that: the
         # suite would pass on the runner's configuration rather than on the
         # application's.
-        run: |
-          set -e
-          for suite in $(find integration_test -name '*_test.dart' | sort); do
-            echo "::group::$suite"
-            flutter test "$suite" -d windows
-            echo "::endgroup::"
-          done
+        run: bash ci/integration-suite.sh windows
 
   build:
     name: Release build (windows)

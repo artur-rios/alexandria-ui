@@ -88,12 +88,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    return (
-      container: container,
-      gateway: gateway,
-      index: index,
-      store: store,
-    );
+    return (container: container, gateway: gateway, index: index, store: store);
   }
 
   AppLocalizations messages(WidgetTester tester) =>
@@ -139,203 +134,217 @@ void main() {
   }
 
   group('a folder that is not registered yet', () {
-    testWidgets('GivenItIsPicked_ThenTheScopeDialogAsksAsALibrary', (
-      tester,
-    ) async {
-      // One dialog for both questions, and the library half is already
-      // answered: the owner pressed "Add a library", so the box is ticked and
-      // the name filled in from the folder.
-      await openLibraries(tester);
+    testWidgets(
+      'GivenAnUnregisteredFolder_WhenItIsPicked_ThenTheScopeDialogAsksAsALibrary',
+      (tester) async {
+        // One dialog for both questions, and the library half is already
+        // answered: the owner pressed "Add a library", so the box is ticked and
+        // the name filled in from the folder.
+        await openLibraries(tester);
 
-      await pressAdd(tester);
+        await pressAdd(tester);
 
-      expect(find.byType(IndexScopeDialog), findsOneWidget);
-      expect(find.text('rust'), findsOneWidget);
-    });
+        expect(find.byType(IndexScopeDialog), findsOneWidget);
+        expect(find.text('rust'), findsOneWidget);
+      },
+    );
 
-    testWidgets('GivenTheScopeIsAnswered_ThenTheFolderIsRegisteredAndIndexed', (
-      tester,
-    ) async {
-      // The whole bug this flow was rewritten for: a library over a folder
-      // nobody indexed shows nothing at all, because the tree is built from
-      // catalog rows rather than from a walk of the disk.
-      final opened = await openLibraries(tester);
+    testWidgets(
+      'GivenAnUnregisteredFolder_WhenTheScopeIsAnswered_ThenTheFolderIsRegisteredAndIndexed',
+      (tester) async {
+        // The whole bug this flow was rewritten for: a library over a folder
+        // nobody indexed shows nothing at all, because the tree is built from
+        // catalog rows rather than from a walk of the disk.
+        final opened = await openLibraries(tester);
 
-      await pressAdd(tester);
-      await acceptScope(tester);
+        await pressAdd(tester);
+        await acceptScope(tester);
 
-      expect(opened.store.read().single.path, folder);
-      expect(opened.gateway.registered, [(name: 'rust', rootPath: folder)]);
-      expect(
-        opened.index.starts.map((call) => call.root),
-        [folder],
-        reason: 'a library over an unindexed folder shows nothing',
-      );
-    });
+        expect(opened.store.read().single.path, folder);
+        expect(opened.gateway.registered, [(name: 'rust', rootPath: folder)]);
+        expect(opened.index.starts.map((call) => call.root), [
+          folder,
+        ], reason: 'a library over an unindexed folder shows nothing');
+      },
+    );
 
-    testWidgets('GivenTheLibraryIsRegistered_ThenItIsBeforeTheWalkStarts', (
-      tester,
-    ) async {
-      // Order matters: the core assigns each file to the library it is
-      // indexed into, so a library created after the walk would hold nothing
-      // until something claimed the files back.
-      final opened = await openLibraries(tester);
+    testWidgets(
+      'GivenAnUnregisteredFolder_WhenItIsAdded_ThenTheLibraryIsRegisteredBeforeTheWalkStarts',
+      (tester) async {
+        // Order matters: the core assigns each file to the library it is
+        // indexed into, so a library created after the walk would hold nothing
+        // until something claimed the files back.
+        final opened = await openLibraries(tester);
 
-      await pressAdd(tester);
-      await acceptScope(tester);
+        await pressAdd(tester);
+        await acceptScope(tester);
 
-      expect(opened.gateway.registered, isNotEmpty);
-      expect(opened.index.starts, isNotEmpty);
-    });
+        expect(opened.gateway.registered, isNotEmpty);
+        expect(opened.index.starts, isNotEmpty);
+      },
+    );
 
-    testWidgets('GivenTheScopeIsCancelled_ThenNothingIsRegistered', (
-      tester,
-    ) async {
-      final opened = await openLibraries(tester);
+    testWidgets(
+      'GivenAnUnregisteredFolder_WhenTheScopeIsCancelled_ThenNothingIsRegistered',
+      (tester) async {
+        final opened = await openLibraries(tester);
 
-      await pressAdd(tester);
-      await tester.tap(find.text(messages(tester).cancel).last);
-      await tester.pumpAndSettle();
+        await pressAdd(tester);
+        await tester.tap(find.text(messages(tester).cancel).last);
+        await tester.pumpAndSettle();
 
-      expect(opened.store.read(), isEmpty);
-      expect(opened.gateway.registered, isEmpty);
-      expect(opened.index.starts, isEmpty);
-    });
+        expect(opened.store.read(), isEmpty);
+        expect(opened.gateway.registered, isEmpty);
+        expect(opened.index.starts, isEmpty);
+      },
+    );
 
-    testWidgets('GivenTheFolderIsNotThere_ThenTheRefusalIsSaidPlainly', (
-      tester,
-    ) async {
-      // The sources screen renders its refusal notice from the same state,
-      // and this screen has nowhere to put one — so a folder that is gone has
-      // to be said here, or the button just looks broken.
-      final opened = await openLibraries(tester, folderExists: false);
+    testWidgets(
+      'GivenAFolderThatIsNotThere_WhenItIsAdded_ThenTheRefusalIsSaidPlainly',
+      (tester) async {
+        // The sources screen renders its refusal notice from the same state,
+        // and this screen has nowhere to put one — so a folder that is gone has
+        // to be said here, or the button just looks broken.
+        final opened = await openLibraries(tester, folderExists: false);
 
-      await pressAdd(tester);
-      await tester.pumpAndSettle();
+        await pressAdd(tester);
+        await tester.pumpAndSettle();
 
-      expect(
-        find.text(messages(tester).librarySourcesMissing(folder)),
-        findsWidgets,
-      );
-      expect(opened.store.read(), isEmpty);
-    });
+        expect(
+          find.text(messages(tester).librarySourcesMissing(folder)),
+          findsWidgets,
+        );
+        expect(opened.store.read(), isEmpty);
+      },
+    );
   });
 
   group('a folder that is registered already', () {
-    testWidgets('GivenItIsPicked_ThenOnlyTheNameIsAsked', (tester) async {
-      // The scope was chosen when the folder was registered and belongs to
-      // the folder, so this asks the one question that is still open.
-      final opened = await openLibraries(
-        tester,
-        registered: [source(folder)],
-      );
+    testWidgets(
+      'GivenARegisteredFolder_WhenItIsPicked_ThenOnlyTheNameIsAsked',
+      (tester) async {
+        // The scope was chosen when the folder was registered and belongs to
+        // the folder, so this asks the one question that is still open.
+        final opened = await openLibraries(
+          tester,
+          registered: [source(folder)],
+        );
 
-      await pressAdd(tester);
-      await acceptName(tester, name: 'Rust course');
+        await pressAdd(tester);
+        await acceptName(tester, name: 'Rust course');
 
-      expect(find.byType(IndexScopeDialog), findsNothing);
-      expect(opened.gateway.registered, [
-        (name: 'Rust course', rootPath: folder),
-      ]);
-    });
+        expect(find.byType(IndexScopeDialog), findsNothing);
+        expect(opened.gateway.registered, [
+          (name: 'Rust course', rootPath: folder),
+        ]);
+      },
+    );
 
-    testWidgets('GivenItIsMarked_ThenItsFolderIsIndexed', (tester) async {
-      // Registered is not the same as indexed: a folder registered before the
-      // first index happened on its own, or one whose run was cancelled, is a
-      // source with nothing of it in the catalog — and the library made of it
-      // shows nothing until something walks it. Adding a library is a request
-      // to have its contents in it, not a request to press Scan afterwards.
-      final opened = await openLibraries(
-        tester,
-        registered: [source(folder)],
-      );
+    testWidgets(
+      'GivenARegisteredFolder_WhenItIsMarked_ThenItsFolderIsIndexed',
+      (tester) async {
+        // Registered is not the same as indexed: a folder registered before the
+        // first index happened on its own, or one whose run was cancelled, is a
+        // source with nothing of it in the catalog — and the library made of it
+        // shows nothing until something walks it. Adding a library is a request
+        // to have its contents in it, not a request to press Scan afterwards.
+        final opened = await openLibraries(
+          tester,
+          registered: [source(folder)],
+        );
 
-      await pressAdd(tester);
-      await acceptName(tester, name: 'Rust course');
+        await pressAdd(tester);
+        await acceptName(tester, name: 'Rust course');
 
-      expect(opened.index.starts.map((call) => call.root), [folder]);
-    });
+        expect(opened.index.starts.map((call) => call.root), [folder]);
+      },
+    );
 
-    testWidgets('GivenAScanIsAlreadyGoing_ThenNoSecondRunIsStarted', (
-      tester,
-    ) async {
-      // The contents are on their way, which is what the owner asked for. A
-      // second run would be refused anyway, and reporting that refusal reads
-      // as an error for a run they never pressed for.
-      final opened = await openLibraries(
-        tester,
-        registered: [source(folder)],
-      );
-      opened.index.readOutcomes = [runningRun(root: folder)];
-      await opened.container
-          .read(indexRunsControllerProvider.notifier)
-          .startIndex(folder);
+    testWidgets(
+      'GivenAScanIsAlreadyGoing_WhenTheFolderIsMarked_ThenNoSecondRunIsStarted',
+      (tester) async {
+        // The contents are on their way, which is what the owner asked for. A
+        // second run would be refused anyway, and reporting that refusal reads
+        // as an error for a run they never pressed for.
+        final opened = await openLibraries(
+          tester,
+          registered: [source(folder)],
+        );
+        opened.index.readOutcomes = [runningRun(root: folder)];
+        await opened.container
+            .read(indexRunsControllerProvider.notifier)
+            .startIndex(folder);
 
-      await pressAdd(tester);
-      await acceptName(tester, name: 'Rust course');
+        await pressAdd(tester);
+        await acceptName(tester, name: 'Rust course');
 
-      expect(opened.index.starts.map((call) => call.root), [folder]);
-      expect(
-        find.text(messages(tester).librarySourcesRunRefused),
-        findsNothing,
-      );
+        expect(opened.index.starts.map((call) => call.root), [folder]);
+        expect(
+          find.text(messages(tester).librarySourcesRunRefused),
+          findsNothing,
+        );
 
-      // Disposed here rather than at teardown, as every test that leaves a
-      // run in flight does: the run is still being polled, and the widget
-      // tree is torn down before the container is.
-      opened.container.dispose();
-    });
+        // Disposed here rather than at teardown, as every test that leaves a
+        // run in flight does: the run is still being polled, and the widget
+        // tree is torn down before the container is.
+        opened.container.dispose();
+      },
+    );
 
-    testWidgets('GivenItIsMade_ThenItsSourceFolderIsMarked', (tester) async {
-      // Registering with the core and marking the folder are one action:
-      // doing only the first leaves the sources screen offering to mark a
-      // folder that is already a library.
-      final opened = await openLibraries(
-        tester,
-        registered: [source(folder)],
-      );
+    testWidgets(
+      'GivenARegisteredFolder_WhenTheLibraryIsMade_ThenItsSourceFolderIsMarked',
+      (tester) async {
+        // Registering with the core and marking the folder are one action:
+        // doing only the first leaves the sources screen offering to mark a
+        // folder that is already a library.
+        final opened = await openLibraries(
+          tester,
+          registered: [source(folder)],
+        );
 
-      await pressAdd(tester);
-      await acceptName(tester, name: 'Rust course');
+        await pressAdd(tester);
+        await acceptName(tester, name: 'Rust course');
 
-      expect(opened.store.read().single.libraryName, 'Rust course');
-    });
+        expect(opened.store.read().single.libraryName, 'Rust course');
+      },
+    );
 
-    testWidgets('GivenTheCoreRefuses_ThenTheOverlapIsSaidPlainly', (
-      tester,
-    ) async {
-      // "That folder is already inside another library" is something the
-      // owner can act on, where a generic refusal is a puzzle.
-      final opened = await openLibraries(
-        tester,
-        registered: [source(folder)],
-        writeOutcomes: const [
-          LibraryWrite.failed(
-            failure: Failure.conflict(
-              family: CoreStatusFamily.library,
-              code: LIBRARY_ERR_CONFLICT,
+    testWidgets(
+      'GivenTheCoreRefusesAnOverlap_WhenTheLibraryIsMade_ThenTheOverlapIsSaidPlainly',
+      (tester) async {
+        // "That folder is already inside another library" is something the
+        // owner can act on, where a generic refusal is a puzzle.
+        final opened = await openLibraries(
+          tester,
+          registered: [source(folder)],
+          writeOutcomes: const [
+            LibraryWrite.failed(
+              failure: Failure.conflict(
+                family: CoreStatusFamily.library,
+                code: LIBRARY_ERR_CONFLICT,
+              ),
             ),
-          ),
-        ],
-      );
+          ],
+        );
 
-      await pressAdd(tester);
-      await acceptName(tester, name: 'Rust course');
+        await pressAdd(tester);
+        await acceptName(tester, name: 'Rust course');
 
-      // `findsWidgets`: the snackbar is drawn by every scaffold registered
-      // with the one messenger.
-      expect(find.text(messages(tester).libraryOverlaps), findsWidgets);
-      expect(
-        opened.store.read().single.libraryName,
-        isNull,
-        reason: 'a refused registration must not mark the folder',
-      );
-      expect(
-        opened.index.starts,
-        isEmpty,
-        reason: 'nothing became a library, so there is nothing to index for',
-      );
-    });
+        // `findsWidgets`: the snackbar is drawn by every scaffold registered
+        // with the one messenger.
+        expect(find.text(messages(tester).libraryOverlaps), findsWidgets);
+        expect(
+          opened.store.read().single.libraryName,
+          isNull,
+          reason: 'a refused registration must not mark the folder',
+        );
+        expect(
+          opened.index.starts,
+          isEmpty,
+          reason: 'nothing became a library, so there is nothing to index for',
+        );
+      },
+    );
   });
 
   group('scanning a library that shows nothing', () {
@@ -359,32 +368,33 @@ void main() {
       expect(opened.index.starts.map((call) => call.root), [folder]);
     });
 
-    testWidgets('GivenAFolderThatIsNotASourceYet_WhenScanned_ThenItIsRegistered', (
-      tester,
-    ) async {
-      // An index run is refused for a folder the application does not know,
-      // so the scan registers it first — asking the scope, and not asking
-      // again whether it is a library.
-      final opened = await openLibraries(
-        tester,
-        libraries: const [
-          Library(uuid: 'lib-1', name: 'Rust course', rootPath: folder),
-        ],
-      );
+    testWidgets(
+      'GivenAFolderThatIsNotASourceYet_WhenScanned_ThenItIsRegistered',
+      (tester) async {
+        // An index run is refused for a folder the application does not know,
+        // so the scan registers it first — asking the scope, and not asking
+        // again whether it is a library.
+        final opened = await openLibraries(
+          tester,
+          libraries: const [
+            Library(uuid: 'lib-1', name: 'Rust course', rootPath: folder),
+          ],
+        );
 
-      await tester.tap(find.byTooltip(messages(tester).libraryScan));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      await acceptScope(tester);
+        await tester.tap(find.byTooltip(messages(tester).libraryScan));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await acceptScope(tester);
 
-      expect(opened.store.read().single.path, folder);
-      expect(opened.index.starts.map((call) => call.root), [folder]);
-      expect(
-        opened.gateway.registered,
-        isEmpty,
-        reason: 'it is already a library — asking again would make it twice',
-      );
-    });
+        expect(opened.store.read().single.path, folder);
+        expect(opened.index.starts.map((call) => call.root), [folder]);
+        expect(
+          opened.gateway.registered,
+          isEmpty,
+          reason: 'it is already a library — asking again would make it twice',
+        );
+      },
+    );
   });
 
   testWidgets('GivenAFolderThatIsAlreadyALibrary_WhenPicked_ThenItSaysSo', (

@@ -51,15 +51,16 @@ void main() {
   AppLocalizations messages(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(LibrariesView)));
 
-  testWidgets('GivenTheScreenOpens_ThenItSaysWhatALibraryHides', (
-    tester,
-  ) async {
-    // Marking a folder empties part of a type panel, and that is not visible
-    // until afterwards. Said before anything is marked.
-    await openLibraries(tester);
+  testWidgets(
+    'GivenTheLibrariesScreen_WhenItOpens_ThenItSaysWhatALibraryHides',
+    (tester) async {
+      // Marking a folder empties part of a type panel, and that is not visible
+      // until afterwards. Said before anything is marked.
+      await openLibraries(tester);
 
-    expect(find.text(messages(tester).librariesExplanation), findsOneWidget);
-  });
+      expect(find.text(messages(tester).librariesExplanation), findsOneWidget);
+    },
+  );
 
   testWidgets('GivenNoLibraries_WhenTheScreenOpens_ThenItSaysSo', (
     tester,

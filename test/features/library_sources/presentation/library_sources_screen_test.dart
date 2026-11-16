@@ -852,34 +852,35 @@ void main() {
       ]);
     });
 
-    testWidgets('GivenTheCoreRefusesTheLibrary_ThenNothingIsIndexed', (
-      tester,
-    ) async {
-      // The folder never became a library, so there is nothing to fill.
-      final gateway = FakeIndexGateway();
-      await openScreen(
-        tester,
-        registered: [source('/home/owner/courses/rust')],
-        gateway: gateway,
-        extraOverrides: [
-          libraryGatewayProvider.overrideWithValue(
-            FakeLibraryGateway()
-              ..writeOutcomes.add(
-                const LibraryWrite.failed(
-                  failure: Failure.conflict(
-                    family: CoreStatusFamily.library,
-                    code: LIBRARY_ERR_CONFLICT,
+    testWidgets(
+      'GivenTheCoreRefusesTheLibrary_WhenAFolderIsMarked_ThenNothingIsIndexed',
+      (tester) async {
+        // The folder never became a library, so there is nothing to fill.
+        final gateway = FakeIndexGateway();
+        await openScreen(
+          tester,
+          registered: [source('/home/owner/courses/rust')],
+          gateway: gateway,
+          extraOverrides: [
+            libraryGatewayProvider.overrideWithValue(
+              FakeLibraryGateway()
+                ..writeOutcomes.add(
+                  const LibraryWrite.failed(
+                    failure: Failure.conflict(
+                      family: CoreStatusFamily.library,
+                      code: LIBRARY_ERR_CONFLICT,
+                    ),
                   ),
                 ),
-              ),
-          ),
-        ],
-      );
+            ),
+          ],
+        );
 
-      await mark(tester, 'Rust course');
+        await mark(tester, 'Rust course');
 
-      expect(gateway.starts, isEmpty);
-    });
+        expect(gateway.starts, isEmpty);
+      },
+    );
 
     testWidgets(
       'GivenAnUnmarkedFolder_WhenItIsMarked_ThenTheCoreIsToldAndTheRowSaysSo',

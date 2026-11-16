@@ -19,12 +19,10 @@ ensure_packages clang g++ pkg-config libgtk-3-dev libx11-dev libxi-dev
 flutter pub get
 
 # IR-11: a key present in one language and absent from the other fails the build. The parity test in test/core/l10n is
-# what enforces it.
-echo "== Localization parity"
-flutter test test/core/l10n
-
-echo "== Test with coverage"
-flutter test --coverage
+# what enforces it, and it is part of the suite below: it ran a second time on its own before, a run of its own to compile
+# and start for a test the full run repeats anyway, and a parity failure fails this check by name either way.
+echo "== Test with coverage (localization parity included)"
+bash ci/unit-suite.sh
 
 # IR-02: proven against the fixture package, so what runs here is the plugin itself rather than a reimplementation of its
 # logic. Linux only: it exercises the analyzer plugin, which has no platform-dependent behaviour to catch.
