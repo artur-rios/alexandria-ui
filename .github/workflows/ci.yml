@@ -69,11 +69,9 @@ jobs:
       - run: flutter pub get
 
       # IR-11: a key present in one language and absent from the other fails the
-      # build. The parity test in test/core/l10n is what enforces it.
-      - name: Localization parity
-        run: flutter test test/core/l10n
-
-      - name: Test with coverage
+      # build. The parity test in test/core/l10n is what enforces it, and it
+      # runs as part of the suite below rather than in a run of its own first.
+      - name: Test with coverage (localization parity included)
         run: flutter test --coverage
 
   integration:
