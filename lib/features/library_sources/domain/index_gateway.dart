@@ -34,9 +34,8 @@ sealed class IndexRunOutcome with _$IndexRunOutcome {
 @freezed
 sealed class RunFailuresOutcome with _$RunFailuresOutcome {
   /// The core answered, possibly with nothing.
-  const factory RunFailuresOutcome.read({
-    required List<RunFailure> failures,
-  }) = RunFailuresRead;
+  const factory RunFailuresOutcome.read({required List<RunFailure> failures}) =
+      RunFailuresRead;
 
   /// The core could not answer.
   const factory RunFailuresOutcome.failed({required Failure failure}) =
@@ -82,6 +81,18 @@ abstract interface class IndexGateway {
     required String root,
     RunPriority? priority,
     List<FileType> types = const [],
+    required String credential,
+  });
+
+  /// Re-indexes the library [uuid] (core 0.6.0).
+  ///
+  /// The scan a library gets after the one adding it started. Refused with a
+  /// [ConflictFailure] while the library already has a running or paused
+  /// run — one unfinished run per library — and a [NotFoundFailure] for a
+  /// library the core no longer has.
+  Future<IndexStartOutcome> startLibraryIndex({
+    required String uuid,
+    RunPriority? priority,
     required String credential,
   });
 

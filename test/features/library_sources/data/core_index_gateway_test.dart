@@ -1,4 +1,5 @@
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
+import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/library_sources/data/core_index_gateway.dart';
 import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
@@ -271,6 +272,76 @@ void main() {
 
         final run = (outcome as IndexRunRead).run;
         expect(run.counts?.alreadyCataloged, 7);
+      },
+    );
+  });
+
+  group('library runs (core 0.6.0)', () {
+    test('GivenARunJsonWithLibraryUuid_WhenRead_ThenTheRunCarriesIt', () async {
+      final gateway = CoreIndexGateway(
+        FakeCoreClient(
+          indexRunStatusResult: (
+            status: 0,
+            json:
+                '{"runId":"r1","kind":"index","status":"running",'
+                '"root":"/m","libraryUuid":"l1"}',
+          ),
+        ),
+      );
+
+      final outcome = await gateway.readRun(runId: 'r1', credential: 't');
+
+      expect((outcome as IndexRunRead).run.libraryUuid, 'l1');
+    });
+
+    test('GivenARefreshRunJson_WhenRead_ThenLibraryUuidIsNull', () async {
+      final gateway = CoreIndexGateway(
+        FakeCoreClient(
+          indexRunStatusResult: (
+            status: 0,
+            json: '{"runId":"r1","kind":"refresh","status":"running"}',
+          ),
+        ),
+      );
+
+      final outcome = await gateway.readRun(runId: 'r1', credential: 't');
+
+      expect((outcome as IndexRunRead).run.libraryUuid, isNull);
+    });
+
+    test(
+      'GivenTheCoreStartsALibraryRun_WhenStartLibraryIndex_ThenStartedWithRunId',
+      () async {
+        final fake = FakeCoreClient()
+          ..libraryIndexStartResult = (status: 0, runId: 'r9');
+        final gateway = CoreIndexGateway(fake);
+
+        final outcome = await gateway.startLibraryIndex(
+          uuid: 'l1',
+          priority: RunPriority.low,
+          credential: 't',
+        );
+
+        expect(outcome, const IndexStartOutcome.started(runId: 'r9'));
+        expect(fake.libraryIndexStarts, [
+          (uuid: 'l1', token: 't', priority: 'low'),
+        ]);
+      },
+    );
+
+    test(
+      'GivenTheCoreAnswersConflict_WhenStartLibraryIndex_ThenFailedWithConflict',
+      () async {
+        final fake = FakeCoreClient()
+          ..libraryIndexStartResult = (status: INDEX_ERR_CONFLICT, runId: '');
+        final gateway = CoreIndexGateway(fake);
+
+        final outcome = await gateway.startLibraryIndex(
+          uuid: 'l1',
+          credential: 't',
+        );
+
+        expect((outcome as IndexStartFailed).failure, isA<ConflictFailure>());
       },
     );
   });

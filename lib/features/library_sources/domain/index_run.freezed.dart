@@ -307,7 +307,9 @@ mixin _$IndexRun {
 /// The identifier the core returned when the run was started.
  String get runId;/// The folder being scanned, or empty for a refresh, which covers the
 /// whole catalog rather than one folder.
- String get root;/// Which operation opened this run.
+ String get root;/// The library this run indexes, or null for a refresh, which re-checks
+/// every library at once (core 0.6.0).
+ String? get libraryUuid;/// Which operation opened this run.
  IndexRunKind get kind;/// Where the run is.
  IndexRunStatus get status;/// Which half of the run is executing, or null once it is terminal.
  IndexRunPhase? get phase;/// How many entries the run has to get through, once discovery has
@@ -331,16 +333,16 @@ $IndexRunCopyWith<IndexRun> get copyWith => _$IndexRunCopyWithImpl<IndexRun>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is IndexRun&&(identical(other.runId, runId) || other.runId == runId)&&(identical(other.root, root) || other.root == root)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.status, status) || other.status == status)&&(identical(other.phase, phase) || other.phase == phase)&&(identical(other.total, total) || other.total == total)&&(identical(other.processed, processed) || other.processed == processed)&&(identical(other.activeMillis, activeMillis) || other.activeMillis == activeMillis)&&(identical(other.pausedAt, pausedAt) || other.pausedAt == pausedAt)&&(identical(other.counts, counts) || other.counts == counts)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is IndexRun&&(identical(other.runId, runId) || other.runId == runId)&&(identical(other.root, root) || other.root == root)&&(identical(other.libraryUuid, libraryUuid) || other.libraryUuid == libraryUuid)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.status, status) || other.status == status)&&(identical(other.phase, phase) || other.phase == phase)&&(identical(other.total, total) || other.total == total)&&(identical(other.processed, processed) || other.processed == processed)&&(identical(other.activeMillis, activeMillis) || other.activeMillis == activeMillis)&&(identical(other.pausedAt, pausedAt) || other.pausedAt == pausedAt)&&(identical(other.counts, counts) || other.counts == counts)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,runId,root,kind,status,phase,total,processed,activeMillis,pausedAt,counts,error);
+int get hashCode => Object.hash(runtimeType,runId,root,libraryUuid,kind,status,phase,total,processed,activeMillis,pausedAt,counts,error);
 
 @override
 String toString() {
-  return 'IndexRun(runId: $runId, root: $root, kind: $kind, status: $status, phase: $phase, total: $total, processed: $processed, activeMillis: $activeMillis, pausedAt: $pausedAt, counts: $counts, error: $error)';
+  return 'IndexRun(runId: $runId, root: $root, libraryUuid: $libraryUuid, kind: $kind, status: $status, phase: $phase, total: $total, processed: $processed, activeMillis: $activeMillis, pausedAt: $pausedAt, counts: $counts, error: $error)';
 }
 
 
@@ -351,7 +353,7 @@ abstract mixin class $IndexRunCopyWith<$Res>  {
   factory $IndexRunCopyWith(IndexRun value, $Res Function(IndexRun) _then) = _$IndexRunCopyWithImpl;
 @useResult
 $Res call({
- String runId, String root, IndexRunKind kind, IndexRunStatus status, IndexRunPhase? phase, int? total, int? processed, int activeMillis, DateTime? pausedAt, IndexRunCounts? counts, String? error
+ String runId, String root, String? libraryUuid, IndexRunKind kind, IndexRunStatus status, IndexRunPhase? phase, int? total, int? processed, int activeMillis, DateTime? pausedAt, IndexRunCounts? counts, String? error
 });
 
 
@@ -368,11 +370,12 @@ class _$IndexRunCopyWithImpl<$Res>
 
 /// Create a copy of IndexRun
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? runId = null,Object? root = null,Object? kind = null,Object? status = null,Object? phase = freezed,Object? total = freezed,Object? processed = freezed,Object? activeMillis = null,Object? pausedAt = freezed,Object? counts = freezed,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? runId = null,Object? root = null,Object? libraryUuid = freezed,Object? kind = null,Object? status = null,Object? phase = freezed,Object? total = freezed,Object? processed = freezed,Object? activeMillis = null,Object? pausedAt = freezed,Object? counts = freezed,Object? error = freezed,}) {
   return _then(_self.copyWith(
 runId: null == runId ? _self.runId : runId // ignore: cast_nullable_to_non_nullable
 as String,root: null == root ? _self.root : root // ignore: cast_nullable_to_non_nullable
-as String,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as String,libraryUuid: freezed == libraryUuid ? _self.libraryUuid : libraryUuid // ignore: cast_nullable_to_non_nullable
+as String?,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
 as IndexRunKind,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as IndexRunStatus,phase: freezed == phase ? _self.phase : phase // ignore: cast_nullable_to_non_nullable
 as IndexRunPhase?,total: freezed == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
@@ -478,10 +481,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String runId,  String root,  IndexRunKind kind,  IndexRunStatus status,  IndexRunPhase? phase,  int? total,  int? processed,  int activeMillis,  DateTime? pausedAt,  IndexRunCounts? counts,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String runId,  String root,  String? libraryUuid,  IndexRunKind kind,  IndexRunStatus status,  IndexRunPhase? phase,  int? total,  int? processed,  int activeMillis,  DateTime? pausedAt,  IndexRunCounts? counts,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _IndexRun() when $default != null:
-return $default(_that.runId,_that.root,_that.kind,_that.status,_that.phase,_that.total,_that.processed,_that.activeMillis,_that.pausedAt,_that.counts,_that.error);case _:
+return $default(_that.runId,_that.root,_that.libraryUuid,_that.kind,_that.status,_that.phase,_that.total,_that.processed,_that.activeMillis,_that.pausedAt,_that.counts,_that.error);case _:
   return orElse();
 
 }
@@ -499,10 +502,10 @@ return $default(_that.runId,_that.root,_that.kind,_that.status,_that.phase,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String runId,  String root,  IndexRunKind kind,  IndexRunStatus status,  IndexRunPhase? phase,  int? total,  int? processed,  int activeMillis,  DateTime? pausedAt,  IndexRunCounts? counts,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String runId,  String root,  String? libraryUuid,  IndexRunKind kind,  IndexRunStatus status,  IndexRunPhase? phase,  int? total,  int? processed,  int activeMillis,  DateTime? pausedAt,  IndexRunCounts? counts,  String? error)  $default,) {final _that = this;
 switch (_that) {
 case _IndexRun():
-return $default(_that.runId,_that.root,_that.kind,_that.status,_that.phase,_that.total,_that.processed,_that.activeMillis,_that.pausedAt,_that.counts,_that.error);case _:
+return $default(_that.runId,_that.root,_that.libraryUuid,_that.kind,_that.status,_that.phase,_that.total,_that.processed,_that.activeMillis,_that.pausedAt,_that.counts,_that.error);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -519,10 +522,10 @@ return $default(_that.runId,_that.root,_that.kind,_that.status,_that.phase,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String runId,  String root,  IndexRunKind kind,  IndexRunStatus status,  IndexRunPhase? phase,  int? total,  int? processed,  int activeMillis,  DateTime? pausedAt,  IndexRunCounts? counts,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String runId,  String root,  String? libraryUuid,  IndexRunKind kind,  IndexRunStatus status,  IndexRunPhase? phase,  int? total,  int? processed,  int activeMillis,  DateTime? pausedAt,  IndexRunCounts? counts,  String? error)?  $default,) {final _that = this;
 switch (_that) {
 case _IndexRun() when $default != null:
-return $default(_that.runId,_that.root,_that.kind,_that.status,_that.phase,_that.total,_that.processed,_that.activeMillis,_that.pausedAt,_that.counts,_that.error);case _:
+return $default(_that.runId,_that.root,_that.libraryUuid,_that.kind,_that.status,_that.phase,_that.total,_that.processed,_that.activeMillis,_that.pausedAt,_that.counts,_that.error);case _:
   return null;
 
 }
@@ -534,7 +537,7 @@ return $default(_that.runId,_that.root,_that.kind,_that.status,_that.phase,_that
 
 
 class _IndexRun extends IndexRun {
-  const _IndexRun({required this.runId, required this.root, this.kind = IndexRunKind.scan, required this.status, this.phase, this.total, this.processed, this.activeMillis = 0, this.pausedAt, this.counts, this.error}): super._();
+  const _IndexRun({required this.runId, required this.root, this.libraryUuid, this.kind = IndexRunKind.scan, required this.status, this.phase, this.total, this.processed, this.activeMillis = 0, this.pausedAt, this.counts, this.error}): super._();
   
 
 /// The identifier the core returned when the run was started.
@@ -542,6 +545,9 @@ class _IndexRun extends IndexRun {
 /// The folder being scanned, or empty for a refresh, which covers the
 /// whole catalog rather than one folder.
 @override final  String root;
+/// The library this run indexes, or null for a refresh, which re-checks
+/// every library at once (core 0.6.0).
+@override final  String? libraryUuid;
 /// Which operation opened this run.
 @override@JsonKey() final  IndexRunKind kind;
 /// Where the run is.
@@ -575,16 +581,16 @@ _$IndexRunCopyWith<_IndexRun> get copyWith => __$IndexRunCopyWithImpl<_IndexRun>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IndexRun&&(identical(other.runId, runId) || other.runId == runId)&&(identical(other.root, root) || other.root == root)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.status, status) || other.status == status)&&(identical(other.phase, phase) || other.phase == phase)&&(identical(other.total, total) || other.total == total)&&(identical(other.processed, processed) || other.processed == processed)&&(identical(other.activeMillis, activeMillis) || other.activeMillis == activeMillis)&&(identical(other.pausedAt, pausedAt) || other.pausedAt == pausedAt)&&(identical(other.counts, counts) || other.counts == counts)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IndexRun&&(identical(other.runId, runId) || other.runId == runId)&&(identical(other.root, root) || other.root == root)&&(identical(other.libraryUuid, libraryUuid) || other.libraryUuid == libraryUuid)&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.status, status) || other.status == status)&&(identical(other.phase, phase) || other.phase == phase)&&(identical(other.total, total) || other.total == total)&&(identical(other.processed, processed) || other.processed == processed)&&(identical(other.activeMillis, activeMillis) || other.activeMillis == activeMillis)&&(identical(other.pausedAt, pausedAt) || other.pausedAt == pausedAt)&&(identical(other.counts, counts) || other.counts == counts)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,runId,root,kind,status,phase,total,processed,activeMillis,pausedAt,counts,error);
+int get hashCode => Object.hash(runtimeType,runId,root,libraryUuid,kind,status,phase,total,processed,activeMillis,pausedAt,counts,error);
 
 @override
 String toString() {
-  return 'IndexRun(runId: $runId, root: $root, kind: $kind, status: $status, phase: $phase, total: $total, processed: $processed, activeMillis: $activeMillis, pausedAt: $pausedAt, counts: $counts, error: $error)';
+  return 'IndexRun(runId: $runId, root: $root, libraryUuid: $libraryUuid, kind: $kind, status: $status, phase: $phase, total: $total, processed: $processed, activeMillis: $activeMillis, pausedAt: $pausedAt, counts: $counts, error: $error)';
 }
 
 
@@ -595,7 +601,7 @@ abstract mixin class _$IndexRunCopyWith<$Res> implements $IndexRunCopyWith<$Res>
   factory _$IndexRunCopyWith(_IndexRun value, $Res Function(_IndexRun) _then) = __$IndexRunCopyWithImpl;
 @override @useResult
 $Res call({
- String runId, String root, IndexRunKind kind, IndexRunStatus status, IndexRunPhase? phase, int? total, int? processed, int activeMillis, DateTime? pausedAt, IndexRunCounts? counts, String? error
+ String runId, String root, String? libraryUuid, IndexRunKind kind, IndexRunStatus status, IndexRunPhase? phase, int? total, int? processed, int activeMillis, DateTime? pausedAt, IndexRunCounts? counts, String? error
 });
 
 
@@ -612,11 +618,12 @@ class __$IndexRunCopyWithImpl<$Res>
 
 /// Create a copy of IndexRun
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? runId = null,Object? root = null,Object? kind = null,Object? status = null,Object? phase = freezed,Object? total = freezed,Object? processed = freezed,Object? activeMillis = null,Object? pausedAt = freezed,Object? counts = freezed,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? runId = null,Object? root = null,Object? libraryUuid = freezed,Object? kind = null,Object? status = null,Object? phase = freezed,Object? total = freezed,Object? processed = freezed,Object? activeMillis = null,Object? pausedAt = freezed,Object? counts = freezed,Object? error = freezed,}) {
   return _then(_IndexRun(
 runId: null == runId ? _self.runId : runId // ignore: cast_nullable_to_non_nullable
 as String,root: null == root ? _self.root : root // ignore: cast_nullable_to_non_nullable
-as String,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
+as String,libraryUuid: freezed == libraryUuid ? _self.libraryUuid : libraryUuid // ignore: cast_nullable_to_non_nullable
+as String?,kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
 as IndexRunKind,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as IndexRunStatus,phase: freezed == phase ? _self.phase : phase // ignore: cast_nullable_to_non_nullable
 as IndexRunPhase?,total: freezed == total ? _self.total : total // ignore: cast_nullable_to_non_nullable

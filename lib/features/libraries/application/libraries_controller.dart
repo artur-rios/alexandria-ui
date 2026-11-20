@@ -135,17 +135,19 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
         .register(name: name, rootPath: rootPath, credential: credential);
 
     switch (outcome) {
-      case LibraryWriteDone():
+      case LibraryRegistered():
         await reload();
         return null;
 
       // The owner goes back to login, and the caller still learns the write
       // did not happen — its follow-up must not run either way.
-      case LibraryWriteFailed(failure: final UnauthorizedFailure failure):
+      case LibraryRegistrationFailed(
+        failure: final UnauthorizedFailure failure,
+      ):
         ref.read(sessionControllerProvider.notifier).invalidate(failure);
         return failure;
 
-      case LibraryWriteFailed(:final failure):
+      case LibraryRegistrationFailed(:final failure):
         return failure;
     }
   }
@@ -169,11 +171,7 @@ class LibraryTreeController extends AsyncNotifier<LibraryListing?> {
 
     final outcome = await ref
         .read(libraryGatewayProvider)
-        .read(
-          uuid: location.uuid,
-          path: location.path,
-          credential: credential,
-        );
+        .read(uuid: location.uuid, path: location.path, credential: credential);
 
     switch (outcome) {
       case LibraryReadLoaded(:final listing):

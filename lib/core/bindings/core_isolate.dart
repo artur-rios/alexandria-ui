@@ -370,6 +370,20 @@ class CoreIsolate {
         return (status: result.status, runId: _readRunId(result.run_id));
       }),
 
+      // A library's uuid, the session token and an optional priority in;
+      // the same struct a refresh answers out.
+      'libraryIndexStart' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = withNativeString(
+            arguments[2] as String?,
+            (priority) =>
+                bindings.alexandria_library_index_start(uuid, token, priority),
+          );
+          return (status: result.status, runId: _readRunId(result.run_id));
+        }),
+      ),
+
       'countMissing' => bindings.alexandria_index_count_missing(),
 
       'indexedFilesJson' => strings.consume(
@@ -595,6 +609,17 @@ class CoreIsolate {
         arguments.first! as String,
         (uuid) => withNativeString(arguments[1]! as String, (token) {
           final result = bindings.alexandria_file_playback_source(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'fileThumbnail' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_file_thumbnail(uuid, token);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),

@@ -419,6 +419,38 @@ class FakeCoreClient implements CoreClient {
     return indexRefreshStartResult;
   }
 
+  /// What [libraryIndexStart] answers.
+  CoreRunStart libraryIndexStartResult = (status: 0, runId: 'library-run-1');
+
+  /// What [libraryIndexStart] was called with, in order.
+  final List<({String uuid, String token, String? priority})>
+  libraryIndexStarts = [];
+
+  @override
+  Future<CoreRunStart> libraryIndexStart(
+    String uuid,
+    String token, [
+    String? priority,
+  ]) async {
+    libraryIndexStarts.add((uuid: uuid, token: token, priority: priority));
+    return libraryIndexStartResult;
+  }
+
+  /// What [fileThumbnail] answers. No picture by default.
+  CoreJsonResponse fileThumbnailResult = (
+    status: PLAYBACK_ERR_NOT_FOUND,
+    json: null,
+  );
+
+  /// What [fileThumbnail] was called with, in order.
+  final List<({String uuid, String token})> fileThumbnailCalls = [];
+
+  @override
+  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async {
+    fileThumbnailCalls.add((uuid: uuid, token: token));
+    return fileThumbnailResult;
+  }
+
   /// What [indexPause] answers.
   int indexPauseResult = 0;
 

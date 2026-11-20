@@ -140,6 +140,10 @@ abstract class IndexRun with _$IndexRun {
     /// whole catalog rather than one folder.
     required String root,
 
+    /// The library this run indexes, or null for a refresh, which re-checks
+    /// every library at once (core 0.6.0).
+    String? libraryUuid,
+
     /// Which operation opened this run.
     @Default(IndexRunKind.scan) IndexRunKind kind,
 

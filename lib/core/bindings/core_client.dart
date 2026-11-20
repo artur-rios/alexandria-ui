@@ -119,6 +119,20 @@ abstract interface class CoreClient {
     String? types,
   ]);
 
+  /// Re-indexes the library [uuid] through `alexandria_library_index_start`
+  /// (core UC-01, 0.6.0).
+  ///
+  /// The only way to scan a folder again: the core indexes nothing that is
+  /// not a library. [priority] means what it means to [indexRefreshStart].
+  /// Refused with `INDEX_ERR_CONFLICT` while the library already has a
+  /// running or paused run, and `INDEX_ERR_NOT_FOUND` for a library the core
+  /// no longer has.
+  Future<CoreRunStart> libraryIndexStart(
+    String uuid,
+    String token, [
+    String? priority,
+  ]);
+
   /// Reads a run's status and outcome through
   /// `alexandria_index_run_status_json` (FR-LB-07, FR-LB-08, UC-06).
   ///
@@ -223,6 +237,14 @@ abstract interface class CoreClient {
   /// because it lives inside the archive, and it is bounded — which is what
   /// lets the archive be read without being extracted to disk.
   Future<CoreJsonResponse> comicPage(String uuid, int page, String token);
+
+  /// A downscaled picture of the file [uuid], through
+  /// `alexandria_file_thumbnail` (UC-40).
+  ///
+  /// Answers `{"uuid":…,"mimeType":"image/jpeg","bytesBase64":…}`. For audio
+  /// it is the embedded front cover; a file with none answers a playback
+  /// error rather than an empty picture.
+  Future<CoreJsonResponse> fileThumbnail(String uuid, String token);
 
   /// Reads a text file's content from disk through
   /// `alexandria_file_read_content` (FR-ME-06, UC-18).
@@ -443,11 +465,13 @@ abstract interface class CoreClient {
   /// per episode — and UC-29 and UC-30 are what present it.
   Future<CoreJsonResponse> watchlistsList(String jsonFilters, String token);
 
-  /// Treats a folder as a library through `alexandria_library_register`
-  /// (libraries design).
+  /// Adds a folder as a library through `alexandria_library_register`
+  /// (core FR-FC-36).
   ///
-  /// [jsonBody] carries the `name` and `rootPath`. Whatever is already
-  /// indexed beneath the folder is claimed by the same call.
+  /// [jsonBody] carries the `name`, the `rootPath`, and an optional
+  /// `priority` for the library's first index run, which the same call
+  /// starts. The answer is the library with that run's `runId` beside its
+  /// fields.
   Future<CoreJsonResponse> libraryRegister(String jsonBody, String token);
 
   /// Every registered library, through `alexandria_libraries_list`.
@@ -477,10 +501,11 @@ abstract interface class CoreClient {
     String token,
   );
 
-  /// Stops treating a folder as a library, through
-  /// `alexandria_library_remove`.
+  /// Removes a library, through `alexandria_library_remove`.
   ///
-  /// The files are kept and return to the type panels.
+  /// Deletes the library's catalog records — its files, their progress and
+  /// collection membership, and its runs — and touches nothing on disk.
+  /// Refused while the library has a running run.
   Future<CoreJsonResponse> libraryRemove(String uuid, String token);
 
   /// Releases the worker isolate and the shared library.
@@ -622,6 +647,15 @@ class FfiCoreClient implements CoreClient {
   );
 
   @override
+  Future<CoreRunStart> libraryIndexStart(
+    String uuid,
+    String token, [
+    String? priority,
+  ]) async => _reply<CoreRunStart>(
+    await _isolate.call('libraryIndexStart', [uuid, token, priority]),
+  );
+
+  @override
   Future<int> indexPause(String runId, String token) async =>
       _reply<int>(await _isolate.call('indexPause', [runId, token]));
 
@@ -683,6 +717,12 @@ class FfiCoreClient implements CoreClient {
   ) async => _reply<CoreJsonResponse>(
     await _isolate.call('comicPage', [uuid, page, token]),
   );
+
+  @override
+  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async =>
+      _reply<CoreJsonResponse>(
+        await _isolate.call('fileThumbnail', [uuid, token]),
+      );
 
   @override
   Future<CoreJsonResponse> fileReadContent(String uuid, String token) async =>

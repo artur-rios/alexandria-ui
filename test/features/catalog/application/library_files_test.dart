@@ -70,27 +70,21 @@ void main() {
     },
   );
 
-  test(
-    'GivenAMissingLibraryFile_WhenTheReviewLoads_ThenItIsListed',
-    () async {
-      // The one screen that offers anything to do about a missing file. Its
-      // library tree still shows it — missing is a marking on an active
-      // record, not a state — but the tree is not where the remedy is.
-      final sut = build(
-        files: [
-          row('lecture.mp4', library: 'lib-1', missingAt: indexedAt),
-          row('manual.pdf', missingAt: indexedAt),
-        ],
-      );
+  test('GivenAMissingLibraryFile_WhenTheReviewLoads_ThenItIsListed', () async {
+    // The one screen that offers anything to do about a missing file. Its
+    // library tree still shows it — missing is a marking on an active
+    // record, not a state — but the tree is not where the remedy is.
+    final sut = build(
+      files: [
+        row('lecture.mp4', library: 'lib-1', missingAt: indexedAt),
+        row('manual.pdf', missingAt: indexedAt),
+      ],
+    );
 
-      final missing = await sut.ref.read(missingFilesControllerProvider.future);
+    final missing = await sut.ref.read(missingFilesControllerProvider.future);
 
-      expect(missing.map((row) => row.file.name), [
-        'lecture.mp4',
-        'manual.pdf',
-      ]);
-    },
-  );
+    expect(missing.map((row) => row.file.name), ['lecture.mp4', 'manual.pdf']);
+  });
 
   test(
     'GivenALibraryFile_WhenTheCollectionPickerLoads_ThenItIsOffered',

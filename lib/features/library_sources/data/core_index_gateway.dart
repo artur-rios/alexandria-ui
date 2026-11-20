@@ -74,6 +74,43 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
+  Future<IndexStartOutcome> startLibraryIndex({
+    required String uuid,
+    RunPriority? priority,
+    required String credential,
+  }) async {
+    final CoreRunStart result;
+    try {
+      result = await _core.libraryIndexStart(uuid, credential, priority?.wire);
+    } on CoreCallException {
+      return const IndexStartOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.indexing,
+          code: callFailedCode,
+        ),
+      );
+    }
+
+    if (!CoreStatusFamily.indexing.isOk(result.status)) {
+      return IndexStartOutcome.failed(
+        failure: mapCoreStatus(CoreStatusFamily.indexing, result.status),
+      );
+    }
+
+    // As for a folder scan: a success with no id cannot be followed.
+    if (result.runId.isEmpty) {
+      return const IndexStartOutcome.failed(
+        failure: Failure.unexpected(
+          family: CoreStatusFamily.indexing,
+          code: callFailedCode,
+        ),
+      );
+    }
+
+    return IndexStartOutcome.started(runId: result.runId);
+  }
+
+  @override
   Future<IndexStartOutcome> startRefresh({
     RunPriority? priority,
     required String credential,
@@ -363,6 +400,7 @@ class CoreIndexGateway implements IndexGateway {
     return IndexRun(
       runId: body['runId'] as String? ?? fallbackId,
       root: body['root'] as String? ?? '',
+      libraryUuid: body['libraryUuid'] as String?,
       kind: IndexRunKind.parse(body['kind'] as String?),
       status: status,
       phase: IndexRunPhase.parse(body['phase'] as String?),

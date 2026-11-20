@@ -127,6 +127,26 @@ class FakeIndexGateway implements IndexGateway {
   /// what changed — a refresh that has actually started.
   ActiveRunsOutcome? activeRunsOutcomeOnceRefreshStarts;
 
+  /// What [startLibraryIndex] answers, in order; empty reuses
+  /// [startOutcome].
+  final List<IndexStartOutcome> libraryStartOutcomes = [];
+
+  /// What [startLibraryIndex] was called with, in order.
+  final List<({String uuid, RunPriority? priority, String credential})>
+  libraryStarts = [];
+
+  @override
+  Future<IndexStartOutcome> startLibraryIndex({
+    required String uuid,
+    RunPriority? priority,
+    required String credential,
+  }) async {
+    libraryStarts.add((uuid: uuid, priority: priority, credential: credential));
+    return libraryStartOutcomes.isNotEmpty
+        ? libraryStartOutcomes.removeAt(0)
+        : startOutcome;
+  }
+
   /// What [pauseRun] was called with, in order.
   final List<({String runId, String credential})> pauses = [];
 

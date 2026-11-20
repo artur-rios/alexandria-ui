@@ -7,6 +7,7 @@ import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/data/file_view_parser.dart';
+import '../../library_sources/domain/run_priority.dart';
 import '../domain/library.dart';
 import '../domain/library_gateway.dart';
 
@@ -102,16 +103,60 @@ class CoreLibraryGateway implements LibraryGateway {
   }
 
   @override
-  Future<LibraryWrite> register({
+  Future<LibraryRegistration> register({
     required String name,
     required String rootPath,
+    RunPriority? priority,
     required String credential,
-  }) => _write(
-    () => _core.libraryRegister(
-      jsonEncode({'name': name, 'rootPath': rootPath}),
-      credential,
-    ),
-  );
+  }) async {
+    const unreadable = LibraryRegistration.failed(
+      failure: Failure.unexpected(
+        family: CoreStatusFamily.library,
+        code: LIBRARY_ERR_OTHER,
+      ),
+    );
+
+    final CoreJsonResponse response;
+    try {
+      response = await _core.libraryRegister(
+        jsonEncode({
+          'name': name,
+          'rootPath': rootPath,
+          // Only low is sent: absent is the core's normal pace, and the
+          // core reads anything else as normal too.
+          if (priority == RunPriority.low) 'priority': priority!.wire,
+        }),
+        credential,
+      );
+    } on CoreCallException {
+      return unreadable;
+    }
+
+    if (!CoreStatusFamily.library.isOk(response.status)) {
+      return LibraryRegistration.failed(
+        failure: mapCoreStatus(CoreStatusFamily.library, response.status),
+      );
+    }
+
+    final json = response.json;
+    if (json == null) return unreadable;
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+      final runId = body['runId'] as String?;
+      // A library with no run would sit unindexed with nothing to follow.
+      // The core always answers one; a body without it is not one this
+      // build can trust.
+      if (runId == null || runId.isEmpty) return unreadable;
+
+      return LibraryRegistration.registered(
+        library: _libraryFrom(body),
+        runId: runId,
+      );
+    } on Object {
+      return unreadable;
+    }
+  }
 
   @override
   Future<LibraryWrite> move({
@@ -119,11 +164,8 @@ class CoreLibraryGateway implements LibraryGateway {
     required String rootPath,
     required String credential,
   }) => _write(
-    () => _core.libraryMove(
-      uuid,
-      jsonEncode({'rootPath': rootPath}),
-      credential,
-    ),
+    () =>
+        _core.libraryMove(uuid, jsonEncode({'rootPath': rootPath}), credential),
   );
 
   @override
