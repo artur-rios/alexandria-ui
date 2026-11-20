@@ -25,7 +25,6 @@ class CoreCatalogGateway implements CatalogGateway {
     required String credential,
     FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
-    bool includeLibraries = false,
   }) async {
     final CoreJsonResponse response;
     try {
@@ -39,10 +38,6 @@ class CoreCatalogGateway implements CatalogGateway {
           // is a type name it does not have.
           if (type != null) 'type': type.wireName,
           'state': lifecycle.wireName,
-          // Sent only when it is true: absent is the core's default and the
-          // narrower answer, so a filter that never mentions it behaves as
-          // this call always has.
-          if (includeLibraries) 'includeLibraries': true,
         }),
         credential,
       );

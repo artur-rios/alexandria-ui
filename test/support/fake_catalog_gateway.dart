@@ -73,24 +73,15 @@ class FakeCatalogGateway implements CatalogGateway {
   /// The lifecycle filter each call was made with (UC-12).
   final List<LifecycleFilter> lifecycles = [];
 
-  /// Whether each [listFiles] call asked to reach into libraries, in order.
-  ///
-  /// Recorded because it is the whole difference between a search that finds
-  /// a library's files and one that cannot, and nothing else about the call
-  /// shows it.
-  final List<bool> libraryReaches = [];
-
   @override
   Future<CatalogListing> listFiles({
     required String credential,
     FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
-    bool includeLibraries = false,
   }) async {
     requested.add(type);
     credentials.add(credential);
     lifecycles.add(lifecycle);
-    libraryReaches.add(includeLibraries);
 
     // No type is every type, as the core reads it — so the fake answers the
     // union of what it holds rather than a single bucket. The counts panel

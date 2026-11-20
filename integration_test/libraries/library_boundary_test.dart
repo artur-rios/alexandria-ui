@@ -353,7 +353,6 @@ void main() {
     final everywhere = await gateway.listFiles(
       type: FileType.text,
       credential: credential,
-      includeLibraries: true,
     );
     final found = (everywhere as CatalogListingLoaded).files;
 
@@ -400,7 +399,6 @@ void main() {
       type: FileType.text,
       credential: credential,
       lifecycle: LifecycleFilter.deleted,
-      includeLibraries: true,
     );
 
     expect(

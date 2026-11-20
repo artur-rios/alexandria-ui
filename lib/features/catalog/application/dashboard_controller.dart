@@ -24,16 +24,8 @@ class RecentFilesController extends AsyncNotifier<List<CatalogFile>> {
   Future<List<CatalogFile>> build() async {
     final index = await ref.watch(catalogSearchProvider.future);
 
-    // A library's files are left out here even though the index carries
-    // them. The index reaches into libraries because the search must
-    // (FR-CT-06); this is a front page, and a course's three hundred class
-    // handouts arriving all at once is exactly what marking the folder was
-    // meant to stop (FR-CT-16).
     final byNewest = sortFiles(
-      [
-        for (final row in index.files)
-          if (row.libraryUuid == null) row.file,
-      ],
+      [for (final row in index.files) row.file],
       const ListingView(
         sortField: SortField.indexed,
         direction: SortDirection.descending,

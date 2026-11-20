@@ -68,23 +68,13 @@ sealed class FileRenameOutcome with _$FileRenameOutcome {
 
 /// The application's view of the core's catalog queries (IR-02, NFR-17).
 abstract interface class CatalogGateway {
-  /// The files of [type] in [lifecycle], merged across every registered
-  /// folder (FR-CT-02, FR-CT-07, FR-LB-04).
+  /// The files of [type] in [lifecycle], across every library (FR-CT-02,
+  /// FR-CT-07, FR-LB-04). Every file belongs to one (core 0.6.0), so nothing
+  /// is left out for being in a library.
   ///
   /// [lifecycle] is the one filter the core applies itself; everything else
   /// UC-12 offers is applied to what it returns. Defaults to active records,
   /// which is what a listing opens on.
-  /// [includeLibraries] reaches into libraries, whose files a type listing
-  /// otherwise excludes (libraries design, core FR-FC-38).
-  ///
-  /// Off by default, because the type panels are what this call is normally
-  /// for and a course leaking into them is the defect marking the folder was
-  /// meant to prevent. The two callers that pass it are the ones that are
-  /// not browsing by type: search, which must find a lecture recording the
-  /// owner remembers by name, and the deleted-items review, which must be
-  /// able to offer one back — a deleted library file appears in no panel and
-  /// not in its library either, which lists only active files.
-  ///
   /// [type] is optional, and omitting it lists every type in one call. That
   /// is what the navigation panel's counts want: they used to ask once per
   /// type and take the length of each answer, which serialized the whole
@@ -95,7 +85,6 @@ abstract interface class CatalogGateway {
     required String credential,
     FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
-    bool includeLibraries = false,
   });
 
   /// One file, with everything the core knows about it (FR-CT-05, UC-13).

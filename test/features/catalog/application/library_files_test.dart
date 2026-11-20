@@ -4,6 +4,7 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/organization/domain/collection.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -11,23 +12,11 @@ import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_bookmarks.dart';
 import '../../../support/fake_catalog_gateway.dart';
 
-/// Which screens reach into libraries, and which must not (FR-CT-06,
-/// FR-CT-16, core FR-FC-38).
-///
-/// A library keeps its files out of the type panels so a course does not
-/// bury everything else. That is a rule about *listing* — the libraries
-/// design scopes it to "the queries that browse by type" and names search,
-/// watchlists, reading lists and collections as things it does not apply
-/// to. Reading it as a rule about the catalog has cost the owner
-/// four things so far, and each was found separately: a marked folder's files
-/// could not be found by name; a deleted one could be reached from nowhere —
-/// not its panel, not the review, and not its own library, which lists only
-/// active files; a missing one appeared in no review at all; and one could
-/// not be filed into a collection, because the picker is the only place that
-/// offers it.
-///
-/// Hence one file naming every screen on both sides of the rule, rather than
-/// a reach asserted wherever it happens to be remembered.
+/// Every file belongs to a library (core 0.6.0), so every screen that lists
+/// files lists library files: the type panels, the dashboard, the deleted and
+/// missing reviews, and the collection picker. Before 0.6 a library kept its
+/// files out of the type panels and the dashboard; one file pins that the
+/// exclusion is gone everywhere it used to be.
 void main() {
   final indexedAt = DateTime.utc(2026, 8, 30, 9);
 
@@ -70,35 +59,6 @@ void main() {
     return (ref: container, gateway: gateway);
   }
 
-  test('GivenTheSearchIndex_WhenItLoads_ThenItReachesIntoLibraries', () async {
-    final sut = build();
-
-    await sut.ref.read(catalogSearchProvider.future);
-
-    expect(
-      sut.gateway.libraryReaches.every((reached) => reached),
-      isTrue,
-      reason:
-          'the search asked for the type-panel listing, so a library file '
-          'could never be found by name',
-    );
-  });
-
-  test(
-    'GivenTheDeletedItemsReview_WhenItLoads_ThenItReachesIntoLibraries',
-    () async {
-      final sut = build();
-
-      await sut.ref.read(deletedItemsControllerProvider.future);
-
-      expect(
-        sut.gateway.libraryReaches.every((reached) => reached),
-        isTrue,
-        reason: 'a deleted library file would be reachable from nowhere at all',
-      );
-    },
-  );
-
   test(
     'GivenADeletedLibraryFile_WhenTheReviewLoads_ThenItCanBeOfferedBack',
     () async {
@@ -107,23 +67,6 @@ void main() {
       final records = await sut.ref.read(deletedItemsControllerProvider.future);
 
       expect(records.map((record) => record.name), contains('syllabus.pdf'));
-    },
-  );
-
-  test(
-    'GivenTheMissingFilesReview_WhenItLoads_ThenItReachesIntoLibraries',
-    () async {
-      final sut = build();
-
-      await sut.ref.read(missingFilesControllerProvider.future);
-
-      expect(
-        sut.gateway.libraryReaches.every((reached) => reached),
-        isTrue,
-        reason:
-            'the review listed every missing file in the catalog except the '
-            'ones inside a library',
-      );
     },
   );
 
@@ -150,7 +93,7 @@ void main() {
   );
 
   test(
-    'GivenTheCollectionPicker_WhenItLoads_ThenItReachesIntoLibraries',
+    'GivenALibraryFile_WhenTheCollectionPickerLoads_ThenItIsOffered',
     () async {
       // The libraries design names collections among the things the exclusion
       // does not apply to. Watchlists and reading lists honour that
@@ -173,28 +116,37 @@ void main() {
         collectionCandidatesControllerProvider.future,
       );
 
-      expect(
-        sut.gateway.libraryReaches.every((reached) => reached),
-        isTrue,
-        reason: 'a library file could not be put into a collection at all',
-      );
       expect(candidates.map((member) => member.name), ['lecture.pdf']);
     },
   );
 
-  test('GivenALibraryFile_WhenTheDashboardLoads_ThenItIsNotShown', () async {
-    // The other direction, and the one the reach put at risk: the dashboard
-    // reads the same index the search does, and a course's handouts arriving
-    // on the front page is what marking the folder was meant to stop.
-    final sut = build(
-      files: [
-        row('lecture.pdf', library: 'lib-1'),
-        row('manual.pdf'),
-      ],
-    );
+  test(
+    'GivenARecentLibraryFile_WhenTheDashboardLoads_ThenItIsAmongRecentFiles',
+    () async {
+      final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
 
-    final recent = await sut.ref.read(recentFilesProvider.future);
+      final recent = await sut.ref.read(recentFilesProvider.future);
 
-    expect(recent.map((file) => file.name), ['manual.pdf']);
+      expect(recent.map((file) => file.name), ['lecture.pdf']);
+    },
+  );
+
+  test('GivenAFileInALibrary_WhenItsTypePanelLists_ThenItIsListed', () async {
+    final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
+    sut.ref.listen(listingControllerProvider, (_, _) {});
+    sut.ref.read(shellControllerProvider.notifier).go(ShellDestination.books);
+
+    final listed = await sut.ref.read(listingControllerProvider.future);
+
+    expect(listed.map((file) => file.name), ['lecture.pdf']);
+  });
+
+  test('GivenAFileInALibrary_WhenTypeCountsAreRead_ThenItIsCounted', () async {
+    final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
+    sut.ref.listen(typeCountsControllerProvider, (_, _) {});
+
+    final counts = await sut.ref.read(typeCountsControllerProvider.future);
+
+    expect(counts[FileType.document], 1);
   });
 }
