@@ -34,7 +34,7 @@ class CoreCallException implements Exception {
 /// Owns the Alexandria core on a worker isolate (IR-09).
 ///
 /// Every core call runs off the interface thread. This matters more than it
-/// might look: `alexandria_index_start` scans a filesystem and
+/// might look: `alexandria_library_register` scans a filesystem and
 /// `alexandria_files_list` serializes the whole catalog to JSON, and either on
 /// the UI isolate is a frozen window.
 ///
@@ -354,11 +354,11 @@ class CoreIsolate {
       'countFiles' => bindings.alexandria_index_count_files(),
 
       // The session token and an optional priority in, a status and a run id
-      // out. No root: a refresh covers the whole catalog rather than one
-      // folder (FR-LB-06). withNativeString already passes null through as
+      // out. No library: a refresh covers every library at once rather than
+      // one (FR-LB-06). withNativeString already passes null through as
       // nullptr (see its signature), which is what a null priority needs:
-      // the core reads an absent priority as "normal" here — see
-      // alexandria_index_start's doc comment, which this call shares.
+      // the core reads an absent priority as "normal" here, as it does for
+      // alexandria_library_index_start.
       'indexRefreshStart' => withNativeString(arguments.first! as String, (
         token,
       ) {
@@ -471,11 +471,6 @@ class CoreIsolate {
         }),
       ),
 
-      // The 0.6.0 core removed `alexandria_index_start`: a folder is indexed
-      // only by being a library. Answered as the core's "other" until the
-      // callers move to library runs.
-      'indexStart' => (status: INDEX_ERR_OTHER, runId: null),
-
       'indexRunFailures' => withNativeString(
         arguments.first! as String,
         (runId) => withNativeString(arguments[1]! as String, (token) {
@@ -523,14 +518,14 @@ class CoreIsolate {
       ),
 
       // The run id, the session token, and an optional priority in, the same
-      // shape indexStart answers with — the *same* run id, not a fresh one
+      // shape libraryIndexStart answers with — the *same* run id, not a fresh one
       // (FR-FC-33). The C function takes (run_id, token, priority) — not the
       // Dart-level (runId, priority, token) order this operation's argument
       // list uses — so the nesting reorders on the way in; getting this wrong
       // would pass a token as a priority and a priority as a token.
       //
       // priority goes through withNativeString for the same reason it does
-      // in indexStart, with a sharper stake here: null must reach the core
+      // in libraryIndexStart, with a sharper stake here: null must reach the core
       // as a null pointer because the core reads an absent priority as
       // *keep the run's current width* — deliberately not the same as
       // "normal". An empty string lands in that same branch today only

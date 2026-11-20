@@ -97,28 +97,6 @@ abstract interface class CoreClient {
     String token,
   );
 
-  /// Starts an index scan of [root] through `alexandria_index_start`
-  /// (FR-LB-05, UC-06).
-  ///
-  /// The scan runs in the background on the core's own runtime; this returns
-  /// as soon as it has been started. [token] is the active session's
-  /// credential. [priority] is `"normal"` or `"low"`; null means the core's
-  /// default (`"normal"`) rather than a value this client had to choose.
-  ///
-  /// [types] is the run's scope: the `FileType` wire names the run records,
-  /// comma-separated (`"video,image"`). Null means every type, which is what
-  /// the core reads an absent scope as — so it is passed as null and never as
-  /// `""`, and a name the core does not know is refused rather than ignored.
-  ///
-  /// The run id comes back in a fixed-size array inside the result struct
-  /// rather than as an allocation, so there is nothing to free on this path.
-  Future<CoreRunStart> indexStart(
-    String root,
-    String token, [
-    String? priority,
-    String? types,
-  ]);
-
   /// Re-indexes the library [uuid] through `alexandria_library_index_start`
   /// (core UC-01, 0.6.0).
   ///
@@ -152,7 +130,7 @@ abstract interface class CoreClient {
   /// `alexandria_index_refresh_start` (FR-LB-06, UC-07).
   ///
   /// Takes no root: a refresh covers the whole catalog rather than one folder,
-  /// which is the difference between it and [indexStart]. [priority] means the
+  /// which is the difference between it and [libraryIndexStart]. [priority] means the
   /// same thing there does: null is the core's default.
   Future<CoreRunStart> indexRefreshStart(String token, [String? priority]);
 
@@ -614,16 +592,6 @@ class FfiCoreClient implements CoreClient {
     String token,
   ) async => _reply<CoreJsonResponse>(
     await _isolate.call('authLocalSetCredentials', [jsonBody, token]),
-  );
-
-  @override
-  Future<CoreRunStart> indexStart(
-    String root,
-    String token, [
-    String? priority,
-    String? types,
-  ]) async => _reply<CoreRunStart>(
-    await _isolate.call('indexStart', [root, token, priority, types]),
   );
 
   @override
