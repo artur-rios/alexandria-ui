@@ -53,6 +53,13 @@ class FakeCatalogGateway implements CatalogGateway {
   /// core.
   final List<({String uuid, VideoMetadata metadata})> videoEdits = [];
 
+  /// What [editMusicMetadata] answers, in order (UC-15). Empty saves what
+  /// was sent.
+  final List<MetadataEditOutcome> editOutcomes = [];
+
+  /// Every tag edit asked for, in order.
+  final List<({String uuid, MusicMetadata metadata})> edits = [];
+
   /// What [renameFile] answers, in order (UC-17).
   final List<FileRenameOutcome> renameOutcomes = [];
 
@@ -183,6 +190,21 @@ class FakeCatalogGateway implements CatalogGateway {
     listings[type] = const CatalogListing.failed(
       failure: Failure.notFound(family: CoreStatusFamily.file, code: 4),
     );
+  }
+
+  @override
+  Future<MetadataEditOutcome> editMusicMetadata({
+    required String uuid,
+    required MusicMetadata metadata,
+    required String credential,
+  }) async {
+    edits.add((uuid: uuid, metadata: metadata));
+    credentials.add(credential);
+
+    if (editOutcomes.isEmpty) {
+      return MetadataEditOutcome.saved(metadata: metadata);
+    }
+    return editOutcomes.removeAt(0);
   }
 
   @override

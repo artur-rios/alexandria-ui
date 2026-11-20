@@ -2216,5 +2216,66 @@
   "libraryMenuAdd": "Add library…",
   "@libraryMenuAdd": {
     "description": "Library menu entry that adds a folder as a library."
+  },
+  "musicMetadataTitle": "Music metadata",
+  "@musicMetadataTitle": {
+    "description": "Title of the music metadata form (UC-15, FR-ME-01)."
+  },
+  "musicMetadataFieldTitle": "Title",
+  "@musicMetadataFieldTitle": {
+    "description": "Label of the track title field."
+  },
+  "musicMetadataFieldArtist": "Artist",
+  "@musicMetadataFieldArtist": {
+    "description": "Label of the artist field."
+  },
+  "musicMetadataFieldAlbumArtist": "Album artist",
+  "@musicMetadataFieldAlbumArtist": {
+    "description": "Label of the album artist field — who the record is by, which the music area groups by (UC-46, FR-CT-13)."
+  },
+  "musicMetadataFieldAlbum": "Album",
+  "@musicMetadataFieldAlbum": {
+    "description": "Label of the album field."
+  },
+  "musicMetadataFieldYear": "Year",
+  "@musicMetadataFieldYear": {
+    "description": "Label of the release year field."
+  },
+  "musicMetadataFieldGenre": "Genre",
+  "@musicMetadataFieldGenre": {
+    "description": "Label of the genre field."
+  },
+  "musicMetadataFieldTrack": "Track number",
+  "@musicMetadataFieldTrack": {
+    "description": "Label of the track number field."
+  },
+  "musicMetadataSave": "Save",
+  "@musicMetadataSave": {
+    "description": "Sends the edited metadata to the core (UC-15 main flow step 5)."
+  },
+  "musicMetadataCancel": "Cancel",
+  "@musicMetadataCancel": {
+    "description": "Closes the metadata form without saving."
+  },
+  "musicMetadataErrorNotANumber": "Enter a whole number.",
+  "@musicMetadataErrorNotANumber": {
+    "description": "UC-15 AF-01: a numeric field holds something that is not a number, so the core is not called."
+  },
+  "musicMetadataErrorYear": "Enter a four-digit year.",
+  "@musicMetadataErrorYear": {
+    "description": "UC-15 AF-01: the year is earlier than any recording could carry, which is a typo rather than a year."
+  },
+  "musicMetadataErrorTrack": "A track number starts at 1.",
+  "@musicMetadataErrorTrack": {
+    "description": "UC-15 AF-01: the track number is zero or negative."
+  },
+  "musicMetadataErrorTooLong": "Keep this under {max} characters.",
+  "@musicMetadataErrorTooLong": {
+    "description": "UC-15 AF-01: a text field is longer than the core stores.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
   }
 }

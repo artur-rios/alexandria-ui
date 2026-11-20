@@ -1668,4 +1668,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryMenuAdd => 'Add library…';
+
+  @override
+  String get musicMetadataTitle => 'Music metadata';
+
+  @override
+  String get musicMetadataFieldTitle => 'Title';
+
+  @override
+  String get musicMetadataFieldArtist => 'Artist';
+
+  @override
+  String get musicMetadataFieldAlbumArtist => 'Album artist';
+
+  @override
+  String get musicMetadataFieldAlbum => 'Album';
+
+  @override
+  String get musicMetadataFieldYear => 'Year';
+
+  @override
+  String get musicMetadataFieldGenre => 'Genre';
+
+  @override
+  String get musicMetadataFieldTrack => 'Track number';
+
+  @override
+  String get musicMetadataSave => 'Save';
+
+  @override
+  String get musicMetadataCancel => 'Cancel';
+
+  @override
+  String get musicMetadataErrorNotANumber => 'Enter a whole number.';
+
+  @override
+  String get musicMetadataErrorYear => 'Enter a four-digit year.';
+
+  @override
+  String get musicMetadataErrorTrack => 'A track number starts at 1.';
+
+  @override
+  String musicMetadataErrorTooLong(int max) {
+    return 'Keep this under $max characters.';
+  }
 }

@@ -461,5 +461,19 @@
   "libraryScanFailed": "Não foi possível analisar esta biblioteca.",
   "libraryRunProgress": "Analisando… {processed} de {total}",
   "libraryMenuLibraries": "Bibliotecas",
-  "libraryMenuAdd": "Adicionar biblioteca…"
+  "libraryMenuAdd": "Adicionar biblioteca…",
+  "musicMetadataTitle": "Metadados da música",
+  "musicMetadataFieldTitle": "Título",
+  "musicMetadataFieldArtist": "Artista",
+  "musicMetadataFieldAlbumArtist": "Artista do álbum",
+  "musicMetadataFieldAlbum": "Álbum",
+  "musicMetadataFieldYear": "Ano",
+  "musicMetadataFieldGenre": "Gênero",
+  "musicMetadataFieldTrack": "Número da faixa",
+  "musicMetadataSave": "Salvar",
+  "musicMetadataCancel": "Cancelar",
+  "musicMetadataErrorNotANumber": "Digite um número inteiro.",
+  "musicMetadataErrorYear": "Digite um ano com quatro dígitos.",
+  "musicMetadataErrorTrack": "O número da faixa começa em 1.",
+  "musicMetadataErrorTooLong": "Use menos de {max} caracteres."
 }

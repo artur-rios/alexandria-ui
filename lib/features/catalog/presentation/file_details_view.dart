@@ -26,6 +26,7 @@ import '../../lifecycle/presentation/purge_on_disk_section.dart';
 import '../../tracking/presentation/add_to_reading_list_button.dart';
 import '../../tracking/presentation/add_to_watchlist_button.dart';
 import 'rename_file_dialog.dart';
+import 'music_metadata_form.dart';
 import 'video_metadata_form.dart';
 
 /// One file's details (UC-13, FR-CT-05, FR-CT-12).
@@ -544,8 +545,7 @@ typedef OpenMetadataForm =
 /// one place (IR-02's registration rule).
 OpenMetadataForm? _metadataFormFor(FileType type) => switch (type) {
   FileType.video => VideoMetadataForm.show,
-  // The tags form is restored with tag editing.
-  FileType.audio ||
+  FileType.audio => MusicMetadataForm.show,
   FileType.document ||
   FileType.comic ||
   FileType.text ||

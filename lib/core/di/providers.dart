@@ -35,6 +35,7 @@ import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
 import '../../features/catalog/application/in_progress.dart';
 import '../../features/catalog/application/file_rename_controller.dart';
+import '../../features/catalog/application/music_metadata_editor.dart';
 import '../../features/catalog/application/video_metadata_editor.dart';
 import '../../features/catalog/application/layout_controller.dart';
 import '../../features/catalog/application/listing_controller.dart';
@@ -875,6 +876,12 @@ final watchProgressGatewayProvider = Provider<WatchProgressGateway>((ref) {
 
   return CoreWatchProgressGateway(core);
 });
+
+/// The open tags form (UC-15).
+final musicMetadataEditorProvider =
+    NotifierProvider<MusicMetadataEditor, MusicEditorState>(
+      MusicMetadataEditor.new,
+    );
 
 /// The open video metadata form (UC-16).
 final videoMetadataEditorProvider =
