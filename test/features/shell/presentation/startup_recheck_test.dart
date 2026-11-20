@@ -1,7 +1,7 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
-import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
+import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
+import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
 import 'package:alexandria_ui/features/shell/presentation/background_activity_strip.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -13,7 +13,7 @@ import '../../../support/shell_harness.dart';
 /// The owner's own experience of FR-LB-21 (UC-07 AF): nobody presses
 /// Re-check, and the strip reports one anyway.
 ///
-/// `test/features/library_sources/application/index_session_activity_test.dart`
+/// `test/features/indexing/application/index_session_activity_test.dart`
 /// and `.../presentation/refresh_catalog_test.dart` already prove `begin()`
 /// reaches the core and that the sources screen shows the outcome with no
 /// refusal. Neither proves the half of the feature the owner actually sees

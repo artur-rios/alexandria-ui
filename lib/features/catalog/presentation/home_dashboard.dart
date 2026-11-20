@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../library_sources/presentation/library_sources_screen.dart';
+import '../../libraries/presentation/libraries_view.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/catalog_file.dart';
 import '../application/dashboard_controller.dart';
@@ -230,11 +230,11 @@ class _LastRunSection extends ConsumerWidget {
 }
 
 /// The first-run guidance (AF-01).
-class _FirstRun extends StatelessWidget {
+class _FirstRun extends ConsumerWidget {
   const _FirstRun();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
@@ -259,7 +259,7 @@ class _FirstRun extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
-              onPressed: () => LibrarySourcesScreen.show(context),
+              onPressed: () => openLibrariesAndAdd(context, ref),
               icon: const Icon(Icons.folder_outlined),
               label: Text(l10n.catalogEmptyAddFolder),
             ),

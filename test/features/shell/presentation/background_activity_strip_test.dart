@@ -1,12 +1,14 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/library_sources/application/active_runs_controller.dart';
-import 'package:alexandria_ui/features/library_sources/application/active_runs_state.dart';
-import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
-import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
-import 'package:alexandria_ui/features/library_sources/domain/run_estimate.dart';
-import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
-import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
+import 'package:alexandria_ui/features/indexing/application/active_runs_controller.dart';
+import 'package:alexandria_ui/features/indexing/application/active_runs_state.dart';
+import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
+import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
+import 'package:alexandria_ui/features/indexing/domain/run_estimate.dart';
+import 'package:alexandria_ui/features/indexing/domain/run_priority.dart';
+import 'package:alexandria_ui/features/libraries/application/libraries_controller.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/background_activity_strip.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +18,6 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
-import '../../../support/fake_library_sources.dart';
 import '../../../support/shell_harness.dart';
 
 /// The strip that reports whatever the core is indexing, from anywhere in the
@@ -353,25 +354,23 @@ void main() {
       expect(find.text('View'), findsOneWidget);
     });
 
-    testWidgets('GivenTwoRuns_WhenViewIsChosen_ThenTheFoldersScreenOpens', (
-      tester,
-    ) async {
-      await pumpStrip(
-        tester,
-        runs: [processingRun, secondRun],
-        extraOverrides: [
-          librarySourceStoreProvider.overrideWithValue(
-            InMemoryLibrarySourceStore([]),
-          ),
-          indexGatewayProvider.overrideWithValue(FakeIndexGateway()),
-        ],
-      );
+    testWidgets(
+      'GivenTwoRuns_WhenViewIsChosen_ThenTheLibrariesDestinationIsSelected',
+      (tester) async {
+        await pumpStrip(tester, runs: [processingRun, secondRun]);
 
-      await tester.tap(find.text('View'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('View'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(LibrarySourcesScreen), findsOneWidget);
-    });
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(BackgroundActivityStrip)),
+        );
+        expect(
+          container.read(shellControllerProvider),
+          ShellDestination.libraries,
+        );
+      },
+    );
 
     testWidgets('GivenTwoRuns_WhenBuilt_ThenNoPerRunControlIsOffered', (
       tester,
@@ -731,6 +730,50 @@ void main() {
       },
     );
   });
+
+  group('a run is named for its library', () {
+    const music = Library(
+      uuid: 'lib-music',
+      name: 'My music',
+      rootPath: '/home/owner/music',
+    );
+
+    testWidgets(
+      'GivenAnActiveRunOfAKnownLibrary_WhenTheStripShows_ThenItIsNamedByTheLibrary',
+      (tester) async {
+        await pumpStrip(
+          tester,
+          runs: [processingRun.copyWith(libraryUuid: music.uuid)],
+          extraOverrides: [
+            librariesControllerProvider.overrideWith(
+              () => _FixedLibraries([music]),
+            ),
+          ],
+        );
+
+        expect(find.textContaining('My music'), findsWidgets);
+      },
+    );
+
+    testWidgets(
+      'GivenAnActiveRunOfAnUnknownLibrary_WhenTheStripShows_ThenItIsNamedByItsFolder',
+      (tester) async {
+        // Removed since, or not read yet: its folder is the next best name.
+        await pumpStrip(
+          tester,
+          runs: [processingRun.copyWith(libraryUuid: 'lib-gone')],
+          extraOverrides: [
+            librariesControllerProvider.overrideWith(
+              () => _FixedLibraries([music]),
+            ),
+          ],
+        );
+
+        expect(find.textContaining('My music'), findsNothing);
+        expect(find.textContaining('music'), findsWidgets);
+      },
+    );
+  });
 }
 
 /// An [ActiveRunsController] that records the control calls made on it.
@@ -782,4 +825,14 @@ class RecordingActiveRunsController extends ActiveRunsController {
   @override
   Future<void> resume(String runId, {RunPriority? priority}) async =>
       calls.add('resume:$runId:${priority?.name}');
+}
+
+/// The libraries a test says there are, without a core behind them.
+class _FixedLibraries extends LibrariesController {
+  _FixedLibraries(this._libraries);
+
+  final List<Library> _libraries;
+
+  @override
+  Future<List<Library>> build() async => _libraries;
 }

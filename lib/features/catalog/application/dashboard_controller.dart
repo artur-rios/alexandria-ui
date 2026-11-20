@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
-import '../../library_sources/application/index_runs_state.dart';
-import '../../library_sources/domain/index_run.dart';
+import '../../indexing/application/index_runs_state.dart';
+import '../../indexing/domain/index_run.dart';
 import '../domain/catalog_file.dart';
 import '../domain/index_run_summary.dart';
 import '../domain/listing_view.dart';

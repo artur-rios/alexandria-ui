@@ -358,155 +358,16 @@
   "@changeCredentialsRejected": {
     "description": "UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched."
   },
-  "librarySourcesOpen": "Library folders",
-  "@librarySourcesOpen": {
-    "description": "The action in preferences that opens the library-folders screen (UC-05)."
-  },
-  "librarySourcesTitle": "Library folders",
-  "@librarySourcesTitle": {
-    "description": "Title of the library-folders screen (UC-05)."
-  },
-  "librarySourcesEmptyTitle": "No library folders yet",
-  "@librarySourcesEmptyTitle": {
-    "description": "Heading of the first-run guidance shown whenever no folder is registered (FR-LB-11, UC-05 main flow step 1)."
-  },
-  "librarySourcesEmptyBody": "Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.",
-  "@librarySourcesEmptyBody": {
-    "description": "Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06)."
-  },
-  "librarySourcesClose": "Close the library folders",
-  "@librarySourcesClose": {
-    "description": "Closes the full-screen library-folders dialog. Its own word rather than the generic Cancel, which a folder's own row now uses for abandoning a run — the two must never read as the same action."
-  },
-  "librarySourcesAdd": "Add a folder",
-  "@librarySourcesAdd": {
-    "description": "The action that opens the platform's native folder picker (FR-LB-01)."
-  },
-  "librarySourcesMissing": "There is no folder at {path}. Nothing was added.",
-  "@librarySourcesMissing": {
-    "description": "UC-05 AF-02: the chosen path does not exist.",
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
-  "librarySourcesUnreadable": "The folder at {path} cannot be read. Nothing was added.",
-  "@librarySourcesUnreadable": {
-    "description": "UC-05 AF-02: the folder exists but its contents cannot be listed.",
-    "placeholders": {
-      "path": {
-        "type": "String"
-      }
-    }
-  },
-  "librarySourcesAlreadyRegistered": "That folder is already in your library.",
-  "@librarySourcesAlreadyRegistered": {
-    "description": "UC-05 AF-03: the chosen folder is already registered. The existing entry is highlighted in the list."
-  },
-  "librarySourcesOverlapTitle": "These folders overlap",
-  "@librarySourcesOverlapTitle": {
-    "description": "Title of the confirmation shown when the chosen folder contains, or sits inside, one already registered (UC-05 AF-04)."
-  },
-  "librarySourcesOverlapBody": "{path} overlaps {existing}, which is already in your library. Files inside both will be cataloged once for each folder.",
-  "@librarySourcesOverlapBody": {
-    "description": "Body of the overlap confirmation. Names both folders and states the consequence the owner is agreeing to (UC-05 AF-04).",
-    "placeholders": {
-      "path": {
-        "type": "String"
-      },
-      "existing": {
-        "type": "String"
-      }
-    }
-  },
-  "librarySourcesOverlapConfirm": "Add it anyway",
-  "@librarySourcesOverlapConfirm": {
-    "description": "The confirming action on the overlap warning (UC-05 AF-04)."
-  },
-  "indexScopeTitle": "What is in this folder?",
-  "@indexScopeTitle": {
-    "description": "Title of the dialog asking which kinds of file an index of the folder being registered should record (UC-05)."
-  },
-  "indexScopeBody": "Alexandria will catalog only the kinds of file you choose here. A folder of ebooks scoped to books keeps their cover images out of your images.",
-  "@indexScopeBody": {
-    "description": "Body of the scope dialog. Names the symptom the choice solves rather than restating the control (UC-05)."
-  },
-  "indexScopeAll": "All supported files",
-  "@indexScopeAll": {
-    "description": "The scope dialog's default: every type the core supports, which is also what a folder registered before this choice existed keeps (UC-05)."
-  },
-  "indexScopeConfirm": "Add the folder",
-  "@indexScopeConfirm": {
-    "description": "The confirming action on the scope dialog. Registering the folder is what it does, so that is what it says (UC-05)."
-  },
-  "indexScopeEmpty": "Choose at least one kind of file, or all of them.",
-  "@indexScopeEmpty": {
-    "description": "Shown when every kind has been unticked. A folder scoped to nothing would record nothing, so the confirming action is unavailable until something is chosen (UC-05)."
-  },
-  "librarySourcesScopeUnreadable": "Covers file types this version does not recognize",
-  "@librarySourcesScopeUnreadable": {
-    "description": "What a registered folder covers when its stored types name nothing this version knows — a record from a newer build, or a type since renamed. Shown on its row instead of a type list, because reading it as 'all supported files' would state the opposite of what the owner chose (UC-05, FR-LB-03)."
-  },
-  "librarySourcesStartUnreadableScope": "This folder is set to cover file types this version does not recognize, so it was not scanned. Remove it and add it again to choose what it covers.",
-  "@librarySourcesStartUnreadableScope": {
-    "description": "UC-06: the run was refused before the core was called, because an unreadable scope would have been sent as no scope at all — which the core reads as every type. Says what to do about it (UC-05, UC-08)."
-  },
-  "librarySourcesStartNotRegistered": "This folder is no longer in your library, so it was not scanned.",
-  "@librarySourcesStartNotRegistered": {
-    "description": "UC-06: the run was refused because no registered folder answers this path — most likely one unregistered while the row was still on screen. Nothing was scanned."
-  },
-  "librarySourcesScopeAll": "All supported files",
-  "@librarySourcesScopeAll": {
-    "description": "What a registered folder with no scope covers, on its row in the list (UC-05, FR-LB-03)."
-  },
-  "librarySourcesScopeOnly": "Only {types}",
-  "@librarySourcesScopeOnly": {
-    "description": "What a scoped folder covers, on its row in the list. {types} is the chosen type names, already joined (UC-05, FR-LB-03).",
-    "placeholders": {
-      "types": {
-        "type": "String"
-      }
-    }
-  },
-  "fileTypeVideo": "Video",
-  "@fileTypeVideo": {
-    "description": "The core's `video` type, named for the owner (FR-CT-02)."
-  },
-  "fileTypeDocument": "Books",
-  "@fileTypeDocument": {
-    "description": "The core's `document` type, named for the owner (FR-CT-02)."
-  },
-  "fileTypeComic": "Comic books",
-  "@fileTypeComic": {
-    "description": "The core's `comic` type, named for the owner (FR-CT-02)."
-  },
-  "fileTypeText": "Notes",
-  "@fileTypeText": {
-    "description": "The core's `text` type, named for the owner (FR-CT-02)."
-  },
-  "fileTypeHtml": "Saved pages",
-  "@fileTypeHtml": {
-    "description": "The core's `html` type, named for the owner (FR-CT-02)."
-  },
-  "fileTypeImage": "Images",
-  "@fileTypeImage": {
-    "description": "The core's `image` type, named for the owner (FR-CT-02)."
-  },
   "dismiss": "Dismiss",
   "@dismiss": {
     "description": "Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action."
   },
-  "librarySourcesRescan": "Rescan",
-  "@librarySourcesRescan": {
-    "description": "The per-folder action offered by a row with no run in flight and nothing left over from one — its job now that the first scan after registering happens on its own (UC-06)."
-  },
-  "librarySourcesIndexing": "Scanning…",
-  "@librarySourcesIndexing": {
+  "libraryRunStarting": "Scanning…",
+  "@libraryRunStarting": {
     "description": "Shown while a run is in flight. The scan belongs to the core, so the rest of the application stays usable (FR-LB-07)."
   },
-  "librarySourcesRunComplete": "Scanned {scanned} files, cataloged {indexed}, skipped {skipped}.",
-  "@librarySourcesRunComplete": {
+  "libraryRunComplete": "Scanned {scanned} files, cataloged {indexed}, skipped {skipped}.",
+  "@libraryRunComplete": {
     "description": "UC-06 main flow step 5: a finished run's tally. These are the core's own counts for an index run.",
     "placeholders": {
       "scanned": {
@@ -520,8 +381,8 @@
       }
     }
   },
-  "librarySourcesRunFailedCount": "{failed} files could not be read, and are not in your library. Re-scanning tries them again.",
-  "@librarySourcesRunFailedCount": {
+  "libraryRunFailedCount": "{failed} files could not be read, and are not in your library. Re-scanning tries them again.",
+  "@libraryRunFailedCount": {
     "description": "Appended to a run's outcome when the core reports files it failed on.",
     "placeholders": {
       "failed": {
@@ -529,85 +390,52 @@
       }
     }
   },
-  "librarySourcesRunFailed": "The scan did not finish.",
-  "@librarySourcesRunFailed": {
+  "libraryRunFailed": "The scan did not finish.",
+  "@libraryRunFailed": {
     "description": "UC-06: the core reports the run as failed."
   },
-  "librarySourcesRunCancelled": "The scan was cancelled.",
-  "@librarySourcesRunCancelled": {
+  "libraryRunCancelled": "The scan was cancelled.",
+  "@libraryRunCancelled": {
     "description": "FR-FC-30: a run the owner abandoned. The core keeps a cancelled run's tally, so without this the outcome falls through to the completion line and tells the owner the scan finished."
   },
-  "librarySourcesRunPaused": "The scan is paused. It can be resumed from where it left off.",
-  "@librarySourcesRunPaused": {
+  "libraryRunPaused": "The scan is paused. It can be resumed from where it left off.",
+  "@libraryRunPaused": {
     "description": "UC-06 AF-05: a run the application was closed on comes back paused, not failed — it is resumable, which is a different fact from an interruption and deserves different words."
   },
-  "librarySourcesRunRefused": "A scan of this folder is already running.",
-  "@librarySourcesRunRefused": {
-    "description": "UC-06 AF-01: a second run is refused while one is in flight (FR-LB-09)."
-  },
-  "librarySourcesStartFailed": "This folder could not be scanned.",
-  "@librarySourcesStartFailed": {
-    "description": "UC-06 AF-02 and AF-03: the core refused to start the run. The reason from the core follows."
-  },
-  "librarySourcesUnregister": "Remove",
-  "@librarySourcesUnregister": {
-    "description": "The action that unregisters a library folder (UC-08 main flow step 1)."
-  },
-  "librarySourcesUnregisterTitle": "Remove {label} from your library folders?",
-  "@librarySourcesUnregisterTitle": {
-    "description": "Title of the unregister confirmation (UC-08 main flow step 2).",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "librarySourcesUnregisterBody": "Alexandria will stop scanning this folder. Everything already cataloged from it stays in your library, and nothing on disk is touched.",
-  "@librarySourcesUnregisterBody": {
-    "description": "Body of the unregister confirmation. FR-LB-10 requires it state that catalog records and on-disk files are left untouched (BR-12)."
-  },
-  "librarySourcesUnregisterConfirm": "Remove the folder",
-  "@librarySourcesUnregisterConfirm": {
-    "description": "The confirming action on the unregister confirmation."
-  },
-  "librarySourcesUnregisterRefused": "This folder is being scanned. It can be removed once the scan finishes.",
-  "@librarySourcesUnregisterRefused": {
-    "description": "UC-08 AF-02: a folder with a run in flight is refused until the run settles."
-  },
-  "librarySourcesRecheck": "Re-check library",
-  "@librarySourcesRecheck": {
+  "libraryRefreshAll": "Re-check all libraries",
+  "@libraryRefreshAll": {
     "description": "The catalog-wide action that re-checks everything already cataloged, across every folder at once — distinct from a per-folder Rescan (UC-07 main flow step 1, FR-LB-06)."
   },
-  "librarySourcesPause": "Pause",
-  "@librarySourcesPause": {
+  "libraryRunPause": "Pause",
+  "@libraryRunPause": {
     "description": "Pauses a folder's own running scan from its row (FR-FC-28)."
   },
-  "librarySourcesResume": "Resume",
-  "@librarySourcesResume": {
+  "libraryRunResume": "Resume",
+  "@libraryRunResume": {
     "description": "Picks a folder's own paused scan back up from its row (FR-FC-29)."
   },
-  "librarySourcesCancelRun": "Cancel",
-  "@librarySourcesCancelRun": {
+  "libraryRunCancel": "Cancel",
+  "@libraryRunCancel": {
     "description": "Abandons a folder's own scan for good from its row (FR-FC-30). Terminal and not resumable, unlike pause, which is why it confirms first."
   },
-  "librarySourcesCancelRunTitle": "Cancel this scan?",
-  "@librarySourcesCancelRunTitle": {
+  "libraryRunCancelTitle": "Cancel this scan?",
+  "@libraryRunCancelTitle": {
     "description": "Title of the cancel-run confirmation (FR-FC-30, FR-UX-10)."
   },
-  "librarySourcesCancelRunConfirm": "This scan cannot be resumed once cancelled. Everything it has already cataloged stays in your library.",
-  "@librarySourcesCancelRunConfirm": {
+  "libraryRunCancelConfirm": "This scan cannot be resumed once cancelled. Everything it has already cataloged stays in your library.",
+  "@libraryRunCancelConfirm": {
     "description": "Body of the cancel-run confirmation: states that cancelling is final, and that what the run already cataloged is not undone."
   },
-  "librarySourcesCancelRunAction": "Cancel the scan",
-  "@librarySourcesCancelRunAction": {
+  "libraryRunCancelAction": "Cancel the scan",
+  "@libraryRunCancelAction": {
     "description": "The confirming action on the cancel-run confirmation, distinct from the dialog's own decline button so the two are never mistaken for each other."
   },
-  "librarySourcesRefreshing": "Re-checking the catalog…",
-  "@librarySourcesRefreshing": {
+  "libraryRefreshing": "Re-checking the catalog…",
+  "@libraryRefreshing": {
     "description": "Shown while a refresh is in flight (UC-07 main flow step 3)."
   },
-  "librarySourcesRefreshComplete": "{refreshed} files updated, {unchanged} unchanged, {missing} now missing.",
-  "@librarySourcesRefreshComplete": {
+  "libraryRefreshComplete": "{refreshed} files updated, {unchanged} unchanged, {missing} now missing.",
+  "@libraryRefreshComplete": {
     "description": "UC-07 main flow step 4: a finished refresh's tally, in the core's own counts for a refresh run.",
     "placeholders": {
       "refreshed": {
@@ -621,16 +449,16 @@
       }
     }
   },
-  "librarySourcesRefreshRunning": "The catalog is already being re-checked.",
-  "@librarySourcesRefreshRunning": {
+  "libraryRefreshRunning": "The catalog is already being re-checked.",
+  "@libraryRefreshRunning": {
     "description": "UC-07 AF-01: a second refresh is refused while one is in flight."
   },
-  "librarySourcesRefreshEmpty": "There is nothing cataloged yet. Add a folder and index it first.",
-  "@librarySourcesRefreshEmpty": {
+  "libraryRefreshEmpty": "There is nothing cataloged yet. Add a library first.",
+  "@libraryRefreshEmpty": {
     "description": "UC-07 AF-02: the catalog is empty, so registering and indexing a folder is offered instead of a refresh (UC-05, UC-06)."
   },
-  "librarySourcesRefreshFailed": "The catalog could not be re-checked.",
-  "@librarySourcesRefreshFailed": {
+  "libraryRefreshFailed": "The catalog could not be re-checked.",
+  "@libraryRefreshFailed": {
     "description": "UC-07: the core refused to start the refresh."
   },
   "destinationVideos": "Videos",
@@ -1590,23 +1418,6 @@
       }
     }
   },
-  "indexScopeAsLibrary": "Keep this folder together as a library",
-  "@indexScopeAsLibrary": {
-    "description": "Libraries design: marks a source folder as a library at registration, which is the same question as the type scope above — what is this folder."
-  },
-  "indexScopeAsLibraryBody": "Its files are browsed in their folders here instead of appearing in the type panels. Search still finds them.",
-  "@indexScopeAsLibraryBody": {
-    "description": "Says what marking hides, at the moment of marking — it empties part of a type panel and that is not visible until afterwards."
-  },
-  "librarySourcesIsLibrary": "Library: {name}",
-  "@librarySourcesIsLibrary": {
-    "description": "Libraries design: badges a source folder whose files are browsed as a library instead of appearing in the type panels.",
-    "placeholders": { "name": { "type": "String" } }
-  },
-  "librarySourcesMarkAsLibrary": "Mark as a library",
-  "@librarySourcesMarkAsLibrary": {
-    "description": "Libraries design: marks a folder registered before the question was asked, without re-registering it."
-  },
   "libraryMove": "The folder moved",
   "@libraryMove": {
     "description": "Libraries design FR-FC-41: corrects a library's root after its folder moved on disk, taking its files with it."
@@ -1618,7 +1429,11 @@
   "searchInLibrary": "In {name}",
   "@searchInLibrary": {
     "description": "Libraries design: marks a search hit that lives in a library, which is why it is absent from the panel for its type.",
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "searchInALibrary": "In a library",
   "@searchInALibrary": {
@@ -1652,13 +1467,13 @@
   "@runFailuresOpen": {
     "description": "Opens the list from the run report that names the count."
   },
-  "librariesNone": "You have not made a library yet. Add one with the button above \u2014 a folder becomes a library, and its files are shown there instead of in the type panels.",
+  "librariesNone": "You have no libraries yet. Add a folder as a library with the button above, and Alexandria indexes it.",
   "@librariesNone": {
-    "description": "Libraries design: no folder has been made into a library yet. A state, not a failure \u2014 and it points at the button on this screen rather than at another one."
+    "description": "Shown when there are no libraries."
   },
-  "librariesExplanation": "A library keeps a folder's files together and in their folders — a course, with each class's recording and handouts side by side. Its files are shown here instead of in the type panels, so they do not bury everything else. Search still finds them.",
+  "librariesExplanation": "A library is a folder Alexandria indexes, with its folders kept as they are. Adding one is how files get into Alexandria: everything you browse, play, or read comes from your libraries.",
   "@librariesExplanation": {
-    "description": "Says what a library does and, crucially, what it hides: marking a folder empties part of a type panel and that is not visible until afterwards."
+    "description": "What a library is, said above the list of libraries."
   },
   "libraryNameLabel": "Library name",
   "@libraryNameLabel": {
@@ -1668,18 +1483,22 @@
   "@libraryAdd": {
     "description": "Opens the folder picker to mark a folder as a library."
   },
-  "libraryScan": "Scan this folder",
+  "libraryScan": "Scan again",
   "@libraryScan": {
-    "description": "Libraries design: indexes the library's folder, which is what puts its files in the catalog and so in the library. Offered on the row because an empty library is seen here, and the remedy used to be on another screen entirely."
+    "description": "Tooltip of the button that scans a library's folder again."
   },
   "libraryRemove": "Remove this library",
   "@libraryRemove": {
     "description": "Stops treating the folder as a library."
   },
-  "libraryRemoveMessage": "Remove {name}? Its files go back to the type panels — nothing on disk is touched and nothing is deleted.",
+  "libraryRemoveMessage": "Remove {name}? It is deleted from the catalog with its files, their reading and watching positions, and their place in collections. Nothing on disk is touched.",
   "@libraryRemoveMessage": {
-    "description": "The confirmation. Says the files come back, because removing must not read as discarding them.",
-    "placeholders": { "name": { "type": "String" } }
+    "description": "The confirmation before a library is removed. Removing deletes its catalog records.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "libraryEmptyRoot": "Nothing under this folder has been indexed yet. Scan it from the libraries list, and what it holds will appear here.",
   "@libraryEmptyRoot": {
@@ -2356,10 +2175,38 @@
   },
   "destinationLibraries": "Libraries",
   "@destinationLibraries": {
-    "description": "Navigation panel entry for the registered libraries \u2014 folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it."
+    "description": "Navigation panel entry for the registered libraries — folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it."
   },
-  "libraryAlreadyOne": "That folder is already a library.",
-  "@libraryAlreadyOne": {
-    "description": "Libraries design: the owner picked a folder that is a library already. Said rather than silently doing nothing, because the button would otherwise look broken \u2014 the library is in the list behind the dialog."
+  "libraryRemovePausedNote": "Its paused scan is discarded too.",
+  "@libraryRemovePausedNote": {
+    "description": "Added to the remove confirmation when the library has a paused scan."
+  },
+  "libraryScanConflict": "This library already has an unfinished scan. Resume or cancel it first.",
+  "@libraryScanConflict": {
+    "description": "Said when a scan is asked for while the library already has a running or paused one."
+  },
+  "libraryScanFailed": "This library could not be scanned.",
+  "@libraryScanFailed": {
+    "description": "Said before the reason when the core refused to scan a library."
+  },
+  "libraryRunProgress": "Scanning… {processed} of {total}",
+  "@libraryRunProgress": {
+    "description": "A library's running scan, once it has counted its files.",
+    "placeholders": {
+      "processed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryMenuLibraries": "Libraries",
+  "@libraryMenuLibraries": {
+    "description": "Library menu entry that opens the libraries."
+  },
+  "libraryMenuAdd": "Add library…",
+  "@libraryMenuAdd": {
+    "description": "Library menu entry that adds a folder as a library."
   }
 }

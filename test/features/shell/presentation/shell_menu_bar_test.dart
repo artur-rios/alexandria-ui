@@ -66,14 +66,23 @@ void main() {
         await openLibrary(tester);
 
         for (final label in [
-          l10n.librarySourcesOpen,
+          l10n.libraryMenuLibraries,
+          l10n.libraryMenuAdd,
           l10n.collectionsOpen,
           l10n.watchlistsOpen,
           l10n.readingListsOpen,
           l10n.deletedItemsOpen,
           l10n.missingFilesOpen,
         ]) {
-          expect(find.text(label), findsOneWidget, reason: label);
+          // In the menu: "Libraries" is also the navigation panel's label.
+          expect(
+            find.descendant(
+              of: find.byType(MenuItemButton),
+              matching: find.text(label),
+            ),
+            findsOneWidget,
+            reason: label,
+          );
         }
       },
     );

@@ -8,7 +8,7 @@ import '../../catalog/domain/catalog_search.dart';
 import '../../catalog/presentation/catalog_listing.dart';
 import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
-import '../../libraries/presentation/library_tree_screen.dart';
+import '../../libraries/presentation/libraries_view.dart';
 import '../../organization/presentation/bookmarks_view.dart';
 import '../domain/shell_destination.dart';
 import 'background_activity_strip.dart';

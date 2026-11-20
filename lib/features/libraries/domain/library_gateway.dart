@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
-import '../../library_sources/domain/run_priority.dart';
+import '../../indexing/domain/run_priority.dart';
 import 'library.dart';
 
 part 'library_gateway.freezed.dart';

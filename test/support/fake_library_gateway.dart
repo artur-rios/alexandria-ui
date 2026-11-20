@@ -2,7 +2,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
-import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
+import 'package:alexandria_ui/features/indexing/domain/run_priority.dart';
 
 /// A [LibraryGateway] that never reaches the core (Testing Specification
 /// §2.3).

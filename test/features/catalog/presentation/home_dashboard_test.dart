@@ -6,8 +6,7 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/catalog/presentation/home_dashboard.dart';
-import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
-import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/tracking/domain/reading_list.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist.dart';
@@ -19,7 +18,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
-import '../../../support/fake_library_sources.dart';
+import '../../../support/fake_folder_picker.dart';
 import '../../../support/fake_reading_list_gateway.dart';
 import '../../../support/fake_watchlist_gateway.dart';
 import '../../../support/in_memory_settings_store.dart';
@@ -56,19 +55,9 @@ void main() {
         ),
         if (indexGateway != null)
           indexGatewayProvider.overrideWithValue(indexGateway),
-        // The folder these tests scan has to be registered, because a run
-        // reads its scope from the store and is refused outright when no
-        // source answers the path (UC-05). A dashboard showing a run over a
-        // folder nobody registered was never a reachable state.
-        librarySourceStoreProvider.overrideWithValue(
-          InMemoryLibrarySourceStore([
-            LibrarySource(
-              path: '/home/owner/music',
-              label: 'music',
-              registeredAt: DateTime.utc(2026, 8, 19, 10, 30),
-            ),
-          ]),
-        ),
+        // The empty dashboard offers to add a library; cancelling the picker
+        // it opens keeps a test that presses it off the platform channel.
+        folderPickerProvider.overrideWithValue(FakeFolderPicker()),
         watchlistGatewayProvider.overrideWithValue(
           FakeWatchlistGateway(watchlists: watchlists),
         ),
@@ -212,7 +201,7 @@ void main() {
       await tester.tap(find.text(l10n.catalogEmptyAddFolder));
       await tester.pumpAndSettle();
 
-      expect(find.byType(LibrarySourcesScreen), findsOneWidget);
+      expect(find.byType(LibrariesView), findsOneWidget);
     });
   });
 
@@ -389,7 +378,7 @@ void main() {
 
       await container
           .read(indexRunsControllerProvider.notifier)
-          .startIndex('/home/owner/music');
+          .startLibraryIndex('lib-1');
       await tester.pump();
 
       expect(find.text(l10n.dashboardLastRunRunning), findsOneWidget);
@@ -409,7 +398,7 @@ void main() {
 
       await container
           .read(indexRunsControllerProvider.notifier)
-          .startIndex('/home/owner/music');
+          .startLibraryIndex('lib-1');
       await tester.pumpAndSettle();
 
       final l10n = AppLocalizations.of(

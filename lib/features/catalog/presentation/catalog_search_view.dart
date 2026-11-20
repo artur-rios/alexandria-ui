@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../library_sources/presentation/library_sources_screen.dart';
+import '../../libraries/presentation/libraries_view.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../application/search_controller.dart';
 import '../domain/catalog_search.dart';
@@ -315,11 +315,11 @@ class _NoMatches extends StatelessWidget {
 }
 
 /// The catalog holds nothing to search (AF-04).
-class _NothingCatalogued extends StatelessWidget {
+class _NothingCatalogued extends ConsumerWidget {
   const _NothingCatalogued();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
@@ -344,7 +344,7 @@ class _NothingCatalogued extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
-              onPressed: () => LibrarySourcesScreen.show(context),
+              onPressed: () => openLibrariesAndAdd(context, ref),
               icon: const Icon(Icons.folder_outlined),
               label: Text(l10n.catalogEmptyAddFolder),
             ),

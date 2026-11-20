@@ -287,205 +287,70 @@ class AppLocalizationsPt extends AppLocalizations {
       'A alteração foi recusada, e seu e-mail e senha continuam os mesmos.';
 
   @override
-  String get librarySourcesOpen => 'Pastas da biblioteca';
-
-  @override
-  String get librarySourcesTitle => 'Pastas da biblioteca';
-
-  @override
-  String get librarySourcesEmptyTitle => 'Nenhuma pasta da biblioteca ainda';
-
-  @override
-  String get librarySourcesEmptyBody =>
-      'Adicione uma pasta do seu disco e o Alexandria vai catalogar o que houver dentro dela. Nada é movido, copiado ou alterado.';
-
-  @override
-  String get librarySourcesClose => 'Fechar as pastas da biblioteca';
-
-  @override
-  String get librarySourcesAdd => 'Adicionar uma pasta';
-
-  @override
-  String librarySourcesMissing(String path) {
-    return 'Não há nenhuma pasta em $path. Nada foi adicionado.';
-  }
-
-  @override
-  String librarySourcesUnreadable(String path) {
-    return 'A pasta em $path não pode ser lida. Nada foi adicionado.';
-  }
-
-  @override
-  String get librarySourcesAlreadyRegistered =>
-      'Essa pasta já está na sua biblioteca.';
-
-  @override
-  String get librarySourcesOverlapTitle => 'Estas pastas se sobrepõem';
-
-  @override
-  String librarySourcesOverlapBody(String path, String existing) {
-    return '$path se sobrepõe a $existing, que já está na sua biblioteca. Os arquivos dentro das duas serão catalogados uma vez para cada pasta.';
-  }
-
-  @override
-  String get librarySourcesOverlapConfirm => 'Adicionar mesmo assim';
-
-  @override
-  String get indexScopeTitle => 'O que há nesta pasta?';
-
-  @override
-  String get indexScopeBody =>
-      'O Alexandria vai catalogar apenas os tipos de arquivo que você escolher aqui. Uma pasta de e-books limitada a livros mantém as capas fora das suas imagens.';
-
-  @override
-  String get indexScopeAll => 'Todos os arquivos suportados';
-
-  @override
-  String get indexScopeConfirm => 'Adicionar a pasta';
-
-  @override
-  String get indexScopeEmpty =>
-      'Escolha ao menos um tipo de arquivo, ou todos eles.';
-
-  @override
-  String get librarySourcesScopeUnreadable =>
-      'Abrange tipos de arquivo que esta versão não reconhece';
-
-  @override
-  String get librarySourcesStartUnreadableScope =>
-      'Esta pasta está definida para abranger tipos de arquivo que esta versão não reconhece, então ela não foi analisada. Remova-a e adicione-a novamente para escolher o que ela abrange.';
-
-  @override
-  String get librarySourcesStartNotRegistered =>
-      'Esta pasta não está mais na sua biblioteca, então ela não foi analisada.';
-
-  @override
-  String get librarySourcesScopeAll => 'Todos os arquivos suportados';
-
-  @override
-  String librarySourcesScopeOnly(String types) {
-    return 'Somente $types';
-  }
-
-  @override
-  String get fileTypeVideo => 'Vídeo';
-
-  @override
-  String get fileTypeDocument => 'Livros';
-
-  @override
-  String get fileTypeComic => 'Quadrinhos';
-
-  @override
-  String get fileTypeText => 'Notas';
-
-  @override
-  String get fileTypeHtml => 'Páginas salvas';
-
-  @override
-  String get fileTypeImage => 'Imagens';
-
-  @override
   String get dismiss => 'Dispensar';
 
   @override
-  String get librarySourcesRescan => 'Reanalisar';
+  String get libraryRunStarting => 'Analisando…';
 
   @override
-  String get librarySourcesIndexing => 'Analisando…';
-
-  @override
-  String librarySourcesRunComplete(int scanned, int indexed, int skipped) {
+  String libraryRunComplete(int scanned, int indexed, int skipped) {
     return '$scanned arquivos analisados, $indexed catalogados, $skipped ignorados.';
   }
 
   @override
-  String librarySourcesRunFailedCount(int failed) {
+  String libraryRunFailedCount(int failed) {
     return '$failed arquivos não puderam ser lidos e não estão na sua biblioteca. Uma nova varredura tenta novamente.';
   }
 
   @override
-  String get librarySourcesRunFailed => 'A análise não foi concluída.';
+  String get libraryRunFailed => 'A análise não foi concluída.';
 
   @override
-  String get librarySourcesRunCancelled => 'A análise foi cancelada.';
+  String get libraryRunCancelled => 'A análise foi cancelada.';
 
   @override
-  String get librarySourcesRunPaused =>
+  String get libraryRunPaused =>
       'A análise está pausada. Ela pode ser retomada de onde parou.';
 
   @override
-  String get librarySourcesRunRefused =>
-      'Já existe uma análise desta pasta em andamento.';
+  String get libraryRefreshAll => 'Reverificar todas as bibliotecas';
 
   @override
-  String get librarySourcesStartFailed =>
-      'Não foi possível analisar esta pasta.';
+  String get libraryRunPause => 'Pausar';
 
   @override
-  String get librarySourcesUnregister => 'Remover';
+  String get libraryRunResume => 'Retomar';
 
   @override
-  String librarySourcesUnregisterTitle(String label) {
-    return 'Remover $label das pastas da biblioteca?';
-  }
+  String get libraryRunCancel => 'Cancelar';
 
   @override
-  String get librarySourcesUnregisterBody =>
-      'O Alexandria vai parar de analisar esta pasta. Tudo o que já foi catalogado a partir dela continua na sua biblioteca, e nada no disco é alterado.';
+  String get libraryRunCancelTitle => 'Cancelar esta análise?';
 
   @override
-  String get librarySourcesUnregisterConfirm => 'Remover a pasta';
-
-  @override
-  String get librarySourcesUnregisterRefused =>
-      'Esta pasta está sendo analisada. Ela pode ser removida quando a análise terminar.';
-
-  @override
-  String get librarySourcesRecheck => 'Reverificar biblioteca';
-
-  @override
-  String get librarySourcesPause => 'Pausar';
-
-  @override
-  String get librarySourcesResume => 'Retomar';
-
-  @override
-  String get librarySourcesCancelRun => 'Cancelar';
-
-  @override
-  String get librarySourcesCancelRunTitle => 'Cancelar esta análise?';
-
-  @override
-  String get librarySourcesCancelRunConfirm =>
+  String get libraryRunCancelConfirm =>
       'Esta análise não pode ser retomada depois de cancelada. Tudo o que ela já catalogou continua na sua biblioteca.';
 
   @override
-  String get librarySourcesCancelRunAction => 'Cancelar a análise';
+  String get libraryRunCancelAction => 'Cancelar a análise';
 
   @override
-  String get librarySourcesRefreshing => 'Reverificando o catálogo…';
+  String get libraryRefreshing => 'Reverificando o catálogo…';
 
   @override
-  String librarySourcesRefreshComplete(
-    int refreshed,
-    int unchanged,
-    int missing,
-  ) {
+  String libraryRefreshComplete(int refreshed, int unchanged, int missing) {
     return '$refreshed arquivos atualizados, $unchanged sem alteração, $missing agora ausentes.';
   }
 
   @override
-  String get librarySourcesRefreshRunning =>
-      'O catálogo já está sendo reverificado.';
+  String get libraryRefreshRunning => 'O catálogo já está sendo reverificado.';
 
   @override
-  String get librarySourcesRefreshEmpty =>
-      'Ainda não há nada catalogado. Adicione uma pasta e indexe-a primeiro.';
+  String get libraryRefreshEmpty =>
+      'Ainda não há nada catalogado. Adicione uma biblioteca primeiro.';
 
   @override
-  String get librarySourcesRefreshFailed =>
-      'Não foi possível reverificar o catálogo.';
+  String get libraryRefreshFailed => 'Não foi possível reverificar o catálogo.';
 
   @override
   String get destinationVideos => 'Vídeos';
@@ -1192,22 +1057,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get indexScopeAsLibrary =>
-      'Manter esta pasta junta como uma biblioteca';
-
-  @override
-  String get indexScopeAsLibraryBody =>
-      'Seus arquivos são navegados em suas pastas aqui, em vez de aparecerem nos painéis por tipo. A busca continua encontrando-os.';
-
-  @override
-  String librarySourcesIsLibrary(String name) {
-    return 'Biblioteca: $name';
-  }
-
-  @override
-  String get librarySourcesMarkAsLibrary => 'Marcar como biblioteca';
-
-  @override
   String get libraryMove => 'A pasta foi movida';
 
   @override
@@ -1243,11 +1092,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get librariesNone =>
-      'Você ainda não criou uma biblioteca. Crie uma com o botão acima — uma pasta vira uma biblioteca, e seus arquivos aparecem lá em vez de nos painéis por tipo.';
+      'Você ainda não tem bibliotecas. Adicione uma pasta como biblioteca com o botão acima, e o Alexandria a indexa.';
 
   @override
   String get librariesExplanation =>
-      'Uma biblioteca mantém os arquivos de uma pasta juntos e em suas pastas — um curso, com a gravação e os materiais de cada aula lado a lado. Seus arquivos aparecem aqui em vez de nos painéis por tipo, para não soterrar o resto. A busca continua encontrando-os.';
+      'Uma biblioteca é uma pasta que o Alexandria indexa, mantendo suas pastas como estão. Adicionar uma é como os arquivos entram no Alexandria: tudo o que você navega, reproduz ou lê vem das suas bibliotecas.';
 
   @override
   String get libraryNameLabel => 'Nome da biblioteca';
@@ -1256,14 +1105,14 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryAdd => 'Adicionar uma biblioteca';
 
   @override
-  String get libraryScan => 'Varrer esta pasta';
+  String get libraryScan => 'Analisar novamente';
 
   @override
   String get libraryRemove => 'Remover esta biblioteca';
 
   @override
   String libraryRemoveMessage(String name) {
-    return 'Remover $name? Os arquivos voltam para os painéis por tipo — nada no disco é tocado e nada é excluído.';
+    return 'Remover $name? Ela é excluída do catálogo com seus arquivos, as posições de leitura e de reprodução deles e o lugar deles nas coleções. Nada no disco é tocado.';
   }
 
   @override
@@ -1797,5 +1646,24 @@ class AppLocalizationsPt extends AppLocalizations {
   String get destinationLibraries => 'Bibliotecas';
 
   @override
-  String get libraryAlreadyOne => 'Essa pasta já é uma biblioteca.';
+  String get libraryRemovePausedNote =>
+      'A análise pausada também é descartada.';
+
+  @override
+  String get libraryScanConflict =>
+      'Esta biblioteca já tem uma análise não concluída. Retome-a ou cancele-a primeiro.';
+
+  @override
+  String get libraryScanFailed => 'Não foi possível analisar esta biblioteca.';
+
+  @override
+  String libraryRunProgress(int processed, int total) {
+    return 'Analisando… $processed de $total';
+  }
+
+  @override
+  String get libraryMenuLibraries => 'Bibliotecas';
+
+  @override
+  String get libraryMenuAdd => 'Adicionar biblioteca…';
 }

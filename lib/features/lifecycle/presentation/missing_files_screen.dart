@@ -31,8 +31,13 @@ class MissingFilesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final missing = ref.watch(missingFilesControllerProvider);
-    final sources = ref.watch(librarySourcesControllerProvider).sources;
-    final roots = [for (final source in sources) source.path];
+    // Null until the libraries have been read: a file is not said to be
+    // outside every library on the strength of a list not loaded yet.
+    final roots = ref
+        .watch(librariesControllerProvider)
+        .value
+        ?.map((library) => library.rootPath)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -73,13 +78,12 @@ class MissingFilesScreen extends ConsumerWidget {
                   itemCount: rows.length,
                   itemBuilder: (context, index) => _MissingTile(
                     details: rows[index],
-                    // AF-03: a record from a folder the owner has since
-                    // unregistered is marked as such — it is missing for a
-                    // reason the review can name.
-                    fromUnregisteredFolder: !isUnderRegisteredFolder(
-                      rows[index].file.path,
-                      roots,
-                    ),
+                    // AF-03: a record outside every library — one whose
+                    // library moved away from it — is marked as such: it is
+                    // missing for a reason the review can name.
+                    fromUnregisteredFolder:
+                        roots != null &&
+                        !isUnderRegisteredFolder(rows[index].file.path, roots),
                   ),
                 ),
               ),

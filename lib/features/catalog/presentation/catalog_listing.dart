@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../library_sources/presentation/library_sources_screen.dart';
+import '../../libraries/presentation/libraries_view.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
@@ -457,7 +457,7 @@ class _EmptyListing extends ConsumerWidget {
             if (catalogEmpty && !filtered) ...[
               const SizedBox(height: AppSpacing.lg),
               FilledButton.icon(
-                onPressed: () => LibrarySourcesScreen.show(context),
+                onPressed: () => openLibrariesAndAdd(context, ref),
                 icon: const Icon(Icons.folder_outlined),
                 label: Text(l10n.catalogEmptyAddFolder),
               ),

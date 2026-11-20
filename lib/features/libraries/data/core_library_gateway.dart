@@ -7,7 +7,7 @@ import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/data/file_view_parser.dart';
-import '../../library_sources/domain/run_priority.dart';
+import '../../indexing/domain/run_priority.dart';
 import '../domain/library.dart';
 import '../domain/library_gateway.dart';
 

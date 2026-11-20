@@ -5,7 +5,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/libraries/data/core_library_gateway.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
-import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
+import 'package:alexandria_ui/features/indexing/domain/run_priority.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_core_client.dart';

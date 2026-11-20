@@ -31,9 +31,6 @@ import '../../features/auth/application/sign_up_controller.dart';
 import '../../features/auth/application/sign_up_state.dart';
 import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
-import '../../features/library_sources/application/audio_library_cleanup_activity.dart';
-import '../../features/library_sources/application/library_sources_controller.dart';
-import '../../features/library_sources/application/library_sources_state.dart';
 import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
 import '../../features/catalog/application/in_progress.dart';
@@ -50,20 +47,18 @@ import '../../features/catalog/domain/file_type.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
 import '../../features/catalog/domain/file_name.dart';
-import '../../features/library_sources/application/active_runs_controller.dart';
-import '../../features/library_sources/application/active_runs_state.dart';
-import '../../features/library_sources/application/index_runs_controller.dart';
-import '../../features/library_sources/application/run_failures_controller.dart';
-import '../../features/library_sources/application/index_runs_state.dart';
-import '../../features/library_sources/application/index_session_activity.dart';
-import '../../features/library_sources/data/core_index_gateway.dart';
-import '../../features/library_sources/data/disk_folder_probe.dart';
-import '../../features/library_sources/data/native_folder_picker.dart';
-import '../../features/library_sources/data/settings_library_source_store.dart';
-import '../../features/library_sources/domain/folder_picker.dart';
-import '../../features/library_sources/domain/index_gateway.dart';
-import '../../features/library_sources/domain/index_run.dart';
-import '../../features/library_sources/domain/library_source_store.dart';
+import '../../features/indexing/application/active_runs_controller.dart';
+import '../../features/indexing/application/active_runs_state.dart';
+import '../../features/indexing/application/index_runs_controller.dart';
+import '../../features/indexing/application/run_failures_controller.dart';
+import '../../features/indexing/application/source_list_cleanup_activity.dart';
+import '../../features/indexing/application/index_runs_state.dart';
+import '../../features/indexing/application/index_session_activity.dart';
+import '../../features/indexing/data/core_index_gateway.dart';
+import '../../features/indexing/data/native_folder_picker.dart';
+import '../../features/indexing/domain/folder_picker.dart';
+import '../../features/indexing/domain/index_gateway.dart';
+import '../../features/indexing/domain/index_run.dart';
 import '../../features/shell/application/preferences_controller.dart';
 import '../../features/shell/application/preferences_state.dart';
 import '../../features/shell/application/shell_controller.dart';
@@ -296,33 +291,6 @@ final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 final folderPickerProvider = Provider<FolderPicker>(
   (ref) => const NativeFolderPicker(),
 );
-
-/// Whether a folder on disk exists and can be read (FR-LB-02).
-final folderProbeProvider = Provider<FolderProbe>(
-  (ref) => const DiskFolderProbe(),
-);
-
-/// Where the registered source folders are kept (FR-LB-03).
-///
-/// Reads the settings store the startup sequence loaded, so it is only usable
-/// once startup has reached ready — which is when the shell, and so the
-/// library-sources screen, is reachable.
-final librarySourceStoreProvider = Provider<LibrarySourceStore>((ref) {
-  final settings = _loadedSettings(ref);
-  if (settings == null) {
-    throw StateError(
-      'the library source store was read before settings were loaded',
-    );
-  }
-
-  return SettingsLibrarySourceStore(settings);
-});
-
-/// The registered source folders and the screen that manages them (UC-05).
-final librarySourcesControllerProvider =
-    NotifierProvider<LibrarySourcesController, LibrarySourcesState>(
-      LibrarySourcesController.new,
-    );
 
 /// The core's indexing operations (UC-06).
 final indexGatewayProvider = Provider<IndexGateway>((ref) {
@@ -928,9 +896,11 @@ final sessionActivitiesProvider = Provider<List<SessionActivity>>(
     EditingSessionActivity(ref),
     // Whatever is playing, which sign-out stops (UC-03 main flow step 2).
     PlaybackSessionActivity(ref),
-    // Audio taken out of the tracked folders, and the libraries of the
-    // music-only ones, which need a credential (remove-music design).
-    AudioLibraryCleanupActivity(ref),
+    // The folder list a 0.5 build kept, which the libraries-only core made
+    // meaningless (libraries-only design).
+    SourceListCleanupActivity(
+      () => ref.read(startupControllerProvider.notifier).settings,
+    ),
   ],
 );
 

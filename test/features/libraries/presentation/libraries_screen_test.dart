@@ -4,6 +4,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/libraries/presentation/library_tree_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
