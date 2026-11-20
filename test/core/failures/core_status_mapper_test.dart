@@ -52,6 +52,29 @@ void main() {
       },
     );
 
+    // 0.6.0's library runs: 6 and 7 are an unknown library and a library
+    // that already has an unfinished run. 5 is the older "not now".
+    test('GivenIndexBusy_WhenMapped_ThenInvalidState', () {
+      expect(
+        mapCoreStatus(CoreStatusFamily.indexing, 5),
+        isA<InvalidStateFailure>(),
+      );
+    });
+
+    test('GivenIndexNotFound_WhenMapped_ThenNotFound', () {
+      expect(
+        mapCoreStatus(CoreStatusFamily.indexing, 6),
+        isA<NotFoundFailure>(),
+      );
+    });
+
+    test('GivenIndexConflict_WhenMapped_ThenConflict', () {
+      final failure = mapCoreStatus(CoreStatusFamily.indexing, 7);
+
+      expect(failure, isA<ConflictFailure>());
+      expect(failure.coreStatusCode, 7);
+    });
+
     test('GivenTheCodeFour_WhenItIsMappedAsFile_ThenTheFailureIsNotFound', () {
       expect(mapCoreStatus(CoreStatusFamily.file, 4), isA<NotFoundFailure>());
     });

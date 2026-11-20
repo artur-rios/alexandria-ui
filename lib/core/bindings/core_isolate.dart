@@ -457,45 +457,10 @@ class CoreIsolate {
         }),
       ),
 
-      // The root, the session token, an optional priority and an optional
-      // scope in, a status and a run id out. The run id is a fixed-size array
-      // inside the struct rather than an allocation, so it is read straight
-      // off and there is nothing to free on the way back — only the strings
-      // passed in, which the nesting handles (IR-09, NFR-13).
-      //
-      // priority is passed through withNativeString like everything else
-      // here — its `String?` parameter already turns null into nullptr — and
-      // that distinction matters more for this argument than for most: a
-      // null priority must reach the core as a null pointer, never as the
-      // string "null" or as "", because the core reads an absent priority as
-      // "normal" (see alexandria_index_start's doc comment). An empty string
-      // happens to land in the same branch today, since the core treats any
-      // unrecognised value as absent, but that is a coincidence of the
-      // core's parsing, not a guarantee — passing "" on purpose for "no
-      // priority" would be relying on it.
-      //
-      // types is the run's scope and follows exactly the same reasoning: a
-      // folder with no scope must arrive as a null pointer, not as the string
-      // "null" and not as "". The core documents NULL and "" as the same
-      // absence for this argument, which priority's parsing only happens to
-      // do — but an absent scope is still built as null here, because that is
-      // what "every type" is on both sides of the boundary, and because
-      // anything unrecognised in this argument is INDEX_ERR_INVALID_INPUT
-      // rather than a quiet default.
-      'indexStart' => withNativeString(
-        arguments.first! as String,
-        (root) => withNativeString(arguments[1]! as String, (token) {
-          final result = withNativeString(
-            arguments[2] as String?,
-            (priority) => withNativeString(
-              arguments[3] as String?,
-              (types) =>
-                  bindings.alexandria_index_start(root, token, priority, types),
-            ),
-          );
-          return (status: result.status, runId: _readRunId(result.run_id));
-        }),
-      ),
+      // The 0.6.0 core removed `alexandria_index_start`: a folder is indexed
+      // only by being a library. Answered as the core's "other" until the
+      // callers move to library runs.
+      'indexStart' => (status: INDEX_ERR_OTHER, runId: null),
 
       'indexRunFailures' => withNativeString(
         arguments.first! as String,

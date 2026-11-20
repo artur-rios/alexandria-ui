@@ -28,13 +28,13 @@ FLUTTER_SHA256=6ea2d806fd57269ae783e6788e2a81fc26eaad782f1e0d0ff38623bb765ff9f5
 # The default address is GitHub's read-only mirror of alexandria-api; ALEXANDRIA_API_URL points the scripts at another
 # copy (the Forgejo repository, a local clone).
 #
-# The 0.5 core with the music-removal follow-ups, merged as alexandria-api#140: its migration 26 deletes the run
-# failures earlier runs recorded on audio files, which migration 25 left behind. The version is still 0.5.0 and no
-# export changed; the header differs from the previous pin's (alexandria-api#137, an ancestor of this one) only in one
-# doc comment, re-vendored here. This application accepts `>=0.5.0 <0.6.0`. The pin and the vendored header move
-# together: the drift check in ci/integration.sh is exactly the guard against them moving apart.
+# The 0.6.0 release of the core (tag v0.6.0, the merge of alexandria-api#162): libraries are the only way into the
+# catalog. It removed `alexandria_index_start` and the per-run type scope, added `alexandria_library_index_start`, made
+# `alexandria_library_register` start the library's first run, and brought audio back as playable files. This
+# application accepts `>=0.6.0 <0.7.0`. The pin and the vendored header move together: the drift check in
+# ci/integration.sh is exactly the guard against them moving apart.
 CORE_REPOSITORY=artur-rios/alexandria-api
-CORE_REF=1353826aca82db16d116483646a3c41c5a10f781
+CORE_REF=0e4500bf08039e92a63e48f7d51d351529dad85b
 
 # The Rust toolchain that builds the core (the workflows used dtolnay/rust-toolchain@stable, which was 1.99.1). Jenkins
 # installs it with rustup (RUSTUP_VERSION's rustup-init, checked against RUSTUP_SHA256) in ci/core.sh; the GitHub workflows
