@@ -1,7 +1,7 @@
 # Libraries only, and audio back, in the desktop app
 
 **Date:** 2026-11-20
-**Status:** draft
+**Status:** approved
 **Core:** alexandria-api 0.6.0 (`v0.6.0`, merge commit `0e4500bf08039e92a63e48f7d51d351529dad85b`)
 
 ## Why
