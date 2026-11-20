@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_auth_gateway.dart';
+import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
 
 /// Starting a library's index run and watching it finish (UC-06, FR-LB-05,
@@ -19,12 +20,16 @@ void main() {
 
   ({ProviderContainer ref, FakeIndexGateway gateway}) build({
     FakeIndexGateway? gateway,
+    FakeCatalogGateway? catalog,
   }) {
     final indexGateway = gateway ?? FakeIndexGateway();
 
     final container = ProviderContainer(
       overrides: [
         indexGatewayProvider.overrideWithValue(indexGateway),
+        catalogGatewayProvider.overrideWithValue(
+          catalog ?? FakeCatalogGateway(),
+        ),
         // Long enough that no timer fires during a test: the observation is
         // driven by calling refresh directly.
         runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
@@ -201,6 +206,29 @@ void main() {
       },
     );
   });
+
+  test(
+    'GivenALibraryRunThatFinishesBeforeItIsListed_WhenItSettles_ThenTheCatalogIsReadAgain',
+    () async {
+      // A small first library is done before the active-runs listing ever
+      // sees it running, and that listing is what used to refresh the panels.
+      final catalog = FakeCatalogGateway();
+      final sut = build(
+        gateway: FakeIndexGateway()..readOutcomes = [finishedRun()],
+        catalog: catalog,
+      );
+      sut.ref.listen(typeCountsControllerProvider, (_, _) {});
+      await sut.ref.read(typeCountsControllerProvider.future);
+      final before = catalog.requested.length;
+
+      await sut.ref
+          .read(indexRunsControllerProvider.notifier)
+          .startLibraryIndex(library);
+      await sut.ref.read(typeCountsControllerProvider.future);
+
+      expect(catalog.requested.length, greaterThan(before));
+    },
+  );
 
   group('the core rejects the session (AF-06)', () {
     test(

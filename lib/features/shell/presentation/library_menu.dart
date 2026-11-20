@@ -54,7 +54,7 @@ class LibraryMenu extends ConsumerWidget {
         MenuEntry(
           icon: Icons.create_new_folder_outlined,
           label: l10n.libraryMenuAdd,
-          onSelected: () => openLibrariesAndAdd(context, ref),
+          onSelected: () => openLibrariesAndAdd(ref),
         ),
         MenuEntry(
           icon: Icons.collections_bookmark_outlined,

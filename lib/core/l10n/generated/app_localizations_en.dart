@@ -365,10 +365,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get catalogEmptyFirstRun =>
-      'Your library is empty. Add a folder and index it, and what is inside will appear here.';
-
-  @override
-  String get catalogEmptyAddFolder => 'Library folders';
+      'Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.';
 
   @override
   String get catalogFileMissing => 'Missing from disk';
@@ -1739,4 +1736,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String playerSkipped(String name) {
     return 'Skipped $name: it could not be opened.';
   }
+
+  @override
+  String get libraryRemoveRunning =>
+      'This library is being scanned. Pause or cancel the scan, then remove it.';
 }

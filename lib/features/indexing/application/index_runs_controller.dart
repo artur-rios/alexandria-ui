@@ -8,6 +8,7 @@ import '../../../core/bindings/alexandria_bindings.dart';
 import '../../../core/failures/core_status.dart';
 import '../../../core/failures/failure.dart';
 import '../../auth/application/session_controller.dart';
+import '../../catalog/application/catalog_projections.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
 import 'index_runs_state.dart';
@@ -289,7 +290,14 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     switch (outcome) {
       case IndexRunRead(run: final observed):
         state = state.observed(uuid, observed.copyWith(libraryUuid: uuid));
-        if (observed.status.isTerminal) _stopPollingIfIdle();
+        if (observed.status.isTerminal) {
+          _stopPollingIfIdle();
+          // The run is what filled or changed the catalog, so everything that
+          // shows it reads it again. The active-runs listing does this for
+          // the runs it sees — but a small library's first run is over
+          // before that listing ever lists it.
+          if (!run.status.isTerminal) invalidateCatalogProjections(ref);
+        }
 
       // AF-06: the core rejected the session. Discarding it returns the owner
       // to login, and there is nothing left to poll.

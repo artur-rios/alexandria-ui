@@ -93,6 +93,7 @@ import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/libraries/application/libraries_controller.dart';
+import '../../features/libraries/application/library_add_request.dart';
 import '../../features/libraries/data/core_library_gateway.dart';
 import '../../features/libraries/domain/library.dart';
 import '../../features/libraries/domain/library_gateway.dart';
@@ -865,6 +866,11 @@ final libraryGatewayProvider = Provider<LibraryGateway>((ref) {
 
   return CoreLibraryGateway(core);
 });
+
+/// Adding a library, asked for from a screen the Libraries screen replaces.
+final libraryAddRequestProvider = NotifierProvider<LibraryAddRequest, bool>(
+  LibraryAddRequest.new,
+);
 
 /// The registered libraries.
 final librariesControllerProvider =

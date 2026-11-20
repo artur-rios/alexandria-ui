@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
@@ -15,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_folder_picker.dart';
 import '../../../support/fake_index_gateway.dart';
 import '../../../support/fake_library_gateway.dart';
@@ -311,4 +314,48 @@ void main() {
       expect(opened.index.refreshStarts, hasLength(1));
     },
   );
+
+  group('adding from an empty catalog', () {
+    testWidgets(
+      'GivenAnEmptyDashboard_WhenAddIsPressedAndAFolderPickedLater_ThenTheLibraryIsAdded',
+      (tester) async {
+        // The native picker is open for seconds, and pressing the button
+        // switches to the Libraries screen meanwhile — so the dashboard that
+        // asked is gone by the time the folder comes back.
+        final gate = Completer<void>();
+        final gateway = FakeLibraryGateway();
+        await tester.pumpShell(
+          surfaceSize: const Size(1440, 1000),
+          settings: InMemorySettingsStore(rechecksAtStartup: false),
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(FakeCatalogGateway()),
+            libraryGatewayProvider.overrideWithValue(gateway),
+            folderPickerProvider.overrideWithValue(
+              FakeFolderPicker(path: folder, gate: gate),
+            ),
+            indexGatewayProvider.overrideWithValue(
+              FakeIndexGateway()..readOutcomes = [runningRun()],
+            ),
+            runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
+          ],
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellNavigationPanel)),
+        );
+
+        await tester.tap(find.widgetWithText(FilledButton, l10n.libraryAdd));
+        await tester.pumpAndSettle();
+        expect(find.byType(LibrariesView), findsOneWidget);
+
+        gate.complete();
+        await tester.pumpAndSettle();
+        await acceptName(tester, name: 'Rust course');
+
+        expect(gateway.registered.single, (
+          name: 'Rust course',
+          rootPath: folder,
+        ));
+      },
+    );
+  });
 }

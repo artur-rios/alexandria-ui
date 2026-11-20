@@ -345,9 +345,9 @@ class _NothingCatalogued extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
-              onPressed: () => openLibrariesAndAdd(context, ref),
+              onPressed: () => openLibrariesAndAdd(ref),
               icon: const Icon(Icons.folder_outlined),
-              label: Text(l10n.catalogEmptyAddFolder),
+              label: Text(l10n.libraryAdd),
             ),
           ],
         ),

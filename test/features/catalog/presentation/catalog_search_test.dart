@@ -315,7 +315,7 @@ void main() {
       );
       expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
 
-      await tester.tap(find.text(l10n.catalogEmptyAddFolder));
+      await tester.tap(find.text(l10n.libraryAdd));
       await tester.pumpAndSettle();
 
       expect(find.byType(LibrariesView), findsOneWidget);

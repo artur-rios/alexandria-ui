@@ -198,7 +198,7 @@ void main() {
       // Four empty sections would be four ways of saying the same thing.
       expect(find.text(l10n.dashboardRecent), findsNothing);
 
-      await tester.tap(find.text(l10n.catalogEmptyAddFolder));
+      await tester.tap(find.text(l10n.libraryAdd));
       await tester.pumpAndSettle();
 
       expect(find.byType(LibrariesView), findsOneWidget);

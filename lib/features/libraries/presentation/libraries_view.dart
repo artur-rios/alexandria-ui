@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -10,6 +12,7 @@ import '../../indexing/domain/index_run.dart';
 import '../../shell/domain/shell_destination.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
+import '../application/library_add_request.dart';
 import '../domain/library.dart';
 import 'library_name_dialog.dart';
 import 'library_run_status.dart';
@@ -25,15 +28,41 @@ import 'library_tree_screen.dart';
 /// No scaffold and no title of its own: the content area draws the
 /// destination's heading, and a second one inside it would say Libraries
 /// twice.
-class LibrariesView extends ConsumerWidget {
+class LibrariesView extends ConsumerStatefulWidget {
   /// Creates the view.
   const LibrariesView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LibrariesView> createState() => _LibrariesViewState();
+}
+
+class _LibrariesViewState extends ConsumerState<LibrariesView> {
+  @override
+  void initState() {
+    super.initState();
+    // Asked for from another screen just before this one replaced it.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _addIfAsked());
+  }
+
+  /// Runs the add flow [openLibrariesAndAdd] asked for, here, where its
+  /// context outlives the picker.
+  void _addIfAsked() {
+    if (!mounted || !ref.read(libraryAddRequestProvider.notifier).take()) {
+      return;
+    }
+
+    unawaited(addLibrary(context, ref));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final libraries = ref.watch(librariesControllerProvider);
+    // Asked for while this screen is already showing (the Library menu).
+    ref.listen(libraryAddRequestProvider, (_, asked) {
+      if (asked) _addIfAsked();
+    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -123,13 +152,13 @@ class _LibraryRow extends ConsumerWidget {
 
 /// Opens the libraries and starts adding one.
 ///
-/// What the "add a folder" offers on the empty dashboard, listing and search
-/// do: a library is the only way anything gets into the catalog, so that is
-/// where they send the owner.
-Future<void> openLibrariesAndAdd(BuildContext context, WidgetRef ref) {
+/// What the "add a library" offers on the empty dashboard, listing and
+/// search, and the Library menu, do: a library is the only way anything gets
+/// into the catalog, so that is where they send the owner. The flow itself
+/// runs on the Libraries screen ([LibraryAddRequest] says why).
+void openLibrariesAndAdd(WidgetRef ref) {
+  ref.read(libraryAddRequestProvider.notifier).ask();
   ref.read(shellControllerProvider.notifier).go(ShellDestination.libraries);
-
-  return addLibrary(context, ref);
 }
 
 /// Adds a folder the owner picks as a library (core FR-FC-36).
@@ -240,7 +269,13 @@ Future<void> _remove(
       .remove(library.uuid);
   if (failure == null || !context.mounted) return;
 
-  _say(context, failure.localizedMessage(l10n));
+  // The one conflict a removal answers: a scan of the library is running.
+  _say(
+    context,
+    failure is ConflictFailure
+        ? l10n.libraryRemoveRunning
+        : failure.localizedMessage(l10n),
+  );
 }
 
 /// Says [message] over whatever is showing.

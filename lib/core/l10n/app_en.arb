@@ -473,13 +473,9 @@
   "@catalogEmptyTitle": {
     "description": "UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states."
   },
-  "catalogEmptyFirstRun": "Your library is empty. Add a folder and index it, and what is inside will appear here.",
+  "catalogEmptyFirstRun": "Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.",
   "@catalogEmptyFirstRun": {
     "description": "UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06)."
-  },
-  "catalogEmptyAddFolder": "Library folders",
-  "@catalogEmptyAddFolder": {
-    "description": "The action on the empty state that opens the library-folders screen (UC-05)."
   },
   "catalogFileMissing": "Missing from disk",
   "@catalogFileMissing": {
@@ -2314,5 +2310,9 @@
         "type": "String"
       }
     }
+  },
+  "libraryRemoveRunning": "This library is being scanned. Pause or cancel the scan, then remove it.",
+  "@libraryRemoveRunning": {
+    "description": "Said when a library is removed while its scan is running, which the core refuses."
   }
 }

@@ -151,18 +151,35 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
   }
 
   /// Opens the queue's track at [start], skipping past any that cannot be
-  /// opened — forwards, or backwards when [backwards] — and says so.
-  Future<void> _openFrom(int start, {bool backwards = false}) async {
+  /// opened — forwards, or backwards when [backwards] — and says which.
+  ///
+  /// The track being opened is the current one from the moment it is asked
+  /// for, not once the engine has it: the bar names it straight away, a
+  /// second "next" moves on from it, and a hold on it protects it.
+  /// [skipped] carries the name of a track already skipped on the way here.
+  Future<void> _openFrom(
+    int start, {
+    bool backwards = false,
+    String? skipped,
+  }) async {
     final generation = ++_generation;
     final credential = ref.read(sessionControllerProvider.notifier).credential;
     if (credential == null) return;
 
-    String? skipped;
     Failure? lastFailure;
     final step = backwards ? -1 : 1;
 
     for (var i = start; i >= 0 && i < state.queue.length; i += step) {
       final file = state.queue[i];
+      state = state.copyWith(
+        index: i,
+        playing: false,
+        position: Duration.zero,
+        duration: null,
+        cover: null,
+        failure: null,
+      );
+
       final outcome = await ref
           .read(playbackSourceGatewayProvider)
           .resolve(uuid: file.uuid, credential: credential);
@@ -174,15 +191,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
           await _player.open(source.path);
           if (generation != _generation) return;
 
-          state = state.copyWith(
-            index: i,
-            playing: true,
-            position: Duration.zero,
-            duration: null,
-            cover: null,
-            skippedName: skipped,
-            failure: null,
-          );
+          state = state.copyWith(playing: true, skippedName: skipped);
           unawaited(_loadCover(file, credential, generation));
           return;
 
@@ -198,13 +207,18 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
       }
     }
 
-    // Nothing from [start] on could be opened.
+    await _settleOnFailure(skipped: skipped, failure: lastFailure);
+  }
+
+  /// Nothing left in the queue could be played: the engine stops, and the
+  /// bar says so and offers a rescan.
+  Future<void> _settleOnFailure({String? skipped, Failure? failure}) async {
     await _player.stop();
     state = state.copyWith(
       playing: false,
       skippedName: skipped,
       failure:
-          lastFailure ??
+          failure ??
           const Failure.unexpected(
             family: CoreStatusFamily.playback,
             code: PLAYBACK_ERR_OTHER,
@@ -233,9 +247,11 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     _statuses = _player.status.listen((status) {
       if (state.current == null) return;
 
+      // The engine could not play it — a file gone from disk since the last
+      // refresh resolves fine and fails here. Skipped like one that could not
+      // be opened at all.
       if (status.failedToDecode) {
-        state = state.copyWith(skippedName: state.current?.name);
-        unawaited(_advanceOrSettle());
+        unawaited(_skipFailed());
         return;
       }
 
@@ -260,5 +276,25 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     }
 
     state = state.copyWith(playing: false);
+  }
+
+  /// Skips the current track, which the engine could not play.
+  Future<void> _skipFailed() async {
+    final failed = state.current;
+    if (failed == null) return;
+
+    if (state.index + 1 < state.queue.length) {
+      await _openFrom(state.index + 1, skipped: failed.name);
+      return;
+    }
+
+    _generation++;
+    await _settleOnFailure(
+      skipped: failed.name,
+      failure: const Failure.unexpected(
+        family: CoreStatusFamily.playback,
+        code: PLAYBACK_ERR_INVALID_STATE,
+      ),
+    );
   }
 }

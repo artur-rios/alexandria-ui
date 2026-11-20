@@ -719,14 +719,8 @@ abstract class AppLocalizations {
   /// UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06).
   ///
   /// In en, this message translates to:
-  /// **'Your library is empty. Add a folder and index it, and what is inside will appear here.'**
+  /// **'Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.'**
   String get catalogEmptyFirstRun;
-
-  /// The action on the empty state that opens the library-folders screen (UC-05).
-  ///
-  /// In en, this message translates to:
-  /// **'Library folders'**
-  String get catalogEmptyAddFolder;
 
   /// Marks a file the last refresh could not find on disk. The record is still active; reviewing them is UC-37.
   ///
@@ -3001,6 +2995,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skipped {name}: it could not be opened.'**
   String playerSkipped(String name);
+
+  /// Said when a library is removed while its scan is running, which the core refuses.
+  ///
+  /// In en, this message translates to:
+  /// **'This library is being scanned. Pause or cancel the scan, then remove it.'**
+  String get libraryRemoveRunning;
 }
 
 class _AppLocalizationsDelegate

@@ -2,7 +2,6 @@ import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
-import 'package:alexandria_ui/core/failures/failure_messages.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
@@ -144,10 +143,7 @@ void main() {
     await askToRemove(tester);
     await confirm(tester);
 
-    expect(
-      find.text(conflict.localizedMessage(messages(tester))),
-      findsWidgets,
-    );
+    expect(find.text(messages(tester).libraryRemoveRunning), findsWidgets);
     expect(find.text('Course'), findsOneWidget);
   });
 }

@@ -363,10 +363,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get catalogEmptyFirstRun =>
-      'Sua biblioteca está vazia. Adicione uma pasta e indexe-a, e o que estiver dentro aparecerá aqui.';
-
-  @override
-  String get catalogEmptyAddFolder => 'Pastas da biblioteca';
+      'Ainda não há nada no Alexandria. Adicione uma pasta como biblioteca, e o que estiver dentro aparece aqui assim que for indexado.';
 
   @override
   String get catalogFileMissing => 'Ausente do disco';
@@ -1743,4 +1740,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String playerSkipped(String name) {
     return '$name foi pulada: não pôde ser aberta.';
   }
+
+  @override
+  String get libraryRemoveRunning =>
+      'Esta biblioteca está sendo analisada. Pause ou cancele a análise e depois remova-a.';
 }

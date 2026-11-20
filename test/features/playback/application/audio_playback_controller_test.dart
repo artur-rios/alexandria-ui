@@ -252,4 +252,75 @@ void main() {
     expect(sut.ref.read(audioPlaybackControllerProvider).current, isNull);
     expect(sut.player.stopCount, 1);
   });
+
+  test(
+    'GivenTheOnlyTrackFailsToDecode_WhenItPlays_ThenTheFailureShowsAndPlaybackStops',
+    () async {
+      // A file gone from disk since the last refresh resolves fine — the
+      // core does not look at the disk — and fails in the engine instead.
+      final sut = build();
+      await sut.ref.read(audioPlaybackControllerProvider.notifier).play(one, [
+        one,
+      ]);
+
+      sut.player.report(const PlaybackStatus(failedToDecode: true));
+      await pumpEventQueue();
+
+      final state = sut.ref.read(audioPlaybackControllerProvider);
+      expect(state.failure, isNotNull);
+      expect(state.skippedName, 'one.flac');
+      expect(state.playing, isFalse);
+      expect(sut.player.stopCount, 1);
+    },
+  );
+
+  test(
+    'GivenATrackFailsToDecode_WhenAnotherFollows_ThenItIsSkippedAndTheNextPlays',
+    () async {
+      final sut = build();
+      await sut.ref.read(audioPlaybackControllerProvider.notifier).play(one, [
+        one,
+        two,
+      ]);
+
+      sut.player.report(const PlaybackStatus(failedToDecode: true));
+      await pumpEventQueue();
+
+      final state = sut.ref.read(audioPlaybackControllerProvider);
+      expect(state.current?.uuid, 'two');
+      expect(state.skippedName, 'one.flac');
+      expect(state.failure, isNull);
+      expect(sut.player.opened.last, '/music/two.flac');
+    },
+  );
+
+  test(
+    'GivenTwoNextPressesInARow_WhenBothAreSent_ThenTwoTracksAdvance',
+    () async {
+      final sut = build();
+      final controller = sut.ref.read(audioPlaybackControllerProvider.notifier);
+      await controller.play(one, [one, two, three]);
+
+      final first = controller.next();
+      final second = controller.next();
+      await first;
+      await second;
+
+      expect(
+        sut.ref.read(audioPlaybackControllerProvider).current?.uuid,
+        'three',
+      );
+    },
+  );
+
+  test('GivenATrackIsOpening_WhenAsked_ThenItIsAlreadyTheCurrentOne', () async {
+    final sut = build();
+    final controller = sut.ref.read(audioPlaybackControllerProvider.notifier);
+
+    final opening = controller.play(two, [one, two]);
+    final whileOpening = sut.ref.read(audioPlaybackControllerProvider).current;
+    await opening;
+
+    expect(whileOpening?.uuid, 'two');
+  });
 }
