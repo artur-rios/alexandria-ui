@@ -6,6 +6,7 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 
@@ -234,6 +235,9 @@ CatalogFile aFile({
   DateTime? missingAt,
   DateTime? deletedAt,
   bool isDeleted = false,
+  MusicMetadata? tags,
+  double? durationSeconds,
+  String? libraryUuid,
 }) => CatalogFile(
   uuid: uuid,
   name: name,
@@ -249,6 +253,11 @@ CatalogFile aFile({
   missingAt: missingAt,
   deletedAt: deletedAt,
   isDeleted: isDeleted,
+  // An audio file always carries tags, empty when it has none — the shape
+  // the parser answers.
+  tags: tags ?? (type == FileType.audio ? const MusicMetadata() : null),
+  durationSeconds: durationSeconds,
+  libraryUuid: libraryUuid,
 );
 
 /// A listing of [files], each wrapped as a [FileDetails] row with no

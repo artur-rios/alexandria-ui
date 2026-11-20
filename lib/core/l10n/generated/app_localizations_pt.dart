@@ -356,6 +356,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get destinationVideos => 'Vídeos';
 
   @override
+  String get destinationMusic => 'Música';
+
+  @override
   String get catalogEmptyTitle => 'Nada deste tipo ainda';
 
   @override
@@ -431,6 +434,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sortByIndexed => 'Data de inclusão';
+
+  @override
+  String get sortByAlbum => 'Álbum';
 
   @override
   String get sortAscending => 'Crescente';

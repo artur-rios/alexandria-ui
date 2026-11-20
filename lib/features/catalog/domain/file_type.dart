@@ -2,7 +2,7 @@ import '../../shell/domain/shell_destination.dart';
 
 /// The types the Alexandria core classifies a file into (FR-CT-02).
 ///
-/// Six, which is the core's own `FileType` and not a reinterpretation of it.
+/// Seven, which is the core's own `FileType` and not a reinterpretation of it.
 /// The navigation panel's entries map onto these; where the two disagree, the
 /// core wins, because classifying a file is domain work the core owns (BR-02).
 enum FileType {
@@ -13,6 +13,11 @@ enum FileType {
   /// would be the same query returning the same rows. That distinction is a
   /// watchlist's (UC-29), not the catalog's.
   video('video'),
+
+  /// `audio` — music and other recordings, played rather than read
+  /// (core 0.6.0). Their tags ride on the file, so a listing can name a
+  /// track by its title and order an album by its track numbers.
+  audio('audio'),
 
   /// `document` — the panel's books.
   document('document'),
@@ -55,6 +60,7 @@ enum FileType {
 /// separate entity with their own core call, which UC-28 owns.
 FileType? fileTypeFor(ShellDestination destination) => switch (destination) {
   ShellDestination.videos => FileType.video,
+  ShellDestination.music => FileType.audio,
   ShellDestination.books => FileType.document,
   ShellDestination.comicBooks => FileType.comic,
   ShellDestination.notes => FileType.text,

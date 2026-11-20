@@ -12,6 +12,7 @@ import '../application/in_progress.dart';
 import '../domain/file_type.dart';
 import 'catalog_search_view.dart';
 import 'file_details_view.dart';
+import 'music_display_name.dart';
 
 /// The home dashboard (UC-14, FR-CT-11).
 ///
@@ -87,7 +88,7 @@ class _RecentSection extends ConsumerWidget {
               return ListTile(
                 dense: true,
                 leading: const Icon(Icons.insert_drive_file_outlined),
-                title: Text(file.name),
+                title: Text(displayName(file)),
                 subtitle: Text(file.type.label(l10n)),
                 // Main flow step 4: opening an item here behaves exactly as
                 // opening it from its listing, which now means the file

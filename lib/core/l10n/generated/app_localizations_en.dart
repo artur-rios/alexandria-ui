@@ -358,6 +358,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get destinationVideos => 'Videos';
 
   @override
+  String get destinationMusic => 'Music';
+
+  @override
   String get catalogEmptyTitle => 'Nothing of this type yet';
 
   @override
@@ -433,6 +436,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortByIndexed => 'Date added';
+
+  @override
+  String get sortByAlbum => 'Album';
 
   @override
   String get sortAscending => 'Ascending';

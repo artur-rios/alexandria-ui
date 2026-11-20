@@ -10,6 +10,7 @@ import '../application/search_controller.dart';
 import '../domain/catalog_search.dart';
 import '../domain/file_details.dart';
 import '../domain/file_type.dart';
+import 'music_display_name.dart';
 
 /// The catalog-wide search field (UC-11 main flow step 1).
 ///
@@ -181,7 +182,7 @@ class _ResultRow extends ConsumerWidget {
       leading: const Icon(Icons.insert_drive_file_outlined),
       // The term is marked in the name the row shows; marking a name the row
       // does not show would point at nothing.
-      title: _Highlighted(text: file.name, term: term),
+      title: _Highlighted(text: displayName(file), term: term),
       // Says where a hit lives when it lives in a library. Without it the
       // row is a puzzle: the owner finds the file here and then cannot find
       // it in the panel for its type, because a library's files are shown in
@@ -362,6 +363,7 @@ extension FileTypeLabel on FileType {
   /// The localized name of this type.
   String label(AppLocalizations l10n) => switch (this) {
     FileType.video => l10n.destinationVideos,
+    FileType.audio => l10n.destinationMusic,
     FileType.document => l10n.destinationBooks,
     FileType.comic => l10n.destinationComicBooks,
     FileType.text => l10n.destinationNotes,

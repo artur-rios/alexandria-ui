@@ -12,6 +12,7 @@ import '../domain/catalog_file.dart';
 import '../domain/file_type.dart';
 import '../domain/listing_view.dart';
 import 'file_details_view.dart';
+import 'music_display_name.dart';
 import '../domain/view_layout.dart';
 
 /// The files of the selected type (UC-09, FR-CT-02, FR-CT-10).
@@ -270,7 +271,7 @@ class _FileGrid extends ConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          file.name,
+                          displayName(file),
                           style: theme.textTheme.bodySmall,
                           textAlign: TextAlign.center,
                           maxLines: 2,
@@ -335,6 +336,8 @@ class _FileRow extends ConsumerWidget {
         // claiming to be one.
         file.isMissing
             ? Icons.report_gmailerrorred_outlined
+            : file.type == FileType.audio
+            ? Icons.music_note_outlined
             : Icons.insert_drive_file_outlined,
         color: file.isMissing ? theme.colorScheme.error : null,
       ),
@@ -348,7 +351,7 @@ class _FileRow extends ConsumerWidget {
       title: detailed
           ? Row(
               children: [
-                Expanded(child: Text(file.name)),
+                Expanded(child: Text(displayName(file))),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
@@ -361,12 +364,27 @@ class _FileRow extends ConsumerWidget {
                 ),
               ],
             )
-          : Text(file.name),
+          : Text(displayName(file)),
+      // A track is named by its tags, with who and from what beneath; the
+      // path beside it in the detailed layout still tells two apart.
+      subtitle: switch (musicByline(file)) {
+        final String byline when file.type == FileType.audio => Text(byline),
+        _ => null,
+      },
       // A file the last refresh could not find is still an active record; it
       // is marked rather than hidden, and reviewing them is UC-37.
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (file.durationSeconds case final double seconds
+              when file.type == FileType.audio)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              child: Text(
+                formatDuration(seconds),
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
           if (file.isMissing)
             Text(
               l10n.catalogFileMissing,
@@ -510,17 +528,19 @@ class _FilterControls extends ConsumerWidget {
 
         const Divider(),
         _MenuHeading(l10n.sortLabel),
+        // The album order reads tags only audio has.
         for (final field in SortField.values)
-          MenuItemButton(
-            leadingIcon: Icon(
-              view.sortField == field
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked,
+          if (field != SortField.album || type == FileType.audio)
+            MenuItemButton(
+              leadingIcon: Icon(
+                view.sortField == field
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+              ),
+              onPressed: () =>
+                  controller.apply(type, view.copyWith(sortField: field)),
+              child: Text(field.label(l10n)),
             ),
-            onPressed: () =>
-                controller.apply(type, view.copyWith(sortField: field)),
-            child: Text(field.label(l10n)),
-          ),
         for (final direction in SortDirection.values)
           MenuItemButton(
             leadingIcon: Icon(
@@ -576,6 +596,7 @@ extension _SortFieldLabel on SortField {
   String label(AppLocalizations l10n) => switch (this) {
     SortField.name => l10n.sortByName,
     SortField.indexed => l10n.sortByIndexed,
+    SortField.album => l10n.sortByAlbum,
   };
 }
 

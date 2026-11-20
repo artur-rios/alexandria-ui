@@ -465,6 +465,10 @@
   "@destinationVideos": {
     "description": "Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog."
   },
+  "destinationMusic": "Music",
+  "@destinationMusic": {
+    "description": "The listing's name for music and other audio."
+  },
   "catalogEmptyTitle": "Nothing of this type yet",
   "@catalogEmptyTitle": {
     "description": "UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states."
@@ -566,6 +570,10 @@
   "sortByIndexed": "Date added",
   "@sortByIndexed": {
     "description": "Sort the listing by when the core last indexed the file."
+  },
+  "sortByAlbum": "Album",
+  "@sortByAlbum": {
+    "description": "Sort choice: albums in their own order, by album artist, album and track number."
   },
   "sortAscending": "Ascending",
   "@sortAscending": {

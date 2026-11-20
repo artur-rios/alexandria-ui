@@ -204,16 +204,10 @@ class CoreLibraryGateway implements LibraryGateway {
 
   /// One file, or `null` when its record cannot be read.
   ///
-  /// `row` is a whole `FileView`; the file's own columns are nested under
-  /// `file`, which is what `fileFromFileView` reads. Handing it the outer
-  /// map instead finds no `fileType`, answers `null`, and — since an
-  /// unreadable row is dropped — makes every file in the folder vanish while
-  /// the folders beside them still appear.
+  /// `row` is a whole `FileView`: the file's own columns nested under
+  /// `file`, and its tags beside them, which is what `fileFromView` reads.
   LibraryFile? _fileFrom(Map<String, dynamic> row) {
-    final nested = row['file'];
-    if (nested is! Map<String, dynamic>) return null;
-
-    final file = fileFromFileView(nested);
+    final file = fileFromView(row);
     if (file == null) return null;
 
     return LibraryFile(file: file);

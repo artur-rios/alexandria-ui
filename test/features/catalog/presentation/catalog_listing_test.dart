@@ -4,6 +4,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 // Prefixed: the widget and the domain's listing union share a name, and this
 // test speaks about both.
 import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
@@ -370,5 +371,68 @@ void main() {
         },
       );
     }
+  });
+
+  group('the Music panel', () {
+    Map<FileType, CatalogListing> twoTracks() => {
+      FileType.audio: loadedDetails([
+        aFile(
+          uuid: 't2',
+          name: '02 - b.flac',
+          type: FileType.audio,
+          tags: const MusicMetadata(
+            title: 'Second',
+            artist: 'Band',
+            album: 'Record',
+            track: 2,
+          ),
+          durationSeconds: 125,
+        ),
+        aFile(
+          uuid: 't1',
+          name: '01 - a.flac',
+          type: FileType.audio,
+          tags: const MusicMetadata(
+            title: 'First',
+            artist: 'Band',
+            album: 'Record',
+            track: 1,
+          ),
+          durationSeconds: 245,
+        ),
+      ]),
+    };
+
+    testWidgets(
+      'GivenTheMusicPanel_WhenListed_ThenRowsShowTitleBylineDuration',
+      (tester) async {
+        await openListing(
+          tester,
+          listings: twoTracks(),
+          destination: ShellDestination.music,
+        );
+
+        expect(find.text('First'), findsOneWidget);
+        expect(find.text('01 - a.flac'), findsNothing);
+        expect(find.text('Band · Record'), findsNWidgets(2));
+        expect(find.text('4:05'), findsOneWidget);
+      },
+    );
+
+    testWidgets('GivenTheMusicPanel_WhenOpened_ThenItIsSortedByAlbum', (
+      tester,
+    ) async {
+      await openListing(
+        tester,
+        listings: twoTracks(),
+        destination: ShellDestination.music,
+      );
+
+      expect(
+        tester.getTopLeft(find.text('First')).dy,
+        lessThan(tester.getTopLeft(find.text('Second')).dy),
+        reason: 'track 1 is listed after track 2',
+      );
+    });
   });
 }

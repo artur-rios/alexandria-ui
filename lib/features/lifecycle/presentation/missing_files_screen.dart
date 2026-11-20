@@ -8,6 +8,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/file_details.dart';
 import '../../catalog/presentation/file_details_view.dart';
+import '../../catalog/presentation/music_display_name.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../application/missing_files_controller.dart';
 
@@ -143,7 +144,7 @@ class _MissingTile extends ConsumerWidget {
         Icons.help_outline,
         color: theme.colorScheme.onSurfaceVariant,
       ),
-      title: Text(file.name),
+      title: Text(displayName(file)),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

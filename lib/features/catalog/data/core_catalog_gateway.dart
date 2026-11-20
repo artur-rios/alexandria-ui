@@ -224,7 +224,12 @@ class CoreCatalogGateway implements CatalogGateway {
   /// place that reads it rather than a second copy that could drift from the
   /// first.
   FileDetails? _detailsFrom(Map<String, dynamic> body) {
-    final file = fileFromFileView(body['file'] as Map<String, dynamic>);
+    // A row with no file at all is a document this build cannot read, not a
+    // file of an unknown type to skip.
+    if (body['file'] is! Map<String, dynamic>) {
+      throw const FormatException('a FileView without its file');
+    }
+    final file = fileFromView(body);
     if (file == null) return null;
 
     return FileDetails(

@@ -18,7 +18,7 @@ void main() {
     test('GivenAnUnknownWireName_WhenItIsRead_ThenTheTypeIsNull', () {
       // A core that grows a type must not have its files guessed into an
       // existing listing.
-      expect(FileType.fromWire('audio'), isNull);
+      expect(FileType.fromWire('hologram'), isNull);
     });
 
     test('GivenNoWireName_WhenItIsRead_ThenTheTypeIsNull', () {

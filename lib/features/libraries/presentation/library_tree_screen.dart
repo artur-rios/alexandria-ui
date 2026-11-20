@@ -5,6 +5,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/presentation/file_details_view.dart';
+import '../../catalog/presentation/music_display_name.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/library.dart';
 
@@ -107,7 +108,7 @@ class _LibraryTreeScreenState extends ConsumerState<LibraryTreeScreen> {
                       // in a folder view the owner is looking for the file
                       // they saw on disk, and a lecture recording tagged
                       // with something else would be unfindable.
-                      title: Text(entry.file.name),
+                      title: Text(displayName(entry.file)),
                       // The same as a listing row: the file, with its details
                       // one press to the right (`openFile`).
                       onTap: () => openFile(context, ref, entry.file),

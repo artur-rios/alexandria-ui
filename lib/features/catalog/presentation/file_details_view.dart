@@ -493,6 +493,11 @@ Future<void> openFile(BuildContext context, WidgetRef ref, CatalogFile file) {
     case FileType.video:
       return VideoPlayerScreen.show(context, ref, file);
 
+    // Until the player bar plays it, a track opens its details, which show
+    // its tags.
+    case FileType.audio:
+      return FileDetailsView.show(context, ref, file.uuid);
+
     case FileType.document:
     case FileType.comic:
     case FileType.image:
@@ -539,6 +544,8 @@ typedef OpenMetadataForm =
 /// one place (IR-02's registration rule).
 OpenMetadataForm? _metadataFormFor(FileType type) => switch (type) {
   FileType.video => VideoMetadataForm.show,
+  // The tags form is restored with tag editing.
+  FileType.audio ||
   FileType.document ||
   FileType.comic ||
   FileType.text ||

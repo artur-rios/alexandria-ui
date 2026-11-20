@@ -704,6 +704,12 @@ abstract class AppLocalizations {
   /// **'Videos'**
   String get destinationVideos;
 
+  /// The listing's name for music and other audio.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get destinationMusic;
+
   /// UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states.
   ///
   /// In en, this message translates to:
@@ -841,6 +847,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Date added'**
   String get sortByIndexed;
+
+  /// Sort choice: albums in their own order, by album artist, album and track number.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get sortByAlbum;
 
   /// Sort direction: A to Z, oldest first.
   ///
