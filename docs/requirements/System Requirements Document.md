@@ -26,10 +26,11 @@ repeated in each row:
 
 ### 1.2 Scope
 
-The application covers authentication and session handling; registering and
-indexing library folders; browsing, searching, filtering, and sorting the
-catalog; playing video; viewing documents, comic books, images, and saved HTML
-pages; editing video metadata, file names, and Markdown and text content;
+The application covers authentication and session handling; adding folders as
+libraries and indexing them; browsing, searching, filtering, and sorting the
+catalog; playing video, and playing music in a player bar; viewing documents,
+comic books, images, and saved HTML pages; editing video metadata, music tags,
+file names, and Markdown and text content;
 organizing files and bookmarks into collections; tracking watchlists and reading
 lists with per-episode and per-issue progress; carrying out the core's two-phase
 deletion lifecycle including the separate purge-on-disk; and the application
@@ -143,62 +144,63 @@ replace the FFI one without touching a screen.
 | FR-AU-18 | The system shall discard the active session and return to the login screen when a password is replaced through a recovery code. |
 | FR-AU-19 | The system shall neither generate, validate, nor consume a recovery code itself, and shall neither count what remains nor decide when a set should be replaced. |
 
-### 3.2 Library Sources and Indexing — `LB`
+### 3.2 Libraries and Indexing — `LB`
 
 | ID | Requirement |
 | --- | --- |
-| FR-LB-01 | The system shall allow the owner to register a library folder chosen through the platform's native folder picker. |
-| FR-LB-02 | The system shall reject a folder that does not exist, cannot be read, or is already registered, stating which condition failed. |
-| FR-LB-03 | The system shall persist the registered library folders locally — each with its label, its run history, and the file types an index of it records — so they survive a restart. A folder with no recorded types covers every supported type. Every sign-in takes audio out of the recorded types: a folder whose recorded types were music only is unregistered, and one that mixed music with other types drops it. A music-only folder that was also a library has its library removed first; a library the core will not remove keeps its folder, and the next sign-in tries again. Once no folder records audio, a sign-in changes nothing. |
-| FR-LB-04 | The system shall support any number of registered library folders and present their files as one merged catalog. |
-| FR-LB-05 | The system shall start an index run for a chosen library folder and retain the run identifier the core returns. |
-| FR-LB-06 | The system shall start a refresh run covering everything already cataloged, independently of any single folder. This also happens when a session is established, subject to FR-LB-21. |
+| FR-LB-01 | The system shall allow the owner to add a folder as a library from the Libraries screen, chosen through the platform's native folder picker and named — by the folder's own name unless the owner gives another. A library is the only way files reach the catalog: since core 0.6 every file belongs to exactly one library, and nothing is indexed outside one. Rewritten for the 0.6 core: this used to register a source folder, which could then be marked as a library or left as one. |
+| FR-LB-02 | The system shall present the core's refusal of a folder — not a folder, missing, outside the core's root, or overlapping another library — stating which condition failed. Which folder may be a library is the core's rule, and the application checks nothing of its own before asking. Rewritten for the 0.6 core: the application used to check a folder's existence, readability, and registration itself. |
+| FR-LB-03 | The system shall keep no folder list of its own: the libraries are the core's record, read from the core wherever they are shown. At sign-in it shall delete, once and silently, the folder list an earlier version kept in its settings (`librarySources`). The 0.6 core already deleted those folders' records when it upgraded the catalog, and the owner adds the folders again as libraries. Rewritten for the 0.6 core: this used to persist the registered source folders, each with its label, its run history, and the file types an index of it recorded. |
+| FR-LB-04 | The system shall support any number of libraries and present their files as one merged catalog. |
+| FR-LB-05 | The system shall start an index run for a chosen library — "Scan again" on its row — and retain the run identifier the core returns. |
+| FR-LB-06 | The system shall start a refresh run covering everything already cataloged, independently of any single library, from the Libraries screen ("Re-check all libraries"). This also happens when a session is established, subject to FR-LB-21. |
 | FR-LB-07 | The system shall observe a run's progress without blocking the interface, leaving browsing, playback, viewing, and editing available while it runs. |
-| FR-LB-08 | The system shall present the outcome of a finished run — files added, files updated, and files found missing — and shall keep that summary visible until the owner dismisses it. A run that could not record some of the files it walked shall say so, for a scan and for a re-check alike, and shall say it as a problem rather than as one more statistic: those files are on disk and absent from the library, and nothing else in the application will ever mention them. The remedy is another run, which the folder's own row already offers. |
-| FR-LB-09 | The system shall prevent a second index run from being started for a library folder while a run for that folder is in flight. |
-| FR-LB-10 | The system shall allow the owner to unregister a library folder after a confirmation stating that catalog records and on-disk files are left untouched. |
-| FR-LB-11 | The system shall present first-run guidance directing the owner to register a library folder whenever no folder is registered. |
-| FR-LB-12 | The system shall start an index run for a library folder as soon as that folder is registered, so that a newly added folder does not sit uncatalogued until the owner asks separately. |
+| FR-LB-08 | The system shall present the outcome of a finished run — files added, files updated, and files found missing — and shall keep that summary visible until the owner dismisses it. A run that could not record some of the files it walked shall say so, for a scan and for a re-check alike, and shall say it as a problem rather than as one more statistic: those files are on disk and absent from the library, and nothing else in the application will ever mention them. The remedy is another run, which the library's own row already offers. |
+| FR-LB-09 | The system shall present the core's refusal to start a second index run for a library, or to move it (FR-CT-17), while a run of that library is running or paused, in the core's own words, which name the unfinished run. The owner resumes, pauses, or cancels that run instead (FR-LB-16). |
+| FR-LB-10 | The system shall allow the owner to remove a library after a confirmation stating that removing it deletes it from the catalog with its files, their reading and watching positions, their place in collections, and its runs, and that nothing on disk is touched. Where the library has a paused run, the confirmation shall add that the paused scan is discarded too. The core refuses to remove a library while one of its runs is running, and the system shall present that refusal. Rewritten for the 0.6 core: un-registering a source folder used to leave the catalog untouched, and un-marking a library used to return its files to the type panels. |
+| FR-LB-11 | The system shall present first-run guidance directing the owner to add a library whenever there is none; the empty-catalog actions shall open the Libraries screen and start adding one. |
+| FR-LB-12 | The system shall follow, under the library's row, the index run the core starts when a library is added, so that a newly added library does not sit uncatalogued until the owner asks separately. |
 | FR-LB-13 | The system shall present, for every run in flight, the phase it is in, how many entries it has processed, how many it found, and how long it has been working, updating these as the run proceeds. |
 | FR-LB-14 | The system shall derive a remaining-time estimate for a run in flight from its own observed rate, and shall present none where the run has not yet reported a total to divide by. |
-| FR-LB-15 | The system shall present a persistent background activity indicator, outside the library folders screen, whenever any run is outstanding — so that a scan started from one screen remains visible from every other. |
-| FR-LB-16 | The system shall allow the owner to pause a running scan, resume a paused one, and cancel either, from the library folders screen and from the background activity indicator alike. |
+| FR-LB-15 | The system shall present a persistent background activity indicator, outside the Libraries screen, whenever any run is outstanding — so that a scan started from one screen remains visible from every other. It shall name a run by its library, falling back to the root folder's name, and a refresh as the catalog's. |
+| FR-LB-16 | The system shall allow the owner to pause a running scan, resume a paused one, and cancel either, from the library's row on the Libraries screen and from the background activity indicator alike. |
 | FR-LB-17 | The system shall confirm a cancellation before sending it, stating that the run is abandoned rather than paused, and shall not confirm a pause. |
-| FR-LB-18 | The system shall allow the owner to choose a run's pace — normal or low — when starting it, and to change that pace on a run already under way by pausing and resuming it at the new pace. A resume for which no pace is named shall keep the pace the run already has. |
+| FR-LB-18 | The system shall start a run at the normal pace, and allow the owner to change the pace — normal or low — of a run already under way by pausing and resuming it at the new pace. A resume for which no pace is named shall keep the pace the run already has. Amended for the 0.6 core: adding a library no longer asks for a pace, since the answer can be changed from the background activity indicator a moment later. |
 | FR-LB-19 | The system shall offer every run the core reports as outstanding at launch — including one left behind by a previous session — for the owner to resume or cancel, and shall resume none of them by itself. |
 | FR-LB-20 | The system shall continue to follow every other outstanding run when one of them ends, fails to be read, or is abandoned. |
 | FR-LB-21 | The system shall re-check the catalog when a session is established, unless the owner has turned that off, the catalog holds no files, or a run is already outstanding; and shall report such a re-check through the background activity indicator (FR-LB-15) without announcing a refusal the owner did not ask for. |
-| FR-LB-22 | The system shall let the owner mark a registered source folder as a library, named, either when the folder is registered or afterwards, and shall unmark it on request. A folder is marked at most once: what a library is, is the core's record, and the application's own record of the folder only reflects it. |
+| FR-LB-22 | **Removed (0.6 core)** — a folder is a library or is not in the catalog at all, so there is nothing to mark or unmark: adding a library is FR-LB-01 and removing one FR-LB-10. |
 | FR-LB-23 | The system shall name, on request, the files a finished run could not record, each with the reason the core gave (core FR-FC-42), so that the count in a run's report can be acted on rather than only read. Those files are on disk and in no listing; without their paths the owner has nowhere to look. The list is read when it is asked for, not carried on the status the application polls. |
 
 ### 3.3 Catalog Browsing and Search — `CT`
 
 | ID | Requirement |
 | --- | --- |
-| FR-CT-01 | The system shall present a navigation panel listing every file type in the library — videos, books, comic books, notes and text files, HTML pages, and images — plus bookmarks, with the count of items in each. Corrected in UC-09: this originally listed movies and series separately, but the core classifies a file as `video` and carries no subtype, so the two would be the same query returning the same rows. That distinction is a watchlist's (UC-29), not the catalog's. Bookmarks are not files and are listed through their own core call (UC-28). Files belonging to a library are excluded from both the listings and the counts (FR-CT-16). Amended again: the panel also lists the libraries (FR-CT-15), which are not a file type and carry no count — a library holds whatever its folder holds, of every type at once. It sat in the tools menu until then, which is where things the owner *does* live rather than where things they *have* live, and reaching somewhere they browse took two clicks through a menu. |
+| FR-CT-01 | The system shall present a navigation panel listing every file type in the library — videos, music, books, comic books, notes and text files, HTML pages, and images — plus bookmarks, with the count of items in each. Corrected in UC-09: this originally listed movies and series separately, but the core classifies a file as `video` and carries no subtype, so the two would be the same query returning the same rows. That distinction is a watchlist's (UC-29), not the catalog's. Bookmarks are not files and are listed through their own core call (UC-28). Amended again: the panel also lists the libraries (FR-CT-15), which are not a file type and carry no count — a library holds whatever its folder holds, of every type at once. It sat in the tools menu until then, which is where things the owner *does* live rather than where things they *have* live, and reaching somewhere they browse took two clicks through a menu. Amended for the 0.6 core: music is a type again, listed after videos, and a library's files are listed and counted in their type panels like any other — every file belongs to a library now, so the exclusion (FR-CT-16) would have emptied every panel. |
 | FR-CT-02 | The system shall list the files of a selected type, retrieved from the core. |
 | FR-CT-03 | The system shall offer three view layouts — list, list with details, and grid — and switch between them on request. |
 | FR-CT-04 | The system shall remember the chosen layout per file type across restarts. |
 | FR-CT-05 | The system shall present a detail view for a single file showing its type-specific metadata, its path, and its lifecycle state. |
-| FR-CT-06 | The system shall search the catalog by file name and by type-specific metadata, and present matches across every type, including files that belong to a library (FR-CT-16). Deliberately: a library keeps its files out of the type panels so they do not bury the rest, and a search that also hid them would mean the owner could no longer find a file they know they have. |
+| FR-CT-06 | The system shall search the catalog by file name and by type-specific metadata, a track's tags included, and present matches across every type, each naming the library it lives in. |
 | FR-CT-07 | The system shall filter the listed items by type, lifecycle state, containing collection, and the type-specific attributes the core exposes. |
-| FR-CT-08 | The system shall sort the listed items by name, by date, and by the type-specific attributes the core exposes. |
+| FR-CT-08 | The system shall sort the listed items by name, by date, and by the type-specific attributes the core exposes, and music also in album order (FR-CT-19). |
 | FR-CT-09 | The system shall present an empty-result state that is visually distinct from a loading state and from an error state. |
 | FR-CT-10 | The system shall render long catalog listings without materializing every row, so that scrolling cost does not grow with the size of the library. |
 | FR-CT-11 | The system shall present a home dashboard showing recently added items, items in progress in watchlists and reading lists, per-type counts, and the outcome of the most recent index run. |
 | FR-CT-12 | The system shall open the viewer or player registered for a file's type from any listing or from the detail view. Selecting a file in a listing shall open it, and its details shall be reachable in one press from beside it; a file with no viewer, and one missing from disk, shall present their details instead, since neither can be opened. |
-| FR-CT-13 | **Removed (moved out of scope, see Orpheus)** |
+| FR-CT-13 | The system shall present a track by its tags wherever it is listed — the Music panel, search results, the home dashboard's recent files, a library's folders, the delete confirmation, the missing-files review, and the player bar — naming it by its title, or by its file name when it has none, with its artist beside it. A Music panel row shows the title, then artist · album, and the duration; a library's folder shows the file name beneath the title, since that is where the file sits. Reinstated for the 0.6 core, which knows audio again; the music area's context menu (FR-CT-14) stays removed. |
 | FR-CT-14 | **Removed (moved out of scope, see Orpheus)** |
-| FR-CT-15 | The system shall present a library's files in their folders on disk, one level at a time, from the navigation panel's own libraries area, which lists every library. A library exists so that a folder whose structure *is* its meaning — a course, with each class's recording and handouts side by side — keeps that structure; a flat listing of its files answers a question nobody asked of it. Making one registers the folder as a source and indexes it where it is not one already: the tree is built from what the catalog holds beneath the root, not from a walk of the disk, so a library over a folder nobody has indexed shows nothing at all — no files, and no folders either. |
-| FR-CT-16 | The system shall exclude a library's files from the type-panel listings and their counts (FR-CT-01, FR-CT-02) and from the home dashboard (FR-CT-11), and shall reach into libraries for the two readings that are not browsing by type: the catalog search (FR-CT-06) and the deleted-items review (FR-LC-03). Both are built from the same core listing as the panels, so the reach is asked for per call; the core answers which library each row belongs to, which is how the dashboard leaves them out again while reading the search's own index and how a search result says where its file lives — a hit the owner then cannot find in the panel for its type is otherwise a puzzle. This is the whole point of marking a folder: three hundred class handouts otherwise bury every other document the owner has. Search (FR-CT-06), the deleted-items review (FR-LC-03), watchlists and reading lists (FR-TR-01 … FR-TR-14), and collections (FR-OG-01 … FR-OG-07) continue to reach them — a library narrows where files are *listed*, never what can be *found* or tracked, and a later reader must not "fix" that apparent inconsistency by widening the exclusion. |
-| FR-CT-17 | The system shall let the owner correct a library's folder after it moves on disk, by picking the folder it moved to. The library's files move with it and keep their identity (core FR-FC-41), so nothing that references them is lost; the registered source folder the library was made from follows the same move, or its next scan would walk a folder that is no longer there. A destination that overlaps another library, or that the catalog already holds files for, is refused in those terms rather than generically. |
-| FR-CT-18 | The system shall offer, from a file's detail view, the actions that add it to the owner's lists — a watchlist for a video, a reading list for a book or comic — so that a file inside a library, which no type panel lists, can still be added to them. |
+| FR-CT-15 | The system shall present a library's files in their folders on disk, one level at a time, from the navigation panel's own libraries area, which lists every library. A library exists so that a folder whose structure *is* its meaning — a course, with each class's recording and handouts side by side — keeps that structure; a flat listing of its files answers a question nobody asked of it. Adding one starts its first index run (FR-LB-12): the tree is built from what the catalog holds beneath the root, not from a walk of the disk, so until that run has recorded something the library shows nothing at all — no files, and no folders either. The tree is a second way to a library's files, not the only one: they are listed in their type panels as well. |
+| FR-CT-16 | **Removed (0.6 core)** — every file belongs to a library now, so a library's files are listed in the type panels, their counts, the home dashboard, search, the deleted-items and missing-files reviews, and the collection picker like any other. |
+| FR-CT-17 | The system shall let the owner correct a library's folder after it moves on disk, by picking the folder it moved to. The library's files move with it and keep their identity (core FR-FC-41), so nothing that references them is lost. A destination that overlaps another library, or that the catalog already holds files for, is refused in those terms rather than generically, and so is a move while a run of the library is running or paused (FR-LB-09). |
+| FR-CT-18 | The system shall offer, from a file's detail view, the actions that add it to the owner's lists — a watchlist for a video, a reading list for a book or comic — so that a file reached through a library's folders, rather than through its type panel, can be added to them as well. |
+| FR-CT-19 | The system shall offer, for music only, an album sort, which is the Music panel's default: by album artist (falling back to artist), then album, then track number, then title, all without regard to case, with untagged values last. It is saved with the type's other listing settings (FR-UX-12), and the name and date sorts stay offered beside it. The player's next and previous follow it (FR-PL-06), which is why it exists: an album has to play in its own order, not in the order of its file names. |
 
 ### 3.4 Metadata and Content Editing — `ME`
 
 | ID | Requirement |
 | --- | --- |
-| FR-ME-01 | **Removed (moved out of scope, see Orpheus)** |
+| FR-ME-01 | The system shall edit an audio file's tags through the core — title, artist, album artist, album, year, genre, and track number — from the file's detail view, which also shows the tags and the duration. Reinstated for the 0.6 core, which knows audio again. |
 | FR-ME-02 | The system shall edit a video file's metadata through the core, including whether it is a movie or a series. |
 | FR-ME-03 | The system shall validate editable fields before the call for immediate feedback, and shall present the core's rejection as final when it disagrees. |
 | FR-ME-04 | The system shall rename any file through the core, rejecting names containing characters the host operating system forbids before the call is made. |
@@ -217,11 +219,11 @@ replace the FFI one without touching a screen.
 | FR-PL-02 | The system shall offer full-screen toggling, pause and resume, and seeking forward and backward during video playback. |
 | FR-PL-03 | The system shall list the subtitle tracks available in a video and switch between them, including turning subtitles off. |
 | FR-PL-04 | The system shall list the audio tracks available in a video and switch between them. |
-| FR-PL-05 | **Removed (moved out of scope, see Orpheus)** |
-| FR-PL-06 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-05 | The system shall play an audio file from its on-disk path in a player bar docked at the bottom of the shell, which remains while the owner navigates elsewhere in the application. The bar shows the track's cover, its title and artist (FR-CT-13), previous, play and pause, and next, where the track has reached against its length with seeking, and a control that stops playback and hides the bar; the title opens the track's details. Reinstated for the 0.6 core, without the full-window player (FR-PL-07). |
+| FR-PL-06 | The system shall play, as a queue, the list a track was started from: the Music panel's listing in its sort and filter, a library folder's audio files in tree order, or the track alone when it was started from search, its details, or the home dashboard. Deleted records are left out of the queue. Next and previous move within it, the next track plays when one ends, and playback stops after the last; there is no shuffle and no repeat. Reinstated, narrowed, for the 0.6 core: albums, artists, and playlists are not queued, because none of them is browsed. |
 | FR-PL-07 | **Removed (moved out of scope, see Orpheus)** |
-| FR-PL-08 | The system shall keep at most one playback session active. |
-| FR-PL-09 | The system shall persist a resume position for a played file and offer to resume from it when the file is opened again. |
+| FR-PL-08 | The system shall keep at most one playback session playing: opening a video pauses the music. |
+| FR-PL-09 | The system shall persist a resume position for a played video and offer to resume from it when the file is opened again. A track keeps none and starts from its beginning each time. |
 | FR-PL-10 | The system shall report a file that is missing on disk or cannot be decoded as a readable failure, without terminating the application. |
 | FR-PL-11 | **Removed (moved out of scope, see Orpheus)** |
 | FR-PL-12 | **Removed (moved out of scope, see Orpheus)** |
@@ -230,6 +232,14 @@ replace the FFI one without touching a screen.
 | FR-PL-15 | **Removed (moved out of scope, see Orpheus)** |
 | FR-PL-16 | **Removed (moved out of scope, see Orpheus)** |
 | FR-PL-17 | **Removed (moved out of scope, see Orpheus)** |
+| FR-PL-18 | The system shall skip a queued track that cannot be opened — missing on disk or unreadable — naming it briefly in the player bar and playing the next; only when nothing left in the queue opens shall it stop, with a readable failure that offers a re-scan as the video player does (FR-PL-10). One missing file does not end an album. |
+| FR-PL-19 | The system shall stop music when the owner signs out (FR-AU-09), and shall drop a removed library's tracks from the queue (FR-LB-10), stopping playback when the track playing is one of them. |
+
+Audio came back with the 0.6 core as files to play, not as a music library to
+manage, which stays Orpheus's. The full-window player (FR-PL-07, FR-PL-11,
+FR-PL-12), lyrics and artist photographs (FR-PL-13, FR-PL-15, FR-UX-13),
+browsing by artist and album (FR-PL-14), play history and statistics (FR-PL-16,
+FR-PL-17), and playlists (FR-TR-15 … FR-TR-20) remain removed.
 
 ### 3.6 Document, Image, and Page Viewing — `VW`
 
@@ -330,9 +340,11 @@ addressed by the **public UUID string** the core returns, and that UUID is what
 every call passes back. The core's internal keys are never exposed across the FFI
 boundary and consequently never exist in this application.
 
-The application's own entities are keyed by what naturally identifies them: a
-`LibrarySource` by its absolute folder path, an `IndexRun` by the run identifier
-the core returned when it started, and `AppSettings` by being a singleton. A
+The application's own entities are keyed by what naturally identifies them: an
+`IndexRun` by the run identifier the core returned when it started, and
+`AppSettings` by being a singleton. A library is the core's, addressed by its
+UUID like every other core-owned entity; the application keeps no folder record
+of its own. A
 `PlaybackState` is keyed by the file UUID it belongs to, which means a purged
 file's resume point is identifiable and removable.
 
@@ -340,8 +352,8 @@ file's resume point is identifiable and removable.
 
 ```mermaid
 erDiagram
-    LIBRARY_SOURCE ||--o{ INDEX_RUN : "produces"
-    LIBRARY_SOURCE ||--o{ FILE : "yields"
+    LIBRARY ||--o{ INDEX_RUN : "produces"
+    LIBRARY ||--o{ FILE : "holds"
     FILE ||--o| PLAYBACK_STATE : "resumes at"
     FILE }o--o{ COLLECTION : "grouped by (kind = file)"
     BOOKMARK }o--o| COLLECTION : "grouped by (kind = bookmark)"
@@ -349,16 +361,18 @@ erDiagram
     FILE ||--o{ WATCH_PROGRESS : "tracked by"
     READING_LIST ||--o{ READING_PROGRESS : "contains"
     FILE ||--o{ READING_PROGRESS : "tracked by"
-    APP_SETTINGS ||--|| LIBRARY_SOURCE : "records"
     SESSION ||--o{ FILE : "authorizes"
 ```
 
-`FILE`, `BOOKMARK`, `COLLECTION`, `WATCHLIST`, `WATCH_PROGRESS`, `READING_LIST`,
-and `READING_PROGRESS` are **projections** of core-owned entities; the field
-tables below list what the application consumes from each, not what the core
-stores. `LIBRARY_SOURCE`, `INDEX_RUN`, `SESSION`, `PLAYBACK_STATE`, and
-`APP_SETTINGS` are owned by the application and persisted — except `SESSION` —
-in the local settings store.
+`LIBRARY`, `FILE`, `BOOKMARK`, `COLLECTION`, `WATCHLIST`, `WATCH_PROGRESS`,
+`READING_LIST`, and `READING_PROGRESS` are **projections** of core-owned
+entities; the field tables below list what the application consumes from each,
+not what the core stores. Every file belongs to exactly one library.
+`INDEX_RUN` is the core's too — it stores every run and lists the running and
+paused ones — and the application keeps only what this session followed, in
+memory. `SESSION`, `PLAYBACK_STATE`, and `APP_SETTINGS` are owned by the
+application and persisted — except `SESSION`, which lives in memory — in the
+local settings store.
 
 ### 4.2 File (projection)
 
@@ -370,7 +384,8 @@ in the local settings store.
 | type | enum | Required | The file's type, which selects the viewer and the available actions. |
 | state | enum | Required | The lifecycle state the core reports — active, deleted, or missing. |
 | contentHash | string | Required, read-only | The core's content hash. Used to detect that a file changed since it was listed. |
-| metadata | type-specific | Optional | The subtype metadata the core returns for this file's type, edited through the core. |
+| metadata | type-specific | Optional | The subtype metadata the core returns for this file's type, edited through the core — a video's metadata, or a track's tags and duration. |
+| libraryUuid | string | Required, from the core | The library the file belongs to. |
 | deletedAt | timestamp | Present when deleted | Drives the remaining-restorable indication in the deleted view. |
 
 ### 4.3 Bookmark (projection)
@@ -414,16 +429,18 @@ in the local settings store.
 | progress.currentIssue | integer | Optional, comic series only | Current issue. |
 | progress.totalIssues | integer | Optional, comic series only | Total issues, when known. |
 
-### 4.7 LibrarySource (application-owned)
+### 4.7 Library (projection)
 
 | Field | Type | Constraints | Description |
 | --- | --- | --- | --- |
-| path | string | Required, unique, an existing readable directory at registration | The registered library folder. Also its key. |
-| label | string | Optional | An owner-supplied name, defaulting to the folder name. |
-| registeredAt | timestamp | Required | When it was registered. |
-| lastRunId | string | Optional | The identifier of the most recent run over this folder. |
-| lastRunOutcome | enum | Optional | Whether that run finished or failed. |
-| lastRunAt | timestamp | Optional | When it finished. |
+| uuid | string | Required, from the core | Public identifier. |
+| name | string | Required, non-empty | The owner's name for the library, defaulting to the folder's name. |
+| rootPath | string | Required, from the core | The folder the library stands for. Corrected through the core when it moves (FR-CT-17). |
+
+This replaces the application-owned `LibrarySource`, the folder list 0.5 kept in
+the settings store with each folder's label, run history, and recorded file
+types. The 0.6 core keeps the libraries itself, and the application deletes the
+old list at sign-in (FR-LB-03).
 
 ### 4.8 IndexRun (application-owned)
 
@@ -431,7 +448,7 @@ in the local settings store.
 | --- | --- | --- | --- |
 | runId | string | Required, from the core | The run identifier the core returned. |
 | kind | enum | Required — scan or refresh | Which operation started it. |
-| sourcePath | string | Required for a scan | The library folder being scanned. |
+| libraryUuid | string | Required for a scan, absent for a refresh | The library being scanned. |
 | status | enum | Required — running, finished, failed | Observed state. |
 | filesIndexed | integer | Derived | Files counted so far. |
 | filesMissing | integer | Derived | Cataloged files found missing. |
@@ -468,7 +485,6 @@ and from every other: they exist only as arguments to the call that submits them
 | layoutByType | map | Required | The chosen view layout per file type. |
 | sortByType | map | Optional | The chosen sort per file type. |
 | filtersByType | map | Optional | The retained filters per file type. |
-| librarySources | list | Required | The registered library folders. |
 | windowGeometry | record | Optional | Last window size and position. |
 
 ---
@@ -488,12 +504,12 @@ does not already publish.
 | Login | Authenticate the owner | FR-AU-04, FR-AU-05, FR-AU-07 |
 | Password recovery | Spend a recovery code on a new password | FR-AU-15, FR-AU-16, FR-AU-18 |
 | Home dashboard | Recent items, items in progress, counts, last run outcome | FR-CT-11 |
-| Library sources | Register, scan, refresh, pace, unregister, mark folders as libraries, and name what a run could not record | FR-LB-01 … FR-LB-23 |
-| Catalog listing | Type-filtered listing in three layouts, with search, filters, and sorting | FR-CT-01 … FR-CT-04, FR-CT-06 … FR-CT-10, FR-CT-12, FR-CT-16 |
-| Libraries | Every library, and one library's folders a level at a time | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
-| File detail | Metadata, path, state, and available actions | FR-CT-05, FR-CT-18, FR-ME-02, FR-ME-04 |
+| Catalog listing | Type-filtered listing in three layouts, with search, filters, and sorting; music listed by its tags, in album order by default | FR-CT-01 … FR-CT-04, FR-CT-06 … FR-CT-10, FR-CT-12, FR-CT-13, FR-CT-19 |
+| Libraries | Every library — add, scan again, re-check all, move, remove, and name what a run could not record — and one library's folders a level at a time | FR-LB-01 … FR-LB-21, FR-LB-23, FR-CT-15, FR-CT-17 |
+| File detail | Metadata, path, state, and available actions | FR-CT-05, FR-CT-18, FR-ME-01, FR-ME-02, FR-ME-04 |
 | Text editor | Markdown and text editing with live preview | FR-ME-06 … FR-ME-10 |
 | Video player | Playback with subtitle and audio tracks | FR-PL-01 … FR-PL-04, FR-PL-08 … FR-PL-10 |
+| Player bar | A track playing while the owner browses, through the list it was started from | FR-PL-05, FR-PL-06, FR-PL-08, FR-PL-18, FR-PL-19 |
 | Document viewer | PDFs and e-books | FR-VW-02, FR-VW-07, FR-VW-08 |
 | Comic viewer | Comic archives, page by page | FR-VW-03, FR-VW-07, FR-VW-08 |
 | Image viewer | Fit and zoom | FR-VW-04, FR-VW-07 |
@@ -514,21 +530,21 @@ Calls are grouped by the gateway that owns them.
 
 | Gateway | Core operations used | Requirements |
 | --- | --- | --- |
-| Bootstrap | `alexandria_index_init`, `alexandria_version`, `alexandria_health_status_code` | FR-LB-03, and the startup checks in [Operations & Infrastructure §5](Operations%20%26%20Infrastructure%20Document.md) |
+| Bootstrap | `alexandria_index_init`, `alexandria_version`, `alexandria_health_status_code` | The startup checks in [Operations & Infrastructure §5](Operations%20%26%20Infrastructure%20Document.md) |
 | Auth | `alexandria_auth_local_login`, `alexandria_auth_local_set_credentials` | FR-AU-01, FR-AU-04, FR-AU-10 |
 | Auth — recovery codes | `alexandria_auth_local_register`, `alexandria_auth_local_account`, `alexandria_auth_local_redeem_recovery_code`, `alexandria_auth_local_regenerate_recovery_codes` | FR-AU-02, FR-AU-12 … FR-AU-19 |
-| Indexing | `alexandria_index_start`, `alexandria_index_refresh_start`, `alexandria_index_count_files`, `alexandria_index_count_missing`, `alexandria_index_files_json` | FR-LB-05 … FR-LB-09, FR-LC-08 |
+| Indexing | `alexandria_library_index_start`, `alexandria_index_refresh_start`, `alexandria_index_count_files`, `alexandria_index_count_missing`, `alexandria_index_files_json` | FR-LB-05 … FR-LB-09, FR-LC-08 |
 | Indexing — following a run | `alexandria_index_run_status_json`, `alexandria_index_runs_active_json`, `alexandria_index_run_failures_json` | FR-LB-08, FR-LB-13 … FR-LB-15, FR-LB-18 |
 | Indexing — controlling a run | `alexandria_index_pause`, `alexandria_index_cancel`, `alexandria_index_resume` | FR-LB-16, FR-LB-17 |
 | Files | `alexandria_files_list`, `alexandria_file_get_by_uuid` | FR-CT-02, FR-CT-05 … FR-CT-08, FR-CT-11 |
-| File editing | `alexandria_file_edit_metadata`, `alexandria_file_rename`, `alexandria_file_read_content`, `alexandria_file_edit_content` | FR-ME-02, FR-ME-04, FR-ME-06, FR-ME-08 |
+| File editing | `alexandria_file_edit_metadata`, `alexandria_file_rename`, `alexandria_file_read_content`, `alexandria_file_edit_content` | FR-ME-01, FR-ME-02, FR-ME-04, FR-ME-06, FR-ME-08 |
 | File lifecycle | `alexandria_file_soft_delete`, `alexandria_file_restore`, `alexandria_file_purge`, `alexandria_file_purge_on_disk` | FR-LC-01, FR-LC-04, FR-LC-05, FR-LC-06 |
 | Collections | `alexandria_collections_list`, `alexandria_collection_create`, `_rename`, `_delete`, `_add_items`, `_remove_item`, `_list_items` | FR-OG-01 … FR-OG-06 |
 | Bookmarks | `alexandria_bookmark_create`, `_update`, `alexandria_bookmarks_list`, `_soft_delete`, `_restore`, `_purge` | FR-OG-08 … FR-OG-10, FR-LC-01, FR-LC-04, FR-LC-05 |
 | Watchlists | `alexandria_watchlist_create`, `_add_video`, `alexandria_watchlists_list`, `_update_progress`, `_remove_video`, `_delete` | FR-TR-01 … FR-TR-07 |
 | Reading lists | `alexandria_reading_list_create`, `_add_item`, `alexandria_reading_lists_list`, `_update_progress`, `_remove_item`, `_delete` | FR-TR-08 … FR-TR-14 |
-| Libraries | `alexandria_libraries_list`, `alexandria_library_register`, `_move`, `_browse`, `_remove` | FR-CT-16, FR-CT-17 |
-| Playback sources | `alexandria_file_playback_source`, `alexandria_comic_page` | FR-PL-01, FR-VW-04 |
+| Libraries | `alexandria_libraries_list`, `alexandria_library_register`, `_move`, `_browse`, `_remove` | FR-LB-01, FR-LB-02, FR-LB-10, FR-LB-12, FR-CT-15, FR-CT-17 |
+| Playback sources | `alexandria_file_playback_source`, `alexandria_file_thumbnail`, `alexandria_comic_page` | FR-PL-01, FR-PL-05, FR-VW-04 |
 | Settings | `alexandria_settings_json` | FR-LC-03 |
 | Memory | `alexandria_free_string` | NFR-13 |
 
@@ -541,8 +557,7 @@ made from a gateway and named in no row here is a dependency nobody agreed to.
 
 | Access | Purpose | Requirements |
 | --- | --- | --- |
-| Read bytes at a file's path | Playback and viewing | FR-PL-01, FR-VW-02 … FR-VW-07 |
-| Read a directory's existence and readability | Validating a library folder before registering it | FR-LB-02 |
+| Read bytes at a file's path | Playback and viewing | FR-PL-01, FR-PL-05, FR-VW-02 … FR-VW-07 |
 | Write the local settings store and the log file | Application-owned state | FR-UX-12, and [Operations & Infrastructure §4](Operations%20%26%20Infrastructure%20Document.md) |
 
 The application performs no other filesystem write. Renaming, content saving, and
@@ -613,7 +628,7 @@ with the new account's recovery codes still on screen, and authenticated.
 | Regenerate the recovery codes | ✅ | ❌ Already showing a set | ❌ |
 | Change credentials | ✅ | ❌ | ❌ |
 | Sign out | ✅ | ✅ | ❌ |
-| Register, scan, refresh, or unregister a library folder | ✅ | ❌ | ❌ |
+| Add, scan, refresh, move, or remove a library | ✅ | ❌ | ❌ |
 | Browse, search, filter, or sort the catalog | ✅ | ❌ | ❌ |
 | View a file's details | ✅ | ❌ | ❌ |
 | Play or view a file | ✅ | ❌ | ❌ |
@@ -689,10 +704,10 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Feature | Requirements |
 | --- | --- |
 | F-01 Authentication and session | FR-AU-01 through FR-AU-19 |
-| F-02 Library sources and indexing | FR-LB-01 through FR-LB-23 |
-| F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-18 |
-| F-04 Metadata and content editing | FR-ME-02 through FR-ME-10 (FR-ME-01 removed) |
-| F-05 Media playback | FR-PL-01 through FR-PL-04, FR-PL-08 through FR-PL-10 (FR-PL-05 through FR-PL-07 and FR-PL-11 through FR-PL-17 removed) |
+| F-02 Libraries and indexing | FR-LB-01 through FR-LB-23 (FR-LB-22 removed) |
+| F-03 Catalog browsing, search, and filtering | FR-CT-01 through FR-CT-19 (FR-CT-14 and FR-CT-16 removed) |
+| F-04 Metadata and content editing | FR-ME-01 through FR-ME-10 |
+| F-05 Media playback | FR-PL-01 through FR-PL-06, FR-PL-08 through FR-PL-10, FR-PL-18, FR-PL-19 (FR-PL-07 and FR-PL-11 through FR-PL-17 removed) |
 | F-06 Document, image, and page viewing | FR-VW-01 through FR-VW-08 |
 | F-07 Collections and bookmarks | FR-OG-01 through FR-OG-12 |
 | F-08 Watchlists and reading lists | FR-TR-01 through FR-TR-14 (FR-TR-15 through FR-TR-20 removed) |
@@ -704,10 +719,10 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Domain area | Code | Requirement IDs |
 | --- | --- | --- |
 | Authentication and session | `AU` | FR-AU-01 … FR-AU-19 |
-| Library sources and indexing | `LB` | FR-LB-01 … FR-LB-23 |
-| Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-18 |
-| Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 (FR-ME-01 removed) |
-| Media playback | `PL` | FR-PL-01 … FR-PL-17 (FR-PL-05 … FR-PL-07 and FR-PL-11 … FR-PL-17 removed) |
+| Libraries and indexing | `LB` | FR-LB-01 … FR-LB-23 (FR-LB-22 removed) |
+| Catalog browsing and search | `CT` | FR-CT-01 … FR-CT-19 (FR-CT-14 and FR-CT-16 removed) |
+| Metadata and content editing | `ME` | FR-ME-01 … FR-ME-10 |
+| Media playback | `PL` | FR-PL-01 … FR-PL-19 (FR-PL-07 and FR-PL-11 … FR-PL-17 removed) |
 | Document, image, and page viewing | `VW` | FR-VW-01 … FR-VW-08 |
 | Collections and bookmarks | `OG` | FR-OG-01 … FR-OG-12 |
 | Watchlists and reading lists | `TR` | FR-TR-01 … FR-TR-20 (FR-TR-15 … FR-TR-20 removed) |
@@ -731,8 +746,8 @@ appears exactly once.
 | BR-08 Purge-on-disk is presented distinctly | FR-LC-06 |
 | BR-09 No media editing | §1.1, FR-PL-01 |
 | BR-10 Indexing observed asynchronously, interface stays usable | FR-LB-07, NFR-06 |
-| BR-11 Multiple library folders | FR-LB-04 |
-| BR-12 Source changes never delete data | FR-LB-10 |
+| BR-11 Multiple libraries | FR-LB-01, FR-LB-04 |
+| BR-12 Removing a library deletes only its catalog records | FR-LB-10 |
 | BR-13 Types handled through a viewer registry | FR-VW-01, NFR-18 |
 | BR-14 Collections modeled as a tree of depth one | FR-OG-07 |
 | BR-15 Bytes read at open, never cached across runs | FR-VW-07 |

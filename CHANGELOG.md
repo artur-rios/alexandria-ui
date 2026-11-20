@@ -7,6 +7,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Music, as files to play rather than a music library to manage, which stays Orpheus's. A Music panel after Videos
+  lists tracks by their tags: the title, then artist · album, and the duration. A track is named by its title, or its
+  file name when it has none, everywhere it appears: search, the dashboard, a library's folders (with the file name
+  beneath), the delete and missing-files reviews, and the player bar.
+- An "Album" sort for Music, and its default: by album artist (or artist), album, track number and title, with untagged
+  tracks last.
+- A track's tags — title, artist, album artist, album, year, genre and track number — are edited from its details.
+- A player bar docked at the bottom of the window plays a track while you browse: its cover, title and artist,
+  previous, play and pause, next, a seek bar, and close. It plays on through the list the track was started from (the
+  Music panel in its order, a library folder in tree order, or the track alone from search, details or the
+  dashboard), skips a track that cannot be opened and says which, and stops after the last. Opening a video pauses
+  it, and signing out stops it. There are no playlists, play history, shuffle or repeat, and a track does not
+  remember where it stopped.
+
+### Changed
+
+- Libraries are the only way files get into Alexandria. A folder is added as a library on the Libraries screen, now
+  a destination of its own, and its first scan starts straight away and is followed under its row. Each library can
+  be scanned again, moved, or removed from its row, and "Re-check all libraries" is there too. The Library menu has
+  "Libraries" and "Add library…", the buttons on an empty catalog open the Libraries screen and start adding one, and
+  the activity strip names a scan by its library.
+- A library's files are listed everywhere: the type panels, the dashboard's recent files, search, the deleted and
+  missing-files reviews, and the collection picker. They used to be kept out of the type panels.
+- Removing a library deletes it from the catalog with its files, their reading and watching positions, their place in
+  collections, and its scans, a paused one included; nothing on disk is touched, and the confirmation says so. A
+  library cannot be removed while it is being scanned, and it cannot be moved or scanned again while a scan of it is
+  running or paused. Its tracks leave the player's queue.
+- The application needs Alexandria core 0.6 (`>=0.6.0 <0.7.0`); a 0.5 core is refused at startup.
+- Signing in clears the folder list 0.5 kept in the application's settings. The 0.6 core has already deleted those
+  folders' records, so add them again as libraries.
+
+### Removed
+
+- The Library sources screen and the folder list the application kept for it.
+- The question of which file types a folder's index records.
+- Indexing a folder that is not a library.
+
 ## [1.0.1] - 2026-11-14
 
 ### Changed

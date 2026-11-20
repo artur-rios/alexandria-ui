@@ -87,9 +87,9 @@ implementation is built in this scope.
 
 | Package | Version | Used by | Role |
 | --- | --- | --- | --- |
-| **media_kit** | latest stable at implementation time | Playback | Video playback engine, libmpv-backed. Chosen over the simpler embedders because subtitle-track and audio-track selection on both Windows and Linux are hard requirements, and it plays the container and codec range a real personal library contains without transcoding. |
+| **media_kit** | latest stable at implementation time | Playback | Video and audio playback engine, libmpv-backed; the player bar uses its own instance beside the video player's. Chosen over the simpler embedders because subtitle-track and audio-track selection on both Windows and Linux are hard requirements, and it plays the container and codec range a real personal library contains without transcoding. |
 | **media_kit_video** | latest stable at implementation time | Playback | The video render surface. |
-| **media_kit_libs_video** | latest stable at implementation time | Playback | The bundled native libmpv libraries for each target platform. |
+| **media_kit_libs_video** | latest stable at implementation time | Playback | The bundled native libmpv libraries for each target platform, which decode audio too, so music needs no package of its own. |
 
 ### 3.4 Document, image, and page viewing
 
@@ -210,8 +210,8 @@ deferred until comic viewing ships. The choice is recorded here when made.
 | Package | Version | Used by | Role |
 | --- | --- | --- | --- |
 | **window_manager** | latest stable at implementation time | Shell | Enforces the minimum window size and persists and restores window geometry across runs. |
-| **file_selector** | latest stable at implementation time | Library sources | The native folder picker used to register a library folder. |
-| **shared_preferences** | latest stable at implementation time | Data layer | The local key-value store for settings, registered library folders, and playback resume points. It holds **no catalog data and no credential**. |
+| **file_selector** | latest stable at implementation time | Libraries | The native folder picker used to add a folder as a library. |
+| **shared_preferences** | latest stable at implementation time | Data layer | The local key-value store for settings and playback resume points. It holds **no catalog data and no credential**. |
 | **path** / **path_provider** | latest stable at implementation time | Data layer | Resolves the per-platform application-support directory that holds the settings store, the log file, and the core's SQLite database. |
 
 ### 3.6 Cross-cutting
@@ -229,7 +229,7 @@ deferred until comic viewing ships. The choice is recorded here when made.
 | --- | --- |
 | Catalog database | **None owned by this application.** The catalog is a SQLite database owned by the Alexandria core. The application supplies its path at startup via `alexandria_index_init` and thereafter reads and writes it *only* through the core's FFI surface. Opening that file directly is prohibited by [Business Rules BR-01 and its prohibitions](../initial/Business%20Rules.md). |
 | Database location | The per-platform application-support directory resolved by `path_provider`, overridable by configuration for development and tests. |
-| Application settings | **shared_preferences** — theme, language, view layout, registered library folders, per-type sort and filter defaults, playback resume points, and window geometry. |
+| Application settings | **shared_preferences** — theme, language, view layout, per-type sort and filter defaults, playback resume points, and window geometry. |
 | Credentials | **Never stored by this application.** The salted hash lives in the core; the session credential lives in process memory for the run of the application only. |
 | File bytes | **Never stored or copied.** Media and document content is read from the on-disk path on each open. |
 
