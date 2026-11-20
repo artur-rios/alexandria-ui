@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../catalog/domain/file_type.dart';
 import '../../catalog/presentation/file_details_view.dart';
 import '../../catalog/presentation/music_display_name.dart';
 import '../../shell/presentation/async_state_view.dart';
@@ -103,15 +104,27 @@ class _LibraryTreeScreenState extends ConsumerState<LibraryTreeScreen> {
                     ),
                   for (final entry in loaded.files)
                     ListTile(
-                      leading: const Icon(Icons.insert_drive_file_outlined),
-                      // The file's own name here, not its metadata title:
-                      // in a folder view the owner is looking for the file
-                      // they saw on disk, and a lecture recording tagged
-                      // with something else would be unfindable.
+                      leading: Icon(
+                        entry.file.type == FileType.audio
+                            ? Icons.music_note_outlined
+                            : Icons.insert_drive_file_outlined,
+                      ),
+                      // A track by its title, as everywhere else, with the
+                      // file's own name beneath it: in a folder view the
+                      // owner may be looking for the file they saw on disk.
                       title: Text(displayName(entry.file)),
+                      subtitle: entry.file.type == FileType.audio
+                          ? Text(entry.file.name)
+                          : null,
                       // The same as a listing row: the file, with its details
-                      // one press to the right (`openFile`).
-                      onTap: () => openFile(context, ref, entry.file),
+                      // one press to the right (`openFile`). A track plays
+                      // through the folder's other tracks, in tree order.
+                      onTap: () => openFile(
+                        context,
+                        ref,
+                        entry.file,
+                        queue: [for (final each in loaded.files) each.file],
+                      ),
                       trailing: FileDetailsButton(file: entry.file),
                     ),
                 ],

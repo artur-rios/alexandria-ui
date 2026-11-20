@@ -83,9 +83,11 @@ import '../../features/organization/domain/browser_launcher.dart';
 import '../../features/playback/application/playback_session_activity.dart';
 import '../../features/playback/application/video_playback_controller.dart';
 import '../../features/playback/application/video_playback_session.dart';
+import '../../features/playback/data/core_cover_gateway.dart';
 import '../../features/playback/data/core_playback_source_gateway.dart';
 import '../../features/playback/data/media_kit_player.dart';
 import '../../features/playback/data/settings_playback_position_store.dart';
+import '../../features/playback/domain/cover_gateway.dart';
 import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
@@ -119,6 +121,9 @@ import '../../features/lifecycle/domain/deleted_record.dart';
 import '../../features/lifecycle/domain/file_hold.dart';
 import '../../features/lifecycle/domain/lifecycle_gateway.dart';
 import '../../features/lifecycle/domain/retention.dart';
+import '../../features/playback/application/audio_playback_controller.dart';
+import '../../features/playback/application/audio_playback_session.dart';
+import '../../features/playback/application/audio_playback_state.dart';
 import '../../features/playback/application/playback_file_holds.dart';
 import '../../features/tracking/application/reading_lists_controller.dart';
 import '../../features/tracking/application/reading_progress_editor.dart';
@@ -429,6 +434,32 @@ final videoPlayerProvider = Provider<MediaPlayer>((ref) {
   return player;
 });
 
+/// The engine the player bar plays music with (libraries-only design §6).
+///
+/// Its own, not the video player's: music keeps playing while the owner
+/// browses, and a video opening pauses it rather than taking it over.
+final audioPlayerProvider = Provider<MediaPlayer>((ref) {
+  final player = MediaKitPlayer();
+  ref.onDispose(() => unawaited(player.dispose()));
+  return player;
+});
+
+/// A track's front cover (UC-40).
+final coverGatewayProvider = Provider<CoverGateway>((ref) {
+  final core = _loadedCore(ref);
+  if (core == null) {
+    throw StateError('the cover gateway was read before the core was loaded');
+  }
+
+  return CoreCoverGateway(core);
+});
+
+/// What the player bar is playing (libraries-only design §6).
+final audioPlaybackControllerProvider =
+    NotifierProvider<AudioPlaybackController, AudioPlaybackState>(
+      AudioPlaybackController.new,
+    );
+
 /// The widget that draws the decoded frames (UC-19, FR-PL-01).
 ///
 /// The engine owns the surface, so this follows the engine's binding: the
@@ -461,7 +492,7 @@ final videoPlaybackControllerProvider =
 /// The players the session can have running, which sign-out stops (UC-03
 /// main flow step 2). The video player is the only one (`PlaybackSession`).
 final playbackSessionsProvider = Provider<List<PlaybackSession>>(
-  (ref) => [VideoPlaybackSession(ref)],
+  (ref) => [VideoPlaybackSession(ref), AudioPlaybackSession(ref)],
 );
 
 /// The core's text content operations (UC-18, FR-ME-06, FR-ME-08).
@@ -750,7 +781,11 @@ final openFileHoldsProvider =
 /// it is on screen. The deletion asks this list and nothing else, so neither
 /// player nor viewer has to know the deletion exists.
 final fileHoldsProvider = Provider<List<FileHold>>(
-  (ref) => [VideoFileHold(ref), ...ref.watch(openFileHoldsProvider)],
+  (ref) => [
+    VideoFileHold(ref),
+    AudioFileHold(ref),
+    ...ref.watch(openFileHoldsProvider),
+  ],
 );
 
 /// What a deletion is reporting (UC-33).

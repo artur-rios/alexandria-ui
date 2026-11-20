@@ -2953,6 +2953,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep this under {max} characters.'**
   String musicMetadataErrorTooLong(int max);
+
+  /// Player bar: play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get playerPlay;
+
+  /// Player bar: pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get playerPause;
+
+  /// Player bar: the next track in the list it was started from.
+  ///
+  /// In en, this message translates to:
+  /// **'Next track'**
+  String get playerNext;
+
+  /// Player bar: the previous track, or the start of this one.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous track'**
+  String get playerPrevious;
+
+  /// Player bar: stop the music and hide the bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop and close'**
+  String get playerClose;
+
+  /// Player bar: every track left in the list failed to open.
+  ///
+  /// In en, this message translates to:
+  /// **'None of the remaining tracks could be opened.'**
+  String get playerNothingPlayable;
+
+  /// Player bar: re-check the catalog after tracks could not be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-check libraries'**
+  String get playerRescan;
+
+  /// Player bar: a track that failed to open was skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped {name}: it could not be opened.'**
+  String playerSkipped(String name);
 }
 
 class _AppLocalizationsDelegate

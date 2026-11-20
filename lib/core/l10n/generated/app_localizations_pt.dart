@@ -1716,4 +1716,31 @@ class AppLocalizationsPt extends AppLocalizations {
   String musicMetadataErrorTooLong(int max) {
     return 'Use menos de $max caracteres.';
   }
+
+  @override
+  String get playerPlay => 'Reproduzir';
+
+  @override
+  String get playerPause => 'Pausar';
+
+  @override
+  String get playerNext => 'Próxima faixa';
+
+  @override
+  String get playerPrevious => 'Faixa anterior';
+
+  @override
+  String get playerClose => 'Parar e fechar';
+
+  @override
+  String get playerNothingPlayable =>
+      'Nenhuma das faixas restantes pôde ser aberta.';
+
+  @override
+  String get playerRescan => 'Reverificar bibliotecas';
+
+  @override
+  String playerSkipped(String name) {
+    return '$name foi pulada: não pôde ser aberta.';
+  }
 }

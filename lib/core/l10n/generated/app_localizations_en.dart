@@ -1712,4 +1712,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String musicMetadataErrorTooLong(int max) {
     return 'Keep this under $max characters.';
   }
+
+  @override
+  String get playerPlay => 'Play';
+
+  @override
+  String get playerPause => 'Pause';
+
+  @override
+  String get playerNext => 'Next track';
+
+  @override
+  String get playerPrevious => 'Previous track';
+
+  @override
+  String get playerClose => 'Stop and close';
+
+  @override
+  String get playerNothingPlayable =>
+      'None of the remaining tracks could be opened.';
+
+  @override
+  String get playerRescan => 'Re-check libraries';
+
+  @override
+  String playerSkipped(String name) {
+    return 'Skipped $name: it could not be opened.';
+  }
 }

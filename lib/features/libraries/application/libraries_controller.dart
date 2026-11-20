@@ -72,6 +72,10 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     switch (outcome) {
       case LibraryWriteDone():
         ref.read(indexRunsControllerProvider.notifier).dismiss(uuid);
+        // Its tracks' records are gone with it, so none of them can play.
+        await ref
+            .read(audioPlaybackControllerProvider.notifier)
+            .dropLibrary(uuid);
         invalidateCatalogProjections(ref);
         ref
           ..invalidate(collectionsControllerProvider)

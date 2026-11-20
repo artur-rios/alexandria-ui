@@ -147,6 +147,10 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
   /// AF-04: a resume position stops here and asks first, because the answer
   /// decides where the file is opened at.
   Future<void> open(CatalogFile file) async {
+    // The music in the player bar pauses for the film rather than playing
+    // under it.
+    await ref.read(audioPlaybackControllerProvider.notifier).pauseForVideo();
+
     final resume = _positions.positionFor(file.uuid);
     if (resume != null && resume.position > Duration.zero) {
       state = VideoPlaybackState(

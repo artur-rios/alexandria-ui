@@ -475,5 +475,13 @@
   "musicMetadataErrorNotANumber": "Digite um número inteiro.",
   "musicMetadataErrorYear": "Digite um ano com quatro dígitos.",
   "musicMetadataErrorTrack": "O número da faixa começa em 1.",
-  "musicMetadataErrorTooLong": "Use menos de {max} caracteres."
+  "musicMetadataErrorTooLong": "Use menos de {max} caracteres.",
+  "playerPlay": "Reproduzir",
+  "playerPause": "Pausar",
+  "playerNext": "Próxima faixa",
+  "playerPrevious": "Faixa anterior",
+  "playerClose": "Parar e fechar",
+  "playerNothingPlayable": "Nenhuma das faixas restantes pôde ser aberta.",
+  "playerRescan": "Reverificar bibliotecas",
+  "playerSkipped": "{name} foi pulada: não pôde ser aberta."
 }

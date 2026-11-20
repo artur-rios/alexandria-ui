@@ -9,6 +9,7 @@ import '../../catalog/presentation/catalog_listing.dart';
 import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
 import '../../libraries/presentation/libraries_view.dart';
+import '../../playback/presentation/player_bar.dart';
 import '../../organization/presentation/bookmarks_view.dart';
 import '../domain/shell_destination.dart';
 import 'background_activity_strip.dart';
@@ -50,6 +51,9 @@ class ShellScreen extends ConsumerWidget {
               ],
             ),
           ),
+          // The music playing, under whatever the owner is browsing
+          // (libraries-only design §6). No height when nothing is loaded.
+          const PlayerBar(),
           // FR-LB-15: whatever the core is indexing, below everything else.
           // It takes no height when nothing is running, so the shell is
           // unchanged for anyone not indexing.

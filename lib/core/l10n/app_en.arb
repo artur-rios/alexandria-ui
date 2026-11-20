@@ -2277,5 +2277,42 @@
         "type": "int"
       }
     }
+  },
+  "playerPlay": "Play",
+  "@playerPlay": {
+    "description": "Player bar: play."
+  },
+  "playerPause": "Pause",
+  "@playerPause": {
+    "description": "Player bar: pause."
+  },
+  "playerNext": "Next track",
+  "@playerNext": {
+    "description": "Player bar: the next track in the list it was started from."
+  },
+  "playerPrevious": "Previous track",
+  "@playerPrevious": {
+    "description": "Player bar: the previous track, or the start of this one."
+  },
+  "playerClose": "Stop and close",
+  "@playerClose": {
+    "description": "Player bar: stop the music and hide the bar."
+  },
+  "playerNothingPlayable": "None of the remaining tracks could be opened.",
+  "@playerNothingPlayable": {
+    "description": "Player bar: every track left in the list failed to open."
+  },
+  "playerRescan": "Re-check libraries",
+  "@playerRescan": {
+    "description": "Player bar: re-check the catalog after tracks could not be opened."
+  },
+  "playerSkipped": "Skipped {name}: it could not be opened.",
+  "@playerSkipped": {
+    "description": "Player bar: a track that failed to open was skipped.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

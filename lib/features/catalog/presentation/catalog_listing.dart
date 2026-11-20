@@ -255,7 +255,13 @@ class _FileGrid extends ConsumerWidget {
               ),
               Positioned.fill(
                 child: InkWell(
-                  onTap: () => openFile(context, ref, file),
+                  // A track plays through the listing in its order.
+                  onTap: () => openFile(
+                    context,
+                    ref,
+                    file,
+                    queue: ref.read(listingControllerProvider).value,
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.sm),
                     child: Column(
@@ -329,7 +335,13 @@ class _FileRow extends ConsumerWidget {
       // UC-13 main flow step 1: a row opens its file. The details are the
       // button at the end of the row, and are still where a file that cannot
       // be opened ends up (`openFile`).
-      onTap: () => openFile(context, ref, file),
+      // A track plays through the listing as it is sorted and filtered.
+      onTap: () => openFile(
+        context,
+        ref,
+        file,
+        queue: ref.read(listingControllerProvider).value,
+      ),
       leading: Icon(
         // Deliberately not one of the navigation panel's icons: a row and a
         // destination that draw the same glyph are two different things
