@@ -253,7 +253,7 @@ jobs:
             # Opened now, or ExitCode reads as nothing once the process is gone.
             $null = $process.Handle
             $process.WaitForExit()
-            Get-Content $log -ErrorAction SilentlyContinue | Select-String 'staged|could not move|kept|nothing was changed' | Out-Host
+            Get-Content $log -ErrorAction SilentlyContinue | Select-String 'staged|could not|kept|set aside|nothing was changed' | Out-Host
             return $process.ExitCode
           }
           # An update starts the application again; it has nothing to do here, and holding its files it would stop the
@@ -280,9 +280,15 @@ jobs:
           foreach ($path in "$dir\alexandria.exe", "$dir\unrelated.txt") {
             if (-not (Test-Path $path)) { throw "missing after the update: $path" }
           }
-          foreach ($path in "$dir\.staging-update", "$dir\.backup-update") {
-            if (Test-Path $path) { throw "left behind: $path" }
+          # What a leftover holds, and its attributes, say why it stayed.
+          function Assert-Gone([string] $path) {
+            if (Test-Path $path) {
+              Get-ChildItem -LiteralPath $path -Recurse -Force | Select-Object FullName, Attributes | Format-Table -AutoSize | Out-Host
+              throw "left behind: $path"
+            }
           }
+          foreach ($path in "$dir\.staging-update", "$dir\.backup-update") { Assert-Gone $path }
+          Get-ChildItem -LiteralPath $dir -Filter '.stale-update-*' -Force | ForEach-Object { Assert-Gone $_.FullName }
 
           $before = Entries
           $held = Get-ChildItem -LiteralPath $dir -Filter '*.dll' | Select-Object -Last 1

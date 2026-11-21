@@ -124,6 +124,7 @@ Type: files; Name: "{app}\{#AppExeName}"
 Type: files; Name: "{app}\FFMPEG-LICENSE.txt"
 Type: files; Name: "{app}\*.dll"
 Type: filesandordirs; Name: "{app}\data"
+Type: filesandordirs; Name: "{app}\.stale-update-*"
 Type: dirifempty; Name: "{app}\.staging-update"
 Type: dirifempty; Name: "{app}"
 
@@ -152,6 +153,7 @@ Filename: "{app}\{#AppExeName}"; Check: IsUpdate; \
 const
   UninstallKey =
     'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#AppGuid}_is1';
+  FILE_ATTRIBUTE_NORMAL = $80;
 
 var
   RecordedLocation: String;
@@ -159,6 +161,75 @@ var
   RecordedRoot: Integer;
   { Decided on the directory page, carried out once the files are staged. }
   RemoveElsewhere: Boolean;
+
+{ Used to clear the read-only attribute some bundled files carry, which
+  DeleteFile and DelTree do not get past. }
+function SetFileAttributesW(lpFileName: String; dwFileAttributes: Cardinal): Boolean;
+  external 'SetFileAttributesW@kernel32.dll stdcall';
+
+{ Clears every attribute of Path and of everything below it. }
+procedure ClearAttributes(const Path: String);
+var
+  Found: TFindRec;
+begin
+  SetFileAttributesW(Path, FILE_ATTRIBUTE_NORMAL);
+  if DirExists(Path) and FindFirst(Path + '\*', Found) then
+  try
+    repeat
+      if (Found.Name <> '.') and (Found.Name <> '..') then
+        ClearAttributes(Path + '\' + Found.Name);
+    until not FindNext(Found);
+  finally
+    FindClose(Found);
+  end;
+end;
+
+{ Deletes a folder or file this setup is done with: attributes cleared, and
+  retried for a few seconds while an antivirus holds a file just moved. }
+function RemoveTree(const Path: String): Boolean;
+var
+  Attempt: Integer;
+begin
+  Attempt := 0;
+  while (DirExists(Path) or FileExists(Path)) and (Attempt < 10) do
+  begin
+    if Attempt > 0 then
+      Sleep(500);
+    ClearAttributes(Path);
+    if DirExists(Path) then
+      DelTree(Path, True, True, True)
+    else
+      DeleteFile(Path);
+    Attempt := Attempt + 1;
+  end;
+  Result := not (DirExists(Path) or FileExists(Path));
+  if not Result then
+    Log('could not remove ' + Path);
+end;
+
+{ Removes the backups earlier successful swaps could not delete at the time. }
+procedure RemoveStaleBackups(const Directory: String);
+var
+  Found: TFindRec;
+  Names: TStringList;
+  Index: Integer;
+begin
+  Names := TStringList.Create;
+  try
+    if FindFirst(Directory + '\.stale-update-*', Found) then
+    try
+      repeat
+        Names.Add(Found.Name);
+      until not FindNext(Found);
+    finally
+      FindClose(Found);
+    end;
+    for Index := 0 to Names.Count - 1 do
+      RemoveTree(Directory + '\' + Names.Strings[Index]);
+  finally
+    Names.Free;
+  end;
+end;
 
 { Whether the application started this setup to update itself. }
 function IsUpdate(): Boolean;
@@ -234,10 +305,7 @@ begin
        (Pos('\', Names[Index]) > 0) or (Pos('/', Names[Index]) > 0) or (Pos(':', Names[Index]) > 0) then
       Continue;
     Path := Directory + '\' + Names[Index];
-    if DirExists(Path) then
-      DelTree(Path, True, True, True)
-    else
-      DeleteFile(Path);
+    RemoveTree(Path);
   end;
   DeleteFile(PayloadRecord(Directory));
 end;
@@ -407,6 +475,7 @@ begin
       if (Found.Name <> '.') and (Found.Name <> '..') and
          (CompareText(Found.Name, '.staging-update') <> 0) and
          (CompareText(Found.Name, '.backup-update') <> 0) and
+         (Pos('.stale-update-', Found.Name) <> 1) and
          ((not PayloadOnly) or IsPayloadEntry(Found.Name)) then
         Result.Add(Found.Name);
     until not FindNext(Found);
@@ -519,6 +588,7 @@ begin
   Staging := Directory + '\.staging-update';
   Backup := Directory + '\.backup-update';
 
+  RemoveStaleBackups(Directory);
   RemoveDir(Backup);
   if DirExists(Backup) then
   begin
@@ -546,11 +616,18 @@ begin
     if Result then
       SaveNames(NewNames, PayloadRecord(Directory));
 
+    { A backup the swap no longer needs, which would otherwise stop the next
+      update, is renamed out of the way if it will not go now, and removed by
+      the next run. }
     if Result or Restored then
-      DelTree(Backup, True, True, True)
+    begin
+      if not RemoveTree(Backup) then
+        if not RenameFile(Backup, Directory + '\.stale-update-' + GetDateTimeString('yyyymmddhhnnss', #0, #0)) then
+          Log('the backup could not be removed or set aside: ' + Backup);
+    end
     else
       Log('the previous program files are kept in ' + Backup);
-    DelTree(Staging, True, True, True);
+    RemoveTree(Staging);
   finally
     OldNames.Free;
     NewNames.Free;
@@ -566,7 +643,7 @@ begin
   { A staging folder a crashed run left behind would mix old files into new
     ones. }
   if CurStep = ssInstall then
-    DelTree(Directory + '\.staging-update', True, True, True);
+    RemoveTree(Directory + '\.staging-update');
 
   if CurStep = ssPostInstall then
   begin
