@@ -37,6 +37,13 @@ abstract interface class SettingsStore {
   /// Records [value] for the next launch.
   Future<void> setRechecksAtStartup(bool value);
 
+  /// Whether a release build looks for a newer release when it starts, or
+  /// `true` when the owner has not said (update-check design).
+  bool get checksForUpdates;
+
+  /// Records [value] for the next launch.
+  Future<void> setChecksForUpdates(bool value);
+
   /// Reads an arbitrary string preference.
   ///
   /// Features add their own typed accessors above rather than reaching for this

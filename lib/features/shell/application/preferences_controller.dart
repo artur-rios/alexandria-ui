@@ -36,6 +36,7 @@ class PreferencesController extends Notifier<PreferencesState> {
       themeMode: settings?.themeMode ?? ThemeMode.system,
       locale: settings?.locale,
       rechecksAtStartup: settings?.rechecksAtStartup ?? true,
+      checksForUpdates: settings?.checksForUpdates ?? true,
     );
   }
 
@@ -63,6 +64,13 @@ class PreferencesController extends Notifier<PreferencesState> {
   Future<void> setRechecksAtStartup(bool value) async {
     state = state.copyWith(rechecksAtStartup: value, lastChangeUnsaved: false);
     await _persist((settings) => settings.setRechecksAtStartup(value));
+  }
+
+  /// Applies [value] now and records it for the next launch (update-check
+  /// design).
+  Future<void> setChecksForUpdates(bool value) async {
+    state = state.copyWith(checksForUpdates: value, lastChangeUnsaved: false);
+    await _persist((settings) => settings.setChecksForUpdates(value));
   }
 
   /// Clears the unsaved notice once the owner has seen it.

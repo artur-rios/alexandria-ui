@@ -59,6 +59,15 @@ class FailingSettingsStore implements SettingsStore {
   }
 
   @override
+  bool get checksForUpdates => true;
+
+  @override
+  Future<void> setChecksForUpdates(bool value) async {
+    attempted.add('checksForUpdates');
+    throw const FileSystemException('the settings file is read-only');
+  }
+
+  @override
   String? getString(String key) => null;
 
   @override
