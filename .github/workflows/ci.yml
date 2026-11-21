@@ -230,6 +230,109 @@ jobs:
 
       - run: flutter build windows --release
 
+      # The setup, staged (update-check design §3 step 4): a silent install; a replacement in the update mode the
+      # application uses, which must keep a file the setup did not write and leave no staging behind; and a replacement
+      # that fails part-way — a DLL held open with no sharing, so it cannot be moved — which must leave the previous
+      # files exactly as they were; then an uninstall, which must leave only that unrelated file. Compiled on every push
+      # rather than only at release time, so a broken setup script fails here first. Each run is waited for by itself:
+      # Start-Process -Wait would also wait for the application the update starts again.
+      - name: Installer smoke test
+        shell: pwsh
+        timeout-minutes: 15
+        env:
+          ALEXANDRIA_VERSION: 0.0.0
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" packaging\windows\installer.iss
+          if ($LASTEXITCODE -ne 0) { throw 'the setup did not compile' }
+          $setup = (Resolve-Path 'dist\alexandria-setup-0.0.0.exe').Path
+          $dir = Join-Path $env:RUNNER_TEMP 'Alexandria Smoke'
+          function Run-Setup([string[]] $arguments, [string] $log) {
+            $all = $arguments + '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$dir`"", "/LOG=`"$log`""
+            $process = Start-Process $setup -ArgumentList $all -PassThru
+            # Opened now, or ExitCode reads as nothing once the process is gone.
+            $null = $process.Handle
+            $process.WaitForExit()
+            Get-Content $log -ErrorAction SilentlyContinue | Select-String 'staged|could not|kept|set aside|nothing was changed' | Out-Host
+            return $process.ExitCode
+          }
+          # An update starts the application again once the swap is over; it has nothing to do here, and holding its
+          # files it would stop the next run. Given up to ten seconds to appear.
+          # After the failed update it may not start at all: the library held open there is one it loads.
+          function Stop-App([switch] $Started) {
+            for ($i = 0; $i -lt 20 -and -not (Get-Process alexandria -ErrorAction SilentlyContinue); $i++) {
+              Start-Sleep -Milliseconds 500
+            }
+            $running = @(Get-Process alexandria -ErrorAction SilentlyContinue)
+            if ($Started -and -not $running) { throw 'the update did not start Alexandria again' }
+            $running | Stop-Process -Force -PassThru | Wait-Process -Timeout 30
+          }
+          function Entries { Get-ChildItem -LiteralPath $dir -Recurse -Force | ForEach-Object { $_.FullName } | Sort-Object }
+          # Any process with a file of the installation loaded, the executable or a library: what holds a file the
+          # setup cannot move or remove.
+          function Show-Holders([string] $when) {
+            $holders = @(Get-Process | Where-Object {
+              try { @($_.Modules | Where-Object { $_.FileName -like "$dir\*" }).Count -gt 0 } catch { $false }
+            })
+            foreach ($holder in $holders) {
+              $info = Get-CimInstance Win32_Process -Filter "ProcessId = $($holder.Id)"
+              "holding the installation ($when): $($holder.Id) $($holder.Path) started $($holder.StartTime) by $($info.ParentProcessId): $($info.CommandLine)" | Out-Host
+            }
+          }
+
+          $code = Run-Setup @('/VERYSILENT') "$env:RUNNER_TEMP\install.log"
+          if ($code -ne 0) { throw "the first install exited with $code" }
+          if (-not (Test-Path "$dir\alexandria.exe")) { throw 'the first install placed no executable' }
+          Set-Content "$dir\unrelated.txt" 'not ours'
+
+          Show-Holders 'before the update'
+          $code = Run-Setup @('/SILENT', '/UPDATE') "$env:RUNNER_TEMP\update.log"
+          Show-Holders 'after the update'
+          Stop-App -Started
+          if ($code -ne 0) { throw "the update exited with $code" }
+          if (-not (Select-String -Quiet -Path "$env:RUNNER_TEMP\update.log" -Pattern 'the staged files were moved into place')) {
+            throw 'the update did not move the staged files into place'
+          }
+          foreach ($path in "$dir\alexandria.exe", "$dir\unrelated.txt") {
+            if (-not (Test-Path $path)) { throw "missing after the update: $path" }
+          }
+          # What a leftover holds, and its attributes, say why it stayed.
+          function Assert-Gone([string] $path) {
+            if (Test-Path $path) {
+              Get-ChildItem -LiteralPath $path -Recurse -Force | Select-Object FullName, Attributes | Format-Table -AutoSize | Out-Host
+              throw "left behind: $path"
+            }
+          }
+          foreach ($path in "$dir\.staging-update", "$dir\.backup-update") { Assert-Gone $path }
+          Get-ChildItem -LiteralPath $dir -Filter '.stale-update-*' -Force | ForEach-Object { Assert-Gone $_.FullName }
+
+          $before = Entries
+          $held = Get-ChildItem -LiteralPath $dir -Filter '*.dll' | Select-Object -Last 1
+          $handle = [IO.File]::Open($held.FullName, 'Open', 'Read', 'None')
+          try {
+            $code = Run-Setup @('/SILENT', '/UPDATE') "$env:RUNNER_TEMP\failed.log"
+          } finally {
+            $handle.Dispose()
+          }
+          Stop-App
+          if (-not (Select-String -Quiet -Path "$env:RUNNER_TEMP\failed.log" -Pattern 'could not be moved into place')) {
+            throw "the update with $($held.Name) held open did not fail as it should"
+          }
+          $after = Entries
+          $changed = Compare-Object $before $after
+          if ($changed) { $changed | Out-Host; throw 'the failed update changed the previous installation' }
+          if (-not (Test-Path "$dir\.alexandria-payload")) { throw 'the update recorded no payload' }
+
+          # Uninstalling removes every entry the swap put in place — the uninstall log names only their staging paths —
+          # and keeps the file the setup did not write. The uninstaller hands over to a copy of itself and returns at once;
+          # unins000.exe disappearing is what says it finished.
+          Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait
+          for ($i = 0; $i -lt 120 -and (Test-Path "$dir\unins000.exe"); $i++) { Start-Sleep -Milliseconds 500 }
+          $left = @(Get-ChildItem -LiteralPath $dir -Force | ForEach-Object { $_.Name })
+          if (($left.Count -ne 1) -or ($left[0] -ne 'unrelated.txt')) {
+            throw "uninstall left: $($left -join ', ')"
+          }
+
   # integration_test/viewers/saved_page_engine_test.dart opens a hostile saved page in the real Chromium engine and asserts
   # on what its script managed to do (UC-25, FR-VW-05, NFR-12): web security on, the sandbox on, the page held to its folder.
   # That is a security gate, and it cannot run in Jenkins: its checks run as container root, where the engine must refuse to

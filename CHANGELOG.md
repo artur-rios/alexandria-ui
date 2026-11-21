@@ -63,6 +63,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The question of which file types a folder's index records.
 - Indexing a folder that is not a library.
 
+### Fixed
+
+- Replacing an installation no longer removes it first. Both installers unpack the new version beside the old one and
+  move it in only once all of it is there, so a setup that fails part-way, runs out of disk, or is cancelled leaves
+  the previous version as it was; files in the folder that the installer did not write are kept. The Windows setup
+  waits for a running Alexandria to close, or asks you to close it, and removing the copy you moved away from no
+  longer takes the new copy's Start menu entry with it.
+- Each release publishes the SHA-256 of its packages, `alexandria-<version>-linux-SHA256SUMS` and
+  `alexandria-<version>-windows-SHA256SUMS`, which the application's updater checks a download against.
+
 ## [1.0.1] - 2026-11-14
 
 ### Changed

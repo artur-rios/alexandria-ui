@@ -62,3 +62,9 @@ sh tools/check-webview-cef-fork.sh
 # exercised by the integration suite's saved-page test.
 echo "== Vendored webview_cef policy tests"
 sh third_party/webview_cef/test/native/run.sh
+
+# The Linux installer, without root or a release build: a fresh install, a replacement that keeps the owner's own files, a
+# replacement whose payload cannot be unpacked (which must leave the old installation whole, since the in-app updater runs
+# this installer), and removal. The release build smoke-tests the real installer as well.
+echo "== Linux installer"
+sh packaging/linux/test-install.sh
