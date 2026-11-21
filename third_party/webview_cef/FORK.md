@@ -9,8 +9,8 @@ the page viewer (UC-25, FR-VW-05).
 |---|---|
 | Upstream | <https://github.com/hlwhl/webview_cef> (pub.dev: [`webview_cef`](https://pub.dev/packages/webview_cef)) |
 | Base version | **0.6.2**, the pub.dev archive `webview_cef-0.6.2.tar.gz`, sha256 `1e028859e6fe4f52a82349a0acaa6594c1bd8317738df5764fd4365d6aebf6cc` (published 2026-08-25) |
-| CEF it downloads | 149.0.4+g2f1bfd8+chromium-149.0.7827.156 (`third/download.cmake`, unchanged) |
-| Fork version | `0.6.2+alexandria.1` (`pubspec.yaml`) |
+| CEF it downloads | 149.0.4+g2f1bfd8+chromium-149.0.7827.156 (`third/download.cmake`; the version is unchanged, the download is checked: patch 11) |
+| Fork version | `0.6.2+alexandria.2` (`pubspec.yaml`) |
 | Licence | Apache-2.0, upstream's (`LICENSE`, unchanged). Every file this fork changed or added starts with a line saying so, as Apache-2.0 §4(b) asks. |
 
 The CEF binary distribution (`third/cef/`, about 2 GB) is not committed. The
@@ -178,10 +178,27 @@ is set up so that it can be pushed to one as it is (see *Syncing upstream*).
      (C2385): both handler bases declare that typedef.
 9. **Comments and version.**
    - `windows/CMakeLists.txt`: the comment on `USE_SANDBOX OFF` is updated.
-   - `pubspec.yaml`: the version is `0.6.2+alexandria.1`.
+   - `pubspec.yaml`: the version is `0.6.2+alexandria.2`.
 10. **Tests** (`test/native/`). `security_test.cc` and `run.sh` test every
     rule in `webview_security.h` and the sandbox probe without a browser,
     using only a C++17 compiler.
+11. **A checked CEF download** (`third/download.cmake`,
+    `test/native/download_test.sh`). Upstream downloads the CEF archive
+    without looking at the result: its `file(DOWNLOAD … STATUS
+    SHOW_PROGRESS)` takes `SHOW_PROGRESS` for the status variable, and
+    nothing reads it. A connection dropped part-way left part of the archive,
+    unpacking that failed unnoticed, and the build stopped later on "Could not
+    find a package configuration file provided by CEF" (the Linux release of
+    2.0.0 did).
+    - Each archive's SHA-1, as the CDN publishes it, is recorded beside
+      `CEF_VERSION`, and a download is kept only when it matches.
+    - A failed or mismatched download is deleted and tried again, three times
+      in all, ten seconds apart; a download that stalls for two minutes is
+      abandoned. Then the build stops and says which archive it could not
+      download.
+    - An archive that cannot be unpacked stops the build too.
+    - `download_test.sh` tests all of this with CMake in script mode against
+      local files, and that every archive the script can choose has a SHA-1.
 
 ### Every file that differs from upstream 0.6.2
 
@@ -201,11 +218,13 @@ M lib/src/webview_events_listener.dart
 M lib/src/webview_manager.dart
 M linux/webview_cef_plugin.cc
 M pubspec.yaml
+M third/download.cmake
 M windows/CMakeLists.txt
 M windows/webview_cef_plugin.cpp
 A FORK.md
 A common/webview_sandbox.h
 A common/webview_security.h
+A test/native/download_test.sh
 A test/native/run.sh
 A test/native/security_test.cc
 ```
@@ -224,6 +243,8 @@ A test/native/security_test.cc
 
 - `third_party/webview_cef/test/native/run.sh` runs the policy and probe unit
   tests (Linux, a C++17 compiler).
+- `third_party/webview_cef/test/native/download_test.sh` tests the download
+  and unpacking checks (CMake).
 - `integration_test/viewers/saved_page_engine_test.dart` tests the real
   engine.
   - A hostile page tries `XMLHttpRequest` and `fetch` on `/etc/hostname`, an
@@ -249,12 +270,14 @@ A test/native/security_test.cc
    against a pristine 0.6.2 extraction shows exactly what the fork changed.
 3. Re-check upstream's command-line switches, `CefSettings`, popup handling
    and request handlers for anything new that weakens isolation.
-4. Update this file's base version, hash and CEF version. Update
+4. Update this file's base version, hash and CEF version, and, if the CEF
+   version changed, each archive's SHA-1 in `third/download.cmake`. Update
    `UPSTREAM_VERSION` and `UPSTREAM_SHA256` in
    `tools/check-webview-cef-fork.sh`. Bump `pubspec.yaml` to
    `<version>+alexandria.1`.
-5. Run `test/native/run.sh`, the tool above, `flutter test`, and the saved-page
-   engine integration test on Linux as an ordinary user.
+5. Run `test/native/run.sh`, `test/native/download_test.sh`, the tool above,
+   `flutter test`, and the saved-page engine integration test on Linux as an
+   ordinary user.
 
 To publish the fork as a GitHub fork, push this directory's contents to a
 fork of `hlwhl/webview_cef`, as a commit on the upstream tag that matches the

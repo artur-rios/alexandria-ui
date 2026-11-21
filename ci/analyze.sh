@@ -12,7 +12,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 # shellcheck source=ci/flutter-env.sh
 . ci/flutter-env.sh
 
-ensure_packages clang libclang-dev g++ pkg-config libgtk-3-dev libx11-dev libxi-dev
+ensure_packages clang libclang-dev g++ pkg-config libgtk-3-dev libx11-dev libxi-dev cmake
 
 flutter pub get
 dart pub get --directory tools/alexandria_lints
@@ -62,6 +62,11 @@ sh tools/check-webview-cef-fork.sh
 # exercised by the integration suite's saved-page test.
 echo "== Vendored webview_cef policy tests"
 sh third_party/webview_cef/test/native/run.sh
+
+# The fork's checks on the CEF archive the plugin's build downloads: its SHA-1 against the one the CDN publishes, a
+# retry on a failed or cut-off download, and a stop with the reason rather than a missing CEF later on.
+echo "== Vendored webview_cef download checks"
+sh third_party/webview_cef/test/native/download_test.sh
 
 # The Linux installer, without root or a release build: a fresh install, a replacement that keeps the owner's own files, a
 # replacement whose payload cannot be unpacked (which must leave the old installation whole, since the in-app updater runs
