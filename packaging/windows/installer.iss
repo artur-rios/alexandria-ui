@@ -153,7 +153,6 @@ Filename: "{app}\{#AppExeName}"; Check: IsUpdate; \
 const
   UninstallKey =
     'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#AppGuid}_is1';
-  FILE_ATTRIBUTE_NORMAL = $80;
 
 var
   RecordedLocation: String;
