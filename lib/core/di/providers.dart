@@ -12,6 +12,7 @@ library;
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -142,6 +143,13 @@ import '../../features/tracking/domain/watchlist_gateway.dart';
 import '../../features/tracking/domain/watch_progress_gateway.dart';
 import '../../features/shell/domain/shell_destination.dart';
 import '../../features/shell/domain/window_placement.dart';
+import '../../features/updates/application/update_controller.dart';
+import '../../features/updates/application/update_state.dart';
+import '../../features/updates/data/github_release_source.dart';
+import '../../features/updates/data/http_downloader.dart';
+import '../../features/updates/data/pending_update_store.dart';
+import '../../features/updates/data/platform_install_kind_probe.dart';
+import '../../features/updates/domain/update_ports.dart';
 import '../bindings/core_client.dart';
 import '../settings/settings_store.dart';
 import '../settings/shared_preferences_settings_store.dart';
@@ -951,6 +959,52 @@ final sessionActivitiesProvider = Provider<List<SessionActivity>>(
     ),
   ],
 );
+
+/// The running version: the build name the release builds stamp into the
+/// pubspec, which Flutter passes on as `FLUTTER_BUILD_NAME` (update-check
+/// design §2).
+final appVersionProvider = Provider<String>(
+  (ref) =>
+      const String.fromEnvironment('FLUTTER_BUILD_NAME', defaultValue: '0.0.0'),
+);
+
+/// Whether this is a release build. Debug and profile builds never check for
+/// updates, so a developer's `flutter run` reports nothing.
+final isReleaseBuildProvider = Provider<bool>((ref) => kReleaseMode);
+
+/// Where the latest release is read from (update-check design §2).
+final releaseSourceProvider = Provider<ReleaseSource>(
+  (ref) => GitHubReleaseSource(
+    url: Uri.parse(
+      const String.fromEnvironment(
+        'ALEXANDRIA_RELEASES_URL',
+        defaultValue:
+            'https://api.github.com/repos/artur-rios/alexandria-ui/releases/latest',
+      ),
+    ),
+    appVersion: ref.watch(appVersionProvider),
+  ),
+);
+
+/// Downloads an update's package (update-check design §3).
+final downloaderProvider = Provider<Downloader>((ref) => HttpDownloader());
+
+/// How this copy was installed (update-check design §1).
+final installKindProbeProvider = Provider<InstallKindProbe>(
+  (ref) => PlatformInstallKindProbe.system(),
+);
+
+/// The record an update leaves for the next start, in the application
+/// support folder.
+final pendingUpdateStoreProvider = FutureProvider<PendingUpdateStore>(
+  (ref) async => PendingUpdateStore(
+    await ref.read(corePathsProvider).resolveApplicationDirectory(),
+  ),
+);
+
+/// The update check and the update itself (update-check design).
+final updateControllerProvider =
+    NotifierProvider<UpdateController, UpdateState>(UpdateController.new);
 
 /// Ends the session on request (UC-03).
 final signOutControllerProvider = Provider<SignOutController>(
