@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'install_kind.dart';
@@ -33,13 +34,18 @@ abstract interface class InstallKindProbe {
 
 /// Asks a download in flight to stop.
 class CancelToken {
-  bool _cancelled = false;
+  final Completer<void> _cancelled = Completer<void>();
 
-  /// Stops the download.
-  void cancel() => _cancelled = true;
+  /// Stops the download, even one waiting on a stalled connection.
+  void cancel() {
+    if (!_cancelled.isCompleted) _cancelled.complete();
+  }
 
   /// Whether [cancel] was called.
-  bool get isCancelled => _cancelled;
+  bool get isCancelled => _cancelled.isCompleted;
+
+  /// Completes when [cancel] is called.
+  Future<void> get whenCancelled => _cancelled.future;
 }
 
 /// Downloads files and hashes them.

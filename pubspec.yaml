@@ -108,6 +108,10 @@ dependencies:
   html: ^0.15.7
   csslib: ^1.0.2
   url_launcher: ^6.3.3
+  # Verifies a downloaded update against the SHA-256 its release publishes
+  # (update-check design §3). Already in the lock as a transitive dependency;
+  # named here because the application now calls it.
+  crypto: ^3.0.8
   # The browser engine saved HTML pages are drawn with (UC-25, FR-VW-05):
   # CEF, rendered off-screen and composed into the window as a texture. The
   # stack document records the trade — the page's script runs, and the
