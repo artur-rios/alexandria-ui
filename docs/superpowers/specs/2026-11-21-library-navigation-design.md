@@ -1,7 +1,7 @@
 # No login, libraries in the left menu, pinned and favorite libraries, a new home
 
 **Date:** 2026-11-21
-**Status:** draft
+**Status:** approved
 **Core:** alexandria-api 0.7.0 (`docs/superpowers/specs/2026-11-21-no-authentication-design.md` there)
 
 ## Why
@@ -38,8 +38,10 @@ The docs site (alexandria-docs) has to describe the app as it will be.
 - Every library can be pinned or unpinned and favorited or unfavorited. You do this from its entry in the left menu
   and from its page header. The choice is stored by the core and survives restarts.
 - Home shows the favorite libraries, A–Z, and the totals: how many libraries, and how many files of each type.
-- Adding, moving, rescanning and removing libraries moves to the menu bar. (A library's name is set when it is added.
-  There is no rename today, and none is added.)
+- A library can be renamed at any time, even while it is being scanned. This is new: today a library's name is set
+  only when it is added. Renaming is offered from the library's entry in the left menu, from its page header and from
+  Manage libraries.
+- Adding, renaming, moving, rescanning and removing libraries moves to the menu bar.
 - The app accepts core `0.7.x` only and builds against core 0.7.0.
 - The docs describe the new behaviour:
   - this repository's README, CHANGELOG, `docs/requirements` and `docs/initial`;
@@ -96,7 +98,8 @@ favorites and totals.
 - `CoreClient` and the core isolate:
   - Remove the token parameter from every call.
   - Remove the auth calls.
-  - Add `librarySetPinned(uuid, pinned)`, `librarySetFavorite(uuid, favorite)` and `catalogStats()`. `catalogStats()`
+  - Add `librarySetPinned(uuid, pinned)`, `librarySetFavorite(uuid, favorite)`, `libraryRename(uuid, name)` and
+    `catalogStats()`. `catalogStats()`
     reads a `LibraryJsonResult` and maps its status like the other library calls.
 - `core_status_mapper.dart`: drop the unauthorized mappings (code 2 is retired in every family). Keep every other
   mapping.
@@ -143,8 +146,8 @@ Each library entry:
 - Shows the folder icon, with a small pin badge when pinned, and the library's name as its label. At the
   icons-only tier, the tooltip is the name. A letter avatar instead of the icon is the builder's choice if it reads
   better.
-- Has a context menu (right-click, and long-press) with Pin/Unpin and Add to favorites/Remove from favorites. The
-  menu shows a star when the library is a favorite.
+- Has a context menu (right-click, and long-press) with Pin/Unpin, Add to favorites/Remove from favorites, and
+  Rename…. The menu shows a star when the library is a favorite.
 - When the library being viewed is removed, the shell goes to Home.
 - Library data comes from `LibrariesController`, which already lists libraries. It now carries `pinned` and
   `favorite`.
@@ -159,7 +162,8 @@ Each library entry:
 
 - **Header:**
   - the library name, with Pin and Favorite toggle buttons beside it;
-  - a menu with Scan again, Move and Remove (the existing flows from `LibrariesView`);
+  - a menu with Rename, Scan again, Move and Remove (Rename is new, see below; the others are the existing flows
+    from `LibrariesView`);
   - the library's run status line, as `LibrariesView` shows it today.
 - **Breadcrumbs:** library root ▸ folder ▸ folder. Each crumb opens that level.
 - **Toolbar:** the layout switcher (grid and list, from `CatalogListing`'s `_LayoutBar`), a type filter (All plus
@@ -184,10 +188,20 @@ results keep whatever listing widgets they use.
 `LibraryMenu` gains a "Libraries" heading, first:
 
 - **Add library…** runs the existing add flow (`openLibrariesAndAdd`).
-- **Manage libraries…** opens today's `LibrariesView` as a dialog: every library with its run, scan again, move and
-  remove.
+- **Manage libraries…** opens today's `LibrariesView` as a dialog: every library with its run, rename, scan again,
+  move and remove.
 
 Removing a library keeps today's confirmation, which says plainly that its catalog records are deleted.
+
+### 5a. Renaming a library
+
+- **Offered in three places:** the left-menu entry's context menu, the library page header's menu, and its row in
+  Manage libraries. It is enabled whatever the library's run is doing.
+- **The dialog:** `LibraryNameDialog`, opened with the current name filled in and selected. Confirm is disabled while
+  the field is blank, the same rule as when a library is added.
+- **Saving:** calls `libraryRename(uuid, name)` (`alexandria_library_rename`), then reloads the libraries. The left
+  menu, the page header, the home favorites and Manage libraries all show the new name, and the menu sorts it again.
+- **If the core refuses:** the dialog stays open and shows the core's message.
 
 ### 6. Home
 
@@ -228,6 +242,13 @@ client:
   - the type filter, sort and layout apply;
   - a file's actions are present;
   - next and previous within the folder's audio.
+- **Rename:**
+  - from each of the three places;
+  - the current name prefilled;
+  - blank disabled;
+  - a refusal shown in the dialog;
+  - allowed during a run;
+  - the menu re-sorting after a rename.
 - **Home:**
   - favorites A–Z;
   - the empty favorites hint;
@@ -248,18 +269,18 @@ This repository:
   - Removed: the login (sign-up, login, recovery codes, change credentials, sign out) and the per-type pages.
   - Changed: the left menu lists libraries; a library opens in the main area; home shows favorites and totals;
     library management is in the menu bar; the core is 0.7.
-  - Added: pinned and favorite libraries.
+  - Added: pinned and favorite libraries, and renaming a library.
 - `docs/requirements`:
   - Mark the auth requirements and use cases, and the per-type navigation (FR-CT-01's per-type entries), withdrawn
     with the reason, as earlier removals were recorded.
-  - Add requirements and use cases for library navigation, pin, favorite and the home statistics.
+  - Add requirements and use cases for library navigation, pin, favorite, rename and the home statistics.
   - Update FR-UX-01 and FR-UX-02 for the new panel.
 - `docs/initial`: wherever the login or per-type browsing is described.
 
 alexandria-docs (`content/en`), a pull request into `main`:
 
 - `docs/usage`: remove the sign-up, login and recovery-code sections. Describe the left menu, pinning, favorites,
-  browsing a library's folders with layout, filter and sort, home, and library management in the menu bar.
+  renaming a library, browsing a library's folders with layout, filter and sort, home, and library management in the menu bar.
 - `docs/architecture`:
   - Remove "Who checks the credentials".
   - "Two ways to deploy it" becomes one: the desktop process with the core through its C ABI. Server mode is gone.
