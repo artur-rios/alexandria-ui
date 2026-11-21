@@ -169,6 +169,19 @@ class UpdateController extends Notifier<UpdateState> {
   /// Stops a download in flight; the offer stands.
   void cancelDownload() => _download?.cancel();
 
+  /// Goes back to the offer when the owner stopped the close, deleting the
+  /// downloaded package: a later Update now downloads it afresh.
+  void abandonInstall() {
+    final ready = state;
+    if (ready is! UpdateReadyToInstall) return;
+    final folder = ready.package.parent;
+    if (folder.existsSync()) folder.deleteSync(recursive: true);
+    state = _available(
+      ready.release,
+      ref.read(installKindProbeProvider).detect(),
+    );
+  }
+
   /// Closes a notice or a failure.
   void dismiss() => state = const UpdateState.idle();
 

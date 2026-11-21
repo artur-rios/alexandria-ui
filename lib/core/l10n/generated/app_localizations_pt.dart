@@ -1816,4 +1816,24 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get updatesCheckFailed => 'Não foi possível procurar atualizações.';
+
+  @override
+  String get updateUnsavedTitle => 'Alterações não salvas';
+
+  @override
+  String get updateUnsavedMessage =>
+      'Atualizar fecha o Alexandria e descarta as alterações que você não salvou. Cancele para voltar e salvá-las antes.';
+
+  @override
+  String get updateUnsavedConfirm => 'Atualizar e descartar';
+
+  @override
+  String get updateScanTitle => 'Uma análise está em andamento';
+
+  @override
+  String get updateScanMessage =>
+      'Ela será pausada, e você poderá retomá-la depois da atualização.';
+
+  @override
+  String get updateScanConfirm => 'Atualizar mesmo assim';
 }

@@ -262,6 +262,25 @@ void main() {
       },
     );
 
+    test(
+      'GivenAReadyPackage_WhenTheCloseIsStopped_ThenTheOfferStandsAndThePackageGoes',
+      () async {
+        final sut = await build();
+        sut.downloader.contents
+          ..[package] = 'abc'
+          ..[sums] = '$abcSum  alexandria-installer-1.2.0-linux-x64.sh\n';
+        final controller = sut.ref.read(updateControllerProvider.notifier);
+        await controller.checkAtStartup();
+        await controller.download();
+        final ready = state(sut.ref) as UpdateReadyToInstall;
+
+        controller.abandonInstall();
+
+        expect(state(sut.ref), isA<UpdateAvailable>());
+        expect(ready.package.existsSync(), isFalse);
+      },
+    );
+
     test('GivenTheSumsLackTheLine_WhenDownloaded_ThenVerifyFailed', () async {
       final sut = await build();
       sut.downloader.contents

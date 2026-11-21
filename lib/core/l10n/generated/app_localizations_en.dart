@@ -1811,4 +1811,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updatesCheckFailed => 'Couldn\'t check for updates.';
+
+  @override
+  String get updateUnsavedTitle => 'Unsaved changes';
+
+  @override
+  String get updateUnsavedMessage =>
+      'Updating closes Alexandria and discards the changes you have not saved. Cancel to go back and save them first.';
+
+  @override
+  String get updateUnsavedConfirm => 'Update and discard';
+
+  @override
+  String get updateScanTitle => 'A scan is running';
+
+  @override
+  String get updateScanMessage =>
+      'It will pause, and you can resume it after the update.';
+
+  @override
+  String get updateScanConfirm => 'Update anyway';
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -6,6 +8,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/file_size.dart';
+import '../application/update_close.dart';
 import '../application/update_state.dart';
 import '../domain/release_info.dart';
 
@@ -145,8 +148,9 @@ class UpdateDialog extends ConsumerWidget {
             .read(browserLauncherProvider)
             .open('https://github.com/artur-rios/alexandria-ui/releases'),
       ),
-      UpdateReadyToInstall() => AlertDialog(
-        content: Text(l10n.updateInstalling),
+      UpdateReadyToInstall(:final release, :final package) => _Installing(
+        release: release,
+        package: package,
       ),
       _ => const SizedBox.shrink(),
     };
@@ -212,4 +216,42 @@ class _Offer extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Closes the application to install the verified package, once it is shown.
+class _Installing extends ConsumerStatefulWidget {
+  const _Installing({required this.release, required this.package});
+
+  final ReleaseInfo release;
+  final File package;
+
+  @override
+  ConsumerState<_Installing> createState() => _InstallingState();
+}
+
+class _InstallingState extends ConsumerState<_Installing> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _install());
+  }
+
+  Future<void> _install() async {
+    if (!mounted) return;
+    final closed = await closeForUpdate(
+      context,
+      ref,
+      release: widget.release,
+      package: widget.package,
+    );
+    // The owner kept unsaved work or a scan: the offer stands, and the
+    // downloaded package goes.
+    if (!closed && mounted) {
+      ref.read(updateControllerProvider.notifier).abandonInstall();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      AlertDialog(content: Text(AppLocalizations.of(context).updateInstalling));
 }

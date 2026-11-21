@@ -148,8 +148,11 @@ import '../../features/updates/application/update_prompt_presence.dart';
 import '../../features/updates/application/update_state.dart';
 import '../../features/updates/data/github_release_source.dart';
 import '../../features/updates/data/http_downloader.dart';
+import '../../features/updates/data/linux_helper_installer.dart';
 import '../../features/updates/data/pending_update_store.dart';
 import '../../features/updates/data/platform_install_kind_probe.dart';
+import '../../features/updates/data/windows_setup_installer.dart';
+import '../../features/updates/domain/install_kind.dart';
 import '../../features/updates/domain/update_ports.dart';
 import '../bindings/core_client.dart';
 import '../settings/settings_store.dart';
@@ -1002,6 +1005,28 @@ final pendingUpdateStoreProvider = FutureProvider<PendingUpdateStore>(
     await ref.read(corePathsProvider).resolveApplicationDirectory(),
   ),
 );
+
+/// What installs a downloaded update for this kind of installation, or null
+/// for one that does not update itself (update-check design §3 step 4).
+final updateInstallerProvider = Provider<UpdateInstaller?>(
+  (ref) => switch (ref.read(installKindProbeProvider).detect()) {
+    InstallKind.windowsInstaller => const WindowsSetupInstaller(),
+    InstallKind.linuxInstaller => LinuxHelperInstaller(
+      appImage: false,
+      processId: pid,
+      executable: Platform.resolvedExecutable,
+    ),
+    InstallKind.appImage => LinuxHelperInstaller(
+      appImage: true,
+      processId: pid,
+      executable: Platform.resolvedExecutable,
+    ),
+    InstallKind.flatpak || InstallKind.manual => null,
+  },
+);
+
+/// Ends the process, once an update's installer has been started.
+final appExitProvider = Provider<void Function(int code)>((ref) => exit);
 
 /// Whether the update prompt is on screen.
 final updatePromptPresenceProvider =

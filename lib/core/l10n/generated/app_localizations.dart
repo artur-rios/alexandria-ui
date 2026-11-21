@@ -3121,6 +3121,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t check for updates.'**
   String get updatesCheckFailed;
+
+  /// Title of the question asked before updating with unsaved edits.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved changes'**
+  String get updateUnsavedTitle;
+
+  /// Asked before updating when an open file has unsaved changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating closes Alexandria and discards the changes you have not saved. Cancel to go back and save them first.'**
+  String get updateUnsavedMessage;
+
+  /// Confirms updating and discarding unsaved changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Update and discard'**
+  String get updateUnsavedConfirm;
+
+  /// Title of the question asked before updating during a library scan.
+  ///
+  /// In en, this message translates to:
+  /// **'A scan is running'**
+  String get updateScanTitle;
+
+  /// Asked before updating while a library scan is running.
+  ///
+  /// In en, this message translates to:
+  /// **'It will pause, and you can resume it after the update.'**
+  String get updateScanMessage;
+
+  /// Confirms updating while a scan is running.
+  ///
+  /// In en, this message translates to:
+  /// **'Update anyway'**
+  String get updateScanConfirm;
 }
 
 class _AppLocalizationsDelegate

@@ -221,4 +221,35 @@ void main() {
 
     expect(container.read(updateControllerProvider), isA<UpdateAvailable>());
   });
+
+  testWidgets('GivenAVerifiedDownload_WhenReady_ThenTheAppClosesToInstallIt', (
+    tester,
+  ) async {
+    const abc =
+        'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
+    final downloader = FakeDownloader()
+      ..contents['https://example.test/alexandria-installer-1.2.0-linux-x64.sh'] =
+          'abc'
+      ..contents['https://example.test/alexandria-1.2.0-linux-SHA256SUMS'] =
+          '$abc  alexandria-installer-1.2.0-linux-x64.sh\n';
+    final installer = FakeUpdateInstaller();
+    final exits = <int>[];
+    final source = FakeReleaseSource();
+    final container = await tester.pumpShell(
+      extraOverrides: [
+        ...updates(downloader: downloader, source: source),
+        updateInstallerProvider.overrideWithValue(installer),
+        appExitProvider.overrideWithValue(exits.add),
+      ],
+    );
+    source.release = aRelease('1.2.0');
+    await container.read(updateControllerProvider.notifier).checkNow();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(messages(tester).updateNow));
+    await tester.pumpAndSettle();
+
+    expect(installer.launches, hasLength(1));
+    expect(exits, [0]);
+  });
 }

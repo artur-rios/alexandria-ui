@@ -503,5 +503,11 @@
   "updatesCheckDescription": "Consulta o GitHub pela versão mais recente. Nada mais é enviado.",
   "updatesCheckNow": "Verificar agora",
   "updatesUpToDate": "Você está com a versão mais recente.",
-  "updatesCheckFailed": "Não foi possível procurar atualizações."
+  "updatesCheckFailed": "Não foi possível procurar atualizações.",
+  "updateUnsavedTitle": "Alterações não salvas",
+  "updateUnsavedMessage": "Atualizar fecha o Alexandria e descarta as alterações que você não salvou. Cancele para voltar e salvá-las antes.",
+  "updateUnsavedConfirm": "Atualizar e descartar",
+  "updateScanTitle": "Uma análise está em andamento",
+  "updateScanMessage": "Ela será pausada, e você poderá retomá-la depois da atualização.",
+  "updateScanConfirm": "Atualizar mesmo assim"
 }

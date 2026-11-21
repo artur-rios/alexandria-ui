@@ -2417,5 +2417,29 @@
   "updatesCheckFailed": "Couldn't check for updates.",
   "@updatesCheckFailed": {
     "description": "Said when Check now could not reach the release server."
+  },
+  "updateUnsavedTitle": "Unsaved changes",
+  "@updateUnsavedTitle": {
+    "description": "Title of the question asked before updating with unsaved edits."
+  },
+  "updateUnsavedMessage": "Updating closes Alexandria and discards the changes you have not saved. Cancel to go back and save them first.",
+  "@updateUnsavedMessage": {
+    "description": "Asked before updating when an open file has unsaved changes."
+  },
+  "updateUnsavedConfirm": "Update and discard",
+  "@updateUnsavedConfirm": {
+    "description": "Confirms updating and discarding unsaved changes."
+  },
+  "updateScanTitle": "A scan is running",
+  "@updateScanTitle": {
+    "description": "Title of the question asked before updating during a library scan."
+  },
+  "updateScanMessage": "It will pause, and you can resume it after the update.",
+  "@updateScanMessage": {
+    "description": "Asked before updating while a library scan is running."
+  },
+  "updateScanConfirm": "Update anyway",
+  "@updateScanConfirm": {
+    "description": "Confirms updating while a scan is running."
   }
 }
