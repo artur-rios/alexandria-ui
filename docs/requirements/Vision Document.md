@@ -26,7 +26,9 @@ comics, images and saved pages, editing Markdown and text content, editing video
 metadata and music tags, renaming files, organizing files and bookmarks into
 collections, tracking watchlists and reading lists, and carrying out the core's
 two-phase deletion lifecycle — all in light and dark themes, in Brazilian
-Portuguese and English, on Windows and Ubuntu.
+Portuguese and English, on Windows and Ubuntu. It also checks for a newer
+release at startup and, where the package allows it, installs one the owner
+accepts.
 
 It explicitly does **not** cover:
 
@@ -49,7 +51,12 @@ It explicitly does **not** cover:
 - **Mail transport.** The application never sends e-mail; the core sends the
   confirmation and recovery messages and owns their tokens entirely.
 - **Servers, cloud, or synchronization.** Everything is local to the machine,
-  apart from the core's delivery of a confirmation or recovery message.
+  apart from the core's delivery of a confirmation or recovery message and the
+  application's one call of its own: the update check (F-11), which asks
+  GitHub's public releases API for the latest release, is on by default, and
+  can be turned off. The Flatpak never makes it.
+- **Telemetry.** Nothing about the owner, their library, or their use of the
+  application is sent anywhere.
 - **Mobile, web, or macOS builds.**
 
 ### 1.3 Definitions and Acronyms
@@ -132,12 +139,14 @@ C4Context
     System_Ext(core, "Alexandria core", "Rust library linked in process over FFI; owns the catalog and every domain rule")
     System_Ext(db, "Catalog database", "SQLite file owned exclusively by the core")
     System_Ext(disk, "Local filesystem", "The owner's library folders and the files they contain")
+    System_Ext(releases, "GitHub releases", "The public releases API and the packages each release publishes")
 
     Rel(owner, desktop, "Uses")
     Rel(desktop, core, "Calls in process over the C ABI")
     Rel(core, db, "Reads and writes the catalog")
     Rel(core, disk, "Indexes, renames, and writes text content")
     Rel(desktop, disk, "Reads file bytes for playback and viewing")
+    Rel(desktop, releases, "Asks for the latest release; downloads an accepted update")
 ```
 
 The application reads file **bytes** from disk directly, because playback and
@@ -161,6 +170,7 @@ the core.
 | F-08 | Watchlists and reading lists | Creating and deleting watchlists and reading lists, adding and removing items, and tracking per-episode and per-issue progress. |
 | F-09 | Safe deletion lifecycle | Soft deletion, a restorable view of deleted items, record purging after retention, the separate explicit purge-on-disk, and a review of files missing from disk. |
 | F-10 | Application shell, theming, and localization | The responsive window shell and navigation, light and dark themes, Brazilian Portuguese and English, and consistent loading and error presentation. |
+| F-11 | Updates | A check for a newer release at startup and on request, offered with its release notes; a verified download and install for the packages that can update themselves, and the release page for the rest. |
 
 These `F-xx` identifiers are traced to requirement ranges in
 [System Requirements §9](System%20Requirements%20Document.md).
@@ -274,9 +284,14 @@ graph TD
   in the [Technology Stack Document](Technology%20Stack%20Document.md).
 - **In-process, offline by default, single-user.** No server, no
   synchronization, no second user, and no network call this application
-  makes at all.
+  makes, with one exception: the update check (F-11). It asks GitHub's public
+  releases API for the latest release once per start, sends nothing but the
+  request, is on by default, and can be turned off in Preferences; the Flatpak,
+  which has no network permission, never makes it.
 - **The disk is the owner's.** The application writes exactly two kinds of thing:
-  text-file content the owner saved, and its own local settings. Nothing else it
+  text-file content the owner saved, and its own local settings and state —
+  which, for an update the owner accepted, includes the downloaded package and
+  a pending-update record, and the installation it replaces. Nothing else it
   does modifies the filesystem, and only an explicit confirmed purge-on-disk
   removes a file.
 - **No plaintext credential is persisted or logged**, and the session lives in

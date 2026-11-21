@@ -25,6 +25,7 @@ class SharedPreferencesSettingsStore implements SettingsStore {
   static const _themeModeKey = 'settings.themeMode';
   static const _localeKey = 'settings.locale';
   static const _rechecksAtStartupKey = 'settings.rechecksAtStartup';
+  static const _checksForUpdatesKey = 'settings.checksForUpdates';
 
   @override
   ThemeMode get themeMode => switch (_preferences.getString(_themeModeKey)) {
@@ -75,6 +76,16 @@ class SharedPreferencesSettingsStore implements SettingsStore {
   @override
   Future<void> setRechecksAtStartup(bool value) =>
       _preferences.setString(_rechecksAtStartupKey, value.toString());
+
+  /// On unless turned off, as the owner decided: an owner who never opens the
+  /// dialog still hears about a new release.
+  @override
+  bool get checksForUpdates =>
+      _preferences.getString(_checksForUpdatesKey) != 'false';
+
+  @override
+  Future<void> setChecksForUpdates(bool value) =>
+      _preferences.setString(_checksForUpdatesKey, value.toString());
 
   @override
   String? getString(String key) => _preferences.getString(key);

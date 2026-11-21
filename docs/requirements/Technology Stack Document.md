@@ -221,6 +221,16 @@ deferred until comic viewing ships. The choice is recorded here when made.
 | **flutter_localizations** + **intl** | latest stable at implementation time | Presentation | Localization for `pt-BR` and `en`, backed by ARB message files. |
 | **logging** | latest stable at implementation time | All layers | Structured application logging, routed to console in development and to a rolling local file in release builds. |
 
+### 3.7 Updates
+
+| Package | Version | Used by | Role |
+| --- | --- | --- | --- |
+| **crypto** | latest stable at implementation time | Updates | Computes a downloaded update's SHA-256, which must match the checksum its release publishes before anything is installed (FR-UP-11). Already in the lockfile as a transitive dependency; named directly because the application now calls it. |
+| **win32_registry** | latest stable at implementation time | Updates (Windows only) | Reads the Windows setup's uninstall key to find where this copy was installed, so that an update replaces exactly that installation (FR-UP-08). |
+
+The release check and the downloads use `dart:io`'s `HttpClient`; no HTTP
+package is added for them.
+
 ---
 
 ## 4. Local Storage
@@ -325,6 +335,8 @@ section is the canonical list of the tools and versions.
 | Storage | path / path_provider | latest stable at implementation time |
 | Cross-cutting | flutter_localizations + intl | latest stable at implementation time |
 | Cross-cutting | logging | latest stable at implementation time |
+| Updates | crypto | latest stable at implementation time |
+| Updates | win32_registry | latest stable at implementation time |
 | Testing | flutter_test | latest stable at implementation time |
 | Testing | integration_test | latest stable at implementation time |
 | Testing | mocktail | latest stable at implementation time |

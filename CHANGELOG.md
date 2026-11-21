@@ -22,8 +22,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   dashboard), skips a track that cannot be opened and says which, and stops after the last. Opening a video pauses
   it, and signing out stops it. There are no playlists, play history, shuffle or repeat, and a track does not
   remember where it stopped.
+- A check for updates at startup. A release build asks GitHub, once per start, for the latest release, and when it is
+  newer than the running one and not a version you skipped, offers it over whatever screen is up: the version, its
+  release notes, and Update now, Later, or Skip this version. Later asks again at the next start; a skipped version
+  is not offered again, but a newer one is. Preferences has the switch, "Check for updates at startup" (on by
+  default), and "Check now", which also offers a skipped version. The Flatpak never checks, and hides both.
+- Update now, for the Windows installer, the Linux installer in a folder you can write to, and an AppImage in a
+  writable folder. The package is downloaded with its progress and a Cancel, and verified against the SHA-256 the
+  release publishes; one that does not match, or has no checksum, is deleted and never run. Alexandria then asks
+  about unsaved edits, says a running scan will pause (it can be resumed afterwards), closes, installs the update
+  and starts again. If the update did not take, the next start says so and links to the release page.
+- Other installs — the `.deb`, the zip and tarball, MSIX, and an installation you cannot write to — and releases
+  that publish no checksums are offered the release page instead. Updating in place needs a release that publishes
+  checksums, so the first one that does is installed by hand, once.
 
 ### Changed
+
+- Alexandria makes one network call of its own: the update check at startup, a request to GitHub's public releases
+  API that carries the application's version in its User-Agent and nothing else. It sends no telemetry, and it can
+  be turned off in Preferences.
 
 - Libraries are the only way files get into Alexandria. A folder is added as a library on the Libraries screen, now
   a destination of its own, and its first scan starts straight away and is followed under its row. Each library can

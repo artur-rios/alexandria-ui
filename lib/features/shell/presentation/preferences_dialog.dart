@@ -7,6 +7,9 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../auth/application/session_state.dart';
+import '../../updates/application/update_state.dart';
+import '../../updates/domain/install_kind.dart';
+import '../../updates/presentation/update_dialog.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
 ///
@@ -98,6 +101,28 @@ class PreferencesDialog extends ConsumerWidget {
                   ],
                 ),
               ),
+
+              // Hidden for the Flatpak, which has no network permission and
+              // never checks (update-check design §1).
+              if (ref.read(installKindProbeProvider).detect() !=
+                  InstallKind.flatpak) ...[
+                const SizedBox(height: AppSpacing.md),
+                SwitchListTile(
+                  title: Text(l10n.updatesCheckLabel),
+                  subtitle: Text(l10n.updatesCheckDescription),
+                  value: preferences.checksForUpdates,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (value) =>
+                      unawaited(controller.setChecksForUpdates(value)),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton(
+                    onPressed: () => _checkNow(context, ref),
+                    child: Text(l10n.updatesCheckNow),
+                  ),
+                ),
+              ],
 
               if (signedIn) ...[
                 const SizedBox(height: AppSpacing.md),
@@ -260,5 +285,28 @@ class PreferencesButton extends StatelessWidget {
       tooltip: l10n.preferencesOpen,
       onPressed: () => PreferencesDialog.show(context),
     );
+  }
+}
+
+/// "Check now": asks for the latest release and says what it found, or
+/// opens the update prompt over this dialog when there is one.
+Future<void> _checkNow(BuildContext context, WidgetRef ref) async {
+  final l10n = AppLocalizations.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+
+  await ref.read(updateControllerProvider.notifier).checkNow();
+  if (!context.mounted) return;
+
+  switch (ref.read(updateControllerProvider)) {
+    case UpdateAvailable():
+      await UpdateDialog.show(context, ref);
+    case UpdateUpToDate():
+      messenger.showSnackBar(SnackBar(content: Text(l10n.updatesUpToDate)));
+      ref.read(updateControllerProvider.notifier).dismiss();
+    case UpdateCheckFailed():
+      messenger.showSnackBar(SnackBar(content: Text(l10n.updatesCheckFailed)));
+      ref.read(updateControllerProvider.notifier).dismiss();
+    default:
+      break;
   }
 }

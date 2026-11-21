@@ -55,6 +55,15 @@ class InMemorySettingsStore implements SettingsStore {
   Future<void> setRechecksAtStartup(bool value) async =>
       _rechecksAtStartup = value;
 
+  bool _checksForUpdates = true;
+
+  @override
+  bool get checksForUpdates => _checksForUpdates;
+
+  @override
+  Future<void> setChecksForUpdates(bool value) async =>
+      _checksForUpdates = value;
+
   @override
   String? getString(String key) => _values[key];
 

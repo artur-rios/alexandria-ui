@@ -60,4 +60,24 @@ void main() {
       },
     );
   });
+
+  group('the update check (update-check design)', () {
+    test('GivenNoStoredChoice_WhenRead_ThenChecksForUpdatesIsOn', () async {
+      SharedPreferences.setMockInitialValues({});
+
+      final store = await SharedPreferencesSettingsStore.load();
+
+      expect(store.checksForUpdates, isTrue);
+    });
+
+    test('GivenOff_WhenStoredAndRead_ThenOff', () async {
+      SharedPreferences.setMockInitialValues({});
+      final store = await SharedPreferencesSettingsStore.load();
+
+      await store.setChecksForUpdates(false);
+      final reloaded = await SharedPreferencesSettingsStore.load();
+
+      expect(reloaded.checksForUpdates, isFalse);
+    });
+  });
 }

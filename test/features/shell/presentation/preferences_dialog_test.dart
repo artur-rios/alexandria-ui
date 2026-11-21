@@ -4,6 +4,7 @@ import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dar
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:alexandria_ui/features/updates/domain/install_kind.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -12,6 +13,7 @@ import 'package:alexandria_ui/core/theme/breakpoints.dart';
 
 import '../../../support/login_harness.dart';
 import '../../../support/shell_harness.dart';
+import '../../../support/fake_updates.dart';
 import '../../../support/in_memory_settings_store.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-11, FR-UX-12).
@@ -457,4 +459,96 @@ void main() {
       },
     );
   });
+
+  group('updates (update-check design §5)', () {
+    testWidgets('GivenPreferences_WhenTheSwitchIsToggled_ThenSaved', (
+      tester,
+    ) async {
+      final settings = InMemorySettingsStore();
+      await openFromShell(tester, settings: settings);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+
+      await tester.tap(find.text(l10n.updatesCheckLabel));
+      await tester.pumpAndSettle();
+
+      expect(settings.checksForUpdates, isFalse);
+    });
+
+    testWidgets(
+      'GivenPreferences_WhenCheckNowFindsNothing_ThenUpToDateIsSaid',
+      (tester) async {
+        await tester.pumpShell(
+          extraOverrides: [
+            appVersionProvider.overrideWithValue('1.2.0'),
+            releaseSourceProvider.overrideWithValue(
+              FakeReleaseSource(aRelease('1.2.0')),
+            ),
+            installKindProbeProvider.overrideWithValue(FakeInstallKindProbe()),
+          ],
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellScreen)),
+        );
+        await tester.openSettingsMenuEntry(l10n.preferencesLabel);
+
+        await tester.tap(find.text(l10n.updatesCheckNow));
+        await tester.pumpAndSettle();
+
+        expect(find.text(l10n.updatesUpToDate), findsWidgets);
+      },
+    );
+
+    testWidgets('GivenFlatpak_WhenPreferencesOpen_ThenNoUpdateRows', (
+      tester,
+    ) async {
+      await tester.pumpShell(
+        extraOverrides: [
+          installKindProbeProvider.overrideWithValue(
+            FakeInstallKindProbe(InstallKind.flatpak),
+          ),
+        ],
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+      await tester.openSettingsMenuEntry(l10n.preferencesLabel);
+
+      expect(find.text(l10n.updatesCheckLabel), findsNothing);
+      expect(find.text(l10n.updatesCheckNow), findsNothing);
+    });
+  });
+
+  testWidgets(
+    'GivenThePromptOpenedFromCheckNow_WhenEveryRouteIsClosed_ThenItCanOpenAgain',
+    (tester) async {
+      // A session the core rejects closes every route, Preferences and the
+      // prompt over it included. The prompt must not stay "open" after that.
+      final container = await tester.pumpShell(
+        extraOverrides: [
+          appVersionProvider.overrideWithValue('1.1.0'),
+          releaseSourceProvider.overrideWithValue(
+            FakeReleaseSource(aRelease('1.2.0')),
+          ),
+          installKindProbeProvider.overrideWithValue(FakeInstallKindProbe()),
+        ],
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+      await tester.openSettingsMenuEntry(l10n.preferencesLabel);
+      await tester.tap(find.text(l10n.updatesCheckNow));
+      await tester.pumpAndSettle();
+      expect(container.read(updatePromptPresenceProvider), isTrue);
+
+      Navigator.of(
+        tester.element(find.byType(ShellScreen)),
+      ).popUntil((route) => route.isFirst);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(container.read(updatePromptPresenceProvider), isFalse);
+    },
+  );
 }

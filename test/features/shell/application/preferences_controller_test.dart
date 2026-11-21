@@ -252,4 +252,30 @@ void main() {
       },
     );
   });
+
+  group('checking for updates at startup', () {
+    test('GivenNoStoredChoice_WhenStartupSettles_ThenItIsOn', () async {
+      final container = await started();
+
+      expect(
+        container.read(preferencesControllerProvider).checksForUpdates,
+        isTrue,
+      );
+    });
+
+    test('GivenThePreference_WhenToggled_ThenPersisted', () async {
+      final settings = InMemorySettingsStore();
+      final container = await started(settings: settings);
+
+      await container
+          .read(preferencesControllerProvider.notifier)
+          .setChecksForUpdates(false);
+
+      expect(
+        container.read(preferencesControllerProvider).checksForUpdates,
+        isFalse,
+      );
+      expect(settings.checksForUpdates, isFalse);
+    });
+  });
 }
