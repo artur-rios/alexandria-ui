@@ -140,10 +140,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
 Filename: "{app}\{#AppExeName}"; \
   Description: "{cm:LaunchProgram,{#StringChange(AppName, '&', '&&')}}"; \
   Flags: nowait postinstall skipifsilent
-; An update started from inside the application: it closed itself to be
-; replaced, so it is started again — as the owner, not as setup's own token.
-Filename: "{app}\{#AppExeName}"; Check: IsUpdate; \
-  Flags: nowait runasoriginaluser
+; An update started from inside the application is started again from the
+; code, once the swap is over (StartAgain): Inno runs entries without
+; postinstall before ssPostInstall, so one here would start the previous
+; version, and the swap would then move the files it has loaded.
 
 ; Nothing is uninstalled separately: the core is a library inside the bundle,
 ; not a service (§7.3). The owner's catalog and settings live in their
@@ -633,6 +633,18 @@ begin
   end;
 end;
 
+{ An update started from inside the application: it closed itself to be
+  replaced, so it is started again, whichever way the swap went: as the
+  owner, not with setup's own token. }
+procedure StartAgain(const Directory: String);
+var
+  ResultCode: Integer;
+begin
+  if not ExecAsOriginalUser(Directory + '\{#AppExeName}', '', Directory,
+                            SW_SHOWNORMAL, ewNoWait, ResultCode) then
+    Log('Alexandria could not be started again: ' + SysErrorMessage(ResultCode));
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   Directory: String;
@@ -646,17 +658,21 @@ begin
 
   if CurStep = ssPostInstall then
   begin
-    if not SwapIn(Directory) then
+    if SwapIn(Directory) then
+    begin
+      Log('the staged files were moved into place');
+      if RemoveElsewhere then
+        RemoveOtherCopy(RecordedLocation);
+    end
+    else
     begin
       Log('the staged files could not be moved into place; the previous installation was kept');
       if not WizardSilent() then
         MsgBox(CustomMessage('SwapFailed'), mbError, MB_OK);
-      Exit;
     end;
-    Log('the staged files were moved into place');
 
-    if RemoveElsewhere then
-      RemoveOtherCopy(RecordedLocation);
+    if IsUpdate() then
+      StartAgain(Directory);
   end;
 end;
 

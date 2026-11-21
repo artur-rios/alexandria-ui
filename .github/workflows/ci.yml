@@ -256,17 +256,20 @@ jobs:
             Get-Content $log -ErrorAction SilentlyContinue | Select-String 'staged|could not|kept|set aside|nothing was changed' | Out-Host
             return $process.ExitCode
           }
-          # An update starts the application again; it has nothing to do here, and holding its files it would stop the
-          # next run. Given up to ten seconds to appear.
-          function Stop-App {
+          # An update starts the application again once the swap is over; it has nothing to do here, and holding its
+          # files it would stop the next run. Given up to ten seconds to appear.
+          # After the failed update it may not start at all: the library held open there is one it loads.
+          function Stop-App([switch] $Started) {
             for ($i = 0; $i -lt 20 -and -not (Get-Process alexandria -ErrorAction SilentlyContinue); $i++) {
               Start-Sleep -Milliseconds 500
             }
-            Get-Process alexandria -ErrorAction SilentlyContinue | Stop-Process -Force -PassThru | Wait-Process -Timeout 30
+            $running = @(Get-Process alexandria -ErrorAction SilentlyContinue)
+            if ($Started -and -not $running) { throw 'the update did not start Alexandria again' }
+            $running | Stop-Process -Force -PassThru | Wait-Process -Timeout 30
           }
           function Entries { Get-ChildItem -LiteralPath $dir -Recurse -Force | ForEach-Object { $_.FullName } | Sort-Object }
-          # Any process with a file of the installation loaded — the executable or a library — which the setup
-          # should have waited for.
+          # Any process with a file of the installation loaded, the executable or a library: what holds a file the
+          # setup cannot move or remove.
           function Show-Holders([string] $when) {
             $holders = @(Get-Process | Where-Object {
               try { @($_.Modules | Where-Object { $_.FileName -like "$dir\*" }).Count -gt 0 } catch { $false }
@@ -285,7 +288,7 @@ jobs:
           Show-Holders 'before the update'
           $code = Run-Setup @('/SILENT', '/UPDATE') "$env:RUNNER_TEMP\update.log"
           Show-Holders 'after the update'
-          Stop-App
+          Stop-App -Started
           if ($code -ne 0) { throw "the update exited with $code" }
           if (-not (Select-String -Quiet -Path "$env:RUNNER_TEMP\update.log" -Pattern 'the staged files were moved into place')) {
             throw 'the update did not move the staged files into place'
