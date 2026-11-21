@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-11-21
+
+### Fixed
+
+- A release build whose download of the page viewer's browser engine (CEF) is cut off or fails now tries again, and
+  stops with the reason if it cannot get it. It checks the archive against the SHA-1 the CEF builds site publishes
+  before unpacking it; a cut-off download used to fail later, on a missing CEF.
+
 ## [2.0.0] - 2026-11-21
 
 ### Added
@@ -228,7 +236,8 @@ First tagged release, published as a prerelease to exercise the release pipeline
 - Windows packages — an installer, an MSIX, and a portable zip — and Linux packages — a self-extracting installer and a
   portable tarball, which need the distribution's ffmpeg libraries installed.
 
-[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/artur-rios/alexandria-ui/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/artur-rios/alexandria-ui/compare/v1.0.1...v2.0.0
 [1.0.1]: https://github.com/artur-rios/alexandria-ui/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/artur-rios/alexandria-ui/compare/v0.1.1...v1.0.0
