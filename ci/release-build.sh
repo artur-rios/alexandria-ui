@@ -330,6 +330,20 @@ as_user "$smoke/installer.sh" --prefix "$prefix" --yes
 test -x "$prefix/alexandria"
 test -f "$prefix/unrelated.txt"
 
+# A replacement whose payload is cut short must fail and leave the installation it was replacing whole: the in-app updater
+# runs this installer, and a failed update must never leave the owner without the application.
+size=$(wc -c < "$installer")
+head -c $((size - size / 4)) "$installer" > "$smoke/truncated.sh"
+chmod 755 "$smoke/truncated.sh"
+if as_user "$smoke/truncated.sh" --prefix "$prefix" --yes; then
+  echo "a truncated installer reported success" >&2
+  exit 1
+fi
+test -x "$prefix/alexandria"
+test -f "$prefix/lib/libalexandria_ffi.so"
+test ! -e "$prefix/.staging-update"
+test ! -e "$prefix/.backup-update"
+
 as_user "$smoke/installer.sh" --uninstall --yes
 test ! -e "$prefix/alexandria"
 test -f "$prefix/unrelated.txt"

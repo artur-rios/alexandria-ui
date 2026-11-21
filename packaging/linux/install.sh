@@ -315,18 +315,6 @@ remove_recorded_install() {
   rm -f "$_manifest" || true
 }
 
-# The fallback for a prefix this installer never recorded — an install from the
-# portable tarball, say, or one whose manifest was lost. Only the paths this
-# payload itself writes are removed.
-remove_unrecorded_install() {
-  _prefix=$1
-  rm -f "$_prefix/$EXE_NAME" || true
-  rm -f "$_prefix/$DESKTOP_FILE" || true
-  rm -f "$_prefix/${APP_ID}.png" || true
-  rm -rf "$_prefix/lib" || true
-  rm -rf "$_prefix/data" || true
-}
-
 # ------------------------------------------------------------------ payload
 
 payload_start_line() {
@@ -438,39 +426,109 @@ case $prefix in
     ;;
 esac
 
+# Decide what this install replaces first, asking whatever needs asking, but
+# change nothing yet: the new payload is unpacked and swapped in below, and
+# only then does anything of the old installation go.
+#
 # 1. An installation in the directory the owner actually chose.
+replacing="no"
 if looks_installed "$prefix"; then
   if [ "$recorded_prefix" = "$prefix" ]; then
     existing_version=$(manifest_value version "$MANIFEST" || printf 'unknown')
     confirm "${APP_NAME} ${existing_version} is installed in ${prefix}. Replace it with ${VERSION}?" \
       || die "nothing was changed"
-    remove_recorded_install "$MANIFEST"
   else
     confirm "${prefix} already contains ${APP_NAME}, put there by something other than this installer. Replace it?" \
       || die "nothing was changed"
-    remove_unrecorded_install "$prefix"
   fi
-  log "Removed the previous installation from ${prefix}."
+  replacing="yes"
+fi
 
 # 2. An installation somewhere else entirely. Offered separately, because
 #    leaving it would mean two copies on the machine and a launcher pointing at
-#    whichever won.
-elif [ "$recorded_prefix" != "$prefix" ] && looks_installed "$recorded_prefix"; then
+#    whichever won. Removed only once this install has succeeded.
+remove_elsewhere="no"
+if [ "$recorded_prefix" != "$prefix" ] && looks_installed "$recorded_prefix"; then
   if confirm "${APP_NAME} is already installed in ${recorded_prefix}. Remove that one?"; then
-    remove_recorded_install "$MANIFEST"
-    log "Removed the previous installation from ${recorded_prefix}."
+    remove_elsewhere="yes"
   else
     warn "leaving the installation in ${recorded_prefix} in place — there will be two"
   fi
 fi
 
 log "Installing ${APP_NAME} ${VERSION} into ${prefix} ..."
-# Whether the prefix is this installer's to remove again on uninstall.
+# Whether the prefix is this installer's to remove again on uninstall: it is
+# when this run creates it, and still is when the install being replaced
+# created it.
 prefix_created="no"
-[ -d "$prefix" ] || prefix_created="yes"
+if [ ! -d "$prefix" ]; then
+  prefix_created="yes"
+elif [ "$recorded_prefix" = "$prefix" ] && grep -qxF "dir=$prefix" "$MANIFEST" 2> /dev/null; then
+  prefix_created="yes"
+fi
+
+# Staged inside the prefix rather than beside it, so the swap below is a
+# rename on one filesystem, and needs no more than the prefix to be writable.
+staging="$prefix/.staging-update"
+backup="$prefix/.backup-update"
+mkdir -p "$prefix"
+rm -rf "$staging" "$backup"
 listing=$(mktemp)
-trap 'rm -f "$listing"' EXIT INT TERM
-extract_payload "$prefix" "$payload_start" "$listing"
+trap 'rm -f "$listing"; rm -rf "$staging"' EXIT INT TERM
+
+# A payload that cannot be unpacked — a truncated download, a full disk — has
+# changed nothing yet, and the old installation is still whole.
+if ! extract_payload "$staging" "$payload_start" "$listing"; then
+  rm -rf "$staging"
+  [ "$prefix_created" = "yes" ] && [ "$replacing" = "no" ] && rmdir "$prefix" 2> /dev/null
+  die "the payload could not be unpacked; nothing was changed"
+fi
+
+# The payload's own top-level entries. Only these are swapped — for an
+# installation this installer recorded and for one put there by other means
+# (the portable tarball, a lost manifest) alike: anything else the owner keeps
+# in the prefix stays where it is.
+own_entries() {
+  printf '%s\n' "$EXE_NAME" lib data "$DESKTOP_FILE" "${APP_ID}.png"
+}
+
+# Moves the old entries aside and the new ones in. Every step is a rename, so
+# it either completes or leaves a state restore_backup can undo.
+swap_in() {
+  mkdir -p "$backup" || return 1
+  for _name in $(own_entries); do
+    if [ -e "$prefix/$_name" ] || [ -L "$prefix/$_name" ]; then
+      mv "$prefix/$_name" "$backup/$_name" || return 1
+    fi
+  done
+  for _entry in "$staging"/*; do
+    [ -e "$_entry" ] || continue
+    mv "$_entry" "$prefix/" || return 1
+  done
+}
+
+restore_backup() {
+  for _name in $(own_entries); do
+    if [ -e "$backup/$_name" ] || [ -L "$backup/$_name" ]; then
+      rm -rf "${prefix:?}/$_name"
+      mv "$backup/$_name" "$prefix/$_name"
+    fi
+  done
+}
+
+if ! swap_in; then
+  restore_backup
+  rm -rf "$staging" "$backup"
+  die "the new files could not be put in place; the previous installation was restored"
+fi
+rm -rf "$staging" "$backup"
+[ "$replacing" = "yes" ] && log "Replaced the previous installation in ${prefix}."
+
+if [ "$remove_elsewhere" = "yes" ]; then
+  remove_recorded_install "$MANIFEST"
+  log "Removed the previous installation from ${recorded_prefix}."
+fi
+
 chmod 755 "$prefix/$EXE_NAME"
 
 bindir=$(launcher_dir)
