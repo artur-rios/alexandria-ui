@@ -8,23 +8,25 @@
 
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
+  // Held by every process this executable runs as, and released by Windows
+  // as each exits: how the setup knows Alexandria's files are in use and
+  // waits before replacing them (packaging/windows/installer.iss, AppMutex —
+  // the two names must match). Before the CEF call, so Chromium's helper
+  // processes, which load this executable and its libraries and can outlive
+  // the window by a moment, hold it too; a setup that saw only the
+  // application's process would move files a helper still has open.
+  ::CreateMutexW(nullptr, FALSE, L"Alexandria.Running.8F2A6C41");
+
   // Chromium is a multi-process browser: this same executable is re-launched
   // as its render, GPU and utility processes, and each of those has to hand
   // control to CEF and exit rather than start a second copy of the
-  // application. That is what this call does, which is why it must be the
-  // first statement in the entry point, before the console, COM, or anything
-  // else this function does (webview_cef, UC-25).
+  // application. That is what this call does, which is why it comes before
+  // the console, COM, and everything else this function does but take the
+  // mutex (webview_cef, UC-25).
   int cef_exit_code = initCEFProcesses(instance);
   if (cef_exit_code >= 0) {
     return cef_exit_code;
   }
-
-  // Held for as long as the application runs, and released by Windows when
-  // it exits: how the setup knows Alexandria is open and waits for it to close
-  // before replacing its files (packaging/windows/installer.iss, AppMutex —
-  // the two names must match). After the CEF call, so only the application
-  // process holds it, not its browser processes.
-  ::CreateMutexW(nullptr, FALSE, L"Alexandria.Running.8F2A6C41");
 
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.

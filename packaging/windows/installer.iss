@@ -36,9 +36,9 @@
 ; the code silently stop finding what the installer itself registered.
 #define AppGuid "{8F2A6C41-9B3E-4D77-A5C2-1E6D0B9F4A38}"
 
-; The mutex the Windows runner holds while the application runs
-; (windows/runner/main.cpp): how this setup knows Alexandria is open. The two
-; spellings must match.
+; The mutex every Alexandria process holds, Chromium's helpers included
+; (windows/runner/main.cpp): how this setup knows Alexandria's files are in
+; use. The two spellings must match.
 #define AppMutex "Alexandria.Running.8F2A6C41"
 
 [Setup]

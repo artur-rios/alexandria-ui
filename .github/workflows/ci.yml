@@ -265,13 +265,26 @@ jobs:
             Get-Process alexandria -ErrorAction SilentlyContinue | Stop-Process -Force -PassThru | Wait-Process -Timeout 30
           }
           function Entries { Get-ChildItem -LiteralPath $dir -Recurse -Force | ForEach-Object { $_.FullName } | Sort-Object }
+          # Any process with a file of the installation loaded — the executable or a library — which the setup
+          # should have waited for.
+          function Show-Holders([string] $when) {
+            $holders = @(Get-Process | Where-Object {
+              try { @($_.Modules | Where-Object { $_.FileName -like "$dir\*" }).Count -gt 0 } catch { $false }
+            })
+            foreach ($holder in $holders) {
+              $info = Get-CimInstance Win32_Process -Filter "ProcessId = $($holder.Id)"
+              "holding the installation ($when): $($holder.Id) $($holder.Path) started $($holder.StartTime) by $($info.ParentProcessId): $($info.CommandLine)" | Out-Host
+            }
+          }
 
           $code = Run-Setup @('/VERYSILENT') "$env:RUNNER_TEMP\install.log"
           if ($code -ne 0) { throw "the first install exited with $code" }
           if (-not (Test-Path "$dir\alexandria.exe")) { throw 'the first install placed no executable' }
           Set-Content "$dir\unrelated.txt" 'not ours'
 
+          Show-Holders 'before the update'
           $code = Run-Setup @('/SILENT', '/UPDATE') "$env:RUNNER_TEMP\update.log"
+          Show-Holders 'after the update'
           Stop-App
           if ($code -ne 0) { throw "the update exited with $code" }
           if (-not (Select-String -Quiet -Path "$env:RUNNER_TEMP\update.log" -Pattern 'the staged files were moved into place')) {
