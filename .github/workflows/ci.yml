@@ -230,6 +230,33 @@ jobs:
 
       - run: flutter build windows --release
 
+      # The setup, staged (update-check design §3 step 4): a silent install, then a replacement in the update mode the
+      # application uses, which must keep a file the setup did not write and leave no staging behind. Compiled on every
+      # pull request rather than only at release time, so a broken setup script fails here first.
+      - name: Installer smoke test
+        shell: pwsh
+        env:
+          ALEXANDRIA_VERSION: 0.0.0
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" packaging\windows\installer.iss
+          if ($LASTEXITCODE -ne 0) { throw 'the setup did not compile' }
+          $setup = Resolve-Path 'dist\alexandria-setup-0.0.0.exe'
+          $dir = Join-Path $env:RUNNER_TEMP 'Alexandria Smoke'
+          Start-Process $setup -Wait -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$dir`""
+          if (-not (Test-Path "$dir\alexandria.exe")) { throw 'the first install placed no executable' }
+          Set-Content "$dir\unrelated.txt" 'not ours'
+          Start-Process $setup -Wait -ArgumentList '/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/UPDATE', "/DIR=`"$dir`""
+          # Update mode starts the application again; it has nothing to do on a runner.
+          Start-Sleep -Seconds 2
+          Get-Process alexandria -ErrorAction SilentlyContinue | Stop-Process -Force
+          foreach ($path in "$dir\alexandria.exe", "$dir\unrelated.txt") {
+            if (-not (Test-Path $path)) { throw "missing after the update: $path" }
+          }
+          foreach ($path in "$dir\.staging-update", "$dir\.backup-update") {
+            if (Test-Path $path) { throw "left behind: $path" }
+          }
+
   # integration_test/viewers/saved_page_engine_test.dart opens a hostile saved page in the real Chromium engine and asserts
   # on what its script managed to do (UC-25, FR-VW-05, NFR-12): web security on, the sandbox on, the page held to its folder.
   # That is a security gate, and it cannot run in Jenkins: its checks run as container root, where the engine must refuse to

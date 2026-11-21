@@ -14,6 +14,15 @@
 ; owner picked by hand that already holds Alexandria, and an installation left
 ; behind somewhere else when they change the directory. Both are found and
 ; offered for removal, and the removal is targeted — see RemovePayload.
+;
+; A replacement is staged (update-check design §3 step 4): the new files are
+; copied into a folder inside the install directory, and only once every one
+; is there are the old program files moved aside and the new ones moved in —
+; renames on one volume — restoring the old ones if that fails. A setup that
+; dies part-way, a full disk, or a cancelled install leaves the previous
+; version as it was. The in-app updater runs this setup silently with
+; /UPDATE, which answers this script's own questions with their defaults and
+; starts the application again afterwards.
 
 #define AppName "Alexandria"
 #define AppPublisher "Artur Rios"
@@ -70,11 +79,14 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 
 [CustomMessages]
-english.ReplaceHere=%1 is already installed in:%n%n%2%n%nIt will be removed before %3 is installed. Your library, catalog, and settings are left where they are and are not touched.%n%nRemove it and continue?
-brazilianportuguese.ReplaceHere=O %1 já está instalado em:%n%n%2%n%nEle será removido antes da instalação da versão %3. Sua biblioteca, seu catálogo e suas configurações permanecem onde estão e não são alterados.%n%nRemover e continuar?
+english.ReplaceHere=%1 is already installed in:%n%n%2%n%nIt will be replaced by %3 once %3 has been copied; if that fails, it is kept as it is. Your library, catalog, and settings are left where they are and are not touched.%n%nReplace it and continue?
+brazilianportuguese.ReplaceHere=O %1 já está instalado em:%n%n%2%n%nEle será substituído pela versão %3 assim que ela for copiada; se isso falhar, ele é mantido como está. Sua biblioteca, seu catálogo e suas configurações permanecem onde estão e não são alterados.%n%nSubstituir e continuar?
 
 english.RemoveElsewhere=%1 is also installed in another location:%n%n%2%n%nYou chose to install into a different directory, so that copy would be left behind.%n%nRemove it as well?
 brazilianportuguese.RemoveElsewhere=O %1 também está instalado em outro local:%n%n%2%n%nVocê escolheu instalar em um diretório diferente, então aquela cópia ficaria para trás.%n%nRemover também?
+
+english.SwapFailed=The new version could not be put in place, so the previous installation was kept as it was.
+brazilianportuguese.SwapFailed=A nova versão não pôde ser colocada no lugar, então a instalação anterior foi mantida como estava.
 
 english.UninstallFailed=The previous installation's uninstaller did not finish cleanly. Setup will remove the program files in that directory itself.
 brazilianportuguese.UninstallFailed=O desinstalador da instalação anterior não terminou corretamente. A instalação removerá os arquivos do programa naquele diretório por conta própria.
@@ -93,8 +105,19 @@ brazilianportuguese.UninstallFailed=O desinstalador da instalação anterior nã
 ; of two independent packaging steps is not something this script should have
 ; to depend on.
 Source: "..\..\build\windows\x64\runner\Release\*"; \
-  DestDir: "{app}"; Excludes: "*.msix"; \
+  DestDir: "{app}\.staging-update"; Excludes: "*.msix"; \
   Flags: ignoreversion recursesubdirs createallsubdirs
+
+; Files are copied into the staging folder and moved into place by [Code], so
+; the uninstall log names the staging paths. These name the real ones —
+; exactly the paths RemovePayload removes, and nothing else in the directory.
+[UninstallDelete]
+Type: files; Name: "{app}\{#AppExeName}"
+Type: files; Name: "{app}\FFMPEG-LICENSE.txt"
+Type: files; Name: "{app}\*.dll"
+Type: filesandordirs; Name: "{app}\data"
+Type: dirifempty; Name: "{app}\.staging-update"
+Type: dirifempty; Name: "{app}"
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"
@@ -108,6 +131,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; \
 Filename: "{app}\{#AppExeName}"; \
   Description: "{cm:LaunchProgram,{#StringChange(AppName, '&', '&&')}}"; \
   Flags: nowait postinstall skipifsilent
+; An update started from inside the application: it closed itself to be
+; replaced, so it is started again — as the owner, not as setup's own token.
+Filename: "{app}\{#AppExeName}"; Check: IsUpdate; \
+  Flags: nowait runasoriginaluser
 
 ; Nothing is uninstalled separately: the core is a library inside the bundle,
 ; not a service (§7.3). The owner's catalog and settings live in their
@@ -120,6 +147,14 @@ const
 
 var
   RecordedLocation: String;
+  { Decided on the directory page, carried out once the files are staged. }
+  RemoveElsewhere: Boolean;
+
+{ Whether the application started this setup to update itself. }
+function IsUpdate(): Boolean;
+begin
+  Result := Pos('/UPDATE', UpperCase(GetCmdTail())) > 0;
+end;
 
 { Where a previous install registered itself, if it did.
 
@@ -272,32 +307,129 @@ begin
 
   Chosen := RemoveBackslashUnlessRoot(WizardDirValue);
 
+  { Nothing is removed here: the decisions are recorded, and carried out by
+    SwapIn once the new files are staged. }
+  RemoveElsewhere := False;
+
   { 1. An installation in the directory the owner actually chose. Refusing
        keeps them on the directory page rather than cancelling setup, so they
-       can pick somewhere else. }
+       can pick somewhere else. An update replaces it without asking: that is
+       what the owner asked the application for. }
   if DirectoryHoldsInstall(Chosen) then
   begin
-    Prompt := FmtMessage(CustomMessage('ReplaceHere'), ['{#AppName}', Chosen, '{#AppVersion}']);
-
-    if MsgBox(Prompt, mbConfirmation, MB_YESNO) <> IDYES then
+    if not IsUpdate() then
     begin
-      Result := False;
-      Exit;
-    end;
+      Prompt := FmtMessage(CustomMessage('ReplaceHere'), ['{#AppName}', Chosen, '{#AppVersion}']);
 
-    RemoveInstallation(Chosen, True);
+      if MsgBox(Prompt, mbConfirmation, MB_YESNO) <> IDYES then
+      begin
+        Result := False;
+        Exit;
+      end;
+    end;
   end;
 
   { 2. An installation somewhere else entirely — the owner changed the
        directory. Asked separately, and answering no is a real choice rather
-       than a blocked one: two copies is a state they may want. }
-  if (RecordedLocation <> '') and
+       than a blocked one: two copies is a state they may want. An update
+       leaves it alone. }
+  if (not IsUpdate()) and
+     (RecordedLocation <> '') and
      (CompareText(RecordedLocation, Chosen) <> 0) and
      DirectoryHoldsInstall(RecordedLocation) then
   begin
     Prompt := FmtMessage(CustomMessage('RemoveElsewhere'), ['{#AppName}', RecordedLocation]);
 
     if MsgBox(Prompt, mbConfirmation, MB_YESNO) = IDYES then
+      RemoveElsewhere := True;
+  end;
+end;
+
+{ Moves the entries of FromDir into ToDir — only the program's own files when
+  PayloadOnly. Renames only, on one volume. False at the first that fails. }
+function MoveEntries(const FromDir, ToDir: String; const PayloadOnly: Boolean): Boolean;
+var
+  Found: TFindRec;
+  Name: String;
+begin
+  Result := True;
+  if not FindFirst(FromDir + '\*', Found) then
+    Exit;
+  try
+    repeat
+      Name := Found.Name;
+      if (Name = '.') or (Name = '..') or
+         (CompareText(Name, '.staging-update') = 0) or
+         (CompareText(Name, '.backup-update') = 0) then
+        Continue;
+
+      { The program's own files, as RemovePayload knows them: the executable,
+        the ffmpeg licence, every DLL beside it, and the data folder. }
+      if PayloadOnly and
+         not ((CompareText(Name, '{#AppExeName}') = 0) or
+              (CompareText(Name, 'FFMPEG-LICENSE.txt') = 0) or
+              (CompareText(Name, 'data') = 0) or
+              (CompareText(ExtractFileExt(Name), '.dll') = 0)) then
+        Continue;
+
+      if not RenameFile(FromDir + '\' + Name, ToDir + '\' + Name) then
+      begin
+        Log('could not move ' + FromDir + '\' + Name);
+        Result := False;
+        Exit;
+      end;
+    until not FindNext(Found);
+  finally
+    FindClose(Found);
+  end;
+end;
+
+{ The swap: old program files aside, staged ones in, the backup gone. A failure
+  part-way puts the old files back, so the previous version still runs. }
+function SwapIn(const Directory: String): Boolean;
+var
+  Staging, Backup: String;
+begin
+  Staging := Directory + '\.staging-update';
+  Backup := Directory + '\.backup-update';
+  DelTree(Backup, True, True, True);
+  ForceDirectories(Backup);
+
+  Result := MoveEntries(Directory, Backup, True) and
+            MoveEntries(Staging, Directory, False);
+
+  if not Result then
+  begin
+    MoveEntries(Directory, Staging, True);
+    MoveEntries(Backup, Directory, False);
+  end;
+
+  DelTree(Backup, True, True, True);
+  DelTree(Staging, True, True, True);
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  Directory: String;
+begin
+  Directory := RemoveBackslashUnlessRoot(ExpandConstant('{app}'));
+
+  { A staging folder a crashed run left behind would mix old files into new
+    ones. }
+  if CurStep = ssInstall then
+    DelTree(Directory + '\.staging-update', True, True, True);
+
+  if CurStep = ssPostInstall then
+  begin
+    if not SwapIn(Directory) then
+    begin
+      Log('the staged files could not be moved into place; the previous installation was kept');
+      if not WizardSilent() then
+        MsgBox(CustomMessage('SwapFailed'), mbError, MB_OK);
+      Exit;
+    end;
+
+    if RemoveElsewhere then
       RemoveInstallation(RecordedLocation, False);
   end;
 end;
