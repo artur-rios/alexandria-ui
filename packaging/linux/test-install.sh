@@ -49,6 +49,12 @@ build() {
   printf '#!/bin/sh\necho %s\n' "$_version" > "$_bundle/alexandria"
   head -c 200000 /dev/urandom > "$_bundle/lib/libalexandria_ffi.so"
   printf 'data %s\n' "$_version" > "$_bundle/data/version.txt"
+  # Top-level entries the installer has no name for, as a bundle gains them
+  # (the Windows one carries Chromium's locales and .pak files there): a
+  # replacement has to swap them as it does its own.
+  mkdir -p "$_bundle/locales"
+  printf 'locale %s\n' "$_version" > "$_bundle/locales/en-US.pak"
+  printf 'resources %s\n' "$_version" > "$_bundle/resources.pak"
   printf '[Desktop Entry]\nType=Application\nName=Alexandria\nExec=alexandria\n' \
     > "$_bundle/io.github.artur_rios.Alexandria.desktop"
   tar czf "$work/payload-$_version.tar.gz" -C "$_bundle" .
@@ -87,6 +93,12 @@ check "a replacement leaves no staging behind" \
   no_staging
 check "a replacement records the new version" \
   grep -q '^version=2.0.0$' "$manifest"
+check "a replacement replaces a top-level folder it has no name for" \
+  grep -q 'locale 2.0.0' "$prefix/locales/en-US.pak"
+check "a replacement does not nest that folder inside the old one" \
+  test ! -e "$prefix/locales/locales"
+check "a replacement replaces a top-level file it has no name for" \
+  grep -q 'resources 2.0.0' "$prefix/resources.pak"
 
 if sh "$broken" --yes --prefix "$prefix" > "$work/broken.log" 2>&1; then
   check "a payload that cannot be unpacked fails the install" false
@@ -101,11 +113,15 @@ check "a failed replacement keeps the old data" \
   grep -q 'data 2.0.0' "$prefix/data/version.txt"
 check "a failed replacement leaves no staging behind" \
   no_staging
+check "a failed replacement keeps the old top-level extras" \
+  grep -q 'locale 2.0.0' "$prefix/locales/en-US.pak"
 check "a failed replacement keeps the old manifest" \
   grep -q '^version=2.0.0$' "$manifest"
 
 sh "$v2" --uninstall --yes > /dev/null
 check "uninstall removes what was installed" test ! -e "$prefix/alexandria"
+check "uninstall removes the top-level extras" \
+  test ! -e "$prefix/locales" -a ! -e "$prefix/resources.pak"
 check "uninstall keeps a file it did not write" test -f "$prefix/unrelated.txt"
 
 if [ "$failures" -gt 0 ]; then

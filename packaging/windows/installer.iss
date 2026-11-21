@@ -114,9 +114,12 @@ Source: "..\..\build\windows\x64\runner\Release\*"; \
   Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; Files are copied into the staging folder and moved into place by [Code], so
-; the uninstall log names the staging paths. These name the real ones —
-; exactly the paths RemovePayload removes, and nothing else in the directory.
+; the uninstall log names the staging paths. The swap records the top-level
+; entries it put in place in .alexandria-payload, which uninstall reads
+; (CurUninstallStepChanged); these name the rest of what RemovePayload
+; removes, and nothing else in the directory.
 [UninstallDelete]
+Type: files; Name: "{app}\.alexandria-payload"
 Type: files; Name: "{app}\{#AppExeName}"
 Type: files; Name: "{app}\FFMPEG-LICENSE.txt"
 Type: files; Name: "{app}\*.dll"
@@ -208,6 +211,37 @@ begin
              FileExists(Directory + '\unins000.exe'));
 end;
 
+{ The record of the top-level entries the last swap put in place. }
+function PayloadRecord(const Directory: String): String;
+begin
+  Result := Directory + '\.alexandria-payload';
+end;
+
+{ Removes the entries the payload record names, and the record. A name that
+  is not a plain entry of Directory is ignored, so a damaged record cannot
+  reach outside it. }
+procedure RemoveRecordedEntries(const Directory: String);
+var
+  Names: TArrayOfString;
+  Index: Integer;
+  Path: String;
+begin
+  if not LoadStringsFromFile(PayloadRecord(Directory), Names) then
+    Exit;
+  for Index := 0 to GetArrayLength(Names) - 1 do
+  begin
+    if (Trim(Names[Index]) = '') or (Names[Index] = '.') or (Names[Index] = '..') or
+       (Pos('\', Names[Index]) > 0) or (Pos('/', Names[Index]) > 0) or (Pos(':', Names[Index]) > 0) then
+      Continue;
+    Path := Directory + '\' + Names[Index];
+    if DirExists(Path) then
+      DelTree(Path, True, True, True)
+    else
+      DeleteFile(Path);
+  end;
+  DeleteFile(PayloadRecord(Directory));
+end;
+
 { Removes only the paths this payload writes. Deliberately not a DelTree of the
   directory: the owner chooses it by hand on the directory page, and one who
   points setup at a folder holding unrelated files must not lose them. }
@@ -216,6 +250,7 @@ begin
   if Directory = '' then
     Exit;
 
+  RemoveRecordedEntries(Directory);
   DeleteFile(Directory + '\{#AppExeName}');
   DeleteFile(Directory + '\FFMPEG-LICENSE.txt');
 
@@ -380,6 +415,48 @@ begin
   end;
 end;
 
+{ Writes Names to FileName, one per line. }
+procedure SaveNames(const Names: TStringList; const FileName: String);
+var
+  Lines: TArrayOfString;
+  Index: Integer;
+begin
+  SetArrayLength(Lines, Names.Count);
+  for Index := 0 to Names.Count - 1 do
+    Lines[Index] := Names.Strings[Index];
+  if not SaveStringsToFile(FileName, Lines, False) then
+    Log('could not write ' + FileName);
+end;
+
+{ Adds Name to List when Directory holds an entry of that name and the list
+  does not have it yet. }
+procedure AddPresent(const List: TStringList; const Directory, Name: String);
+begin
+  if (FileExists(Directory + '\' + Name) or DirExists(Directory + '\' + Name)) and
+     (List.IndexOf(Name) < 0) then
+    List.Add(Name);
+end;
+
+{ The entries a replacement moves aside: the program's own as RemovePayload
+  knows them, every entry the last swap recorded, and anything else under a
+  name the new version brings — Chromium's .pak files, icudtl.dat and locales
+  among them — whose name a rename could not otherwise take. Something the
+  owner keeps in the folder under another name stays where it is. }
+function AsideEntries(const Directory: String; const NewNames: TStringList): TStringList;
+var
+  Recorded: TArrayOfString;
+  Index: Integer;
+begin
+  Result := ListEntries(Directory, True);
+  for Index := 0 to NewNames.Count - 1 do
+    AddPresent(Result, Directory, NewNames.Strings[Index]);
+  if LoadStringsFromFile(PayloadRecord(Directory), Recorded) then
+    for Index := 0 to GetArrayLength(Recorded) - 1 do
+      if (Trim(Recorded[Index]) <> '') and (Pos('\', Recorded[Index]) = 0) and
+         (Recorded[Index] <> '.') and (Recorded[Index] <> '..') then
+        AddPresent(Result, Directory, Recorded[Index]);
+end;
+
 { One rename, retried for a few seconds: an antivirus scanning a file just
   written holds it for a moment. }
 function MoveEntry(const FromPath, ToPath: String): Boolean;
@@ -451,8 +528,8 @@ begin
   end;
   ForceDirectories(Backup);
 
-  OldNames := ListEntries(Directory, True);
   NewNames := ListEntries(Staging, False);
+  OldNames := AsideEntries(Directory, NewNames);
   try
     Restored := True;
     NewMoved := 0;
@@ -465,6 +542,9 @@ begin
     end;
     if not Result then
       Restored := MoveBack(OldNames, OldMoved, Backup, Directory) and Restored;
+
+    if Result then
+      SaveNames(NewNames, PayloadRecord(Directory));
 
     if Result or Restored then
       DelTree(Backup, True, True, True)
@@ -502,4 +582,12 @@ begin
     if RemoveElsewhere then
       RemoveOtherCopy(RecordedLocation);
   end;
+end;
+
+{ Uninstalling: the entries the last swap put in place, which the uninstall
+  log names only by their staging paths. }
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usUninstall then
+    RemoveRecordedEntries(RemoveBackslashUnlessRoot(ExpandConstant('{app}')));
 end;

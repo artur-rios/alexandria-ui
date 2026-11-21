@@ -233,9 +233,9 @@ jobs:
       # The setup, staged (update-check design §3 step 4): a silent install; a replacement in the update mode the
       # application uses, which must keep a file the setup did not write and leave no staging behind; and a replacement
       # that fails part-way — a DLL held open with no sharing, so it cannot be moved — which must leave the previous
-      # files exactly as they were. Compiled on every push rather than only at release time, so a broken setup script
-      # fails here first. Each run is waited for by itself: Start-Process -Wait would also wait for the application the
-      # update starts again.
+      # files exactly as they were; then an uninstall, which must leave only that unrelated file. Compiled on every push
+      # rather than only at release time, so a broken setup script fails here first. Each run is waited for by itself:
+      # Start-Process -Wait would also wait for the application the update starts again.
       - name: Installer smoke test
         shell: pwsh
         timeout-minutes: 15
@@ -299,6 +299,17 @@ jobs:
           $after = Entries
           $changed = Compare-Object $before $after
           if ($changed) { $changed | Out-Host; throw 'the failed update changed the previous installation' }
+          if (-not (Test-Path "$dir\.alexandria-payload")) { throw 'the update recorded no payload' }
+
+          # Uninstalling removes every entry the swap put in place — the uninstall log names only their staging paths —
+          # and keeps the file the setup did not write. The uninstaller hands over to a copy of itself and returns at once;
+          # unins000.exe disappearing is what says it finished.
+          Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait
+          for ($i = 0; $i -lt 120 -and (Test-Path "$dir\unins000.exe"); $i++) { Start-Sleep -Milliseconds 500 }
+          $left = @(Get-ChildItem -LiteralPath $dir -Force | ForEach-Object { $_.Name })
+          if (($left.Count -ne 1) -or ($left[0] -ne 'unrelated.txt')) {
+            throw "uninstall left: $($left -join ', ')"
+          }
 
   # integration_test/viewers/saved_page_engine_test.dart opens a hostile saved page in the real Chromium engine and asserts
   # on what its script managed to do (UC-25, FR-VW-05, NFR-12): web security on, the sandbox on, the page held to its folder.

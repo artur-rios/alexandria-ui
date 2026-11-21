@@ -492,36 +492,59 @@ own_entries() {
   printf '%s\n' "$EXE_NAME" lib data "$DESKTOP_FILE" "${APP_ID}.png"
 }
 
-# Moves the old entries aside and the new ones in. Every step is a rename, so
-# it either completes or leaves a state restore_backup can undo.
+# The new version's top-level names, one per line, listed before anything moves.
+staged_names() {
+  for _entry in "$staging"/* "$staging"/.[!.]*; do
+    [ -e "$_entry" ] || [ -L "$_entry" ] || continue
+    basename "$_entry"
+  done
+}
+
+# Moves the old entries aside and the new ones in. Aside go the installer's own
+# entries and anything else under a name the new version brings — a top-level
+# entry the bundle gained, which mv would otherwise refuse (a folder) or
+# overwrite past undoing (a file). Every step is a rename, so it either
+# completes or leaves a state restore_backup can undo.
 swap_in() {
   mkdir -p "$backup" || return 1
-  for _name in $(own_entries); do
+  { own_entries; cat "$names"; } | while IFS= read -r _name; do
     if [ -e "$prefix/$_name" ] || [ -L "$prefix/$_name" ]; then
-      mv "$prefix/$_name" "$backup/$_name" || return 1
+      mv "$prefix/$_name" "$backup/$_name" || exit 1
     fi
-  done
-  for _entry in "$staging"/*; do
-    [ -e "$_entry" ] || continue
-    mv "$_entry" "$prefix/" || return 1
-  done
+  done || return 1
+  while IFS= read -r _name; do
+    mv "$staging/$_name" "$prefix/$_name" || return 1
+  done < "$names"
 }
 
+# Undoes exactly what swap_in did: the new entries that made it in go, then
+# everything moved aside comes back. Tries every entry rather than stopping at
+# the first failure, and answers whether all of them went.
 restore_backup() {
-  for _name in $(own_entries); do
-    if [ -e "$backup/$_name" ] || [ -L "$backup/$_name" ]; then
-      rm -rf "${prefix:?}/$_name"
-      mv "$backup/$_name" "$prefix/$_name"
+  _restored=yes
+  while IFS= read -r _name; do
+    if [ ! -e "$staging/$_name" ] && [ ! -L "$staging/$_name" ]; then
+      rm -rf "${prefix:?}/$_name" || _restored=no
     fi
+  done < "$names"
+  for _entry in "$backup"/* "$backup"/.[!.]*; do
+    [ -e "$_entry" ] || [ -L "$_entry" ] || continue
+    mv "$_entry" "$prefix/" || _restored=no
   done
+  [ "$_restored" = yes ]
 }
 
+names="$prefix/.update-names"
+staged_names > "$names"
 if ! swap_in; then
-  restore_backup
-  rm -rf "$staging" "$backup"
-  die "the new files could not be put in place; the previous installation was restored"
+  if restore_backup; then
+    rm -rf "$staging" "$backup" "$names"
+    die "the new files could not be put in place; the previous installation was restored"
+  fi
+  rm -rf "$staging" "$names"
+  die "the new files could not be put in place, and some of the previous ones are still in ${backup}"
 fi
-rm -rf "$staging" "$backup"
+rm -rf "$staging" "$backup" "$names"
 [ "$replacing" = "yes" ] && log "Replaced the previous installation in ${prefix}."
 
 if [ "$remove_elsewhere" = "yes" ]; then
