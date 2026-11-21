@@ -83,7 +83,9 @@ library.
 - **No mail transport.** The app never sends e-mail. Confirmation and recovery
   messages are the core's to send; the app asks and reports the outcome.
 - **No server, no cloud, no sync.** Everything is local to the machine, apart
-  from whatever the core does to deliver a confirmation or recovery message.
+  from whatever the core does to deliver a confirmation or recovery message,
+  and the update check, which asks GitHub for the latest release and can be
+  turned off.
 - **No mobile or web build.** Windows and Linux desktop only.
 - **No library server administration.** The app configures where its own database
   lives, and the owner chooses which folders are libraries; it is not an administration console for a remote

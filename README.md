@@ -49,6 +49,11 @@ its data.
   regenerated on request.
 - Adapts to window and screen size, in light and dark themes, in Brazilian
   Portuguese and English.
+- Checks for a newer release at startup and offers it with its release notes.
+  The Windows installer, the Linux installer, and the AppImage update
+  themselves — the download verified against the release's SHA-256 checksums
+  first — and every other package is pointed at the release page. The check
+  can be turned off in Preferences; the Flatpak never makes it.
 
 ## What it doesn't do
 
@@ -67,7 +72,10 @@ its data.
 - No second account, sharing, profiles, or roles — one owner, one account.
 - No mail of any kind: the account's address is a login identifier and nothing
   else. Recovery is the core's single-use codes, not a message.
-- No server, no cloud, no synchronization.
+- No server, no cloud, no synchronization, and no telemetry. The one network
+  call the application makes of its own is the update check: a request for the
+  latest release to GitHub's public API, carrying nothing but the running
+  version.
 - No mobile, web, or macOS build.
 
 ## Specifications

@@ -37,8 +37,9 @@ than repeated as an alternative flow in each:
 | --- | --- |
 | **Owner** | The single human user, and the only actor with access to any catalog operation. Interacts with every use case below. |
 | **Alexandria core** | The Rust library linked in process over FFI. Owns the catalog, the database, and every domain rule. Every catalog change in these flows is performed by it, never by the application. |
-| **Local filesystem** | The disk holding the library folders. Read directly for media and document bytes; written only by the core, except for the application's own settings and log. |
-| **Default browser** | The platform's configured web browser. Involved only when a bookmark is opened. |
+| **Local filesystem** | The disk holding the library folders. Read directly for media and document bytes; written only by the core, except for the application's own settings and log, and an accepted update's download and pending-update record (UC-51). |
+| **Default browser** | The platform's configured web browser. Involved only when a bookmark is opened, or a release page (UC-51). |
+| **GitHub releases** | GitHub's public releases API and the packages each release publishes. Asked for the latest release at startup and on "Check now", and downloaded from only when the owner accepts an update (UC-51). |
 
 ### 1.3 Use Case Overview
 
@@ -120,6 +121,10 @@ graph LR
         UC39[UC-39: Manage preferences]
     end
 
+    subgraph "Updates (UP)"
+        UC51[UC-51: Update the application]
+    end
+
     OWNER --> UC01
     OWNER --> UC05
     OWNER --> UC09
@@ -129,6 +134,7 @@ graph LR
     OWNER --> UC29
     OWNER --> UC33
     OWNER --> UC38
+    OWNER --> UC51
 ```
 
 ---
@@ -1524,7 +1530,7 @@ graph LR
 | AF-02 | The settings store cannot be written | The choices apply for this session and the application reports that they were not saved. |
 | AF-03 | No preference has ever been set | The application starts on the system theme and the system language when it is one of the two supported, and English otherwise. |
 | AF-04 | Playback or an index run is active | Both continue uninterrupted through a theme or language change. |
-| AF-05 | There is no session | Only the theme and the language are offered — they change the screen the owner is standing on. The choices that belong to a library nobody has opened (the startup re-check) appear once they have signed in. |
+| AF-05 | There is no session | The theme and the language are offered — they change the screen the owner is standing on — and so is the update check, which belongs to the application rather than to a library (UC-51). The choices that belong to a library nobody has opened (the startup re-check) appear once they have signed in. |
 
 ---
 
@@ -1830,6 +1836,76 @@ graph LR
 
 ---
 
+### UC-51: Update the application
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-51 |
+| **Name** | Update the application |
+| **Actors** | Owner, GitHub releases, Local filesystem |
+| **Description** | The application finds a newer release at startup, or when the owner asks, and offers it; the owner updates now, later, or never to that version, and a copy that can update itself downloads, verifies, installs, and starts the new version. |
+| **Preconditions** | A release build is running, from an installation other than the Flatpak. At startup, "Check for updates at startup" is on (the default). A session is not required. |
+| **Postconditions** | The owner is running the newer release; or has chosen to be asked again at the next start; or has skipped that version, which is remembered; or has been sent to the release page. Nothing unverified has run, and the owner's data is untouched. |
+| **Requirements** | FR-UP-01, FR-UP-02, FR-UP-03, FR-UP-04, FR-UP-05, FR-UP-06, FR-UP-07, FR-UP-08, FR-UP-09, FR-UP-10, FR-UP-11, FR-UP-12, FR-UP-13, FR-UP-14, FR-UP-15 |
+
+**Main Flow**
+
+1. Startup reaches ready. In the background, the application asks GitHub's
+   public releases API for the latest release, sending only the request, its
+   `Accept` header, and `User-Agent: Alexandria/<version>`.
+2. The latest release is newer than the running version, and is not a version
+   the owner skipped.
+3. The application shows the prompt over whatever screen is up — the login
+   screen or the shell — waiting first for any open dialog to close. It names
+   the new version, says "You have <current>", and shows the release notes,
+   with Update now, Later, and Skip this version.
+4. The owner chooses Update now. The application downloads the package for
+   this installation, showing its progress and a Cancel.
+5. The application verifies the download's SHA-256 against the checksums file
+   the release publishes.
+6. The application closes for the update: it ends the session's activities,
+   records the window's geometry, writes the pending-update record, starts the
+   installer detached, and exits.
+7. The installer replaces the installation, keeping the owner's data, and
+   starts the application again.
+8. At the next start, the application finds itself running the new version and
+   deletes the pending-update record.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The owner chooses Later | The prompt closes and nothing is stored; the next start asks again. |
+| AF-02 | The owner chooses Skip this version | The version is remembered and not offered at startup again. A release newer than it is offered as usual. |
+| AF-03 | This copy cannot update itself — the `.deb`, the zip or tarball, MSIX, or an installation the owner cannot write to | The prompt says this copy can't update itself and offers "Open release page" in place of Update now, which opens the release in the default browser. |
+| AF-04 | The release publishes no checksums for this installation | As AF-03: the application cannot verify what it would install, so it offers the release page. The first release that publishes checksums is installed by hand, once. |
+| AF-05 | The download does not match its checksum, or the checksums file has no line for it | The download is deleted, the prompt says it could not be verified, and nothing runs. |
+| AF-06 | The download fails | The partial file is deleted and the prompt says the update could not be downloaded. |
+| AF-07 | The owner cancels the download, or signs out while it runs | The partial file is deleted and, on Cancel, the offer stands as it was. |
+| AF-08 | An edit is unsaved when the application closes for the update | The owner is asked first, as signing out asks. "Update and discard" continues; declining returns to the offer and deletes the download, so the owner can save first. |
+| AF-09 | A library scan is running when the application closes for the update | The owner is told that the scan will pause and can be resumed after the update (UC-44); confirming continues, and declining returns to the offer. |
+| AF-10 | The update did not take: the next start is still running the old version | The installer started the old version again. The application deletes the pending-update record and, in the prompt's place, shows "The update to <version> did not complete", with "Open release page". |
+| AF-11 | The check fails at startup — offline, timed out, rate-limited, a server error, or an unreadable answer | It is logged, and nothing is shown. Startup is neither slowed nor interrupted. |
+| AF-12 | The owner chooses "Check now" in Preferences and nothing newer exists | The application says "You're up to date". A failed check says "Couldn't check for updates"; a newer release opens the prompt, even one the owner skipped. |
+| AF-13 | The owner turns "Check for updates at startup" off | No request is made at startup. "Check now" still works. |
+| AF-14 | The application runs from the Flatpak | It never checks, and Preferences shows neither the switch nor "Check now": the Flatpak has no network permission (FR-UP-15). |
+
+> **One network call, and only one.** The check is the application's only
+> request of its own: no telemetry, nothing about the owner or the library,
+> and nothing beyond what any HTTPS request carries. It runs once per start,
+> never periodically, and can be turned off.
+>
+> **Nothing unverified runs.** The packages are unsigned, so what the
+> application installs is what HTTPS delivered and the release's SHA-256
+> confirms. A release that cannot be checked is not installed by the
+> application at all.
+>
+> **Closing for an update is its own path.** It asks about unsaved edits and a
+> running scan; closing the window in the ordinary way does not, and is
+> unchanged.
+
+---
+
 ## 3. Use Case — Requirements Traceability
 
 | Use Case | Requirements |
@@ -1884,6 +1960,7 @@ graph LR
 | UC-48: Play a playlist | **Removed (moved out of scope, see Orpheus)** |
 | UC-49: Browse a library | FR-CT-13, FR-CT-15, FR-CT-17, FR-LB-09 |
 | UC-50: See what has been played most | **Removed (moved out of scope, see Orpheus)** |
+| UC-51: Update the application | FR-UP-01, FR-UP-02, FR-UP-03, FR-UP-04, FR-UP-05, FR-UP-06, FR-UP-07, FR-UP-08, FR-UP-09, FR-UP-10, FR-UP-11, FR-UP-12, FR-UP-13, FR-UP-14, FR-UP-15 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) that has not been

@@ -33,7 +33,8 @@ comic books, images, and saved HTML pages; editing video metadata, music tags,
 file names, and Markdown and text content;
 organizing files and bookmarks into collections; tracking watchlists and reading
 lists with per-episode and per-issue progress; carrying out the core's two-phase
-deletion lifecycle including the separate purge-on-disk; and the application
+deletion lifecycle including the separate purge-on-disk; checking for a newer
+release and installing one the owner accepts; and the application
 shell that hosts all of it — responsive layout, light and dark themes, Brazilian
 Portuguese and English, and consistent loading, error, and confirmation
 presentation.
@@ -86,12 +87,14 @@ graph LR
         FFI[FFI gateway<br/>generated bindings]
         FILES[Filesystem reader]
         PREFS[Local settings store]
+        RELEASES[Release source<br/>and downloader]
     end
 
     subgraph External
         CORE[Alexandria core<br/>shared library]
         DB[(Catalog database)]
         DISK[(Library folders)]
+        GITHUB[GitHub releases API]
     end
 
     OWNER --> SHELL
@@ -104,10 +107,12 @@ graph LR
     PORTS --> FFI
     PORTS --> FILES
     PORTS --> PREFS
+    PORTS --> RELEASES
     FFI --> CORE
     CORE --> DB
     CORE --> DISK
     FILES --> DISK
+    RELEASES --> GITHUB
 ```
 
 The single arrow worth noting is the one that is **absent**: nothing in
@@ -328,6 +333,34 @@ FR-PL-17), and playlists (FR-TR-15 … FR-TR-20) remain removed.
 | FR-UX-12 | The system shall persist the owner's theme, language, layout, sort, and filter preferences locally and restore them at launch. |
 | FR-UX-13 | **Removed (moved out of scope, see Orpheus)** |
 
+### 3.11 Updates — `UP`
+
+| ID | Requirement |
+| --- | --- |
+| FR-UP-01 | The system shall check for a newer release once per application start, when startup reaches ready, in the background and without delaying or blocking startup — and only when the build is a release build (never a debug or profile build), the owner's "Check for updates at startup" preference is on, and the installation is not the Flatpak. It shall not check periodically while it runs. |
+| FR-UP-02 | The system shall ask for the latest release with one `GET` to GitHub's public releases API, `https://api.github.com/repos/artur-rios/alexandria-ui/releases/latest`, which leaves out pre-releases and drafts, sending only the headers `Accept: application/vnd.github+json` and `User-Agent: Alexandria/<version>`, and giving up after 10 seconds. It shall send nothing else and no telemetry. The URL may be replaced at build time so that tests can point it elsewhere. |
+| FR-UP-03 | The system shall compare the latest release's tag, without its `v`, with the running version as SemVer `major.minor.patch`, ignoring a tag that does not parse, and shall offer a release only when it is newer than the running one. It shall never offer a downgrade. |
+| FR-UP-04 | The system shall log a failed check at startup — offline, timed out, rate-limited, a server error, or an unreadable answer — and show nothing. |
+| FR-UP-05 | The system shall offer a newer release in a prompt over whatever screen is up — the login screen or the shell — as soon as the check answers, but never over another dialog: if one is open, the prompt waits until it closes. The prompt shall show the new version, "You have <current>", the release's notes rendered as Markdown, and three choices: Update now, Later, and Skip this version. |
+| FR-UP-06 | The system shall, on Later, store nothing and ask again at the next start; and on Skip this version, store the version (`updates.skippedVersion`) and not offer it again at startup, while still offering any release newer than it. |
+| FR-UP-07 | The system shall offer in Preferences, with or without a session, a "Check for updates at startup" switch, on by default and persisted (`settings.checksForUpdates`), and a "Check now" action that runs the same check and reports "You're up to date", reports "Couldn't check for updates", or opens the prompt. "Check now" shall offer a skipped version too: it is an explicit request, and the only way to undo a skip. |
+| FR-UP-08 | The system shall install an update itself only for an installation it recognises as able to replace itself, from facts on disk: the Windows installer's copy (its uninstall key's install location is the running executable's folder, and the running user can write to it), the Linux installer's copy (its manifest's prefix contains the running executable, and the running user can write to it), and an AppImage in a folder the running user can write to. Every other installation — the `.deb`, the zip or tarball, MSIX, a Program Files or root-owned install the running user cannot write to, and anything unrecognised — shall be treated as one that cannot update itself. |
+| FR-UP-09 | The system shall, for an installation that cannot update itself, and for a release that publishes no checksums file for this installation, say in the prompt that this copy cannot update itself and offer "Open release page", which opens the release in the default browser, in place of Update now. |
+| FR-UP-10 | The system shall, on Update now, download the release's package for this installation into a fresh temporary folder, showing its progress and offering Cancel. A cancelled download shall be deleted and return the owner to the offer; a failed one shall be deleted and say that the update could not be downloaded. Signing out shall cancel a download in flight. |
+| FR-UP-11 | The system shall verify a downloaded package's SHA-256 against its line in the checksums file the release publishes beside its packages — `alexandria-<version>-windows-SHA256SUMS` or `alexandria-<version>-linux-SHA256SUMS` — and, when the digest does not match or the file has no line for the package, delete the download, say that it could not be verified, and run nothing. |
+| FR-UP-12 | The system shall close for a verified update through a path of its own, leaving ordinary window closing unchanged: confirm discarding unsaved edits as signing out does ("Update and discard"), returning to the offer and deleting the download when the owner declines; say that a running scan will pause and can be resumed after the update; end the session's activities; record the window geometry; write the pending-update record (`update-pending.json`); start the installer detached; and exit. |
+| FR-UP-13 | The system shall install by the installation's kind: on Windows, by running the release's setup with `/SILENT /SUPPRESSMSGBOXES /NORESTART /UPDATE /DIR="<install folder>"`; on Linux, through a small `sh` helper that waits for the application to exit, runs the release's installer with `--yes --prefix <prefix>` or replaces the AppImage by an atomic rename, starts the application again — the old one when the install failed — and deletes the temporary folder. The owner's data shall not be touched. |
+| FR-UP-14 | The system shall, at the next start, read the pending-update record and delete it; and when the running version is older than the one the record names, show in the prompt's place a notice, "The update to <version> did not complete", with "Open release page". |
+| FR-UP-15 | The system shall never check for updates from the Flatpak, and shall hide its update switch and "Check now": the Flatpak has no network permission, and granting it one would also open the network to saved pages (NFR-12). |
+
+Updating in place needs the release to publish its checksums. The installers'
+part — staging the new version and swapping in only their own files, so that a
+failed update leaves the old version working, and the Windows setup's
+`/UPDATE` switch — and the checksums files belong to the release packaging
+([Operations & Infrastructure §7.2](Operations%20%26%20Infrastructure%20Document.md)).
+Releases up to and including 1.0.1 publish no checksums, so the first release
+that does is installed by hand, once.
+
 ---
 
 ## 4. Data Model
@@ -486,6 +519,22 @@ and from every other: they exist only as arguments to the call that submits them
 | sortByType | map | Optional | The chosen sort per file type. |
 | filtersByType | map | Optional | The retained filters per file type. |
 | windowGeometry | record | Optional | Last window size and position. |
+| checksForUpdates | boolean | Required, on unless set to `false` | Whether the update check runs at startup (FR-UP-07). Stored as `settings.checksForUpdates`. |
+| skippedVersion | string | Optional, `major.minor.patch` | The release the owner chose to skip (FR-UP-06). Stored as `updates.skippedVersion`. |
+
+### 4.12 PendingUpdate (application-owned, a file)
+
+| Field | Type | Constraints | Description |
+| --- | --- | --- | --- |
+| from | string | Required | The version that was running when the update started. |
+| to | string | Required | The version being installed. |
+| at | timestamp | Required, UTC | When the update started. |
+
+Written as `update-pending.json` in the application-support directory just
+before the application closes to install an update (FR-UP-12), and read and
+deleted at the next start (FR-UP-14). It is not kept in the settings store: it
+has to be readable by a start that may be running either version. An unreadable
+record is deleted and treated as none.
 
 ---
 
@@ -493,7 +542,8 @@ and from every other: they exist only as arguments to the call that submits them
 
 The application has two interface surfaces: outward to the owner (screens) and
 inward to the Alexandria core (calls). Neither introduces an operation the core
-does not already publish.
+does not already publish. One external interface sits beside them, outside the
+catalog entirely: the release check (§5.4).
 
 ### 5.1 Screen Surface
 
@@ -520,7 +570,8 @@ does not already publish.
 | Reading lists | Lists, membership, and read progress | FR-TR-08 … FR-TR-14 |
 | Deleted items | Restore and purge, with retention shown | FR-LC-02 … FR-LC-07 |
 | Missing files | Review and re-scan | FR-LC-08 |
-| Preferences | Theme, language, and credential change | FR-AU-10, FR-UX-04, FR-UX-05, FR-UX-12 |
+| Preferences | Theme, language, credential change, and the update check — its switch and "Check now" | FR-AU-10, FR-UX-04, FR-UX-05, FR-UX-12, FR-UP-07, FR-UP-15 |
+| Update prompt | A newer release with its notes — Update now, Later, Skip this version, or the release page — the download's progress, and the notice of an update that did not complete | FR-UP-05, FR-UP-06, FR-UP-09 … FR-UP-12, FR-UP-14 |
 
 ### 5.2 Core Call Surface
 
@@ -559,11 +610,25 @@ made from a gateway and named in no row here is a dependency nobody agreed to.
 | --- | --- | --- |
 | Read bytes at a file's path | Playback and viewing | FR-PL-01, FR-PL-05, FR-VW-02 … FR-VW-07 |
 | Write the local settings store and the log file | Application-owned state | FR-UX-12, and [Operations & Infrastructure §4](Operations%20%26%20Infrastructure%20Document.md) |
+| Write an accepted update's download to a temporary folder, and delete it when it is cancelled, fails, or does not verify | Updating | FR-UP-10, FR-UP-11 |
+| Write and delete `update-pending.json` in the application-support directory | The pending-update record (§4.12) | FR-UP-12, FR-UP-14 |
+| Start the release's installer, which replaces the installation | Updating, at the owner's request | FR-UP-13 |
 
 The application performs no other filesystem write. Renaming, content saving, and
 file deletion happen through the core.
 
-### 5.4 Account Recovery
+### 5.4 Release Surface
+
+The one network interface the application uses itself. It is not a core call,
+and it carries nothing from the catalog.
+
+| Interface | Use | Requirements |
+| --- | --- | --- |
+| `GET https://api.github.com/repos/artur-rios/alexandria-ui/releases/latest` (GitHub's public REST API, no login) | The latest release: its tag, notes, page, and assets. Headers `Accept: application/vnd.github+json` and `User-Agent: Alexandria/<version>`, 10-second timeout | FR-UP-01 … FR-UP-04, FR-UP-07 |
+| The `browser_download_url` of a release asset | The package for this installation and the release's `SHA256SUMS` file, downloaded only on Update now | FR-UP-10, FR-UP-11 |
+| The release's `html_url`, in the default browser | "Open release page" | FR-UP-09, FR-UP-14 |
+
+### 5.5 Account Recovery
 
 The core does not verify the account's e-mail address and never writes to it:
 the address is a login identifier and nothing more. An owner who cannot sign in
@@ -640,6 +705,7 @@ with the new account's recovery codes still on screen, and authenticated.
 | Purge a record | ✅ | ❌ | ❌ |
 | Purge a file on disk | ✅ | ❌ | ❌ |
 | Change theme or language | ✅ | ✅ | ✅ |
+| Check for updates, or update the application | ✅ | ✅ | ✅ |
 
 Legend: ✅ allowed · ⚠️ allowed under the stated condition · ❌ denied.
 
@@ -713,6 +779,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | F-08 Watchlists and reading lists | FR-TR-01 through FR-TR-14 (FR-TR-15 through FR-TR-20 removed) |
 | F-09 Safe deletion lifecycle | FR-LC-01 through FR-LC-09 |
 | F-10 Application shell, theming, and localization | FR-UX-01 through FR-UX-12 (FR-UX-13 removed) |
+| F-11 Updates | FR-UP-01 through FR-UP-15 |
 
 ### 9.2 Domain areas to codes
 
@@ -728,6 +795,7 @@ Three cascade notes follow from the core's rules and bind the interface:
 | Watchlists and reading lists | `TR` | FR-TR-01 … FR-TR-20 (FR-TR-15 … FR-TR-20 removed) |
 | Deletion lifecycle | `LC` | FR-LC-01 … FR-LC-09 |
 | Application shell, theming, and localization | `UX` | FR-UX-01 … FR-UX-13 (FR-UX-13 removed) |
+| Updates | `UP` | FR-UP-01 … FR-UP-15 |
 
 ### 9.3 Business rules to requirements
 

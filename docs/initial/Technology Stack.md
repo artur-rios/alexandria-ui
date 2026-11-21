@@ -131,7 +131,9 @@ flutter test
   selected in Phase 2.
 
 No payments, no identity provider, no message broker, and no object storage are
-involved, and this application makes no network call of its own. E-mail is
+involved, and this application makes no network call of its own but one: the
+update check, which asks GitHub's public releases API for the latest release
+and can be turned off (System Requirements §3.11). E-mail is
 involved only indirectly: the core sends confirmation and recovery messages, and
 the app never touches a mail transport.
 
