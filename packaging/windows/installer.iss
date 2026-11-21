@@ -36,6 +36,11 @@
 ; the code silently stop finding what the installer itself registered.
 #define AppGuid "{8F2A6C41-9B3E-4D77-A5C2-1E6D0B9F4A38}"
 
+; The mutex the Windows runner holds while the application runs
+; (windows/runner/main.cpp): how this setup knows Alexandria is open. The two
+; spellings must match.
+#define AppMutex "Alexandria.Running.8F2A6C41"
+
 [Setup]
 AppId={{#AppGuid}
 AppName={#AppName}
@@ -59,12 +64,12 @@ ArchitecturesInstallIn64BitMode=x64compatible
 ; NFR-07: the application is usable at 1024 x 640, so Windows 10 x64 and later.
 MinVersion=10.0
 
-; The Restart Manager closes a running Alexandria before files are replaced.
-; Without it, upgrading while the application is open fails on a locked
-; alexandria.exe or a loaded alexandria_ffi.dll — and a half-replaced
-; bundle is worse than a refused one. Nothing is restarted afterwards: the
-; [Run] entry below already offers to launch it.
-CloseApplications=yes
+; Not the Restart Manager: it looks only at the files setup overwrites, and
+; those are now in an empty staging folder, so it never sees a running
+; Alexandria. InitializeSetup checks the runner's mutex instead — waiting for
+; the application to close when it started this setup with /UPDATE, asking the
+; owner to close it otherwise.
+CloseApplications=no
 RestartApplications=no
 
 ; DefaultDirName is {autopf}, so the owner may reasonably want either a
@@ -88,8 +93,8 @@ brazilianportuguese.RemoveElsewhere=O %1 também está instalado em outro local:
 english.SwapFailed=The new version could not be put in place, so the previous installation was kept as it was.
 brazilianportuguese.SwapFailed=A nova versão não pôde ser colocada no lugar, então a instalação anterior foi mantida como estava.
 
-english.UninstallFailed=The previous installation's uninstaller did not finish cleanly. Setup will remove the program files in that directory itself.
-brazilianportuguese.UninstallFailed=O desinstalador da instalação anterior não terminou corretamente. A instalação removerá os arquivos do programa naquele diretório por conta própria.
+english.CloseApp=%1 is running. Close it, then choose Retry to continue.
+brazilianportuguese.CloseApp=O %1 está aberto. Feche-o e escolha Repetir para continuar.
 
 [Files]
 ; The whole release bundle, which already carries alexandria_ffi.dll beside the
@@ -147,6 +152,8 @@ const
 
 var
   RecordedLocation: String;
+  { The registry root RecordedLocation was found under. }
+  RecordedRoot: Integer;
   { Decided on the directory page, carried out once the files are staged. }
   RemoveElsewhere: Boolean;
 
@@ -184,6 +191,7 @@ begin
       if (Location <> '') and DirExists(Location) then
       begin
         Result := Location;
+        RecordedRoot := Views[Index];
         Exit;
       end;
     end;
@@ -198,25 +206,6 @@ begin
   Result := (Directory <> '') and
             (FileExists(Directory + '\{#AppExeName}') or
              FileExists(Directory + '\unins000.exe'));
-end;
-
-{ Inno's uninstaller relaunches itself from a temporary copy and the first
-  process returns immediately, so Exec's wait says nothing about whether the
-  uninstall finished. What does say so is unins000.exe itself disappearing —
-  it is deleted once the uninstall completes. Bounded at a minute so a stuck
-  uninstaller leaves the wizard responsive rather than hung; the caller falls
-  back to removing the files directly. }
-function WaitForUninstaller(const UninstallerPath: String): Boolean;
-var
-  Waited: Integer;
-begin
-  Waited := 0;
-  while FileExists(UninstallerPath) and (Waited < 120) do
-  begin
-    Sleep(500);
-    Waited := Waited + 1;
-  end;
-  Result := not FileExists(UninstallerPath);
 end;
 
 { Removes only the paths this payload writes. Deliberately not a DelTree of the
@@ -243,48 +232,63 @@ begin
   RemoveDir(Directory);
 end;
 
-{ Runs the uninstaller a previous setup registered, and reports whether it
-  actually finished. }
-function RunPreviousUninstaller(const Directory: String): Boolean;
+{ The copy the owner moved away from, once the new one is in place. Not
+  through its uninstaller: that would remove the uninstall entry and the Start
+  menu and desktop shortcuts this setup has just written, which have the same
+  names. Its program files go, its uninstaller with them, and its uninstall
+  entry only when it lives in the other registry hive — the one this setup
+  did not just rewrite. }
+procedure RemoveOtherCopy(const Directory: String);
 var
-  UninstallerPath: String;
-  ResultCode: Integer;
+  RecordedPerMachine: Boolean;
 begin
-  UninstallerPath := Directory + '\unins000.exe';
+  DeleteFile(Directory + '\unins000.exe');
+  DeleteFile(Directory + '\unins000.dat');
+  RemovePayload(Directory);
 
-  if not FileExists(UninstallerPath) then
-  begin
-    Result := False;
-    Exit;
-  end;
-
-  if not Exec(UninstallerPath,
-              '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART',
-              '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-  begin
-    Result := False;
-    Exit;
-  end;
-
-  Result := WaitForUninstaller(UninstallerPath);
+  RecordedPerMachine := (RecordedRoot = HKLM64) or (RecordedRoot = HKLM32);
+  if RecordedPerMachine <> IsAdminInstallMode() then
+    if not RegDeleteKeyIncludingSubkeys(RecordedRoot, UninstallKey) then
+      Log('the other copy''s uninstall entry stays: it needs other rights');
 end;
 
-{ Uninstaller first, then a targeted sweep of whatever it left. The sweep runs
-  either way: a clean uninstall leaves nothing for it to find, and a failed one
-  is exactly when it is needed. }
-procedure RemoveInstallation(const Directory: String; const WarnOnFailure: Boolean);
+{ Waits, a minute at most, for the application to close: it closes itself
+  once it has started this setup. }
+function WaitForAppToClose(): Boolean;
+var
+  Waited: Integer;
 begin
-  if FileExists(Directory + '\unins000.exe') then
-    if (not RunPreviousUninstaller(Directory)) and WarnOnFailure then
-      MsgBox(CustomMessage('UninstallFailed'), mbInformation, MB_OK);
-
-  RemovePayload(Directory);
+  Waited := 0;
+  while CheckForMutexes('{#AppMutex}') and (Waited < 120) do
+  begin
+    Sleep(500);
+    Waited := Waited + 1;
+  end;
+  Result := not CheckForMutexes('{#AppMutex}');
 end;
 
 function InitializeSetup(): Boolean;
 begin
   RecordedLocation := FindRecordedLocation();
   Result := True;
+
+  { Files a running application holds cannot be moved aside, and the swap
+    would fail. Nothing has changed yet, so stopping here keeps everything as
+    it is. Suppressed message boxes answer Cancel, so a silent run that is not
+    an update stops rather than waits forever. }
+  if IsUpdate() then
+  begin
+    if not WaitForAppToClose() then
+    begin
+      Log('Alexandria did not close; nothing was changed');
+      Result := False;
+    end;
+  end
+  else
+    while Result and CheckForMutexes('{#AppMutex}') do
+      if SuppressibleMsgBox(FmtMessage(CustomMessage('CloseApp'), ['{#AppName}']),
+                            mbError, MB_RETRYCANCEL, IDCANCEL) <> IDRETRY then
+        Result := False;
 end;
 
 { Note on formatting throughout this section: no line may *begin* with `[`,
@@ -345,67 +349,132 @@ begin
   end;
 end;
 
-{ Moves the entries of FromDir into ToDir — only the program's own files when
-  PayloadOnly. Renames only, on one volume. False at the first that fails. }
-function MoveEntries(const FromDir, ToDir: String; const PayloadOnly: Boolean): Boolean;
+{ The program's own files, as RemovePayload knows them: the executable, the
+  ffmpeg licence, every DLL beside it, and the data folder. }
+function IsPayloadEntry(const Name: String): Boolean;
+begin
+  Result := (CompareText(Name, '{#AppExeName}') = 0) or
+            (CompareText(Name, 'FFMPEG-LICENSE.txt') = 0) or
+            (CompareText(Name, 'data') = 0) or
+            (CompareText(ExtractFileExt(Name), '.dll') = 0);
+end;
+
+{ The entries of Directory — only the program's own when PayloadOnly — listed
+  before anything moves, so the listing is never read while it changes. }
+function ListEntries(const Directory: String; const PayloadOnly: Boolean): TStringList;
 var
   Found: TFindRec;
-  Name: String;
 begin
-  Result := True;
-  if not FindFirst(FromDir + '\*', Found) then
-    Exit;
+  Result := TStringList.Create;
+  if FindFirst(Directory + '\*', Found) then
   try
     repeat
-      Name := Found.Name;
-      if (Name = '.') or (Name = '..') or
-         (CompareText(Name, '.staging-update') = 0) or
-         (CompareText(Name, '.backup-update') = 0) then
-        Continue;
-
-      { The program's own files, as RemovePayload knows them: the executable,
-        the ffmpeg licence, every DLL beside it, and the data folder. }
-      if PayloadOnly and
-         not ((CompareText(Name, '{#AppExeName}') = 0) or
-              (CompareText(Name, 'FFMPEG-LICENSE.txt') = 0) or
-              (CompareText(Name, 'data') = 0) or
-              (CompareText(ExtractFileExt(Name), '.dll') = 0)) then
-        Continue;
-
-      if not RenameFile(FromDir + '\' + Name, ToDir + '\' + Name) then
-      begin
-        Log('could not move ' + FromDir + '\' + Name);
-        Result := False;
-        Exit;
-      end;
+      if (Found.Name <> '.') and (Found.Name <> '..') and
+         (CompareText(Found.Name, '.staging-update') <> 0) and
+         (CompareText(Found.Name, '.backup-update') <> 0) and
+         ((not PayloadOnly) or IsPayloadEntry(Found.Name)) then
+        Result.Add(Found.Name);
     until not FindNext(Found);
   finally
     FindClose(Found);
   end;
 end;
 
-{ The swap: old program files aside, staged ones in, the backup gone. A failure
-  part-way puts the old files back, so the previous version still runs. }
+{ One rename, retried for a few seconds: an antivirus scanning a file just
+  written holds it for a moment. }
+function MoveEntry(const FromPath, ToPath: String): Boolean;
+var
+  Attempt: Integer;
+begin
+  Result := RenameFile(FromPath, ToPath);
+  Attempt := 1;
+  while (not Result) and (Attempt < 10) do
+  begin
+    Sleep(300);
+    Result := RenameFile(FromPath, ToPath);
+    Attempt := Attempt + 1;
+  end;
+  if not Result then
+    Log('could not move ' + FromPath + ' to ' + ToPath);
+end;
+
+{ Moves Names from FromDir to ToDir in order, stopping at the first that
+  fails; Moved says how many did. }
+function MoveNames(const Names: TStringList; const FromDir, ToDir: String; var Moved: Integer): Boolean;
+begin
+  Result := True;
+  Moved := 0;
+  while Moved < Names.Count do
+  begin
+    if not MoveEntry(FromDir + '\' + Names.Strings[Moved], ToDir + '\' + Names.Strings[Moved]) then
+    begin
+      Result := False;
+      Exit;
+    end;
+    Moved := Moved + 1;
+  end;
+end;
+
+{ Moves the first Count of Names back from FromDir to ToDir, trying every one;
+  true when all of them went. }
+function MoveBack(const Names: TStringList; const Count: Integer; const FromDir, ToDir: String): Boolean;
+var
+  Index: Integer;
+begin
+  Result := True;
+  for Index := 0 to Count - 1 do
+    if not MoveEntry(FromDir + '\' + Names.Strings[Index], ToDir + '\' + Names.Strings[Index]) then
+      Result := False;
+end;
+
+{ The swap: the old program files aside, the staged ones in, the backup gone.
+  A failure undoes exactly what had moved — the new files that made it in go
+  back to staging first, freeing their names, then the old ones come back — so
+  the previous version runs as before. A backup that could not be put back is
+  kept, never deleted, and so is one a previous run left. }
 function SwapIn(const Directory: String): Boolean;
 var
   Staging, Backup: String;
+  OldNames, NewNames: TStringList;
+  OldMoved, NewMoved: Integer;
+  Restored: Boolean;
 begin
   Staging := Directory + '\.staging-update';
   Backup := Directory + '\.backup-update';
-  DelTree(Backup, True, True, True);
+
+  RemoveDir(Backup);
+  if DirExists(Backup) then
+  begin
+    Log('a previous update left its backup in ' + Backup + '; nothing was changed');
+    Result := False;
+    Exit;
+  end;
   ForceDirectories(Backup);
 
-  Result := MoveEntries(Directory, Backup, True) and
-            MoveEntries(Staging, Directory, False);
+  OldNames := ListEntries(Directory, True);
+  NewNames := ListEntries(Staging, False);
+  try
+    Restored := True;
+    NewMoved := 0;
+    Result := MoveNames(OldNames, Directory, Backup, OldMoved);
+    if Result then
+    begin
+      Result := MoveNames(NewNames, Staging, Directory, NewMoved);
+      if not Result then
+        Restored := MoveBack(NewNames, NewMoved, Directory, Staging);
+    end;
+    if not Result then
+      Restored := MoveBack(OldNames, OldMoved, Backup, Directory) and Restored;
 
-  if not Result then
-  begin
-    MoveEntries(Directory, Staging, True);
-    MoveEntries(Backup, Directory, False);
+    if Result or Restored then
+      DelTree(Backup, True, True, True)
+    else
+      Log('the previous program files are kept in ' + Backup);
+    DelTree(Staging, True, True, True);
+  finally
+    OldNames.Free;
+    NewNames.Free;
   end;
-
-  DelTree(Backup, True, True, True);
-  DelTree(Staging, True, True, True);
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
@@ -428,8 +497,9 @@ begin
         MsgBox(CustomMessage('SwapFailed'), mbError, MB_OK);
       Exit;
     end;
+    Log('the staged files were moved into place');
 
     if RemoveElsewhere then
-      RemoveInstallation(RecordedLocation, False);
+      RemoveOtherCopy(RecordedLocation);
   end;
 end;

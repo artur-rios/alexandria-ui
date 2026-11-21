@@ -19,6 +19,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
     return cef_exit_code;
   }
 
+  // Held for as long as the application runs, and released by Windows when
+  // it exits: how the setup knows Alexandria is open and waits for it to close
+  // before replacing its files (packaging/windows/installer.iss, AppMutex —
+  // the two names must match). After the CEF call, so only the application
+  // process holds it, not its browser processes.
+  ::CreateMutexW(nullptr, FALSE, L"Alexandria.Running.8F2A6C41");
+
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
   if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
