@@ -1662,7 +1662,7 @@ packages:
       path: "third_party/webview_cef"
       relative: true
     source: path
-    version: "0.6.2+alexandria.1"
+    version: "0.6.2+alexandria.2"
   webview_flutter:
     dependency: transitive
     description:
