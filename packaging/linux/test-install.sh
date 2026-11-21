@@ -20,6 +20,14 @@ mkdir -p "$HOME"
 prefix="$work/My Apps/alexandria"
 failures=0
 
+# Where the installer records what it wrote: the system folder as root (which is
+# how the analyze check's container runs), the user's state folder otherwise.
+if [ "$(id -u)" -eq 0 ]; then
+  manifest=/var/lib/alexandria/install.manifest
+else
+  manifest="$XDG_STATE_HOME/alexandria/install.manifest"
+fi
+
 check() {
   _what=$1
   shift
@@ -78,7 +86,7 @@ check "a replacement keeps a file it did not write" \
 check "a replacement leaves no staging behind" \
   no_staging
 check "a replacement records the new version" \
-  grep -q '^version=2.0.0$' "$XDG_STATE_HOME/alexandria/install.manifest"
+  grep -q '^version=2.0.0$' "$manifest"
 
 if sh "$broken" --yes --prefix "$prefix" > "$work/broken.log" 2>&1; then
   check "a payload that cannot be unpacked fails the install" false
@@ -94,7 +102,7 @@ check "a failed replacement keeps the old data" \
 check "a failed replacement leaves no staging behind" \
   no_staging
 check "a failed replacement keeps the old manifest" \
-  grep -q '^version=2.0.0$' "$XDG_STATE_HOME/alexandria/install.manifest"
+  grep -q '^version=2.0.0$' "$manifest"
 
 sh "$v2" --uninstall --yes > /dev/null
 check "uninstall removes what was installed" test ! -e "$prefix/alexandria"
