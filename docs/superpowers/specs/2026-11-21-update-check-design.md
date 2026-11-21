@@ -1,7 +1,7 @@
 # Checking for updates at startup
 
 **Date:** 2026-11-21
-**Status:** draft
+**Status:** approved
 
 ## Why
 
@@ -137,14 +137,15 @@ All three self-updating kinds follow the same steps:
    - the updater is launched, detached so it outlives the application, and the application exits.
 4. **Install, staged, and relaunch.** Both installers gain a staged mode. It is used by the updater, and by an
    interactive install that replaces an existing one:
-   1. the new files are written to a sibling folder (`<install>.new`);
-   2. only after every file is written is the old installation moved aside (`<install>.old`) and the new one renamed
-      into place;
-   3. the old one is deleted after the swap.
+   1. the new payload is written to a staging folder beside the install (`<install>.staging`);
+   2. only after every file is written are the installer's **own paths** in the install swapped. Each recorded path of
+      the old version is moved into a backup folder (`<install>.backup`), and each new path is moved in from staging;
+   3. the backup is deleted after the swap.
 
-   A failure before the swap deletes `.new` and leaves the old installation untouched. A failure during the swap
-   renames `.old` back. The manifest (Linux) and the uninstall key (Windows) are rewritten only after the swap, so they
-   always describe what is on disk.
+   Paths, not the whole folder: the installers have always left files they did not write in the install folder alone,
+   and the smoke tests pin that. A failure before the swap deletes the staging folder and leaves the old installation
+   untouched. A failure during the swap moves the backed-up paths back. The manifest (Linux) and the uninstall key
+   (Windows) are rewritten only after the swap, so they always describe what is on disk.
    - **Windows:** `installer.iss` installs into the staging folder and swaps in `[Code]`
      (`CurStepChanged(ssPostInstall)`), instead of running the old uninstaller before copying, as `NextButtonClick` on
      `wpSelectDir` does today.
@@ -155,8 +156,8 @@ All three self-updating kinds follow the same steps:
      - A `[Run]` entry with `Check: IsUpdate` and `Flags: runasoriginaluser nowait` starts the application again. The
        existing entry skips silent installs, so an updated application would not start otherwise.
      - Inno's `CloseApplications` already waits for it to close.
-   - **Linux installer:** `install.sh` gains the same staging: extract into `<prefix>.new`, then swap, then rewrite the
-     manifest, instead of running `remove_recorded_install` before `extract_payload`.
+   - **Linux installer:** `install.sh` gains the same staging: extract into `<prefix>.staging`, swap path by path, then
+     rewrite the manifest, instead of running `remove_recorded_install` before `extract_payload`.
    - **The Linux helper:** for the installer and the AppImage, the application writes a small `sh` helper beside the
      download and runs it detached (`setsid`). The helper:
      1. waits for the application's PID to exit;
