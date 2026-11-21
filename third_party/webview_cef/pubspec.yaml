@@ -1,7 +1,7 @@
 # Alexandria fork of webview_cef 0.6.2: modified file (see FORK.md).
 name: webview_cef
 description: Flutter Desktop Webview backed by CEF (Chromium Embedded Framework).
-version: 0.6.2+alexandria.1
+version: 0.6.2+alexandria.2
 homepage: https://github.com/hlwhl/webview_cef
 repository: https://github.com/hlwhl/webview_cef
 
