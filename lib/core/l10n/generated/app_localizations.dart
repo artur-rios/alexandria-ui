@@ -584,345 +584,131 @@ abstract class AppLocalizations {
   /// **'The change was refused, and your e-mail and password are unchanged.'**
   String get changeCredentialsRejected;
 
-  /// The action in preferences that opens the library-folders screen (UC-05).
-  ///
-  /// In en, this message translates to:
-  /// **'Library folders'**
-  String get librarySourcesOpen;
-
-  /// Title of the library-folders screen (UC-05).
-  ///
-  /// In en, this message translates to:
-  /// **'Library folders'**
-  String get librarySourcesTitle;
-
-  /// Heading of the first-run guidance shown whenever no folder is registered (FR-LB-11, UC-05 main flow step 1).
-  ///
-  /// In en, this message translates to:
-  /// **'No library folders yet'**
-  String get librarySourcesEmptyTitle;
-
-  /// Body of the first-run guidance. Says plainly that registering a folder does not touch its contents (BR-06).
-  ///
-  /// In en, this message translates to:
-  /// **'Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.'**
-  String get librarySourcesEmptyBody;
-
-  /// Closes the full-screen library-folders dialog. Its own word rather than the generic Cancel, which a folder's own row now uses for abandoning a run — the two must never read as the same action.
-  ///
-  /// In en, this message translates to:
-  /// **'Close the library folders'**
-  String get librarySourcesClose;
-
-  /// The action that opens the platform's native folder picker (FR-LB-01).
-  ///
-  /// In en, this message translates to:
-  /// **'Add a folder'**
-  String get librarySourcesAdd;
-
-  /// UC-05 AF-02: the chosen path does not exist.
-  ///
-  /// In en, this message translates to:
-  /// **'There is no folder at {path}. Nothing was added.'**
-  String librarySourcesMissing(String path);
-
-  /// UC-05 AF-02: the folder exists but its contents cannot be listed.
-  ///
-  /// In en, this message translates to:
-  /// **'The folder at {path} cannot be read. Nothing was added.'**
-  String librarySourcesUnreadable(String path);
-
-  /// UC-05 AF-03: the chosen folder is already registered. The existing entry is highlighted in the list.
-  ///
-  /// In en, this message translates to:
-  /// **'That folder is already in your library.'**
-  String get librarySourcesAlreadyRegistered;
-
-  /// Title of the confirmation shown when the chosen folder contains, or sits inside, one already registered (UC-05 AF-04).
-  ///
-  /// In en, this message translates to:
-  /// **'These folders overlap'**
-  String get librarySourcesOverlapTitle;
-
-  /// Body of the overlap confirmation. Names both folders and states the consequence the owner is agreeing to (UC-05 AF-04).
-  ///
-  /// In en, this message translates to:
-  /// **'{path} overlaps {existing}, which is already in your library. Files inside both will be cataloged once for each folder.'**
-  String librarySourcesOverlapBody(String path, String existing);
-
-  /// The confirming action on the overlap warning (UC-05 AF-04).
-  ///
-  /// In en, this message translates to:
-  /// **'Add it anyway'**
-  String get librarySourcesOverlapConfirm;
-
-  /// Title of the dialog asking which kinds of file an index of the folder being registered should record (UC-05).
-  ///
-  /// In en, this message translates to:
-  /// **'What is in this folder?'**
-  String get indexScopeTitle;
-
-  /// Body of the scope dialog. Names the symptom the choice solves rather than restating the control (UC-05).
-  ///
-  /// In en, this message translates to:
-  /// **'Alexandria will catalog only the kinds of file you choose here. A folder of ebooks scoped to books keeps their cover images out of your images.'**
-  String get indexScopeBody;
-
-  /// The scope dialog's default: every type the core supports, which is also what a folder registered before this choice existed keeps (UC-05).
-  ///
-  /// In en, this message translates to:
-  /// **'All supported files'**
-  String get indexScopeAll;
-
-  /// The confirming action on the scope dialog. Registering the folder is what it does, so that is what it says (UC-05).
-  ///
-  /// In en, this message translates to:
-  /// **'Add the folder'**
-  String get indexScopeConfirm;
-
-  /// Shown when every kind has been unticked. A folder scoped to nothing would record nothing, so the confirming action is unavailable until something is chosen (UC-05).
-  ///
-  /// In en, this message translates to:
-  /// **'Choose at least one kind of file, or all of them.'**
-  String get indexScopeEmpty;
-
-  /// What a registered folder covers when its stored types name nothing this version knows — a record from a newer build, or a type since renamed. Shown on its row instead of a type list, because reading it as 'all supported files' would state the opposite of what the owner chose (UC-05, FR-LB-03).
-  ///
-  /// In en, this message translates to:
-  /// **'Covers file types this version does not recognize'**
-  String get librarySourcesScopeUnreadable;
-
-  /// UC-06: the run was refused before the core was called, because an unreadable scope would have been sent as no scope at all — which the core reads as every type. Says what to do about it (UC-05, UC-08).
-  ///
-  /// In en, this message translates to:
-  /// **'This folder is set to cover file types this version does not recognize, so it was not scanned. Remove it and add it again to choose what it covers.'**
-  String get librarySourcesStartUnreadableScope;
-
-  /// UC-06: the run was refused because no registered folder answers this path — most likely one unregistered while the row was still on screen. Nothing was scanned.
-  ///
-  /// In en, this message translates to:
-  /// **'This folder is no longer in your library, so it was not scanned.'**
-  String get librarySourcesStartNotRegistered;
-
-  /// What a registered folder with no scope covers, on its row in the list (UC-05, FR-LB-03).
-  ///
-  /// In en, this message translates to:
-  /// **'All supported files'**
-  String get librarySourcesScopeAll;
-
-  /// What a scoped folder covers, on its row in the list. {types} is the chosen type names, already joined (UC-05, FR-LB-03).
-  ///
-  /// In en, this message translates to:
-  /// **'Only {types}'**
-  String librarySourcesScopeOnly(String types);
-
-  /// The core's `video` type, named for the owner (FR-CT-02).
-  ///
-  /// In en, this message translates to:
-  /// **'Video'**
-  String get fileTypeVideo;
-
-  /// The core's `document` type, named for the owner (FR-CT-02).
-  ///
-  /// In en, this message translates to:
-  /// **'Books'**
-  String get fileTypeDocument;
-
-  /// The core's `comic` type, named for the owner (FR-CT-02).
-  ///
-  /// In en, this message translates to:
-  /// **'Comic books'**
-  String get fileTypeComic;
-
-  /// The core's `text` type, named for the owner (FR-CT-02).
-  ///
-  /// In en, this message translates to:
-  /// **'Notes'**
-  String get fileTypeText;
-
-  /// The core's `html` type, named for the owner (FR-CT-02).
-  ///
-  /// In en, this message translates to:
-  /// **'Saved pages'**
-  String get fileTypeHtml;
-
-  /// The core's `image` type, named for the owner (FR-CT-02).
-  ///
-  /// In en, this message translates to:
-  /// **'Images'**
-  String get fileTypeImage;
-
   /// Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action.
   ///
   /// In en, this message translates to:
   /// **'Dismiss'**
   String get dismiss;
 
-  /// The per-folder action offered by a row with no run in flight and nothing left over from one — its job now that the first scan after registering happens on its own (UC-06).
-  ///
-  /// In en, this message translates to:
-  /// **'Rescan'**
-  String get librarySourcesRescan;
-
   /// Shown while a run is in flight. The scan belongs to the core, so the rest of the application stays usable (FR-LB-07).
   ///
   /// In en, this message translates to:
   /// **'Scanning…'**
-  String get librarySourcesIndexing;
+  String get libraryRunStarting;
 
   /// UC-06 main flow step 5: a finished run's tally. These are the core's own counts for an index run.
   ///
   /// In en, this message translates to:
   /// **'Scanned {scanned} files, cataloged {indexed}, skipped {skipped}.'**
-  String librarySourcesRunComplete(int scanned, int indexed, int skipped);
+  String libraryRunComplete(int scanned, int indexed, int skipped);
 
   /// Appended to a run's outcome when the core reports files it failed on.
   ///
   /// In en, this message translates to:
   /// **'{failed} files could not be read, and are not in your library. Re-scanning tries them again.'**
-  String librarySourcesRunFailedCount(int failed);
+  String libraryRunFailedCount(int failed);
 
   /// UC-06: the core reports the run as failed.
   ///
   /// In en, this message translates to:
   /// **'The scan did not finish.'**
-  String get librarySourcesRunFailed;
+  String get libraryRunFailed;
 
   /// FR-FC-30: a run the owner abandoned. The core keeps a cancelled run's tally, so without this the outcome falls through to the completion line and tells the owner the scan finished.
   ///
   /// In en, this message translates to:
   /// **'The scan was cancelled.'**
-  String get librarySourcesRunCancelled;
+  String get libraryRunCancelled;
 
   /// UC-06 AF-05: a run the application was closed on comes back paused, not failed — it is resumable, which is a different fact from an interruption and deserves different words.
   ///
   /// In en, this message translates to:
   /// **'The scan is paused. It can be resumed from where it left off.'**
-  String get librarySourcesRunPaused;
-
-  /// UC-06 AF-01: a second run is refused while one is in flight (FR-LB-09).
-  ///
-  /// In en, this message translates to:
-  /// **'A scan of this folder is already running.'**
-  String get librarySourcesRunRefused;
-
-  /// UC-06 AF-02 and AF-03: the core refused to start the run. The reason from the core follows.
-  ///
-  /// In en, this message translates to:
-  /// **'This folder could not be scanned.'**
-  String get librarySourcesStartFailed;
-
-  /// The action that unregisters a library folder (UC-08 main flow step 1).
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get librarySourcesUnregister;
-
-  /// Title of the unregister confirmation (UC-08 main flow step 2).
-  ///
-  /// In en, this message translates to:
-  /// **'Remove {label} from your library folders?'**
-  String librarySourcesUnregisterTitle(String label);
-
-  /// Body of the unregister confirmation. FR-LB-10 requires it state that catalog records and on-disk files are left untouched (BR-12).
-  ///
-  /// In en, this message translates to:
-  /// **'Alexandria will stop scanning this folder. Everything already cataloged from it stays in your library, and nothing on disk is touched.'**
-  String get librarySourcesUnregisterBody;
-
-  /// The confirming action on the unregister confirmation.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove the folder'**
-  String get librarySourcesUnregisterConfirm;
-
-  /// UC-08 AF-02: a folder with a run in flight is refused until the run settles.
-  ///
-  /// In en, this message translates to:
-  /// **'This folder is being scanned. It can be removed once the scan finishes.'**
-  String get librarySourcesUnregisterRefused;
+  String get libraryRunPaused;
 
   /// The catalog-wide action that re-checks everything already cataloged, across every folder at once — distinct from a per-folder Rescan (UC-07 main flow step 1, FR-LB-06).
   ///
   /// In en, this message translates to:
-  /// **'Re-check library'**
-  String get librarySourcesRecheck;
+  /// **'Re-check all libraries'**
+  String get libraryRefreshAll;
 
   /// Pauses a folder's own running scan from its row (FR-FC-28).
   ///
   /// In en, this message translates to:
   /// **'Pause'**
-  String get librarySourcesPause;
+  String get libraryRunPause;
 
   /// Picks a folder's own paused scan back up from its row (FR-FC-29).
   ///
   /// In en, this message translates to:
   /// **'Resume'**
-  String get librarySourcesResume;
+  String get libraryRunResume;
 
   /// Abandons a folder's own scan for good from its row (FR-FC-30). Terminal and not resumable, unlike pause, which is why it confirms first.
   ///
   /// In en, this message translates to:
   /// **'Cancel'**
-  String get librarySourcesCancelRun;
+  String get libraryRunCancel;
 
   /// Title of the cancel-run confirmation (FR-FC-30, FR-UX-10).
   ///
   /// In en, this message translates to:
   /// **'Cancel this scan?'**
-  String get librarySourcesCancelRunTitle;
+  String get libraryRunCancelTitle;
 
   /// Body of the cancel-run confirmation: states that cancelling is final, and that what the run already cataloged is not undone.
   ///
   /// In en, this message translates to:
   /// **'This scan cannot be resumed once cancelled. Everything it has already cataloged stays in your library.'**
-  String get librarySourcesCancelRunConfirm;
+  String get libraryRunCancelConfirm;
 
   /// The confirming action on the cancel-run confirmation, distinct from the dialog's own decline button so the two are never mistaken for each other.
   ///
   /// In en, this message translates to:
   /// **'Cancel the scan'**
-  String get librarySourcesCancelRunAction;
+  String get libraryRunCancelAction;
 
   /// Shown while a refresh is in flight (UC-07 main flow step 3).
   ///
   /// In en, this message translates to:
   /// **'Re-checking the catalog…'**
-  String get librarySourcesRefreshing;
+  String get libraryRefreshing;
 
   /// UC-07 main flow step 4: a finished refresh's tally, in the core's own counts for a refresh run.
   ///
   /// In en, this message translates to:
   /// **'{refreshed} files updated, {unchanged} unchanged, {missing} now missing.'**
-  String librarySourcesRefreshComplete(
-    int refreshed,
-    int unchanged,
-    int missing,
-  );
+  String libraryRefreshComplete(int refreshed, int unchanged, int missing);
 
   /// UC-07 AF-01: a second refresh is refused while one is in flight.
   ///
   /// In en, this message translates to:
   /// **'The catalog is already being re-checked.'**
-  String get librarySourcesRefreshRunning;
+  String get libraryRefreshRunning;
 
   /// UC-07 AF-02: the catalog is empty, so registering and indexing a folder is offered instead of a refresh (UC-05, UC-06).
   ///
   /// In en, this message translates to:
-  /// **'There is nothing cataloged yet. Add a folder and index it first.'**
-  String get librarySourcesRefreshEmpty;
+  /// **'There is nothing cataloged yet. Add a library first.'**
+  String get libraryRefreshEmpty;
 
   /// UC-07: the core refused to start the refresh.
   ///
   /// In en, this message translates to:
   /// **'The catalog could not be re-checked.'**
-  String get librarySourcesRefreshFailed;
+  String get libraryRefreshFailed;
 
   /// Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog.
   ///
   /// In en, this message translates to:
   /// **'Videos'**
   String get destinationVideos;
+
+  /// The listing's name for music and other audio.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get destinationMusic;
 
   /// UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states.
   ///
@@ -933,14 +719,8 @@ abstract class AppLocalizations {
   /// UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06).
   ///
   /// In en, this message translates to:
-  /// **'Your library is empty. Add a folder and index it, and what is inside will appear here.'**
+  /// **'Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.'**
   String get catalogEmptyFirstRun;
-
-  /// The action on the empty state that opens the library-folders screen (UC-05).
-  ///
-  /// In en, this message translates to:
-  /// **'Library folders'**
-  String get catalogEmptyAddFolder;
 
   /// Marks a file the last refresh could not find on disk. The record is still active; reviewing them is UC-37.
   ///
@@ -1061,6 +841,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Date added'**
   String get sortByIndexed;
+
+  /// Sort choice: albums in their own order, by album artist, album and track number.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get sortByAlbum;
 
   /// Sort direction: A to Z, oldest first.
   ///
@@ -2166,30 +1952,6 @@ abstract class AppLocalizations {
   /// **'{count} tracked'**
   String readingListItemCount(int count);
 
-  /// Libraries design: marks a source folder as a library at registration, which is the same question as the type scope above — what is this folder.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep this folder together as a library'**
-  String get indexScopeAsLibrary;
-
-  /// Says what marking hides, at the moment of marking — it empties part of a type panel and that is not visible until afterwards.
-  ///
-  /// In en, this message translates to:
-  /// **'Its files are browsed in their folders here instead of appearing in the type panels. Search still finds them.'**
-  String get indexScopeAsLibraryBody;
-
-  /// Libraries design: badges a source folder whose files are browsed as a library instead of appearing in the type panels.
-  ///
-  /// In en, this message translates to:
-  /// **'Library: {name}'**
-  String librarySourcesIsLibrary(String name);
-
-  /// Libraries design: marks a folder registered before the question was asked, without re-registering it.
-  ///
-  /// In en, this message translates to:
-  /// **'Mark as a library'**
-  String get librarySourcesMarkAsLibrary;
-
   /// Libraries design FR-FC-41: corrects a library's root after its folder moved on disk, taking its files with it.
   ///
   /// In en, this message translates to:
@@ -2244,16 +2006,16 @@ abstract class AppLocalizations {
   /// **'Show which files'**
   String get runFailuresOpen;
 
-  /// Libraries design: no folder has been made into a library yet. A state, not a failure — and it points at the button on this screen rather than at another one.
+  /// Shown when there are no libraries.
   ///
   /// In en, this message translates to:
-  /// **'You have not made a library yet. Add one with the button above — a folder becomes a library, and its files are shown there instead of in the type panels.'**
+  /// **'You have no libraries yet. Add a folder as a library with the button above, and Alexandria indexes it.'**
   String get librariesNone;
 
-  /// Says what a library does and, crucially, what it hides: marking a folder empties part of a type panel and that is not visible until afterwards.
+  /// What a library is, said above the list of libraries.
   ///
   /// In en, this message translates to:
-  /// **'A library keeps a folder\'s files together and in their folders — a course, with each class\'s recording and handouts side by side. Its files are shown here instead of in the type panels, so they do not bury everything else. Search still finds them.'**
+  /// **'A library is a folder Alexandria indexes, with its folders kept as they are. Adding one is how files get into Alexandria: everything you browse, play, or read comes from your libraries.'**
   String get librariesExplanation;
 
   /// The owner's name for the library, which is not the folder's name.
@@ -2268,10 +2030,10 @@ abstract class AppLocalizations {
   /// **'Add a library'**
   String get libraryAdd;
 
-  /// Libraries design: indexes the library's folder, which is what puts its files in the catalog and so in the library. Offered on the row because an empty library is seen here, and the remedy used to be on another screen entirely.
+  /// Tooltip of the button that scans a library's folder again.
   ///
   /// In en, this message translates to:
-  /// **'Scan this folder'**
+  /// **'Scan again'**
   String get libraryScan;
 
   /// Stops treating the folder as a library.
@@ -2280,10 +2042,10 @@ abstract class AppLocalizations {
   /// **'Remove this library'**
   String get libraryRemove;
 
-  /// The confirmation. Says the files come back, because removing must not read as discarding them.
+  /// The confirmation before a library is removed. Removing deletes its catalog records.
   ///
   /// In en, this message translates to:
-  /// **'Remove {name}? Its files go back to the type panels — nothing on disk is touched and nothing is deleted.'**
+  /// **'Remove {name}? It is deleted from the catalog with its files, their reading and watching positions, and their place in collections. Nothing on disk is touched.'**
   String libraryRemoveMessage(String name);
 
   /// Libraries design: the top of a library with no indexed files under it. A library is browsed out of the catalog, not out of a walk of the disk, so this is what an owner sees when they made a library of a folder nobody has scanned — and it says the remedy, because "nothing in this folder" describes a disk the owner can see is not empty.
@@ -3066,11 +2828,179 @@ abstract class AppLocalizations {
   /// **'Libraries'**
   String get destinationLibraries;
 
-  /// Libraries design: the owner picked a folder that is a library already. Said rather than silently doing nothing, because the button would otherwise look broken — the library is in the list behind the dialog.
+  /// Added to the remove confirmation when the library has a paused scan.
   ///
   /// In en, this message translates to:
-  /// **'That folder is already a library.'**
-  String get libraryAlreadyOne;
+  /// **'Its paused scan is discarded too.'**
+  String get libraryRemovePausedNote;
+
+  /// Said when a scan is asked for while the library already has a running or paused one.
+  ///
+  /// In en, this message translates to:
+  /// **'This library already has an unfinished scan. Resume or cancel it first.'**
+  String get libraryScanConflict;
+
+  /// Said before the reason when the core refused to scan a library.
+  ///
+  /// In en, this message translates to:
+  /// **'This library could not be scanned.'**
+  String get libraryScanFailed;
+
+  /// A library's running scan, once it has counted its files.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning… {processed} of {total}'**
+  String libraryRunProgress(int processed, int total);
+
+  /// Library menu entry that opens the libraries.
+  ///
+  /// In en, this message translates to:
+  /// **'Libraries'**
+  String get libraryMenuLibraries;
+
+  /// Library menu entry that adds a folder as a library.
+  ///
+  /// In en, this message translates to:
+  /// **'Add library…'**
+  String get libraryMenuAdd;
+
+  /// Title of the music metadata form (UC-15, FR-ME-01).
+  ///
+  /// In en, this message translates to:
+  /// **'Music metadata'**
+  String get musicMetadataTitle;
+
+  /// Label of the track title field.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get musicMetadataFieldTitle;
+
+  /// Label of the artist field.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get musicMetadataFieldArtist;
+
+  /// Label of the album artist field — who the record is by, which the music area groups by (UC-46, FR-CT-13).
+  ///
+  /// In en, this message translates to:
+  /// **'Album artist'**
+  String get musicMetadataFieldAlbumArtist;
+
+  /// Label of the album field.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get musicMetadataFieldAlbum;
+
+  /// Label of the release year field.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get musicMetadataFieldYear;
+
+  /// Label of the genre field.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get musicMetadataFieldGenre;
+
+  /// Label of the track number field.
+  ///
+  /// In en, this message translates to:
+  /// **'Track number'**
+  String get musicMetadataFieldTrack;
+
+  /// Sends the edited metadata to the core (UC-15 main flow step 5).
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get musicMetadataSave;
+
+  /// Closes the metadata form without saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get musicMetadataCancel;
+
+  /// UC-15 AF-01: a numeric field holds something that is not a number, so the core is not called.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number.'**
+  String get musicMetadataErrorNotANumber;
+
+  /// UC-15 AF-01: the year is earlier than any recording could carry, which is a typo rather than a year.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a four-digit year.'**
+  String get musicMetadataErrorYear;
+
+  /// UC-15 AF-01: the track number is zero or negative.
+  ///
+  /// In en, this message translates to:
+  /// **'A track number starts at 1.'**
+  String get musicMetadataErrorTrack;
+
+  /// UC-15 AF-01: a text field is longer than the core stores.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this under {max} characters.'**
+  String musicMetadataErrorTooLong(int max);
+
+  /// Player bar: play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get playerPlay;
+
+  /// Player bar: pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get playerPause;
+
+  /// Player bar: the next track in the list it was started from.
+  ///
+  /// In en, this message translates to:
+  /// **'Next track'**
+  String get playerNext;
+
+  /// Player bar: the previous track, or the start of this one.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous track'**
+  String get playerPrevious;
+
+  /// Player bar: stop the music and hide the bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop and close'**
+  String get playerClose;
+
+  /// Player bar: every track left in the list failed to open.
+  ///
+  /// In en, this message translates to:
+  /// **'None of the remaining tracks could be opened.'**
+  String get playerNothingPlayable;
+
+  /// Player bar: re-check the catalog after tracks could not be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-check libraries'**
+  String get playerRescan;
+
+  /// Player bar: a track that failed to open was skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped {name}: it could not be opened.'**
+  String playerSkipped(String name);
+
+  /// Said when a library is removed while its scan is running, which the core refuses.
+  ///
+  /// In en, this message translates to:
+  /// **'This library is being scanned. Pause or cancel the scan, then remove it.'**
+  String get libraryRemoveRunning;
 }
 
 class _AppLocalizationsDelegate

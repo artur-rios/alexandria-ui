@@ -4,9 +4,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
-import 'package:alexandria_ui/features/libraries/presentation/library_tree_screen.dart';
-import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
-import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,53 +13,34 @@ import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_library_gateway.dart';
-import '../../../support/fake_library_sources.dart';
+import '../../../support/fake_folder_picker.dart';
 import '../../../support/shell_harness.dart';
 
 /// Correcting a library's root after its folder moved (UC-49 AF-04 /
 /// core FR-FC-41).
 ///
 /// A move is a correction, not a re-index: what this screen has to get right
-/// is that the core is told, and that the folder's own registration follows —
-/// a source folder still pointing at where the library used to be is one
-/// whose next scan walks a folder that is not there.
+/// is that the core is told, and that its refusal — the folder overlaps
+/// another library, or the library has an unfinished run — is said.
 void main() {
   const from = '/library/course';
   const to = '/media/courses/rust';
   const course = Library(uuid: 'lib-1', name: 'Course', rootPath: from);
 
-  final registeredAt = DateTime.utc(2026, 8, 30, 9);
-
-  LibrarySource marked(String path) => LibrarySource(
-    path: path,
-    label: defaultLabelFor(path),
-    registeredAt: registeredAt,
-    libraryName: 'Course',
-  );
-
-  Future<
-    ({
-      ProviderContainer container,
-      FakeLibraryGateway gateway,
-      InMemoryLibrarySourceStore store,
-    })
-  >
+  Future<({ProviderContainer container, FakeLibraryGateway gateway})>
   openLibraries(
     WidgetTester tester, {
     String? picked = to,
-    List<LibrarySource>? registered,
     List<LibraryWrite> writeOutcomes = const [],
   }) async {
     final gateway = FakeLibraryGateway(libraries: const [course])
       ..writeOutcomes.addAll(writeOutcomes);
-    final store = InMemoryLibrarySourceStore(registered ?? [marked(from)]);
 
     final container = await tester.pumpShell(
       surfaceSize: const Size(1440, 1000),
       extraOverrides: <Override>[
         libraryGatewayProvider.overrideWithValue(gateway),
         folderPickerProvider.overrideWithValue(FakeFolderPicker(path: picked)),
-        librarySourceStoreProvider.overrideWithValue(store),
       ],
     );
 
@@ -73,7 +52,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    return (container: container, gateway: gateway, store: store);
+    return (container: container, gateway: gateway);
   }
 
   AppLocalizations messages(WidgetTester tester) =>
@@ -109,23 +88,6 @@ void main() {
     );
   });
 
-  testWidgets('GivenAMovedLibrary_WhenItSettles_ThenItsSourceFolderFollows', (
-    tester,
-  ) async {
-    // Otherwise the registration points at somewhere that is no longer
-    // there, and the next scan of it walks a missing folder.
-    final opened = await openLibraries(tester);
-
-    await pressMove(tester);
-
-    expect(opened.store.read().single.path, to);
-    expect(
-      opened.store.read().single.libraryName,
-      'Course',
-      reason: 'following the move must not unmark the folder',
-    );
-  });
-
   testWidgets('GivenThePickerIsCancelled_WhenMoveIsPressed_ThenNothingMoves', (
     tester,
   ) async {
@@ -134,7 +96,7 @@ void main() {
     await pressMove(tester);
 
     expect(opened.gateway.moved, isEmpty);
-    expect(opened.store.read().single.path, from);
+    expect(opened.gateway.libraries.single.rootPath, from);
   });
 
   testWidgets('GivenTheCoreRefuses_WhenTheFolderIsPicked_ThenItIsSaidPlainly', (
@@ -159,38 +121,6 @@ void main() {
     // full-screen dialog over the shell — so the message exists twice in the
     // tree and is visible once, on top.
     expect(find.text(messages(tester).libraryMoveConflict), findsWidgets);
-    expect(
-      opened.store.read().single.path,
-      from,
-      reason: 'a refused move must not move the source folder either',
-    );
+    expect(opened.gateway.libraries.single.rootPath, from);
   });
-
-  testWidgets(
-    'GivenTheDestinationIsAlreadyRegistered_WhenTheLibraryMoves_ThenTheSourcesAreLeftAlone',
-    (tester) async {
-      // Two registrations collapsing into one would silently drop the
-      // other's scope. The library still moves; the folder's record is what
-      // stays behind, which is visible and correctable.
-      final opened = await openLibraries(
-        tester,
-        registered: [
-          marked(from),
-          LibrarySource(
-            path: to,
-            label: defaultLabelFor(to),
-            registeredAt: registeredAt,
-          ),
-        ],
-      );
-
-      await pressMove(tester);
-
-      expect(opened.gateway.moved, hasLength(1));
-      expect(opened.store.read().map((source) => source.path), [
-        from,
-        to,
-      ], reason: 'a registration was overwritten');
-    },
-  );
 }

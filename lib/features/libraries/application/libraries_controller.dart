@@ -4,17 +4,17 @@ import '../../../core/bindings/alexandria_bindings.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/failures/core_status.dart';
 import '../../../core/failures/failure.dart';
+import '../../catalog/application/catalog_projections.dart';
 import '../domain/library.dart';
 import '../domain/library_gateway.dart';
 
 /// What a write answers when there is no session to make it with.
 ///
 /// Returned rather than `null`, because `null` is this file's word for "it
-/// worked". A caller that could not tell the two apart ran its follow-up —
-/// clearing a folder's library mark, following a move — as though the write
-/// had happened, leaving the local store describing a core that never
-/// changed. No call was made, so the code is the library family's own
-/// unauthorized rather than anything the core said.
+/// worked". A caller that could not tell the two apart would report a
+/// library added, moved or removed that never was. No call was made, so the
+/// code is the library family's own unauthorized rather than anything the
+/// core said.
 const Failure _noSession = Failure.unauthorized(
   family: CoreStatusFamily.library,
   code: LIBRARY_ERR_UNAUTHORIZED,
@@ -52,11 +52,14 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     state = await AsyncValue.guard(build);
   }
 
-  /// Stops treating a folder as a library.
+  /// Removes the library [uuid] (core 0.6.0).
   ///
-  /// The files return to the type panels; nothing on disk is touched. Both
-  /// listings are invalidated afterwards, because the files that come back
-  /// are exactly the ones the type panels were not showing.
+  /// The core deletes its catalog records — its files with their reading and
+  /// watching positions and collection membership, and its runs, a paused
+  /// one included — and touches nothing on disk. Refused while a run of it is
+  /// running. Everything that showed those records is read again afterwards,
+  /// and the run this session followed for it is forgotten, so neither the
+  /// panels nor the activity strip keep showing what the core no longer has.
   Future<Failure?> remove(String uuid) async {
     final credential = ref.read(sessionControllerProvider.notifier).credential;
     // No session, no call (FR-AU-07) — and the caller is told so.
@@ -68,6 +71,18 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
 
     switch (outcome) {
       case LibraryWriteDone():
+        ref.read(indexRunsControllerProvider.notifier).dismiss(uuid);
+        // Its tracks' records are gone with it, so none of them can play.
+        await ref
+            .read(audioPlaybackControllerProvider.notifier)
+            .dropLibrary(uuid);
+        invalidateCatalogProjections(ref);
+        ref
+          ..invalidate(collectionsControllerProvider)
+          ..invalidate(collectionMembersControllerProvider)
+          ..invalidate(watchlistsControllerProvider)
+          ..invalidate(readingListsControllerProvider);
+        await ref.read(activeRunsControllerProvider.notifier).refresh();
         await reload();
         return null;
 
@@ -116,7 +131,8 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     }
   }
 
-  /// Treats [rootPath] as a library called [name].
+  /// Adds [rootPath] as a library called [name], and follows the index run
+  /// the core starts for it.
   ///
   /// Answers the refusal rather than throwing it: registering is something
   /// the owner does from a form, and a conflict — the folder already sits
@@ -135,17 +151,25 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
         .register(name: name, rootPath: rootPath, credential: credential);
 
     switch (outcome) {
-      case LibraryWriteDone():
+      case LibraryRegistered(:final library, :final runId):
         await reload();
+        // The core started the library's first run with it; following it is
+        // what puts its progress beside the new row and its outcome there
+        // once it settles.
+        await ref
+            .read(indexRunsControllerProvider.notifier)
+            .follow(library.uuid, runId);
         return null;
 
       // The owner goes back to login, and the caller still learns the write
       // did not happen — its follow-up must not run either way.
-      case LibraryWriteFailed(failure: final UnauthorizedFailure failure):
+      case LibraryRegistrationFailed(
+        failure: final UnauthorizedFailure failure,
+      ):
         ref.read(sessionControllerProvider.notifier).invalidate(failure);
         return failure;
 
-      case LibraryWriteFailed(:final failure):
+      case LibraryRegistrationFailed(:final failure):
         return failure;
     }
   }
@@ -169,11 +193,7 @@ class LibraryTreeController extends AsyncNotifier<LibraryListing?> {
 
     final outcome = await ref
         .read(libraryGatewayProvider)
-        .read(
-          uuid: location.uuid,
-          path: location.path,
-          credential: credential,
-        );
+        .read(uuid: location.uuid, path: location.path, credential: credential);
 
     switch (outcome) {
       case LibraryReadLoaded(:final listing):

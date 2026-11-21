@@ -13,7 +13,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 class FakeCoreClient implements CoreClient {
   /// Creates a fake reporting a healthy, supported core by default.
   FakeCoreClient({
-    this.versionResult = '0.5.0',
+    this.versionResult = '0.6.0',
     int? healthResult,
     int? initializeResult,
     this.failOnVersion = false,
@@ -25,8 +25,6 @@ class FakeCoreClient implements CoreClient {
     this.failOnAuthLocalRegister = false,
     CoreJsonResponse? authLocalSetCredentialsResult,
     this.failOnAuthLocalSetCredentials = false,
-    CoreRunStart? indexStartResult,
-    this.failOnIndexStart = false,
     CoreJsonResponse? indexRunStatusResult,
     this.failOnIndexRunStatus = false,
     CoreRunStart? indexRefreshStartResult,
@@ -65,9 +63,6 @@ class FakeCoreClient implements CoreClient {
                  '{"success":true,'
                  '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}',
            ),
-       indexStartResult =
-           indexStartResult ??
-           (status: 0, runId: '3f9a1b7c-2d4e-4a8b-9c1d-5e6f70819a2b'),
        fileByUuidResult =
            fileByUuidResult ??
            (
@@ -204,12 +199,6 @@ class FakeCoreClient implements CoreClient {
   final List<({String jsonBody, String token})> authLocalSetCredentialsCalls =
       [];
 
-  /// What [indexStart] answers (UC-06).
-  final CoreRunStart indexStartResult;
-
-  /// Whether [indexStart] throws instead of answering.
-  final bool failOnIndexStart;
-
   /// What [indexRunStatus] answers (UC-06).
   final CoreJsonResponse indexRunStatusResult;
 
@@ -258,15 +247,6 @@ class FakeCoreClient implements CoreClient {
 
   /// What [filesList] was called with, in order.
   final List<({String filters, String token})> filesListCalls = [];
-
-  /// What [indexStart] was called with, in order.
-  ///
-  /// The scope included, and kept as `String?` rather than flattened to a
-  /// list: an absent scope and an empty one are different arguments to the
-  /// core, and a test asserting "no scope was sent" has to be able to tell
-  /// null from `''`.
-  final List<({String root, String token, String? priority, String? types})>
-  indexStarts = [];
 
   /// What [indexRunStatus] was called with, in order.
   final List<({String runId, String token})> indexRunStatusCalls = [];
@@ -364,25 +344,6 @@ class FakeCoreClient implements CoreClient {
     return authLocalSetCredentialsResult;
   }
 
-  @override
-  Future<CoreRunStart> indexStart(
-    String root,
-    String token, [
-    String? priority,
-    String? types,
-  ]) async {
-    if (failOnIndexStart) {
-      throw const CoreCallException('index start call failed');
-    }
-    indexStarts.add((
-      root: root,
-      token: token,
-      priority: priority,
-      types: types,
-    ));
-    return indexStartResult;
-  }
-
   /// What `indexRunFailures` answers, and every run it was asked about.
   ///
   /// Recorded because the call takes the run id and the token in that order
@@ -417,6 +378,38 @@ class FakeCoreClient implements CoreClient {
     }
     indexRefreshStarts.add((token: token, priority: priority));
     return indexRefreshStartResult;
+  }
+
+  /// What [libraryIndexStart] answers.
+  CoreRunStart libraryIndexStartResult = (status: 0, runId: 'library-run-1');
+
+  /// What [libraryIndexStart] was called with, in order.
+  final List<({String uuid, String token, String? priority})>
+  libraryIndexStarts = [];
+
+  @override
+  Future<CoreRunStart> libraryIndexStart(
+    String uuid,
+    String token, [
+    String? priority,
+  ]) async {
+    libraryIndexStarts.add((uuid: uuid, token: token, priority: priority));
+    return libraryIndexStartResult;
+  }
+
+  /// What [fileThumbnail] answers. No picture by default.
+  CoreJsonResponse fileThumbnailResult = (
+    status: PLAYBACK_ERR_NOT_FOUND,
+    json: null,
+  );
+
+  /// What [fileThumbnail] was called with, in order.
+  final List<({String uuid, String token})> fileThumbnailCalls = [];
+
+  @override
+  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async {
+    fileThumbnailCalls.add((uuid: uuid, token: token));
+    return fileThumbnailResult;
   }
 
   /// What [indexPause] answers.

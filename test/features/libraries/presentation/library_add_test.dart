@@ -1,14 +1,15 @@
+import 'dart:async';
+
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
+import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
+import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
-import 'package:alexandria_ui/features/libraries/presentation/library_tree_screen.dart';
-import 'package:alexandria_ui/features/library_sources/domain/folder_registration.dart';
-import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
-import 'package:alexandria_ui/features/library_sources/presentation/index_scope_dialog.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,52 +17,40 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_catalog_gateway.dart';
+import '../../../support/fake_folder_picker.dart';
 import '../../../support/fake_index_gateway.dart';
 import '../../../support/fake_library_gateway.dart';
-import '../../../support/fake_library_sources.dart';
 import '../../../support/in_memory_settings_store.dart';
 import '../../../support/shell_harness.dart';
 
-/// Making a library from the screen that lists them (libraries design).
+/// Adding a library and scanning it again (libraries-only design §3).
 ///
-/// A library is browsed out of what the catalog holds beneath its root, so a
-/// folder nobody has indexed makes a library that shows nothing at all — no
-/// files, and no folders either. That is what this button did when all it
-/// asked the core for was the library, and it is what these tests are mostly
-/// about: either way — an unregistered folder registered first, or one that
-/// was a source already and is only marked — the folder is indexed, because
-/// adding a library is a request to have its contents in it.
+/// On the 0.6.0 core a library is the only way into the catalog: adding one
+/// starts its first run, which the screen follows under the new row, and a
+/// library is scanned again from its own row.
 void main() {
   const folder = '/media/courses/rust';
-  final registeredAt = DateTime.utc(2026, 8, 30, 9);
-
-  LibrarySource source(String path, {String? libraryName}) => LibrarySource(
-    path: path,
-    label: defaultLabelFor(path),
-    registeredAt: registeredAt,
-    libraryName: libraryName,
-  );
+  const course = Library(uuid: 'lib-1', name: 'Course', rootPath: folder);
 
   Future<
     ({
       ProviderContainer container,
       FakeLibraryGateway gateway,
       FakeIndexGateway index,
-      InMemoryLibrarySourceStore store,
     })
   >
   openLibraries(
     WidgetTester tester, {
     String? picked = folder,
-    List<LibrarySource> registered = const [],
-    List<LibraryWrite> writeOutcomes = const [],
+    List<LibraryRegistration> registerOutcomes = const [],
     List<Library> libraries = const [],
-    bool folderExists = true,
+    FakeIndexGateway? index,
   }) async {
     final gateway = FakeLibraryGateway(libraries: libraries)
-      ..writeOutcomes.addAll(writeOutcomes);
-    final store = InMemoryLibrarySourceStore([...registered]);
-    final index = FakeIndexGateway();
+      ..registerOutcomes.addAll(registerOutcomes);
+    final theIndex =
+        index ?? (FakeIndexGateway()..readOutcomes = [runningRun()]);
 
     final container = await tester.pumpShell(
       surfaceSize: const Size(1440, 1000),
@@ -70,12 +59,7 @@ void main() {
       extraOverrides: <Override>[
         libraryGatewayProvider.overrideWithValue(gateway),
         folderPickerProvider.overrideWithValue(FakeFolderPicker(path: picked)),
-        folderProbeProvider.overrideWithValue(
-          FakeFolderProbe(existing: folderExists, readable: folderExists),
-        ),
-        librarySourceStoreProvider.overrideWithValue(store),
-        indexGatewayProvider.overrideWithValue(index),
-        clockProvider.overrideWithValue(() => registeredAt),
+        indexGatewayProvider.overrideWithValue(theIndex),
         runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
       ],
     );
@@ -88,31 +72,19 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    return (container: container, gateway: gateway, index: index, store: store);
+    return (container: container, gateway: gateway, index: theIndex);
   }
 
   AppLocalizations messages(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(LibrariesView)));
 
   /// Presses the button, which opens the picker.
-  ///
-  /// Pumped rather than settled: registering keeps a dialog in flight, and
-  /// `pumpAndSettle` would wait on an animation doing exactly what it should.
   Future<void> pressAdd(WidgetTester tester) async {
     await tester.tap(
       find.widgetWithText(FilledButton, messages(tester).libraryAdd),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-  }
-
-  /// Answers the scope dialog with what it opens on.
-  Future<void> acceptScope(WidgetTester tester) async {
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(IndexScopeDialog)),
-    );
-    await tester.tap(find.text(l10n.indexScopeConfirm));
-    await tester.pumpAndSettle();
   }
 
   /// Answers the name dialog, keeping the suggestion unless [name] is given.
@@ -133,192 +105,46 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  group('a folder that is not registered yet', () {
+  group('adding a library', () {
     testWidgets(
-      'GivenAnUnregisteredFolder_WhenItIsPicked_ThenTheScopeDialogAsksAsALibrary',
-      (tester) async {
-        // One dialog for both questions, and the library half is already
-        // answered: the owner pressed "Add a library", so the box is ticked and
-        // the name filled in from the folder.
-        await openLibraries(tester);
-
-        await pressAdd(tester);
-
-        expect(find.byType(IndexScopeDialog), findsOneWidget);
-        expect(find.text('rust'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenAnUnregisteredFolder_WhenTheScopeIsAnswered_ThenTheFolderIsRegisteredAndIndexed',
-      (tester) async {
-        // The whole bug this flow was rewritten for: a library over a folder
-        // nobody indexed shows nothing at all, because the tree is built from
-        // catalog rows rather than from a walk of the disk.
-        final opened = await openLibraries(tester);
-
-        await pressAdd(tester);
-        await acceptScope(tester);
-
-        expect(opened.store.read().single.path, folder);
-        expect(opened.gateway.registered, [(name: 'rust', rootPath: folder)]);
-        expect(opened.index.starts.map((call) => call.root), [
-          folder,
-        ], reason: 'a library over an unindexed folder shows nothing');
-      },
-    );
-
-    testWidgets(
-      'GivenAnUnregisteredFolder_WhenItIsAdded_ThenTheLibraryIsRegisteredBeforeTheWalkStarts',
-      (tester) async {
-        // Order matters: the core assigns each file to the library it is
-        // indexed into, so a library created after the walk would hold nothing
-        // until something claimed the files back.
-        final opened = await openLibraries(tester);
-
-        await pressAdd(tester);
-        await acceptScope(tester);
-
-        expect(opened.gateway.registered, isNotEmpty);
-        expect(opened.index.starts, isNotEmpty);
-      },
-    );
-
-    testWidgets(
-      'GivenAnUnregisteredFolder_WhenTheScopeIsCancelled_ThenNothingIsRegistered',
+      'GivenAPickedFolderAndName_WhenAdded_ThenRegisteredAndItsRunShows',
       (tester) async {
         final opened = await openLibraries(tester);
 
         await pressAdd(tester);
-        await tester.tap(find.text(messages(tester).cancel).last);
-        await tester.pumpAndSettle();
-
-        expect(opened.store.read(), isEmpty);
-        expect(opened.gateway.registered, isEmpty);
-        expect(opened.index.starts, isEmpty);
-      },
-    );
-
-    testWidgets(
-      'GivenAFolderThatIsNotThere_WhenItIsAdded_ThenTheRefusalIsSaidPlainly',
-      (tester) async {
-        // The sources screen renders its refusal notice from the same state,
-        // and this screen has nowhere to put one — so a folder that is gone has
-        // to be said here, or the button just looks broken.
-        final opened = await openLibraries(tester, folderExists: false);
-
-        await pressAdd(tester);
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text(messages(tester).librarySourcesMissing(folder)),
-          findsWidgets,
-        );
-        expect(opened.store.read(), isEmpty);
-      },
-    );
-  });
-
-  group('a folder that is registered already', () {
-    testWidgets(
-      'GivenARegisteredFolder_WhenItIsPicked_ThenOnlyTheNameIsAsked',
-      (tester) async {
-        // The scope was chosen when the folder was registered and belongs to
-        // the folder, so this asks the one question that is still open.
-        final opened = await openLibraries(
-          tester,
-          registered: [source(folder)],
-        );
-
-        await pressAdd(tester);
         await acceptName(tester, name: 'Rust course');
 
-        expect(find.byType(IndexScopeDialog), findsNothing);
-        expect(opened.gateway.registered, [
-          (name: 'Rust course', rootPath: folder),
-        ]);
+        expect(opened.gateway.registered.single, (
+          name: 'Rust course',
+          rootPath: folder,
+        ));
+        expect(find.text('Rust course'), findsOneWidget);
+        // The core started the run with the library; this screen only
+        // follows it, and starts nothing of its own.
+        expect(opened.index.libraryStarts, isEmpty);
+        expect(opened.index.reads.single.runId, 'run-1');
+        expect(find.text(messages(tester).libraryRunStarting), findsOneWidget);
       },
     );
 
-    testWidgets(
-      'GivenARegisteredFolder_WhenItIsMarked_ThenItsFolderIsIndexed',
-      (tester) async {
-        // Registered is not the same as indexed: a folder registered before the
-        // first index happened on its own, or one whose run was cancelled, is a
-        // source with nothing of it in the catalog — and the library made of it
-        // shows nothing until something walks it. Adding a library is a request
-        // to have its contents in it, not a request to press Scan afterwards.
-        final opened = await openLibraries(
-          tester,
-          registered: [source(folder)],
-        );
+    testWidgets('GivenAPickedFolder_WhenNamed_ThenTheFolderNameIsSuggested', (
+      tester,
+    ) async {
+      final opened = await openLibraries(tester);
 
-        await pressAdd(tester);
-        await acceptName(tester, name: 'Rust course');
+      await pressAdd(tester);
+      await acceptName(tester);
 
-        expect(opened.index.starts.map((call) => call.root), [folder]);
-      },
-    );
+      expect(opened.gateway.registered.single.name, 'rust');
+    });
 
     testWidgets(
-      'GivenAScanIsAlreadyGoing_WhenTheFolderIsMarked_ThenNoSecondRunIsStarted',
+      'GivenAnOverlappingFolder_WhenAdded_ThenTheRefusalShowsAndNothingIsAdded',
       (tester) async {
-        // The contents are on their way, which is what the owner asked for. A
-        // second run would be refused anyway, and reporting that refusal reads
-        // as an error for a run they never pressed for.
         final opened = await openLibraries(
           tester,
-          registered: [source(folder)],
-        );
-        opened.index.readOutcomes = [runningRun(root: folder)];
-        await opened.container
-            .read(indexRunsControllerProvider.notifier)
-            .startIndex(folder);
-
-        await pressAdd(tester);
-        await acceptName(tester, name: 'Rust course');
-
-        expect(opened.index.starts.map((call) => call.root), [folder]);
-        expect(
-          find.text(messages(tester).librarySourcesRunRefused),
-          findsNothing,
-        );
-
-        // Disposed here rather than at teardown, as every test that leaves a
-        // run in flight does: the run is still being polled, and the widget
-        // tree is torn down before the container is.
-        opened.container.dispose();
-      },
-    );
-
-    testWidgets(
-      'GivenARegisteredFolder_WhenTheLibraryIsMade_ThenItsSourceFolderIsMarked',
-      (tester) async {
-        // Registering with the core and marking the folder are one action:
-        // doing only the first leaves the sources screen offering to mark a
-        // folder that is already a library.
-        final opened = await openLibraries(
-          tester,
-          registered: [source(folder)],
-        );
-
-        await pressAdd(tester);
-        await acceptName(tester, name: 'Rust course');
-
-        expect(opened.store.read().single.libraryName, 'Rust course');
-      },
-    );
-
-    testWidgets(
-      'GivenTheCoreRefusesAnOverlap_WhenTheLibraryIsMade_ThenTheOverlapIsSaidPlainly',
-      (tester) async {
-        // "That folder is already inside another library" is something the
-        // owner can act on, where a generic refusal is a puzzle.
-        final opened = await openLibraries(
-          tester,
-          registered: [source(folder)],
-          writeOutcomes: const [
-            LibraryWrite.failed(
+          registerOutcomes: const [
+            LibraryRegistration.failed(
               failure: Failure.conflict(
                 family: CoreStatusFamily.library,
                 code: LIBRARY_ERR_CONFLICT,
@@ -328,103 +154,208 @@ void main() {
         );
 
         await pressAdd(tester);
-        await acceptName(tester, name: 'Rust course');
+        await acceptName(tester);
 
         // `findsWidgets`: the snackbar is drawn by every scaffold registered
         // with the one messenger.
         expect(find.text(messages(tester).libraryOverlaps), findsWidgets);
-        expect(
-          opened.store.read().single.libraryName,
-          isNull,
-          reason: 'a refused registration must not mark the folder',
-        );
-        expect(
-          opened.index.starts,
-          isEmpty,
-          reason: 'nothing became a library, so there is nothing to index for',
-        );
+        expect(opened.gateway.libraries, isEmpty);
+        expect(opened.index.reads, isEmpty);
       },
     );
-  });
-
-  group('scanning a library that shows nothing', () {
-    testWidgets('GivenARegisteredFolder_WhenScanned_ThenARunStarts', (
-      tester,
-    ) async {
-      // The way out of an empty library, offered where the empty library is
-      // seen: a library made before this screen indexed anything holds
-      // nothing at all, and the remedy used to be on another screen.
-      final opened = await openLibraries(
-        tester,
-        registered: [source(folder, libraryName: 'Rust course')],
-        libraries: const [
-          Library(uuid: 'lib-1', name: 'Rust course', rootPath: folder),
-        ],
-      );
-
-      await tester.tap(find.byTooltip(messages(tester).libraryScan));
-      await tester.pumpAndSettle();
-
-      expect(opened.index.starts.map((call) => call.root), [folder]);
-    });
 
     testWidgets(
-      'GivenAFolderThatIsNotASourceYet_WhenScanned_ThenItIsRegistered',
+      'GivenAFolderTheCoreCannotIndex_WhenAdded_ThenTheReasonIsSaid',
       (tester) async {
-        // An index run is refused for a folder the application does not know,
-        // so the scan registers it first — asking the scope, and not asking
-        // again whether it is a library.
-        final opened = await openLibraries(
+        const missing = Failure.invalidInput(
+          family: CoreStatusFamily.library,
+          code: LIBRARY_ERR_INVALID_INPUT,
+        );
+        await openLibraries(
           tester,
-          libraries: const [
-            Library(uuid: 'lib-1', name: 'Rust course', rootPath: folder),
+          registerOutcomes: const [
+            LibraryRegistration.failed(failure: missing),
           ],
         );
 
-        await tester.tap(find.byTooltip(messages(tester).libraryScan));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-        await acceptScope(tester);
+        await pressAdd(tester);
+        await acceptName(tester);
 
-        expect(opened.store.read().single.path, folder);
-        expect(opened.index.starts.map((call) => call.root), [folder]);
+        expect(find.byType(SnackBar), findsWidgets);
+        expect(find.text('Course'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenThePickerIsCancelled_WhenAddIsPressed_ThenNothingIsAsked',
+      (tester) async {
+        final opened = await openLibraries(tester, picked: null);
+
+        await pressAdd(tester);
+        await tester.pumpAndSettle();
+
+        expect(opened.gateway.registered, isEmpty);
+        expect(find.byType(AlertDialog), findsNothing);
+      },
+    );
+  });
+
+  group('scanning a library again', () {
+    Future<void> pressScan(WidgetTester tester) async {
+      await tester.tap(find.byTooltip(messages(tester).libraryScan));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('GivenALibrary_WhenScanAgain_ThenALibraryRunStarts', (
+      tester,
+    ) async {
+      final opened = await openLibraries(tester, libraries: [course]);
+
+      await pressScan(tester);
+
+      expect(opened.index.libraryStarts.single.uuid, course.uuid);
+      expect(find.text(messages(tester).libraryRunStarting), findsOneWidget);
+    });
+
+    testWidgets(
+      'GivenAnUnfinishedRun_WhenScanAgainTwice_ThenTheConflictIsSaidAndOneRunStarts',
+      (tester) async {
+        final opened = await openLibraries(tester, libraries: [course]);
+
+        await pressScan(tester);
+        await pressScan(tester);
+
+        expect(opened.index.libraryStarts, hasLength(1));
+        expect(find.text(messages(tester).libraryScanConflict), findsWidgets);
+      },
+    );
+
+    testWidgets(
+      'GivenTheCoreAnswersConflict_WhenScanAgain_ThenTheConflictIsSaid',
+      (tester) async {
+        await openLibraries(
+          tester,
+          libraries: [course],
+          index: FakeIndexGateway()
+            ..libraryStartOutcomes.add(
+              const IndexStartOutcome.failed(
+                failure: Failure.conflict(
+                  family: CoreStatusFamily.indexing,
+                  code: INDEX_ERR_CONFLICT,
+                ),
+              ),
+            ),
+        );
+
+        await pressScan(tester);
+
+        expect(find.text(messages(tester).libraryScanConflict), findsWidgets);
+      },
+    );
+
+    testWidgets('GivenAFinishedRun_WhenItSettles_ThenItsCountsAreShown', (
+      tester,
+    ) async {
+      await openLibraries(
+        tester,
+        libraries: [course],
+        index: FakeIndexGateway()..readOutcomes = [finishedRun()],
+      );
+
+      await pressScan(tester);
+
+      expect(
+        find.text(messages(tester).libraryRunComplete(120, 118, 0)),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'GivenAPausedRunFromAnotherSession_WhenTheScreenOpens_ThenItReadsAsResumable',
+      (tester) async {
+        await openLibraries(
+          tester,
+          libraries: [course],
+          index: FakeIndexGateway()
+            ..activeRunsOutcome = const ActiveRunsOutcome.read(
+              runs: [
+                IndexRun(
+                  runId: 'r-old',
+                  root: folder,
+                  libraryUuid: 'lib-1',
+                  status: IndexRunStatus.paused,
+                ),
+              ],
+            ),
+        );
+
+        expect(find.text(messages(tester).libraryRunPaused), findsOneWidget);
         expect(
-          opened.gateway.registered,
-          isEmpty,
-          reason: 'it is already a library — asking again would make it twice',
+          find.descendant(
+            of: find.byType(LibrariesView),
+            matching: find.byTooltip(messages(tester).libraryRunResume),
+          ),
+          findsOneWidget,
         );
       },
     );
   });
 
-  testWidgets('GivenAFolderThatIsAlreadyALibrary_WhenPicked_ThenItSaysSo', (
-    tester,
-  ) async {
-    // Nothing to do, and saying so beats a button that appears to do nothing.
-    final opened = await openLibraries(
-      tester,
-      registered: [source(folder, libraryName: 'Rust course')],
+  testWidgets(
+    'GivenTheLibrariesScreen_WhenRefreshAllTapped_ThenARefreshStarts',
+    (tester) async {
+      final opened = await openLibraries(tester, libraries: [course]);
+
+      await tester.tap(find.text(messages(tester).libraryRefreshAll));
+      // Pumped rather than settled: the button spins while the refresh runs.
+      await tester.pump();
+      await tester.pump();
+
+      expect(opened.index.refreshStarts, hasLength(1));
+    },
+  );
+
+  group('adding from an empty catalog', () {
+    testWidgets(
+      'GivenAnEmptyDashboard_WhenAddIsPressedAndAFolderPickedLater_ThenTheLibraryIsAdded',
+      (tester) async {
+        // The native picker is open for seconds, and pressing the button
+        // switches to the Libraries screen meanwhile — so the dashboard that
+        // asked is gone by the time the folder comes back.
+        final gate = Completer<void>();
+        final gateway = FakeLibraryGateway();
+        await tester.pumpShell(
+          surfaceSize: const Size(1440, 1000),
+          settings: InMemorySettingsStore(rechecksAtStartup: false),
+          extraOverrides: <Override>[
+            catalogGatewayProvider.overrideWithValue(FakeCatalogGateway()),
+            libraryGatewayProvider.overrideWithValue(gateway),
+            folderPickerProvider.overrideWithValue(
+              FakeFolderPicker(path: folder, gate: gate),
+            ),
+            indexGatewayProvider.overrideWithValue(
+              FakeIndexGateway()..readOutcomes = [runningRun()],
+            ),
+            runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
+          ],
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(ShellNavigationPanel)),
+        );
+
+        await tester.tap(find.widgetWithText(FilledButton, l10n.libraryAdd));
+        await tester.pumpAndSettle();
+        expect(find.byType(LibrariesView), findsOneWidget);
+
+        gate.complete();
+        await tester.pumpAndSettle();
+        await acceptName(tester, name: 'Rust course');
+
+        expect(gateway.registered.single, (
+          name: 'Rust course',
+          rootPath: folder,
+        ));
+      },
     );
-
-    await pressAdd(tester);
-    await tester.pumpAndSettle();
-
-    expect(find.text(messages(tester).libraryAlreadyOne), findsWidgets);
-    expect(opened.gateway.registered, isEmpty);
-    expect(find.byType(AlertDialog), findsNothing);
-  });
-
-  testWidgets('GivenThePickerIsCancelled_WhenAddIsPressed_ThenNothingIsAsked', (
-    tester,
-  ) async {
-    final opened = await openLibraries(tester, picked: null);
-
-    await pressAdd(tester);
-    await tester.pumpAndSettle();
-
-    expect(opened.gateway.registered, isEmpty);
-    expect(opened.store.read(), isEmpty);
-    expect(find.byType(AlertDialog), findsNothing);
-    expect(find.byType(IndexScopeDialog), findsNothing);
   });
 }

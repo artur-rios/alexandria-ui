@@ -94,7 +94,8 @@ lib/
 │   │   ├── application/
 │   │   ├── data/
 │   │   └── presentation/
-│   ├── library_sources/
+│   ├── indexing/
+│   ├── libraries/
 │   ├── catalog/
 │   ├── editing/
 │   ├── playback/
@@ -119,7 +120,7 @@ test/                           unit and widget tests, mirroring lib/
 integration_test/               whole flows against the real core
 ├── support/                    temporary database and fixture library setup
 ├── auth/
-├── library_sources/
+├── libraries/
 └── …
 ```
 

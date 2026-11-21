@@ -124,7 +124,8 @@ alexandria-ui/
 │   │   └── theme/                 light and dark themes, breakpoints
 │   └── features/
 │       ├── auth/
-│       ├── library_sources/
+│       ├── indexing/
+│       ├── libraries/
 │       ├── catalog/
 │       ├── editing/
 │       ├── playback/
@@ -157,7 +158,7 @@ Each folder under `features/` holds `domain/`, `application/`, `data/`, and
 | IR-03 | The solution shall generate its Alexandria core bindings from the core's published C header, shall commit the generated output, and shall never hand-edit it. |
 | IR-04 | The solution shall bundle the Alexandria core's shared library for each target platform and load it at startup from a path resolved relative to the installed application. |
 | IR-05 | The solution shall initialize the core with a database path in the per-platform application-support directory, creating the directory when absent. |
-| IR-06 | The solution shall verify at startup that the loaded core reports a healthy status and a version the application supports, and shall present a readable failure with a retry when it does not. |
+| IR-06 | The solution shall verify at startup that the loaded core reports a healthy status and a version the application supports — `>=0.6.0 <0.7.0`, since core 0.6 made libraries the only way into the catalog and changed what removing one does, so a 0.5 core is refused — and shall present a readable failure with a retry when it does not. |
 | IR-07 | The solution shall expose a single composition root through which every gateway interface is bound to its implementation, and which a test can override wholesale. |
 | IR-08 | The solution shall define one typed failure model, mapping every status code the core can return to exactly one failure and every failure to exactly one localized message. |
 | IR-09 | The solution shall free every string returned across the FFI boundary, including on failure paths, and shall run every core call off the interface thread. |
@@ -183,7 +184,7 @@ environment. There is no server, no connection string, and no secret to inject.
 | Core configuration | The core's own configuration mechanism, which it loads itself | The application does not parse or duplicate the core's configuration; it passes the database path and lets the core resolve the rest, so a setting means the same thing on both sides. |
 | Log level | `--dart-define` at build time | Verbose in development, informational in release. |
 | Log file location | Application-support directory | See §4. |
-| Owner preferences — theme, language, layout, sort, filters, library folders, window geometry | The local settings store | Owner-facing state, changed in the interface, never in a config file. |
+| Owner preferences — theme, language, layout, sort, filters, window geometry | The local settings store | Owner-facing state, changed in the interface, never in a config file. |
 | The core's thumbnail cache | Set to a directory beside the catalog, through `ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR`, before the core is initialized | The setting defaults to a path relative to the process's working directory, which for an installed application is wherever the desktop started it — a directory this application does not own and often cannot write to. The catalog's own directory is the one it does. |
 
 No secret is ever written into this document, into the repository, or into a

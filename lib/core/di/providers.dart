@@ -31,13 +31,11 @@ import '../../features/auth/application/sign_up_controller.dart';
 import '../../features/auth/application/sign_up_state.dart';
 import '../../features/auth/data/core_auth_gateway.dart';
 import '../../features/auth/domain/auth_gateway.dart';
-import '../../features/library_sources/application/audio_library_cleanup_activity.dart';
-import '../../features/library_sources/application/library_sources_controller.dart';
-import '../../features/library_sources/application/library_sources_state.dart';
 import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
 import '../../features/catalog/application/in_progress.dart';
 import '../../features/catalog/application/file_rename_controller.dart';
+import '../../features/catalog/application/music_metadata_editor.dart';
 import '../../features/catalog/application/video_metadata_editor.dart';
 import '../../features/catalog/application/layout_controller.dart';
 import '../../features/catalog/application/listing_controller.dart';
@@ -50,20 +48,18 @@ import '../../features/catalog/domain/file_type.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
 import '../../features/catalog/domain/file_name.dart';
-import '../../features/library_sources/application/active_runs_controller.dart';
-import '../../features/library_sources/application/active_runs_state.dart';
-import '../../features/library_sources/application/index_runs_controller.dart';
-import '../../features/library_sources/application/run_failures_controller.dart';
-import '../../features/library_sources/application/index_runs_state.dart';
-import '../../features/library_sources/application/index_session_activity.dart';
-import '../../features/library_sources/data/core_index_gateway.dart';
-import '../../features/library_sources/data/disk_folder_probe.dart';
-import '../../features/library_sources/data/native_folder_picker.dart';
-import '../../features/library_sources/data/settings_library_source_store.dart';
-import '../../features/library_sources/domain/folder_picker.dart';
-import '../../features/library_sources/domain/index_gateway.dart';
-import '../../features/library_sources/domain/index_run.dart';
-import '../../features/library_sources/domain/library_source_store.dart';
+import '../../features/indexing/application/active_runs_controller.dart';
+import '../../features/indexing/application/active_runs_state.dart';
+import '../../features/indexing/application/index_runs_controller.dart';
+import '../../features/indexing/application/run_failures_controller.dart';
+import '../../features/indexing/application/source_list_cleanup_activity.dart';
+import '../../features/indexing/application/index_runs_state.dart';
+import '../../features/indexing/application/index_session_activity.dart';
+import '../../features/indexing/data/core_index_gateway.dart';
+import '../../features/indexing/data/native_folder_picker.dart';
+import '../../features/indexing/domain/folder_picker.dart';
+import '../../features/indexing/domain/index_gateway.dart';
+import '../../features/indexing/domain/index_run.dart';
 import '../../features/shell/application/preferences_controller.dart';
 import '../../features/shell/application/preferences_state.dart';
 import '../../features/shell/application/shell_controller.dart';
@@ -87,14 +83,17 @@ import '../../features/organization/domain/browser_launcher.dart';
 import '../../features/playback/application/playback_session_activity.dart';
 import '../../features/playback/application/video_playback_controller.dart';
 import '../../features/playback/application/video_playback_session.dart';
+import '../../features/playback/data/core_cover_gateway.dart';
 import '../../features/playback/data/core_playback_source_gateway.dart';
 import '../../features/playback/data/media_kit_player.dart';
 import '../../features/playback/data/settings_playback_position_store.dart';
+import '../../features/playback/domain/cover_gateway.dart';
 import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/libraries/application/libraries_controller.dart';
+import '../../features/libraries/application/library_add_request.dart';
 import '../../features/libraries/data/core_library_gateway.dart';
 import '../../features/libraries/domain/library.dart';
 import '../../features/libraries/domain/library_gateway.dart';
@@ -123,6 +122,9 @@ import '../../features/lifecycle/domain/deleted_record.dart';
 import '../../features/lifecycle/domain/file_hold.dart';
 import '../../features/lifecycle/domain/lifecycle_gateway.dart';
 import '../../features/lifecycle/domain/retention.dart';
+import '../../features/playback/application/audio_playback_controller.dart';
+import '../../features/playback/application/audio_playback_session.dart';
+import '../../features/playback/application/audio_playback_state.dart';
 import '../../features/playback/application/playback_file_holds.dart';
 import '../../features/tracking/application/reading_lists_controller.dart';
 import '../../features/tracking/application/reading_progress_editor.dart';
@@ -297,33 +299,6 @@ final folderPickerProvider = Provider<FolderPicker>(
   (ref) => const NativeFolderPicker(),
 );
 
-/// Whether a folder on disk exists and can be read (FR-LB-02).
-final folderProbeProvider = Provider<FolderProbe>(
-  (ref) => const DiskFolderProbe(),
-);
-
-/// Where the registered source folders are kept (FR-LB-03).
-///
-/// Reads the settings store the startup sequence loaded, so it is only usable
-/// once startup has reached ready — which is when the shell, and so the
-/// library-sources screen, is reachable.
-final librarySourceStoreProvider = Provider<LibrarySourceStore>((ref) {
-  final settings = _loadedSettings(ref);
-  if (settings == null) {
-    throw StateError(
-      'the library source store was read before settings were loaded',
-    );
-  }
-
-  return SettingsLibrarySourceStore(settings);
-});
-
-/// The registered source folders and the screen that manages them (UC-05).
-final librarySourcesControllerProvider =
-    NotifierProvider<LibrarySourcesController, LibrarySourcesState>(
-      LibrarySourcesController.new,
-    );
-
 /// The core's indexing operations (UC-06).
 final indexGatewayProvider = Provider<IndexGateway>((ref) {
   final core = _loadedCore(ref);
@@ -460,6 +435,32 @@ final videoPlayerProvider = Provider<MediaPlayer>((ref) {
   return player;
 });
 
+/// The engine the player bar plays music with (libraries-only design §6).
+///
+/// Its own, not the video player's: music keeps playing while the owner
+/// browses, and a video opening pauses it rather than taking it over.
+final audioPlayerProvider = Provider<MediaPlayer>((ref) {
+  final player = MediaKitPlayer();
+  ref.onDispose(() => unawaited(player.dispose()));
+  return player;
+});
+
+/// A track's front cover (UC-40).
+final coverGatewayProvider = Provider<CoverGateway>((ref) {
+  final core = _loadedCore(ref);
+  if (core == null) {
+    throw StateError('the cover gateway was read before the core was loaded');
+  }
+
+  return CoreCoverGateway(core);
+});
+
+/// What the player bar is playing (libraries-only design §6).
+final audioPlaybackControllerProvider =
+    NotifierProvider<AudioPlaybackController, AudioPlaybackState>(
+      AudioPlaybackController.new,
+    );
+
 /// The widget that draws the decoded frames (UC-19, FR-PL-01).
 ///
 /// The engine owns the surface, so this follows the engine's binding: the
@@ -492,7 +493,7 @@ final videoPlaybackControllerProvider =
 /// The players the session can have running, which sign-out stops (UC-03
 /// main flow step 2). The video player is the only one (`PlaybackSession`).
 final playbackSessionsProvider = Provider<List<PlaybackSession>>(
-  (ref) => [VideoPlaybackSession(ref)],
+  (ref) => [VideoPlaybackSession(ref), AudioPlaybackSession(ref)],
 );
 
 /// The core's text content operations (UC-18, FR-ME-06, FR-ME-08).
@@ -781,7 +782,11 @@ final openFileHoldsProvider =
 /// it is on screen. The deletion asks this list and nothing else, so neither
 /// player nor viewer has to know the deletion exists.
 final fileHoldsProvider = Provider<List<FileHold>>(
-  (ref) => [VideoFileHold(ref), ...ref.watch(openFileHoldsProvider)],
+  (ref) => [
+    VideoFileHold(ref),
+    AudioFileHold(ref),
+    ...ref.watch(openFileHoldsProvider),
+  ],
 );
 
 /// What a deletion is reporting (UC-33).
@@ -862,6 +867,11 @@ final libraryGatewayProvider = Provider<LibraryGateway>((ref) {
   return CoreLibraryGateway(core);
 });
 
+/// Adding a library, asked for from a screen the Libraries screen replaces.
+final libraryAddRequestProvider = NotifierProvider<LibraryAddRequest, bool>(
+  LibraryAddRequest.new,
+);
+
 /// The registered libraries.
 final librariesControllerProvider =
     AsyncNotifierProvider<LibrariesController, List<Library>>(
@@ -908,6 +918,12 @@ final watchProgressGatewayProvider = Provider<WatchProgressGateway>((ref) {
   return CoreWatchProgressGateway(core);
 });
 
+/// The open tags form (UC-15).
+final musicMetadataEditorProvider =
+    NotifierProvider<MusicMetadataEditor, MusicEditorState>(
+      MusicMetadataEditor.new,
+    );
+
 /// The open video metadata form (UC-16).
 final videoMetadataEditorProvider =
     NotifierProvider<VideoMetadataEditor, VideoEditorState>(
@@ -928,9 +944,11 @@ final sessionActivitiesProvider = Provider<List<SessionActivity>>(
     EditingSessionActivity(ref),
     // Whatever is playing, which sign-out stops (UC-03 main flow step 2).
     PlaybackSessionActivity(ref),
-    // Audio taken out of the tracked folders, and the libraries of the
-    // music-only ones, which need a credential (remove-music design).
-    AudioLibraryCleanupActivity(ref),
+    // The folder list a 0.5 build kept, which the libraries-only core made
+    // meaningless (libraries-only design).
+    SourceListCleanupActivity(
+      () => ref.read(startupControllerProvider.notifier).settings,
+    ),
   ],
 );
 

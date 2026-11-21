@@ -6,11 +6,12 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../library_sources/application/active_runs_state.dart';
-import '../../library_sources/domain/index_run.dart';
-import '../../library_sources/domain/run_estimate.dart';
-import '../../library_sources/domain/run_priority.dart';
-import '../../library_sources/presentation/library_sources_screen.dart';
+import '../../indexing/application/active_runs_state.dart';
+import '../../indexing/domain/index_run.dart';
+import '../../indexing/domain/run_estimate.dart';
+import '../../indexing/domain/run_priority.dart';
+import '../../libraries/domain/library.dart';
+import '../domain/shell_destination.dart';
 
 /// What the core is indexing, from anywhere in the application
 /// (FR-LB-13 … FR-LB-16 / core FR-FC-28, FR-FC-31 … FR-FC-35).
@@ -273,7 +274,7 @@ class _BackgroundActivityStripState
 /// The one outstanding run: what it is doing, how far it has got, and the
 /// controls for it (FR-LB-13, FR-LB-16, FR-LB-18 / core FR-FC-28, FR-FC-31,
 /// FR-FC-34).
-class _RunRow extends StatelessWidget {
+class _RunRow extends ConsumerWidget {
   const _RunRow({
     required this.run,
     required this.samples,
@@ -298,7 +299,7 @@ class _RunRow extends StatelessWidget {
   final ValueChanged<RunPriority> onRepace;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final paused = run.status == IndexRunStatus.paused;
@@ -326,7 +327,7 @@ class _RunRow extends StatelessWidget {
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 220),
           child: Text(
-            _folderName(l10n, run),
+            _runName(l10n, run, _libraryNames(ref)),
             style: theme.textTheme.bodySmall,
             overflow: TextOverflow.ellipsis,
           ),
@@ -417,13 +418,13 @@ class _RunRow extends StatelessWidget {
 /// One row rather than one row per run: the strip is forty pixels of the
 /// shell, and a list of runs is the library-folders screen's job — which is
 /// what the single action here opens.
-class _AggregateRow extends StatelessWidget {
+class _AggregateRow extends ConsumerWidget {
   const _AggregateRow({required this.runs});
 
   final List<IndexRun> runs;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
@@ -475,7 +476,9 @@ class _AggregateRow extends StatelessWidget {
         // runs a button would act on, and guessing is worse than sending the
         // owner where every run is named.
         TextButton(
-          onPressed: () => unawaited(LibrarySourcesScreen.show(context)),
+          onPressed: () => ref
+              .read(shellControllerProvider.notifier)
+              .go(ShellDestination.libraries),
           child: Text(l10n.activityViewAll),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -504,7 +507,7 @@ class _AggregateRow extends StatelessWidget {
 }
 
 /// How a run ended (FR-LB-13).
-class _OutcomeRow extends StatelessWidget {
+class _OutcomeRow extends ConsumerWidget {
   const _OutcomeRow({required this.run, required this.failed, this.onDismiss});
 
   final IndexRun run;
@@ -514,10 +517,10 @@ class _OutcomeRow extends StatelessWidget {
   final VoidCallback? onDismiss;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final folder = _folderName(l10n, run);
+    final folder = _runName(l10n, run, _libraryNames(ref));
 
     return Row(
       children: [
@@ -608,11 +611,27 @@ class _Control extends StatelessWidget {
   );
 }
 
+/// The registered libraries' names, by uuid, as far as they are known.
+Map<String, String> _libraryNames(WidgetRef ref) => {
+  for (final library
+      in ref.watch(librariesControllerProvider).value ?? const <Library>[])
+    library.uuid: library.name,
+};
+
 /// What the run is working on, named the way the owner would name it.
 ///
-/// A refresh covers everything already cataloged rather than one folder, so it
-/// carries no root and is named for what it is (UC-07).
-String _folderName(AppLocalizations l10n, IndexRun run) {
+/// A library run is named for its library. A run whose library this session
+/// has not read — or that has since been removed — is named for its folder
+/// instead, and a refresh, which re-checks every library at once and carries
+/// no root, for what it is (UC-07).
+String _runName(
+  AppLocalizations l10n,
+  IndexRun run,
+  Map<String, String> names,
+) {
+  final library = names[run.libraryUuid];
+  if (library != null) return library;
+
   final root = run.root;
   if (root.isEmpty) return l10n.activityCatalog;
 

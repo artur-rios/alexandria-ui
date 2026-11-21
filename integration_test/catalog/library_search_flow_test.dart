@@ -19,18 +19,13 @@ import 'package:material_ui/material_ui.dart';
 import '../support/temporary_catalog.dart';
 
 /// Finding a library's file by name, through the whole application against the
-/// real core (UC-11, FR-CT-06, FR-CT-16, FR-CT-17).
+/// real core (UC-11, FR-CT-06, FR-CT-17).
 ///
-/// The seam every other suite leaves untested. The gateway tests prove the
-/// core answers a library's files when asked to reach in; the widget tests
-/// prove the row renders a tag when the index says a file is in a library.
-/// Neither proves that what the search screen asks for is what the core was
-/// told to exclude — and that is exactly where this feature was broken: the
-/// requirement said a library's files stay findable, three layers each behaved
-/// correctly on their own, and searching for one found nothing.
-///
-/// So this drives the real widget tree over the real core: the shell, the
-/// search field, the results list.
+/// The seam every other suite leaves untested: the gateway tests prove the
+/// core answers a library's files, and the widget tests prove the row names
+/// its library when the index says so. Neither proves the two meet — so this
+/// drives the real widget tree over the real core: the shell, the search
+/// field, the results list.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -115,13 +110,14 @@ void main() {
   /// UC-01 has its own integration test, and driving it here would make this
   /// one fail for that reason instead of this one.
   Future<void> signIn(WidgetTester tester, ProviderContainer container) async {
-    final outcome = await CoreAuthGateway(
-      container.read(startupControllerProvider.notifier).core!,
-    ).register(
-      email: email,
-      password: password,
-      passwordConfirmation: password,
-    );
+    final outcome =
+        await CoreAuthGateway(
+          container.read(startupControllerProvider.notifier).core!,
+        ).register(
+          email: email,
+          password: password,
+          passwordConfirmation: password,
+        );
     expect(outcome, isA<AuthenticatedOutcome>());
 
     container
@@ -132,8 +128,12 @@ void main() {
     expect(find.byType(ShellScreen), findsOneWidget);
   }
 
-  /// Indexes the fixture folder and waits for the walk to settle.
-  Future<void> indexAndSettle(
+  /// Adds the fixture folder as a library and waits for its first run to
+  /// record [expected] files.
+  ///
+  /// The core starts that run with the library (0.6.0): a library is the
+  /// only way anything gets into the catalog.
+  Future<void> addLibraryAndSettle(
     WidgetTester tester,
     ProviderContainer container,
     int expected,
@@ -143,19 +143,20 @@ void main() {
         .credential!;
     final core = container.read(startupControllerProvider.notifier).core!;
 
-    final started = await core.indexStart(
-      catalog.libraryDirectory.path,
-      credential,
-      null,
-      null,
-    );
-    expect(started.status, 0, reason: 'the run would not start');
+    final registered = await container
+        .read(libraryGatewayProvider)
+        .register(
+          name: libraryName,
+          rootPath: catalog.libraryDirectory.path,
+          credential: credential,
+        );
+    expect(registered, isA<LibraryRegistered>());
 
     for (var attempt = 0; attempt < 300; attempt++) {
       if (await core.indexCountFiles() >= expected) return;
       await tester.pump(const Duration(milliseconds: 100));
     }
-    fail('the index run never recorded $expected files');
+    fail('the library run never recorded $expected files');
   }
 
   /// Loads the search index, then types [term] into the shell's search field.
@@ -188,23 +189,12 @@ void main() {
   testWidgets(
     'GivenAFileInALibrary_WhenTheOwnerSearchesForIt_ThenItIsFoundAndNamesItsLibrary',
     (tester) async {
-      // The whole claim, end to end: a course's files are kept out of the
-      // type panels, and the owner can still find one by typing its name.
+      // End to end: a library's file is found by typing its name, and the
+      // hit says which library it is in.
       catalog.addFixture('class-01/lecture-notes.md', '# a lecture');
       final container = await startApp(tester);
       await signIn(tester, container);
-      await indexAndSettle(tester, container, 1);
-
-      final registered = await container
-          .read(libraryGatewayProvider)
-          .register(
-            name: libraryName,
-            rootPath: catalog.libraryDirectory.path,
-            credential: container
-                .read(sessionControllerProvider.notifier)
-                .credential!,
-          );
-      expect(registered, isA<LibraryWriteDone>());
+      await addLibraryAndSettle(tester, container, 1);
 
       await search(tester, container, 'lecture');
 
@@ -213,9 +203,7 @@ void main() {
       expect(
         find.textContaining('lecture-notes.md'),
         findsWidgets,
-        reason:
-            'a library file could not be found by name — the exclusion that '
-            'keeps it out of the type panels reached the search too',
+        reason: 'a library file could not be found by name',
       );
       expect(
         find.text(messages(tester).searchInLibrary(libraryName)),
@@ -224,23 +212,6 @@ void main() {
             'the hit did not say where it lives, so the owner finds it here '
             'and then cannot find it in the panel for its type',
       );
-    },
-  );
-
-  testWidgets(
-    'GivenAFileOutsideEveryLibrary_WhenItIsFound_ThenNoLibraryIsNamed',
-    (tester) async {
-      // The half that makes the test above mean something: a results list
-      // that tagged every row would pass it.
-      catalog.addFixture('loose-notes.md', '# loose');
-      final container = await startApp(tester);
-      await signIn(tester, container);
-      await indexAndSettle(tester, container, 1);
-
-      await search(tester, container, 'loose');
-
-      expect(find.textContaining('loose-notes.md'), findsWidgets);
-      expect(find.byType(Chip), findsNothing);
     },
   );
 }

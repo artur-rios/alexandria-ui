@@ -8,7 +8,7 @@ void main() {
   });
 
   test('GivenAPatchAboveTheMinimum_WhenItIsChecked_ThenItIsSupported', () {
-    expect(CoreVersionRange.supports('0.5.7'), isTrue);
+    expect(CoreVersionRange.supports('0.6.3'), isTrue);
   });
 
   test('GivenTheExclusiveMaximum_WhenItIsChecked_ThenItIsNotSupported', () {
@@ -27,18 +27,19 @@ void main() {
   });
 
   test('GivenTheFirstSupportedRelease_WhenItIsChecked_ThenItIsSupported', () {
-    expect(CoreVersionRange.supports('0.5.0'), isTrue);
+    expect(CoreVersionRange.supports('0.6.0'), isTrue);
   });
 
   test('GivenThePreviousMinorLine_WhenItIsChecked_ThenItIsNotSupported', () {
-    // The 0.4 core still serves playlists, plays and enrichment, and this
-    // build no longer speaks to them. Its last patch is the nearest miss.
-    expect(CoreVersionRange.supports('0.4.9'), isFalse);
-    expect(CoreVersionRange.supports('0.3.0'), isFalse);
+    // The 0.5 core still indexes folders outside any library and answers
+    // `alexandria_index_start`, which this build no longer calls. Its last
+    // patch is the nearest miss.
+    expect(CoreVersionRange.supports('0.5.9'), isFalse);
+    expect(CoreVersionRange.supports('0.4.0'), isFalse);
   });
 
   test('GivenTheNextMinorLine_WhenItIsChecked_ThenItIsNotSupported', () {
-    expect(CoreVersionRange.supports('0.6.0'), isFalse);
+    expect(CoreVersionRange.supports('0.7.0'), isFalse);
   });
 
   test('GivenAMuchLaterVersion_WhenItIsChecked_ThenItIsNotSupported', () {
@@ -46,8 +47,8 @@ void main() {
   });
 
   test('GivenAPreReleaseSuffix_WhenItIsChecked_ThenTheSuffixIsIgnored', () {
-    expect(CoreVersionRange.supports('0.5.0-rc.1'), isTrue);
-    expect(CoreVersionRange.supports('0.5.0+build.5'), isTrue);
+    expect(CoreVersionRange.supports('0.6.0-rc.1'), isTrue);
+    expect(CoreVersionRange.supports('0.6.0+build.5'), isTrue);
   });
 
   group('a core that will not say what it is', () {

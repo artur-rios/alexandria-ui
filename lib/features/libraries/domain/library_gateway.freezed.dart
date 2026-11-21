@@ -895,4 +895,316 @@ $FailureCopyWith<$Res> get failure {
 }
 }
 
+/// @nodoc
+mixin _$LibraryRegistration {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LibraryRegistration);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'LibraryRegistration()';
+}
+
+
+}
+
+/// @nodoc
+class $LibraryRegistrationCopyWith<$Res>  {
+$LibraryRegistrationCopyWith(LibraryRegistration _, $Res Function(LibraryRegistration) __);
+}
+
+
+/// Adds pattern-matching-related methods to [LibraryRegistration].
+extension LibraryRegistrationPatterns on LibraryRegistration {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( LibraryRegistered value)?  registered,TResult Function( LibraryRegistrationFailed value)?  failed,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case LibraryRegistered() when registered != null:
+return registered(_that);case LibraryRegistrationFailed() when failed != null:
+return failed(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( LibraryRegistered value)  registered,required TResult Function( LibraryRegistrationFailed value)  failed,}){
+final _that = this;
+switch (_that) {
+case LibraryRegistered():
+return registered(_that);case LibraryRegistrationFailed():
+return failed(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( LibraryRegistered value)?  registered,TResult? Function( LibraryRegistrationFailed value)?  failed,}){
+final _that = this;
+switch (_that) {
+case LibraryRegistered() when registered != null:
+return registered(_that);case LibraryRegistrationFailed() when failed != null:
+return failed(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( Library library,  String runId)?  registered,TResult Function( Failure failure)?  failed,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case LibraryRegistered() when registered != null:
+return registered(_that.library,_that.runId);case LibraryRegistrationFailed() when failed != null:
+return failed(_that.failure);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( Library library,  String runId)  registered,required TResult Function( Failure failure)  failed,}) {final _that = this;
+switch (_that) {
+case LibraryRegistered():
+return registered(_that.library,_that.runId);case LibraryRegistrationFailed():
+return failed(_that.failure);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( Library library,  String runId)?  registered,TResult? Function( Failure failure)?  failed,}) {final _that = this;
+switch (_that) {
+case LibraryRegistered() when registered != null:
+return registered(_that.library,_that.runId);case LibraryRegistrationFailed() when failed != null:
+return failed(_that.failure);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class LibraryRegistered implements LibraryRegistration {
+  const LibraryRegistered({required this.library, required this.runId});
+  
+
+ final  Library library;
+ final  String runId;
+
+/// Create a copy of LibraryRegistration
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LibraryRegisteredCopyWith<LibraryRegistered> get copyWith => _$LibraryRegisteredCopyWithImpl<LibraryRegistered>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LibraryRegistered&&(identical(other.library, library) || other.library == library)&&(identical(other.runId, runId) || other.runId == runId));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,library,runId);
+
+@override
+String toString() {
+  return 'LibraryRegistration.registered(library: $library, runId: $runId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LibraryRegisteredCopyWith<$Res> implements $LibraryRegistrationCopyWith<$Res> {
+  factory $LibraryRegisteredCopyWith(LibraryRegistered value, $Res Function(LibraryRegistered) _then) = _$LibraryRegisteredCopyWithImpl;
+@useResult
+$Res call({
+ Library library, String runId
+});
+
+
+$LibraryCopyWith<$Res> get library;
+
+}
+/// @nodoc
+class _$LibraryRegisteredCopyWithImpl<$Res>
+    implements $LibraryRegisteredCopyWith<$Res> {
+  _$LibraryRegisteredCopyWithImpl(this._self, this._then);
+
+  final LibraryRegistered _self;
+  final $Res Function(LibraryRegistered) _then;
+
+/// Create a copy of LibraryRegistration
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? library = null,Object? runId = null,}) {
+  return _then(LibraryRegistered(
+library: null == library ? _self.library : library // ignore: cast_nullable_to_non_nullable
+as Library,runId: null == runId ? _self.runId : runId // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+/// Create a copy of LibraryRegistration
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$LibraryCopyWith<$Res> get library {
+  
+  return $LibraryCopyWith<$Res>(_self.library, (value) {
+    return _then(_self.copyWith(library: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class LibraryRegistrationFailed implements LibraryRegistration {
+  const LibraryRegistrationFailed({required this.failure});
+  
+
+ final  Failure failure;
+
+/// Create a copy of LibraryRegistration
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$LibraryRegistrationFailedCopyWith<LibraryRegistrationFailed> get copyWith => _$LibraryRegistrationFailedCopyWithImpl<LibraryRegistrationFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LibraryRegistrationFailed&&(identical(other.failure, failure) || other.failure == failure));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,failure);
+
+@override
+String toString() {
+  return 'LibraryRegistration.failed(failure: $failure)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $LibraryRegistrationFailedCopyWith<$Res> implements $LibraryRegistrationCopyWith<$Res> {
+  factory $LibraryRegistrationFailedCopyWith(LibraryRegistrationFailed value, $Res Function(LibraryRegistrationFailed) _then) = _$LibraryRegistrationFailedCopyWithImpl;
+@useResult
+$Res call({
+ Failure failure
+});
+
+
+$FailureCopyWith<$Res> get failure;
+
+}
+/// @nodoc
+class _$LibraryRegistrationFailedCopyWithImpl<$Res>
+    implements $LibraryRegistrationFailedCopyWith<$Res> {
+  _$LibraryRegistrationFailedCopyWithImpl(this._self, this._then);
+
+  final LibraryRegistrationFailed _self;
+  final $Res Function(LibraryRegistrationFailed) _then;
+
+/// Create a copy of LibraryRegistration
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? failure = null,}) {
+  return _then(LibraryRegistrationFailed(
+failure: null == failure ? _self.failure : failure // ignore: cast_nullable_to_non_nullable
+as Failure,
+  ));
+}
+
+/// Create a copy of LibraryRegistration
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$FailureCopyWith<$Res> get failure {
+  
+  return $FailureCopyWith<$Res>(_self.failure, (value) {
+    return _then(_self.copyWith(failure: value));
+  });
+}
+}
+
 // dart format on

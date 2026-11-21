@@ -1,4 +1,7 @@
 import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
+import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
@@ -129,6 +132,94 @@ void main() {
       sortFiles(files, ListingView.initial);
 
       expect(files, original);
+    });
+  });
+
+  group('the album order (Music)', () {
+    CatalogFile track(
+      String uuid, {
+      String? albumArtist,
+      String? artist,
+      String? album,
+      int? track,
+      String? title,
+      String name = 'x.flac',
+    }) => aFile(
+      uuid: uuid,
+      name: name,
+      type: FileType.audio,
+      tags: MusicMetadata(
+        albumArtist: albumArtist,
+        artist: artist,
+        album: album,
+        track: track,
+        title: title,
+      ),
+    );
+
+    final album = ListingView.initial.copyWith(sortField: SortField.album);
+
+    test(
+      'GivenTracksOfTwoAlbums_WhenSortedByAlbum_ThenAlbumArtistAlbumTrackOrder',
+      () {
+        final sorted = sortFiles([
+          track('a2-10', albumArtist: 'a2', album: 'One', track: 10),
+          track('B-1', albumArtist: 'B', album: 'Two', track: 1),
+          track('a2-2', albumArtist: 'a2', album: 'One', track: 2),
+          track('a10-1', albumArtist: 'a10', album: 'Zed', track: 1),
+        ], album);
+
+        // Case-insensitive text, numeric track numbers.
+        expect(sorted.map((file) => file.uuid), [
+          'a10-1',
+          'a2-2',
+          'a2-10',
+          'B-1',
+        ]);
+      },
+    );
+
+    test('GivenNoAlbumArtist_WhenSortedByAlbum_ThenArtistIsUsed', () {
+      final sorted = sortFiles([
+        track('z', albumArtist: 'Zed', album: 'A'),
+        track('m', artist: 'Mid', album: 'A'),
+      ], album);
+
+      expect(sorted.map((file) => file.uuid), ['m', 'z']);
+    });
+
+    test('GivenUntaggedTracks_WhenSortedByAlbum_ThenTheySortLastByName', () {
+      final sorted = sortFiles([
+        track('untagged-b', name: 'b.flac'),
+        track('tagged', albumArtist: 'Band', album: 'Record', track: 1),
+        track('untagged-a', name: 'a.flac'),
+        track('no-track', albumArtist: 'Band', album: 'Record'),
+      ], album);
+
+      expect(sorted.map((file) => file.uuid), [
+        'tagged',
+        'no-track',
+        'untagged-a',
+        'untagged-b',
+      ]);
+    });
+
+    test('GivenAlbumDescending_WhenSorted_ThenTheOrderReverses', () {
+      final sorted = sortFiles([
+        track('1', albumArtist: 'A', album: 'A', track: 1),
+        track('2', albumArtist: 'A', album: 'A', track: 2),
+      ], album.copyWith(direction: SortDirection.descending));
+
+      expect(sorted.map((file) => file.uuid), ['2', '1']);
+    });
+
+    test('GivenMusic_WhenItsInitialViewIsAsked_ThenItIsTheAlbumOrder', () {
+      expect(ListingView.initialFor(FileType.audio).sortField, SortField.album);
+      expect(ListingView.initialFor(FileType.video), ListingView.initial);
+    });
+
+    test('GivenAnAlbumView_WhenSavedAndRead_ThenAlbumSurvives', () {
+      expect(ListingView.fromJson(album.toJson()), album);
     });
   });
 }

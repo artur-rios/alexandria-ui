@@ -129,6 +129,7 @@ extension ShellDestinationPresentation on ShellDestination {
   IconData get icon => switch (this) {
     ShellDestination.home => Icons.home_outlined,
     ShellDestination.videos => Icons.movie_outlined,
+    ShellDestination.music => Icons.library_music_outlined,
     ShellDestination.books => Icons.menu_book_outlined,
     ShellDestination.comicBooks => Icons.auto_stories_outlined,
     ShellDestination.notes => Icons.description_outlined,
@@ -142,6 +143,7 @@ extension ShellDestinationPresentation on ShellDestination {
   IconData get selectedIcon => switch (this) {
     ShellDestination.home => Icons.home,
     ShellDestination.videos => Icons.movie,
+    ShellDestination.music => Icons.library_music,
     ShellDestination.books => Icons.menu_book,
     ShellDestination.comicBooks => Icons.auto_stories,
     ShellDestination.notes => Icons.description,
@@ -155,6 +157,7 @@ extension ShellDestinationPresentation on ShellDestination {
   String label(AppLocalizations l10n) => switch (this) {
     ShellDestination.home => l10n.destinationHome,
     ShellDestination.videos => l10n.destinationVideos,
+    ShellDestination.music => l10n.destinationMusic,
     ShellDestination.books => l10n.destinationBooks,
     ShellDestination.comicBooks => l10n.destinationComicBooks,
     ShellDestination.notes => l10n.destinationNotes,

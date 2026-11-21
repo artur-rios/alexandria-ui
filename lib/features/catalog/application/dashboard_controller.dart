@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
-import '../../library_sources/application/index_runs_state.dart';
-import '../../library_sources/domain/index_run.dart';
+import '../../indexing/application/index_runs_state.dart';
+import '../../indexing/domain/index_run.dart';
 import '../domain/catalog_file.dart';
 import '../domain/index_run_summary.dart';
 import '../domain/listing_view.dart';
@@ -24,16 +24,8 @@ class RecentFilesController extends AsyncNotifier<List<CatalogFile>> {
   Future<List<CatalogFile>> build() async {
     final index = await ref.watch(catalogSearchProvider.future);
 
-    // A library's files are left out here even though the index carries
-    // them. The index reaches into libraries because the search must
-    // (FR-CT-06); this is a front page, and a course's three hundred class
-    // handouts arriving all at once is exactly what marking the folder was
-    // meant to stop (FR-CT-16).
     final byNewest = sortFiles(
-      [
-        for (final row in index.files)
-          if (row.libraryUuid == null) row.file,
-      ],
+      [for (final row in index.files) row.file],
       const ListingView(
         sortField: SortField.indexed,
         direction: SortDirection.descending,

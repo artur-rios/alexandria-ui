@@ -1,4 +1,6 @@
 import 'catalog_file.dart';
+import 'file_type.dart';
+import 'music_metadata.dart';
 
 /// Which lifecycle states a listing shows (FR-CT-07).
 ///
@@ -41,7 +43,12 @@ enum SortField {
   name,
 
   /// When the core last indexed it.
-  indexed;
+  indexed,
+
+  /// A record's own order: album artist (or artist), album, track number,
+  /// then title (Music only). What next and previous follow, so an album
+  /// plays as it was made rather than in file-name order.
+  album;
 
   /// The field [name] names, or `null` when it names none.
   static SortField? byName(String? name) {
@@ -89,6 +96,12 @@ class ListingView {
 
   /// The view a listing opens on before the owner has chosen anything.
   static const ListingView initial = ListingView();
+
+  /// The view [type]'s listing opens on: albums in their own order for
+  /// music, names for everything else.
+  static ListingView initialFor(FileType type) => type == FileType.audio
+      ? const ListingView(sortField: SortField.album)
+      : initial;
 
   /// Whether anything has been narrowed away from the default.
   ///
@@ -157,10 +170,47 @@ List<CatalogFile> sortFiles(List<CatalogFile> files, ListingView view) {
       SortField.indexed => (a.indexedAt ?? DateTime.utc(0)).compareTo(
         b.indexedAt ?? DateTime.utc(0),
       ),
+      SortField.album => _albumOrder(a, b),
     };
 
     return view.direction == SortDirection.ascending ? order : -order;
   });
 
   return sorted;
+}
+
+/// [a] against [b] in a record's own order.
+///
+/// Album artist (falling back to the artist), album, track number, title,
+/// and finally the file name, so the order is total and stable. A missing
+/// value sorts after every present one, so untagged files gather at the end
+/// rather than scattering through the albums.
+int _albumOrder(CatalogFile a, CatalogFile b) {
+  final ta = a.tags ?? const MusicMetadata();
+  final tb = b.tags ?? const MusicMetadata();
+
+  return _compareText(ta.albumArtist ?? ta.artist, tb.albumArtist ?? tb.artist)
+      .orElse(() => _compareText(ta.album, tb.album))
+      .orElse(() => _compareNumber(ta.track, tb.track))
+      .orElse(() => _compareText(ta.title, tb.title))
+      .orElse(() => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+}
+
+int _compareText(String? a, String? b) {
+  final left = a?.trim().toLowerCase() ?? '';
+  final right = b?.trim().toLowerCase() ?? '';
+  if (left.isEmpty || right.isEmpty) {
+    return (left.isEmpty ? 1 : 0) - (right.isEmpty ? 1 : 0);
+  }
+  return left.compareTo(right);
+}
+
+int _compareNumber(int? a, int? b) {
+  if (a == null || b == null) return (a == null ? 1 : 0) - (b == null ? 1 : 0);
+  return a.compareTo(b);
+}
+
+extension on int {
+  /// This comparison, or [next]'s when this one is a tie.
+  int orElse(int Function() next) => this != 0 ? this : next();
 }

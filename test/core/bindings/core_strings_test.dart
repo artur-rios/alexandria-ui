@@ -5,7 +5,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// [withNativeString] is what stands between a null `priority` and a native
-/// pointer the core can read at the `indexStart`, `indexRefreshStart`, and
+/// pointer the core can read at the `libraryIndexStart`, `indexRefreshStart`, and
 /// `indexResume` call sites (`core_isolate.dart`).
 ///
 /// The core reads an absent priority as *keep the run's current width* on

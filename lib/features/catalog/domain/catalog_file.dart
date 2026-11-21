@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'file_stamp.dart';
 import 'file_type.dart';
+import 'music_metadata.dart';
 
 part 'catalog_file.freezed.dart';
 
@@ -57,6 +58,22 @@ abstract class CatalogFile with _$CatalogFile {
     /// deleted record and refused for an active one (UC-35 AF-03), and the
     /// answer to which it is has to come from the same listing the record did.
     @Default(false) bool isDeleted,
+
+    /// The library the file belongs to — every file belongs to one on the
+    /// 0.6.0 core. Null where a listing did not say, as a record parsed on
+    /// its own does not.
+    String? libraryUuid,
+
+    /// An audio file's tags, empty rather than null when it has none; null
+    /// for every other type.
+    ///
+    /// On the file rather than only on its details, because a listing names
+    /// a track by its title, orders an album by them, and the player bar says
+    /// what is playing — all from the rows a listing already has.
+    MusicMetadata? tags,
+
+    /// How long an audio file plays, in seconds, once the core has read it.
+    double? durationSeconds,
 
     /// When the record was soft-deleted.
     ///

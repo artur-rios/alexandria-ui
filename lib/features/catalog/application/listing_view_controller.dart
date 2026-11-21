@@ -94,7 +94,7 @@ class ListingViewController extends Notifier<ListingViewState> {
   /// Reverts [type] to the view that was showing before the last change, and
   /// reports why (AF-04).
   Future<void> revert(FileType type, Failure reason) async {
-    final previous = _previousByType[type] ?? ListingView.initial;
+    final previous = _previousByType[type] ?? ListingView.initialFor(type);
 
     // Already reverted and already reported: doing it again would change the
     // state the listing watches, which would reload, which would fail the same
@@ -144,14 +144,16 @@ class ListingViewState {
   /// Creates a state.
   const ListingViewState({this.byType = const {}, this.rejection});
 
-  /// The view chosen per type. A type with no entry uses [ListingView.initial].
+  /// The view chosen per type. A type with no entry uses
+  /// [ListingView.initialFor] it.
   final Map<FileType, ListingView> byType;
 
   /// Why the core refused the last filter, or `null` (AF-04).
   final Failure? rejection;
 
   /// The view [type] is listed with.
-  ListingView forType(FileType type) => byType[type] ?? ListingView.initial;
+  ListingView forType(FileType type) =>
+      byType[type] ?? ListingView.initialFor(type);
 
   /// A copy with the given changes.
   ///

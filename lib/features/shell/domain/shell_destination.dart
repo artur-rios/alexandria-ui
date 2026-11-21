@@ -1,6 +1,6 @@
 /// The areas the navigation panel offers (FR-UX-01, FR-CT-01).
 ///
-/// Seven of these are the library's types: the six of the core's file types
+/// Eight of these are the library's types: the seven of the core's file types
 /// the panel lists, plus bookmarks, which are not files at all and are listed
 /// through their own core call (UC-28). [home] is not a file type — it is
 /// where UC-14's dashboard lands, and the panel carries it because "the
@@ -23,6 +23,10 @@ enum ShellDestination {
   /// catalog, and inventing one here would be the front-end doing domain
   /// classification the core owns (BR-02).
   videos,
+
+  /// Music and other recordings (core 0.6.0), listed by their tags and played
+  /// in the player bar rather than opened full-screen.
+  music,
 
   /// Books, including e-book formats and PDFs read as books.
   books,

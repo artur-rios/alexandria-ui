@@ -1,9 +1,8 @@
 import 'dart:async';
 
-import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
-import 'package:alexandria_ui/features/library_sources/domain/index_gateway.dart';
-import 'package:alexandria_ui/features/library_sources/domain/index_run.dart';
-import 'package:alexandria_ui/features/library_sources/domain/run_priority.dart';
+import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
+import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
+import 'package:alexandria_ui/features/indexing/domain/run_priority.dart';
 
 /// An [IndexGateway] that never reaches the core (Testing Specification §2.3).
 ///
@@ -39,7 +38,7 @@ class FakeIndexGateway implements IndexGateway {
   /// The run id a successful start returns.
   final String runId;
 
-  /// What [startIndex] answers.
+  /// What a start answers, unless a more specific outcome is set.
   IndexStartOutcome startOutcome;
 
   /// What [readRun] answers, in order.
@@ -80,21 +79,6 @@ class FakeIndexGateway implements IndexGateway {
   /// The credentials [startRefresh] was called with, in order.
   final List<String> refreshStarts = [];
 
-  /// What [startIndex] was called with, in order.
-  ///
-  /// The scope included: what a run was told to record is the whole of UC-05's
-  /// effect on UC-06, and an empty list here is the absent scope that means
-  /// every type.
-  final List<
-    ({
-      String root,
-      RunPriority? priority,
-      List<FileType> types,
-      String credential,
-    })
-  >
-  starts = [];
-
   /// What [readRun] was called with, in order.
   final List<({String runId, String credential})> reads = [];
 
@@ -127,6 +111,26 @@ class FakeIndexGateway implements IndexGateway {
   /// what changed — a refresh that has actually started.
   ActiveRunsOutcome? activeRunsOutcomeOnceRefreshStarts;
 
+  /// What [startLibraryIndex] answers, in order; empty reuses
+  /// [startOutcome].
+  final List<IndexStartOutcome> libraryStartOutcomes = [];
+
+  /// What [startLibraryIndex] was called with, in order.
+  final List<({String uuid, RunPriority? priority, String credential})>
+  libraryStarts = [];
+
+  @override
+  Future<IndexStartOutcome> startLibraryIndex({
+    required String uuid,
+    RunPriority? priority,
+    required String credential,
+  }) async {
+    libraryStarts.add((uuid: uuid, priority: priority, credential: credential));
+    return libraryStartOutcomes.isNotEmpty
+        ? libraryStartOutcomes.removeAt(0)
+        : startOutcome;
+  }
+
   /// What [pauseRun] was called with, in order.
   final List<({String runId, String credential})> pauses = [];
 
@@ -136,22 +140,6 @@ class FakeIndexGateway implements IndexGateway {
   /// What [resumeRun] was called with, in order.
   final List<({String runId, RunPriority? priority, String credential})>
   resumes = [];
-
-  @override
-  Future<IndexStartOutcome> startIndex({
-    required String root,
-    RunPriority? priority,
-    List<FileType> types = const [],
-    required String credential,
-  }) async {
-    starts.add((
-      root: root,
-      priority: priority,
-      types: types,
-      credential: credential,
-    ));
-    return startOutcome;
-  }
 
   @override
   Future<IndexStartOutcome> startRefresh({

@@ -103,6 +103,23 @@ Failure _mapIndex(int code) => switch (code) {
     family: CoreStatusFamily.indexing,
     code: code,
   ),
+  // A "not now": the run is settling and the same call will be accepted
+  // once it has.
+  INDEX_ERR_BUSY => Failure.invalidState(
+    family: CoreStatusFamily.indexing,
+    code: code,
+  ),
+  // A library run (0.6.0): the library is not registered any more.
+  INDEX_ERR_NOT_FOUND => Failure.notFound(
+    family: CoreStatusFamily.indexing,
+    code: code,
+  ),
+  // A library run (0.6.0): the library already has a running or paused run,
+  // and only one may be unfinished at a time.
+  INDEX_ERR_CONFLICT => Failure.conflict(
+    family: CoreStatusFamily.indexing,
+    code: code,
+  ),
   // `INDEX_ERR_OTHER` needs no arm of its own: it maps to the same
   // unexpected failure the default below produces, and spelling it out
   // twice invited the reading that the two differ.

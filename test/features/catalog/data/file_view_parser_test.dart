@@ -1,5 +1,6 @@
 import 'package:alexandria_ui/features/catalog/data/file_view_parser.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// The one parse of the core's `FileView` row, shared by the listing and the
@@ -41,7 +42,7 @@ void main() {
     });
 
     test('GivenAnUnknownFileType_WhenItIsParsed_ThenTheRowIsDropped', () {
-      expect(fileFromFileView(row({'fileType': 'audio'})), isNull);
+      expect(fileFromFileView(row({'fileType': 'hologram'})), isNull);
     });
 
     test('GivenNoFileType_WhenItIsParsed_ThenTheRowIsDropped', () {
@@ -153,5 +154,53 @@ void main() {
         expect(metadataFromFileView(const ['title']), isEmpty);
       },
     );
+  });
+
+  group('fileFromView', () {
+    test('GivenAudioFileViewRow_WhenParsed_ThenTagsAndDurationAreRead', () {
+      final file = fileFromView({
+        'file': row({'name': '03 song.flac', 'fileType': 'audio'}),
+        'libraryUuid': 'lib-1',
+        'metadata': {
+          'type': 'audio',
+          'title': 'Song',
+          'artist': 'Band',
+          'albumArtist': 'Band',
+          'album': 'Record',
+          'year': 1997,
+          'genre': 'Rock',
+          'track': 3,
+        },
+        'durationSeconds': 245.5,
+      })!;
+
+      expect(file.type, FileType.audio);
+      expect(file.libraryUuid, 'lib-1');
+      expect(file.tags?.title, 'Song');
+      expect(file.tags?.artist, 'Band');
+      expect(file.tags?.albumArtist, 'Band');
+      expect(file.tags?.album, 'Record');
+      expect(file.tags?.year, 1997);
+      expect(file.tags?.track, 3);
+      expect(file.durationSeconds, 245.5);
+    });
+
+    test('GivenVideoRow_WhenParsed_ThenTagsAreNull', () {
+      final file = fileFromView({
+        'file': row(),
+        'metadata': {'type': 'video', 'title': 'A talk'},
+        'durationSeconds': 60.0,
+      })!;
+
+      expect(file.tags, isNull);
+    });
+
+    test('GivenAnUntaggedAudioRow_WhenParsed_ThenTagsAreEmptyNotNull', () {
+      final file = fileFromView({
+        'file': row({'fileType': 'audio'}),
+      })!;
+
+      expect(file.tags, const MusicMetadata());
+    });
   });
 }

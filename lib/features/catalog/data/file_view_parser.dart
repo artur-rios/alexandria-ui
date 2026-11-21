@@ -1,5 +1,6 @@
 import '../domain/catalog_file.dart';
 import '../domain/file_type.dart';
+import '../domain/music_metadata.dart';
 
 /// The `File` object [row] describes, or `null` when its type is one this
 /// application does not know.
@@ -35,6 +36,27 @@ CatalogFile? fileFromFileView(Map<String, dynamic> row) {
     indexedAt: indexedAt == null ? null : DateTime.tryParse(indexedAt),
     missingAt: missingAt == null ? null : DateTime.tryParse(missingAt),
     deletedAt: deletedAt == null ? null : DateTime.tryParse(deletedAt),
+  );
+}
+
+/// The file a whole `FileView` describes — [fileFromFileView] over its
+/// nested `file`, with what the view carries beside it: the library it
+/// belongs to and, for audio, its tags and duration.
+CatalogFile? fileFromView(Map<String, dynamic> view) {
+  final nested = view['file'];
+  if (nested is! Map<String, dynamic>) return null;
+
+  final file = fileFromFileView(nested);
+  if (file == null) return null;
+
+  return file.copyWith(
+    libraryUuid: view['libraryUuid'] as String?,
+    tags: file.type == FileType.audio
+        ? MusicMetadata.fromDetails(metadataFromFileView(view['metadata']))
+        : null,
+    durationSeconds: file.type == FileType.audio
+        ? (view['durationSeconds'] as num?)?.toDouble()
+        : null,
   );
 }
 
