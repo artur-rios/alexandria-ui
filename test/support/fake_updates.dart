@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:alexandria_ui/features/updates/data/pending_update_store.dart';
 import 'package:alexandria_ui/features/updates/domain/app_version.dart';
 import 'package:alexandria_ui/features/updates/domain/install_kind.dart';
 import 'package:alexandria_ui/features/updates/domain/release_info.dart';
@@ -121,3 +122,8 @@ class FakeUpdateInstaller implements UpdateInstaller {
     from: fromVersion,
   ));
 }
+
+/// The pending-update record in [folder], for tests in the layers that may
+/// not import the Data layer themselves.
+PendingUpdateStore pendingStoreIn(Directory folder) =>
+    PendingUpdateStore(folder);

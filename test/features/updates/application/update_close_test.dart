@@ -6,7 +6,6 @@ import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/updates/application/update_close.dart';
-import 'package:alexandria_ui/features/updates/data/pending_update_store.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
@@ -60,7 +59,7 @@ void main() {
         windowPlacementProvider.overrideWithValue(FakeWindowPlacement()),
         sessionActivitiesProvider.overrideWithValue([activity]),
         pendingUpdateStoreProvider.overrideWith(
-          (ref) async => PendingUpdateStore(support),
+          (ref) async => pendingStoreIn(support),
         ),
         indexGatewayProvider.overrideWithValue(index),
       ],
@@ -113,7 +112,7 @@ void main() {
     expect(await closing, isFalse);
     expect(sut.installer.launches, isEmpty);
     expect(sut.exits, isEmpty);
-    expect(PendingUpdateStore(support).read(), isNull);
+    expect(pendingStoreIn(support).read(), isNull);
   });
 
   testWidgets(
@@ -135,7 +134,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(await closing, isTrue);
-      expect(PendingUpdateStore(support).read(), (from: '1.1.0', to: '1.2.0'));
+      expect(pendingStoreIn(support).read(), (from: '1.1.0', to: '1.2.0'));
       expect(sut.installer.launches.single.package, package.path);
       expect(
         sut.installer.launches.single.location,

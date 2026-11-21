@@ -6,7 +6,6 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/updates/application/update_state.dart';
-import 'package:alexandria_ui/features/updates/data/pending_update_store.dart';
 import 'package:alexandria_ui/features/updates/domain/install_kind.dart';
 import 'package:alexandria_ui/features/updates/presentation/update_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,7 +41,7 @@ void main() {
     downloaderProvider.overrideWithValue(downloader ?? FakeDownloader()),
     installKindProbeProvider.overrideWithValue(FakeInstallKindProbe(kind)),
     pendingUpdateStoreProvider.overrideWith(
-      (ref) async => PendingUpdateStore(support),
+      (ref) async => pendingStoreIn(support),
     ),
     browserLauncherProvider.overrideWithValue(browser ?? FakeBrowserLauncher()),
   ];
@@ -202,7 +201,7 @@ void main() {
   testWidgets('GivenAPreviousFailure_WhenTheAppStarts_ThenTheNotice', (
     tester,
   ) async {
-    PendingUpdateStore(support).write(from: '1.1.0', to: '1.2.0');
+    pendingStoreIn(support).write(from: '1.1.0', to: '1.2.0');
 
     await tester.pumpLoginScreen(extraOverrides: updates());
     await tester.pumpAndSettle();

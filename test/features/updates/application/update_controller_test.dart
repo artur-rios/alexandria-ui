@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/features/updates/application/update_state.dart';
-import 'package:alexandria_ui/features/updates/data/pending_update_store.dart';
 import 'package:alexandria_ui/features/updates/domain/install_kind.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -49,7 +48,7 @@ void main() {
         downloaderProvider.overrideWithValue(downloader),
         installKindProbeProvider.overrideWithValue(FakeInstallKindProbe(kind)),
         pendingUpdateStoreProvider.overrideWith(
-          (ref) async => PendingUpdateStore(support),
+          (ref) async => pendingStoreIn(support),
         ),
       ],
     );
@@ -331,20 +330,20 @@ void main() {
     test(
       'GivenAMarkerToTheRunningVersion_WhenEvaluated_ThenClearedAndNoNotice',
       () async {
-        PendingUpdateStore(support).write(from: '1.0.0', to: '1.1.0');
+        pendingStoreIn(support).write(from: '1.0.0', to: '1.1.0');
         final sut = await build(latest: '1.1.0');
 
         await sut.ref.read(updateControllerProvider.notifier).checkAtStartup();
 
         expect(state(sut.ref), isA<UpdateIdle>());
-        expect(PendingUpdateStore(support).read(), isNull);
+        expect(pendingStoreIn(support).read(), isNull);
       },
     );
 
     test(
       'GivenAMarkerFromTheRunningVersion_WhenEvaluated_ThenPreviousUpdateFailedAndCleared',
       () async {
-        PendingUpdateStore(support).write(from: '1.1.0', to: '1.2.0');
+        pendingStoreIn(support).write(from: '1.1.0', to: '1.2.0');
         final sut = await build();
 
         await sut.ref.read(updateControllerProvider.notifier).checkAtStartup();
@@ -353,7 +352,7 @@ void main() {
           state(sut.ref),
           const UpdateState.previousUpdateFailed(to: '1.2.0'),
         );
-        expect(PendingUpdateStore(support).read(), isNull);
+        expect(pendingStoreIn(support).read(), isNull);
       },
     );
   });
