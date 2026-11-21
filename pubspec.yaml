@@ -112,6 +112,10 @@ dependencies:
   # (update-check design §3). Already in the lock as a transitive dependency;
   # named here because the application now calls it.
   crypto: ^3.0.8
+  # Reads where the Windows setup installed this copy, from its uninstall key,
+  # so an update replaces exactly that installation (update-check design §1).
+  # Called only on Windows.
+  win32_registry: ^3.0.3
   # The browser engine saved HTML pages are drawn with (UC-25, FR-VW-05):
   # CEF, rendered off-screen and composed into the window as a texture. The
   # stack document records the trade — the page's script runs, and the
