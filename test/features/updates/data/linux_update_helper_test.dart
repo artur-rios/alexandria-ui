@@ -5,7 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// The shell helper that installs after the application has exited
 /// (update-check design §3 step 4), run for real with `sh`.
+///
+/// Skipped on Windows, where the suite also runs: the helper only ever runs on
+/// Linux, and Git's sh there has no executable bit and no Linux process IDs.
+/// Marked per test rather than with `@TestOn`, which ci/unit-suite.sh's
+/// bundles would drop.
 void main() {
+  final onlyOnLinux = Platform.isWindows
+      ? 'the Linux update helper runs only on Linux'
+      : null;
+
   late Directory root;
   late Directory work;
   late String helper;
@@ -65,6 +74,7 @@ void main() {
       expect(File('${root.path}/relaunched').existsSync(), isTrue);
       expect(work.existsSync(), isFalse, reason: 'its folder was left behind');
     },
+    skip: onlyOnLinux,
   );
 
   test(
@@ -83,6 +93,7 @@ void main() {
 
       expect(File('${root.path}/relaunched').existsSync(), isTrue);
     },
+    skip: onlyOnLinux,
   );
 
   test(
@@ -104,5 +115,6 @@ void main() {
       );
       expect(File('${root.path}/relaunched').readAsStringSync().trim(), 'new');
     },
+    skip: onlyOnLinux,
   );
 }
