@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-21
+
 ### Added
 
 - Music, as files to play rather than a music library to manage, which stays Orpheus's. A Music panel after Videos
@@ -41,7 +43,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Alexandria makes one network call of its own: the update check at startup, a request to GitHub's public releases
   API that carries the application's version in its User-Agent and nothing else. It sends no telemetry, and it can
   be turned off in Preferences.
-
 - Libraries are the only way files get into Alexandria. A folder is added as a library on the Libraries screen, now
   a destination of its own, and its first scan starts straight away and is followed under its row. Each library can
   be scanned again, moved, or removed from its row, and "Re-check all libraries" is there too. The Library menu has
@@ -227,7 +228,8 @@ First tagged release, published as a prerelease to exercise the release pipeline
 - Windows packages — an installer, an MSIX, and a portable zip — and Linux packages — a self-extracting installer and a
   portable tarball, which need the distribution's ffmpeg libraries installed.
 
-[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/artur-rios/alexandria-ui/compare/v1.0.1...v2.0.0
 [1.0.1]: https://github.com/artur-rios/alexandria-ui/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/artur-rios/alexandria-ui/compare/v0.1.1...v1.0.0
 [0.1.1]: https://github.com/artur-rios/alexandria-ui/compare/v0.1.0...v0.1.1
