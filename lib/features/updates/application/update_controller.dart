@@ -27,7 +27,7 @@ class UpdateController extends Notifier<UpdateState> {
   /// Where the skipped version is stored.
   static const String skippedVersionKey = 'updates.skippedVersion';
 
-  bool _startedOnce = false;
+  Future<void>? _atStartup;
   CancelToken? _download;
 
   @override
@@ -39,15 +39,16 @@ class UpdateController extends Notifier<UpdateState> {
     return const UpdateState.idle();
   }
 
-  void _startOnce() {
-    if (_startedOnce) return;
-    _startedOnce = true;
-    unawaited(checkAtStartup());
-  }
+  void _startOnce() => unawaited(checkAtStartup());
 
   /// The check at startup: silent unless there is something to offer.
-  Future<void> checkAtStartup() async {
-    _startedOnce = true;
+  ///
+  /// Once per process: every caller shares the one run, so a second call can
+  /// never override what the first found — a failed update's notice above
+  /// all, whose record the first run has already cleared.
+  Future<void> checkAtStartup() => _atStartup ??= _checkAtStartup();
+
+  Future<void> _checkAtStartup() async {
     if (!ref.read(isReleaseBuildProvider)) return;
     if (!ref.read(preferencesControllerProvider).checksForUpdates) return;
 
@@ -111,7 +112,7 @@ class UpdateController extends Notifier<UpdateState> {
     final downloader = ref.read(downloaderProvider);
     final cancel = _download = CancelToken();
 
-    final folder = await Directory.systemTemp.createTemp('alexandria-update');
+    final folder = Directory.systemTemp.createTempSync('alexandria-update');
     final target = File(
       '${folder.path}${Platform.pathSeparator}${package.name}',
     );
@@ -142,18 +143,18 @@ class UpdateController extends Notifier<UpdateState> {
         cancel: cancel,
       );
 
-      final expected = checksumFor(await sumsFile.readAsString(), package.name);
+      final expected = checksumFor(sumsFile.readAsStringSync(), package.name);
       final actual = await downloader.sha256Of(target);
       if (expected == null || expected != actual) {
         _log.warning('update ${release.version} did not verify');
-        await folder.delete(recursive: true);
+        folder.deleteSync(recursive: true);
         state = UpdateState.verifyFailed(release: release);
         return;
       }
 
       state = UpdateState.readyToInstall(release: release, package: target);
     } on Object catch (error) {
-      if (folder.existsSync()) await folder.delete(recursive: true);
+      if (folder.existsSync()) folder.deleteSync(recursive: true);
       if (cancel.isCancelled) {
         state = offered;
         return;
@@ -175,9 +176,9 @@ class UpdateController extends Notifier<UpdateState> {
   /// did not. The record is cleared either way.
   Future<bool> _previousUpdateFailed() async {
     final store = await ref.read(pendingUpdateStoreProvider.future);
-    final pending = await store.read();
+    final pending = store.read();
     if (pending == null) return false;
-    await store.clear();
+    store.clear();
     if (!ref.mounted) return true;
 
     final running = AppVersion.parse(ref.read(appVersionProvider));

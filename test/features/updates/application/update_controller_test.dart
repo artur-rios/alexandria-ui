@@ -312,20 +312,20 @@ void main() {
     test(
       'GivenAMarkerToTheRunningVersion_WhenEvaluated_ThenClearedAndNoNotice',
       () async {
-        await PendingUpdateStore(support).write(from: '1.0.0', to: '1.1.0');
+        PendingUpdateStore(support).write(from: '1.0.0', to: '1.1.0');
         final sut = await build(latest: '1.1.0');
 
         await sut.ref.read(updateControllerProvider.notifier).checkAtStartup();
 
         expect(state(sut.ref), isA<UpdateIdle>());
-        expect(await PendingUpdateStore(support).read(), isNull);
+        expect(PendingUpdateStore(support).read(), isNull);
       },
     );
 
     test(
       'GivenAMarkerFromTheRunningVersion_WhenEvaluated_ThenPreviousUpdateFailedAndCleared',
       () async {
-        await PendingUpdateStore(support).write(from: '1.1.0', to: '1.2.0');
+        PendingUpdateStore(support).write(from: '1.1.0', to: '1.2.0');
         final sut = await build();
 
         await sut.ref.read(updateControllerProvider.notifier).checkAtStartup();
@@ -334,7 +334,7 @@ void main() {
           state(sut.ref),
           const UpdateState.previousUpdateFailed(to: '1.2.0'),
         );
-        expect(await PendingUpdateStore(support).read(), isNull);
+        expect(PendingUpdateStore(support).read(), isNull);
       },
     );
   });

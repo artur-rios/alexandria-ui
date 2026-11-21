@@ -144,6 +144,7 @@ import '../../features/tracking/domain/watch_progress_gateway.dart';
 import '../../features/shell/domain/shell_destination.dart';
 import '../../features/shell/domain/window_placement.dart';
 import '../../features/updates/application/update_controller.dart';
+import '../../features/updates/application/update_prompt_presence.dart';
 import '../../features/updates/application/update_state.dart';
 import '../../features/updates/data/github_release_source.dart';
 import '../../features/updates/data/http_downloader.dart';
@@ -1001,6 +1002,10 @@ final pendingUpdateStoreProvider = FutureProvider<PendingUpdateStore>(
     await ref.read(corePathsProvider).resolveApplicationDirectory(),
   ),
 );
+
+/// Whether the update prompt is on screen.
+final updatePromptPresenceProvider =
+    NotifierProvider<UpdatePromptPresence, bool>(UpdatePromptPresence.new);
 
 /// The update check and the update itself (update-check design).
 final updateControllerProvider =

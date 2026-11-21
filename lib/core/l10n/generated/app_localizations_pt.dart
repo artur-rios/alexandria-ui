@@ -1744,4 +1744,76 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get libraryRemoveRunning =>
       'Esta biblioteca está sendo analisada. Pause ou cancele a análise e depois remova-a.';
+
+  @override
+  String updateAvailableTitle(String version) {
+    return 'O Alexandria $version está disponível';
+  }
+
+  @override
+  String updateYouHave(String current) {
+    return 'Você tem a $current.';
+  }
+
+  @override
+  String get updateWhatsNew => 'Novidades';
+
+  @override
+  String get updateNow => 'Atualizar agora';
+
+  @override
+  String get updateLater => 'Depois';
+
+  @override
+  String get updateSkip => 'Pular esta versão';
+
+  @override
+  String get updateOpenPage => 'Abrir página da versão';
+
+  @override
+  String get updateClose => 'Fechar';
+
+  @override
+  String get updateCancel => 'Cancelar';
+
+  @override
+  String updateDownloading(String received, String total) {
+    return 'Baixando… $received de $total';
+  }
+
+  @override
+  String get updateDownloadFailed => 'Não foi possível baixar a atualização.';
+
+  @override
+  String get updateVerifyFailed =>
+      'Não foi possível verificar o download, então ele não foi instalado.';
+
+  @override
+  String get updateInstalling =>
+      'Fechando o Alexandria para instalar a atualização…';
+
+  @override
+  String updatePreviousFailed(String to) {
+    return 'A atualização para a $to não foi concluída.';
+  }
+
+  @override
+  String get updateManual =>
+      'Esta cópia do Alexandria não consegue se atualizar sozinha. Baixe a nova versão na página da versão.';
+
+  @override
+  String get updatesCheckLabel => 'Procurar atualizações ao iniciar';
+
+  @override
+  String get updatesCheckDescription =>
+      'Consulta o GitHub pela versão mais recente. Nada mais é enviado.';
+
+  @override
+  String get updatesCheckNow => 'Verificar agora';
+
+  @override
+  String get updatesUpToDate => 'Você está com a versão mais recente.';
+
+  @override
+  String get updatesCheckFailed => 'Não foi possível procurar atualizações.';
 }

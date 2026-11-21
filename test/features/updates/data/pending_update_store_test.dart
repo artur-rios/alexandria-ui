@@ -14,30 +14,30 @@ void main() {
   test('GivenAWrittenMarker_WhenRead_ThenFromAndTo', () async {
     final store = PendingUpdateStore(folder);
 
-    await store.write(from: '1.1.0', to: '1.2.0');
+    store.write(from: '1.1.0', to: '1.2.0');
 
-    expect(await store.read(), (from: '1.1.0', to: '1.2.0'));
+    expect(store.read(), (from: '1.1.0', to: '1.2.0'));
     expect(File('${folder.path}/update-pending.json').existsSync(), isTrue);
   });
 
   test('GivenNoMarker_WhenRead_ThenNull', () async {
-    expect(await PendingUpdateStore(folder).read(), isNull);
+    expect(PendingUpdateStore(folder).read(), isNull);
   });
 
   test('GivenAGarbledMarker_WhenRead_ThenNullAndDeleted', () async {
     final file = File('${folder.path}/update-pending.json')
       ..writeAsStringSync('{not json');
 
-    expect(await PendingUpdateStore(folder).read(), isNull);
+    expect(PendingUpdateStore(folder).read(), isNull);
     expect(file.existsSync(), isFalse);
   });
 
   test('GivenAMarker_WhenCleared_ThenGone', () async {
     final store = PendingUpdateStore(folder);
-    await store.write(from: '1.1.0', to: '1.2.0');
+    store.write(from: '1.1.0', to: '1.2.0');
 
-    await store.clear();
+    store.clear();
 
-    expect(await store.read(), isNull);
+    expect(store.read(), isNull);
   });
 }

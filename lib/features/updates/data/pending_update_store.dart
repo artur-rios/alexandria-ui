@@ -17,9 +17,11 @@ class PendingUpdateStore {
   File get _file => File('${supportDirectory.path}/update-pending.json');
 
   /// Records an update from [from] to [to], about to start.
-  Future<void> write({required String from, required String to}) async {
-    await supportDirectory.create(recursive: true);
-    await _file.writeAsString(
+  void write({required String from, required String to}) {
+    // Synchronous: the record is a few bytes, written as the application
+    // closes, and read once at start.
+    supportDirectory.createSync(recursive: true);
+    _file.writeAsStringSync(
       jsonEncode({
         'from': from,
         'to': to,
@@ -30,24 +32,24 @@ class PendingUpdateStore {
 
   /// The pending update, or null when there is none. An unreadable record
   /// is deleted and answers null: it can only have been cut short.
-  Future<({String from, String to})?> read() async {
+  ({String from, String to})? read() {
     final file = _file;
     if (!file.existsSync()) return null;
 
     try {
-      final json = jsonDecode(await file.readAsString());
+      final json = jsonDecode(file.readAsStringSync());
       if (json case {'from': final String from, 'to': final String to}) {
         return (from: from, to: to);
       }
     } on FormatException {
       // Fall through to deleting it.
     }
-    await clear();
+    clear();
     return null;
   }
 
   /// Forgets the pending update.
-  Future<void> clear() async {
-    if (_file.existsSync()) await _file.delete();
+  void clear() {
+    if (_file.existsSync()) _file.deleteSync();
   }
 }

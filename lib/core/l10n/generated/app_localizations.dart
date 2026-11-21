@@ -3001,6 +3001,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This library is being scanned. Pause or cancel the scan, then remove it.'**
   String get libraryRemoveRunning;
+
+  /// Title of the update prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Alexandria {version} is available'**
+  String updateAvailableTitle(String version);
+
+  /// Under the update title: the running version.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {current}.'**
+  String updateYouHave(String current);
+
+  /// Heading above the release notes in the update prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get updateWhatsNew;
+
+  /// Starts downloading and installing the update.
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get updateNow;
+
+  /// Closes the update prompt; it is asked again at the next start.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// Stops offering this version; a newer one is offered again.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this version'**
+  String get updateSkip;
+
+  /// Opens the release page in the browser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open release page'**
+  String get updateOpenPage;
+
+  /// Closes an update notice.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get updateClose;
+
+  /// Stops the update download.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get updateCancel;
+
+  /// Progress of the update download, sizes already formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading… {received} of {total}'**
+  String updateDownloading(String received, String total);
+
+  /// Said when the update download failed.
+  ///
+  /// In en, this message translates to:
+  /// **'The update could not be downloaded.'**
+  String get updateDownloadFailed;
+
+  /// Said when the downloaded update did not match its published checksum.
+  ///
+  /// In en, this message translates to:
+  /// **'The download could not be verified, so it was not installed.'**
+  String get updateVerifyFailed;
+
+  /// Said while the application closes to install the update.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing Alexandria to install the update…'**
+  String get updateInstalling;
+
+  /// Said at start when the last update did not complete.
+  ///
+  /// In en, this message translates to:
+  /// **'The update to {to} did not complete.'**
+  String updatePreviousFailed(String to);
+
+  /// Said when this kind of installation cannot install the update itself.
+  ///
+  /// In en, this message translates to:
+  /// **'This copy of Alexandria can\'t update itself. Download the new version from the release page.'**
+  String get updateManual;
+
+  /// Preferences switch for the startup update check.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates at startup'**
+  String get updatesCheckLabel;
+
+  /// Under the update check switch: what it sends.
+  ///
+  /// In en, this message translates to:
+  /// **'Asks GitHub for the latest release. Nothing else is sent.'**
+  String get updatesCheckDescription;
+
+  /// Preferences button that checks for an update now.
+  ///
+  /// In en, this message translates to:
+  /// **'Check now'**
+  String get updatesCheckNow;
+
+  /// Said when Check now finds nothing newer.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re up to date.'**
+  String get updatesUpToDate;
+
+  /// Said when Check now could not reach the release server.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check for updates.'**
+  String get updatesCheckFailed;
 }
 
 class _AppLocalizationsDelegate

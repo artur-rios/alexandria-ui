@@ -2314,5 +2314,108 @@
   "libraryRemoveRunning": "This library is being scanned. Pause or cancel the scan, then remove it.",
   "@libraryRemoveRunning": {
     "description": "Said when a library is removed while its scan is running, which the core refuses."
+  },
+  "updateAvailableTitle": "Alexandria {version} is available",
+  "@updateAvailableTitle": {
+    "description": "Title of the update prompt.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateYouHave": "You have {current}.",
+  "@updateYouHave": {
+    "description": "Under the update title: the running version.",
+    "placeholders": {
+      "current": {
+        "type": "String"
+      }
+    }
+  },
+  "updateWhatsNew": "What's new",
+  "@updateWhatsNew": {
+    "description": "Heading above the release notes in the update prompt."
+  },
+  "updateNow": "Update now",
+  "@updateNow": {
+    "description": "Starts downloading and installing the update."
+  },
+  "updateLater": "Later",
+  "@updateLater": {
+    "description": "Closes the update prompt; it is asked again at the next start."
+  },
+  "updateSkip": "Skip this version",
+  "@updateSkip": {
+    "description": "Stops offering this version; a newer one is offered again."
+  },
+  "updateOpenPage": "Open release page",
+  "@updateOpenPage": {
+    "description": "Opens the release page in the browser."
+  },
+  "updateClose": "Close",
+  "@updateClose": {
+    "description": "Closes an update notice."
+  },
+  "updateCancel": "Cancel",
+  "@updateCancel": {
+    "description": "Stops the update download."
+  },
+  "updateDownloading": "Downloading… {received} of {total}",
+  "@updateDownloading": {
+    "description": "Progress of the update download, sizes already formatted.",
+    "placeholders": {
+      "received": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "updateDownloadFailed": "The update could not be downloaded.",
+  "@updateDownloadFailed": {
+    "description": "Said when the update download failed."
+  },
+  "updateVerifyFailed": "The download could not be verified, so it was not installed.",
+  "@updateVerifyFailed": {
+    "description": "Said when the downloaded update did not match its published checksum."
+  },
+  "updateInstalling": "Closing Alexandria to install the update…",
+  "@updateInstalling": {
+    "description": "Said while the application closes to install the update."
+  },
+  "updatePreviousFailed": "The update to {to} did not complete.",
+  "@updatePreviousFailed": {
+    "description": "Said at start when the last update did not complete.",
+    "placeholders": {
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "updateManual": "This copy of Alexandria can't update itself. Download the new version from the release page.",
+  "@updateManual": {
+    "description": "Said when this kind of installation cannot install the update itself."
+  },
+  "updatesCheckLabel": "Check for updates at startup",
+  "@updatesCheckLabel": {
+    "description": "Preferences switch for the startup update check."
+  },
+  "updatesCheckDescription": "Asks GitHub for the latest release. Nothing else is sent.",
+  "@updatesCheckDescription": {
+    "description": "Under the update check switch: what it sends."
+  },
+  "updatesCheckNow": "Check now",
+  "@updatesCheckNow": {
+    "description": "Preferences button that checks for an update now."
+  },
+  "updatesUpToDate": "You're up to date.",
+  "@updatesUpToDate": {
+    "description": "Said when Check now finds nothing newer."
+  },
+  "updatesCheckFailed": "Couldn't check for updates.",
+  "@updatesCheckFailed": {
+    "description": "Said when Check now could not reach the release server."
   }
 }

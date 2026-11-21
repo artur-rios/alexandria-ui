@@ -1740,4 +1740,75 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get libraryRemoveRunning =>
       'This library is being scanned. Pause or cancel the scan, then remove it.';
+
+  @override
+  String updateAvailableTitle(String version) {
+    return 'Alexandria $version is available';
+  }
+
+  @override
+  String updateYouHave(String current) {
+    return 'You have $current.';
+  }
+
+  @override
+  String get updateWhatsNew => 'What\'s new';
+
+  @override
+  String get updateNow => 'Update now';
+
+  @override
+  String get updateLater => 'Later';
+
+  @override
+  String get updateSkip => 'Skip this version';
+
+  @override
+  String get updateOpenPage => 'Open release page';
+
+  @override
+  String get updateClose => 'Close';
+
+  @override
+  String get updateCancel => 'Cancel';
+
+  @override
+  String updateDownloading(String received, String total) {
+    return 'Downloading… $received of $total';
+  }
+
+  @override
+  String get updateDownloadFailed => 'The update could not be downloaded.';
+
+  @override
+  String get updateVerifyFailed =>
+      'The download could not be verified, so it was not installed.';
+
+  @override
+  String get updateInstalling => 'Closing Alexandria to install the update…';
+
+  @override
+  String updatePreviousFailed(String to) {
+    return 'The update to $to did not complete.';
+  }
+
+  @override
+  String get updateManual =>
+      'This copy of Alexandria can\'t update itself. Download the new version from the release page.';
+
+  @override
+  String get updatesCheckLabel => 'Check for updates at startup';
+
+  @override
+  String get updatesCheckDescription =>
+      'Asks GitHub for the latest release. Nothing else is sent.';
+
+  @override
+  String get updatesCheckNow => 'Check now';
+
+  @override
+  String get updatesUpToDate => 'You\'re up to date.';
+
+  @override
+  String get updatesCheckFailed => 'Couldn\'t check for updates.';
 }
