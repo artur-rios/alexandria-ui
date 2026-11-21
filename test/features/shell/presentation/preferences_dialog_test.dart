@@ -519,4 +519,36 @@ void main() {
       expect(find.text(l10n.updatesCheckNow), findsNothing);
     });
   });
+
+  testWidgets(
+    'GivenThePromptOpenedFromCheckNow_WhenEveryRouteIsClosed_ThenItCanOpenAgain',
+    (tester) async {
+      // A session the core rejects closes every route, Preferences and the
+      // prompt over it included. The prompt must not stay "open" after that.
+      final container = await tester.pumpShell(
+        extraOverrides: [
+          appVersionProvider.overrideWithValue('1.1.0'),
+          releaseSourceProvider.overrideWithValue(
+            FakeReleaseSource(aRelease('1.2.0')),
+          ),
+          installKindProbeProvider.overrideWithValue(FakeInstallKindProbe()),
+        ],
+      );
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
+      await tester.openSettingsMenuEntry(l10n.preferencesLabel);
+      await tester.tap(find.text(l10n.updatesCheckNow));
+      await tester.pumpAndSettle();
+      expect(container.read(updatePromptPresenceProvider), isTrue);
+
+      Navigator.of(
+        tester.element(find.byType(ShellScreen)),
+      ).popUntil((route) => route.isFirst);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(container.read(updatePromptPresenceProvider), isFalse);
+    },
+  );
 }

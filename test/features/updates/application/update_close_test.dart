@@ -95,6 +95,32 @@ void main() {
   AppLocalizations messages(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(ShellScreen)));
 
+  testWidgets(
+    'GivenTheInstallerFailsToStart_WhenClosing_ThenTheAppStaysAndTheRecordGoes',
+    (tester) async {
+      final sut = await openShell(tester);
+      sut.installer.failWith = const ProcessException('setsid', []);
+      final begunBefore = sut.activity.beginCount;
+
+      final closing = closeForUpdate(
+        tester.element(find.byType(ShellScreen)),
+        sut.ref,
+        release: aRelease('1.2.0'),
+        package: package,
+      );
+      await tester.pumpAndSettle();
+
+      expect(await closing, CloseForUpdate.failed);
+      expect(sut.exits, isEmpty);
+      expect(pendingStoreIn(support).read(), isNull);
+      expect(
+        sut.activity.beginCount,
+        begunBefore + 1,
+        reason: 'the session was left with its activities ended',
+      );
+    },
+  );
+
   testWidgets('GivenUnsavedEdits_WhenDeclined_ThenNothingRuns', (tester) async {
     final sut = await openShell(tester, unsaved: true);
 
@@ -109,7 +135,7 @@ void main() {
     await tester.tap(find.text(messages(tester).updateCancel));
     await tester.pumpAndSettle();
 
-    expect(await closing, isFalse);
+    expect(await closing, CloseForUpdate.declined);
     expect(sut.installer.launches, isEmpty);
     expect(sut.exits, isEmpty);
     expect(pendingStoreIn(support).read(), isNull);
@@ -133,7 +159,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(await closing, isTrue);
+      expect(await closing, CloseForUpdate.launched);
       expect(pendingStoreIn(support).read(), (from: '1.1.0', to: '1.2.0'));
       expect(sut.installer.launches.single.package, package.path);
       expect(
@@ -158,7 +184,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(await closing, isTrue);
+      expect(await closing, CloseForUpdate.launched);
       expect(sut.activity.endCount, endedBefore + 1);
       expect(sut.installer.launches, hasLength(1));
       expect(sut.exits, [0]);

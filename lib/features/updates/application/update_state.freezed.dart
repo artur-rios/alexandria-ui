@@ -55,7 +55,7 @@ extension UpdateStatePatterns on UpdateState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( UpdateIdle value)?  idle,TResult Function( UpdateChecking value)?  checking,TResult Function( UpdateUpToDate value)?  upToDate,TResult Function( UpdateCheckFailed value)?  checkFailed,TResult Function( UpdateAvailable value)?  available,TResult Function( UpdateDownloading value)?  downloading,TResult Function( UpdateDownloadFailed value)?  downloadFailed,TResult Function( UpdateVerifyFailed value)?  verifyFailed,TResult Function( UpdateReadyToInstall value)?  readyToInstall,TResult Function( UpdatePreviousFailed value)?  previousUpdateFailed,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( UpdateIdle value)?  idle,TResult Function( UpdateChecking value)?  checking,TResult Function( UpdateUpToDate value)?  upToDate,TResult Function( UpdateCheckFailed value)?  checkFailed,TResult Function( UpdateAvailable value)?  available,TResult Function( UpdateDownloading value)?  downloading,TResult Function( UpdateDownloadFailed value)?  downloadFailed,TResult Function( UpdateVerifyFailed value)?  verifyFailed,TResult Function( UpdateReadyToInstall value)?  readyToInstall,TResult Function( UpdateInstallFailed value)?  installFailed,TResult Function( UpdatePreviousFailed value)?  previousUpdateFailed,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case UpdateIdle() when idle != null:
@@ -67,7 +67,8 @@ return available(_that);case UpdateDownloading() when downloading != null:
 return downloading(_that);case UpdateDownloadFailed() when downloadFailed != null:
 return downloadFailed(_that);case UpdateVerifyFailed() when verifyFailed != null:
 return verifyFailed(_that);case UpdateReadyToInstall() when readyToInstall != null:
-return readyToInstall(_that);case UpdatePreviousFailed() when previousUpdateFailed != null:
+return readyToInstall(_that);case UpdateInstallFailed() when installFailed != null:
+return installFailed(_that);case UpdatePreviousFailed() when previousUpdateFailed != null:
 return previousUpdateFailed(_that);case _:
   return orElse();
 
@@ -86,7 +87,7 @@ return previousUpdateFailed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( UpdateIdle value)  idle,required TResult Function( UpdateChecking value)  checking,required TResult Function( UpdateUpToDate value)  upToDate,required TResult Function( UpdateCheckFailed value)  checkFailed,required TResult Function( UpdateAvailable value)  available,required TResult Function( UpdateDownloading value)  downloading,required TResult Function( UpdateDownloadFailed value)  downloadFailed,required TResult Function( UpdateVerifyFailed value)  verifyFailed,required TResult Function( UpdateReadyToInstall value)  readyToInstall,required TResult Function( UpdatePreviousFailed value)  previousUpdateFailed,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( UpdateIdle value)  idle,required TResult Function( UpdateChecking value)  checking,required TResult Function( UpdateUpToDate value)  upToDate,required TResult Function( UpdateCheckFailed value)  checkFailed,required TResult Function( UpdateAvailable value)  available,required TResult Function( UpdateDownloading value)  downloading,required TResult Function( UpdateDownloadFailed value)  downloadFailed,required TResult Function( UpdateVerifyFailed value)  verifyFailed,required TResult Function( UpdateReadyToInstall value)  readyToInstall,required TResult Function( UpdateInstallFailed value)  installFailed,required TResult Function( UpdatePreviousFailed value)  previousUpdateFailed,}){
 final _that = this;
 switch (_that) {
 case UpdateIdle():
@@ -98,7 +99,8 @@ return available(_that);case UpdateDownloading():
 return downloading(_that);case UpdateDownloadFailed():
 return downloadFailed(_that);case UpdateVerifyFailed():
 return verifyFailed(_that);case UpdateReadyToInstall():
-return readyToInstall(_that);case UpdatePreviousFailed():
+return readyToInstall(_that);case UpdateInstallFailed():
+return installFailed(_that);case UpdatePreviousFailed():
 return previousUpdateFailed(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -113,7 +115,7 @@ return previousUpdateFailed(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( UpdateIdle value)?  idle,TResult? Function( UpdateChecking value)?  checking,TResult? Function( UpdateUpToDate value)?  upToDate,TResult? Function( UpdateCheckFailed value)?  checkFailed,TResult? Function( UpdateAvailable value)?  available,TResult? Function( UpdateDownloading value)?  downloading,TResult? Function( UpdateDownloadFailed value)?  downloadFailed,TResult? Function( UpdateVerifyFailed value)?  verifyFailed,TResult? Function( UpdateReadyToInstall value)?  readyToInstall,TResult? Function( UpdatePreviousFailed value)?  previousUpdateFailed,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( UpdateIdle value)?  idle,TResult? Function( UpdateChecking value)?  checking,TResult? Function( UpdateUpToDate value)?  upToDate,TResult? Function( UpdateCheckFailed value)?  checkFailed,TResult? Function( UpdateAvailable value)?  available,TResult? Function( UpdateDownloading value)?  downloading,TResult? Function( UpdateDownloadFailed value)?  downloadFailed,TResult? Function( UpdateVerifyFailed value)?  verifyFailed,TResult? Function( UpdateReadyToInstall value)?  readyToInstall,TResult? Function( UpdateInstallFailed value)?  installFailed,TResult? Function( UpdatePreviousFailed value)?  previousUpdateFailed,}){
 final _that = this;
 switch (_that) {
 case UpdateIdle() when idle != null:
@@ -125,7 +127,8 @@ return available(_that);case UpdateDownloading() when downloading != null:
 return downloading(_that);case UpdateDownloadFailed() when downloadFailed != null:
 return downloadFailed(_that);case UpdateVerifyFailed() when verifyFailed != null:
 return verifyFailed(_that);case UpdateReadyToInstall() when readyToInstall != null:
-return readyToInstall(_that);case UpdatePreviousFailed() when previousUpdateFailed != null:
+return readyToInstall(_that);case UpdateInstallFailed() when installFailed != null:
+return installFailed(_that);case UpdatePreviousFailed() when previousUpdateFailed != null:
 return previousUpdateFailed(_that);case _:
   return null;
 
@@ -143,7 +146,7 @@ return previousUpdateFailed(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function()?  checking,TResult Function()?  upToDate,TResult Function()?  checkFailed,TResult Function( ReleaseInfo release,  InstallKind kind,  bool canInstall)?  available,TResult Function( ReleaseInfo release,  int received,  int total)?  downloading,TResult Function( ReleaseInfo release)?  downloadFailed,TResult Function( ReleaseInfo release)?  verifyFailed,TResult Function( ReleaseInfo release,  File package)?  readyToInstall,TResult Function( String to)?  previousUpdateFailed,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  idle,TResult Function()?  checking,TResult Function()?  upToDate,TResult Function()?  checkFailed,TResult Function( ReleaseInfo release,  InstallKind kind,  bool canInstall)?  available,TResult Function( ReleaseInfo release,  int received,  int total)?  downloading,TResult Function( ReleaseInfo release)?  downloadFailed,TResult Function( ReleaseInfo release)?  verifyFailed,TResult Function( ReleaseInfo release,  File package)?  readyToInstall,TResult Function( ReleaseInfo release)?  installFailed,TResult Function( String to)?  previousUpdateFailed,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case UpdateIdle() when idle != null:
 return idle();case UpdateChecking() when checking != null:
@@ -154,7 +157,8 @@ return available(_that.release,_that.kind,_that.canInstall);case UpdateDownloadi
 return downloading(_that.release,_that.received,_that.total);case UpdateDownloadFailed() when downloadFailed != null:
 return downloadFailed(_that.release);case UpdateVerifyFailed() when verifyFailed != null:
 return verifyFailed(_that.release);case UpdateReadyToInstall() when readyToInstall != null:
-return readyToInstall(_that.release,_that.package);case UpdatePreviousFailed() when previousUpdateFailed != null:
+return readyToInstall(_that.release,_that.package);case UpdateInstallFailed() when installFailed != null:
+return installFailed(_that.release);case UpdatePreviousFailed() when previousUpdateFailed != null:
 return previousUpdateFailed(_that.to);case _:
   return orElse();
 
@@ -173,7 +177,7 @@ return previousUpdateFailed(_that.to);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function()  checking,required TResult Function()  upToDate,required TResult Function()  checkFailed,required TResult Function( ReleaseInfo release,  InstallKind kind,  bool canInstall)  available,required TResult Function( ReleaseInfo release,  int received,  int total)  downloading,required TResult Function( ReleaseInfo release)  downloadFailed,required TResult Function( ReleaseInfo release)  verifyFailed,required TResult Function( ReleaseInfo release,  File package)  readyToInstall,required TResult Function( String to)  previousUpdateFailed,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  idle,required TResult Function()  checking,required TResult Function()  upToDate,required TResult Function()  checkFailed,required TResult Function( ReleaseInfo release,  InstallKind kind,  bool canInstall)  available,required TResult Function( ReleaseInfo release,  int received,  int total)  downloading,required TResult Function( ReleaseInfo release)  downloadFailed,required TResult Function( ReleaseInfo release)  verifyFailed,required TResult Function( ReleaseInfo release,  File package)  readyToInstall,required TResult Function( ReleaseInfo release)  installFailed,required TResult Function( String to)  previousUpdateFailed,}) {final _that = this;
 switch (_that) {
 case UpdateIdle():
 return idle();case UpdateChecking():
@@ -184,7 +188,8 @@ return available(_that.release,_that.kind,_that.canInstall);case UpdateDownloadi
 return downloading(_that.release,_that.received,_that.total);case UpdateDownloadFailed():
 return downloadFailed(_that.release);case UpdateVerifyFailed():
 return verifyFailed(_that.release);case UpdateReadyToInstall():
-return readyToInstall(_that.release,_that.package);case UpdatePreviousFailed():
+return readyToInstall(_that.release,_that.package);case UpdateInstallFailed():
+return installFailed(_that.release);case UpdatePreviousFailed():
 return previousUpdateFailed(_that.to);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -199,7 +204,7 @@ return previousUpdateFailed(_that.to);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function()?  checking,TResult? Function()?  upToDate,TResult? Function()?  checkFailed,TResult? Function( ReleaseInfo release,  InstallKind kind,  bool canInstall)?  available,TResult? Function( ReleaseInfo release,  int received,  int total)?  downloading,TResult? Function( ReleaseInfo release)?  downloadFailed,TResult? Function( ReleaseInfo release)?  verifyFailed,TResult? Function( ReleaseInfo release,  File package)?  readyToInstall,TResult? Function( String to)?  previousUpdateFailed,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  idle,TResult? Function()?  checking,TResult? Function()?  upToDate,TResult? Function()?  checkFailed,TResult? Function( ReleaseInfo release,  InstallKind kind,  bool canInstall)?  available,TResult? Function( ReleaseInfo release,  int received,  int total)?  downloading,TResult? Function( ReleaseInfo release)?  downloadFailed,TResult? Function( ReleaseInfo release)?  verifyFailed,TResult? Function( ReleaseInfo release,  File package)?  readyToInstall,TResult? Function( ReleaseInfo release)?  installFailed,TResult? Function( String to)?  previousUpdateFailed,}) {final _that = this;
 switch (_that) {
 case UpdateIdle() when idle != null:
 return idle();case UpdateChecking() when checking != null:
@@ -210,7 +215,8 @@ return available(_that.release,_that.kind,_that.canInstall);case UpdateDownloadi
 return downloading(_that.release,_that.received,_that.total);case UpdateDownloadFailed() when downloadFailed != null:
 return downloadFailed(_that.release);case UpdateVerifyFailed() when verifyFailed != null:
 return verifyFailed(_that.release);case UpdateReadyToInstall() when readyToInstall != null:
-return readyToInstall(_that.release,_that.package);case UpdatePreviousFailed() when previousUpdateFailed != null:
+return readyToInstall(_that.release,_that.package);case UpdateInstallFailed() when installFailed != null:
+return installFailed(_that.release);case UpdatePreviousFailed() when previousUpdateFailed != null:
 return previousUpdateFailed(_that.to);case _:
   return null;
 
@@ -681,6 +687,72 @@ class _$UpdateReadyToInstallCopyWithImpl<$Res>
 release: null == release ? _self.release : release // ignore: cast_nullable_to_non_nullable
 as ReleaseInfo,package: null == package ? _self.package : package // ignore: cast_nullable_to_non_nullable
 as File,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class UpdateInstallFailed implements UpdateState {
+  const UpdateInstallFailed({required this.release});
+  
+
+ final  ReleaseInfo release;
+
+/// Create a copy of UpdateState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$UpdateInstallFailedCopyWith<UpdateInstallFailed> get copyWith => _$UpdateInstallFailedCopyWithImpl<UpdateInstallFailed>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UpdateInstallFailed&&(identical(other.release, release) || other.release == release));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,release);
+
+@override
+String toString() {
+  return 'UpdateState.installFailed(release: $release)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $UpdateInstallFailedCopyWith<$Res> implements $UpdateStateCopyWith<$Res> {
+  factory $UpdateInstallFailedCopyWith(UpdateInstallFailed value, $Res Function(UpdateInstallFailed) _then) = _$UpdateInstallFailedCopyWithImpl;
+@useResult
+$Res call({
+ ReleaseInfo release
+});
+
+
+
+
+}
+/// @nodoc
+class _$UpdateInstallFailedCopyWithImpl<$Res>
+    implements $UpdateInstallFailedCopyWith<$Res> {
+  _$UpdateInstallFailedCopyWithImpl(this._self, this._then);
+
+  final UpdateInstallFailed _self;
+  final $Res Function(UpdateInstallFailed) _then;
+
+/// Create a copy of UpdateState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? release = null,}) {
+  return _then(UpdateInstallFailed(
+release: null == release ? _self.release : release // ignore: cast_nullable_to_non_nullable
+as ReleaseInfo,
   ));
 }
 

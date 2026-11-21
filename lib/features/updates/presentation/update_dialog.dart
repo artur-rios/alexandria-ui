@@ -21,8 +21,11 @@ class UpdateDialog extends ConsumerWidget {
   /// Shows the prompt over [context] and waits until it closes. An offer the
   /// owner dismissed some other way counts as "later".
   static Future<void> show(BuildContext context, WidgetRef ref) async {
-    final presence = ref.read(updatePromptPresenceProvider.notifier);
-    if (ref.read(updatePromptPresenceProvider)) return;
+    // Read before waiting: the widget that asked may be gone by the time the
+    // prompt closes — a session ending closes every route at once.
+    final container = ProviderScope.containerOf(context, listen: false);
+    final presence = container.read(updatePromptPresenceProvider.notifier);
+    if (container.read(updatePromptPresenceProvider)) return;
     presence.mark(open: true);
     try {
       await showDialog<void>(
@@ -31,10 +34,10 @@ class UpdateDialog extends ConsumerWidget {
         builder: (_) => const UpdateDialog(),
       );
     } finally {
-      if (ref.context.mounted) presence.mark(open: false);
+      presence.mark(open: false);
     }
-    if (ref.read(updateControllerProvider) is UpdateAvailable) {
-      ref.read(updateControllerProvider.notifier).later();
+    if (container.read(updateControllerProvider) is UpdateAvailable) {
+      container.read(updateControllerProvider.notifier).later();
     }
   }
 
@@ -131,6 +134,15 @@ class UpdateDialog extends ConsumerWidget {
       UpdateVerifyFailed(:final release) => _notice(
         l10n,
         message: l10n.updateVerifyFailed,
+        onClose: () {
+          controller.dismiss();
+          close();
+        },
+        onOpenPage: () => openPage(release),
+      ),
+      UpdateInstallFailed(:final release) => _notice(
+        l10n,
+        message: l10n.updateInstallFailed,
         onClose: () {
           controller.dismiss();
           close();
@@ -238,16 +250,23 @@ class _InstallingState extends ConsumerState<_Installing> {
 
   Future<void> _install() async {
     if (!mounted) return;
+    final controller = ref.read(updateControllerProvider.notifier);
     final closed = await closeForUpdate(
       context,
       ref,
       release: widget.release,
       package: widget.package,
     );
-    // The owner kept unsaved work or a scan: the offer stands, and the
-    // downloaded package goes.
-    if (!closed && mounted) {
-      ref.read(updateControllerProvider.notifier).abandonInstall();
+    switch (closed) {
+      // The owner kept unsaved work or a scan: the offer stands, and the
+      // downloaded package goes.
+      case CloseForUpdate.declined:
+        controller.abandonInstall();
+      // The installer would not start: said, with the release page.
+      case CloseForUpdate.failed:
+        controller.installFailed();
+      case CloseForUpdate.launched:
+        break;
     }
   }
 

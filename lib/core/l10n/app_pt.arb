@@ -496,6 +496,7 @@
   "updateDownloading": "Baixando… {received} de {total}",
   "updateDownloadFailed": "Não foi possível baixar a atualização.",
   "updateVerifyFailed": "Não foi possível verificar o download, então ele não foi instalado.",
+  "updateInstallFailed": "Não foi possível iniciar a atualização, então esta versão continua em uso.",
   "updateInstalling": "Fechando o Alexandria para instalar a atualização…",
   "updatePreviousFailed": "A atualização para a {to} não foi concluída.",
   "updateManual": "Esta cópia do Alexandria não consegue se atualizar sozinha. Baixe a nova versão na página da versão.",

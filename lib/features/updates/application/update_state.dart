@@ -53,6 +53,10 @@ sealed class UpdateState with _$UpdateState {
   }) = UpdateReadyToInstall;
 
   /// The last start's update to [to] did not complete.
+  /// The installer could not be started; the running version stays.
+  const factory UpdateState.installFailed({required ReleaseInfo release}) =
+      UpdateInstallFailed;
+
   const factory UpdateState.previousUpdateFailed({required String to}) =
       UpdatePreviousFailed;
 }

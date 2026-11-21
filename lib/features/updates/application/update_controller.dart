@@ -28,6 +28,10 @@ class UpdateController extends Notifier<UpdateState> {
   static const String skippedVersionKey = 'updates.skippedVersion';
 
   Future<void>? _atStartup;
+
+  /// Set when the session ends mid-download, so the cancelled download
+  /// settles on idle rather than back on the offer.
+  bool _endedSession = false;
   CancelToken? _download;
 
   @override
@@ -50,13 +54,16 @@ class UpdateController extends Notifier<UpdateState> {
 
   Future<void> _checkAtStartup() async {
     if (!ref.read(isReleaseBuildProvider)) return;
+
+    // A failed update's notice wins over a new prompt this start — and is
+    // given whether or not the startup check is on, since "Check now" updates
+    // with it off.
+    if (await _previousUpdateFailed() || !ref.mounted) return;
+
     if (!ref.read(preferencesControllerProvider).checksForUpdates) return;
 
     final kind = ref.read(installKindProbeProvider).detect();
     if (kind == InstallKind.flatpak) return;
-
-    // A failed update's notice wins over a new prompt this start.
-    if (await _previousUpdateFailed() || !ref.mounted) return;
 
     try {
       final release = await ref.read(releaseSourceProvider).latest();
@@ -156,7 +163,8 @@ class UpdateController extends Notifier<UpdateState> {
     } on Object catch (error) {
       if (folder.existsSync()) folder.deleteSync(recursive: true);
       if (cancel.isCancelled) {
-        state = offered;
+        state = _endedSession ? const UpdateState.idle() : offered;
+        _endedSession = false;
         return;
       }
       _log.warning('update download failed: $error');
@@ -168,6 +176,29 @@ class UpdateController extends Notifier<UpdateState> {
 
   /// Stops a download in flight; the offer stands.
   void cancelDownload() => _download?.cancel();
+
+  /// The session ended: a download in flight stops, a downloaded package is
+  /// deleted, and nothing is left on offer.
+  void endSession() {
+    final current = state;
+    _download?.cancel();
+    if (current is UpdateReadyToInstall) {
+      final folder = current.package.parent;
+      if (folder.existsSync()) folder.deleteSync(recursive: true);
+    }
+    _endedSession = true;
+    state = const UpdateState.idle();
+  }
+
+  /// The installer could not be started: the package goes, and the owner is
+  /// told and pointed at the release page.
+  void installFailed() {
+    final ready = state;
+    if (ready is! UpdateReadyToInstall) return;
+    final folder = ready.package.parent;
+    if (folder.existsSync()) folder.deleteSync(recursive: true);
+    state = UpdateState.installFailed(release: ready.release);
+  }
 
   /// Goes back to the offer when the owner stopped the close, deleting the
   /// downloaded package: a later Update now downloads it afresh.

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:alexandria_ui/features/updates/data/pending_update_store.dart';
@@ -79,6 +80,10 @@ class FakeDownloader implements Downloader {
   /// Where each download was written, in order.
   final List<File> targets = [];
 
+  /// When set, a download writes its file and then waits for this — or for
+  /// a cancel — before finishing: a download in flight.
+  Completer<void>? gate;
+
   @override
   Future<File> download(
     Uri url,
@@ -92,8 +97,17 @@ class FakeDownloader implements Downloader {
     if (body == null || (cancel?.isCancelled ?? false)) {
       throw HttpException('no such file', uri: url);
     }
+    to.writeAsStringSync(body);
+    final waiting = gate;
+    if (waiting != null) {
+      await Future.any([waiting.future, ?cancel?.whenCancelled]);
+      if (cancel?.isCancelled ?? false) {
+        to.deleteSync();
+        throw HttpException('cancelled', uri: url);
+      }
+    }
     onProgress?.call(body.length, body.length);
-    return to..writeAsStringSync(body);
+    return to;
   }
 
   @override
@@ -111,16 +125,24 @@ class FakeUpdateInstaller implements UpdateInstaller {
   /// Every launch, in order.
   final List<({String package, String location, String from})> launches = [];
 
+  /// When set, launching throws this: the setup was quarantined, or `setsid`
+  /// is missing.
+  Exception? failWith;
+
   @override
   Future<void> launch({
     required File package,
     required String installLocation,
     required String fromVersion,
-  }) async => launches.add((
-    package: package.path,
-    location: installLocation,
-    from: fromVersion,
-  ));
+  }) async {
+    final failure = failWith;
+    if (failure != null) throw failure;
+    launches.add((
+      package: package.path,
+      location: installLocation,
+      from: fromVersion,
+    ));
+  }
 }
 
 /// The pending-update record in [folder], for tests in the layers that may

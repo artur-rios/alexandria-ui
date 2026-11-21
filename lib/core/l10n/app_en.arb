@@ -2381,6 +2381,10 @@
   "@updateVerifyFailed": {
     "description": "Said when the downloaded update did not match its published checksum."
   },
+  "updateInstallFailed": "The update could not be started, so this version is still the one running.",
+  "@updateInstallFailed": {
+    "description": "Said when the installer of a downloaded, verified update could not be started."
+  },
   "updateInstalling": "Closing Alexandria to install the update…",
   "@updateInstalling": {
     "description": "Said while the application closes to install the update."

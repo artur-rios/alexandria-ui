@@ -3074,6 +3074,12 @@ abstract class AppLocalizations {
   /// **'The download could not be verified, so it was not installed.'**
   String get updateVerifyFailed;
 
+  /// Said when the installer of a downloaded, verified update could not be started.
+  ///
+  /// In en, this message translates to:
+  /// **'The update could not be started, so this version is still the one running.'**
+  String get updateInstallFailed;
+
   /// Said while the application closes to install the update.
   ///
   /// In en, this message translates to:

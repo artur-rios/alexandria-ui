@@ -145,6 +145,7 @@ import '../../features/shell/domain/shell_destination.dart';
 import '../../features/shell/domain/window_placement.dart';
 import '../../features/updates/application/update_controller.dart';
 import '../../features/updates/application/update_prompt_presence.dart';
+import '../../features/updates/application/update_session_activity.dart';
 import '../../features/updates/application/update_state.dart';
 import '../../features/updates/data/github_release_source.dart';
 import '../../features/updates/data/http_downloader.dart';
@@ -961,6 +962,9 @@ final sessionActivitiesProvider = Provider<List<SessionActivity>>(
     SourceListCleanupActivity(
       () => ref.read(startupControllerProvider.notifier).settings,
     ),
+    // An update in flight, which a session ending cancels (update-check
+    // design §6).
+    UpdateSessionActivity(ref),
   ],
 );
 

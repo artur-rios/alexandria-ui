@@ -1785,6 +1785,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The download could not be verified, so it was not installed.';
 
   @override
+  String get updateInstallFailed =>
+      'The update could not be started, so this version is still the one running.';
+
+  @override
   String get updateInstalling => 'Closing Alexandria to install the update…';
 
   @override

@@ -1789,6 +1789,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não foi possível verificar o download, então ele não foi instalado.';
 
   @override
+  String get updateInstallFailed =>
+      'Não foi possível iniciar a atualização, então esta versão continua em uso.';
+
+  @override
   String get updateInstalling =>
       'Fechando o Alexandria para instalar a atualização…';
 
