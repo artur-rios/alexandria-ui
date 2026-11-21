@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/features/playback/domain/cover_gateway.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_position_store.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_session.dart';
 import 'package:alexandria_ui/features/playback/domain/playback_source.dart';
@@ -19,6 +22,12 @@ class FakePlaybackSourceGateway implements PlaybackSourceGateway {
   /// Every uuid resolved, in order.
   final List<String> resolved = [];
 
+  /// The path each file resolves to, when a test needs to tell them apart.
+  String Function(String uuid)? pathFor;
+
+  /// Files that resolve as missing on disk, whenever they are asked for.
+  final Set<String> failing = {};
+
   @override
   Future<PlaybackSourceOutcome> resolve({
     required String uuid,
@@ -26,10 +35,11 @@ class FakePlaybackSourceGateway implements PlaybackSourceGateway {
   }) async {
     resolved.add(uuid);
 
+    if (failing.contains(uuid)) return missingOnDisk;
     if (outcomes.isNotEmpty) return outcomes.removeAt(0);
 
     return PlaybackSourceOutcome.resolved(
-      source: PlaybackSource(uuid: uuid, path: path),
+      source: PlaybackSource(uuid: uuid, path: pathFor?.call(uuid) ?? path),
     );
   }
 
@@ -89,4 +99,15 @@ class FakePlaybackSession implements PlaybackSession {
     stopCount++;
     isActive = false;
   }
+}
+
+/// Covers a test hands out by file uuid; none by default.
+class FakeCoverGateway implements CoverGateway {
+  final Map<String, Uint8List> covers = {};
+
+  @override
+  Future<Uint8List?> cover({
+    required String uuid,
+    required String credential,
+  }) async => covers[uuid];
 }

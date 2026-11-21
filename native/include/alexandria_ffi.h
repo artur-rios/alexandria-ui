@@ -29,6 +29,16 @@
 #define INDEX_ERR_BUSY 5
 
 /**
+ * `alexandria_library_index_start` named no library (HTTP's `404`).
+ */
+#define INDEX_ERR_NOT_FOUND 6
+
+/**
+ * The library already has an unfinished run (FR-FC-43; HTTP's `409`).
+ */
+#define INDEX_ERR_CONFLICT 7
+
+/**
  * FFI status codes returned by file operations (UC-04+). Deliberately
  * separate from `INDEX_*` so a future use case can grow either set without
  * colliding; `FILE_OK == INDEX_OK == 0` by convention.
@@ -270,7 +280,7 @@
  *
  * Shared with `alexandria_index_resume` (UC-48), which reuses this same
  * struct shape for a call that is not starting anything new. That reuse
- * changes what `status` means: from `alexandria_index_start` and
+ * changes what `status` means: from `alexandria_library_index_start` and
  * `alexandria_index_refresh_start` it is one of the `INDEX_ERR_*`
  * constants, where `4` is `INDEX_ERR_OTHER`; from `alexandria_index_resume`
  * it is one of the `RUN_ERR_*` constants, where `4` is `RUN_ERR_NOT_FOUND`
@@ -434,7 +444,7 @@ typedef struct LibraryJsonResult {
 } LibraryJsonResult;
 
 /**
- * This core's version, as a NUL-terminated string such as `"0.5.0"`.
+ * This core's version, as a NUL-terminated string such as `"0.6.0"`.
  *
  * The pointer is to static storage owned by the library: it stays valid for
  * the life of the process and must **not** be passed to
@@ -472,35 +482,13 @@ int32_t alexandria_health_status_code(void);
 int alexandria_index_init(const char *db_path);
 
 /**
- * Start an asynchronous index scan of `root`. Returns a `IndexStartResult`
- * with a `run_id` and `status` (parity with HTTP 202 body). The scan runs in
- * the background on the FFI runtime; read results via the accessor functions.
- *
- * `priority` is `"low"` or `"normal"` (case-sensitive, matching the HTTP
- * body's spelling exactly — FR-FC-24). NULL or any other string is treated
- * as `"normal"`: a client that cannot spell the value gets the safe default
- * rather than a rejected call.
- *
- * `types` is the run's scope: a comma-separated list of the wire names
- * `FileType` reads back (`"video,image"`), the same words the HTTP body's
- * `types` array carries (FR-FC-24). NULL and the empty string are the same
- * absence and mean every type — see [`parse_scope`] for why an unrecognised
- * name is `INDEX_ERR_INVALID_INPUT` here where an unrecognised priority is
- * not.
- */
-struct IndexStartResult alexandria_index_start(const char *root,
-                                               const char *token,
-                                               const char *priority,
-                                               const char *types);
-
-/**
  * Start an asynchronous re-index/refresh of every cataloged path (UC-02).
  * Takes only a token (no root — refresh touches everything cataloged) and
  * returns a `IndexStartResult` with a `run_id` and `status` (parity with the
  * HTTP `POST /v1/index/refresh` 202 body). The refresh runs in the background
  * on the FFI runtime; read results via the accessor functions.
  *
- * `priority` is parsed exactly as `alexandria_index_start`'s is — see that
+ * `priority` is parsed exactly as `alexandria_library_index_start`'s is — see that
  * function's doc comment for the accepted spellings and the NULL/garbage
  * fallback.
  */
@@ -529,10 +517,9 @@ struct FileMetadataResult alexandria_file_edit_metadata(const char *uuid,
  * List/query files filtered by type and lifecycle state (UC-03 / FR-FC-12).
  *
  * `json_filters` is a JSON string `{"type":"video","state":"all"}` (empty
- * string or NULL for defaults). `{"includeLibraries":true}` reaches into
- * libraries, which is what a caller's search and deleted-items review need
- * (libraries design / FR-FC-38); without it a library's files are absent,
- * as they are from the type panels. The function deserializes it, calls the same
+ * string or NULL for defaults), answered across every library unless
+ * `"libraryUuid"` names one. The
+ * function deserializes it, calls the same
  * `BrowseFilesHandler` the HTTP route uses, and on success serializes the
  * returned `Vec<FileView>` back to a JSON array — each element the same
  * `{"file": …, "metadata": …, …}` shape `alexandria_file_get_by_uuid`
@@ -1110,7 +1097,7 @@ struct SettingsJsonResult alexandria_settings_json(const char *token);
 
 /**
  * Report an index or re-index run's status and outcome (UC-42 / FR-FC-28).
- * `run_id` is the id `alexandria_index_start` or
+ * `run_id` is the id `alexandria_library_index_start` or
  * `alexandria_index_refresh_start` returned. On success `json` carries the
  * same body the HTTP `GET /v1/index/runs/{runId}` route returns (FR-FC-24).
  *
@@ -1122,7 +1109,7 @@ struct RunJsonResult alexandria_index_run_status_json(const char *run_id, const 
 
 /**
  * The files a run could not record, oldest first (FR-FC-42). `run_id` is
- * the id `alexandria_index_start` or `alexandria_index_refresh_start`
+ * the id `alexandria_library_index_start` or `alexandria_index_refresh_start`
  * returned. On success `json` carries the same array the HTTP
  * `GET /v1/index/runs/{runId}/failures` route returns (FR-FC-24).
  *
@@ -1139,7 +1126,7 @@ struct RunJsonResult alexandria_index_run_failures_json(const char *run_id, cons
 
 /**
  * Pause a running index or re-index run where it stands, leaving it
- * resumable (UC-48 / FR-FC-32). `run_id` is the id `alexandria_index_start`
+ * resumable (UC-48 / FR-FC-32). `run_id` is the id `alexandria_library_index_start`
  * or `alexandria_index_refresh_start` returned; `token` is the bearer auth
  * token. Calls the same `RunControlHandler::pause` the HTTP route (Task 12)
  * calls.
@@ -1156,7 +1143,7 @@ int alexandria_index_pause(const char *run_id, const char *token);
 /**
  * Abandon a running or paused index or re-index run (UC-48 / FR-FC-34).
  * Terminal — a cancelled run is never resumed. `run_id` is the id
- * `alexandria_index_start` or `alexandria_index_refresh_start` returned;
+ * `alexandria_library_index_start` or `alexandria_index_refresh_start` returned;
  * `token` is the bearer auth token. Calls the same
  * `RunControlHandler::cancel` the HTTP route (Task 12) calls.
  *
@@ -1170,21 +1157,19 @@ int alexandria_index_cancel(const char *run_id, const char *token);
 
 /**
  * Put a paused index or re-index run back to work (UC-48 / FR-FC-33).
- * `run_id` is the id `alexandria_index_start` or `alexandria_index_refresh_start`
+ * `run_id` is the id `alexandria_library_index_start` or `alexandria_index_refresh_start`
  * returned; `token` is the bearer auth token. Returns the *same* `run_id` on
  * success — a resume does not mint a fresh run, it continues the one it was
- * given — wrapped in the same `IndexStartResult` `alexandria_index_start`
+ * given — wrapped in the same `IndexStartResult` `alexandria_library_index_start`
  * returns (parity of shape, not of meaning: `status` here is a `RUN_ERR_*`
  * code, because resume is part of run control, not of starting a fresh run).
  *
  * `RunControlHandler::resume` only records the state transition; it does not
  * walk anything. Spawning the walk is this function's job, exactly as
- * `alexandria_index_start` spawns its own — the handler is kept free of the
+ * `alexandria_library_index_start` spawns its own — the handler is kept free of the
  * runtime so `execute` is always spawned by whichever transport owns one.
  * Which handler gets spawned depends on `RunResumed::kind`: an index run
- * resumes into `index_handler.execute(&root, run_id, &scope)` — the scope
- * read back off the run, so a resumed segment covers the file types the run
- * was started with — a refresh into
+ * resumes into `index_handler.execute(&root, run_id)`, a refresh into
  * `refresh_handler.execute(run_id)` (a refresh carries no root — it touches
  * everything cataloged). A resumed index run whose stored `root` is somehow
  * absent — it should never be, every row `RunKind::Index` writes carries one
@@ -1193,7 +1178,7 @@ int alexandria_index_cancel(const char *run_id, const char *token);
  * actually resumes would have no way to notice.
  *
  * `priority` re-paces the run (FR-FC-08 / FR-FC-33): `"low"` or `"normal"`,
- * the same case-sensitive spelling `alexandria_index_start` accepts. Unlike
+ * the same case-sensitive spelling `alexandria_library_index_start` accepts. Unlike
  * there, NULL or an unrecognised string does **not** mean `"normal"` — it
  * means *keep the width this run already has*, which is what every caller
  * written before this parameter existed was asking for. Passing NULL is
@@ -1238,12 +1223,29 @@ struct RunJsonResult alexandria_index_runs_active_json(const char *token);
 void alexandria_free_string(char *ptr);
 
 /**
- * Treat a folder as a library (libraries design).
+ * Re-index one library (UC-01). `priority` is `"low"` or anything else
+ * (normal), lenient as every start is.
  *
- * `json_body` is the JSON body `POST /v1/libraries` takes (`name`,
- * `rootPath`). Whatever is already indexed beneath the folder is claimed by
- * this call. Answers `LIBRARY_ERR_CONFLICT` when the folder overlaps an
- * existing library.
+ * Answers `INDEX_OK` with the run id, `INDEX_ERR_NOT_FOUND` for an unknown
+ * library, `INDEX_ERR_CONFLICT` while it has an unfinished run (FR-FC-43),
+ * `INDEX_ERR_INVALID_INPUT` for a malformed uuid, `INDEX_ERR_UNAUTHORIZED`
+ * or `INDEX_ERR_NOT_INITIALIZED` — HTTP's `202`, `404`, `409`, `400`, `401`.
+ */
+struct IndexStartResult alexandria_library_index_start(const char *uuid,
+                                                       const char *token,
+                                                       const char *priority);
+
+/**
+ * Add a folder as a library and start indexing it (FR-FC-36).
+ *
+ * `json_body` is the JSON body `POST /v1/libraries` takes: `name`,
+ * `rootPath`, and an optional `priority` (`"low"`; anything else is normal)
+ * for the first run. On success `json` is the library with the `runId` of
+ * its first index run beside its fields; follow it with
+ * `alexandria_index_run_status_json`. Answers `LIBRARY_ERR_INVALID_INPUT` for
+ * a blank name or folder, a folder that does not exist or is not a folder,
+ * or one outside `filesystem.root`; `LIBRARY_ERR_CONFLICT` when the folder
+ * overlaps an existing library. A refusal stores nothing.
  */
 struct LibraryJsonResult alexandria_library_register(const char *json_body, const char *token);
 
@@ -1278,9 +1280,9 @@ struct LibraryJsonResult alexandria_library_browse(const char *uuid,
                                                    const char *token);
 
 /**
- * Stop treating a folder as a library.
- *
- * The files are kept and return to the type panels. On success `json`
+ * Remove a library and its catalog records (FR-FC-40); nothing on disk is
+ * touched. `LIBRARY_ERR_CONFLICT` while one of its runs is running
+ * (FR-FC-43), as HTTP answers `409`. On success `json`
  * carries an empty object rather than NULL, so a caller can tell success
  * from the failure codes without a special case.
  */

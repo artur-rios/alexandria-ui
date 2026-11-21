@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../library_sources/presentation/library_sources_screen.dart';
+import '../../libraries/presentation/libraries_view.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
@@ -12,6 +12,7 @@ import '../domain/catalog_file.dart';
 import '../domain/file_type.dart';
 import '../domain/listing_view.dart';
 import 'file_details_view.dart';
+import 'music_display_name.dart';
 import '../domain/view_layout.dart';
 
 /// The files of the selected type (UC-09, FR-CT-02, FR-CT-10).
@@ -254,7 +255,13 @@ class _FileGrid extends ConsumerWidget {
               ),
               Positioned.fill(
                 child: InkWell(
-                  onTap: () => openFile(context, ref, file),
+                  // A track plays through the listing in its order.
+                  onTap: () => openFile(
+                    context,
+                    ref,
+                    file,
+                    queue: ref.read(listingControllerProvider).value,
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.sm),
                     child: Column(
@@ -270,7 +277,7 @@ class _FileGrid extends ConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          file.name,
+                          displayName(file),
                           style: theme.textTheme.bodySmall,
                           textAlign: TextAlign.center,
                           maxLines: 2,
@@ -328,13 +335,21 @@ class _FileRow extends ConsumerWidget {
       // UC-13 main flow step 1: a row opens its file. The details are the
       // button at the end of the row, and are still where a file that cannot
       // be opened ends up (`openFile`).
-      onTap: () => openFile(context, ref, file),
+      // A track plays through the listing as it is sorted and filtered.
+      onTap: () => openFile(
+        context,
+        ref,
+        file,
+        queue: ref.read(listingControllerProvider).value,
+      ),
       leading: Icon(
         // Deliberately not one of the navigation panel's icons: a row and a
         // destination that draw the same glyph are two different things
         // claiming to be one.
         file.isMissing
             ? Icons.report_gmailerrorred_outlined
+            : file.type == FileType.audio
+            ? Icons.music_note_outlined
             : Icons.insert_drive_file_outlined,
         color: file.isMissing ? theme.colorScheme.error : null,
       ),
@@ -348,7 +363,7 @@ class _FileRow extends ConsumerWidget {
       title: detailed
           ? Row(
               children: [
-                Expanded(child: Text(file.name)),
+                Expanded(child: Text(displayName(file))),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
@@ -361,12 +376,27 @@ class _FileRow extends ConsumerWidget {
                 ),
               ],
             )
-          : Text(file.name),
+          : Text(displayName(file)),
+      // A track is named by its tags, with who and from what beneath; the
+      // path beside it in the detailed layout still tells two apart.
+      subtitle: switch (musicByline(file)) {
+        final String byline when file.type == FileType.audio => Text(byline),
+        _ => null,
+      },
       // A file the last refresh could not find is still an active record; it
       // is marked rather than hidden, and reviewing them is UC-37.
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (file.durationSeconds case final double seconds
+              when file.type == FileType.audio)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.sm),
+              child: Text(
+                formatDuration(seconds),
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
           if (file.isMissing)
             Text(
               l10n.catalogFileMissing,
@@ -457,9 +487,9 @@ class _EmptyListing extends ConsumerWidget {
             if (catalogEmpty && !filtered) ...[
               const SizedBox(height: AppSpacing.lg),
               FilledButton.icon(
-                onPressed: () => LibrarySourcesScreen.show(context),
+                onPressed: () => openLibrariesAndAdd(ref),
                 icon: const Icon(Icons.folder_outlined),
-                label: Text(l10n.catalogEmptyAddFolder),
+                label: Text(l10n.libraryAdd),
               ),
             ],
           ],
@@ -510,17 +540,19 @@ class _FilterControls extends ConsumerWidget {
 
         const Divider(),
         _MenuHeading(l10n.sortLabel),
+        // The album order reads tags only audio has.
         for (final field in SortField.values)
-          MenuItemButton(
-            leadingIcon: Icon(
-              view.sortField == field
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked,
+          if (field != SortField.album || type == FileType.audio)
+            MenuItemButton(
+              leadingIcon: Icon(
+                view.sortField == field
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+              ),
+              onPressed: () =>
+                  controller.apply(type, view.copyWith(sortField: field)),
+              child: Text(field.label(l10n)),
             ),
-            onPressed: () =>
-                controller.apply(type, view.copyWith(sortField: field)),
-            child: Text(field.label(l10n)),
-          ),
         for (final direction in SortDirection.values)
           MenuItemButton(
             leadingIcon: Icon(
@@ -576,6 +608,7 @@ extension _SortFieldLabel on SortField {
   String label(AppLocalizations l10n) => switch (this) {
     SortField.name => l10n.sortByName,
     SortField.indexed => l10n.sortByIndexed,
+    SortField.album => l10n.sortByAlbum,
   };
 }
 

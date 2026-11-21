@@ -21,6 +21,7 @@ sealed class PreferencesState with _$PreferencesState {
     @Default(ThemeMode.system) ThemeMode themeMode,
     Locale? locale,
     @Default(true) bool rechecksAtStartup,
+    @Default(true) bool checksForUpdates,
     @Default(false) bool lastChangeUnsaved,
   }) = _PreferencesState;
 }

@@ -6,6 +6,7 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/catalog/domain/listing_view.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 
@@ -52,6 +53,13 @@ class FakeCatalogGateway implements CatalogGateway {
   /// core.
   final List<({String uuid, VideoMetadata metadata})> videoEdits = [];
 
+  /// What [editMusicMetadata] answers, in order (UC-15). Empty saves what
+  /// was sent.
+  final List<MetadataEditOutcome> editOutcomes = [];
+
+  /// Every tag edit asked for, in order.
+  final List<({String uuid, MusicMetadata metadata})> edits = [];
+
   /// What [renameFile] answers, in order (UC-17).
   final List<FileRenameOutcome> renameOutcomes = [];
 
@@ -73,24 +81,15 @@ class FakeCatalogGateway implements CatalogGateway {
   /// The lifecycle filter each call was made with (UC-12).
   final List<LifecycleFilter> lifecycles = [];
 
-  /// Whether each [listFiles] call asked to reach into libraries, in order.
-  ///
-  /// Recorded because it is the whole difference between a search that finds
-  /// a library's files and one that cannot, and nothing else about the call
-  /// shows it.
-  final List<bool> libraryReaches = [];
-
   @override
   Future<CatalogListing> listFiles({
     required String credential,
     FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
-    bool includeLibraries = false,
   }) async {
     requested.add(type);
     credentials.add(credential);
     lifecycles.add(lifecycle);
-    libraryReaches.add(includeLibraries);
 
     // No type is every type, as the core reads it — so the fake answers the
     // union of what it holds rather than a single bucket. The counts panel
@@ -194,6 +193,21 @@ class FakeCatalogGateway implements CatalogGateway {
   }
 
   @override
+  Future<MetadataEditOutcome> editMusicMetadata({
+    required String uuid,
+    required MusicMetadata metadata,
+    required String credential,
+  }) async {
+    edits.add((uuid: uuid, metadata: metadata));
+    credentials.add(credential);
+
+    if (editOutcomes.isEmpty) {
+      return MetadataEditOutcome.saved(metadata: metadata);
+    }
+    return editOutcomes.removeAt(0);
+  }
+
+  @override
   Future<VideoMetadataEditOutcome> editVideoMetadata({
     required String uuid,
     required VideoMetadata metadata,
@@ -243,6 +257,9 @@ CatalogFile aFile({
   DateTime? missingAt,
   DateTime? deletedAt,
   bool isDeleted = false,
+  MusicMetadata? tags,
+  double? durationSeconds,
+  String? libraryUuid,
 }) => CatalogFile(
   uuid: uuid,
   name: name,
@@ -258,6 +275,11 @@ CatalogFile aFile({
   missingAt: missingAt,
   deletedAt: deletedAt,
   isDeleted: isDeleted,
+  // An audio file always carries tags, empty when it has none — the shape
+  // the parser answers.
+  tags: tags ?? (type == FileType.audio ? const MusicMetadata() : null),
+  durationSeconds: durationSeconds,
+  libraryUuid: libraryUuid,
 );
 
 /// A listing of [files], each wrapped as a [FileDetails] row with no

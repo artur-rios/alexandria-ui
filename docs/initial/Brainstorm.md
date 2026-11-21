@@ -2,7 +2,7 @@
 
 This is the brainstorm for a desktop front-end for a project called "Alexandria".  
 
-Alexandria is for things to read and watch. Music lives in Orpheus, a separate project.
+Alexandria is for things to read and watch, and it plays music files too. Managing music — playlists, play history, browsing by artist and album — lives in Orpheus, a separate project.
 
 ## Features
 

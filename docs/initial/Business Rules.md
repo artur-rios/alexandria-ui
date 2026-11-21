@@ -19,6 +19,7 @@ and never treats its in-memory copy as authoritative.
 | --- | --- |
 | **File** | A cataloged on-disk resource, with its public UUID, name, path, type, and lifecycle state. The unit everything else in the interface is built around. |
 | **VideoFile** | A `File` of type video, marked movie or series, playable by the video player and eligible for watchlists. |
+| **AudioFile** | A `File` of type audio — a track — named and ordered by its tags (title, artist, album artist, album, year, genre, track number), whose tags are editable, and playable in the player bar. No playlists, play history, or music library around it: that is Orpheus's. |
 | **TextFile** | A Markdown or plain-text `File` whose content the app can read from and write back to disk through the core. |
 | **Document** | A PDF or e-book `File`. Viewable, metadata-only, eligible for reading lists. |
 | **ComicBook** | A comic-book archive `File`. Viewable, metadata-only, eligible for reading lists. |
@@ -29,24 +30,24 @@ and never treats its in-memory copy as authoritative.
 | **Collection** | A named group of files or of bookmarks, discriminated by its kind. |
 | **Watchlist** / **WatchProgress** | A tracking list of videos and each item's watch state and progress within it. |
 | **ReadingList** / **ReadingProgress** | A tracking list of books and comics and each item's read state and progress within it. |
+| **Library** | A folder on disk the owner has added, by name, as a library — the only way its files reach the catalog. Every file belongs to exactly one. The owner may add several. |
 
 ### Owned by the app
 
 | Entity | Represents |
 | --- | --- |
-| **LibrarySource** | A folder on disk the owner has registered as a library root, with the outcome of its last index run. The app may hold several. |
 | **IndexRun** | An in-flight or finished index/refresh run started from the interface, identified by the run identifier the core returns, with its observed progress and result. |
 | **Session** | The authenticated owner's session for the current run of the app: the credential material the core returned at login, held in memory only. |
 | **AppSettings** | The owner's local preferences: theme, language, default view layout, per-type sort and filter defaults, and window geometry. |
-| **PlaybackState** | What is currently playing and its position. Persisted per file as a resume point. |
+| **PlaybackState** | What is currently playing and its position. Persisted per video as a resume point; a track keeps none. |
 | **ViewerRegistration** | The binding from a file type to the viewer or player that can present it, and whether that viewer is currently available. |
 
 ## Relationships
 
 | From | Cardinality | To | Notes |
 | --- | --- | --- | --- |
-| LibrarySource | 1 — N | File | A registered folder yields many cataloged files. The core owns the files; the app owns the folder registration. |
-| LibrarySource | 1 — N | IndexRun | Each folder can be scanned and re-scanned many times. |
+| Library | 1 — N | File | A library holds many cataloged files, and every file belongs to exactly one library. The core owns both. |
+| Library | 1 — N | IndexRun | Each library can be scanned and re-scanned many times. |
 | Session | 1 — N | *every core call* | Each call carries the current session's credential. No session, no call. |
 | ViewerRegistration | 1 — 1 | file type | Exactly one viewer or player is responsible for presenting a given file type at a time. |
 | PlaybackState | N — 1 | File | Each playable file may carry a resume point; one item plays at a time. |
@@ -70,8 +71,8 @@ rather than a rewrite (see **BR-14**).
 | **BR-08** | Purge-on-disk is presented distinctly from every other delete, never as the default action, and never reachable by a single click from a list row. | The one operation that destroys the owner's data deserves friction. |
 | **BR-09** | The app performs no media editing: no re-encoding, no transcoding, no image manipulation. Text content, metadata, names, and organization are the only editable things. | Scope guard inherited from the product (`BR-04` back-end). |
 | **BR-10** | Indexing is started from the interface and observed asynchronously. The interface stays usable, and browsing, playback, and editing continue while a run is in flight. | The core indexes asynchronously by design (`BR-09` back-end); blocking the UI would waste that. |
-| **BR-11** | The owner may register **multiple** library folders. Every folder-scoped operation names its folder, and the catalog is presented as one merged library across all of them. | Stated requirement: the app can point at different folders, not only one. |
-| **BR-12** | Registering, re-scanning, or unregistering a library folder never deletes cataloged records or on-disk files. Unregistering removes the folder from the app's source list only. | Organizing the sources must not destroy the catalog. |
+| **BR-11** | The owner may add **multiple** libraries, and a folder reaches the catalog only as one. Every library-scoped operation names its library, and the catalog is presented as one merged library across all of them. The app keeps no folder list of its own: the libraries are the core's. | Stated requirement: the app can point at different folders, not only one. Since core 0.6 there is no indexing outside a library, and a second list in the app's settings could only disagree with the core's. |
+| **BR-12** | Adding, re-scanning, or moving a library never deletes cataloged records or on-disk files. Removing a library deletes its catalog records — its files with their reading and watching positions and collection membership, and its runs — and never touches the disk; its confirmation says exactly that. | A file is in the catalog only because it is inside a library, so removing the library removes its records; the disk is the owner's either way. |
 | **BR-13** | File types are handled through a viewer/player registry, not through conditionals scattered across screens. Adding a type, or a renderer for a type the core later enriches, is a registration. | The core's media capabilities are growing; the interface must absorb that without a rewrite. |
 | **BR-14** | Collection navigation is modeled as a tree whose current depth happens to be one. Nesting, when the core supports it, changes the data the tree is fed — not the navigation, the breadcrumbs, or the move/reparent interactions. | Stated requirement: the core will implement nested collections, and the front-end must be ready. |
 | **BR-15** | A file's content is read from the path the core reports, at the moment it is opened. The app caches no file bytes across sessions. | The disk is the source of truth; a stale cache would show the owner something that no longer exists. |
@@ -80,8 +81,8 @@ rather than a rewrite (see **BR-14**).
 | **BR-18** | Every screen is usable in light and dark themes, and colors come from the theme, never from literals in a widget. | Theming is scope, and hard-coded colors are how it breaks. |
 | **BR-19** | Every screen adapts to window resizing down to the minimum supported window size without clipping or hiding a control behind an unreachable overflow. | Responsiveness without loss of usability is a stated product goal. |
 | **BR-20** | Every operation that can take perceptible time shows a loading state, and every failure shows a human-readable message derived from the core's status code — never a raw code, and never a silent no-op. | Stated requirement for loading and modal feedback; silent failure is the worst outcome for a local app. |
-| **BR-21** | **Removed (moved out of scope, see Orpheus)** | Music lives in Orpheus, so there is no full-window player for it. The number stays so that other references stay valid. |
-| **BR-22** | Only one playback session is active at a time. | Two videos at once is never what the owner meant. |
+| **BR-21** | **Removed (moved out of scope, see Orpheus)** | Music management lives in Orpheus; Alexandria plays tracks in the player bar only, so there is no full-window player for them. The number stays so that other references stay valid. |
+| **BR-22** | Only one playback session plays at a time: opening a video pauses the music in the player bar. | Two videos at once, or a video over an album, is never what the owner meant. |
 | **BR-23** | SOLID and feature-first layering are the baseline. The domain layer declares the interfaces; the FFI gateway, filesystem access, players, and local storage implement them and are injected. | Mandated design approach, and what makes a later HTTP transport a substitution rather than a rewrite. |
 | **BR-24** | The app is single-user. One account exists; there is no sharing, no profile switching, and no per-user data partition. Signing up creates that one account, and it is the only account there will ever be. | Inherited from the core (`BR-01` back-end). |
 | **BR-25** | The recovery codes a new account receives are shown once, in place of the catalog, until the owner confirms having stored them. The app keeps none of them and offers no way back to a dismissed set. | They are the only way back into a library that sits on the owner's own disk, and the core keeps only their hashes — so the single moment they exist is the only moment to record them. |
@@ -97,7 +98,7 @@ to give immediate feedback, and always surfaces the core's verdict as final.
 
 | Field | Owner | Constraint |
 | --- | --- | --- |
-| **path** | LibrarySource | Required. Must be an existing, readable directory at registration time. Not already registered. |
+| **path** | Library | Required, chosen through the native folder picker. Whether it may be a library — a folder, present, inside the core's root, overlapping no other library — is the core's to judge. |
 | **email** | Sign-up / login / credential change | Required. Valid e-mail format. |
 | **password** | Sign-up / login / credential change | Required. Non-empty. Confirmed by a second entry when being set, changed, or reset. |
 | **confirmationCode** | E-mail confirmation | Required. Non-empty after trimming. Validity, format, and expiry are the core's to judge. |
@@ -149,18 +150,20 @@ exists.
 by the owner, submitted once, and never retained by the app (**BR-26**). Their
 expiry is the core's to enforce and the app's to explain.
 
-**LibrarySource**
+**Library**
 
-1. **Registered** — the owner picks an existing folder.
-2. **Indexed** — a scan is started and observed to completion.
-3. **Re-scanned** — refreshed on demand, reporting what was added, updated, and
-   found missing.
-4. **Unregistered** — removed from the app's source list. Catalog records and
-   on-disk files are untouched.
+1. **Added** — the owner picks a folder and names it; the core records the
+   library and starts its first scan.
+2. **Indexed** — that scan is observed to completion.
+3. **Re-scanned** — scanned again on demand, reporting what was added, updated,
+   and found missing. A library can also be moved to the folder it moved to.
+4. **Removed** — deleted from the catalog with its records; on-disk files are
+   untouched. Refused while a scan of it is running.
 
 **IndexRun** — started, observed while running, and settled as finished or
-failed. A finished run's summary stays visible until dismissed; the app never
-starts a second run for a folder while one is in flight for it.
+failed. A finished run's summary stays visible until dismissed; the core refuses a
+second run of a library while one is running or paused, and the app shows that
+refusal.
 
 **File (as the app sees it)** — appears after an index run, is edited and
 organized in place, is hidden when soft-deleted, reappears when restored, and

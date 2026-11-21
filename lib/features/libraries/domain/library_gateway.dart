@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
+import '../../indexing/domain/run_priority.dart';
 import 'library.dart';
 
 part 'library_gateway.freezed.dart';
@@ -41,6 +42,20 @@ sealed class LibraryWrite with _$LibraryWrite {
       LibraryWriteFailed;
 }
 
+/// What adding a library produced (core FR-FC-36).
+@freezed
+sealed class LibraryRegistration with _$LibraryRegistration {
+  /// The core added [library] and started its first index run, [runId].
+  const factory LibraryRegistration.registered({
+    required Library library,
+    required String runId,
+  }) = LibraryRegistered;
+
+  /// The core refused, storing nothing.
+  const factory LibraryRegistration.failed({required Failure failure}) =
+      LibraryRegistrationFailed;
+}
+
 /// The core's library operations (libraries design).
 abstract interface class LibraryGateway {
   /// Every registered library.
@@ -58,15 +73,18 @@ abstract interface class LibraryGateway {
     required String credential,
   });
 
-  /// Treats [rootPath] as a library called [name].
+  /// Adds [rootPath] as a library called [name], and starts indexing it.
   ///
-  /// Whatever is already indexed beneath the folder is claimed by the same
-  /// call — a folder is usually marked after it has been indexed, and a
-  /// library that showed nothing until the owner re-walked their disk would
-  /// read as broken.
-  Future<LibraryWrite> register({
+  /// The core indexes nothing that is not a library (0.6.0), so this is how
+  /// a folder gets into the catalog at all. The first run's id comes back
+  /// with the library, so the caller can follow it; [priority] paces it, and
+  /// null asks for the core's default. Refused — storing nothing — for a
+  /// folder that does not exist, one outside the core's root, or one
+  /// overlapping another library.
+  Future<LibraryRegistration> register({
     required String name,
     required String rootPath,
+    RunPriority? priority,
     required String credential,
   });
 

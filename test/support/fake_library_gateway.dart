@@ -2,6 +2,7 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
+import 'package:alexandria_ui/features/indexing/domain/run_priority.dart';
 
 /// A [LibraryGateway] that never reaches the core (Testing Specification
 /// §2.3).
@@ -60,23 +61,47 @@ class FakeLibraryGateway implements LibraryGateway {
         );
   }
 
+  /// What the next registration answers, in order. Empty registers the
+  /// library under the next `lib-N` uuid with the run [registeredRunId].
+  final List<LibraryRegistration> registerOutcomes = [];
+
+  /// The run id a successful registration answers.
+  String registeredRunId = 'run-1';
+
+  /// The priority each registration asked for, in order.
+  final List<RunPriority?> registeredPriorities = [];
+
   @override
-  Future<LibraryWrite> register({
+  Future<LibraryRegistration> register({
     required String name,
     required String rootPath,
+    RunPriority? priority,
     required String credential,
   }) async {
     registered.add((name: name, rootPath: rootPath));
-    if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
+    registeredPriorities.add(priority);
+    if (registerOutcomes.isNotEmpty) return registerOutcomes.removeAt(0);
+    // A queued write refusal still refuses a registration, so the tests
+    // written against the old shape keep meaning what they said.
+    if (writeOutcomes.isNotEmpty) {
+      switch (writeOutcomes.removeAt(0)) {
+        case LibraryWriteFailed(:final failure):
+          return LibraryRegistration.failed(failure: failure);
+        case LibraryWriteDone():
+          break;
+      }
+    }
 
-    libraries.add(
-      Library(
-        uuid: 'lib-${libraries.length + 1}',
-        name: name,
-        rootPath: rootPath,
-      ),
+    final library = Library(
+      uuid: 'lib-${libraries.length + 1}',
+      name: name,
+      rootPath: rootPath,
     );
-    return const LibraryWrite.done();
+    libraries.add(library);
+    return LibraryRegistration.registered(
+      library: library,
+      runId: registeredRunId,
+    );
   }
 
   @override

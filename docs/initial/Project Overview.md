@@ -5,10 +5,11 @@
 Alexandria UI is the cross-platform desktop front-end for
 [Alexandria](https://github.com/artur-rios/alexandria-api), a personal library
 system that indexes, organizes, and surfaces a single person's on-disk media and
-documents — a library for what the owner reads and watches. Music is not part of
-it; that lives in Orpheus, a separate project. The desktop app is where the
-owner actually *sees* and *uses* that library: it browses the catalog, plays
-video, reads documents and comics, edits Markdown and text in place, and
+documents. It plays music files, but managing a music collection — playlists,
+play history, browsing by artist and album — is not part of it; that lives in
+Orpheus, a separate project. The desktop app is where the owner actually *sees*
+and *uses* that library: it browses the catalog, plays video and music, reads
+documents and comics, edits Markdown and text in place, and
 organizes everything into collections, watchlists, and reading lists. It links
 the Alexandria Rust core in process over FFI rather than talking to a server, so
 the whole product runs as a single local application with no network hop between
@@ -39,17 +40,20 @@ library.
 
 ## What It Does
 
-- **Browses the catalog** by file type — movies, series, HTML pages,
+- **Browses the catalog** by file type — movies, series, music, HTML pages,
   Markdown and text notes, PDFs and e-books, comic books, images, and browser
   bookmarks — in list, detailed-list, and grid layouts.
-- **Manages the library sources**: the owner points the app at one or more
-  library folders, and triggers indexing and re-scanning from the interface.
+- **Manages libraries**: the owner adds one or more folders as libraries —
+  the only way files reach the catalog — which indexes them, and scans them
+  again, moves, or removes them from the interface.
+- **Plays music** in a player bar that stays while the owner browses, through
+  the list a track was started from.
 - **Plays video** with the basics — full screen, pause, seek forward and
   backward, subtitle selection, and audio-track selection.
 - **Views documents and images**: PDFs, e-books, comic books, images, HTML pages,
   and rendered Markdown.
 - **Edits Markdown and text files** in place, writing content back to disk.
-- **Edits metadata** for video, and renames any file.
+- **Edits metadata** for video, and tags for music, and renames any file.
 - **Organizes** files and bookmarks into collections, tracks movies and series in
   watchlists with per-episode progress, and tracks books and comics in reading
   lists with per-issue progress.
@@ -79,17 +83,19 @@ library.
 - **No mail transport.** The app never sends e-mail. Confirmation and recovery
   messages are the core's to send; the app asks and reports the outcome.
 - **No server, no cloud, no sync.** Everything is local to the machine, apart
-  from whatever the core does to deliver a confirmation or recovery message.
+  from whatever the core does to deliver a confirmation or recovery message,
+  and the update check, which asks GitHub for the latest release and can be
+  turned off.
 - **No mobile or web build.** Windows and Linux desktop only.
 - **No library server administration.** The app configures where its own database
-  and library folders live; it is not an administration console for a remote
+  lives, and the owner chooses which folders are libraries; it is not an administration console for a remote
   Alexandria deployment.
 
 ## How Success Is Measured
 
 | Outcome | How you would know |
 | --- | --- |
-| The library is usable end to end | The owner indexes a real library folder, finds a file, plays or reads it, edits its metadata, and organizes it — without leaving the app or touching a file manager. |
+| The library is usable end to end | The owner adds a real folder as a library, finds a file, plays or reads it, edits its metadata, and organizes it — without leaving the app or touching a file manager. |
 | It replaces the five-app workflow | Video, documents, notes, and bookmarks are all reachable from one window with one search. |
 | It feels light | The app starts, opens a large library, and scrolls it without perceptible stutter on ordinary desktop hardware. |
 | It respects the disk | No file is ever modified or removed except by an explicit, confirmed action the owner initiated. |

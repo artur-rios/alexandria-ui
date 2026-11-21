@@ -26,6 +26,7 @@ import '../../lifecycle/presentation/purge_on_disk_section.dart';
 import '../../tracking/presentation/add_to_reading_list_button.dart';
 import '../../tracking/presentation/add_to_watchlist_button.dart';
 import 'rename_file_dialog.dart';
+import 'music_metadata_form.dart';
 import 'video_metadata_form.dart';
 
 /// One file's details (UC-13, FR-CT-05, FR-CT-12).
@@ -179,13 +180,25 @@ class _Details extends ConsumerWidget {
                   icon: const Icon(Icons.play_arrow),
                   label: Text(l10n.videoPlay),
                 ),
+              // A track plays in the player bar, on its own: the details are
+              // not a list to play through.
+              if (details.file.type == FileType.audio && !details.isDeleted)
+                FilledButton.icon(
+                  onPressed: details.canReachTheFile
+                      ? () => ref
+                            .read(audioPlaybackControllerProvider.notifier)
+                            .play(details.file, [details.file])
+                      : null,
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(l10n.videoPlay),
+                ),
 
-              // UC-16 main flow step 1. Offered for video, the one type there
-              // is a form for, and not for a deleted record, which the core
-              // refuses to edit until it is restored. The remaining
-              // editable subtypes — document, comic, image — have no use case
-              // in the backlog, so they are deliberately absent rather than
-              // pending.
+              // UC-15 and UC-16 main flow step 1. Offered for video and audio,
+              // the types there is a form for, and not for a deleted record,
+              // which the core refuses to edit until it is restored. The
+              // remaining editable subtypes — document, comic, image — have no
+              // use case in the backlog, so they are deliberately absent
+              // rather than pending.
               if (details.isDeleted ? null : _metadataFormFor(details.file.type)
                   case final openForm?)
                 OutlinedButton.icon(
@@ -483,7 +496,12 @@ class FileDetailsButton extends ConsumerWidget {
 /// has no viewer registered (FR-VW-08), and one the last refresh could not
 /// find, which is a state to explain and a rescan to offer rather than a
 /// reader to fail in (UC-37).
-Future<void> openFile(BuildContext context, WidgetRef ref, CatalogFile file) {
+Future<void> openFile(
+  BuildContext context,
+  WidgetRef ref,
+  CatalogFile file, {
+  List<CatalogFile>? queue,
+}) {
   if (file.isMissing) return FileDetailsView.show(context, ref, file.uuid);
 
   // The two kinds of opening this application does. A viewer presents a file;
@@ -492,6 +510,13 @@ Future<void> openFile(BuildContext context, WidgetRef ref, CatalogFile file) {
   switch (file.type) {
     case FileType.video:
       return VideoPlayerScreen.show(context, ref, file);
+
+    // A track plays in the player bar, through [queue] — the list it was
+    // opened from — or on its own.
+    case FileType.audio:
+      return ref
+          .read(audioPlaybackControllerProvider.notifier)
+          .play(file, queue ?? [file]);
 
     case FileType.document:
     case FileType.comic:
@@ -539,6 +564,7 @@ typedef OpenMetadataForm =
 /// one place (IR-02's registration rule).
 OpenMetadataForm? _metadataFormFor(FileType type) => switch (type) {
   FileType.video => VideoMetadataForm.show,
+  FileType.audio => MusicMetadataForm.show,
   FileType.document ||
   FileType.comic ||
   FileType.text ||

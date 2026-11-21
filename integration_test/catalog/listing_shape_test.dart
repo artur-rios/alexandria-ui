@@ -10,6 +10,7 @@ import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import '../support/library_runs.dart';
 import '../support/temporary_catalog.dart';
 
 /// The shape the core actually answers a listing in (UC-03, FR-FC-12,
@@ -68,34 +69,6 @@ void main() {
     return (client, (outcome as AuthenticatedOutcome).session.credential);
   }
 
-  /// Indexes [root] and waits for the catalog to hold something.
-  ///
-  /// Polled rather than awaited: an index run is asynchronous, and the run's
-  /// own status call is a second contract this test has no reason to depend
-  /// on. What it needs is a catalog with a file in it.
-  Future<void> indexAndSettle(
-    CoreClient client,
-    String credential,
-    String root,
-  ) async {
-    final start = await client.indexStart(root, credential);
-    expect(
-      CoreStatusFamily.indexing.isOk(start.status),
-      isTrue,
-      reason: 'the run would not start',
-    );
-
-    final deadline = DateTime.now().add(const Duration(seconds: 30));
-    while (await client.indexCountFiles() < 1) {
-      expect(
-        DateTime.now().isBefore(deadline),
-        isTrue,
-        reason: 'the run never catalogued the fixture',
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-    }
-  }
-
   test(
     'GivenAnIndexedLibrary_WhenItIsListed_ThenThisApplicationCanParseTheAnswer',
     () async {
@@ -104,12 +77,15 @@ void main() {
       // exception, so a listing that is merely *not* loaded is the whole bug.
       final (client, credential) = await signedInCore();
       catalog.addFixture('note.md', '# a note');
-      await indexAndSettle(client, credential, catalog.libraryDirectory.path);
-
-      final listing = await CoreCatalogGateway(client).listFiles(
-        type: FileType.text,
-        credential: credential,
+      await addLibraryAndSettle(
+        client,
+        credential,
+        root: catalog.libraryDirectory.path,
       );
+
+      final listing = await CoreCatalogGateway(
+        client,
+      ).listFiles(type: FileType.text, credential: credential);
 
       expect(
         listing,
@@ -132,12 +108,15 @@ void main() {
       // silently.
       final (client, credential) = await signedInCore();
       catalog.addFixture('note.md', '# a note');
-      await indexAndSettle(client, credential, catalog.libraryDirectory.path);
-
-      final listing = await CoreCatalogGateway(client).listFiles(
-        type: FileType.text,
-        credential: credential,
+      await addLibraryAndSettle(
+        client,
+        credential,
+        root: catalog.libraryDirectory.path,
       );
+
+      final listing = await CoreCatalogGateway(
+        client,
+      ).listFiles(type: FileType.text, credential: credential);
 
       final row = (listing as CatalogListingLoaded).files.single;
       expect(row.file.name, 'note.md');

@@ -60,7 +60,7 @@ void main() {
 
         final l10n = await openTools(tester);
 
-        expect(find.text(l10n.librarySourcesOpen), findsOneWidget);
+        expect(find.text(l10n.libraryMenuAdd), findsOneWidget);
         expect(find.text(l10n.collectionsOpen), findsOneWidget);
         expect(find.text(l10n.watchlistsOpen), findsOneWidget);
         expect(find.text(l10n.readingListsOpen), findsOneWidget);

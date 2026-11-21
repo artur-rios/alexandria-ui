@@ -26,6 +26,8 @@ here rather than duplicated.
 - Logging: what is recorded, where, and what is never recorded.
 - Environments: how development, test, and release differ.
 - Build and delivery: the pipeline and the packages it produces.
+- Updates: the one network request the application makes of its own, the
+  pending-update record it leaves, and the checksums a release publishes.
 
 ---
 
@@ -124,7 +126,8 @@ alexandria-ui/
 │   │   └── theme/                 light and dark themes, breakpoints
 │   └── features/
 │       ├── auth/
-│       ├── library_sources/
+│       ├── indexing/
+│       ├── libraries/
 │       ├── catalog/
 │       ├── editing/
 │       ├── playback/
@@ -132,7 +135,8 @@ alexandria-ui/
 │       ├── organization/
 │       ├── tracking/
 │       ├── lifecycle/
-│       └── shell/
+│       ├── shell/
+│       └── updates/
 ├── native/                        the core's shared library per platform
 ├── third_party/webview_cef/       the page engine's plugin, vendored and patched
 │                                  (FORK.md says what changed and why)
@@ -157,7 +161,7 @@ Each folder under `features/` holds `domain/`, `application/`, `data/`, and
 | IR-03 | The solution shall generate its Alexandria core bindings from the core's published C header, shall commit the generated output, and shall never hand-edit it. |
 | IR-04 | The solution shall bundle the Alexandria core's shared library for each target platform and load it at startup from a path resolved relative to the installed application. |
 | IR-05 | The solution shall initialize the core with a database path in the per-platform application-support directory, creating the directory when absent. |
-| IR-06 | The solution shall verify at startup that the loaded core reports a healthy status and a version the application supports, and shall present a readable failure with a retry when it does not. |
+| IR-06 | The solution shall verify at startup that the loaded core reports a healthy status and a version the application supports — `>=0.6.0 <0.7.0`, since core 0.6 made libraries the only way into the catalog and changed what removing one does, so a 0.5 core is refused — and shall present a readable failure with a retry when it does not. |
 | IR-07 | The solution shall expose a single composition root through which every gateway interface is bound to its implementation, and which a test can override wholesale. |
 | IR-08 | The solution shall define one typed failure model, mapping every status code the core can return to exactly one failure and every failure to exactly one localized message. |
 | IR-09 | The solution shall free every string returned across the FFI boundary, including on failure paths, and shall run every core call off the interface thread. |
@@ -183,7 +187,8 @@ environment. There is no server, no connection string, and no secret to inject.
 | Core configuration | The core's own configuration mechanism, which it loads itself | The application does not parse or duplicate the core's configuration; it passes the database path and lets the core resolve the rest, so a setting means the same thing on both sides. |
 | Log level | `--dart-define` at build time | Verbose in development, informational in release. |
 | Log file location | Application-support directory | See §4. |
-| Owner preferences — theme, language, layout, sort, filters, library folders, window geometry | The local settings store | Owner-facing state, changed in the interface, never in a config file. |
+| Owner preferences — theme, language, layout, sort, filters, window geometry, the update check and a skipped version | The local settings store | Owner-facing state, changed in the interface, never in a config file. The update check is `settings.checksForUpdates` (on unless set to `false`) and the skipped version `updates.skippedVersion`. |
+| Releases URL | `ALEXANDRIA_RELEASES_URL`, a `--dart-define` at build time | Defaults to `https://api.github.com/repos/artur-rios/alexandria-ui/releases/latest`. The override exists so that tests can point the update check elsewhere. |
 | The core's thumbnail cache | Set to a directory beside the catalog, through `ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR`, before the core is initialized | The setting defaults to a path relative to the process's working directory, which for an installed application is wherever the desktop started it — a directory this application does not own and often cannot write to. The catalog's own directory is the one it does. |
 
 No secret is ever written into this document, into the repository, or into a
@@ -196,7 +201,8 @@ the application forwards to the core and never stores.
 
 There is no aggregator and no telemetry: this is a local application, and nothing
 it records leaves the machine. Nothing about the owner or their library is
-sent anywhere.
+sent anywhere. The one request the application sends of its own is the update
+check (§5.4), and it carries none of what is logged.
 
 | Concern | Approach |
 | --- | --- |
@@ -230,6 +236,7 @@ usable, and must say so rather than crashing.
 | 5 | Initialize the core against the database path | Present the core's reported reason, with a retry. |
 | 6 | Determine whether an account exists, and present sign-up or login | Present the core's reason, with a retry. |
 | 7 | After signing up, present the recovery codes the core minted | Present the core's reason, with a retry. An account created without codes is said so plainly, and regenerating a set is offered. |
+| 8 | Once startup is ready, read the pending-update record and check for updates in the background (§5.4) | Never blocks or fails startup: a failed check is logged and nothing is shown. |
 
 The settings are read **before** the core is initialized, and that order is
 load-bearing rather than incidental. The core reads its own configuration
@@ -270,6 +277,43 @@ core-unavailable state and its retry in
 [UC-38 AF-04](Use%20Case%20Specification%20Document.md), the branch between
 sign-up and login in UC-01 and UC-02, and the locked-catalog branch in UC-40. The
 sequence itself is platform work, tracked by `IR-04` through `IR-06`.
+
+### 5.4 The update check
+
+The update check is the one network call the application makes of its own. It
+is specified in [System Requirements §3.11](System%20Requirements%20Document.md)
+and [UC-51](Use%20Case%20Specification%20Document.md); this section records
+what it puts on the wire and on disk.
+
+| Concern | Behavior |
+| --- | --- |
+| When | Once per application start, when startup reaches ready, unawaited — and again only when the owner chooses "Check now" in Preferences. Never periodically while the application runs. |
+| Which builds | Release builds only. Debug and profile builds never check. The Flatpak never checks: it has no network permission, and its Preferences hide the setting. |
+| Switch | "Check for updates at startup", on by default, stored as `settings.checksForUpdates`. Off means no request at startup. |
+| Request | `GET https://api.github.com/repos/artur-rios/alexandria-ui/releases/latest` — GitHub's public API, read without a login. It answers the latest release, leaving out pre-releases and drafts. |
+| What is sent | The request and two headers: `Accept: application/vnd.github+json` and `User-Agent: Alexandria/<version>`. Nothing about the owner, the machine, or the library; nothing beyond what any HTTPS request carries (the IP address). |
+| Timeout | 10 seconds. |
+| Failure | Offline, timed out, rate-limited, a server error, or an unreadable answer: logged, and nothing shown at startup. "Check now" says "Couldn't check for updates". |
+| Rate | GitHub allows 60 unauthenticated reads an hour per IP address, far more than one per start. |
+| Downloads | Only after the owner chooses Update now: the release's package for this installation and its checksums file, from the URLs the release lists, into a fresh temporary folder that is deleted when the download is cancelled, fails, or does not verify. |
+
+**The pending-update record.** Before it closes to install an update, the
+application writes `update-pending.json` in the application-support directory,
+holding `{from, to, at}`: the running version, the version being installed, and
+when. At the next start it reads the record and deletes it. Running `to` (or
+newer) means the update took. Still running an older version means it did not,
+and the owner is told "The update to <to> did not complete", with a link to the
+release page. An unreadable record is deleted and ignored.
+
+**Installing.** The application starts the release's own installer, detached,
+and exits. On Windows that is the setup run with
+`/SILENT /SUPPRESSMSGBOXES /NORESTART /UPDATE /DIR="<install folder>"`. On Linux
+it is a small `sh` helper written beside the download, which waits for the
+application to exit, runs the installer with `--yes --prefix <prefix>` or
+replaces the AppImage by writing the new file beside it and renaming it over the
+old one, starts the application again — the old one when the install failed —
+and deletes the temporary folder. The installers stage the new version and swap
+in only their own files, so a failed update leaves the old version working.
 
 ---
 
@@ -330,6 +374,16 @@ then, packages are produced unsigned. The 0.x releases that carry them are
 ordinary releases: the release pipeline marks only a SemVer pre-release version
 (such as `1.0.0-rc.1`) as a prerelease. Neither blocks any use case.
 
+**Checksums.** Because the packages are unsigned, an update's integrity rests on
+HTTPS and a SHA-256 the release publishes next to its packages:
+`alexandria-<version>-linux-SHA256SUMS`, covering every Linux package, and
+`alexandria-<version>-windows-SHA256SUMS`, covering the `.exe`, `.zip` and
+`.msix`. Each is `sha256sum` output, `<hex>  <file name>`, one line per file.
+The application installs an update only after the download matches its line
+(UC-51). A release that publishes no checksums cannot be installed by the
+application, which offers its release page instead; releases up to and including
+1.0.1 publish none, so the first release that does is installed by hand, once.
+
 **The page engine's sandbox on Linux packages.** The saved-page engine (UC-25)
 runs only inside Chromium's sandbox, and the application draws the page without
 it, as widgets, on a machine where that sandbox cannot run (NFR-12;
@@ -366,7 +420,9 @@ bootstrap.
 No installer, updater, or package in this project ever installs, updates, or
 launches a *service*. The Alexandria core travels inside the application bundle as
 a library. There is nothing to run in the background, nothing to open a port, and
-nothing to uninstall separately.
+nothing to uninstall separately. The update check (§5.4) is no exception: it is
+the application itself running a release's own installer once, at the owner's
+request, not an updater service.
 
 ---
 
@@ -389,6 +445,7 @@ nothing to uninstall separately.
 | Continuous integration | IR-15 |
 | Packaging for both platforms | IR-16 |
 | Page engine isolation (vendored `webview_cef`, sandbox, folder confinement) | NFR-12, FR-VW-05, IR-15 |
+| The update check, the pending-update record, and the release checksums | FR-UP-01 … FR-UP-15 |
 
 These `IR-xx` requirements are the Definition of Done for the foundation issue in
 the [README](../../README.md) backlog. They are not use cases and are not split

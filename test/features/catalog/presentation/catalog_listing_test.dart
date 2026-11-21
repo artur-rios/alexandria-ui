@@ -4,13 +4,14 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 // Prefixed: the widget and the domain's listing union share a name, and this
 // test speaks about both.
 import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
     as widgets;
 import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
-import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/organization/presentation/bookmarks_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
@@ -22,6 +23,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_folder_picker.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/shell_harness.dart';
 
@@ -42,6 +44,9 @@ void main() {
         catalogGatewayProvider.overrideWithValue(
           FakeCatalogGateway(listings: listings),
         ),
+        // The empty catalog offers to add a library; cancelling the picker it
+        // opens keeps a test that presses it off the platform channel.
+        folderPickerProvider.overrideWithValue(FakeFolderPicker()),
       ],
     );
 
@@ -239,10 +244,10 @@ void main() {
         );
         expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
 
-        await tester.tap(find.text(l10n.catalogEmptyAddFolder));
+        await tester.tap(find.text(l10n.libraryAdd));
         await tester.pumpAndSettle();
 
-        expect(find.byType(LibrarySourcesScreen), findsOneWidget);
+        expect(find.byType(LibrariesView), findsOneWidget);
       },
     );
   });
@@ -366,5 +371,68 @@ void main() {
         },
       );
     }
+  });
+
+  group('the Music panel', () {
+    Map<FileType, CatalogListing> twoTracks() => {
+      FileType.audio: loadedDetails([
+        aFile(
+          uuid: 't2',
+          name: '02 - b.flac',
+          type: FileType.audio,
+          tags: const MusicMetadata(
+            title: 'Second',
+            artist: 'Band',
+            album: 'Record',
+            track: 2,
+          ),
+          durationSeconds: 125,
+        ),
+        aFile(
+          uuid: 't1',
+          name: '01 - a.flac',
+          type: FileType.audio,
+          tags: const MusicMetadata(
+            title: 'First',
+            artist: 'Band',
+            album: 'Record',
+            track: 1,
+          ),
+          durationSeconds: 245,
+        ),
+      ]),
+    };
+
+    testWidgets(
+      'GivenTheMusicPanel_WhenListed_ThenRowsShowTitleBylineDuration',
+      (tester) async {
+        await openListing(
+          tester,
+          listings: twoTracks(),
+          destination: ShellDestination.music,
+        );
+
+        expect(find.text('First'), findsOneWidget);
+        expect(find.text('01 - a.flac'), findsNothing);
+        expect(find.text('Band · Record'), findsNWidgets(2));
+        expect(find.text('4:05'), findsOneWidget);
+      },
+    );
+
+    testWidgets('GivenTheMusicPanel_WhenOpened_ThenItIsSortedByAlbum', (
+      tester,
+    ) async {
+      await openListing(
+        tester,
+        listings: twoTracks(),
+        destination: ShellDestination.music,
+      );
+
+      expect(
+        tester.getTopLeft(find.text('First')).dy,
+        lessThan(tester.getTopLeft(find.text('Second')).dy),
+        reason: 'track 1 is listed after track 2',
+      );
+    });
   });
 }

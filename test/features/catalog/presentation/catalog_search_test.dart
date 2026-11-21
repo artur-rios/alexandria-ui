@@ -8,7 +8,7 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart'
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
-import 'package:alexandria_ui/features/library_sources/presentation/library_sources_screen.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
     show CatalogListing;
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
@@ -20,6 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_folder_picker.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_library_gateway.dart';
 import '../../../support/shell_harness.dart';
@@ -39,6 +40,9 @@ void main() {
       catalogGatewayProvider.overrideWithValue(
         FakeCatalogGateway(listings: listings),
       ),
+      // The empty catalog offers to add a library; cancelling the picker it
+      // opens keeps a test that presses it off the platform channel.
+      folderPickerProvider.overrideWithValue(FakeFolderPicker()),
     ],
   );
 
@@ -311,10 +315,10 @@ void main() {
       );
       expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
 
-      await tester.tap(find.text(l10n.catalogEmptyAddFolder));
+      await tester.tap(find.text(l10n.libraryAdd));
       await tester.pumpAndSettle();
 
-      expect(find.byType(LibrarySourcesScreen), findsOneWidget);
+      expect(find.byType(LibrariesView), findsOneWidget);
     });
   });
 

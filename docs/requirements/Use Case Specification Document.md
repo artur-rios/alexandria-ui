@@ -37,8 +37,9 @@ than repeated as an alternative flow in each:
 | --- | --- |
 | **Owner** | The single human user, and the only actor with access to any catalog operation. Interacts with every use case below. |
 | **Alexandria core** | The Rust library linked in process over FFI. Owns the catalog, the database, and every domain rule. Every catalog change in these flows is performed by it, never by the application. |
-| **Local filesystem** | The disk holding the library folders. Read directly for media and document bytes; written only by the core, except for the application's own settings and log. |
-| **Default browser** | The platform's configured web browser. Involved only when a bookmark is opened. |
+| **Local filesystem** | The disk holding the library folders. Read directly for media and document bytes; written only by the core, except for the application's own settings and log, and an accepted update's download and pending-update record (UC-51). |
+| **Default browser** | The platform's configured web browser. Involved only when a bookmark is opened, or a release page (UC-51). |
+| **GitHub releases** | GitHub's public releases API and the packages each release publishes. Asked for the latest release at startup and on "Check now", and downloaded from only when the owner accepts an update (UC-51). |
 
 ### 1.3 Use Case Overview
 
@@ -58,11 +59,12 @@ graph LR
         UC42[UC-42: Regenerate the codes]
     end
 
-    subgraph "Library sources (LB)"
-        UC05[UC-05: Register a library folder]
-        UC06[UC-06: Index a library folder]
+    subgraph "Libraries (LB)"
+        UC05[UC-05: Add a library]
+        UC06[UC-06: Scan a library]
         UC07[UC-07: Refresh the catalog]
-        UC08[UC-08: Unregister a library folder]
+        UC08[UC-08: Remove a library]
+        UC49[UC-49: Browse a library]
     end
 
     subgraph "Catalog (CT)"
@@ -75,6 +77,7 @@ graph LR
     end
 
     subgraph "Editing (ME)"
+        UC15[UC-15: Edit a track's tags]
         UC16[UC-16: Edit video metadata]
         UC17[UC-17: Rename a file]
         UC18[UC-18: Edit a text file]
@@ -82,6 +85,7 @@ graph LR
 
     subgraph "Playback (PL)"
         UC19[UC-19: Play a video]
+        UC20[UC-20: Play audio]
     end
 
     subgraph "Viewing (VW)"
@@ -117,6 +121,10 @@ graph LR
         UC39[UC-39: Manage preferences]
     end
 
+    subgraph "Updates (UP)"
+        UC51[UC-51: Update the application]
+    end
+
     OWNER --> UC01
     OWNER --> UC05
     OWNER --> UC09
@@ -126,6 +134,7 @@ graph LR
     OWNER --> UC29
     OWNER --> UC33
     OWNER --> UC38
+    OWNER --> UC51
 ```
 
 ---
@@ -269,81 +278,73 @@ graph LR
 
 ---
 
-### UC-05: Register a library folder
+### UC-05: Add a library
 
 | Field | Value |
 | --- | --- |
 | **ID** | UC-05 |
-| **Name** | Register a library folder |
-| **Actors** | Owner, Local filesystem |
-| **Description** | The owner adds a folder on disk as a source of files to index, says which kinds of file it holds, and says whether it is a library. Several may be registered. |
+| **Name** | Add a library |
+| **Actors** | Owner, Alexandria core, Local filesystem |
+| **Description** | The owner adds a folder on disk as a library, which is the only way its files reach the catalog. The core starts indexing it straight away. Several may be added. |
 | **Preconditions** | An active session exists. |
-| **Postconditions** | The folder is recorded locally, with the file types an index of it records and any library it was marked as, and offered for indexing. |
-| **Requirements** | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-22 |
+| **Postconditions** | The core holds the library, and its first index run is under way and followed under the library's row. |
+| **Requirements** | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12 |
 
 **Main Flow**
 
-1. The application presents the library-sources screen; when nothing is
-   registered, it presents first-run guidance to add a folder.
+1. The owner opens the Libraries screen — from the navigation panel, from the
+   Library menu's "Libraries" or "Add library…", or from the button an empty
+   catalog shows, the last two of which start step 2 at once. With no library
+   yet, the screen presents first-run guidance to add one.
 2. The owner opens the platform's native folder picker and chooses a folder.
-3. The application checks that the folder exists, is readable, and is not already
-   registered.
-4. The application asks which file types an index of the folder records, offering
-   every supported type as the default, and — in the same question — whether the
-   folder is a library and what to call it. Not a library is the default.
-5. The application records the folder locally, with the folder name as its default
-   label and the chosen types as its scope; choosing every type is recorded as no
-   scope at all, which means every type. A folder marked as a library is recorded
-   as one only after the core has accepted it (FR-LB-22), so a folder the
-   application shows as a library is one whose files really are out of the type
-   panels.
-6. The application lists it among the registered folders, showing what it covers,
-   and offers to index it (UC-06). Every later index of that folder uses the same
-   scope without asking again.
+3. The application asks what to call the library, offering the folder's name.
+4. The application asks the core to register the folder as a library. The core
+   checks the folder, records the library, and starts its first index run.
+5. The application lists the library and follows that run under its row
+   (UC-06 step 3 onwards), at the normal pace; the run can be slowed from the
+   background activity indicator (UC-45).
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The owner cancels the picker | Nothing is registered and the screen is unchanged. |
-| AF-02 | The folder does not exist or cannot be read | The application states which condition failed and registers nothing. |
-| AF-03 | The folder is already registered | The application says so and highlights the existing entry. |
-| AF-04 | The chosen folder contains, or sits inside, an already-registered folder | The application warns that files will be indexed once per overlapping source and lets the owner confirm or cancel. The scope is asked after the warning is accepted. |
-| AF-05 | The owner cancels the file-type question | Nothing is registered. A folder recorded with a scope nobody chose is not what was asked for, so the registration is abandoned rather than completed with a default. |
-| AF-06 | The folder is marked as a library but left unnamed | The answer cannot be given: a library is addressed by its name, and marked-but-unnamed is not a state the application can record. |
-| AF-07 | The core refuses the library — the folder sits inside one it already holds | The folder is registered as an ordinary source folder and is indexable; only the marking did not happen. The owner asked for two things and gets the one that was available, and the folder's row offers the marking again. |
+| AF-01 | The owner cancels the picker | Nothing is added and the screen is unchanged. |
+| AF-02 | The core refuses the folder as invalid — not a folder, missing, or outside the core's root | The application states the core's reason and adds nothing. |
+| AF-03 | The core refuses the folder as overlapping another library | The application says the folder is already inside, or holds, another library, and adds nothing. A file in two libraries would have two answers to where it lives. |
+| AF-04 | The owner cancels the name question | Nothing is added. |
+| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
 
-> **The library question is asked with the scope, not after it.** "Which types"
-> and "is this a library" are one question — what is this folder — and asking
-> them in two modal steps would make registering a course two decisions where
-> the owner made one.
+> **The core judges the folder.** Which folder may be a library is the core's
+> rule (BR-01), so the application asks rather than checking the disk itself
+> first, and shows the core's refusal in the core's terms.
 >
-> **A folder registered before this question existed is not stranded.** Its row
-> offers to mark it, which is the same operation reached at a different moment;
-> re-registering it to answer would mean un-registering it first (UC-08) and
-> starting over.
+> **Rewritten for the 0.6 core.** This was *Register a library folder*: a
+> source folder kept in the application's settings, with a question about which
+> file types its index recorded, and an optional marking as a library. The 0.6
+> core has no free-form indexing, so a folder is a library or is not in the
+> catalog at all, and the question of types went with it.
 
 ---
 
-### UC-06: Index a library folder
+### UC-06: Scan a library
 
 | Field | Value |
 | --- | --- |
 | **ID** | UC-06 |
-| **Name** | Index a library folder |
+| **Name** | Scan a library |
 | **Actors** | Owner, Alexandria core, Local filesystem |
-| **Description** | The owner starts a scan of a registered folder and watches it complete without the interface locking up. |
-| **Preconditions** | An active session exists. At least one library folder is registered. |
-| **Postconditions** | The catalog contains the folder's files. The run's outcome is recorded against the folder. |
-| **Requirements** | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09 |
+| **Description** | The owner scans a library again and watches it complete without the interface locking up. A library's first scan, started when it is added (UC-05), is followed the same way. |
+| **Preconditions** | An active session exists. At least one library exists. |
+| **Postconditions** | The catalog contains the library's files. The run's outcome is shown under the library's row. |
+| **Requirements** | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09, FR-LB-23 |
 
 **Main Flow**
 
-1. The owner starts an index run for a registered folder.
-2. The application calls the core to start the scan and retains the run identifier
-   it returns.
-3. The application presents the run as in progress and leaves browsing, playback,
-   viewing, and editing available.
+1. The owner chooses "Scan again" on a library's row.
+2. The application asks the core to start an index run of the library and
+   retains the run identifier it returns.
+3. The application presents the run as in progress under the library's row and
+   leaves browsing, playback, viewing, and editing available.
 4. The application observes the run's progress off the interface thread.
 5. The run finishes; the application presents the outcome — files added, files
    updated, files found missing — and keeps it visible until dismissed.
@@ -353,14 +354,20 @@ graph LR
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | A run for that folder is already in flight | The application refuses to start a second one and points at the running one. |
-| AF-02 | The core rejects the start as invalid input | The application presents the reason and marks the folder as not scanned. |
-| AF-03 | The folder disappeared or became unreadable since registration | The application presents the failure and offers to unregister the folder (UC-08). |
+| AF-01 | A run of that library is running or paused | The core refuses to start a second one; the application shows the core's sentence, which names the unfinished run, beside the library, and the owner can pause, resume, or cancel that run (UC-44). |
+| AF-02 | The core rejects the start as invalid input | The application presents the reason. |
+| AF-03 | The library's folder disappeared or became unreadable | The application presents the failure; if the folder moved, the owner corrects it (UC-49 AF-06), and otherwise may remove the library (UC-08). |
 | AF-04 | The run reports files missing on disk | The outcome links to the missing-files review (UC-37). |
-| AF-08 | The run reports files it could not record | The outcome says so in the screen's warning colours rather than as a clause on the summary line: those files are on disk and absent from the library, and no other screen will ever mention them. It happens under write contention, where a file's insert exhausts the core's retry bound — the core counts it and carries on rather than abandoning the walk. The outcome also offers to name them (FR-LB-23), because a count alone leaves the owner nowhere to look, and the remedy is another run, which the folder's row already offers beside the report. |
+| AF-08 | The run reports files it could not record | The outcome says so in the screen's warning colours rather than as a clause on the summary line: those files are on disk and absent from the library, and no other screen will ever mention them. It happens under write contention, where a file's insert exhausts the core's retry bound — the core counts it and carries on rather than abandoning the walk. The outcome also offers to name them (FR-LB-23), because a count alone leaves the owner nowhere to look, and the remedy is another run, which the library's row already offers beside the report. |
 | AF-05 | The application is closed while a run is in flight | The run belongs to the core; its outcome is presented at the next launch. |
 | AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
-| AF-07 | The folder's recorded file types name nothing this version recognizes, or no registered folder answers the path | The application refuses the run before calling the core, and says which. Neither can be read as a scope, and no scope means every type — so running one would index what the owner narrowed the folder to exclude. |
+| AF-07 | **Removed (0.6 core)** | A run no longer carries a file-type scope, so there is no recorded scope to refuse. |
+
+> **A row's status lasts for the session.** A library shows the run this session
+> is following, or one the core lists as running or paused; otherwise the
+> outcome of the last run this session followed; and with neither, nothing. The
+> core does not list finished runs per library, and keeping one in the
+> application's settings would bring back the folder store FR-LB-03 removed.
 
 ---
 
@@ -371,7 +378,7 @@ graph LR
 | **ID** | UC-07 |
 | **Name** | Refresh the catalog |
 | **Actors** | Owner, Alexandria core, Local filesystem |
-| **Description** | Everything already cataloged is re-checked, across every registered folder at once — either because the owner asked for it, or once, unannounced, when a session is established (FR-LB-21). |
+| **Description** | Everything already cataloged is re-checked, across every library at once — either because the owner asked for it ("Re-check all libraries" on the Libraries screen), or once, unannounced, when a session is established (FR-LB-21). |
 | **Preconditions** | An active session exists. The catalog is not empty. |
 | **Postconditions** | Every cataloged record is refreshed; changed files are updated and absent files are marked missing. |
 | **Requirements** | FR-LB-06, FR-LB-07, FR-LB-08, FR-LB-21 |
@@ -392,41 +399,53 @@ graph LR
 | ID | Condition | Outcome |
 | --- | --- | --- |
 | AF-01 | A refresh is already in flight | Owner-started: the application points at the running one rather than starting a second. Started at sign-in: the check is silently not repeated — nothing is presented, because nobody asked (FR-LB-21). |
-| AF-02 | The catalog is empty | Owner-started: the application offers to register and index a folder instead (UC-05, UC-06). Started at sign-in: nothing is presented; the offer is what the owner already sees on an empty catalog regardless. |
+| AF-02 | The catalog is empty | Owner-started: the application offers to add a library instead (UC-05). Started at sign-in: nothing is presented; the offer is what the owner already sees on an empty catalog regardless. |
 | AF-03 | The refresh marks files missing | The outcome links to the missing-files review (UC-37). |
 | AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login, whether the refresh was owner-started or begun at sign-in. |
 | AF-05 | The owner has turned the sign-in re-check off, or a run the core already had outstanding covers it (FR-LB-19) | Started at sign-in only: no refresh is started, and nothing is presented. |
 
 ---
 
-### UC-08: Unregister a library folder
+### UC-08: Remove a library
 
 | Field | Value |
 | --- | --- |
 | **ID** | UC-08 |
-| **Name** | Unregister a library folder |
-| **Actors** | Owner |
-| **Description** | The owner stops treating a folder as a library source, without losing catalog records or files. |
-| **Preconditions** | An active session exists. The folder is registered. |
-| **Postconditions** | The folder is no longer listed as a source. Catalog records and on-disk files are untouched. |
-| **Requirements** | FR-LB-10 |
+| **Name** | Remove a library |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner removes a library, which deletes its records from the catalog. Nothing on disk is touched. |
+| **Preconditions** | An active session exists. The library exists, and no run of it is running. |
+| **Postconditions** | The library, its files' records with their reading and watching positions and collection membership, and its runs are gone from the catalog. The files on disk are untouched. |
+| **Requirements** | FR-LB-10, FR-PL-19 |
 
 **Main Flow**
 
-1. The owner chooses to unregister a folder.
-2. The application presents a confirmation stating that catalog records and
-   on-disk files are left untouched and only the source registration is removed.
+1. The owner chooses "Remove" on a library's row.
+2. The application presents a confirmation stating that the library is deleted
+   from the catalog with its files, their reading and watching positions, and
+   their place in collections, and that nothing on disk is touched.
 3. The owner confirms.
-4. The application removes the folder from the registered sources and updates the
-   screen.
+4. The application asks the core to remove the library.
+5. The application stops following the library's run, reloads the outstanding
+   runs, and refreshes the libraries, the type counts, the listings, and the
+   collections. Any of the library's tracks leave the player's queue.
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
 | AF-01 | The owner cancels | Nothing changes. |
-| AF-02 | A run for that folder is in flight | The application refuses until the run settles, and says so. |
-| AF-03 | It is the last registered folder | The application unregisters it and presents the first-run guidance again; the catalog is untouched. |
+| AF-02 | A run of that library is running | The core refuses until the run is paused, cancelled, or finished; the application shows the core's sentence. |
+| AF-03 | It is the last library | The application removes it and presents the first-run guidance again. |
+| AF-04 | The library has a paused run | The confirmation also says that the paused scan is discarded; the core deletes it with the library. |
+| AF-05 | The track playing belongs to the library | Playback stops when the library is removed (FR-PL-19). |
+| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+
+> **Rewritten for the 0.6 core.** This was *Unregister a library folder*, which
+> left the catalog untouched. In 0.6 a file is in the catalog only because it is
+> inside a library, so removing the library removes its records — which is why
+> the confirmation says so in plain terms rather than implying the files go
+> somewhere else.
 
 ---
 
@@ -437,10 +456,10 @@ graph LR
 | **ID** | UC-09 |
 | **Name** | Browse the library by type |
 | **Actors** | Owner, Alexandria core |
-| **Description** | The owner selects a file type in the navigation panel and sees the matching items, merged across every registered folder. |
+| **Description** | The owner selects a file type in the navigation panel and sees the matching items, merged across every library. |
 | **Preconditions** | An active session exists. |
 | **Postconditions** | The listing shows the items of the selected type. |
-| **Requirements** | FR-CT-01, FR-CT-02, FR-CT-10, FR-LB-04 |
+| **Requirements** | FR-CT-01, FR-CT-02, FR-CT-10, FR-CT-13, FR-LB-04 |
 
 **Main Flow**
 
@@ -456,10 +475,11 @@ graph LR
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The type has no items | The application presents an empty state distinct from loading and from error, offering to index a folder when the catalog is empty. |
+| AF-01 | The type has no items | The application presents an empty state distinct from loading and from error, offering to add a library when the catalog is empty (UC-05). |
 | AF-02 | The core returns a failure | The application presents a readable message with a retry, and leaves the previous listing intact. |
 | AF-03 | The listing is large | Rows are materialized as they scroll into view; the scroll cost does not grow with the library size. |
 | AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | The type is Music | Each row names the track by its tags — its title, or its file name when it has none, then artist · album, and the duration (FR-CT-13) — in album order unless the owner chose another sort (UC-12). |
 
 ---
 
@@ -510,7 +530,8 @@ graph LR
 2. The application matches it against file names and the type-specific metadata
    the core exposes for the loaded catalog.
 3. The application presents the matches grouped by type, with the matched term
-   highlighted.
+   highlighted, each naming the library it lives in. A track is named by its
+   tags (FR-CT-13).
 4. The owner opens a result, which behaves exactly as opening it from its listing
    (UC-13).
 
@@ -521,7 +542,7 @@ graph LR
 | AF-01 | Nothing matches | The application presents an empty-result state naming the term, distinct from loading and error. |
 | AF-02 | The term is blank or whitespace | The application clears the search and restores the previous listing. |
 | AF-03 | The catalog is still loading | The application searches what has loaded and indicates that results may grow as loading completes. |
-| AF-04 | The catalog is empty | The application offers to register and index a folder instead. |
+| AF-04 | The catalog is empty | The application offers to add a library instead (UC-05). |
 
 > **Bookmarks are not searched.** `FR-CT-06` matches file names and the
 > type-specific metadata the core exposes for files; a bookmark is neither a
@@ -542,7 +563,7 @@ graph LR
 | **Description** | The owner narrows and orders a listing by type, lifecycle state, containing collection, and type-specific attributes. |
 | **Preconditions** | An active session exists and a listing is open. |
 | **Postconditions** | The listing shows the filtered, ordered items, and the choices are remembered for that type. |
-| **Requirements** | FR-CT-07, FR-CT-08 |
+| **Requirements** | FR-CT-07, FR-CT-08, FR-CT-19 |
 
 **Main Flow**
 
@@ -562,6 +583,7 @@ graph LR
 | AF-02 | The owner clears the filters | The application restores the unfiltered listing and clears the stored filters for that type. |
 | AF-03 | A filter names a collection that no longer exists | The application drops that filter, says so, and re-runs the query. |
 | AF-04 | The core rejects the filter as invalid input | The application presents the reason and reverts to the previous filters. |
+| AF-05 | The listing is Music | The album sort is offered beside the others and is the default: album artist (or artist), album, track number, title, untagged values last (FR-CT-19). |
 
 ---
 
@@ -630,16 +652,51 @@ graph LR
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The catalog is empty | The dashboard presents the first-run guidance to register and index a folder (UC-05). |
+| AF-01 | The catalog is empty | The dashboard presents the first-run guidance to add a library (UC-05). |
 | AF-02 | No item is in progress | That section states so rather than rendering empty. |
 | AF-03 | A section's query fails | That section shows its own failure and retry; the rest of the dashboard still renders. |
 | AF-04 | A run is in flight | The dashboard shows it as running and updates when it settles. |
 
 ---
 
-### UC-15: Edit music metadata
+### UC-15: Edit a track's tags
 
-**Removed (moved out of scope, see Orpheus)**
+| Field | Value |
+| --- | --- |
+| **ID** | UC-15 |
+| **Name** | Edit a track's tags |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner corrects an audio file's title, artist, album artist, album, year, genre, and track number. |
+| **Preconditions** | An active session exists. The file is an active audio record. |
+| **Postconditions** | The core holds the edited tags and every open view reflects them. |
+| **Requirements** | FR-ME-01, FR-ME-03, FR-ME-05 |
+
+**Main Flow**
+
+1. The owner opens the tag form from an audio file's detail view, which shows
+   the tags and the duration.
+2. The application presents the current values.
+3. The owner edits one or more fields.
+4. The application validates the edited fields locally and sends the change to
+   the core.
+5. The core validates, persists, and returns the updated tags.
+6. The application updates the detail view and every open listing — the track's
+   name and its place in album order included — without a manual refresh.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | Local validation fails | The application marks the field and does not call the core. |
+| AF-02 | The core rejects the change as invalid | The application presents the core's reason as final, keeps the form open, and leaves the stored tags unchanged. |
+| AF-03 | The core reports the file as not found | The application says the file is no longer in the catalog and closes the form. |
+| AF-04 | Nothing was actually changed | The application closes the form without calling the core. |
+| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+
+> **Reinstated for the 0.6 core**, which knows audio files again. This was
+> *Edit music metadata* until music left Alexandria; it comes back as the tags a
+> track is listed and played by, with nothing of the music library that used to
+> surround it.
 
 ---
 
@@ -780,12 +837,55 @@ graph LR
 | AF-02 | The file cannot be decoded | The application reports that the format cannot be played and returns to the detail view, without terminating. |
 | AF-03 | The file carries no subtitle or no alternative audio track | Those controls state that none is available rather than being silently absent. |
 | AF-04 | A resume position exists | The application offers to resume or start over before playing. |
+| AF-05 | Music is playing in the player bar | The music pauses when the video opens (FR-PL-08). |
 
 ---
 
 ### UC-20: Play audio
 
-**Removed (moved out of scope, see Orpheus)**
+| Field | Value |
+| --- | --- |
+| **ID** | UC-20 |
+| **Name** | Play audio |
+| **Actors** | Owner, Local filesystem |
+| **Description** | The owner plays a track, and the list it was started from plays on, in a player bar that stays while they browse. |
+| **Preconditions** | An active session exists. The file is an active audio record. |
+| **Postconditions** | Playback ran. No resume position is recorded for music. |
+| **Requirements** | FR-PL-05, FR-PL-06, FR-PL-08, FR-PL-18, FR-PL-19, FR-CT-13 |
+
+**Main Flow**
+
+1. The owner opens a track — from the Music panel, a library's folder, search,
+   its details, or the dashboard.
+2. The application builds the queue from where the track was started: the Music
+   listing as it is sorted and filtered, the folder's audio files in tree order,
+   or the track alone from search, details, or the dashboard. Deleted records
+   are left out.
+3. The application plays the track from its on-disk path in the player bar,
+   docked at the bottom of the shell, which shows its cover, its title and
+   artist, previous, play and pause, next, its position with seeking, and close.
+4. The owner navigates elsewhere in the application; playback and the bar
+   continue.
+5. The owner pauses, resumes, seeks, and moves to the next or previous track.
+   When a track ends, the next one plays.
+6. Playback stops after the last track, or when the owner closes the bar.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | A queued track is absent from disk or cannot be opened | The application skips it, says briefly in the bar which one it skipped, and plays the next (FR-PL-18). |
+| AF-02 | Nothing left in the queue can be opened | Playback stops with a readable failure in the bar, offering a re-scan. |
+| AF-03 | The owner opens a video | The music pauses (FR-PL-08). |
+| AF-04 | The owner signs out | Playback stops (UC-03). |
+| AF-05 | The library holding a queued track is removed (UC-08) | Its tracks leave the queue; if the track playing is one of them, playback stops. |
+| AF-06 | The owner presses the track's title in the bar | The track's details open (UC-13); playback continues. |
+
+> **Reinstated, narrowed, for the 0.6 core.** Audio is one more type to play,
+> not a music library to manage, which stays Orpheus's. There are no playlists
+> (UC-47, UC-48), no play history or statistics (UC-50), no browsing by artist
+> or album (UC-46), no full-window player (UC-21), no shuffle or repeat, and no
+> resume position for a track.
 
 ---
 
@@ -1347,7 +1447,7 @@ graph LR
 2. The application requests the count and the records the core reports as missing.
 3. The application lists them with their last known paths.
 4. The owner starts a re-scan (UC-06 or UC-07) to check whether the files
-   returned.
+   returned. The review lists the libraries' roots as the places it looked.
 5. Files found again leave the review; the rest remain listed.
 
 **Alternative Flows**
@@ -1356,7 +1456,7 @@ graph LR
 | --- | --- | --- |
 | AF-01 | No file is missing | The view presents an empty state saying so. |
 | AF-02 | The owner decides to remove a missing record | The application routes them through deletion (UC-33) and purge (UC-35); it never removes a record because a file is absent. |
-| AF-03 | The file's library folder is no longer registered | The application indicates which records came from an unregistered folder. |
+| AF-03 | **Removed (0.6 core)** | Every record belongs to a library, and removing a library removes its records (UC-08), so no missing record can come from a folder that is no longer one. |
 | AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
 
 ---
@@ -1430,7 +1530,7 @@ graph LR
 | AF-02 | The settings store cannot be written | The choices apply for this session and the application reports that they were not saved. |
 | AF-03 | No preference has ever been set | The application starts on the system theme and the system language when it is one of the two supported, and English otherwise. |
 | AF-04 | Playback or an index run is active | Both continue uninterrupted through a theme or language change. |
-| AF-05 | There is no session | Only the theme and the language are offered — they change the screen the owner is standing on. The choices that belong to a library nobody has opened (the startup re-check) appear once they have signed in. |
+| AF-05 | There is no session | The theme and the language are offered — they change the screen the owner is standing on — and so is the update check, which belongs to the application rather than to a library (UC-51). The choices that belong to a library nobody has opened (the startup re-check) appear once they have signed in. |
 
 ---
 
@@ -1560,8 +1660,9 @@ graph LR
    indicator in the shell.
 2. The application asks the core which runs are outstanding, and does so
    repeatedly while any of them is running.
-3. For each run the application presents its phase, how far through it is, and
-   how long it has been working — counting only time the run spent working, not
+3. For each run the application presents the library it belongs to — or the
+   catalog, for a refresh — its phase, how far through it is, and how long it
+   has been working — counting only time the run spent working, not
    time it spent paused.
 4. Where the run has reported a total, the application presents a remaining-time
    estimate derived from the rate it has observed itself.
@@ -1573,7 +1674,7 @@ graph LR
 | ID | Condition | Outcome |
 | --- | --- | --- |
 | AF-01 | The run has not yet reported a total | The application presents the count processed so far and no estimate, rather than dividing by a total it does not have. |
-| AF-02 | Several runs are outstanding at once | The application presents an aggregate line and directs the owner to the library folders screen, where a specific run can be addressed. One row has no space to say which run a control would act on. |
+| AF-02 | Several runs are outstanding at once | The application presents an aggregate line and directs the owner to the Libraries screen, where a specific run can be addressed under its library's row. One row has no space to say which run a control would act on. |
 | AF-03 | One run's status cannot be read | That run stops being polled and the others continue. A single unreadable run never stops the application following the rest. |
 | AF-04 | Every outstanding run is paused | The application says so rather than claiming work is under way, and offers the resume. |
 | AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
@@ -1587,7 +1688,7 @@ graph LR
 | **ID** | UC-44 |
 | **Name** | Pause, resume, or cancel a scan |
 | **Actors** | Owner, Alexandria core |
-| **Description** | The owner stops a scan where it stands and picks it up later, or abandons it outright — from the folder's own row, or from the background activity indicator. |
+| **Description** | The owner stops a scan where it stands and picks it up later, or abandons it outright — from the library's own row, or from the background activity indicator. |
 | **Preconditions** | A run exists and is outstanding. |
 | **Postconditions** | The core records the run paused, running again under the same identifier, or cancelled. Whatever the run already catalogued stays catalogued; nothing is undone. |
 | **Requirements** | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
@@ -1632,19 +1733,20 @@ graph LR
 | **Name** | Pace a scan |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner chooses how hard a scan pushes, so a large library can be catalogued in the background without the application becoming unpleasant to use. |
-| **Preconditions** | A run is being started, or one is outstanding. |
+| **Preconditions** | A run is outstanding. |
 | **Postconditions** | The run carries the chosen pace, and keeps it across a further pause. |
 | **Requirements** | FR-LB-18, FR-LB-16 |
 
 **Main Flow**
 
-1. The owner chooses a pace — normal or low — when starting a scan.
-2. The application passes that choice to the core, which resolves it into how
-   many files the run works on at a time.
-3. To change the pace of a run already under way, the owner asks for the new
-   pace; the application pauses the run and resumes it at that pace, because the
-   pace is fixed for as long as a segment is walking.
-4. The application states that the progress bar returns to zero, since a resume
+1. A scan starts at the normal pace — adding a library and scanning one again
+   do not ask.
+2. To change the pace of a run already under way, the owner chooses normal or
+   low from the background activity indicator; the application pauses the run
+   and resumes it at that pace, because the pace is fixed for as long as a
+   segment is walking. The core resolves the pace into how many files the run
+   works on at a time.
+3. The application states that the progress bar returns to zero, since a resume
    starts a new segment.
 
 **Alternative Flows**
@@ -1680,9 +1782,9 @@ graph LR
 | **Name** | Browse a library |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner opens a library, walks its folders as they are on disk, opens files from them, and corrects where the library is when its folder moves. |
-| **Preconditions** | An active session exists and at least one folder has been marked as a library (UC-05). |
+| **Preconditions** | An active session exists and at least one library has been added (UC-05). |
 | **Postconditions** | None. Browsing changes nothing. |
-| **Requirements** | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
+| **Requirements** | FR-CT-13, FR-CT-15, FR-CT-17, FR-LB-09 |
 
 **Main Flow**
 
@@ -1691,51 +1793,116 @@ graph LR
 2. The owner opens one. The application asks the core for what sits directly
    inside the library's root — the folders at that level, and the files.
 3. The owner opens a folder. The application asks for that level and shows it,
-   keeping a way back up to the level above.
+   keeping a way back up to the level above. A track is named by its tags, with
+   its file name beneath (FR-CT-13).
 4. The owner opens a file. It opens in the viewer or player registered for its
-   type, exactly as it would from a catalog listing (FR-CT-12).
+   type, exactly as it would from a catalog listing (FR-CT-12); a track plays
+   with that folder's audio files as its queue, in tree order (UC-20).
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | No folder has been marked as a library | The screen says so and says where a library is made — on the source-folders screen — because there is nothing to press here. |
-| AF-02 | A folder in the library holds nothing the core catalogued | It is shown as an empty folder rather than hidden. A folder whose files were all scoped out of the index (UC-05) still exists on disk, and hiding it would misdescribe the structure the library exists to preserve. |
-| AF-03 | The library no longer exists — it was unmarked from another window | The screen states that it could not be read and offers to retry, which re-reads the list. |
-| AF-06 | The library's folder moved on disk | The owner picks where it is now. The library's files move with it and keep their identity, and the folder's own registration follows, so the next scan walks the folder that is there. Nothing is re-indexed: these are the same files. |
-| AF-07 | The folder picked already overlaps another library, or the catalog already holds files there | The application says which of the two it is, in those terms, and nothing moves — neither the library nor the source folder. |
-| AF-08 | The folder picked is already registered as a different source folder | The library still moves; the source registrations are left alone, because collapsing two into one would silently drop the other's scope. The owner can see both rows and fix it. |
-| AF-04 | The owner unmarks the library | After confirming, the core stops treating the folder as one and its files return to the type panels; nothing on disk and nothing in the catalog is touched. The folder's own row, if it is still registered as a source, stops calling itself a library. |
+| AF-01 | No library has been added | The screen says so and offers to add one (UC-05). |
+| AF-02 | A folder in the library holds nothing the core catalogued | It is shown as an empty folder rather than hidden. It still exists on disk, and hiding it would misdescribe the structure the library exists to preserve. |
+| AF-03 | The library no longer exists — it was removed from another window | The screen states that it could not be read and offers to retry, which re-reads the list. |
+| AF-06 | The library's folder moved on disk | The owner chooses "Moved…" and picks where it is now. The library's files move with it and keep their identity, so the next scan walks the folder that is there. Nothing is re-indexed: these are the same files. |
+| AF-07 | The folder picked already overlaps another library, or the catalog already holds files there | The application says which of the two it is, in those terms, and nothing moves. |
+| AF-08 | A run of the library is running or paused | The core refuses the move; the application shows the core's sentence, which names the unfinished run (FR-LB-09). |
+| AF-04 | **Removed (0.6 core)** | Unmarking a library so that its files returned to the type panels no longer exists: a library's files are in the type panels already, and removing a library deletes its records (UC-08). |
 | AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
 
-> **The Libraries screen browses; it does not register.** A library is made by
-> marking a source folder (UC-05), which is where a folder's scope is chosen and
-> where indexing is started, so a second way in from here would be a second
-> place to answer the same question — and would let a folder become a library
-> without ever being registered as a source, which is to say without ever being
-> indexed.
+> **The Libraries screen is where libraries are made.** Since the 0.6 core, a
+> library is the only way into the catalog, so adding one (UC-05), scanning it
+> again (UC-06), re-checking every library (UC-07), and removing one (UC-08)
+> all happen on this screen, beside the browsing.
 >
 > **A moved folder is corrected, not re-indexed.** Re-walking the new
 > location would mint new records for the same files and leave the old ones to
 > be found missing — taking with them every reference a watchlist, a reading
 > position, or a collection holds. So the root and the paths beneath it are
 > corrected together, which is the core's own guarantee (FR-FC-41), and this
-> screen's part is to ask which folder and to keep the registration in step.
+> screen's part is to ask which folder.
 >
-> **Unmarking lives here rather than on the folder's row**, because a library
-> outlives the registration it came from: un-registering a source folder leaves
-> the catalog alone (UC-08, BR-12), so its files stay grouped and this screen
-> stays the one place every library can be reached.
->
-> **A library narrows where files are listed, never what can be found.** Search
-> (UC-11), the deleted-items review (UC-34), watchlists and reading lists
-> (UC-29 … UC-32), and collections (UC-26, UC-27) all continue to reach a
-> library's files. That is deliberate and is stated in FR-CT-16 so that a later
-> reader does not resolve the apparent inconsistency by hiding them everywhere.
+> **A library's files are listed everywhere.** The tree is a second way to
+> them, not the only one: the type panels, search, the dashboard, the
+> deleted-items and missing-files reviews, and the collection picker all list
+> them too. Until the 0.6 core they were kept out of the type panels (FR-CT-16,
+> now removed).
 
 ### UC-50: See what has been played most
 
 **Removed (moved out of scope, see Orpheus)**
+
+---
+
+### UC-51: Update the application
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-51 |
+| **Name** | Update the application |
+| **Actors** | Owner, GitHub releases, Local filesystem |
+| **Description** | The application finds a newer release at startup, or when the owner asks, and offers it; the owner updates now, later, or never to that version, and a copy that can update itself downloads, verifies, installs, and starts the new version. |
+| **Preconditions** | A release build is running, from an installation other than the Flatpak. At startup, "Check for updates at startup" is on (the default). A session is not required. |
+| **Postconditions** | The owner is running the newer release; or has chosen to be asked again at the next start; or has skipped that version, which is remembered; or has been sent to the release page. Nothing unverified has run, and the owner's data is untouched. |
+| **Requirements** | FR-UP-01, FR-UP-02, FR-UP-03, FR-UP-04, FR-UP-05, FR-UP-06, FR-UP-07, FR-UP-08, FR-UP-09, FR-UP-10, FR-UP-11, FR-UP-12, FR-UP-13, FR-UP-14, FR-UP-15 |
+
+**Main Flow**
+
+1. Startup reaches ready. In the background, the application asks GitHub's
+   public releases API for the latest release, sending only the request, its
+   `Accept` header, and `User-Agent: Alexandria/<version>`.
+2. The latest release is newer than the running version, and is not a version
+   the owner skipped.
+3. The application shows the prompt over whatever screen is up — the login
+   screen or the shell — waiting first for any open dialog to close. It names
+   the new version, says "You have <current>", and shows the release notes,
+   with Update now, Later, and Skip this version.
+4. The owner chooses Update now. The application downloads the package for
+   this installation, showing its progress and a Cancel.
+5. The application verifies the download's SHA-256 against the checksums file
+   the release publishes.
+6. The application closes for the update: it ends the session's activities,
+   records the window's geometry, writes the pending-update record, starts the
+   installer detached, and exits.
+7. The installer replaces the installation, keeping the owner's data, and
+   starts the application again.
+8. At the next start, the application finds itself running the new version and
+   deletes the pending-update record.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The owner chooses Later | The prompt closes and nothing is stored; the next start asks again. |
+| AF-02 | The owner chooses Skip this version | The version is remembered and not offered at startup again. A release newer than it is offered as usual. |
+| AF-03 | This copy cannot update itself — the `.deb`, the zip or tarball, MSIX, or an installation the owner cannot write to | The prompt says this copy can't update itself and offers "Open release page" in place of Update now, which opens the release in the default browser. |
+| AF-04 | The release publishes no checksums for this installation | As AF-03: the application cannot verify what it would install, so it offers the release page. The first release that publishes checksums is installed by hand, once. |
+| AF-05 | The download does not match its checksum, or the checksums file has no line for it | The download is deleted, the prompt says it could not be verified, and nothing runs. |
+| AF-06 | The download fails | The partial file is deleted and the prompt says the update could not be downloaded. |
+| AF-07 | The owner cancels the download, or signs out while it runs | The partial file is deleted and, on Cancel, the offer stands as it was. |
+| AF-08 | An edit is unsaved when the application closes for the update | The owner is asked first, as signing out asks. "Update and discard" continues; declining returns to the offer and deletes the download, so the owner can save first. |
+| AF-09 | A library scan is running when the application closes for the update | The owner is told that the scan will pause and can be resumed after the update (UC-44); confirming continues, and declining returns to the offer. |
+| AF-10 | The update did not take: the next start is still running the old version | The installer started the old version again. The application deletes the pending-update record and, in the prompt's place, shows "The update to <version> did not complete", with "Open release page". |
+| AF-11 | The check fails at startup — offline, timed out, rate-limited, a server error, or an unreadable answer | It is logged, and nothing is shown. Startup is neither slowed nor interrupted. |
+| AF-12 | The owner chooses "Check now" in Preferences and nothing newer exists | The application says "You're up to date". A failed check says "Couldn't check for updates"; a newer release opens the prompt, even one the owner skipped. |
+| AF-13 | The owner turns "Check for updates at startup" off | No request is made at startup. "Check now" still works. |
+| AF-14 | The application runs from the Flatpak | It never checks, and Preferences shows neither the switch nor "Check now": the Flatpak has no network permission (FR-UP-15). |
+
+> **One network call, and only one.** The check is the application's only
+> request of its own: no telemetry, nothing about the owner or the library,
+> and nothing beyond what any HTTPS request carries. It runs once per start,
+> never periodically, and can be turned off.
+>
+> **Nothing unverified runs.** The packages are unsigned, so what the
+> application installs is what HTTPS delivered and the release's SHA-256
+> confirms. A release that cannot be checked is not installed by the
+> application at all.
+>
+> **Closing for an update is its own path.** It asks about unsaved edits and a
+> running scan; closing the window in the ordinary way does not, and is
+> unchanged.
 
 ---
 
@@ -1747,22 +1914,22 @@ graph LR
 | UC-02: Log in | FR-AU-04, FR-AU-05, FR-AU-06, FR-AU-07, FR-AU-08, FR-AU-11 |
 | UC-03: Sign out | FR-AU-09 |
 | UC-04: Change credentials | FR-AU-10, FR-AU-11 |
-| UC-05: Register a library folder | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12, FR-LB-22 |
-| UC-06: Index a library folder | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09, FR-LB-23 |
+| UC-05: Add a library | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12 |
+| UC-06: Scan a library | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09, FR-LB-23 |
 | UC-07: Refresh the catalog | FR-LB-06, FR-LB-07, FR-LB-08, FR-LB-21 |
-| UC-08: Unregister a library folder | FR-LB-10 |
-| UC-09: Browse the library by type | FR-CT-01, FR-CT-02, FR-CT-10, FR-CT-16, FR-LB-04 |
+| UC-08: Remove a library | FR-LB-10, FR-PL-19 |
+| UC-09: Browse the library by type | FR-CT-01, FR-CT-02, FR-CT-10, FR-CT-13, FR-LB-04 |
 | UC-10: Switch the view layout | FR-CT-03, FR-CT-04 |
-| UC-11: Search the catalog | FR-CT-06, FR-CT-09, FR-CT-16, FR-CT-17 |
-| UC-12: Filter and sort a listing | FR-CT-07, FR-CT-08 |
+| UC-11: Search the catalog | FR-CT-06, FR-CT-09, FR-CT-13 |
+| UC-12: Filter and sort a listing | FR-CT-07, FR-CT-08, FR-CT-19 |
 | UC-13: View a file's details | FR-CT-05, FR-CT-12, FR-CT-18 |
 | UC-14: View the home dashboard | FR-CT-11 |
-| UC-15: Edit music metadata | **Removed (moved out of scope, see Orpheus)** |
+| UC-15: Edit a track's tags | FR-ME-01, FR-ME-03, FR-ME-05 |
 | UC-16: Edit video metadata | FR-ME-02, FR-ME-03, FR-ME-05 |
 | UC-17: Rename a file | FR-ME-04, FR-ME-05 |
 | UC-18: Edit a Markdown or text file | FR-ME-06, FR-ME-07, FR-ME-08, FR-ME-09, FR-ME-10 |
 | UC-19: Play a video | FR-PL-01, FR-PL-02, FR-PL-03, FR-PL-04, FR-PL-08, FR-PL-10 |
-| UC-20: Play audio | **Removed (moved out of scope, see Orpheus)** |
+| UC-20: Play audio | FR-PL-05, FR-PL-06, FR-PL-08, FR-PL-18, FR-PL-19, FR-CT-13 |
 | UC-21: See what is playing | **Removed (moved out of scope, see Orpheus)** |
 | UC-22: View a document | FR-VW-01, FR-VW-02, FR-VW-07, FR-VW-08 |
 | UC-23: Read a comic book | FR-VW-03, FR-VW-07, FR-VW-08 |
@@ -1791,8 +1958,9 @@ graph LR
 | UC-46: Browse the music library | **Removed (moved out of scope, see Orpheus)** |
 | UC-47: Manage a playlist | **Removed (moved out of scope, see Orpheus)** |
 | UC-48: Play a playlist | **Removed (moved out of scope, see Orpheus)** |
-| UC-49: Browse a library | FR-CT-15, FR-CT-16, FR-CT-17, FR-LB-22 |
+| UC-49: Browse a library | FR-CT-13, FR-CT-15, FR-CT-17, FR-LB-09 |
 | UC-50: See what has been played most | **Removed (moved out of scope, see Orpheus)** |
+| UC-51: Update the application | FR-UP-01, FR-UP-02, FR-UP-03, FR-UP-04, FR-UP-05, FR-UP-06, FR-UP-07, FR-UP-08, FR-UP-09, FR-UP-10, FR-UP-11, FR-UP-12, FR-UP-13, FR-UP-14, FR-UP-15 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) that has not been
@@ -1835,23 +2003,26 @@ This note previously described a `Locked` state gated on a confirmed e-mail.
 The core dropped e-mail confirmation on 2026-08-18; there is no such state, and
 the diagram above has never had one.
 
-### 4.2 Library source lifecycle
+### 4.2 Library lifecycle
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Registered : folder chosen (UC-05)
-    Registered --> Scanning : index run started (UC-06)
+    [*] --> Scanning : library added, core starts its first run (UC-05)
+    Scanning --> Paused : paused (UC-44)
+    Paused --> Scanning : resumed (UC-44)
     Scanning --> Indexed : run finished
-    Scanning --> Failed : run failed
-    Failed --> Scanning : retried
-    Indexed --> Scanning : re-scanned
-    Indexed --> [*] : unregistered (UC-08)
-    Failed --> [*] : unregistered (UC-08)
-    Registered --> [*] : unregistered (UC-08)
+    Scanning --> Failed : run failed or cancelled
+    Failed --> Scanning : scanned again (UC-06)
+    Indexed --> Scanning : scanned again (UC-06)
+    Indexed --> [*] : removed (UC-08)
+    Failed --> [*] : removed (UC-08)
+    Paused --> [*] : removed, paused run discarded (UC-08)
 ```
 
-Unregistering never deletes catalog records or on-disk files; only the source
-registration ends.
+Removing a library deletes its catalog records — its files with their reading
+and watching positions and collection membership, and its runs — and never
+touches the files on disk. A library cannot be removed while it is
+`Scanning`, nor moved or scanned again while it is `Scanning` or `Paused`.
 
 ### 4.3 Catalog record lifecycle, as the application presents it
 
@@ -1888,7 +2059,7 @@ stateDiagram-v2
 ```mermaid
 stateDiagram-v2
     [*] --> Idle
-    Idle --> Playing : file opened (UC-19)
+    Idle --> Playing : file opened (UC-19, UC-20)
     Playing --> Paused : paused
     Paused --> Playing : resumed
     Playing --> Idle : stopped or ended

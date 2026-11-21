@@ -330,6 +330,20 @@ as_user "$smoke/installer.sh" --prefix "$prefix" --yes
 test -x "$prefix/alexandria"
 test -f "$prefix/unrelated.txt"
 
+# A replacement whose payload is cut short must fail and leave the installation it was replacing whole: the in-app updater
+# runs this installer, and a failed update must never leave the owner without the application.
+size=$(wc -c < "$installer")
+head -c $((size - size / 4)) "$installer" > "$smoke/truncated.sh"
+chmod 755 "$smoke/truncated.sh"
+if as_user "$smoke/truncated.sh" --prefix "$prefix" --yes; then
+  echo "a truncated installer reported success" >&2
+  exit 1
+fi
+test -x "$prefix/alexandria"
+test -f "$prefix/lib/libalexandria_ffi.so"
+test ! -e "$prefix/.staging-update"
+test ! -e "$prefix/.backup-update"
+
 as_user "$smoke/installer.sh" --uninstall --yes
 test ! -e "$prefix/alexandria"
 test -f "$prefix/unrelated.txt"
@@ -388,6 +402,18 @@ echo "== Collect the assets"
 find dist -mindepth 2 -type f \( -name '*.deb' -o -name '*.AppImage' -o -name '*.flatpak' -o -name '*.tar.gz' \) \
   -exec mv -n {} dist/ \;
 find dist -mindepth 1 -type d -empty -delete
+
+# The SHA-256 of every asset, which the application's updater checks a downloaded installer against before it runs it
+# (update-check design §4). The packages are unsigned, so this and HTTPS are what an update's integrity rests on. Checked
+# straight after writing, so a sums file that does not match what is published never is.
+echo "== Write the checksums"
+sums="alexandria-${version}-linux-SHA256SUMS"
+(
+  cd dist
+  find . -maxdepth 1 -type f ! -name "$sums" -printf '%f\0' | sort -z | xargs -0 sha256sum -- > "../$sums"
+  mv "../$sums" "$sums"
+  sha256sum -c --quiet "$sums"
+)
 count=$(find dist -maxdepth 1 -type f | wc -l)
 test "$count" -gt 0 || {
   echo "no assets were collected" >&2

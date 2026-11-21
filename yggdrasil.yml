@@ -43,6 +43,8 @@ release:
       - "dist/*.deb"
       - "dist/*.flatpak"
       - "dist/*.md"
+      # The checksums the application's updater verifies a download against (update-check design §4).
+      - "dist/*-SHA256SUMS"
   # release.yml's Windows job, on GitHub Actions: dispatched on the tag, with tag=<tag>. The artifact is named
   # alexandria-ui-windows, and holds the installer, the portable archive and the MSIX side by side.
   windows:
@@ -51,3 +53,4 @@ release:
       - "alexandria-ui-windows/*.exe"
       - "alexandria-ui-windows/*.zip"
       - "alexandria-ui-windows/*.msix"
+      - "alexandria-ui-windows/*-SHA256SUMS"

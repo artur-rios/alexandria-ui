@@ -1,12 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../lifecycle/presentation/deleted_items_screen.dart';
 import '../../lifecycle/presentation/missing_files_screen.dart';
-import '../../library_sources/presentation/library_sources_screen.dart';
+import '../../libraries/presentation/libraries_view.dart';
 import '../../organization/presentation/collections_screen.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
+import '../domain/shell_destination.dart';
 import 'menu_entry.dart';
 
 /// The library-wide areas, reached from the menu bar (UC-37 main flow step 1,
@@ -23,7 +26,7 @@ import 'menu_entry.dart';
 /// Three headings inside, because a menu holding six unrelated screens
 /// cannot be read at a glance without them. The order beneath each runs from
 /// filling the library to reviewing what has left it.
-class LibraryMenu extends StatelessWidget {
+class LibraryMenu extends ConsumerWidget {
   /// Creates the menu.
   const LibraryMenu({required this.showsLabel, super.key});
 
@@ -34,7 +37,7 @@ class LibraryMenu extends StatelessWidget {
   final bool showsLabel;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
 
     final button = SubmenuButton(
@@ -42,9 +45,16 @@ class LibraryMenu extends StatelessWidget {
       menuChildren: [
         MenuGroupHeading(l10n.libraryToolsGroupLibrary),
         MenuEntry(
-          icon: Icons.folder_outlined,
-          label: l10n.librarySourcesOpen,
-          onSelected: () => LibrarySourcesScreen.show(context),
+          icon: Icons.folder_special_outlined,
+          label: l10n.libraryMenuLibraries,
+          onSelected: () => ref
+              .read(shellControllerProvider.notifier)
+              .go(ShellDestination.libraries),
+        ),
+        MenuEntry(
+          icon: Icons.create_new_folder_outlined,
+          label: l10n.libraryMenuAdd,
+          onSelected: () => openLibrariesAndAdd(ref),
         ),
         MenuEntry(
           icon: Icons.collections_bookmark_outlined,
@@ -74,7 +84,9 @@ class LibraryMenu extends StatelessWidget {
           onSelected: () => MissingFilesScreen.show(context),
         ),
       ],
-      child: showsLabel ? Text(l10n.libraryToolsLabel) : const SizedBox.shrink(),
+      child: showsLabel
+          ? Text(l10n.libraryToolsLabel)
+          : const SizedBox.shrink(),
     );
 
     if (showsLabel) return button;

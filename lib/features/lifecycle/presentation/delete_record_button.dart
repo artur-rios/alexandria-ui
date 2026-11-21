@@ -6,6 +6,7 @@ import '../../../core/failures/failure_messages.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_file.dart';
+import '../../catalog/presentation/music_display_name.dart';
 import '../../organization/domain/bookmark.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../application/deletion_controller.dart';
@@ -38,7 +39,7 @@ class DeleteFileButton extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final deletion = ref.read(deletionControllerProvider.notifier);
     final isOpen = deletion.holdsOn(file.uuid).isNotEmpty;
-    final name = file.name;
+    final name = displayName(file);
 
     final confirmed = await ConfirmationDialog.show(
       context,

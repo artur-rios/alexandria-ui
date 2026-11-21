@@ -285,6 +285,10 @@ jobs:
           mkdir -p dist/windows
           cp build/windows/x64/runner/Release/*.msix dist/windows/
           cp dist/*.exe dist/*.zip dist/windows/
+          # The SHA-256 of each package, which the application's updater checks a downloaded setup against before it
+          # runs it (update-check design §4). Checked straight after writing.
+          sums="alexandria-${{ steps.version.outputs.value }}-windows-SHA256SUMS"
+          (cd dist/windows && sha256sum -- *.exe *.zip *.msix > "$sums" && sha256sum -c --quiet "$sums")
           ls -l dist/windows
 
       - uses: actions/upload-artifact@v7

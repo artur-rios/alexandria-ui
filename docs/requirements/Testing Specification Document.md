@@ -94,7 +94,8 @@ lib/
 │   │   ├── application/
 │   │   ├── data/
 │   │   └── presentation/
-│   ├── library_sources/
+│   ├── indexing/
+│   ├── libraries/
 │   ├── catalog/
 │   ├── editing/
 │   ├── playback/
@@ -119,7 +120,7 @@ test/                           unit and widget tests, mirroring lib/
 integration_test/               whole flows against the real core
 ├── support/                    temporary database and fixture library setup
 ├── auth/
-├── library_sources/
+├── libraries/
 └── …
 ```
 
@@ -303,8 +304,8 @@ flutter test
 | One feature's tests | `flutter test test/features/auth` |
 | With coverage | `flutter test --coverage` |
 | Regenerate golden files | `flutter test --update-goldens` |
-| Integration, on Windows | `flutter test integration_test -d windows` |
-| Integration, on Linux | `flutter test integration_test -d linux` |
+| Integration, on Windows | `bash ci/integration-suite.sh windows` |
+| Integration, on Linux | `bash ci/integration-suite.sh linux` |
 | The page engine's fork: patch list and policy rules | `sh tools/check-webview-cef-fork.sh` and `sh third_party/webview_cef/test/native/run.sh` |
 
 The separation is structural rather than tag-based: `test/` holds everything that

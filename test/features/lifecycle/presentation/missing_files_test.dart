@@ -11,15 +11,15 @@ import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/lifecycle/application/missing_files_controller.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
-import 'package:alexandria_ui/features/library_sources/domain/library_source.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
-import '../../../support/fake_library_sources.dart';
 import '../../../support/shell_harness.dart';
 
 /// Reviewing missing files (UC-37, FR-LC-08).
@@ -51,10 +51,10 @@ void main() {
     missingAt: missingAt,
   );
 
-  final registered = LibrarySource(
-    path: '/home/owner/books',
-    label: 'Books',
-    registeredAt: DateTime.utc(2026),
+  const books = Library(
+    uuid: 'lib-books',
+    name: 'Books',
+    rootPath: '/home/owner/books',
   );
 
   /// Signs in and opens the missing-files review (main flow step 1).
@@ -82,8 +82,8 @@ void main() {
       surfaceSize: const Size(1440, 1000),
       extraOverrides: <Override>[
         catalogGatewayProvider.overrideWithValue(catalog),
-        librarySourceStoreProvider.overrideWithValue(
-          InMemoryLibrarySourceStore([registered]),
+        libraryGatewayProvider.overrideWithValue(
+          FakeLibraryGateway(libraries: [books]),
         ),
       ],
     );

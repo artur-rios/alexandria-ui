@@ -4,6 +4,7 @@ import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/libraries/presentation/library_tree_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -51,15 +52,16 @@ void main() {
   AppLocalizations messages(WidgetTester tester) =>
       AppLocalizations.of(tester.element(find.byType(LibrariesView)));
 
-  testWidgets('GivenTheScreenOpens_ThenItSaysWhatALibraryHides', (
-    tester,
-  ) async {
-    // Marking a folder empties part of a type panel, and that is not visible
-    // until afterwards. Said before anything is marked.
-    await openLibraries(tester);
+  testWidgets(
+    'GivenTheLibrariesScreen_WhenItOpens_ThenItSaysWhatALibraryHides',
+    (tester) async {
+      // Marking a folder empties part of a type panel, and that is not visible
+      // until afterwards. Said before anything is marked.
+      await openLibraries(tester);
 
-    expect(find.text(messages(tester).librariesExplanation), findsOneWidget);
-  });
+      expect(find.text(messages(tester).librariesExplanation), findsOneWidget);
+    },
+  );
 
   testWidgets('GivenNoLibraries_WhenTheScreenOpens_ThenItSaysSo', (
     tester,

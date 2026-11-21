@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../library_sources/presentation/library_sources_screen.dart';
+import '../../libraries/presentation/libraries_view.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../domain/catalog_file.dart';
 import '../application/dashboard_controller.dart';
@@ -12,6 +12,7 @@ import '../application/in_progress.dart';
 import '../domain/file_type.dart';
 import 'catalog_search_view.dart';
 import 'file_details_view.dart';
+import 'music_display_name.dart';
 
 /// The home dashboard (UC-14, FR-CT-11).
 ///
@@ -87,7 +88,7 @@ class _RecentSection extends ConsumerWidget {
               return ListTile(
                 dense: true,
                 leading: const Icon(Icons.insert_drive_file_outlined),
-                title: Text(file.name),
+                title: Text(displayName(file)),
                 subtitle: Text(file.type.label(l10n)),
                 // Main flow step 4: opening an item here behaves exactly as
                 // opening it from its listing, which now means the file
@@ -230,11 +231,11 @@ class _LastRunSection extends ConsumerWidget {
 }
 
 /// The first-run guidance (AF-01).
-class _FirstRun extends StatelessWidget {
+class _FirstRun extends ConsumerWidget {
   const _FirstRun();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
@@ -259,9 +260,9 @@ class _FirstRun extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
-              onPressed: () => LibrarySourcesScreen.show(context),
+              onPressed: () => openLibrariesAndAdd(ref),
               icon: const Icon(Icons.folder_outlined),
-              label: Text(l10n.catalogEmptyAddFolder),
+              label: Text(l10n.libraryAdd),
             ),
           ],
         ),

@@ -288,217 +288,84 @@ class AppLocalizationsEn extends AppLocalizations {
       'The change was refused, and your e-mail and password are unchanged.';
 
   @override
-  String get librarySourcesOpen => 'Library folders';
-
-  @override
-  String get librarySourcesTitle => 'Library folders';
-
-  @override
-  String get librarySourcesEmptyTitle => 'No library folders yet';
-
-  @override
-  String get librarySourcesEmptyBody =>
-      'Add a folder from your disk and Alexandria will catalog what is inside it. Nothing is moved, copied, or changed.';
-
-  @override
-  String get librarySourcesClose => 'Close the library folders';
-
-  @override
-  String get librarySourcesAdd => 'Add a folder';
-
-  @override
-  String librarySourcesMissing(String path) {
-    return 'There is no folder at $path. Nothing was added.';
-  }
-
-  @override
-  String librarySourcesUnreadable(String path) {
-    return 'The folder at $path cannot be read. Nothing was added.';
-  }
-
-  @override
-  String get librarySourcesAlreadyRegistered =>
-      'That folder is already in your library.';
-
-  @override
-  String get librarySourcesOverlapTitle => 'These folders overlap';
-
-  @override
-  String librarySourcesOverlapBody(String path, String existing) {
-    return '$path overlaps $existing, which is already in your library. Files inside both will be cataloged once for each folder.';
-  }
-
-  @override
-  String get librarySourcesOverlapConfirm => 'Add it anyway';
-
-  @override
-  String get indexScopeTitle => 'What is in this folder?';
-
-  @override
-  String get indexScopeBody =>
-      'Alexandria will catalog only the kinds of file you choose here. A folder of ebooks scoped to books keeps their cover images out of your images.';
-
-  @override
-  String get indexScopeAll => 'All supported files';
-
-  @override
-  String get indexScopeConfirm => 'Add the folder';
-
-  @override
-  String get indexScopeEmpty =>
-      'Choose at least one kind of file, or all of them.';
-
-  @override
-  String get librarySourcesScopeUnreadable =>
-      'Covers file types this version does not recognize';
-
-  @override
-  String get librarySourcesStartUnreadableScope =>
-      'This folder is set to cover file types this version does not recognize, so it was not scanned. Remove it and add it again to choose what it covers.';
-
-  @override
-  String get librarySourcesStartNotRegistered =>
-      'This folder is no longer in your library, so it was not scanned.';
-
-  @override
-  String get librarySourcesScopeAll => 'All supported files';
-
-  @override
-  String librarySourcesScopeOnly(String types) {
-    return 'Only $types';
-  }
-
-  @override
-  String get fileTypeVideo => 'Video';
-
-  @override
-  String get fileTypeDocument => 'Books';
-
-  @override
-  String get fileTypeComic => 'Comic books';
-
-  @override
-  String get fileTypeText => 'Notes';
-
-  @override
-  String get fileTypeHtml => 'Saved pages';
-
-  @override
-  String get fileTypeImage => 'Images';
-
-  @override
   String get dismiss => 'Dismiss';
 
   @override
-  String get librarySourcesRescan => 'Rescan';
+  String get libraryRunStarting => 'Scanning…';
 
   @override
-  String get librarySourcesIndexing => 'Scanning…';
-
-  @override
-  String librarySourcesRunComplete(int scanned, int indexed, int skipped) {
+  String libraryRunComplete(int scanned, int indexed, int skipped) {
     return 'Scanned $scanned files, cataloged $indexed, skipped $skipped.';
   }
 
   @override
-  String librarySourcesRunFailedCount(int failed) {
+  String libraryRunFailedCount(int failed) {
     return '$failed files could not be read, and are not in your library. Re-scanning tries them again.';
   }
 
   @override
-  String get librarySourcesRunFailed => 'The scan did not finish.';
+  String get libraryRunFailed => 'The scan did not finish.';
 
   @override
-  String get librarySourcesRunCancelled => 'The scan was cancelled.';
+  String get libraryRunCancelled => 'The scan was cancelled.';
 
   @override
-  String get librarySourcesRunPaused =>
+  String get libraryRunPaused =>
       'The scan is paused. It can be resumed from where it left off.';
 
   @override
-  String get librarySourcesRunRefused =>
-      'A scan of this folder is already running.';
+  String get libraryRefreshAll => 'Re-check all libraries';
 
   @override
-  String get librarySourcesStartFailed => 'This folder could not be scanned.';
+  String get libraryRunPause => 'Pause';
 
   @override
-  String get librarySourcesUnregister => 'Remove';
+  String get libraryRunResume => 'Resume';
 
   @override
-  String librarySourcesUnregisterTitle(String label) {
-    return 'Remove $label from your library folders?';
-  }
+  String get libraryRunCancel => 'Cancel';
 
   @override
-  String get librarySourcesUnregisterBody =>
-      'Alexandria will stop scanning this folder. Everything already cataloged from it stays in your library, and nothing on disk is touched.';
+  String get libraryRunCancelTitle => 'Cancel this scan?';
 
   @override
-  String get librarySourcesUnregisterConfirm => 'Remove the folder';
-
-  @override
-  String get librarySourcesUnregisterRefused =>
-      'This folder is being scanned. It can be removed once the scan finishes.';
-
-  @override
-  String get librarySourcesRecheck => 'Re-check library';
-
-  @override
-  String get librarySourcesPause => 'Pause';
-
-  @override
-  String get librarySourcesResume => 'Resume';
-
-  @override
-  String get librarySourcesCancelRun => 'Cancel';
-
-  @override
-  String get librarySourcesCancelRunTitle => 'Cancel this scan?';
-
-  @override
-  String get librarySourcesCancelRunConfirm =>
+  String get libraryRunCancelConfirm =>
       'This scan cannot be resumed once cancelled. Everything it has already cataloged stays in your library.';
 
   @override
-  String get librarySourcesCancelRunAction => 'Cancel the scan';
+  String get libraryRunCancelAction => 'Cancel the scan';
 
   @override
-  String get librarySourcesRefreshing => 'Re-checking the catalog…';
+  String get libraryRefreshing => 'Re-checking the catalog…';
 
   @override
-  String librarySourcesRefreshComplete(
-    int refreshed,
-    int unchanged,
-    int missing,
-  ) {
+  String libraryRefreshComplete(int refreshed, int unchanged, int missing) {
     return '$refreshed files updated, $unchanged unchanged, $missing now missing.';
   }
 
   @override
-  String get librarySourcesRefreshRunning =>
+  String get libraryRefreshRunning =>
       'The catalog is already being re-checked.';
 
   @override
-  String get librarySourcesRefreshEmpty =>
-      'There is nothing cataloged yet. Add a folder and index it first.';
+  String get libraryRefreshEmpty =>
+      'There is nothing cataloged yet. Add a library first.';
 
   @override
-  String get librarySourcesRefreshFailed =>
-      'The catalog could not be re-checked.';
+  String get libraryRefreshFailed => 'The catalog could not be re-checked.';
 
   @override
   String get destinationVideos => 'Videos';
+
+  @override
+  String get destinationMusic => 'Music';
 
   @override
   String get catalogEmptyTitle => 'Nothing of this type yet';
 
   @override
   String get catalogEmptyFirstRun =>
-      'Your library is empty. Add a folder and index it, and what is inside will appear here.';
-
-  @override
-  String get catalogEmptyAddFolder => 'Library folders';
+      'Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.';
 
   @override
   String get catalogFileMissing => 'Missing from disk';
@@ -566,6 +433,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortByIndexed => 'Date added';
+
+  @override
+  String get sortByAlbum => 'Album';
 
   @override
   String get sortAscending => 'Ascending';
@@ -1190,21 +1060,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get indexScopeAsLibrary => 'Keep this folder together as a library';
-
-  @override
-  String get indexScopeAsLibraryBody =>
-      'Its files are browsed in their folders here instead of appearing in the type panels. Search still finds them.';
-
-  @override
-  String librarySourcesIsLibrary(String name) {
-    return 'Library: $name';
-  }
-
-  @override
-  String get librarySourcesMarkAsLibrary => 'Mark as a library';
-
-  @override
   String get libraryMove => 'The folder moved';
 
   @override
@@ -1239,11 +1094,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get librariesNone =>
-      'You have not made a library yet. Add one with the button above — a folder becomes a library, and its files are shown there instead of in the type panels.';
+      'You have no libraries yet. Add a folder as a library with the button above, and Alexandria indexes it.';
 
   @override
   String get librariesExplanation =>
-      'A library keeps a folder\'s files together and in their folders — a course, with each class\'s recording and handouts side by side. Its files are shown here instead of in the type panels, so they do not bury everything else. Search still finds them.';
+      'A library is a folder Alexandria indexes, with its folders kept as they are. Adding one is how files get into Alexandria: everything you browse, play, or read comes from your libraries.';
 
   @override
   String get libraryNameLabel => 'Library name';
@@ -1252,14 +1107,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryAdd => 'Add a library';
 
   @override
-  String get libraryScan => 'Scan this folder';
+  String get libraryScan => 'Scan again';
 
   @override
   String get libraryRemove => 'Remove this library';
 
   @override
   String libraryRemoveMessage(String name) {
-    return 'Remove $name? Its files go back to the type panels — nothing on disk is touched and nothing is deleted.';
+    return 'Remove $name? It is deleted from the catalog with its files, their reading and watching positions, and their place in collections. Nothing on disk is touched.';
   }
 
   @override
@@ -1791,5 +1646,193 @@ class AppLocalizationsEn extends AppLocalizations {
   String get destinationLibraries => 'Libraries';
 
   @override
-  String get libraryAlreadyOne => 'That folder is already a library.';
+  String get libraryRemovePausedNote => 'Its paused scan is discarded too.';
+
+  @override
+  String get libraryScanConflict =>
+      'This library already has an unfinished scan. Resume or cancel it first.';
+
+  @override
+  String get libraryScanFailed => 'This library could not be scanned.';
+
+  @override
+  String libraryRunProgress(int processed, int total) {
+    return 'Scanning… $processed of $total';
+  }
+
+  @override
+  String get libraryMenuLibraries => 'Libraries';
+
+  @override
+  String get libraryMenuAdd => 'Add library…';
+
+  @override
+  String get musicMetadataTitle => 'Music metadata';
+
+  @override
+  String get musicMetadataFieldTitle => 'Title';
+
+  @override
+  String get musicMetadataFieldArtist => 'Artist';
+
+  @override
+  String get musicMetadataFieldAlbumArtist => 'Album artist';
+
+  @override
+  String get musicMetadataFieldAlbum => 'Album';
+
+  @override
+  String get musicMetadataFieldYear => 'Year';
+
+  @override
+  String get musicMetadataFieldGenre => 'Genre';
+
+  @override
+  String get musicMetadataFieldTrack => 'Track number';
+
+  @override
+  String get musicMetadataSave => 'Save';
+
+  @override
+  String get musicMetadataCancel => 'Cancel';
+
+  @override
+  String get musicMetadataErrorNotANumber => 'Enter a whole number.';
+
+  @override
+  String get musicMetadataErrorYear => 'Enter a four-digit year.';
+
+  @override
+  String get musicMetadataErrorTrack => 'A track number starts at 1.';
+
+  @override
+  String musicMetadataErrorTooLong(int max) {
+    return 'Keep this under $max characters.';
+  }
+
+  @override
+  String get playerPlay => 'Play';
+
+  @override
+  String get playerPause => 'Pause';
+
+  @override
+  String get playerNext => 'Next track';
+
+  @override
+  String get playerPrevious => 'Previous track';
+
+  @override
+  String get playerClose => 'Stop and close';
+
+  @override
+  String get playerNothingPlayable =>
+      'None of the remaining tracks could be opened.';
+
+  @override
+  String get playerRescan => 'Re-check libraries';
+
+  @override
+  String playerSkipped(String name) {
+    return 'Skipped $name: it could not be opened.';
+  }
+
+  @override
+  String get libraryRemoveRunning =>
+      'This library is being scanned. Pause or cancel the scan, then remove it.';
+
+  @override
+  String updateAvailableTitle(String version) {
+    return 'Alexandria $version is available';
+  }
+
+  @override
+  String updateYouHave(String current) {
+    return 'You have $current.';
+  }
+
+  @override
+  String get updateWhatsNew => 'What\'s new';
+
+  @override
+  String get updateNow => 'Update now';
+
+  @override
+  String get updateLater => 'Later';
+
+  @override
+  String get updateSkip => 'Skip this version';
+
+  @override
+  String get updateOpenPage => 'Open release page';
+
+  @override
+  String get updateClose => 'Close';
+
+  @override
+  String get updateCancel => 'Cancel';
+
+  @override
+  String updateDownloading(String received, String total) {
+    return 'Downloading… $received of $total';
+  }
+
+  @override
+  String get updateDownloadFailed => 'The update could not be downloaded.';
+
+  @override
+  String get updateVerifyFailed =>
+      'The download could not be verified, so it was not installed.';
+
+  @override
+  String get updateInstallFailed =>
+      'The update could not be started, so this version is still the one running.';
+
+  @override
+  String get updateInstalling => 'Closing Alexandria to install the update…';
+
+  @override
+  String updatePreviousFailed(String to) {
+    return 'The update to $to did not complete.';
+  }
+
+  @override
+  String get updateManual =>
+      'This copy of Alexandria can\'t update itself. Download the new version from the release page.';
+
+  @override
+  String get updatesCheckLabel => 'Check for updates at startup';
+
+  @override
+  String get updatesCheckDescription =>
+      'Asks GitHub for the latest release. Nothing else is sent.';
+
+  @override
+  String get updatesCheckNow => 'Check now';
+
+  @override
+  String get updatesUpToDate => 'You\'re up to date.';
+
+  @override
+  String get updatesCheckFailed => 'Couldn\'t check for updates.';
+
+  @override
+  String get updateUnsavedTitle => 'Unsaved changes';
+
+  @override
+  String get updateUnsavedMessage =>
+      'Updating closes Alexandria and discards the changes you have not saved. Cancel to go back and save them first.';
+
+  @override
+  String get updateUnsavedConfirm => 'Update and discard';
+
+  @override
+  String get updateScanTitle => 'A scan is running';
+
+  @override
+  String get updateScanMessage =>
+      'It will pause, and you can resume it after the update.';
+
+  @override
+  String get updateScanConfirm => 'Update anyway';
 }

@@ -46,9 +46,9 @@ The app owns **no catalog database**. The Alexandria SQLite catalog belongs to t
 Rust core, which the app initializes with a database path
 (`alexandria_index_init`) and then only reads and writes through the FFI surface.
 
-The app persists a small amount of purely local state on its own: the configured
-library folders, the selected theme, the selected language, the chosen view
-layout, last playback positions, and window geometry. A lightweight local
+The app persists a small amount of purely local state on its own: the selected
+theme, the selected language, the chosen view layout, last playback positions,
+and window geometry. A lightweight local
 key-value store is used for this; the concrete package is selected in Phase 2.
 
 File **bytes** are never stored or copied. Media and document content is read
@@ -131,7 +131,9 @@ flutter test
   selected in Phase 2.
 
 No payments, no identity provider, no message broker, and no object storage are
-involved, and this application makes no network call of its own. E-mail is
+involved, and this application makes no network call of its own but one: the
+update check, which asks GitHub's public releases API for the latest release
+and can be turned off (System Requirements §3.11). E-mail is
 involved only indirectly: the core sends confirmation and recovery messages, and
 the app never touches a mail transport.
 

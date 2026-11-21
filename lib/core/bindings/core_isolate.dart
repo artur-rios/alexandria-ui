@@ -34,7 +34,7 @@ class CoreCallException implements Exception {
 /// Owns the Alexandria core on a worker isolate (IR-09).
 ///
 /// Every core call runs off the interface thread. This matters more than it
-/// might look: `alexandria_index_start` scans a filesystem and
+/// might look: `alexandria_library_register` scans a filesystem and
 /// `alexandria_files_list` serializes the whole catalog to JSON, and either on
 /// the UI isolate is a frozen window.
 ///
@@ -354,11 +354,11 @@ class CoreIsolate {
       'countFiles' => bindings.alexandria_index_count_files(),
 
       // The session token and an optional priority in, a status and a run id
-      // out. No root: a refresh covers the whole catalog rather than one
-      // folder (FR-LB-06). withNativeString already passes null through as
+      // out. No library: a refresh covers every library at once rather than
+      // one (FR-LB-06). withNativeString already passes null through as
       // nullptr (see its signature), which is what a null priority needs:
-      // the core reads an absent priority as "normal" here — see
-      // alexandria_index_start's doc comment, which this call shares.
+      // the core reads an absent priority as "normal" here, as it does for
+      // alexandria_library_index_start.
       'indexRefreshStart' => withNativeString(arguments.first! as String, (
         token,
       ) {
@@ -369,6 +369,20 @@ class CoreIsolate {
         );
         return (status: result.status, runId: _readRunId(result.run_id));
       }),
+
+      // A library's uuid, the session token and an optional priority in;
+      // the same struct a refresh answers out.
+      'libraryIndexStart' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = withNativeString(
+            arguments[2] as String?,
+            (priority) =>
+                bindings.alexandria_library_index_start(uuid, token, priority),
+          );
+          return (status: result.status, runId: _readRunId(result.run_id));
+        }),
+      ),
 
       'countMissing' => bindings.alexandria_index_count_missing(),
 
@@ -457,46 +471,6 @@ class CoreIsolate {
         }),
       ),
 
-      // The root, the session token, an optional priority and an optional
-      // scope in, a status and a run id out. The run id is a fixed-size array
-      // inside the struct rather than an allocation, so it is read straight
-      // off and there is nothing to free on the way back — only the strings
-      // passed in, which the nesting handles (IR-09, NFR-13).
-      //
-      // priority is passed through withNativeString like everything else
-      // here — its `String?` parameter already turns null into nullptr — and
-      // that distinction matters more for this argument than for most: a
-      // null priority must reach the core as a null pointer, never as the
-      // string "null" or as "", because the core reads an absent priority as
-      // "normal" (see alexandria_index_start's doc comment). An empty string
-      // happens to land in the same branch today, since the core treats any
-      // unrecognised value as absent, but that is a coincidence of the
-      // core's parsing, not a guarantee — passing "" on purpose for "no
-      // priority" would be relying on it.
-      //
-      // types is the run's scope and follows exactly the same reasoning: a
-      // folder with no scope must arrive as a null pointer, not as the string
-      // "null" and not as "". The core documents NULL and "" as the same
-      // absence for this argument, which priority's parsing only happens to
-      // do — but an absent scope is still built as null here, because that is
-      // what "every type" is on both sides of the boundary, and because
-      // anything unrecognised in this argument is INDEX_ERR_INVALID_INPUT
-      // rather than a quiet default.
-      'indexStart' => withNativeString(
-        arguments.first! as String,
-        (root) => withNativeString(arguments[1]! as String, (token) {
-          final result = withNativeString(
-            arguments[2] as String?,
-            (priority) => withNativeString(
-              arguments[3] as String?,
-              (types) =>
-                  bindings.alexandria_index_start(root, token, priority, types),
-            ),
-          );
-          return (status: result.status, runId: _readRunId(result.run_id));
-        }),
-      ),
-
       'indexRunFailures' => withNativeString(
         arguments.first! as String,
         (runId) => withNativeString(arguments[1]! as String, (token) {
@@ -544,14 +518,14 @@ class CoreIsolate {
       ),
 
       // The run id, the session token, and an optional priority in, the same
-      // shape indexStart answers with — the *same* run id, not a fresh one
+      // shape libraryIndexStart answers with — the *same* run id, not a fresh one
       // (FR-FC-33). The C function takes (run_id, token, priority) — not the
       // Dart-level (runId, priority, token) order this operation's argument
       // list uses — so the nesting reorders on the way in; getting this wrong
       // would pass a token as a priority and a priority as a token.
       //
       // priority goes through withNativeString for the same reason it does
-      // in indexStart, with a sharper stake here: null must reach the core
+      // in libraryIndexStart, with a sharper stake here: null must reach the core
       // as a null pointer because the core reads an absent priority as
       // *keep the run's current width* — deliberately not the same as
       // "normal". An empty string lands in that same branch today only
@@ -630,6 +604,17 @@ class CoreIsolate {
         arguments.first! as String,
         (uuid) => withNativeString(arguments[1]! as String, (token) {
           final result = bindings.alexandria_file_playback_source(uuid, token);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'fileThumbnail' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (token) {
+          final result = bindings.alexandria_file_thumbnail(uuid, token);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
