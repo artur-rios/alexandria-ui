@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:alexandria_ui/app.dart';
+import 'package:alexandria_ui/core/bindings/core_client.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/startup/core_paths.dart';
 import 'package:alexandria_ui/core/startup/startup_state.dart';
 import 'package:alexandria_ui/features/catalog/presentation/home_dashboard.dart';
+import 'package:alexandria_ui/features/indexing/data/core_index_gateway.dart';
 import 'package:alexandria_ui/features/indexing/domain/folder_picker.dart';
+import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/libraries/presentation/library_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
@@ -59,14 +62,23 @@ void main() {
   setUp(() => catalog = TemporaryCatalog.create());
   tearDown(() => catalog.dispose());
 
-  /// Pumps until [finder] matches, so a read against the real core has landed.
-  Future<void> until(WidgetTester tester, Finder finder, String what) async {
+  /// Pumps until [holds] answers true, so a write or a read against the real
+  /// core has landed and been drawn.
+  Future<void> untilThat(
+    WidgetTester tester,
+    bool Function() holds,
+    String what,
+  ) async {
     for (var attempt = 0; attempt < 300; attempt++) {
-      if (finder.evaluate().isNotEmpty) return;
+      if (holds()) return;
       await tester.pump(const Duration(milliseconds: 100));
     }
     fail('never saw $what');
   }
+
+  /// Pumps until [finder] matches, so a read against the real core has landed.
+  Future<void> until(WidgetTester tester, Finder finder, String what) =>
+      untilThat(tester, () => finder.evaluate().isNotEmpty, what);
 
   /// Pumps until [finder] matches nothing.
   Future<void> untilGone(
@@ -181,6 +193,45 @@ void main() {
   double top(WidgetTester tester, Finder finder) =>
       tester.getTopLeft(finder).dy;
 
+  /// Whether [above]'s entry is drawn above [below]'s in the left menu.
+  bool listedAbove(WidgetTester tester, String above, String below) =>
+      entry(above).evaluate().length == 1 &&
+      entry(below).evaluate().length == 1 &&
+      top(tester, entry(above)) < top(tester, entry(below));
+
+  /// The panel's dividers drawn between [above]'s entry and [below]'s: the
+  /// one that separates the pinned libraries from the others, and not any
+  /// other divider the panel may draw elsewhere.
+  Iterable<Element> dividersBetween(
+    WidgetTester tester,
+    String above,
+    String below,
+  ) {
+    final from = tester.getBottomLeft(entry(above)).dy;
+    final to = top(tester, entry(below));
+    return find
+        .descendant(of: panel(), matching: find.byType(Divider))
+        .evaluate()
+        .where((divider) {
+          final y = tester
+              .getCenter(find.byElementPredicate((e) => e == divider))
+              .dy;
+          return y > from && y < to;
+        });
+  }
+
+  /// Polls the core until no run is outstanding, so the catalog is not torn
+  /// down under one still walking its folder.
+  Future<void> untilNoRunIsActive(WidgetTester tester, CoreClient core) async {
+    final gateway = CoreIndexGateway(core);
+    for (var attempt = 0; attempt < 300; attempt++) {
+      final outcome = await gateway.listActiveRuns();
+      if (outcome case ActiveRunsRead(:final runs) when runs.isEmpty) return;
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    fail('a run was still active');
+  }
+
   testWidgets(
     'GivenALibrary_WhenPinnedFavoritedRenamedAndOpened_ThenTheMenuHomeAndViewAgree',
     (tester) async {
@@ -229,27 +280,43 @@ void main() {
         reason: 'unpinned libraries were not listed A-Z',
       );
 
-      // 4. Pin it: it is first among the libraries.
+      // 4. Pin it: it is first among the libraries, with the divider under
+      // it. Waited for rather than assumed after a few frames: the pin is a
+      // write to the real core, then a reload of the list.
       await openContextMenu(tester, 'Course');
       await tester.tap(find.text(l10n.libraryPin));
-      await frames(tester);
-      expect(
-        top(tester, entry('Course')),
-        lessThan(top(tester, entry('Alpha'))),
-        reason: 'the pinned library was not listed first',
+      await untilThat(
+        tester,
+        () => listedAbove(tester, 'Course', 'Alpha'),
+        'the pinned library listed first',
       );
-      expect(
-        find.descendant(of: panel(), matching: find.byType(Divider)),
-        findsOneWidget,
-        reason: 'no divider between the pinned and the other libraries',
+      await untilThat(
+        tester,
+        () => dividersBetween(tester, 'Course', 'Alpha').length == 1,
+        'the divider between the pinned and the other libraries',
       );
 
       // 5. Favorite it: home lists it, and only it.
       await openContextMenu(tester, 'Course');
       await tester.tap(find.text(l10n.libraryFavoriteAdd));
-      await frames(tester);
+      await untilThat(
+        tester,
+        () =>
+            container
+                .read(librariesControllerProvider)
+                .value
+                ?.any(
+                  (library) => library.name == 'Course' && library.favorite,
+                ) ??
+            false,
+        'the favorite stored',
+      );
+      await untilGone(
+        tester,
+        find.text(l10n.libraryFavoriteAdd),
+        'the context menu',
+      );
       await tester.tap(entry(l10n.destinationHome));
-      await frames(tester);
       await until(
         tester,
         find.descendant(of: home(), matching: find.text('Course')),
@@ -320,6 +387,10 @@ void main() {
       for (final none in ['video', 'document', 'comic', 'html', 'image']) {
         expect(count(none, '0'), findsOneWidget, reason: 'totals of $none');
       }
+
+      // Alpha's run, the Course's and any other, over before the catalog is
+      // deleted from under them.
+      await untilNoRunIsActive(tester, core);
     },
   );
 }
