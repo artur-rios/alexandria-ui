@@ -538,6 +538,39 @@ void main() {
       );
     });
 
+    group('a name too long to draw whole', () {
+      for (final (tier, size) in [
+        ('Labelled', const Size(Breakpoint.mediumMinWidth, 900)),
+        ('Extended', const Size(Breakpoint.expandedMinWidth, 900)),
+      ]) {
+        testWidgets(
+          'GivenThe${tier}Tier_WhenALibraryIsDrawn_ThenItsWholeNameIsItsTooltip',
+          (tester) async {
+            // The label is cut to fit the panel, so the tooltip is where a
+            // long name can still be read in full.
+            const name =
+                'Lectures on the history of the printed book, 1450 to 1800';
+            await open(tester, [library(name)], surfaceSize: size);
+
+            // Matched on the widget: where the label is drawn the tooltip is
+            // kept out of the semantics tree, which `find.byTooltip` reads.
+            Finder tooltipSaying(String message) => find.descendant(
+              of: panel(),
+              matching: find.byWidgetPredicate(
+                (widget) => widget is Tooltip && widget.message == message,
+              ),
+            );
+
+            final tooltip = tooltipSaying(name);
+            expect(tooltip, findsOneWidget);
+            expect(tester.getSize(tooltip).width, greaterThan(0));
+            // Home's and Bookmarks' labels are short and fixed: no tooltip.
+            expect(tooltipSaying('Home'), findsNothing);
+          },
+        );
+      }
+    });
+
     group('at the minimum window (FR-UX-02)', () {
       testWidgets(
         'GivenTheIconsOnlyTier_WhenThePanelIsDrawn_ThenEachLibraryHasItsNameAsATooltip',

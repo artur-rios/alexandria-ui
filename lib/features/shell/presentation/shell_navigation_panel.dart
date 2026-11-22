@@ -265,6 +265,9 @@ class _LibraryEntry extends ConsumerWidget {
         selectedIcon: folder(Icons.folder),
         label: library.name,
         selected: selected,
+        // A library's name can be longer than the panel is wide, and its
+        // label is cut to fit: the tooltip says it whole at every tier.
+        tooltipAtEveryTier: true,
         onTap: onTap,
         onSecondaryTapUp: (details) =>
             menu.open(position: details.localPosition),
@@ -392,10 +395,17 @@ class _PanelEntry extends StatelessWidget {
       ),
     );
 
-    // The label is the tooltip only where it is not drawn — which is also
-    // what names the entry to a screen reader there. A tooltip repeating the
-    // text beside it is noise.
+    // The label is the tooltip where it is not drawn — which is also what
+    // names the entry to a screen reader there. Where it is drawn, only an
+    // entry whose label may be cut short repeats it as a tooltip; for the
+    // others it would be noise.
     if (tier != _Tier.icons && !tooltipAtEveryTier) return entry;
-    return Tooltip(message: label, child: entry);
+    return Tooltip(
+      message: label,
+      // Where the label is drawn it already names the entry to a screen
+      // reader; the tooltip saying it again would be read twice.
+      excludeFromSemantics: tier != _Tier.icons,
+      child: entry,
+    );
   }
 }
