@@ -349,48 +349,25 @@ class AppLocalizationsPt extends AppLocalizations {
   String get detailsFileModified => 'Última modificação';
 
   @override
-  String get dashboardRecent => 'Adicionados recentemente';
+  String get homeFavorites => 'Bibliotecas preferidas';
 
   @override
-  String get dashboardRecentNone => 'Nada foi adicionado ainda.';
+  String get homeFavoritesNone =>
+      'Marque uma biblioteca como preferida para vê-la aqui';
 
   @override
-  String get dashboardInProgress => 'Em andamento';
+  String get homeStatistics => 'Estatísticas';
 
   @override
-  String get dashboardInProgressNone => 'Nada em andamento.';
-
-  @override
-  String dashboardInProgressIn(String list) {
-    return 'Em $list';
+  String homeLibraryCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bibliotecas',
+      one: '1 biblioteca',
+    );
+    return '$_temp0';
   }
-
-  @override
-  String dashboardInProgressInAt(String list, String progress) {
-    return 'Em $list — $progress';
-  }
-
-  @override
-  String get dashboardCounts => 'O que há na biblioteca';
-
-  @override
-  String get dashboardLastRun => 'A última análise';
-
-  @override
-  String get dashboardLastRunNone => 'Nada foi analisado nesta sessão.';
-
-  @override
-  String get dashboardLastRunRunning => 'Uma análise está em andamento agora.';
-
-  @override
-  String get dashboardLastRunComplete => 'A última análise foi concluída.';
-
-  @override
-  String get dashboardLastRunFailed => 'A última análise não foi concluída.';
-
-  @override
-  String get dashboardLastRunInterrupted =>
-      'A última análise foi interrompida quando o Alexandria fechou.';
 
   @override
   String get detailsEditMetadata => 'Editar metadados';

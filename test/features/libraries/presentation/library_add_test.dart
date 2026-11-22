@@ -73,8 +73,16 @@ void main() {
 
   /// Presses the button, which opens the picker.
   Future<void> pressAdd(WidgetTester tester) async {
+    // Inside the page: home's first-run guidance offers the same button
+    // beneath it.
     await tester.tap(
-      find.widgetWithText(FilledButton, messages(tester).libraryAdd),
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.widgetWithText(
+          FilledButton,
+          messages(tester).libraryAdd,
+        ),
+      ),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));

@@ -463,70 +463,26 @@
   "@detailsFileModified": {
     "description": "Label for when the file was last changed on disk, in the details dialog."
   },
-  "dashboardRecent": "Recently added",
-  "@dashboardRecent": {
-    "description": "Heading of the dashboard's recently added section (UC-14, FR-CT-11)."
+  "homeFavorites": "Favorite libraries",
+  "@homeFavorites": {
+    "description": "Heading of home's section listing the libraries marked as favorites."
   },
-  "dashboardRecentNone": "Nothing has been added yet.",
-  "@dashboardRecentNone": {
-    "description": "The recently added section has nothing to show."
+  "homeFavoritesNone": "Mark a library as a favorite to see it here",
+  "@homeFavoritesNone": {
+    "description": "Home's favorites section when no library is marked as a favorite."
   },
-  "dashboardInProgress": "In progress",
-  "@dashboardInProgress": {
-    "description": "Heading of the dashboard's in-progress section (UC-14, FR-CT-11)."
+  "homeStatistics": "Statistics",
+  "@homeStatistics": {
+    "description": "Heading of home's section with the totals: libraries, and files per type."
   },
-  "dashboardInProgressNone": "Nothing is in progress.",
-  "@dashboardInProgressNone": {
-    "description": "UC-14 AF-02: the section states that nothing is in progress rather than rendering empty."
-  },
-  "dashboardInProgressIn": "In {list}",
-  "@dashboardInProgressIn": {
-    "description": "UC-14 main flow step 2: which watchlist or reading list an in-progress item belongs to.",
+  "homeLibraryCount": "{count, plural, =1{1 library} other{{count} libraries}}",
+  "@homeLibraryCount": {
+    "description": "Home's statistics: how many libraries are registered.",
     "placeholders": {
-      "list": {
-        "type": "String"
+      "count": {
+        "type": "num"
       }
     }
-  },
-  "dashboardInProgressInAt": "In {list} — {progress}",
-  "@dashboardInProgressInAt": {
-    "description": "UC-14 main flow step 2: the list an in-progress item belongs to, and how far through it the owner is.",
-    "placeholders": {
-      "list": {
-        "type": "String"
-      },
-      "progress": {
-        "type": "String"
-      }
-    }
-  },
-  "dashboardCounts": "What is in the library",
-  "@dashboardCounts": {
-    "description": "Heading of the dashboard's per-type counts (UC-14, FR-CT-11)."
-  },
-  "dashboardLastRun": "The last scan",
-  "@dashboardLastRun": {
-    "description": "Heading of the dashboard's most-recent-run section (UC-14, FR-CT-11)."
-  },
-  "dashboardLastRunNone": "Nothing has been scanned in this session.",
-  "@dashboardLastRunNone": {
-    "description": "No index or refresh run has been observed since the application started."
-  },
-  "dashboardLastRunRunning": "A scan is running now.",
-  "@dashboardLastRunRunning": {
-    "description": "UC-14 AF-04: a run is in flight, and the dashboard updates when it settles."
-  },
-  "dashboardLastRunComplete": "The last scan finished.",
-  "@dashboardLastRunComplete": {
-    "description": "The most recent run completed."
-  },
-  "dashboardLastRunFailed": "The last scan did not finish.",
-  "@dashboardLastRunFailed": {
-    "description": "The most recent run failed."
-  },
-  "dashboardLastRunInterrupted": "The last scan was interrupted when Alexandria closed.",
-  "@dashboardLastRunInterrupted": {
-    "description": "The most recent run was interrupted rather than failing."
   },
   "detailsEditMetadata": "Edit metadata",
   "@detailsEditMetadata": {

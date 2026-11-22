@@ -126,17 +126,6 @@ void main() {
     },
   );
 
-  test(
-    'GivenARecentLibraryFile_WhenTheDashboardLoads_ThenItIsAmongRecentFiles',
-    () async {
-      final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
-
-      final recent = await sut.ref.read(recentFilesProvider.future);
-
-      expect(recent.map((file) => file.name), ['lecture.pdf']);
-    },
-  );
-
   test('GivenAFileInALibrary_WhenItsFolderIsShown_ThenItIsListed', () async {
     // Where a library's files are browsed now: its folders, in the main area.
     final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
@@ -148,14 +137,5 @@ void main() {
     final listed = sut.ref.read(libraryFolderProvider('lib-1')).requireValue;
 
     expect(listed.files.map((file) => file.name), ['lecture.pdf']);
-  });
-
-  test('GivenAFileInALibrary_WhenTypeCountsAreRead_ThenItIsCounted', () async {
-    final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
-    sut.ref.listen(typeCountsControllerProvider, (_, _) {});
-
-    final counts = await sut.ref.read(typeCountsControllerProvider.future);
-
-    expect(counts[FileType.document], 1);
   });
 }

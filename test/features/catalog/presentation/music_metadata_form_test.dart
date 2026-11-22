@@ -16,6 +16,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/keyboard.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/shell_harness.dart';
 import '../../../support/file_row.dart';
 
@@ -70,10 +71,11 @@ void main() {
       ],
     );
     await tester.pumpAndSettle();
+    await tester.openFolderHolding(FileType.audio);
 
     // Main flow step 1: the form is opened from the file's detail view,
-    // reached from the dashboard's recent list, which names an audio file by
-    // its metadata title rather than its file name (FR-CT-13).
+    // reached from the folder holding it, which names an audio file by its
+    // metadata title rather than its file name (FR-CT-13).
     await openDetailsOf(tester, 'So What');
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.edit_outlined));
@@ -139,11 +141,13 @@ void main() {
     (tester) async {
       // The edit is the core's to store; what this screen owes the owner is
       // the listing and the details read back, so the new title shows.
-      final (_, gateway) = await openForm(tester);
+      final (container, gateway) = await openForm(tester);
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      final listingsBefore = gateway.requested.length;
+      final libraries =
+          container.read(libraryGatewayProvider) as FakeLibraryGateway;
+      final listingsBefore = libraries.readsMade.length;
       final detailsBefore = gateway.detailsRequested.length;
       await enter(tester, l10n.musicMetadataFieldTitle, 'Freddie Freeloader');
 
@@ -151,7 +155,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(gateway.edits.single.metadata.title, 'Freddie Freeloader');
-      expect(gateway.requested.length, greaterThan(listingsBefore));
+      expect(libraries.readsMade.length, greaterThan(listingsBefore));
       expect(gateway.detailsRequested.length, greaterThan(detailsBefore));
     },
   );
@@ -577,8 +581,8 @@ void main() {
           ],
         );
         await tester.pumpAndSettle();
-        // Named by its metadata title on the dashboard, not its file name
-        // (FR-CT-13).
+        await tester.openFolderHolding(FileType.audio);
+        // Named by its metadata title, not its file name (FR-CT-13).
         await openDetailsOf(tester, 'So What');
 
         expect(find.byIcon(Icons.edit_outlined), findsNothing);

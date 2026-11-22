@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 
 /// Starting a library's index run and watching it finish (UC-06, FR-LB-05,
 /// FR-LB-07 … FR-LB-09, core 0.6.0).
@@ -19,6 +20,7 @@ void main() {
   ({ProviderContainer ref, FakeIndexGateway gateway}) build({
     FakeIndexGateway? gateway,
     FakeCatalogGateway? catalog,
+    FakeLibraryGateway? libraries,
   }) {
     final indexGateway = gateway ?? FakeIndexGateway();
 
@@ -27,6 +29,9 @@ void main() {
         indexGatewayProvider.overrideWithValue(indexGateway),
         catalogGatewayProvider.overrideWithValue(
           catalog ?? FakeCatalogGateway(),
+        ),
+        libraryGatewayProvider.overrideWithValue(
+          libraries ?? FakeLibraryGateway(),
         ),
         // Long enough that no timer fires during a test: the observation is
         // driven by calling refresh directly.
@@ -196,21 +201,21 @@ void main() {
     () async {
       // A small first library is done before the active-runs listing ever
       // sees it running, and that listing is what used to refresh the panels.
-      final catalog = FakeCatalogGateway();
+      final libraries = FakeLibraryGateway();
       final sut = build(
         gateway: FakeIndexGateway()..readOutcomes = [finishedRun()],
-        catalog: catalog,
+        libraries: libraries,
       );
-      sut.ref.listen(typeCountsControllerProvider, (_, _) {});
-      await sut.ref.read(typeCountsControllerProvider.future);
-      final before = catalog.requested.length;
+      sut.ref.listen(catalogStatsProvider, (_, _) {});
+      await sut.ref.read(catalogStatsProvider.future);
+      final before = libraries.statsReads;
 
       await sut.ref
           .read(indexRunsControllerProvider.notifier)
           .startLibraryIndex(library);
-      await sut.ref.read(typeCountsControllerProvider.future);
+      await sut.ref.read(catalogStatsProvider.future);
 
-      expect(catalog.requested.length, greaterThan(before));
+      expect(libraries.statsReads, greaterThan(before));
     },
   );
 

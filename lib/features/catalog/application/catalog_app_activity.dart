@@ -29,9 +29,7 @@ class CatalogAppActivity implements AppActivity {
   Future<void> end() async {
     // The catalog itself, and everything derived from it.
     _ref.invalidate(libraryTreeControllerProvider);
-    _ref.invalidate(typeCountsControllerProvider);
     _ref.invalidate(catalogStatsProvider);
-    _ref.invalidate(recentFilesProvider);
     _ref.invalidate(catalogSearchProvider);
 
     // What the owner had open, and what they had typed.

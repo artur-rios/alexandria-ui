@@ -347,49 +347,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detailsFileModified => 'Last modified';
 
   @override
-  String get dashboardRecent => 'Recently added';
+  String get homeFavorites => 'Favorite libraries';
 
   @override
-  String get dashboardRecentNone => 'Nothing has been added yet.';
+  String get homeFavoritesNone => 'Mark a library as a favorite to see it here';
 
   @override
-  String get dashboardInProgress => 'In progress';
+  String get homeStatistics => 'Statistics';
 
   @override
-  String get dashboardInProgressNone => 'Nothing is in progress.';
-
-  @override
-  String dashboardInProgressIn(String list) {
-    return 'In $list';
+  String homeLibraryCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count libraries',
+      one: '1 library',
+    );
+    return '$_temp0';
   }
-
-  @override
-  String dashboardInProgressInAt(String list, String progress) {
-    return 'In $list — $progress';
-  }
-
-  @override
-  String get dashboardCounts => 'What is in the library';
-
-  @override
-  String get dashboardLastRun => 'The last scan';
-
-  @override
-  String get dashboardLastRunNone =>
-      'Nothing has been scanned in this session.';
-
-  @override
-  String get dashboardLastRunRunning => 'A scan is running now.';
-
-  @override
-  String get dashboardLastRunComplete => 'The last scan finished.';
-
-  @override
-  String get dashboardLastRunFailed => 'The last scan did not finish.';
-
-  @override
-  String get dashboardLastRunInterrupted =>
-      'The last scan was interrupted when Alexandria closed.';
 
   @override
   String get detailsEditMetadata => 'Edit metadata';

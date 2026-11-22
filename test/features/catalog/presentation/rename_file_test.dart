@@ -15,6 +15,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/shell_harness.dart';
 import '../../../support/file_row.dart';
 
@@ -58,7 +59,9 @@ void main() {
       ],
     );
 
-    // Reached from the dashboard's recent list.
+    // Reached from the folder holding it.
+    await tester.pumpAndSettle();
+    await tester.openFolderHolding(FileType.text);
     await openDetailsOf(tester, 'Deep Blue Sea.md');
     await tester.pumpAndSettle();
 
@@ -150,13 +153,15 @@ void main() {
     testWidgets('GivenARename_WhenItIsStored_ThenTheListingIsReadAgain', (
       tester,
     ) async {
-      final (_, gateway) = await openDialog(tester);
-      final before = gateway.requested.length;
+      final (container, _) = await openDialog(tester);
+      final libraries =
+          container.read(libraryGatewayProvider) as FakeLibraryGateway;
+      final before = libraries.readsMade.length;
 
       await enter(tester, 'Blue.md');
       await rename(tester);
 
-      expect(gateway.requested.length, greaterThan(before));
+      expect(libraries.readsMade.length, greaterThan(before));
     });
 
     // The whitespace is a typing artifact, and on Windows the filesystem would

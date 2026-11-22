@@ -15,9 +15,7 @@ import '../../../core/di/providers.dart';
 /// invalidate that one, and it is theirs to add.
 void invalidateCatalogProjections(Ref ref) {
   ref.invalidate(libraryTreeControllerProvider);
-  ref.invalidate(typeCountsControllerProvider);
   ref.invalidate(catalogStatsProvider);
-  ref.invalidate(recentFilesProvider);
   ref.invalidate(catalogSearchProvider);
   ref.invalidate(fileDetailsControllerProvider);
 }

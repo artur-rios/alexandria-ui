@@ -18,17 +18,13 @@ import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../failures/failure.dart';
-import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
-import '../../features/catalog/application/in_progress.dart';
 import '../../features/catalog/application/file_rename_controller.dart';
 import '../../features/catalog/application/music_metadata_editor.dart';
 import '../../features/catalog/application/video_metadata_editor.dart';
 import '../../features/catalog/application/search_controller.dart';
-import '../../features/catalog/application/type_counts_controller.dart';
 import '../../features/catalog/application/catalog_app_activity.dart';
 import '../../features/catalog/data/core_catalog_gateway.dart';
-import '../../features/catalog/domain/catalog_file.dart';
 import '../../features/catalog/domain/file_type.dart';
 import '../../features/catalog/domain/catalog_gateway.dart';
 import '../../features/catalog/domain/file_details.dart';
@@ -286,12 +282,6 @@ final catalogGatewayProvider = Provider<CatalogGateway>((ref) {
   return CoreCatalogGateway(core);
 });
 
-/// Every type's item count, for the dashboard (FR-CT-01).
-final typeCountsControllerProvider =
-    AsyncNotifierProvider<TypeCountsController, Map<FileType, int>>(
-      TypeCountsController.new,
-    );
-
 /// What the owner has typed into the search (UC-11).
 final searchTermProvider = NotifierProvider<SearchTermController, String>(
   SearchTermController.new,
@@ -325,18 +315,6 @@ final runFailuresProvider =
       List<RunFailure>,
       String
     >(RunFailuresController.new, isAutoDispose: true);
-
-/// The most recently added files, for the dashboard (UC-14).
-final recentFilesProvider =
-    AsyncNotifierProvider<RecentFilesController, List<CatalogFile>>(
-      RecentFilesController.new,
-    );
-
-/// What the owner is part-way through, for the dashboard (UC-14, FR-CT-11).
-final inProgressProvider =
-    AsyncNotifierProvider<InProgressController, List<InProgressItem>>(
-      InProgressController.new,
-    );
 
 /// Where the core says a file is, for a player to open (UC-19, FR-PL-01).
 final playbackSourceGatewayProvider = Provider<PlaybackSourceGateway>((ref) {

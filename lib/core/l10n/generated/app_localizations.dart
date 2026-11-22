@@ -704,83 +704,29 @@ abstract class AppLocalizations {
   /// **'Last modified'**
   String get detailsFileModified;
 
-  /// Heading of the dashboard's recently added section (UC-14, FR-CT-11).
+  /// Heading of home's section listing the libraries marked as favorites.
   ///
   /// In en, this message translates to:
-  /// **'Recently added'**
-  String get dashboardRecent;
+  /// **'Favorite libraries'**
+  String get homeFavorites;
 
-  /// The recently added section has nothing to show.
+  /// Home's favorites section when no library is marked as a favorite.
   ///
   /// In en, this message translates to:
-  /// **'Nothing has been added yet.'**
-  String get dashboardRecentNone;
+  /// **'Mark a library as a favorite to see it here'**
+  String get homeFavoritesNone;
 
-  /// Heading of the dashboard's in-progress section (UC-14, FR-CT-11).
+  /// Heading of home's section with the totals: libraries, and files per type.
   ///
   /// In en, this message translates to:
-  /// **'In progress'**
-  String get dashboardInProgress;
+  /// **'Statistics'**
+  String get homeStatistics;
 
-  /// UC-14 AF-02: the section states that nothing is in progress rather than rendering empty.
+  /// Home's statistics: how many libraries are registered.
   ///
   /// In en, this message translates to:
-  /// **'Nothing is in progress.'**
-  String get dashboardInProgressNone;
-
-  /// UC-14 main flow step 2: which watchlist or reading list an in-progress item belongs to.
-  ///
-  /// In en, this message translates to:
-  /// **'In {list}'**
-  String dashboardInProgressIn(String list);
-
-  /// UC-14 main flow step 2: the list an in-progress item belongs to, and how far through it the owner is.
-  ///
-  /// In en, this message translates to:
-  /// **'In {list} — {progress}'**
-  String dashboardInProgressInAt(String list, String progress);
-
-  /// Heading of the dashboard's per-type counts (UC-14, FR-CT-11).
-  ///
-  /// In en, this message translates to:
-  /// **'What is in the library'**
-  String get dashboardCounts;
-
-  /// Heading of the dashboard's most-recent-run section (UC-14, FR-CT-11).
-  ///
-  /// In en, this message translates to:
-  /// **'The last scan'**
-  String get dashboardLastRun;
-
-  /// No index or refresh run has been observed since the application started.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing has been scanned in this session.'**
-  String get dashboardLastRunNone;
-
-  /// UC-14 AF-04: a run is in flight, and the dashboard updates when it settles.
-  ///
-  /// In en, this message translates to:
-  /// **'A scan is running now.'**
-  String get dashboardLastRunRunning;
-
-  /// The most recent run completed.
-  ///
-  /// In en, this message translates to:
-  /// **'The last scan finished.'**
-  String get dashboardLastRunComplete;
-
-  /// The most recent run failed.
-  ///
-  /// In en, this message translates to:
-  /// **'The last scan did not finish.'**
-  String get dashboardLastRunFailed;
-
-  /// The most recent run was interrupted rather than failing.
-  ///
-  /// In en, this message translates to:
-  /// **'The last scan was interrupted when Alexandria closed.'**
-  String get dashboardLastRunInterrupted;
+  /// **'{count, plural, =1{1 library} other{{count} libraries}}'**
+  String homeLibraryCount(num count);
 
   /// Opens the video metadata form from a video's detail view (UC-16 main flow step 1).
   ///
