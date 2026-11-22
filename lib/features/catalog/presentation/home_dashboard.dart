@@ -6,6 +6,7 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../libraries/domain/catalog_stats.dart';
 import '../../libraries/domain/library.dart';
+import '../../libraries/domain/library_order.dart';
 import '../../libraries/presentation/libraries_view.dart';
 import '../../libraries/presentation/library_run_status.dart';
 import '../../shell/domain/shell_destination.dart';
@@ -67,7 +68,7 @@ class _FavoritesSection extends ConsumerWidget {
           final favorites = [
             for (final library in libraries)
               if (library.favorite) library,
-          ]..sort(_byName);
+          ]..sort(byLibraryName);
 
           if (favorites.isEmpty) return _Quiet(l10n.homeFavoritesNone);
 
@@ -85,13 +86,6 @@ class _FavoritesSection extends ConsumerWidget {
         },
       ),
     );
-  }
-
-  /// The menu's own comparison — case-insensitive, then by uuid — so the two
-  /// agree on the order.
-  static int _byName(Library a, Library b) {
-    final order = a.name.toLowerCase().compareTo(b.name.toLowerCase());
-    return order != 0 ? order : a.uuid.compareTo(b.uuid);
   }
 }
 

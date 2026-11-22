@@ -64,6 +64,34 @@ void main() {
     expect(find.text(messages(tester).librariesNone), findsOneWidget);
   });
 
+  testWidgets(
+    'GivenLibrariesInTheCoresOrder_WhenManageOpens_ThenTheyAreListedAToZ',
+    (tester) async {
+      // The core sorts names byte by byte, so "alpha" comes after "Zeta";
+      // the dialog lists them as the left menu and home do, ignoring case.
+      await openLibraries(
+        tester,
+        libraries: const [
+          Library(uuid: 'lib-b', name: 'Beta', rootPath: '/library/beta'),
+          Library(uuid: 'lib-z', name: 'Zeta', rootPath: '/library/zeta'),
+          Library(uuid: 'lib-a', name: 'alpha', rootPath: '/library/alpha'),
+        ],
+      );
+
+      double top(String name) => tester
+          .getTopLeft(
+            find.descendant(
+              of: find.byType(LibrariesView),
+              matching: find.text(name),
+            ),
+          )
+          .dy;
+
+      expect(top('alpha'), lessThan(top('Beta')));
+      expect(top('Beta'), lessThan(top('Zeta')));
+    },
+  );
+
   testWidgets('GivenALibrary_WhenItsRowIsTapped_ThenItsFoldersOpen', (
     tester,
   ) async {

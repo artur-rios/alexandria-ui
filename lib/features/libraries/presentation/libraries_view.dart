@@ -13,6 +13,7 @@ import '../../shell/domain/shell_destination.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../domain/library.dart';
+import '../domain/library_order.dart';
 import 'library_name_dialog.dart';
 import 'library_run_status.dart';
 import 'rename_library.dart';
@@ -115,11 +116,17 @@ class LibrariesView extends ConsumerWidget {
             onRetry: ref.read(librariesControllerProvider.notifier).reload,
             isEmpty: (libraries) => libraries.isEmpty,
             emptyBuilder: (context) => Center(child: Text(l10n.librariesNone)),
-            builder: (context, libraries) => ListView.builder(
-              itemCount: libraries.length,
-              itemBuilder: (context, index) =>
-                  _LibraryRow(library: libraries[index]),
-            ),
+            builder: (context, libraries) {
+              // A–Z as the left menu and home list them, not in the core's
+              // order: it sorts byte by byte, so "alpha" would follow "Zeta".
+              final sorted = [...libraries]..sort(byLibraryName);
+
+              return ListView.builder(
+                itemCount: sorted.length,
+                itemBuilder: (context, index) =>
+                    _LibraryRow(library: sorted[index]),
+              );
+            },
           ),
         ),
       ],
