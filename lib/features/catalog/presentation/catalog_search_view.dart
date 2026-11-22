@@ -7,9 +7,11 @@ import '../../../core/theme/app_spacing.dart';
 import '../../libraries/presentation/libraries_view.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../application/search_controller.dart';
+import '../domain/catalog_file.dart';
 import '../domain/catalog_search.dart';
 import '../domain/file_details.dart';
 import '../domain/file_type.dart';
+import 'file_details_view.dart';
 import 'music_display_name.dart';
 
 /// The catalog-wide search field (UC-11 main flow step 1).
@@ -152,7 +154,11 @@ class _Matches extends StatelessWidget {
                     ),
                   ),
                   for (final details in rows)
-                    _ResultRow(details: details, term: term),
+                    _ResultRow(
+                      details: details,
+                      term: term,
+                      shown: [for (final each in rows) each.file],
+                    ),
                 ],
               );
             },
@@ -166,11 +172,22 @@ class _Matches extends StatelessWidget {
 /// One match (main flow step 3).
 ///
 /// Named by its file name, which is what it is called, with its path beneath.
+/// A tap opens the file, the way a row in a library does (UC-13 main flow
+/// step 1): a result that cannot be opened from where it was found sends the
+/// owner off to look for it again.
 class _ResultRow extends ConsumerWidget {
-  const _ResultRow({required this.details, required this.term});
+  const _ResultRow({
+    required this.details,
+    required this.term,
+    required this.shown,
+  });
 
   final FileDetails details;
   final String term;
+
+  /// The results of its type, in the order drawn: a track plays through the
+  /// tracks the search found, not through the whole catalog.
+  final List<CatalogFile> shown;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -179,6 +196,7 @@ class _ResultRow extends ConsumerWidget {
     final file = details.file;
 
     return ListTile(
+      onTap: () => openFile(context, ref, file, shown: shown),
       leading: const Icon(Icons.insert_drive_file_outlined),
       // The term is marked in the name the row shows; marking a name the row
       // does not show would point at nothing.

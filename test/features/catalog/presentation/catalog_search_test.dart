@@ -13,6 +13,7 @@ import 'package:alexandria_ui/features/libraries/presentation/library_view.dart'
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -21,6 +22,8 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_folder_picker.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_library_gateway.dart';
+import '../../../support/fake_media_player.dart';
+import '../../../support/fake_playback.dart';
 import '../../../support/shell_harness.dart';
 
 /// Searching the catalog (UC-11, FR-CT-06, FR-CT-09).
@@ -438,6 +441,74 @@ void main() {
         expect(
           find.text(localizations(tester).searchInALibrary),
           findsOneWidget,
+        );
+      },
+    );
+  });
+
+  group('opening a result (UC-13 main flow step 1)', () {
+    testWidgets('GivenAResult_WhenItIsTapped_ThenTheFileItselfOpens', (
+      tester,
+    ) async {
+      await openShell(
+        tester,
+        listings: {
+          FileType.document: loadedDetails([
+            aFile(name: 'Blue Book.epub', type: FileType.document),
+          ]),
+        },
+      );
+      await search(tester, 'blue');
+
+      await tester.tap(find.text('Blue Book.epub'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DocumentViewerScreen), findsOneWidget);
+    });
+
+    testWidgets(
+      'GivenMatchingTracks_WhenOneIsTapped_ThenItPlaysThroughTheMatchingTracks',
+      (tester) async {
+        final container = await tester.pumpShell(
+          extraOverrides: [
+            catalogGatewayProvider.overrideWithValue(
+              FakeCatalogGateway(
+                listings: {
+                  FileType.audio: loadedDetails([
+                    aFile(
+                      uuid: 't-a',
+                      name: 'blue-a.flac',
+                      type: FileType.audio,
+                    ),
+                    aFile(uuid: 't-r', name: 'red.flac', type: FileType.audio),
+                    aFile(
+                      uuid: 't-b',
+                      name: 'blue-b.flac',
+                      type: FileType.audio,
+                    ),
+                  ]),
+                },
+              ),
+            ),
+            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway()..pathFor = (uuid) => '/music/$uuid',
+            ),
+            coverGatewayProvider.overrideWithValue(FakeCoverGateway()),
+          ],
+        );
+        await search(tester, 'blue');
+
+        await tester.tap(find.text('blue-b.flac'));
+        await tester.pumpAndSettle();
+
+        final playing = container.read(audioPlaybackControllerProvider);
+        expect(playing.current?.uuid, 't-b');
+        // The queue is what the search showed, not the whole catalog: a track
+        // that did not match is not one the owner asked to hear.
+        expect(
+          playing.queue.map((file) => file.uuid),
+          unorderedEquals(['t-a', 't-b']),
         );
       },
     );
