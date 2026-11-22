@@ -37,7 +37,7 @@ FLUTTER_SHA256=6ea2d806fd57269ae783e6788e2a81fc26eaad782f1e0d0ff38623bb765ff9f5
 # to the `v0.7.0` merge commit before this application is released. The pin and the vendored header move together: the
 # drift check in ci/integration.sh is exactly the guard against them moving apart.
 CORE_REPOSITORY=artur-rios/alexandria-api
-CORE_REF=2fb01253556736fba8479163d208b7aebf916855
+CORE_REF=51a25737895b74c2df1adda56c6c3edd793ac9a5
 
 # The Rust toolchain that builds the core (the workflows used dtolnay/rust-toolchain@stable, which was 1.99.1). Jenkins
 # installs it with rustup (RUSTUP_VERSION's rustup-init, checked against RUSTUP_SHA256) in ci/core.sh; the GitHub workflows
