@@ -4,17 +4,18 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/organization/domain/collection.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
+import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_bookmarks.dart';
 import '../../../support/fake_catalog_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 
 /// Every file belongs to a library (core 0.6.0), so every screen that lists
-/// files lists library files: the type panels, the dashboard, the deleted and
-/// missing reviews, and the collection picker. Before 0.6 a library kept its
+/// files lists library files: a library's folders, the dashboard, the deleted
+/// and missing reviews, and the collection picker. Before 0.6 a library kept its
 /// files out of the type panels and the dashboard; one file pins that the
 /// exclusion is gone everywhere it used to be.
 void main() {
@@ -42,19 +43,30 @@ void main() {
       ..listings[FileType.document] = CatalogListing.loaded(files: files)
       ..deleted[FileType.document] = CatalogListing.loaded(files: deleted);
 
+    // The library the files are in, its root holding them.
+    const library = Library(uuid: 'lib-1', name: 'Course', rootPath: '/');
+    final libraries = FakeLibraryGateway(libraries: const [library]);
+    libraries.reads['lib-1'] = {
+      '': LibraryRead.loaded(
+        listing: LibraryListing(
+          library: library,
+          path: '',
+          folders: const [],
+          files: [for (final each in files) LibraryFile(file: each.file)],
+        ),
+      ),
+    };
+
     final container = ProviderContainer(
       overrides: [
         catalogGatewayProvider.overrideWithValue(gateway),
+        libraryGatewayProvider.overrideWithValue(libraries),
         // The review lists deleted bookmarks beside deleted files; this test
         // is about the files.
         bookmarkGatewayProvider.overrideWithValue(FakeBookmarkGateway()),
       ],
     );
     addTearDown(container.dispose);
-
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
 
     return (ref: container, gateway: gateway);
   }
@@ -114,33 +126,16 @@ void main() {
     },
   );
 
-  test(
-    'GivenARecentLibraryFile_WhenTheDashboardLoads_ThenItIsAmongRecentFiles',
-    () async {
-      final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
-
-      final recent = await sut.ref.read(recentFilesProvider.future);
-
-      expect(recent.map((file) => file.name), ['lecture.pdf']);
-    },
-  );
-
-  test('GivenAFileInALibrary_WhenItsTypePanelLists_ThenItIsListed', () async {
+  test('GivenAFileInALibrary_WhenItsFolderIsShown_ThenItIsListed', () async {
+    // Where a library's files are browsed now: its folders, in the main area.
     final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
-    sut.ref.listen(listingControllerProvider, (_, _) {});
-    sut.ref.read(shellControllerProvider.notifier).go(ShellDestination.books);
+    sut.ref.listen(libraryFolderProvider('lib-1'), (_, _) {});
 
-    final listed = await sut.ref.read(listingControllerProvider.future);
+    await sut.ref.read(
+      libraryTreeControllerProvider((uuid: 'lib-1', path: '')).future,
+    );
+    final listed = sut.ref.read(libraryFolderProvider('lib-1')).requireValue;
 
-    expect(listed.map((file) => file.name), ['lecture.pdf']);
-  });
-
-  test('GivenAFileInALibrary_WhenTypeCountsAreRead_ThenItIsCounted', () async {
-    final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
-    sut.ref.listen(typeCountsControllerProvider, (_, _) {});
-
-    final counts = await sut.ref.read(typeCountsControllerProvider.future);
-
-    expect(counts[FileType.document], 1);
+    expect(listed.files.map((file) => file.name), ['lecture.pdf']);
   });
 }

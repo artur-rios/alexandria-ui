@@ -9,22 +9,11 @@ import '../domain/watchlist_gateway.dart';
 class WatchlistsController extends AsyncNotifier<List<Watchlist>> {
   @override
   Future<List<Watchlist>> build() async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
-
-    final browse = await ref
-        .read(watchlistGatewayProvider)
-        .browse(credential: credential);
+    final browse = await ref.read(watchlistGatewayProvider).browse();
 
     switch (browse) {
       case WatchlistBrowseLoaded(:final watchlists):
         return watchlists;
-
-      // AF-06: a rejected session returns the owner to login.
-      case WatchlistBrowseFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return const [];
 
       case WatchlistBrowseFailed(:final failure):
         throw failure;
@@ -123,8 +112,7 @@ class WatchlistsForm extends Notifier<WatchlistsState> {
     state = state.copyWith(isCreating: true);
 
     await _call(
-      (gateway, credential) =>
-          gateway.create(name: state.name.trim(), credential: credential),
+      (gateway) => gateway.create(name: state.name.trim()),
       onDone: () => state = const WatchlistsState(),
       onFailure: (notice, failure) => state = state.copyWith(
         isCreating: false,
@@ -153,11 +141,7 @@ class WatchlistsForm extends Notifier<WatchlistsState> {
     }
 
     await _call(
-      (gateway, credential) => gateway.addVideo(
-        uuid: watchlistUuid,
-        videoUuid: videoUuid,
-        credential: credential,
-      ),
+      (gateway) => gateway.addVideo(uuid: watchlistUuid, videoUuid: videoUuid),
     );
   }
 
@@ -166,33 +150,23 @@ class WatchlistsForm extends Notifier<WatchlistsState> {
     required String watchlistUuid,
     required String videoUuid,
   }) => _call(
-    (gateway, credential) => gateway.removeVideo(
-      uuid: watchlistUuid,
-      videoUuid: videoUuid,
-      credential: credential,
-    ),
+    (gateway) => gateway.removeVideo(uuid: watchlistUuid, videoUuid: videoUuid),
   );
 
   /// Deletes a watchlist (main flow step 6).
   ///
   /// The confirmation is the screen's: it has to say that the videos are
   /// preserved before this is reached.
-  Future<void> delete(String watchlistUuid) => _call(
-    (gateway, credential) =>
-        gateway.delete(uuid: watchlistUuid, credential: credential),
-  );
+  Future<void> delete(String watchlistUuid) =>
+      _call((gateway) => gateway.delete(uuid: watchlistUuid));
 
   /// Runs [call] and turns its answer into what the screen shows.
   Future<void> _call(
-    Future<WatchlistWrite> Function(WatchlistGateway, String credential) call, {
+    Future<WatchlistWrite> Function(WatchlistGateway) call, {
     void Function()? onDone,
     void Function(WatchlistNotice, Failure?)? onFailure,
   }) async {
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return;
-
-    final outcome = await call(ref.read(watchlistGatewayProvider), credential);
+    final outcome = await call(ref.read(watchlistGatewayProvider));
 
     switch (outcome) {
       case WatchlistWriteDone():
@@ -200,10 +174,6 @@ class WatchlistsForm extends Notifier<WatchlistsState> {
         // because the core is what holds the tracking.
         await ref.read(watchlistsControllerProvider.notifier).reload();
         (onDone ?? () => state = state.copyWith())();
-
-      // AF-06: the session is discarded, which returns the owner to login.
-      case WatchlistWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
 
       // AF-04: the watchlist or the video is gone, so the screen says so and
       // reads the core again — what it was showing is no longer true.

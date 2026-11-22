@@ -1,5 +1,5 @@
-/// A player the session can have running, which sign-out stops (UC-03 main
-/// flow step 2).
+/// A player the application can have running, which closing for an update
+/// stops.
 ///
 /// The video player is the only one. FR-PL-08's one session at a time needs
 /// nothing more while that holds: opening a video replaces whatever video was

@@ -116,7 +116,7 @@ released code and is never branched from for a use case:
 
 ```bash
 git switch develop && git pull
-git switch -c feature/uc-01-sign-up
+git switch -c feature/uc-05-add-a-library
 ```
 
 **Branch naming pattern:**
@@ -127,7 +127,7 @@ feature/uc-##-use-case-name
 
 | Use case | Branch |
 | --- | --- |
-| UC-01: Sign up | `feature/uc-01-sign-up` |
+| UC-05: Add a library | `feature/uc-05-add-a-library` |
 | UC-19: Play a video | `feature/uc-19-play-a-video` |
 | UC-38: Navigate the application shell | `feature/uc-38-navigate-the-application-shell` |
 

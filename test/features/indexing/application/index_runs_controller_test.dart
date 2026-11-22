@@ -2,15 +2,14 @@ import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 
 /// Starting a library's index run and watching it finish (UC-06, FR-LB-05,
 /// FR-LB-07 … FR-LB-09, core 0.6.0).
@@ -21,6 +20,7 @@ void main() {
   ({ProviderContainer ref, FakeIndexGateway gateway}) build({
     FakeIndexGateway? gateway,
     FakeCatalogGateway? catalog,
+    FakeLibraryGateway? libraries,
   }) {
     final indexGateway = gateway ?? FakeIndexGateway();
 
@@ -30,22 +30,15 @@ void main() {
         catalogGatewayProvider.overrideWithValue(
           catalog ?? FakeCatalogGateway(),
         ),
+        libraryGatewayProvider.overrideWithValue(
+          libraries ?? FakeLibraryGateway(),
+        ),
         // Long enough that no timer fires during a test: the observation is
         // driven by calling refresh directly.
         runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
       ],
     );
     addTearDown(container.dispose);
-
-    // Turned off before the session is established: `establish`'s own
-    // unawaited call to `begin()` (FR-LB-21) would otherwise start a refresh
-    // of its own and race the one a test drives.
-    container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
 
     return (ref: container, gateway: indexGateway);
   }
@@ -64,10 +57,6 @@ void main() {
 
         expect(refused, isNull);
         expect(sut.gateway.libraryStarts.single.uuid, library);
-        expect(
-          sut.gateway.libraryStarts.single.credential,
-          FakeAuthGateway.defaultSession.credential,
-        );
         final run = sut.ref.read(indexRunsControllerProvider).runFor(library);
         expect(run?.status, IndexRunStatus.running);
         expect(run?.libraryUuid, library);
@@ -212,47 +201,23 @@ void main() {
     () async {
       // A small first library is done before the active-runs listing ever
       // sees it running, and that listing is what used to refresh the panels.
-      final catalog = FakeCatalogGateway();
+      final libraries = FakeLibraryGateway();
       final sut = build(
         gateway: FakeIndexGateway()..readOutcomes = [finishedRun()],
-        catalog: catalog,
+        libraries: libraries,
       );
-      sut.ref.listen(typeCountsControllerProvider, (_, _) {});
-      await sut.ref.read(typeCountsControllerProvider.future);
-      final before = catalog.requested.length;
+      sut.ref.listen(catalogStatsProvider, (_, _) {});
+      await sut.ref.read(catalogStatsProvider.future);
+      final before = libraries.statsReads;
 
       await sut.ref
           .read(indexRunsControllerProvider.notifier)
           .startLibraryIndex(library);
-      await sut.ref.read(typeCountsControllerProvider.future);
+      await sut.ref.read(catalogStatsProvider.future);
 
-      expect(catalog.requested.length, greaterThan(before));
+      expect(libraries.statsReads, greaterThan(before));
     },
   );
-
-  group('the core rejects the session (AF-06)', () {
-    test(
-      'GivenTheStartIsUnauthorized_WhenItSettles_ThenTheSessionEnds',
-      () async {
-        const unauthorized = Failure.unauthorized(
-          family: CoreStatusFamily.indexing,
-          code: INDEX_ERR_UNAUTHORIZED,
-        );
-        final sut = build(
-          gateway: FakeIndexGateway()
-            ..libraryStartOutcomes.add(
-              const IndexStartOutcome.failed(failure: unauthorized),
-            ),
-        );
-
-        await sut.ref
-            .read(indexRunsControllerProvider.notifier)
-            .startLibraryIndex(library);
-
-        expect(sut.ref.read(sessionControllerProvider), isA<SessionAbsent>());
-      },
-    );
-  });
 
   group('a refresh started without asking (FR-LB-21)', () {
     test(

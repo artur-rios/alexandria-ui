@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/updates/application/update_state.dart';
 import 'package:alexandria_ui/features/updates/domain/install_kind.dart';
@@ -16,7 +15,6 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_bookmarks.dart';
 import '../../../support/fake_updates.dart';
 import '../../../support/in_memory_settings_store.dart';
-import '../../../support/login_harness.dart';
 import '../../../support/shell_harness.dart';
 
 /// The update prompt (update-check design §5).
@@ -46,9 +44,8 @@ void main() {
     browserLauncherProvider.overrideWithValue(browser ?? FakeBrowserLauncher()),
   ];
 
-  /// Signs in with the check offline, then checks again once [latest] is
-  /// out: the prompt shows over the login screen otherwise, and signing in
-  /// through it is not what these tests are about.
+  /// Starts with the check offline, then checks again once [latest] is
+  /// out, so each test decides when the offer arrives.
   Future<ProviderContainer> openShellWithOffer(
     WidgetTester tester, {
     String latest = '1.2.0',
@@ -92,12 +89,12 @@ void main() {
   );
 
   testWidgets(
-    'GivenTheLoginScreen_WhenTheCheckAnswers_ThenThePromptShowsThere',
+    'GivenTheShell_WhenTheStartupCheckAnswers_ThenThePromptShowsThere',
     (tester) async {
-      await tester.pumpLoginScreen(extraOverrides: updates());
+      await tester.pumpShell(extraOverrides: updates());
       await tester.pumpAndSettle();
 
-      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.byType(ShellScreen), findsOneWidget);
       expect(find.byType(UpdateDialog), findsOneWidget);
     },
   );
@@ -203,7 +200,7 @@ void main() {
   ) async {
     pendingStoreIn(support).write(from: '1.1.0', to: '1.2.0');
 
-    await tester.pumpLoginScreen(extraOverrides: updates());
+    await tester.pumpShell(extraOverrides: updates());
     await tester.pumpAndSettle();
 
     expect(

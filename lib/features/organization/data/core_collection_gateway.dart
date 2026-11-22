@@ -17,10 +17,7 @@ class CoreCollectionGateway implements CollectionGateway {
   final CoreClient _core;
 
   @override
-  Future<CollectionBrowse> browse({
-    required String credential,
-    CollectionKind? kind,
-  }) async {
+  Future<CollectionBrowse> browse({CollectionKind? kind}) async {
     final CoreJsonResponse response;
     try {
       response = await _core.collectionsList(
@@ -29,7 +26,6 @@ class CoreCollectionGateway implements CollectionGateway {
         // an absent filter as no filter, and sending an empty one would be
         // saying something different.
         kind == null ? '' : jsonEncode({'kind': kind.wireName}),
-        credential,
       );
     } on CoreCallException {
       return _unreadable();
@@ -62,11 +58,9 @@ class CoreCollectionGateway implements CollectionGateway {
   Future<CollectionWrite> create({
     required String name,
     required CollectionKind kind,
-    required String credential,
   }) => _write(
     () => _core.collectionCreate(
       jsonEncode({'name': name, 'kind': kind.wireName}),
-      credential,
     ),
   );
 
@@ -74,25 +68,17 @@ class CoreCollectionGateway implements CollectionGateway {
   Future<CollectionWrite> rename({
     required String uuid,
     required String name,
-    required String credential,
-  }) => _write(
-    () => _core.collectionRename(uuid, jsonEncode({'name': name}), credential),
-  );
+  }) => _write(() => _core.collectionRename(uuid, jsonEncode({'name': name})));
 
   @override
-  Future<CollectionWrite> delete({
-    required String uuid,
-    required String credential,
-  }) => _write(() => _core.collectionDelete(uuid, credential));
+  Future<CollectionWrite> delete({required String uuid}) =>
+      _write(() => _core.collectionDelete(uuid));
 
   @override
-  Future<CollectionMembers> members({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<CollectionMembers> members({required String uuid}) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.collectionListItems(uuid, credential);
+      response = await _core.collectionListItems(uuid);
     } on CoreCallException {
       return _unreadableMembers();
     }
@@ -130,14 +116,12 @@ class CoreCollectionGateway implements CollectionGateway {
   Future<CollectionAdditions> addItems({
     required String uuid,
     required List<String> itemUuids,
-    required String credential,
   }) async {
     final CoreJsonResponse response;
     try {
       response = await _core.collectionAddItems(
         uuid,
         jsonEncode({'itemUuids': itemUuids}),
-        credential,
       );
     } on CoreCallException {
       return _unaddable();
@@ -179,8 +163,7 @@ class CoreCollectionGateway implements CollectionGateway {
   Future<CollectionWrite> removeItem({
     required String uuid,
     required String itemUuid,
-    required String credential,
-  }) => _write(() => _core.collectionRemoveItem(uuid, itemUuid, credential));
+  }) => _write(() => _core.collectionRemoveItem(uuid, itemUuid));
 
   /// Runs [call] and turns the core's status into an outcome.
   Future<CollectionWrite> _write(

@@ -2,18 +2,16 @@ import 'dart:async';
 
 import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/features/shell/domain/app_activity.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/editing/domain/text_content_gateway.dart';
 import 'package:alexandria_ui/features/editing/presentation/text_editor_screen.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
@@ -48,8 +46,7 @@ void main() {
         isDeleted: isDeleted,
       );
 
-  /// Signs in, opens the notes listing, and opens the editor on the one file
-  /// in it.
+  /// Opens a library folder holding the note, and opens the editor on it.
   Future<(ProviderContainer, FakeTextContentGateway, FakeCatalogGateway)>
   openEditor(
     WidgetTester tester, {
@@ -83,13 +80,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.notes.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openFolderHolding(FileType.text);
     await openDetailsOf(tester, 'Notes.md');
     await tester.pumpAndSettle();
 
@@ -596,78 +587,34 @@ void main() {
     });
   });
 
-  // AF-06: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    const rejected = TextContentWrite.failed(
-      failure: Failure.unauthorized(
-        family: CoreStatusFamily.file,
-        code: FILE_ERR_UNAUTHORIZED,
-      ),
-    );
-
+  // The editor is the one activity that can hold unsaved changes, and closing
+  // for an update asks about them.
+  group('closing for an update with the editor open', () {
     testWidgets(
-      'GivenTheSessionIsRejected_WhenSaving_ThenTheOwnerIsWarnedFirst',
+      'GivenUnsavedChanges_WhenTheActivitiesAreAsked_ThenTheyAreReported',
       (tester) async {
-        final (container, _, _) = await openEditor(
-          tester,
-          writeOutcomes: const [rejected],
-        );
+        final (container, _, _) = await openEditor(tester);
 
         await type(tester, '# Changed');
-        await save(tester);
 
         expect(
-          find.text(messages(tester).editorSessionRejected),
-          findsOneWidget,
+          container.read(appActivitiesProvider).holdUnsavedChanges,
+          isTrue,
         );
-        // Still signed in: the warning comes before the session goes.
-        expect(container.read(sessionControllerProvider), isA<SessionActive>());
       },
     );
 
     testWidgets(
-      'GivenTheWarning_WhenItIsAcknowledged_ThenTheOwnerReturnsToLogin',
+      'GivenACleanEditor_WhenTheActivitiesAreAsked_ThenNothingIsReported',
       (tester) async {
-        final (container, _, _) = await openEditor(
-          tester,
-          writeOutcomes: const [rejected],
+        final (container, _, _) = await openEditor(tester);
+
+        expect(
+          container.read(appActivitiesProvider).holdUnsavedChanges,
+          isFalse,
         );
-
-        await type(tester, '# Changed');
-        await save(tester);
-        await tester.tap(find.text(messages(tester).editorSignInAgain));
-        await tester.pumpAndSettle();
-
-        expect(container.read(sessionControllerProvider), isA<SessionAbsent>());
       },
     );
-  });
-
-  // The editor is what UC-03's registry was built for.
-  group('signing out with the editor open', () {
-    testWidgets('GivenUnsavedChanges_WhenSigningOut_ThenTheyAreReported', (
-      tester,
-    ) async {
-      final (container, _, _) = await openEditor(tester);
-
-      await type(tester, '# Changed');
-
-      expect(
-        container.read(signOutControllerProvider).holdsUnsavedChanges,
-        isTrue,
-      );
-    });
-
-    testWidgets('GivenACleanEditor_WhenSigningOut_ThenNothingIsReported', (
-      tester,
-    ) async {
-      final (container, _, _) = await openEditor(tester);
-
-      expect(
-        container.read(signOutControllerProvider).holdsUnsavedChanges,
-        isFalse,
-      );
-    });
   });
 
   group('the content could not be read', () {

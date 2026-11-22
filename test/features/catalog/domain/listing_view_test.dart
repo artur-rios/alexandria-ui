@@ -6,70 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 
-/// Filtering and ordering a listing (UC-12, FR-CT-07, FR-CT-08).
+/// Ordering a listing's files (UC-12, FR-CT-08).
 void main() {
-  group('what a listing opens on', () {
-    test('GivenAFreshListing_WhenItIsRead_ThenItShowsWhatIsInTheLibrary', () {
-      expect(ListingView.initial.lifecycle, LifecycleFilter.active);
-      expect(ListingView.initial.sortField, SortField.name);
-      expect(ListingView.initial.direction, SortDirection.ascending);
-    });
-
-    test('GivenTheDefaultView_WhenItIsChecked_ThenNothingIsFilteredAway', () {
-      expect(ListingView.initial.isFiltered, isFalse);
-    });
-
-    test('GivenAChangedSort_WhenItIsChecked_ThenNothingIsFilteredAway', () {
-      // A sort orders without hiding anything, which is why clearing the
-      // filters does not un-order the listing.
-      expect(
-        ListingView.initial.copyWith(sortField: SortField.indexed).isFiltered,
-        isFalse,
-      );
-    });
-
-    test('GivenADeletedFilter_WhenItIsChecked_ThenSomethingIsFilteredAway', () {
-      expect(
-        ListingView.initial
-            .copyWith(lifecycle: LifecycleFilter.deleted)
-            .isFiltered,
-        isTrue,
-      );
-    });
-  });
-
-  group('remembering it', () {
-    test('GivenAView_WhenItIsWrittenAndRead_ThenItSurvivesUnchanged', () {
-      const view = ListingView(
-        lifecycle: LifecycleFilter.all,
-        sortField: SortField.indexed,
-        direction: SortDirection.descending,
-      );
-
-      expect(ListingView.fromJson(view.toJson()), view);
-    });
-
-    test('GivenAPartialDocument_WhenItIsRead_ThenTheKnownFieldsSurvive', () {
-      // Written by another version: the fields it knew are still the owner's
-      // choices, and the ones it did not fall back individually.
-      final view = ListingView.fromJson({'sortField': 'indexed'});
-
-      expect(view.sortField, SortField.indexed);
-      expect(view.lifecycle, LifecycleFilter.active);
-      expect(view.direction, SortDirection.ascending);
-    });
-
-    test('GivenUnknownValues_WhenTheyAreRead_ThenEachFallsBack', () {
-      final view = ListingView.fromJson({
-        'lifecycle': 'archived',
-        'sortField': 'popularity',
-        'direction': 'sideways',
-      });
-
-      expect(view, ListingView.initial);
-    });
-  });
-
   group('ordering (FR-CT-08)', () {
     final files = [
       aFile(
@@ -92,7 +30,7 @@ void main() {
     test('GivenNameAscending_WhenSorted_ThenItIgnoresCase', () {
       // A library sorted with every capital first is not sorted the way
       // anyone reads.
-      final sorted = sortFiles(files, ListingView.initial);
+      final sorted = sortFiles(files, const ListingView());
 
       expect(sorted.map((file) => file.uuid), ['2', '1', '3']);
     });
@@ -100,7 +38,7 @@ void main() {
     test('GivenNameDescending_WhenSorted_ThenTheOrderReverses', () {
       final sorted = sortFiles(
         files,
-        ListingView.initial.copyWith(direction: SortDirection.descending),
+        const ListingView(direction: SortDirection.descending),
       );
 
       expect(sorted.map((file) => file.uuid), ['3', '1', '2']);
@@ -109,7 +47,7 @@ void main() {
     test('GivenDateAscending_WhenSorted_ThenTheOldestIsFirst', () {
       final sorted = sortFiles(
         files,
-        ListingView.initial.copyWith(sortField: SortField.indexed),
+        const ListingView(sortField: SortField.indexed),
       );
 
       expect(sorted.map((file) => file.uuid), ['2', '3', '1']);
@@ -121,7 +59,7 @@ void main() {
       final sorted = sortFiles([
         ...files,
         undated,
-      ], ListingView.initial.copyWith(sortField: SortField.indexed));
+      ], const ListingView(sortField: SortField.indexed));
 
       expect(sorted.first.uuid, '4');
     });
@@ -129,7 +67,7 @@ void main() {
     test('GivenAListing_WhenItIsSorted_ThenTheOriginalIsNotDisturbed', () {
       final original = [...files];
 
-      sortFiles(files, ListingView.initial);
+      sortFiles(files, const ListingView());
 
       expect(files, original);
     });
@@ -157,7 +95,7 @@ void main() {
       ),
     );
 
-    final album = ListingView.initial.copyWith(sortField: SortField.album);
+    const album = ListingView(sortField: SortField.album);
 
     test(
       'GivenTracksOfTwoAlbums_WhenSortedByAlbum_ThenAlbumArtistAlbumTrackOrder',
@@ -205,21 +143,18 @@ void main() {
     });
 
     test('GivenAlbumDescending_WhenSorted_ThenTheOrderReverses', () {
-      final sorted = sortFiles([
-        track('1', albumArtist: 'A', album: 'A', track: 1),
-        track('2', albumArtist: 'A', album: 'A', track: 2),
-      ], album.copyWith(direction: SortDirection.descending));
+      final sorted = sortFiles(
+        [
+          track('1', albumArtist: 'A', album: 'A', track: 1),
+          track('2', albumArtist: 'A', album: 'A', track: 2),
+        ],
+        const ListingView(
+          sortField: SortField.album,
+          direction: SortDirection.descending,
+        ),
+      );
 
       expect(sorted.map((file) => file.uuid), ['2', '1']);
-    });
-
-    test('GivenMusic_WhenItsInitialViewIsAsked_ThenItIsTheAlbumOrder', () {
-      expect(ListingView.initialFor(FileType.audio).sortField, SortField.album);
-      expect(ListingView.initialFor(FileType.video), ListingView.initial);
-    });
-
-    test('GivenAnAlbumView_WhenSavedAndRead_ThenAlbumSurvives', () {
-      expect(ListingView.fromJson(album.toJson()), album);
     });
   });
 }

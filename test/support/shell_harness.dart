@@ -1,5 +1,11 @@
 import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
+import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -7,11 +13,19 @@ import 'package:riverpod/misc.dart';
 
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 
 import 'failing_settings_store.dart';
-import 'fake_auth_gateway.dart';
+import 'fake_catalog_gateway.dart';
 import 'fake_library_gateway.dart';
-import 'login_harness.dart';
+import 'app_harness.dart';
+
+/// The library [PumpShell.openFolderHolding] puts a test's files in.
+const Library shelf = Library(
+  uuid: 'lib-shelf',
+  name: 'Test library',
+  rootPath: '/home/owner',
+);
 
 /// Whether [overrides] already replaces [provider], so [pumpShell]'s own
 /// default is skipped rather than colliding with a caller's own — Riverpod
@@ -21,13 +35,12 @@ bool _overrides(List<Override> overrides, ProviderBase<Object?> provider) =>
 
 /// Drives the shell through the real application root.
 ///
-/// The shell is reached the way the owner reaches it — startup settles, the
-/// login screen appears, and a successful sign-in replaces it — rather than by
-/// pumping the shell on its own. That is what makes these tests cover the
-/// wiring in `app.dart` as well as the shell itself, and it is the same
-/// approach the authentication screens' tests take.
+/// The shell is reached the way the owner reaches it — startup settles, and
+/// the shell is the first screen — rather than by pumping the shell on its
+/// own. That is what makes these tests cover the wiring in `app.dart` as well
+/// as the shell itself.
 extension PumpShell on WidgetTester {
-  /// Signs in and lands on the shell.
+  /// Starts the application and lands on the shell.
   ///
   /// [surfaceSize] is applied to the view as well as to the render surface.
   /// `setSurfaceSize` alone changes what is rasterized but leaves
@@ -42,15 +55,13 @@ extension PumpShell on WidgetTester {
     ThemeMode themeMode = ThemeMode.light,
     Size surfaceSize = const Size(1280, 800),
     SettingsStore? settings,
-    FakeAuthGateway? gateway,
     List<Override> extraOverrides = const [],
   }) async {
     view.devicePixelRatio = 1;
     view.physicalSize = surfaceSize;
     addTearDown(view.reset);
 
-    final container = await pumpLoginScreen(
-      gateway: gateway ?? FakeAuthGateway(),
+    final container = await pumpApp(
       locale: locale,
       themeMode: themeMode,
       surfaceSize: surfaceSize,
@@ -72,10 +83,75 @@ extension PumpShell on WidgetTester {
       ],
     );
 
-    await signIn();
-
     return container;
   }
+
+  /// Moves the shell to [destination], as the left menu would, and settles.
+  Future<void> goTo(ShellDestination destination) async {
+    ProviderScope.containerOf(
+      element(find.byType(ShellScreen)),
+    ).read(shellControllerProvider.notifier).go(destination);
+    await pumpAndSettle();
+  }
+
+  /// Opens [library] in the main area, as its left-menu entry does.
+  ///
+  /// The library is added to the test's [FakeLibraryGateway] first when it
+  /// does not hold it, and the list is read again, so the left menu and the
+  /// header know it.
+  Future<void> openLibrary(Library library) async {
+    final container = ProviderScope.containerOf(
+      element(find.byType(ShellScreen)),
+    );
+    final gateway =
+        container.read(libraryGatewayProvider) as FakeLibraryGateway;
+    if (!gateway.libraries.any((each) => each.uuid == library.uuid)) {
+      gateway.libraries.add(library);
+    }
+    await container.read(librariesControllerProvider.notifier).reload();
+    await goTo(LibraryDestination(library.uuid));
+  }
+
+  /// Opens a library whose top folder holds the test's files of [type].
+  ///
+  /// The files are the active ones the test's [FakeCatalogGateway] lists for
+  /// [type], read again every time the folder is — so a write the fake
+  /// answers shows in the folder the way it would in the real one. A listing
+  /// the fake fails fails the folder. A test that is about a file rather than
+  /// about folders reaches its files this way.
+  Future<void> openFolderHolding(FileType type) async {
+    final container = ProviderScope.containerOf(
+      element(find.byType(ShellScreen)),
+    );
+    final gateway =
+        container.read(libraryGatewayProvider) as FakeLibraryGateway;
+    final catalog =
+        container.read(catalogGatewayProvider) as FakeCatalogGateway;
+
+    gateway.readers[shelf.uuid] = (path) => switch (catalog.listings[type]) {
+      CatalogListingFailed(:final failure) => LibraryRead.failed(
+        failure: failure,
+      ),
+      final listing => LibraryRead.loaded(
+        listing: LibraryListing(
+          library: shelf,
+          path: path,
+          folders: const [],
+          files: [
+            if (path.isEmpty && listing is CatalogListingLoaded)
+              for (final row in listing.files) LibraryFile(file: row.file),
+          ],
+        ),
+      ),
+    };
+
+    await openLibrary(shelf);
+  }
+
+  /// Opens Manage libraries from the Library menu, as the owner does.
+  Future<void> openLibrariesPage() => openLibraryTool(
+    AppLocalizations.of(element(find.byType(ShellScreen))).libraryMenuManage,
+  );
 
   /// Opens one of the library-wide screens (UC-37 main flow step 1).
   ///
@@ -100,8 +176,8 @@ extension PumpShell on WidgetTester {
     await pumpAndSettle();
   }
 
-  /// Signs in and lands on the shell over a settings store that refuses every
-  /// write (UC-39 AF-02).
+  /// Lands on the shell over a settings store that refuses every write
+  /// (UC-39 AF-02).
   Future<ProviderContainer> pumpShellWithFailingSettings({
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,

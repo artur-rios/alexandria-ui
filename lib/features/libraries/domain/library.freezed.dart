@@ -19,7 +19,9 @@ mixin _$Library {
 /// A directory called `2024-final-v2` is a path, not a title, and
 /// renaming the library must not mean renaming the directory.
  String get name;/// The folder every entry's position is relative to.
- String get rootPath;
+ String get rootPath;/// Whether the owner pinned it to the top of the left menu.
+ bool get pinned;/// Whether the owner marked it a favorite, which home shows.
+ bool get favorite;
 /// Create a copy of Library
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,16 +32,16 @@ $LibraryCopyWith<Library> get copyWith => _$LibraryCopyWithImpl<Library>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Library&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.rootPath, rootPath) || other.rootPath == rootPath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Library&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.rootPath, rootPath) || other.rootPath == rootPath)&&(identical(other.pinned, pinned) || other.pinned == pinned)&&(identical(other.favorite, favorite) || other.favorite == favorite));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,name,rootPath);
+int get hashCode => Object.hash(runtimeType,uuid,name,rootPath,pinned,favorite);
 
 @override
 String toString() {
-  return 'Library(uuid: $uuid, name: $name, rootPath: $rootPath)';
+  return 'Library(uuid: $uuid, name: $name, rootPath: $rootPath, pinned: $pinned, favorite: $favorite)';
 }
 
 
@@ -50,7 +52,7 @@ abstract mixin class $LibraryCopyWith<$Res>  {
   factory $LibraryCopyWith(Library value, $Res Function(Library) _then) = _$LibraryCopyWithImpl;
 @useResult
 $Res call({
- String uuid, String name, String rootPath
+ String uuid, String name, String rootPath, bool pinned, bool favorite
 });
 
 
@@ -67,12 +69,14 @@ class _$LibraryCopyWithImpl<$Res>
 
 /// Create a copy of Library
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? name = null,Object? rootPath = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? name = null,Object? rootPath = null,Object? pinned = null,Object? favorite = null,}) {
   return _then(_self.copyWith(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,rootPath: null == rootPath ? _self.rootPath : rootPath // ignore: cast_nullable_to_non_nullable
-as String,
+as String,pinned: null == pinned ? _self.pinned : pinned // ignore: cast_nullable_to_non_nullable
+as bool,favorite: null == favorite ? _self.favorite : favorite // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -157,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String name,  String rootPath)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String name,  String rootPath,  bool pinned,  bool favorite)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Library() when $default != null:
-return $default(_that.uuid,_that.name,_that.rootPath);case _:
+return $default(_that.uuid,_that.name,_that.rootPath,_that.pinned,_that.favorite);case _:
   return orElse();
 
 }
@@ -178,10 +182,10 @@ return $default(_that.uuid,_that.name,_that.rootPath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String name,  String rootPath)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String name,  String rootPath,  bool pinned,  bool favorite)  $default,) {final _that = this;
 switch (_that) {
 case _Library():
-return $default(_that.uuid,_that.name,_that.rootPath);case _:
+return $default(_that.uuid,_that.name,_that.rootPath,_that.pinned,_that.favorite);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +202,10 @@ return $default(_that.uuid,_that.name,_that.rootPath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String name,  String rootPath)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String name,  String rootPath,  bool pinned,  bool favorite)?  $default,) {final _that = this;
 switch (_that) {
 case _Library() when $default != null:
-return $default(_that.uuid,_that.name,_that.rootPath);case _:
+return $default(_that.uuid,_that.name,_that.rootPath,_that.pinned,_that.favorite);case _:
   return null;
 
 }
@@ -213,7 +217,7 @@ return $default(_that.uuid,_that.name,_that.rootPath);case _:
 
 
 class _Library implements Library {
-  const _Library({required this.uuid, required this.name, required this.rootPath});
+  const _Library({required this.uuid, required this.name, required this.rootPath, this.pinned = false, this.favorite = false});
   
 
 @override final  String uuid;
@@ -224,6 +228,10 @@ class _Library implements Library {
 @override final  String name;
 /// The folder every entry's position is relative to.
 @override final  String rootPath;
+/// Whether the owner pinned it to the top of the left menu.
+@override@JsonKey() final  bool pinned;
+/// Whether the owner marked it a favorite, which home shows.
+@override@JsonKey() final  bool favorite;
 
 /// Create a copy of Library
 /// with the given fields replaced by the non-null parameter values.
@@ -235,16 +243,16 @@ _$LibraryCopyWith<_Library> get copyWith => __$LibraryCopyWithImpl<_Library>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Library&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.rootPath, rootPath) || other.rootPath == rootPath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Library&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.name, name) || other.name == name)&&(identical(other.rootPath, rootPath) || other.rootPath == rootPath)&&(identical(other.pinned, pinned) || other.pinned == pinned)&&(identical(other.favorite, favorite) || other.favorite == favorite));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,name,rootPath);
+int get hashCode => Object.hash(runtimeType,uuid,name,rootPath,pinned,favorite);
 
 @override
 String toString() {
-  return 'Library(uuid: $uuid, name: $name, rootPath: $rootPath)';
+  return 'Library(uuid: $uuid, name: $name, rootPath: $rootPath, pinned: $pinned, favorite: $favorite)';
 }
 
 
@@ -255,7 +263,7 @@ abstract mixin class _$LibraryCopyWith<$Res> implements $LibraryCopyWith<$Res> {
   factory _$LibraryCopyWith(_Library value, $Res Function(_Library) _then) = __$LibraryCopyWithImpl;
 @override @useResult
 $Res call({
- String uuid, String name, String rootPath
+ String uuid, String name, String rootPath, bool pinned, bool favorite
 });
 
 
@@ -272,12 +280,14 @@ class __$LibraryCopyWithImpl<$Res>
 
 /// Create a copy of Library
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? name = null,Object? rootPath = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? name = null,Object? rootPath = null,Object? pinned = null,Object? favorite = null,}) {
   return _then(_Library(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,rootPath: null == rootPath ? _self.rootPath : rootPath // ignore: cast_nullable_to_non_nullable
-as String,
+as String,pinned: null == pinned ? _self.pinned : pinned // ignore: cast_nullable_to_non_nullable
+as bool,favorite: null == favorite ? _self.favorite : favorite // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

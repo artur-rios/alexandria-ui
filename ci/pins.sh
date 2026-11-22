@@ -28,13 +28,16 @@ FLUTTER_SHA256=6ea2d806fd57269ae783e6788e2a81fc26eaad782f1e0d0ff38623bb765ff9f5
 # The default address is GitHub's read-only mirror of alexandria-api; ALEXANDRIA_API_URL points the scripts at another
 # copy (the Forgejo repository, a local clone).
 #
-# The 0.6.0 release of the core (tag v0.6.0, the merge of alexandria-api#162): libraries are the only way into the
-# catalog. It removed `alexandria_index_start` and the per-run type scope, added `alexandria_library_index_start`, made
-# `alexandria_library_register` start the library's first run, and brought audio back as playable files. This
-# application accepts `>=0.6.0 <0.7.0`. The pin and the vendored header move together: the drift check in
-# ci/integration.sh is exactly the guard against them moving apart.
+# The 0.7 line of the core (alexandria-api#163, merged into its develop): authentication is gone. The seven
+# `alexandria_auth_*` calls and the Windows owner check were removed, no call takes a `token` any more (the parameters
+# that remain keep their order), result code 2 (`*_ERR_UNAUTHORIZED`) is retired in every family, and the
+# `ALEXANDRIA_AUTH_*` settings are ignored. It added `alexandria_library_set_pinned`, `alexandria_library_set_favorite`,
+# `alexandria_library_rename` and `alexandria_catalog_stats_json`, and a library's JSON now carries `pinned` and
+# `favorite`. This application accepts `>=0.7.0 <0.8.0`. Until the release the pin is the develop merge commit; it moves
+# to the `v0.7.0` merge commit before this application is released. The pin and the vendored header move together: the
+# drift check in ci/integration.sh is exactly the guard against them moving apart.
 CORE_REPOSITORY=artur-rios/alexandria-api
-CORE_REF=0e4500bf08039e92a63e48f7d51d351529dad85b
+CORE_REF=51a25737895b74c2df1adda56c6c3edd793ac9a5
 
 # The Rust toolchain that builds the core (the workflows used dtolnay/rust-toolchain@stable, which was 1.99.1). Jenkins
 # installs it with rustup (RUSTUP_VERSION's rustup-init, checked against RUSTUP_SHA256) in ci/core.sh; the GitHub workflows

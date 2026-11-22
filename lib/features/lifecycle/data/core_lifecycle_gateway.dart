@@ -16,73 +16,52 @@ class CoreLifecycleGateway implements LifecycleGateway {
   final CoreClient _core;
 
   @override
-  Future<LifecycleWrite> softDeleteFile({
-    required String uuid,
-    required String credential,
-  }) => _write(
+  Future<LifecycleWrite> softDeleteFile({required String uuid}) => _write(
     CoreStatusFamily.file,
     FILE_ERR_OTHER,
-    () => _core.fileSoftDelete(uuid, credential),
+    () => _core.fileSoftDelete(uuid),
   );
 
   @override
-  Future<LifecycleWrite> softDeleteBookmark({
-    required String uuid,
-    required String credential,
-  }) => _write(
+  Future<LifecycleWrite> softDeleteBookmark({required String uuid}) => _write(
     CoreStatusFamily.bookmark,
     BOOKMARK_ERR_OTHER,
-    () => _core.bookmarkSoftDelete(uuid, credential),
+    () => _core.bookmarkSoftDelete(uuid),
   );
 
   @override
-  Future<LifecycleWrite> restoreFile({
-    required String uuid,
-    required String credential,
-  }) => _write(
+  Future<LifecycleWrite> restoreFile({required String uuid}) => _write(
     CoreStatusFamily.file,
     FILE_ERR_OTHER,
-    () => _core.fileRestore(uuid, credential),
+    () => _core.fileRestore(uuid),
   );
 
   @override
-  Future<LifecycleWrite> restoreBookmark({
-    required String uuid,
-    required String credential,
-  }) => _write(
+  Future<LifecycleWrite> restoreBookmark({required String uuid}) => _write(
     CoreStatusFamily.bookmark,
     BOOKMARK_ERR_OTHER,
-    () => _core.bookmarkRestore(uuid, credential),
+    () => _core.bookmarkRestore(uuid),
   );
 
   @override
-  Future<LifecycleWrite> purgeFile({
-    required String uuid,
-    required String credential,
-  }) => _write(
+  Future<LifecycleWrite> purgeFile({required String uuid}) => _write(
     CoreStatusFamily.file,
     FILE_ERR_OTHER,
-    () => _core.filePurge(uuid, credential),
+    () => _core.filePurge(uuid),
   );
 
   @override
-  Future<LifecycleWrite> purgeBookmark({
-    required String uuid,
-    required String credential,
-  }) => _write(
+  Future<LifecycleWrite> purgeBookmark({required String uuid}) => _write(
     CoreStatusFamily.bookmark,
     BOOKMARK_ERR_OTHER,
-    () => _core.bookmarkPurge(uuid, credential),
+    () => _core.bookmarkPurge(uuid),
   );
 
   @override
-  Future<PurgeOnDiskOutcome> purgeFileOnDisk({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<PurgeOnDiskOutcome> purgeFileOnDisk({required String uuid}) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.filePurgeOnDisk(uuid, credential);
+      response = await _core.filePurgeOnDisk(uuid);
     } on CoreCallException {
       return const PurgeOnDiskOutcome.failed(
         failure: Failure.unexpected(
@@ -120,8 +99,8 @@ class CoreLifecycleGateway implements LifecycleGateway {
   ///
   /// The family is a parameter because a file and a bookmark are different
   /// core families: the same number means different things in each, and
-  /// reading one with the other's table is how a not-found becomes an
-  /// unauthorized.
+  /// reading one with the other's table is how a not-found becomes something
+  /// else.
   Future<LifecycleWrite> _write(
     CoreStatusFamily family,
     int otherCode,

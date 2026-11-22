@@ -15,14 +15,13 @@ import 'package:flutter_test/flutter_test.dart';
 /// because a library with an unfinished run refuses a move and a second run,
 /// and the tests that do either come straight after this.
 Future<Library> addLibraryAndSettle(
-  CoreClient client,
-  String credential, {
+  CoreClient client, {
   required String root,
   String name = 'Course',
 }) async {
   final registered = await CoreLibraryGateway(
     client,
-  ).register(name: name, rootPath: root, credential: credential);
+  ).register(name: name, rootPath: root);
   expect(
     registered,
     isA<LibraryRegistered>(),
@@ -30,23 +29,19 @@ Future<Library> addLibraryAndSettle(
   );
   final library = registered as LibraryRegistered;
 
-  final run = await settleRun(client, credential, library.runId);
+  final run = await settleRun(client, library.runId);
   expect(run.status, IndexRunStatus.complete, reason: 'the first run failed');
 
   return library.library;
 }
 
 /// Polls [runId] until it is over, and answers how it ended.
-Future<IndexRun> settleRun(
-  CoreClient client,
-  String credential,
-  String runId,
-) async {
+Future<IndexRun> settleRun(CoreClient client, String runId) async {
   final gateway = CoreIndexGateway(client);
   final deadline = DateTime.now().add(const Duration(seconds: 30));
 
   while (true) {
-    final outcome = await gateway.readRun(runId: runId, credential: credential);
+    final outcome = await gateway.readRun(runId: runId);
     if (outcome case IndexRunRead(:final run) when run.status.isTerminal) {
       return run;
     }

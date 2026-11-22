@@ -14,7 +14,7 @@ import '../domain/music_metadata.dart';
 import '../domain/video_metadata.dart';
 import 'file_view_parser.dart';
 
-/// [CatalogGateway] over the generated bindings (IR-03, UC-09).
+/// [CatalogGateway] over the generated bindings (IR-03, UC-11).
 class CoreCatalogGateway implements CatalogGateway {
   /// Creates a gateway over [core].
   const CoreCatalogGateway(this._core);
@@ -23,7 +23,6 @@ class CoreCatalogGateway implements CatalogGateway {
 
   @override
   Future<CatalogListing> listFiles({
-    required String credential,
     FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
   }) async {
@@ -40,7 +39,6 @@ class CoreCatalogGateway implements CatalogGateway {
           if (type != null) 'type': type.wireName,
           'state': lifecycle.wireName,
         }),
-        credential,
       );
     } on CoreCallException {
       return const CatalogListing.failed(
@@ -75,13 +73,10 @@ class CoreCatalogGateway implements CatalogGateway {
   }
 
   @override
-  Future<FileDetailsOutcome> fileDetails({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<FileDetailsOutcome> fileDetails({required String uuid}) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.fileByUuid(uuid, credential);
+      response = await _core.fileByUuid(uuid);
     } on CoreCallException {
       return const FileDetailsOutcome.failed(
         failure: Failure.unexpected(
@@ -91,9 +86,9 @@ class CoreCatalogGateway implements CatalogGateway {
       );
     }
 
-    // AF-01 and AF-05 both arrive here and are told apart by the status: a
-    // record the core does not have is not found, and a rejected session is
-    // unauthorized. The mapper draws that line, not this method.
+    // AF-01 arrives here and is told apart by the status: a record the core
+    // does not have is not found. The mapper draws that line, not this
+    // method.
     if (!CoreStatusFamily.file.isOk(response.status)) {
       return FileDetailsOutcome.failed(
         failure: mapCoreStatus(CoreStatusFamily.file, response.status),
@@ -117,14 +112,12 @@ class CoreCatalogGateway implements CatalogGateway {
   Future<VideoMetadataEditOutcome> editVideoMetadata({
     required String uuid,
     required VideoMetadata metadata,
-    required String credential,
   }) async {
     final CoreJsonResponse response;
     try {
       response = await _core.fileEditMetadata(
         uuid,
         jsonEncode(metadata.toPatch()),
-        credential,
       );
     } on CoreCallException {
       return const VideoMetadataEditOutcome.failed(
@@ -135,9 +128,9 @@ class CoreCatalogGateway implements CatalogGateway {
       );
     }
 
-    // AF-02, AF-04 and AF-05 all arrive here and are told apart by the status
-    // the mapper reads: a value the core refused, a record it does not have,
-    // and a rejected session.
+    // AF-02 and AF-04 both arrive here and are told apart by the status the
+    // mapper reads: a value the core refused, and a record it does not
+    // have.
     if (!CoreStatusFamily.file.isOk(response.status)) {
       return VideoMetadataEditOutcome.failed(
         failure: mapCoreStatus(CoreStatusFamily.file, response.status),
@@ -164,18 +157,16 @@ class CoreCatalogGateway implements CatalogGateway {
   Future<FileRenameOutcome> renameFile({
     required String uuid,
     required String name,
-    required String credential,
   }) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.fileRename(uuid, name, credential);
+      response = await _core.fileRename(uuid, name);
     } on CoreCallException {
       return _unreadableRename();
     }
 
-    // AF-02, AF-03 and AF-05 are told apart by the status the mapper reads: a
-    // disk that refused the rename, a record the core does not have, and a
-    // rejected session.
+    // AF-02 and AF-03 are told apart by the status the mapper reads: a disk
+    // that refused the rename, and a record the core does not have.
     if (!CoreStatusFamily.file.isOk(response.status)) {
       return FileRenameOutcome.failed(
         failure: mapCoreStatus(CoreStatusFamily.file, response.status),
@@ -206,22 +197,20 @@ class CoreCatalogGateway implements CatalogGateway {
   Future<MetadataEditOutcome> editMusicMetadata({
     required String uuid,
     required MusicMetadata metadata,
-    required String credential,
   }) async {
     final CoreJsonResponse response;
     try {
       response = await _core.fileEditMetadata(
         uuid,
         jsonEncode(metadata.toPatch()),
-        credential,
       );
     } on CoreCallException {
       return _unreadableMusicEdit();
     }
 
-    // AF-02, AF-03 and AF-05 all arrive here and are told apart by the status
-    // the mapper reads: an invalid value, a record the core does not have, and
-    // a rejected session are three different answers to the same call.
+    // AF-02 and AF-03 both arrive here and are told apart by the status the
+    // mapper reads: an invalid value and a record the core does not have are
+    // different answers to the same call.
     if (!CoreStatusFamily.file.isOk(response.status)) {
       return MetadataEditOutcome.failed(
         failure: mapCoreStatus(CoreStatusFamily.file, response.status),

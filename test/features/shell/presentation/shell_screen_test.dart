@@ -2,29 +2,50 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/startup/core_unavailable_screen.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../support/login_harness.dart';
+import '../../../support/app_harness.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/shell_harness.dart';
 
 /// The application shell (UC-38, FR-UX-01, FR-UX-02, FR-UX-11).
 void main() {
+  Finder panel() => find.byType(ShellNavigationPanel);
+
+  /// Pumps the shell at [surfaceSize] over one library, Course.
+  Future<ProviderContainer> pumpWithALibrary(
+    WidgetTester tester, {
+    required Size surfaceSize,
+  }) => tester.pumpShell(
+    surfaceSize: surfaceSize,
+    extraOverrides: [
+      libraryGatewayProvider.overrideWithValue(
+        FakeLibraryGateway(
+          libraries: const [
+            Library(uuid: 'lib-1', name: 'Course', rootPath: '/course'),
+          ],
+        ),
+      ),
+    ],
+  );
+
   // The three tiers, and the minimum supported window itself.
   const surfaces = <String, Size>{
     'TheMinimumWindow': Size(1024, 640),
     'ACompactWindow': Size(1100, 700),
     'AMediumWindow': Size(1280, 800),
     'AnExpandedWindow': Size(1700, 1000),
-    // Wide enough for labels, short enough that nine of them do not fit: the
-    // breakpoints are widths, so this is the shape that catches a panel which
-    // clips instead of adapting.
+    // Wide enough for labels and short: the breakpoints are widths, so this
+    // is the shape that catches a panel which clips instead of adapting.
     'AWideButShortWindow': Size(1360, 640),
   };
 
@@ -40,7 +61,7 @@ void main() {
     testWidgets(
       'GivenTheShell_WhenTheToolsAreOpened_ThenTheMissingFilesReviewIsOffered',
       (tester) async {
-        // UC-37 main flow step 1: "from the navigation panel or from an index
+        // UC-37 main flow step 1: "from the Library menu or from an index
         // run's outcome". This is the first of the two.
         await tester.pumpShell();
 
@@ -53,9 +74,9 @@ void main() {
     testWidgets(
       'GivenTheShell_WhenTheToolsAreOpened_ThenEveryLibraryWideAreaIsOffered',
       (tester) async {
-        // The areas that belong to no single file type, and so have no
-        // destination of their own (FR-CT-01) — but must still be reachable
-        // from anywhere rather than only from the dashboard.
+        // The areas that belong to no single library, and so have no entry
+        // in the left menu (FR-CT-20) — but must still be reachable from
+        // anywhere rather than only from home.
         await tester.pumpShell();
 
         final l10n = await openTools(tester);
@@ -92,45 +113,56 @@ void main() {
   });
 
   group('the widest tier (FR-UX-02)', () {
-    /// The rail the panel is built around.
-    NavigationRail railIn(WidgetTester tester) =>
-        tester.widget<NavigationRail>(find.byType(NavigationRail));
+    /// Where [label]'s text sits relative to its entry's icon [icon].
+    Offset labelFromIcon(WidgetTester tester, String label, IconData icon) =>
+        tester.getCenter(
+          find.descendant(of: panel(), matching: find.text(label)),
+        ) -
+        tester.getCenter(
+          find.descendant(of: panel(), matching: find.byIcon(icon)),
+        );
 
     testWidgets(
-      'GivenAnExpandedWindow_WhenThePanelIsDrawn_ThenTheRailIsExtended',
+      'GivenAnExpandedWindow_WhenThePanelIsDrawn_ThenLabelsSitBesideTheIcons',
       (tester) async {
         // The third tier had no behaviour of its own: 1600 looked exactly like
         // 1280. At this width the labels sit beside the icons rather than
         // under them, which is what the extra room buys.
-        await tester.pumpShell(surfaceSize: const Size(1700, 1000));
+        await pumpWithALibrary(tester, surfaceSize: const Size(1700, 1000));
 
-        expect(railIn(tester).extended, isTrue);
+        final offset = labelFromIcon(
+          tester,
+          'Bookmarks',
+          Icons.bookmark_outline,
+        );
+        expect(offset.dx, greaterThan(0));
+        expect(offset.dy.abs(), lessThan(4));
       },
     );
 
     testWidgets(
-      'GivenAMediumWindow_WhenThePanelIsDrawn_ThenTheRailIsNotExtended',
+      'GivenAMediumWindow_WhenThePanelIsDrawn_ThenLabelsSitBeneathTheIcons',
       (tester) async {
-        await tester.pumpShell(surfaceSize: const Size(1280, 800));
+        await pumpWithALibrary(tester, surfaceSize: const Size(1280, 800));
 
-        expect(railIn(tester).extended, isFalse);
+        final offset = labelFromIcon(
+          tester,
+          'Bookmarks',
+          Icons.bookmark_outline,
+        );
+        expect(offset.dx.abs(), lessThan(4));
+        expect(offset.dy, greaterThan(0));
       },
     );
 
     testWidgets(
       'GivenAnExpandedWindow_WhenThePanelIsDrawn_ThenEveryLabelIsStillRead',
       (tester) async {
-        await tester.pumpShell(surfaceSize: const Size(1700, 1000));
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
+        await pumpWithALibrary(tester, surfaceSize: const Size(1700, 1000));
 
-        for (final destination in ShellDestination.values) {
+        for (final label in ['Home', 'Bookmarks', 'Course']) {
           expect(
-            find.descendant(
-              of: find.byType(ShellNavigationPanel),
-              matching: find.text(destination.label(l10n)),
-            ),
+            find.descendant(of: panel(), matching: find.text(label)),
             findsOneWidget,
             reason: 'no entry is dropped at any tier (FR-UX-02)',
           );
@@ -155,7 +187,10 @@ void main() {
       (tester) async {
         final container = await tester.pumpShell();
 
-        expect(container.read(shellControllerProvider), ShellDestination.home);
+        expect(
+          container.read(shellControllerProvider),
+          const HomeDestination(),
+        );
       },
     );
 
@@ -182,20 +217,22 @@ void main() {
           tester.element(find.byType(ShellScreen)),
         );
 
-        // The icon rather than the label: the rail's tappable region is the
-        // destination, and the label sits inside a box that does not hit test
-        // on its own.
-        await tester.tap(find.byIcon(ShellDestination.comicBooks.icon));
+        await tester.tap(
+          find.descendant(
+            of: panel(),
+            matching: find.text(l10n.destinationBookmarks),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(
           container.read(shellControllerProvider),
-          ShellDestination.comicBooks,
+          const BookmarksDestination(),
         );
         expect(
           find.descendant(
             of: find.byType(ShellContentArea),
-            matching: find.text(l10n.destinationComicBooks),
+            matching: find.text(l10n.destinationBookmarks),
           ),
           findsOneWidget,
         );
@@ -203,38 +240,25 @@ void main() {
     );
 
     testWidgets(
-      'GivenEveryDestination_WhenEachIsPicked_ThenEachHeadsTheContentArea',
+      'GivenEveryEntry_WhenEachIsPicked_ThenEachHeadsTheContentArea',
       (tester) async {
-        await tester.pumpShell(surfaceSize: const Size(1280, 900));
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
+        await pumpWithALibrary(tester, surfaceSize: const Size(1280, 900));
 
-        for (final destination in ShellDestination.values) {
-          // Either icon: the selected destination shows its filled variant,
-          // and the loop starts on one that is already selected.
+        // Bookmarks first: the shell opens on home, and picking the entry
+        // already shown proves nothing.
+        for (final label in ['Bookmarks', 'Course', 'Home']) {
           await tester.tap(
-            find.descendant(
-              // Scoped to the panel: the content area's rows carry icons too,
-              // and an unscoped predicate matches whichever happens to agree.
-              of: find.byType(ShellNavigationPanel),
-              matching: find.byWidgetPredicate(
-                (widget) =>
-                    widget is Icon &&
-                    (widget.icon == destination.icon ||
-                        widget.icon == destination.selectedIcon),
-              ),
-            ),
+            find.descendant(of: panel(), matching: find.text(label)),
           );
           await tester.pumpAndSettle();
 
           expect(
             find.descendant(
               of: find.byType(ShellContentArea),
-              matching: find.text(destination.label(l10n)),
+              matching: find.text(label),
             ),
             findsOneWidget,
-            reason: 'the content area should be headed by ${destination.name}',
+            reason: 'the content area should be headed by $label',
           );
         }
       },
@@ -258,14 +282,14 @@ void main() {
           await tester.pumpAndSettle();
 
           if (container.read(shellControllerProvider) !=
-              ShellDestination.home) {
+              const HomeDestination()) {
             break;
           }
         }
 
         expect(
           container.read(shellControllerProvider),
-          isNot(ShellDestination.home),
+          isNot(const HomeDestination()),
           reason: 'FR-UX-11: the panel is reachable without a pointer',
         );
       },
@@ -275,25 +299,30 @@ void main() {
   group('breakpoints', () {
     for (final entry in surfaces.entries) {
       testWidgets(
-        'Given${entry.key}_WhenTheShellIsLaidOut_ThenNoDestinationIsDropped',
+        'Given${entry.key}_WhenTheShellIsLaidOut_ThenNoEntryIsDropped',
         (tester) async {
-          await tester.pumpShell(surfaceSize: entry.value);
+          await pumpWithALibrary(tester, surfaceSize: entry.value);
 
-          final rail = tester.widget<NavigationRail>(
-            find.byType(NavigationRail),
-          );
-          expect(
-            rail.destinations.length,
-            ShellDestination.values.length,
-            reason: 'FR-UX-02: the panel collapses, it never drops an entry',
-          );
+          // A label where the tier draws one, its tooltip where it does not.
+          final labelled = Breakpoint.of(
+            entry.value.width,
+          ).showsNavigationLabels;
+          for (final label in ['Home', 'Bookmarks', 'Course']) {
+            expect(
+              labelled
+                  ? find.descendant(of: panel(), matching: find.text(label))
+                  : find.byTooltip(label),
+              findsOneWidget,
+              reason: 'FR-UX-02: the panel collapses, it never drops $label',
+            );
+          }
         },
       );
 
       testWidgets(
         'Given${entry.key}_WhenTheShellIsLaidOut_ThenNothingIsClipped',
         (tester) async {
-          await tester.pumpShell(surfaceSize: entry.value);
+          await pumpWithALibrary(tester, surfaceSize: entry.value);
 
           // An overflowing layout throws during paint, which the tester
           // records; reaching here with nothing recorded is the assertion.
@@ -308,8 +337,11 @@ void main() {
       (tester) async {
         await tester.pumpShell(surfaceSize: Breakpoint.minimumWindowSize);
 
-        final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-        expect(rail.labelType, NavigationRailLabelType.none);
+        expect(
+          find.descendant(of: panel(), matching: find.text('Home')),
+          findsNothing,
+        );
+        expect(find.byTooltip('Home'), findsOneWidget);
       },
     );
 
@@ -318,8 +350,11 @@ void main() {
       (tester) async {
         await tester.pumpShell(surfaceSize: const Size(1280, 800));
 
-        final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-        expect(rail.labelType, NavigationRailLabelType.all);
+        expect(
+          find.descendant(of: panel(), matching: find.text('Home')),
+          findsOneWidget,
+        );
+        expect(find.byTooltip('Home'), findsNothing);
       },
     );
   });
@@ -357,19 +392,25 @@ void main() {
             tester.element(find.byType(ShellScreen)),
           );
 
-          for (final destination in ShellDestination.values) {
-            final label = destination.label(l10n);
+          for (final label in [
+            l10n.destinationHome,
+            l10n.destinationBookmarks,
+          ]) {
             expect(label, isNotEmpty);
             expect(label, isNot(contains('destination')));
+            expect(
+              find.descendant(of: panel(), matching: find.text(label)),
+              findsOneWidget,
+            );
           }
-          // Every destination now has content of its own — home the dashboard
-          // (UC-14), bookmarks the bookmark manager (UC-28), and the rest a
-          // listing — so what this checks is that the one the shell is *not*
-          // opened on renders in the owner's language too.
+          // Home and the bookmarks both have content of their own — the
+          // dashboard (UC-14) and the bookmark manager (UC-28) — so what this
+          // checks is that the one the shell is *not* opened on renders in the
+          // owner's language too.
           await tester.tap(
             find.descendant(
-              of: find.byType(ShellNavigationPanel),
-              matching: find.byIcon(ShellDestination.bookmarks.icon),
+              of: panel(),
+              matching: find.text(l10n.destinationBookmarks),
             ),
           );
           await tester.pumpAndSettle();

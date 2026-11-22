@@ -13,18 +13,12 @@ import 'package:alexandria_ui/core/failures/core_status.dart';
 class FakeCoreClient implements CoreClient {
   /// Creates a fake reporting a healthy, supported core by default.
   FakeCoreClient({
-    this.versionResult = '0.6.0',
+    this.versionResult = '0.7.0',
     int? healthResult,
     int? initializeResult,
     this.failOnVersion = false,
     this.failOnHealth = false,
     this.failOnInitialize = false,
-    CoreJsonResponse? authLocalLoginResult,
-    this.failOnAuthLocalLogin = false,
-    CoreJsonResponse? authLocalRegisterResult,
-    this.failOnAuthLocalRegister = false,
-    CoreJsonResponse? authLocalSetCredentialsResult,
-    this.failOnAuthLocalSetCredentials = false,
     CoreJsonResponse? indexRunStatusResult,
     this.failOnIndexRunStatus = false,
     CoreRunStart? indexRefreshStartResult,
@@ -55,14 +49,6 @@ class FakeCoreClient implements CoreClient {
            ),
        healthResult = healthResult ?? coreHealthyStatusCode,
        initializeResult = initializeResult ?? CoreStatusFamily.indexing.okCode,
-       authLocalLoginResult =
-           authLocalLoginResult ??
-           (
-             status: CoreStatusFamily.auth.okCode,
-             json:
-                 '{"success":true,'
-                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50"}',
-           ),
        fileByUuidResult =
            fileByUuidResult ??
            (
@@ -109,27 +95,6 @@ class FakeCoreClient implements CoreClient {
                  '"startedAt":"2026-08-19T10:30:00Z",'
                  '"finishedAt":"2026-08-19T10:31:00Z",'
                  '"scanned":120,"indexed":118,"skipped":2,"failed":0}',
-           ),
-       authLocalSetCredentialsResult =
-           authLocalSetCredentialsResult ??
-           (
-             status: CoreStatusFamily.auth.okCode,
-             // The core answers with the account body. UC-04 reads nothing
-             // from it, so the shape here is only what the real core sends.
-             json: '{"success":true,"email":"owner@example.com"}',
-           ),
-       authLocalRegisterResult =
-           authLocalRegisterResult ??
-           (
-             status: CoreStatusFamily.auth.okCode,
-             json:
-                 '{"success":true,"email":"owner@example.com",'
-                 '"sessionId":"6f1c9d02-1f3b-4f3a-9a7e-0b1d2c3e4f50",'
-                 // The ten codes the core mints at registration, returned on
-                 // this call and never again (FR-AU-12). Two here: the count
-                 // is the core's business, and a fake that insisted on ten
-                 // would be asserting it.
-                 '"recoveryCodes":["aaaa-bbbb","cccc-dddd"]}',
            ) {
     // Assigned in the body rather than the initializer list: these three
     // back mutable fields further down the class (set post-construction by
@@ -162,42 +127,8 @@ class FakeCoreClient implements CoreClient {
   /// Whether [initialize] throws instead of returning.
   final bool failOnInitialize;
 
-  /// What [authLocalLogin] returns. Defaults to a successful login.
-  final CoreJsonResponse authLocalLoginResult;
-
-  /// Whether [authLocalLogin] throws instead of returning.
-  final bool failOnAuthLocalLogin;
-
   /// The database paths [initialize] was called with, in order.
   final List<String> initializedWith = [];
-
-  /// What [authLocalRegister] returns. Defaults to a created account.
-  final CoreJsonResponse authLocalRegisterResult;
-
-  /// Whether [authLocalRegister] throws instead of returning.
-  final bool failOnAuthLocalRegister;
-
-  /// What [authLocalSetCredentials] answers (UC-04).
-  final CoreJsonResponse authLocalSetCredentialsResult;
-
-  /// Whether [authLocalSetCredentials] throws instead of answering.
-  final bool failOnAuthLocalSetCredentials;
-
-  /// The JSON bodies [authLocalRegister] was called with, in order.
-  final List<String> authLocalRegisterBodies = [];
-
-  /// The JSON bodies [authLocalLogin] was called with, in order.
-  ///
-  /// Recorded so a test can assert that the core was *not* called when local
-  /// validation already rejected the input (Testing Specification §6.3).
-  final List<String> authLocalLoginBodies = [];
-
-  /// What [authLocalSetCredentials] was called with, in order.
-  ///
-  /// Empty is the assertion that matters for UC-04 AF-01: local validation
-  /// failures never reach the core.
-  final List<({String jsonBody, String token})> authLocalSetCredentialsCalls =
-      [];
 
   /// What [indexRunStatus] answers (UC-06).
   final CoreJsonResponse indexRunStatusResult;
@@ -215,9 +146,9 @@ class FakeCoreClient implements CoreClient {
   final int countFilesResult;
 
   /// What [indexRefreshStart] was called with, in order.
-  final List<({String token, String? priority})> indexRefreshStarts = [];
+  final List<({String? priority})> indexRefreshStarts = [];
 
-  /// What [filesList] answers (UC-09).
+  /// What [filesList] answers (UC-11, UC-34, UC-37).
   final CoreJsonResponse filesListResult;
 
   /// Whether [filesList] throws instead of answering.
@@ -230,7 +161,7 @@ class FakeCoreClient implements CoreClient {
   final bool failOnFileByUuid;
 
   /// What [fileByUuid] was called with, in order.
-  final List<({String uuid, String token})> fileByUuidCalls = [];
+  final List<({String uuid})> fileByUuidCalls = [];
 
   /// What [fileEditMetadata] answers (UC-15).
   final CoreJsonResponse fileEditMetadataResult;
@@ -242,14 +173,13 @@ class FakeCoreClient implements CoreClient {
   ///
   /// The patch is kept as sent, because the shape of the body is part of the
   /// contract: the core reads the type tag off it to check the file's subtype.
-  final List<({String uuid, String patch, String token})>
-  fileEditMetadataCalls = [];
+  final List<({String uuid, String patch})> fileEditMetadataCalls = [];
 
   /// What [filesList] was called with, in order.
-  final List<({String filters, String token})> filesListCalls = [];
+  final List<({String filters})> filesListCalls = [];
 
   /// What [indexRunStatus] was called with, in order.
-  final List<({String runId, String token})> indexRunStatusCalls = [];
+  final List<({String runId})> indexRunStatusCalls = [];
 
   /// How many times [dispose] was called.
   int disposeCount = 0;
@@ -273,110 +203,33 @@ class FakeCoreClient implements CoreClient {
     return initializeResult;
   }
 
-  @override
-  Future<CoreJsonResponse> authLocalLogin(String jsonBody) async {
-    if (failOnAuthLocalLogin) {
-      throw const CoreCallException('auth local login call failed');
-    }
-    authLocalLoginBodies.add(jsonBody);
-    return authLocalLoginResult;
-  }
-
-  /// What reading the account answers (UC-42).
-  CoreJsonResponse authLocalAccountResult = (
-    status: AUTH_OK,
-    json: '{"email":"owner@example.com","recoveryCodesRemaining":7}',
-  );
-
-  /// What regenerating the recovery codes answers (UC-42).
-  CoreJsonResponse authLocalRegenerateRecoveryCodesResult = (
-    status: AUTH_OK,
-    json: '{"recoveryCodes":["new-aaaa","new-bbbb"]}',
-  );
-
-  @override
-  Future<CoreJsonResponse> authLocalAccount(String token) async =>
-      authLocalAccountResult;
-
-  @override
-  Future<CoreJsonResponse> authLocalRegenerateRecoveryCodes(
-    String token,
-  ) async => authLocalRegenerateRecoveryCodesResult;
-
-  /// What a recovery redemption answers (UC-41). A success by default.
-  CoreJsonResponse authLocalRedeemRecoveryCodeResult = (
-    status: AUTH_OK,
-    json:
-        '{"success":true,"email":"owner@example.com",'
-        '"recoveryCodesRemaining":9}',
-  );
-
-  /// Every redemption body sent, in order.
-  final List<String> recoveryRedemptions = [];
-
-  @override
-  Future<CoreJsonResponse> authLocalRedeemRecoveryCode(String jsonBody) async {
-    recoveryRedemptions.add(jsonBody);
-    return authLocalRedeemRecoveryCodeResult;
-  }
-
-  @override
-  Future<CoreJsonResponse> authLocalRegister(String jsonBody) async {
-    if (failOnAuthLocalRegister) {
-      throw const CoreCallException('auth local register call failed');
-    }
-    authLocalRegisterBodies.add(jsonBody);
-    return authLocalRegisterResult;
-  }
-
-  @override
-  Future<CoreJsonResponse> authLocalSetCredentials(
-    String jsonBody,
-    String token,
-  ) async {
-    if (failOnAuthLocalSetCredentials) {
-      throw const CoreCallException('auth local set-credentials call failed');
-    }
-    // Both are recorded: the body so a test can assert what was sent, and the
-    // token so it can assert the call was authorized with the active session
-    // rather than with nothing (UC-04 main flow step 4).
-    authLocalSetCredentialsCalls.add((jsonBody: jsonBody, token: token));
-    return authLocalSetCredentialsResult;
-  }
-
-  /// What `indexRunFailures` answers, and every run it was asked about.
-  ///
-  /// Recorded because the call takes the run id and the token in that order
-  /// — a transposition compiles and asks the core about a token.
+  /// What `indexRunFailures` answers.
   CoreJsonResponse runFailuresResponse = (status: RUN_OK, json: '[]');
 
   /// Every failures read asked for, in order.
-  final List<({String runId, String token})> indexRunFailuresCalls = [];
+  final List<({String runId})> indexRunFailuresCalls = [];
 
   @override
-  Future<CoreJsonResponse> indexRunFailures(String runId, String token) async {
-    indexRunFailuresCalls.add((runId: runId, token: token));
+  Future<CoreJsonResponse> indexRunFailures(String runId) async {
+    indexRunFailuresCalls.add((runId: runId));
     return runFailuresResponse;
   }
 
   @override
-  Future<CoreJsonResponse> indexRunStatus(String runId, String token) async {
+  Future<CoreJsonResponse> indexRunStatus(String runId) async {
     if (failOnIndexRunStatus) {
       throw const CoreCallException('index run status call failed');
     }
-    indexRunStatusCalls.add((runId: runId, token: token));
+    indexRunStatusCalls.add((runId: runId));
     return indexRunStatusResult;
   }
 
   @override
-  Future<CoreRunStart> indexRefreshStart(
-    String token, [
-    String? priority,
-  ]) async {
+  Future<CoreRunStart> indexRefreshStart([String? priority]) async {
     if (failOnIndexRefreshStart) {
       throw const CoreCallException('index refresh start call failed');
     }
-    indexRefreshStarts.add((token: token, priority: priority));
+    indexRefreshStarts.add((priority: priority));
     return indexRefreshStartResult;
   }
 
@@ -384,16 +237,14 @@ class FakeCoreClient implements CoreClient {
   CoreRunStart libraryIndexStartResult = (status: 0, runId: 'library-run-1');
 
   /// What [libraryIndexStart] was called with, in order.
-  final List<({String uuid, String token, String? priority})>
-  libraryIndexStarts = [];
+  final List<({String uuid, String? priority})> libraryIndexStarts = [];
 
   @override
   Future<CoreRunStart> libraryIndexStart(
-    String uuid,
-    String token, [
+    String uuid, [
     String? priority,
   ]) async {
-    libraryIndexStarts.add((uuid: uuid, token: token, priority: priority));
+    libraryIndexStarts.add((uuid: uuid, priority: priority));
     return libraryIndexStartResult;
   }
 
@@ -404,11 +255,11 @@ class FakeCoreClient implements CoreClient {
   );
 
   /// What [fileThumbnail] was called with, in order.
-  final List<({String uuid, String token})> fileThumbnailCalls = [];
+  final List<({String uuid})> fileThumbnailCalls = [];
 
   @override
-  Future<CoreJsonResponse> fileThumbnail(String uuid, String token) async {
-    fileThumbnailCalls.add((uuid: uuid, token: token));
+  Future<CoreJsonResponse> fileThumbnail(String uuid) async {
+    fileThumbnailCalls.add((uuid: uuid));
     return fileThumbnailResult;
   }
 
@@ -425,26 +276,26 @@ class FakeCoreClient implements CoreClient {
   bool failOnIndexCancel = false;
 
   /// Every run id [indexPause] was called with, in order.
-  final List<({String runId, String token})> indexPauses = [];
+  final List<({String runId})> indexPauses = [];
 
   /// Every run id [indexCancel] was called with, in order.
-  final List<({String runId, String token})> indexCancels = [];
+  final List<({String runId})> indexCancels = [];
 
   @override
-  Future<int> indexPause(String runId, String token) async {
+  Future<int> indexPause(String runId) async {
     if (failOnIndexPause) {
       throw const CoreCallException('index pause call failed');
     }
-    indexPauses.add((runId: runId, token: token));
+    indexPauses.add((runId: runId));
     return indexPauseResult;
   }
 
   @override
-  Future<int> indexCancel(String runId, String token) async {
+  Future<int> indexCancel(String runId) async {
     if (failOnIndexCancel) {
       throw const CoreCallException('index cancel call failed');
     }
-    indexCancels.add((runId: runId, token: token));
+    indexCancels.add((runId: runId));
     return indexCancelResult;
   }
 
@@ -457,19 +308,14 @@ class FakeCoreClient implements CoreClient {
 
   /// Every call [indexResume] received, in order — the priority included, so
   /// a test can assert a plain resume passed null rather than "normal".
-  final List<({String runId, String? priority, String token})> indexResumes =
-      [];
+  final List<({String runId, String? priority})> indexResumes = [];
 
   @override
-  Future<CoreRunStart> indexResume(
-    String runId,
-    String? priority,
-    String token,
-  ) async {
+  Future<CoreRunStart> indexResume(String runId, String? priority) async {
     if (failOnIndexResume) {
       throw const CoreCallException('index resume call failed');
     }
-    indexResumes.add((runId: runId, priority: priority, token: token));
+    indexResumes.add((runId: runId, priority: priority));
     return indexResumeResult ?? (status: 0, runId: runId);
   }
 
@@ -485,15 +331,11 @@ class FakeCoreClient implements CoreClient {
   /// about rather than reporting no work on no evidence).
   bool failOnIndexRunsActive = false;
 
-  /// Every token [indexRunsActive] was called with, in order.
-  final List<String> indexRunsActiveCalls = [];
-
   @override
-  Future<CoreJsonResponse> indexRunsActive(String token) async {
+  Future<CoreJsonResponse> indexRunsActive() async {
     if (failOnIndexRunsActive) {
       throw const CoreCallException('index runs active call failed');
     }
-    indexRunsActiveCalls.add(token);
     return indexRunsActiveResult;
   }
 
@@ -501,20 +343,20 @@ class FakeCoreClient implements CoreClient {
   Future<int> indexCountFiles() async => countFilesResult;
 
   @override
-  Future<CoreJsonResponse> filesList(String jsonFilters, String token) async {
+  Future<CoreJsonResponse> filesList(String jsonFilters) async {
     if (failOnFilesList) {
       throw const CoreCallException('files list call failed');
     }
-    filesListCalls.add((filters: jsonFilters, token: token));
+    filesListCalls.add((filters: jsonFilters));
     return filesListResult;
   }
 
   @override
-  Future<CoreJsonResponse> fileByUuid(String uuid, String token) async {
+  Future<CoreJsonResponse> fileByUuid(String uuid) async {
     if (failOnFileByUuid) {
       throw const CoreCallException('file get call failed');
     }
-    fileByUuidCalls.add((uuid: uuid, token: token));
+    fileByUuidCalls.add((uuid: uuid));
     return fileByUuidResult;
   }
 
@@ -522,12 +364,11 @@ class FakeCoreClient implements CoreClient {
   Future<CoreJsonResponse> fileEditMetadata(
     String uuid,
     String jsonPatch,
-    String token,
   ) async {
     if (failOnFileEditMetadata) {
       throw const CoreCallException('metadata edit call failed');
     }
-    fileEditMetadataCalls.add((uuid: uuid, patch: jsonPatch, token: token));
+    fileEditMetadataCalls.add((uuid: uuid, patch: jsonPatch));
     return fileEditMetadataResult;
   }
 
@@ -541,10 +382,8 @@ class FakeCoreClient implements CoreClient {
   );
 
   @override
-  Future<CoreJsonResponse> filePlaybackSource(
-    String uuid,
-    String token,
-  ) async => playbackSourceResponse;
+  Future<CoreJsonResponse> filePlaybackSource(String uuid) async =>
+      playbackSourceResponse;
 
   /// What [bookmarksList] answers (UC-28).
   CoreJsonResponse bookmarksResponse = (status: BOOKMARK_OK, json: '[]');
@@ -556,10 +395,8 @@ class FakeCoreClient implements CoreClient {
   final List<({String? uuid, String body})> bookmarkWrites = [];
 
   @override
-  Future<CoreJsonResponse> bookmarksList(
-    String jsonFilters,
-    String token,
-  ) async => bookmarksResponse;
+  Future<CoreJsonResponse> bookmarksList(String jsonFilters) async =>
+      bookmarksResponse;
 
   /// Every record soft-deleted, in order (UC-33).
   final List<String> softDeleted = [];
@@ -595,43 +432,43 @@ class FakeCoreClient implements CoreClient {
   CoreJsonResponse bookmarkPurgeResponse = (status: BOOKMARK_OK, json: null);
 
   @override
-  Future<CoreJsonResponse> filePurge(String uuid, String token) async {
+  Future<CoreJsonResponse> filePurge(String uuid) async {
     purged.add(uuid);
     return filePurgeResponse;
   }
 
   @override
-  Future<CoreJsonResponse> filePurgeOnDisk(String uuid, String token) async {
+  Future<CoreJsonResponse> filePurgeOnDisk(String uuid) async {
     purged.add(uuid);
     return filePurgeOnDiskResponse;
   }
 
   @override
-  Future<CoreJsonResponse> bookmarkPurge(String uuid, String token) async {
+  Future<CoreJsonResponse> bookmarkPurge(String uuid) async {
     purged.add(uuid);
     return bookmarkPurgeResponse;
   }
 
   @override
-  Future<CoreJsonResponse> fileRestore(String uuid, String token) async {
+  Future<CoreJsonResponse> fileRestore(String uuid) async {
     restored.add(uuid);
     return fileRestoreResponse;
   }
 
   @override
-  Future<CoreJsonResponse> bookmarkRestore(String uuid, String token) async {
+  Future<CoreJsonResponse> bookmarkRestore(String uuid) async {
     restored.add(uuid);
     return bookmarkRestoreResponse;
   }
 
   @override
-  Future<CoreJsonResponse> fileSoftDelete(String uuid, String token) async {
+  Future<CoreJsonResponse> fileSoftDelete(String uuid) async {
     softDeleted.add(uuid);
     return fileSoftDeleteResponse;
   }
 
   @override
-  Future<CoreJsonResponse> bookmarkSoftDelete(String uuid, String token) async {
+  Future<CoreJsonResponse> bookmarkSoftDelete(String uuid) async {
     softDeleted.add(uuid);
     return bookmarkSoftDeleteResponse;
   }
@@ -652,16 +489,13 @@ class FakeCoreClient implements CoreClient {
   );
 
   @override
-  Future<CoreJsonResponse> collectionListItems(
-    String uuid,
-    String token,
-  ) async => collectionMembersResult;
+  Future<CoreJsonResponse> collectionListItems(String uuid) async =>
+      collectionMembersResult;
 
   @override
   Future<CoreJsonResponse> collectionAddItems(
     String uuid,
     String jsonBody,
-    String token,
   ) async {
     collectionWrites.add((uuid: uuid, body: jsonBody));
     return collectionWriteResult;
@@ -671,7 +505,6 @@ class FakeCoreClient implements CoreClient {
   Future<CoreJsonResponse> collectionRemoveItem(
     String uuid,
     String itemUuid,
-    String token,
   ) async {
     collectionWrites.add((uuid: uuid, body: itemUuid));
     return collectionWriteResult;
@@ -684,19 +517,14 @@ class FakeCoreClient implements CoreClient {
   );
 
   @override
-  Future<CoreJsonResponse> settings(String token) async => settingsResult;
+  Future<CoreJsonResponse> settings() async => settingsResult;
 
   @override
-  Future<CoreJsonResponse> collectionsList(
-    String jsonFilters,
-    String token,
-  ) async => collectionsListResult;
+  Future<CoreJsonResponse> collectionsList(String jsonFilters) async =>
+      collectionsListResult;
 
   @override
-  Future<CoreJsonResponse> collectionCreate(
-    String jsonBody,
-    String token,
-  ) async {
+  Future<CoreJsonResponse> collectionCreate(String jsonBody) async {
     collectionWrites.add((uuid: null, body: jsonBody));
     return collectionWriteResult;
   }
@@ -705,30 +533,25 @@ class FakeCoreClient implements CoreClient {
   Future<CoreJsonResponse> collectionRename(
     String uuid,
     String jsonBody,
-    String token,
   ) async {
     collectionWrites.add((uuid: uuid, body: jsonBody));
     return collectionWriteResult;
   }
 
   @override
-  Future<CoreJsonResponse> collectionDelete(String uuid, String token) async {
+  Future<CoreJsonResponse> collectionDelete(String uuid) async {
     collectionWrites.add((uuid: uuid, body: null));
     return collectionWriteResult;
   }
 
   @override
-  Future<CoreJsonResponse> bookmarkCreate(String jsonBody, String token) async {
+  Future<CoreJsonResponse> bookmarkCreate(String jsonBody) async {
     bookmarkWrites.add((uuid: null, body: jsonBody));
     return bookmarkWriteResponse;
   }
 
   @override
-  Future<CoreJsonResponse> bookmarkUpdate(
-    String uuid,
-    String jsonBody,
-    String token,
-  ) async {
+  Future<CoreJsonResponse> bookmarkUpdate(String uuid, String jsonBody) async {
     bookmarkWrites.add((uuid: uuid, body: jsonBody));
     return bookmarkWriteResponse;
   }
@@ -740,11 +563,7 @@ class FakeCoreClient implements CoreClient {
   final List<({String uuid, int page})> comicPages = [];
 
   @override
-  Future<CoreJsonResponse> comicPage(
-    String uuid,
-    int page,
-    String token,
-  ) async {
+  Future<CoreJsonResponse> comicPage(String uuid, int page) async {
     comicPages.add((uuid: uuid, page: page));
     return comicPageResponse;
   }
@@ -762,15 +581,11 @@ class FakeCoreClient implements CoreClient {
   final List<({String uuid, String body})> contentWrites = [];
 
   @override
-  Future<CoreJsonResponse> fileReadContent(String uuid, String token) async =>
+  Future<CoreJsonResponse> fileReadContent(String uuid) async =>
       readContentResponse;
 
   @override
-  Future<CoreJsonResponse> fileEditContent(
-    String uuid,
-    String jsonBody,
-    String token,
-  ) async {
+  Future<CoreJsonResponse> fileEditContent(String uuid, String jsonBody) async {
     contentWrites.add((uuid: uuid, body: jsonBody));
     return editContentResponse;
   }
@@ -782,11 +597,7 @@ class FakeCoreClient implements CoreClient {
   final List<({String uuid, String name})> renames = [];
 
   @override
-  Future<CoreJsonResponse> fileRename(
-    String uuid,
-    String name,
-    String token,
-  ) async {
+  Future<CoreJsonResponse> fileRename(String uuid, String name) async {
     renames.add((uuid: uuid, name: name));
     return renameResponse;
   }
@@ -795,33 +606,27 @@ class FakeCoreClient implements CoreClient {
   CoreJsonResponse readingListResponse = (status: READING_LIST_OK, json: '[]');
 
   @override
-  Future<CoreJsonResponse> readingListsList(
-    String jsonFilters,
-    String token,
-  ) async => readingListResponse;
+  Future<CoreJsonResponse> readingListsList(String jsonFilters) async =>
+      readingListResponse;
 
   @override
-  Future<CoreJsonResponse> readingListCreate(
-    String jsonBody,
-    String token,
-  ) async => readingListResponse;
+  Future<CoreJsonResponse> readingListCreate(String jsonBody) async =>
+      readingListResponse;
 
   @override
-  Future<CoreJsonResponse> readingListDelete(String uuid, String token) async =>
+  Future<CoreJsonResponse> readingListDelete(String uuid) async =>
       readingListResponse;
 
   @override
   Future<CoreJsonResponse> readingListAddItem(
     String uuid,
     String jsonBody,
-    String token,
   ) async => readingListResponse;
 
   @override
   Future<CoreJsonResponse> readingListRemoveItem(
     String uuid,
     String itemUuid,
-    String token,
   ) async => readingListResponse;
 
   @override
@@ -829,34 +634,29 @@ class FakeCoreClient implements CoreClient {
     String uuid,
     String itemUuid,
     String jsonBody,
-    String token,
   ) async => readingListResponse;
 
   /// What every watchlist write answers (UC-29, UC-30).
   CoreJsonResponse watchlistWriteResponse = (status: WATCHLIST_OK, json: '{}');
 
   @override
-  Future<CoreJsonResponse> watchlistCreate(
-    String jsonBody,
-    String token,
-  ) async => watchlistWriteResponse;
+  Future<CoreJsonResponse> watchlistCreate(String jsonBody) async =>
+      watchlistWriteResponse;
 
   @override
-  Future<CoreJsonResponse> watchlistDelete(String uuid, String token) async =>
+  Future<CoreJsonResponse> watchlistDelete(String uuid) async =>
       watchlistWriteResponse;
 
   @override
   Future<CoreJsonResponse> watchlistAddVideo(
     String uuid,
     String jsonBody,
-    String token,
   ) async => watchlistWriteResponse;
 
   @override
   Future<CoreJsonResponse> watchlistRemoveVideo(
     String uuid,
     String videoUuid,
-    String token,
   ) async => watchlistWriteResponse;
 
   @override
@@ -864,7 +664,6 @@ class FakeCoreClient implements CoreClient {
     String uuid,
     String videoUuid,
     String jsonBody,
-    String token,
   ) async => watchlistWriteResponse;
 
   /// What [watchlistsList] answers (UC-16 AF-03).
@@ -874,10 +673,8 @@ class FakeCoreClient implements CoreClient {
   CoreJsonResponse watchlists = (status: WATCHLIST_OK, json: '[]');
 
   @override
-  Future<CoreJsonResponse> watchlistsList(
-    String jsonFilters,
-    String token,
-  ) async => watchlists;
+  Future<CoreJsonResponse> watchlistsList(String jsonFilters) async =>
+      watchlists;
 
   /// What every library call answers, and what they were called with.
   ///
@@ -887,14 +684,13 @@ class FakeCoreClient implements CoreClient {
   CoreJsonResponse libraryResponse = (status: LIBRARY_OK, json: '[]');
 
   /// Every library registration asked for, in order.
-  final List<({String jsonBody, String token})> libraryRegisterCalls = [];
+  final List<({String jsonBody})> libraryRegisterCalls = [];
 
   /// Every tree read asked for, in order.
-  final List<({String uuid, String path, String token})> libraryBrowseCalls =
-      [];
+  final List<({String uuid, String path})> libraryBrowseCalls = [];
 
   /// Every library removal asked for, in order.
-  final List<({String uuid, String token})> libraryRemoveCalls = [];
+  final List<({String uuid})> libraryRemoveCalls = [];
 
   /// What [libraryRemove] answers, when it should differ from
   /// [libraryResponse].
@@ -909,44 +705,90 @@ class FakeCoreClient implements CoreClient {
   /// Recorded like `libraryBrowse` above and for the same reason: three
   /// consecutive strings, so a transposition compiles and moves a library to
   /// a path spelled as a JSON body.
-  final List<({String uuid, String jsonBody, String token})> libraryMoveCalls =
-      [];
+  final List<({String uuid, String jsonBody})> libraryMoveCalls = [];
 
   @override
-  Future<CoreJsonResponse> libraryRegister(
-    String jsonBody,
-    String token,
-  ) async {
-    libraryRegisterCalls.add((jsonBody: jsonBody, token: token));
+  Future<CoreJsonResponse> libraryRegister(String jsonBody) async {
+    libraryRegisterCalls.add((jsonBody: jsonBody));
     return libraryResponse;
   }
 
   @override
-  Future<CoreJsonResponse> librariesList(String token) async => libraryResponse;
+  Future<CoreJsonResponse> librariesList() async => libraryResponse;
 
   @override
-  Future<CoreJsonResponse> libraryBrowse(
-    String uuid,
-    String path,
-    String token,
-  ) async {
-    libraryBrowseCalls.add((uuid: uuid, path: path, token: token));
+  Future<CoreJsonResponse> libraryBrowse(String uuid, String path) async {
+    libraryBrowseCalls.add((uuid: uuid, path: path));
     return libraryResponse;
   }
 
   @override
-  Future<CoreJsonResponse> libraryMove(
-    String uuid,
-    String jsonBody,
-    String token,
-  ) async {
-    libraryMoveCalls.add((uuid: uuid, jsonBody: jsonBody, token: token));
+  Future<CoreJsonResponse> libraryMove(String uuid, String jsonBody) async {
+    libraryMoveCalls.add((uuid: uuid, jsonBody: jsonBody));
     return libraryResponse;
   }
 
+  /// What [libraryRename] answers.
+  CoreJsonResponse libraryRenameResponse = (status: LIBRARY_OK, json: '{}');
+
+  /// Every library rename asked for, in order.
+  ///
+  /// Recorded like `libraryMove` above and for the same reason: two
+  /// consecutive strings, so a transposition compiles and renames a library
+  /// called by its uuid.
+  final List<({String uuid, String jsonBody})> libraryRenameCalls = [];
+
   @override
-  Future<CoreJsonResponse> libraryRemove(String uuid, String token) async {
-    libraryRemoveCalls.add((uuid: uuid, token: token));
+  Future<CoreJsonResponse> libraryRename(String uuid, String jsonBody) async {
+    libraryRenameCalls.add((uuid: uuid, jsonBody: jsonBody));
+    return libraryRenameResponse;
+  }
+
+  /// What [librarySetPinned] answers.
+  int librarySetPinnedResult = LIBRARY_OK;
+
+  /// Every pin change asked for, in order.
+  final List<({String uuid, bool pinned})> librarySetPinnedCalls = [];
+
+  @override
+  Future<int> librarySetPinned(String uuid, bool pinned) async {
+    librarySetPinnedCalls.add((uuid: uuid, pinned: pinned));
+    return librarySetPinnedResult;
+  }
+
+  /// What [librarySetFavorite] answers.
+  int librarySetFavoriteResult = LIBRARY_OK;
+
+  /// Every favorite change asked for, in order.
+  final List<({String uuid, bool favorite})> librarySetFavoriteCalls = [];
+
+  @override
+  Future<int> librarySetFavorite(String uuid, bool favorite) async {
+    librarySetFavoriteCalls.add((uuid: uuid, favorite: favorite));
+    return librarySetFavoriteResult;
+  }
+
+  /// What [catalogStats] answers: an empty catalog by default, every type
+  /// present and zero, as the core answers one.
+  CoreJsonResponse catalogStatsResponse = (
+    status: LIBRARY_OK,
+    json:
+        '{"libraries":0,"filesByType":{"video":0,"audio":0,"document":0,'
+        '"comic":0,"text":0,"html":0,"image":0}}',
+  );
+
+  /// How many times [catalogStats] was asked.
+  int catalogStatsCalls = 0;
+
+  @override
+  Future<CoreJsonResponse> catalogStats() async {
+    catalogStatsCalls++;
+    return catalogStatsResponse;
+  }
+
+  @override
+  Future<CoreJsonResponse> libraryRemove(String uuid) async {
+    libraryRemoveCalls.add((uuid: uuid));
     return libraryRemoveResponse ?? libraryResponse;
   }
 }

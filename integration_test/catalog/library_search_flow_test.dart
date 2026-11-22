@@ -6,8 +6,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/startup/core_paths.dart';
 import 'package:alexandria_ui/core/startup/startup_state.dart';
-import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
-import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -29,8 +27,6 @@ import '../support/temporary_catalog.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  const email = 'owner@example.com';
-  const password = 'correct horse battery staple';
   const libraryName = 'Rust course';
 
   late TemporaryCatalog catalog;
@@ -104,30 +100,6 @@ void main() {
     return container;
   }
 
-  /// Registers the owner and puts the shell on screen.
-  ///
-  /// Through the core's own registration call rather than the sign-up form:
-  /// UC-01 has its own integration test, and driving it here would make this
-  /// one fail for that reason instead of this one.
-  Future<void> signIn(WidgetTester tester, ProviderContainer container) async {
-    final outcome =
-        await CoreAuthGateway(
-          container.read(startupControllerProvider.notifier).core!,
-        ).register(
-          email: email,
-          password: password,
-          passwordConfirmation: password,
-        );
-    expect(outcome, isA<AuthenticatedOutcome>());
-
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish((outcome as AuthenticatedOutcome).session);
-    await tester.pumpAndSettle();
-
-    expect(find.byType(ShellScreen), findsOneWidget);
-  }
-
   /// Adds the fixture folder as a library and waits for its first run to
   /// record [expected] files.
   ///
@@ -138,19 +110,17 @@ void main() {
     ProviderContainer container,
     int expected,
   ) async {
-    final credential = container
-        .read(sessionControllerProvider.notifier)
-        .credential!;
     final core = container.read(startupControllerProvider.notifier).core!;
 
     final registered = await container
         .read(libraryGatewayProvider)
-        .register(
-          name: libraryName,
-          rootPath: catalog.libraryDirectory.path,
-          credential: credential,
-        );
+        .register(name: libraryName, rootPath: catalog.libraryDirectory.path);
     expect(registered, isA<LibraryRegistered>());
+
+    // The left menu's list is read once, at startup, and a library added
+    // behind its back (here, through the gateway) is not in it until it is
+    // read again. The hit names its library from that list.
+    await container.read(librariesControllerProvider.notifier).reload();
 
     for (var attempt = 0; attempt < 300; attempt++) {
       if (await core.indexCountFiles() >= expected) return;
@@ -193,7 +163,7 @@ void main() {
       // hit says which library it is in.
       catalog.addFixture('class-01/lecture-notes.md', '# a lecture');
       final container = await startApp(tester);
-      await signIn(tester, container);
+      expect(find.byType(ShellScreen), findsOneWidget);
       await addLibraryAndSettle(tester, container, 1);
 
       await search(tester, container, 'lecture');

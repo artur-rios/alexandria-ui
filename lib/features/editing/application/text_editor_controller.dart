@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/bindings/alexandria_bindings.dart';
 import '../../../core/di/providers.dart';
-import '../../../core/failures/core_status.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_gateway.dart';
 import '../../catalog/domain/file_stamp.dart';
@@ -52,10 +50,6 @@ enum EditorQuestion {
   /// A question rather than a closing, because what the owner typed is still
   /// on screen and closing the editor under them would lose it silently.
   recordIsGone,
-
-  /// The session was rejected mid-edit and the content could not be saved
-  /// (AF-06). Acknowledging it is what discards the session.
-  sessionRejected,
 }
 
 /// The editor's state (UC-18).
@@ -153,24 +147,9 @@ class TextEditorController extends Notifier<TextEditorState> {
     _stampWhenLoaded = stamp;
     state = TextEditorState(uuid: uuid, name: name, stage: EditorStage.loading);
 
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07) — reported as a failed load rather than
-    // returned on, which left the editor showing a spinner over a file it was
-    // never going to read.
-    if (credential == null) {
-      state = state.copyWith(
-        stage: EditorStage.loadFailed,
-        failure: const Failure.unauthorized(
-          family: CoreStatusFamily.file,
-          code: FILE_ERR_UNAUTHORIZED,
-        ),
-      );
-      return;
-    }
-
     final outcome = await ref
         .read(textContentGatewayProvider)
-        .readContent(uuid: uuid, credential: credential);
+        .readContent(uuid: uuid);
 
     switch (outcome) {
       case TextContentLoaded(:final content):
@@ -211,8 +190,7 @@ class TextEditorController extends Notifier<TextEditorState> {
     }
 
     final uuid = state.uuid;
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (uuid == null || credential == null) return;
+    if (uuid == null) return;
 
     // AF-05: something else wrote the file since it was read. Asked before the
     // write rather than after, because after is too late to offer a reload.
@@ -228,33 +206,19 @@ class TextEditorController extends Notifier<TextEditorState> {
 
     final outcome = await ref
         .read(textContentGatewayProvider)
-        .writeContent(
-          uuid: uuid,
-          content: state.content,
-          credential: credential,
-        );
+        .writeContent(uuid: uuid, content: state.content);
 
     switch (outcome) {
       case TextContentWritten(:final file):
         // The record the core refreshed is the truth about what is on disk
         // now, so the next save compares against its stamp.
         _stampWhenLoaded = file.stamp;
-        // FR-ME-05's neighbours: the listing and the detail view read the core
-        // again, because the record's stamp and index time have moved.
+        // FR-ME-05's neighbours: the open folder and the detail view read the
+        // core again, because the record's stamp and index time have moved.
         ref.invalidate(fileDetailsControllerProvider);
-        ref.invalidate(listingControllerProvider);
+        ref.invalidate(libraryTreeControllerProvider);
         ref.invalidate(catalogSearchProvider);
         state = state.copyWith(loaded: state.content, stage: EditorStage.clean);
-
-      // AF-06: the session is gone, and the owner is told before it takes
-      // them to the login screen — what they typed is not on disk, and being
-      // moved away from it without a word would lose it silently.
-      case TextContentWriteFailed(failure: final UnauthorizedFailure failure):
-        state = state.copyWith(
-          stage: EditorStage.dirty,
-          question: EditorQuestion.sessionRejected,
-          failure: failure,
-        );
 
       // AF-04: the record is gone. The content stays exactly where it is
       // until the owner dismisses the message.
@@ -283,18 +247,6 @@ class TextEditorController extends Notifier<TextEditorState> {
 
   /// Clears whatever the editor was asking, leaving the content alone.
   void dismissQuestion() => state = state.copyWith();
-
-  /// Answers AF-06 by letting the rejected session go.
-  ///
-  /// The content is lost with it, which is precisely why the owner had to
-  /// acknowledge this rather than simply arriving at the login screen.
-  void acceptSessionRejection() {
-    final failure = state.failure;
-    state = const TextEditorState();
-    if (failure is UnauthorizedFailure) {
-      ref.read(sessionControllerProvider.notifier).invalidate(failure);
-    }
-  }
 
   /// Asks to close the editor (AF-02).
   ///
@@ -346,12 +298,9 @@ class TextEditorController extends Notifier<TextEditorState> {
   /// The stamp the core reports for [uuid] now, or an empty one when it will
   /// not say.
   Future<FileStamp> _stampNow(String uuid) async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return const FileStamp();
-
     final outcome = await ref
         .read(catalogGatewayProvider)
-        .fileDetails(uuid: uuid, credential: credential);
+        .fileDetails(uuid: uuid);
 
     return switch (outcome) {
       FileDetailsRead(:final details) => details.file.stamp,

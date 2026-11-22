@@ -3,12 +3,9 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/tracking/domain/reading_list.dart';
 import 'package:alexandria_ui/features/tracking/domain/reading_list_gateway.dart';
@@ -94,20 +91,13 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.books.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openFolderHolding(FileType.document);
 
     if (openScreen) {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      await tester.tap(find.text(l10n.readingListsOpen));
-      await tester.pumpAndSettle();
+      await tester.openLibraryTool(l10n.readingListsOpen);
 
       // Main flow step 1: the list is opened, which is what shows its items.
       await tester.tap(find.text('Shelf'));
@@ -122,7 +112,7 @@ void main() {
 
   /// [finder], but only inside the reading-lists screen.
   ///
-  /// The catalog listing it opens over carries the same file names, so an
+  /// The library folder it opens over carries the same file names, so an
   /// unscoped finder matches twice.
   Finder inScreen(Finder finder) =>
       find.descendant(of: find.byType(ReadingListsScreen), matching: finder);
@@ -398,34 +388,6 @@ void main() {
 
       expect(opened.gateway.progressUpdates.single.list, 'rl-1');
     });
-  });
-
-  // AF-06: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenProgressIsSaved_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openLists(
-          tester,
-          writeOutcomes: const [
-            ReadingListWrite.failed(
-              failure: Failure.unauthorized(
-                family: CoreStatusFamily.readingList,
-                code: READING_LIST_ERR_UNAUTHORIZED,
-              ),
-            ),
-          ],
-        );
-
-        await openEditor(tester, 'Solaris.epub');
-        await save(tester);
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
-      },
-    );
   });
 
   group('themes and languages', () {

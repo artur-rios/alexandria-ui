@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/di/providers.dart';
 import '../domain/playback_session.dart';
 
-/// The video player, as sign-out sees it (UC-03 main flow step 2).
+/// The video player, as closing for an update sees it.
 class VideoPlaybackSession implements PlaybackSession {
   /// Creates the session over [_ref].
   const VideoPlaybackSession(this._ref);

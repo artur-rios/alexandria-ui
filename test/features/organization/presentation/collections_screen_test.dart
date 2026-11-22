@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/organization/domain/collection.dart';
 import 'package:alexandria_ui/features/organization/domain/collection_gateway.dart';
@@ -352,34 +351,6 @@ void main() {
 
       expect(find.text(messages(tester).collectionNotFound), findsOneWidget);
     });
-  });
-
-  // AF-05: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenBrowsing_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openCollections(
-          tester,
-          browse: const CollectionBrowse.failed(
-            failure: Failure.unauthorized(
-              family: CoreStatusFamily.collection,
-              code: COLLECTION_ERR_UNAUTHORIZED,
-            ),
-          ),
-          openScreen: false,
-        );
-
-        // Read rather than opened: the collections load lazily, so this is the
-        // browse the screen would have triggered.
-        await opened.container.read(collectionsControllerProvider.future);
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
-      },
-    );
   });
 
   group('themes and languages', () {

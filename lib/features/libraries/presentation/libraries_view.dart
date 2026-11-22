@@ -12,57 +12,98 @@ import '../../indexing/domain/index_run.dart';
 import '../../shell/domain/shell_destination.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
-import '../application/library_add_request.dart';
 import '../domain/library.dart';
+import '../domain/library_order.dart';
 import 'library_name_dialog.dart';
 import 'library_run_status.dart';
-import 'library_tree_screen.dart';
+import 'rename_library.dart';
 
-/// The libraries, as the navigation panel's own area (libraries-only design
-/// §3).
+/// Opens Manage libraries, the dialog listing every library.
 ///
-/// The one place a folder gets into Alexandria: the 0.6.0 core indexes
-/// nothing that is not a library. Each library is added, scanned again,
-/// moved and removed from its row here, and its run is shown under it.
-///
-/// No scaffold and no title of its own: the content area draws the
-/// destination's heading, and a second one inside it would say Libraries
-/// twice.
-class LibrariesView extends ConsumerStatefulWidget {
-  /// Creates the view.
-  const LibrariesView({super.key});
+/// Reached from the Library menu and from the activity strip's "View all".
+/// Each row renames, scans again, moves and removes its library, and shows its
+/// run.
+Future<void> openManageLibraries(BuildContext context) => showDialog<void>(
+  context: context,
+  builder: (context) => const _ManageLibrariesDialog(),
+);
 
-  @override
-  ConsumerState<LibrariesView> createState() => _LibrariesViewState();
-}
-
-class _LibrariesViewState extends ConsumerState<LibrariesView> {
-  @override
-  void initState() {
-    super.initState();
-    // Asked for from another screen just before this one replaced it.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _addIfAsked());
-  }
-
-  /// Runs the add flow [openLibrariesAndAdd] asked for, here, where its
-  /// context outlives the picker.
-  void _addIfAsked() {
-    if (!mounted || !ref.read(libraryAddRequestProvider.notifier).take()) {
-      return;
-    }
-
-    unawaited(addLibrary(context, ref));
-  }
+class _ManageLibrariesDialog extends StatelessWidget {
+  const _ManageLibrariesDialog();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    return Dialog(
+      // The snackbars below are drawn to the dialog's rounded edge.
+      clipBehavior: Clip.antiAlias,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 760, maxHeight: 720),
+        // A messenger and a scaffold of its own, so what an add, a scan, a
+        // move or a removal answers is said inside the dialog: the shell's
+        // scaffold is under the modal barrier, where a snackbar is dimmed
+        // and, at the minimum window, mostly covered.
+        //
+        // The scaffold lets the dialog's own surface show through. Zero alpha
+        // rather than `Colors.transparent`: BR-18 keeps every color literal
+        // out of the widget tree.
+        child: ScaffoldMessenger(
+          child: Scaffold(
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.surface.withValues(alpha: 0),
+            body: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.libraryMenuLibraries,
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: MaterialLocalizations.of(
+                          context,
+                        ).closeButtonTooltip,
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  const Expanded(child: LibrariesView()),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The libraries, as the Manage libraries dialog's content.
+///
+/// The one place a folder gets into Alexandria besides the Library menu's
+/// "Add library…": the 0.6.0 core indexes nothing that is not a library. Each
+/// library is renamed, scanned again, moved and removed from its row here, and
+/// its run is shown under it.
+///
+/// No scaffold and no title of its own: the dialog draws both.
+class LibrariesView extends ConsumerWidget {
+  /// Creates the view.
+  const LibrariesView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final libraries = ref.watch(librariesControllerProvider);
-    // Asked for while this screen is already showing (the Library menu).
-    ref.listen(libraryAddRequestProvider, (_, asked) {
-      if (asked) _addIfAsked();
-    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -92,11 +133,17 @@ class _LibrariesViewState extends ConsumerState<LibrariesView> {
             onRetry: ref.read(librariesControllerProvider.notifier).reload,
             isEmpty: (libraries) => libraries.isEmpty,
             emptyBuilder: (context) => Center(child: Text(l10n.librariesNone)),
-            builder: (context, libraries) => ListView.builder(
-              itemCount: libraries.length,
-              itemBuilder: (context, index) =>
-                  _LibraryRow(library: libraries[index]),
-            ),
+            builder: (context, libraries) {
+              // A–Z as the left menu and home list them, not in the core's
+              // order: it sorts byte by byte, so "alpha" would follow "Zeta".
+              final sorted = [...libraries]..sort(byLibraryName);
+
+              return ListView.builder(
+                itemCount: sorted.length,
+                itemBuilder: (context, index) =>
+                    _LibraryRow(library: sorted[index]),
+              );
+            },
           ),
         ),
       ],
@@ -121,24 +168,37 @@ class _LibraryRow extends ConsumerWidget {
             leading: const Icon(Icons.folder_special_outlined),
             title: Text(library.name),
             subtitle: Text(library.rootPath),
-            onTap: () => LibraryTreeScreen.show(context, library.uuid),
+            // Its folders, in the main area (library navigation design §4),
+            // with the dialog out of the way.
+            onTap: () {
+              Navigator.of(context).pop();
+              ref
+                  .read(shellControllerProvider.notifier)
+                  .go(LibraryDestination(library.uuid));
+            },
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
+                  tooltip: l10n.libraryRenameEntry,
+                  icon: const Icon(Icons.drive_file_rename_outline),
+                  onPressed: () =>
+                      unawaited(renameLibrary(context, ref, library)),
+                ),
+                IconButton(
                   tooltip: l10n.libraryScan,
                   icon: const Icon(Icons.youtube_searched_for),
-                  onPressed: () => _scan(context, ref, library),
+                  onPressed: () => scanLibrary(context, ref, library),
                 ),
                 IconButton(
                   tooltip: l10n.libraryMove,
                   icon: const Icon(Icons.drive_file_move_outlined),
-                  onPressed: () => _move(context, ref, library),
+                  onPressed: () => moveLibrary(context, ref, library),
                 ),
                 IconButton(
                   tooltip: l10n.libraryRemove,
                   icon: const Icon(Icons.delete_outline),
-                  onPressed: () => _remove(context, ref, library),
+                  onPressed: () => removeLibrary(context, ref, library),
                 ),
               ],
             ),
@@ -150,16 +210,15 @@ class _LibraryRow extends ConsumerWidget {
   }
 }
 
-/// Opens the libraries and starts adding one.
+/// Starts adding a library, where the owner is.
 ///
-/// What the "add a library" offers on the empty dashboard, listing and
-/// search, and the Library menu, do: a library is the only way anything gets
-/// into the catalog, so that is where they send the owner. The flow itself
-/// runs on the Libraries screen ([LibraryAddRequest] says why).
-void openLibrariesAndAdd(WidgetRef ref) {
-  ref.read(libraryAddRequestProvider.notifier).ask();
-  ref.read(shellControllerProvider.notifier).go(ShellDestination.libraries);
-}
+/// What the "add a library" offers on the empty dashboard, the search and
+/// the left menu, and the Library menu, do: a library is the only way anything
+/// gets into the catalog. No screen opens for it: the picker and the name
+/// dialog open over the one showing, and [context] is the offer's own, which
+/// stays mounted until the folder comes back.
+void openLibrariesAndAdd(BuildContext context, WidgetRef ref) =>
+    unawaited(addLibrary(context, ref));
 
 /// Adds a folder the owner picks as a library (core FR-FC-36).
 ///
@@ -192,8 +251,12 @@ Future<void> addLibrary(BuildContext context, WidgetRef ref) async {
   );
 }
 
-/// Scans [library]'s folder again.
-Future<void> _scan(BuildContext context, WidgetRef ref, Library library) async {
+/// Scans [library]'s folder again, and says why when the core refuses.
+Future<void> scanLibrary(
+  BuildContext context,
+  WidgetRef ref,
+  Library library,
+) async {
   final l10n = AppLocalizations.of(context);
 
   final failure = await ref
@@ -214,7 +277,11 @@ Future<void> _scan(BuildContext context, WidgetRef ref, Library library) async {
 /// A folder picker rather than a text field: the owner is naming somewhere
 /// that exists, and typing a path is how you get a library pointed at a
 /// folder that is one character wrong.
-Future<void> _move(BuildContext context, WidgetRef ref, Library library) async {
+Future<void> moveLibrary(
+  BuildContext context,
+  WidgetRef ref,
+  Library library,
+) async {
   final l10n = AppLocalizations.of(context);
   final to = await ref.read(folderPickerProvider).pickFolder();
   if (to == null || !context.mounted) return;
@@ -235,7 +302,7 @@ Future<void> _move(BuildContext context, WidgetRef ref, Library library) async {
 }
 
 /// Removes [library] once the owner has read what that deletes.
-Future<void> _remove(
+Future<void> removeLibrary(
   BuildContext context,
   WidgetRef ref,
   Library library,
@@ -279,6 +346,9 @@ Future<void> _remove(
 }
 
 /// Says [message] over whatever is showing.
+///
+/// On the nearest messenger: inside Manage libraries, the dialog's own; from
+/// a library's header, the shell's.
 void _say(BuildContext context, String message) => ScaffoldMessenger.of(
   context,
 ).showSnackBar(SnackBar(content: Text(message)));

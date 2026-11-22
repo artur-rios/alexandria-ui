@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:alexandria_ui/core/bindings/core_client.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
-import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
-import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/catalog/data/core_catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
@@ -24,9 +22,6 @@ import '../support/temporary_catalog.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  const email = 'owner@example.com';
-  const password = 'correct horse battery staple';
-
   late TemporaryCatalog catalog;
   late String libraryPath;
 
@@ -45,41 +40,29 @@ void main() {
   setUp(() => catalog = TemporaryCatalog.create());
   tearDown(() => catalog.dispose());
 
-  /// A core initialized against this run's throwaway database, with an account
-  /// registered and its credential returned.
-  Future<(CoreClient, String)> signedInCore() async {
+  /// A core initialized against this run's throwaway database.
+  Future<CoreClient> initializedCore() async {
     final client = await FfiCoreClient.load(libraryPath);
     addTearDown(client.dispose);
 
     final status = await client.initialize(catalog.databasePath);
     expect(CoreStatusFamily.indexing.isOk(status), isTrue);
 
-    final outcome = await CoreAuthGateway(client).register(
-      email: email,
-      password: password,
-      passwordConfirmation: password,
-    );
-    expect(outcome, isA<AuthenticatedOutcome>());
-
-    return (client, (outcome as AuthenticatedOutcome).session.credential);
+    return client;
   }
 
   test(
     'GivenATaggedAudioFile_WhenItsLibraryIsIndexed_ThenItsTagsAreListed',
     () async {
-      final (client, credential) = await signedInCore();
-      File('integration_test/fixtures/tagged.flac').copySync(
-        p.join(catalog.libraryDirectory.path, 'tagged.flac'),
-      );
-      await addLibraryAndSettle(
-        client,
-        credential,
-        root: catalog.libraryDirectory.path,
-      );
+      final client = await initializedCore();
+      File(
+        'integration_test/fixtures/tagged.flac',
+      ).copySync(p.join(catalog.libraryDirectory.path, 'tagged.flac'));
+      await addLibraryAndSettle(client, root: catalog.libraryDirectory.path);
 
       final listing = await CoreCatalogGateway(
         client,
-      ).listFiles(type: FileType.audio, credential: credential);
+      ).listFiles(type: FileType.audio);
       final file = (listing as CatalogListingLoaded).files.single.file;
 
       expect(file.type, FileType.audio);

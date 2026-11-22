@@ -13,8 +13,8 @@ core in process over FFI rather than talking to a server, so the whole product
 runs as a single local application with no network hop between the interface and
 its data.
 
-> **Status:** all forty-six issues are delivered — the foundation and
-> every use case in the backlog below.
+> **Status:** everything in the backlog below is delivered — the foundation
+> and every use case that has not been removed.
 
 > Windows and Ubuntu. Single-user. Metadata and content editing only — never
 > re-encoding, never relocating, and never deleting a file from disk without an
@@ -22,18 +22,27 @@ its data.
 
 ## What it does
 
-- Browses the catalog by file type — movies, series, music, HTML pages,
-  Markdown and text notes, PDFs and e-books, comic books, images, and browser
-  bookmarks — in list, detailed-list, and grid layouts. Music is listed by its
-  tags, in album order by default.
-- Adds folders as libraries — the only way files get into the catalog — and
-  browses each as its own tree. A library is indexed as soon as it is added, can
-  be scanned again, moved, or removed, and the whole catalog can be re-checked;
-  live progress shows wherever the owner happens to be, and a scan can be
-  paused, resumed, cancelled, or paced down while it works.
+- Starts straight into the library: there is no account and no login. It runs
+  on the owner's machine, over their own files.
+- Lists the owner's libraries in the left menu, under Home and Bookmarks: the
+  pinned ones first, A–Z, then the others, A–Z. Right-clicking one pins it,
+  marks it as a favorite, or renames it.
+- Opens a library in the main area as its folders, with breadcrumbs, and its
+  files — movies and series, music, HTML pages, Markdown and text notes, PDFs
+  and e-books, comic books, and images — in list, detailed-list, or grid
+  layout, filtered to one type or not, and sorted by name, date, or album. Music
+  is listed by its tags.
+- Shows the favorite libraries on home, with the catalog's totals: how many
+  libraries, and how many files of each type.
+- Adds folders as libraries — the only way files get into the catalog — from
+  the menu bar's Library menu, where Manage libraries lists them all. A library
+  is indexed as soon as it is added, can be renamed at any time, scanned again,
+  moved, or removed, and the whole catalog can be re-checked; live progress
+  shows wherever the owner happens to be, and a scan can be paused, resumed,
+  cancelled, or paced down while it works.
 - Plays video with full screen, seeking, subtitle tracks, and audio tracks.
 - Plays music in a player bar that stays while the owner browses, through the
-  list a track was started from.
+  folder a track was started from.
 - Views PDFs, e-books, comic books, images, saved HTML pages, and rendered
   Markdown.
 - Edits Markdown and text files in place, with a live preview.
@@ -41,12 +50,9 @@ its data.
 - Organizes files and bookmarks into collections, tracks movies and series in
   watchlists with per-episode progress, and tracks books and comics in reading
   lists with per-issue progress.
-- Searches, filters, and sorts across the whole catalog.
+- Searches across every library at once.
 - Carries out the core's two-phase deletion lifecycle — soft delete, restore,
   purge, and the separate explicit purge-on-disk.
-- Signs the owner up, logs them in, and gets them back in with one of the ten
-  single-use recovery codes the core mints at registration — shown once, and
-  regenerated on request.
 - Adapts to window and screen size, in light and dark themes, in Brazilian
   Portuguese and English.
 - Checks for a newer release at startup and offers it with its release notes.
@@ -69,9 +75,9 @@ its data.
   belong to the Alexandria core.
 - No file management — it never moves, copies, or duplicates a file, and removes
   one from disk only through the core's explicit purge-on-disk operation.
-- No second account, sharing, profiles, or roles — one owner, one account.
-- No mail of any kind: the account's address is a login identifier and nothing
-  else. Recovery is the core's single-use codes, not a message.
+- No account, login, sharing, profiles, or roles — one owner, on their own
+  machine.
+- No mail of any kind.
 - No server, no cloud, no synchronization, and no telemetry. The one network
   call the application makes of its own is the update check: a request for the
   latest release to GitHub's public API, carrying nothing but the running
@@ -147,17 +153,19 @@ from your system. The Windows archive bundles the ffmpeg DLLs the same way.
 
 ## Roadmap
 
-Twelve milestones covering forty-seven issues: one foundation issue plus one
+Thirteen milestones covering fifty issues: one foundation issue plus one
 issue per use case. `M-12` was removed with music, and its four issues are not
-counted. Milestones are dependency-ordered — no milestone depends on a later
-one, and every milestone after `M-01` depends on it.
+counted. The sign-up, login and recovery issues of `M-02`, and `UC-09` of
+`M-04`, were delivered and later removed, and are counted. Milestones are
+dependency-ordered — no milestone depends on a later one, and every milestone
+after `M-01` depends on it.
 
 | Milestone | Delivers | Depends on | Issues | Status |
 | --- | --- | --- | --- | --- |
 | [M-01 — Foundation](https://github.com/artur-rios/alexandria-ui/milestone/1) | The project scaffold, the core bindings, and the cross-cutting infrastructure every use case is built on | — | 1 | 1 / 1 closed |
-| [M-02 — Shell and access](https://github.com/artur-rios/alexandria-ui/milestone/2) | A window the owner can open, navigate, theme, translate, sign up for, sign in to, and recover access to | M-01 | 9 | 9 / 9 closed |
+| [M-02 — Shell and access](https://github.com/artur-rios/alexandria-ui/milestone/2) | A window the owner can open, navigate, theme, and translate; its sign-up, sign-in, and recovery were removed with core 0.7 | M-01 | 9 | 9 / 9 closed |
 | [M-03 — Libraries and indexing](https://github.com/artur-rios/alexandria-ui/milestone/3) | Folders can be added as libraries, indexed, refreshed, and removed — the catalog gets its content | M-02 | 4 | 4 / 4 closed |
-| [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-ui/milestone/4) | The library can be browsed by type, laid out three ways, searched, filtered, sorted, and summarized on a dashboard | M-03 | 6 | 6 / 6 closed |
+| [M-04 — Catalog browsing and search](https://github.com/artur-rios/alexandria-ui/milestone/4) | The library can be laid out three ways, searched, filtered, sorted, and summarized on home; browsing by type was removed with library navigation | M-03 | 6 | 6 / 6 closed |
 | [M-05 — Metadata and content editing](https://github.com/artur-rios/alexandria-ui/milestone/5) | Video metadata, music tags, file names, and text content can be edited | M-04 | 4 | 4 / 4 closed |
 | [M-06 — Media playback](https://github.com/artur-rios/alexandria-ui/milestone/6) | Video plays with subtitles and audio tracks, and music plays in the player bar | M-04 | 3 | 3 / 3 closed |
 | [M-07 — Document and image viewing](https://github.com/artur-rios/alexandria-ui/milestone/7) | PDFs, e-books, comics, images, and saved pages can be read | M-04 | 4 | 4 / 4 closed |
@@ -166,33 +174,39 @@ one, and every milestone after `M-01` depends on it.
 | [M-10 — Deletion lifecycle](https://github.com/artur-rios/alexandria-ui/milestone/10) | Items can be deleted, restored, purged, purged on disk, and reviewed when missing | M-04 | 5 | 5 / 5 closed |
 | [M-11 — Indexing experience](https://github.com/artur-rios/alexandria-ui/milestone/11) | A scan is visible from anywhere, controllable while it runs, and paceable; a newly added library indexes itself | M-03 | 3 | 3 / 3 closed |
 | M-12 — Music library and playlists | Removed (moved out of scope, see Orpheus) | M-06 | 4 | Removed |
-| M-13 — Libraries | A folder browsed as its own tree, its files listed in their type panels too | M-04 | 1 | 1 / 1 closed |
+| M-13 — Libraries | A folder browsed as its own tree | M-04 | 1 | 1 / 1 closed |
+| M-14 — Library navigation | The left menu lists the libraries, pinned first; libraries are favorited for home and renamed at any time | M-13 | 3 | 3 / 3 closed |
 
 GitHub's milestone pages are the live view of progress; the counts here are as
-of the last update to this file. `M-13` carries no milestone link and no issue
-number, and that is honest rather than an omission: it was built from a design
-document in `docs/superpowers/specs/` rather than from the issue-per-use-case
-backlog the first eleven follow. It is specified all the same — `UC-49` and its
-requirements are in the same two documents as everything above it. `M-12` went
+of the last update to this file. `M-13` and `M-14` carry no milestone link and
+no issue number, and that is honest rather than an omission: they were built
+from design documents in `docs/superpowers/specs/` rather than from the
+issue-per-use-case backlog the first eleven follow. They are specified all the
+same — `UC-49`, `UC-52`, `UC-53`, `UC-54` and their requirements are in the
+same two documents as everything above them. `M-12` went
 with music: `UC-46`, `UC-47`, `UC-48` and `UC-50` stay in those documents only
 as Removed stubs, so their numbers are never reused. Core 0.6 brought audio back
 as a file type, and with it `UC-15` and `UC-20`, narrowed to editing a track's
 tags and playing tracks in the player bar; `UC-21` and `M-12` stay removed.
 
-**The two repositories agree.** `CORE_REF` tracks core 0.6.0, and this
-application accepts core `>=0.6.0 <0.7.0`. That core fills the catalog only
-through libraries — free-form indexing is gone, and removing a library deletes
-its records — and knows audio files again. It also carries the review fixes
-this application depends on being there, such as a library that no longer
-claims folders differing only in case.
+**The two repositories agree.** `CORE_REF` tracks core 0.7.0 — its develop
+merge commit until this application's release pins the `v0.7.0` merge commit —
+and this application accepts core `>=0.7.0 <0.8.0`. That core removed
+authentication, the token on every call, and its HTTP server, and added a
+library's pin, favorite, and rename, and the catalog's statistics. An older
+core still expects a token on every call, so it is refused at startup. The
+specifications follow it:
+
+- **There is no login.** Sign-up, login, sign-out, the credentials change, and
+  the recovery codes went with the core's authentication. `UC-01` … `UC-04` and
+  `UC-40` … `UC-42` stay in the use case document only as Removed stubs, and
+  `FR-AU-01` … `FR-AU-19` with them, so their numbers are never reused.
+- **Libraries are navigated, not types.** The per-type pages are gone, and
+  with them `UC-09` and `FR-CT-01` and `FR-CT-02`: a library's files are
+  filtered by type inside it, and home counts each type.
+
 Earlier divergences are closed on both sides too:
 
-- **Account recovery is recovery codes.** The core dropped e-mail confirmation
-  and password reset and replaced them with ten single-use codes minted at
-  registration. `UC-40`, `UC-41`, and `UC-42` are specified against those calls
-  now — *Save the recovery codes*, *Recover access with a recovery code*, and
-  *Regenerate the recovery codes* — and `FR-AU-12` … `FR-AU-19` with them. The
-  catalog is no longer gated on a confirmation the core does not perform.
 - **Collections can be listed.** `alexandria_collections_list` answers which
   collections exist, with the number of items in each. `UC-26` and `UC-27` are
   built on it, and `UC-28`'s optional filing of a bookmark into a bookmark
@@ -212,17 +226,21 @@ and nesting stays a change of data rather than of interface.
 
 ### M-02 — Shell and access
 
+The sign-up, login and recovery use cases were delivered, then removed with
+core 0.7, which has no authentication: Alexandria starts straight into the
+shell. They keep their numbers so that nothing else is renumbered.
+
 | Issue | Work | Spec |
 | --- | --- | --- |
 | [#39](https://github.com/artur-rios/alexandria-ui/issues/39) | UC-38 — Navigate the application shell — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#40](https://github.com/artur-rios/alexandria-ui/issues/40) | UC-39 — Manage application preferences — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#2](https://github.com/artur-rios/alexandria-ui/issues/2) | UC-01 — Sign up — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#3](https://github.com/artur-rios/alexandria-ui/issues/3) | UC-02 — Log in — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#4](https://github.com/artur-rios/alexandria-ui/issues/4) | UC-03 — Sign out — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#5](https://github.com/artur-rios/alexandria-ui/issues/5) | UC-04 — Change credentials — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#41](https://github.com/artur-rios/alexandria-ui/issues/41) | UC-40 — Save the recovery codes — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#42](https://github.com/artur-rios/alexandria-ui/issues/42) | UC-41 — Recover access with a recovery code — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
-| [#43](https://github.com/artur-rios/alexandria-ui/issues/43) | UC-42 — Regenerate the recovery codes — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#2](https://github.com/artur-rios/alexandria-ui/issues/2) | UC-01 — Sign up — Removed (0.7 core: no login) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#3](https://github.com/artur-rios/alexandria-ui/issues/3) | UC-02 — Log in — Removed (0.7 core: no login) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#4](https://github.com/artur-rios/alexandria-ui/issues/4) | UC-03 — Sign out — Removed (0.7 core: no login) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#5](https://github.com/artur-rios/alexandria-ui/issues/5) | UC-04 — Change credentials — Removed (0.7 core: no login) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#41](https://github.com/artur-rios/alexandria-ui/issues/41) | UC-40 — Save the recovery codes — Removed (0.7 core: no login) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#42](https://github.com/artur-rios/alexandria-ui/issues/42) | UC-41 — Recover access with a recovery code — Removed (0.7 core: no login) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#43](https://github.com/artur-rios/alexandria-ui/issues/43) | UC-42 — Regenerate the recovery codes — Removed (0.7 core: no login) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ### M-03 — Libraries and indexing
 
@@ -237,7 +255,7 @@ and nesting stays a change of data rather than of interface.
 
 | Issue | Work | Spec |
 | --- | --- | --- |
-| [#10](https://github.com/artur-rios/alexandria-ui/issues/10) | UC-09 — Browse the library by type — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| [#10](https://github.com/artur-rios/alexandria-ui/issues/10) | UC-09 — Browse the library by type — Removed (navigation by library) | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#11](https://github.com/artur-rios/alexandria-ui/issues/11) | UC-10 — Switch the view layout — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#12](https://github.com/artur-rios/alexandria-ui/issues/12) | UC-11 — Search the catalog — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 | [#13](https://github.com/artur-rios/alexandria-ui/issues/13) | UC-12 — Filter and sort a listing — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
@@ -328,6 +346,19 @@ renumbered.
 | Issue | Work | Spec |
 | --- | --- | --- |
 | — | UC-49 — Browse a library — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+
+### M-14 — Library navigation
+
+The left menu lists the libraries instead of file types, a library opens in the
+main area, home shows the favorite libraries and the totals, and library
+management moves to the menu bar. `UC-14`, `UC-38` and `UC-49` were rewritten
+for it.
+
+| Issue | Work | Spec |
+| --- | --- | --- |
+| — | UC-52 — Pin a library — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-53 — Mark a favorite library — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
+| — | UC-54 — Rename a library — done | [Use Case Specification](docs/requirements/Use%20Case%20Specification%20Document.md) |
 
 ## Changelog
 

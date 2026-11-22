@@ -2,14 +2,11 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,7 +22,7 @@ import '../../../support/file_row.dart';
 void main() {
   const uuid = '6a1f8c30-5b2e-4d71-9f03-1c2b3a4d5e6f';
 
-  /// Signs in, opens a listing, and taps the file.
+  /// Opens a library folder holding the file, and taps it.
   Future<ProviderContainer> openDetails(
     WidgetTester tester, {
     FileDetailsOutcome? outcome,
@@ -35,8 +32,8 @@ void main() {
     ThemeMode themeMode = ThemeMode.light,
   }) async {
     // Filed under video: this suite is about the details dialog in general,
-    // reached the way every type reaches it — through the generic listing.
-    // Typed explicitly so the fixture matches the listing it sits in.
+    // reached the way every type reaches it — through a library folder.
+    // Typed explicitly so the fixture matches the folder it sits in.
     final gateway = FakeCatalogGateway(
       listings: {
         FileType.video: loadedDetails([
@@ -56,13 +53,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.videos.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openFolderHolding(FileType.video);
 
     if (tapRow) {
       await openDetailsOf(tester, 'Deep Blue Sea.mkv');
@@ -480,21 +471,6 @@ void main() {
       );
 
       expect(find.byType(ShellFailureView), findsOneWidget);
-    });
-
-    testWidgets('GivenTheCoreRejectsTheSession_WhenTheyOpen_ThenLoginReturns', (
-      tester,
-    ) async {
-      // AF-05.
-      await openDetails(
-        tester,
-        outcome: const FileDetailsOutcome.failed(
-          failure: Failure.unauthorized(family: CoreStatusFamily.file, code: 2),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(LoginScreen), findsOneWidget);
     });
   });
 

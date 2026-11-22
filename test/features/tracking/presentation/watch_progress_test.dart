@@ -7,8 +7,6 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist_gateway.dart';
@@ -104,17 +102,10 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.videos.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openFolderHolding(FileType.video);
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.tap(find.text(l10n.watchlistsOpen));
-    await tester.pumpAndSettle();
+    await tester.openLibraryTool(l10n.watchlistsOpen);
     await tester.tap(find.text('Evenings'));
     await tester.pumpAndSettle();
 
@@ -126,7 +117,7 @@ void main() {
 
   /// Opens the progress editor on the item called [name].
   ///
-  /// Scoped to the screen: the videos listing behind the dialog shows the same
+  /// Scoped to the screen: the library folder behind the dialog shows the same
   /// file names.
   Future<void> openEditorFor(WidgetTester tester, String name) async {
     await tester.tap(

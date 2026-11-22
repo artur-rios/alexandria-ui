@@ -10,7 +10,6 @@ import 'package:alexandria_ui/features/editing/application/text_editor_controlle
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_text_content_gateway.dart';
 
@@ -162,9 +161,6 @@ class EditorHarness {
       ],
     );
     addTearDown(container.dispose);
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
 
     final harness = EditorHarness._(
       container: container,

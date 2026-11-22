@@ -75,19 +75,11 @@ class PurgeController extends Notifier<PurgeState> {
       return;
     }
 
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return;
-
     final gateway = ref.read(lifecycleGatewayProvider);
     final outcome = switch (record.kind) {
-      DeletedRecordKind.file => await gateway.purgeFile(
-        uuid: record.uuid,
-        credential: credential,
-      ),
+      DeletedRecordKind.file => await gateway.purgeFile(uuid: record.uuid),
       DeletedRecordKind.bookmark => await gateway.purgeBookmark(
         uuid: record.uuid,
-        credential: credential,
       ),
     };
 
@@ -95,10 +87,6 @@ class PurgeController extends Notifier<PurgeState> {
       case LifecycleWriteDone():
         state = const PurgeState();
         await _refresh(record.uuid);
-
-      // AF-05: the session is discarded, which returns the owner to login.
-      case LifecycleWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
 
       // AF-02: the core refuses a record still inside its retention window,
       // and this says when that changes rather than showing its status code
@@ -131,14 +119,6 @@ class PurgeController extends Notifier<PurgeState> {
   /// names the exact path and says the deletion cannot be undone. AF-05 —
   /// whatever has the file open — is let go of here, before the call.
   Future<void> purgeOnDisk(String uuid) async {
-    // The session first, then the holds. Releasing them first shut whatever
-    // had the file open — a viewer, the player — for a purge that then never
-    // happened, so the owner lost what they were reading and nothing was
-    // deleted.
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return;
-
     for (final hold
         in ref.read(deletionControllerProvider.notifier).holdsOn(uuid)) {
       await hold.release();
@@ -146,7 +126,7 @@ class PurgeController extends Notifier<PurgeState> {
 
     final outcome = await ref
         .read(lifecycleGatewayProvider)
-        .purgeFileOnDisk(uuid: uuid, credential: credential);
+        .purgeFileOnDisk(uuid: uuid);
 
     switch (outcome) {
       case PurgeOnDiskPurged(:final diskFilePresent):
@@ -159,10 +139,6 @@ class PurgeController extends Notifier<PurgeState> {
               : PurgeNotice.nothingOnDisk,
         );
         await _refresh(uuid);
-
-      // AF-06: the session is discarded, which returns the owner to login.
-      case PurgeOnDiskFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
 
       // AF-03: neither the file nor the record was removed, so nothing is
       // refreshed — what is on screen is still what the core holds.

@@ -3,12 +3,10 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark_gateway.dart';
 import 'package:alexandria_ui/features/organization/presentation/bookmarks_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,13 +58,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.bookmarks.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.goTo(const BookmarksDestination());
 
     return (container: container, gateway: gateway, browser: browser);
   }
@@ -374,29 +366,6 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(copied, 'https://example.com/article');
-      },
-    );
-  });
-
-  // AF-06: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenListing_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openBookmarks(
-          tester,
-          listing: const BookmarkListing.failed(
-            failure: Failure.unauthorized(
-              family: CoreStatusFamily.bookmark,
-              code: BOOKMARK_ERR_UNAUTHORIZED,
-            ),
-          ),
-        );
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
       },
     );
   });

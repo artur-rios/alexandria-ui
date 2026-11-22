@@ -38,8 +38,5 @@ sealed class PlaybackSourceOutcome with _$PlaybackSourceOutcome {
 /// Where a file is, for a player to open (FR-PL-01).
 abstract interface class PlaybackSourceGateway {
   /// Resolves the file [uuid] identifies to something a player can open.
-  Future<PlaybackSourceOutcome> resolve({
-    required String uuid,
-    required String credential,
-  });
+  Future<PlaybackSourceOutcome> resolve({required String uuid});
 }

@@ -1,10 +1,12 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/shell_harness.dart';
 
 /// The theme and layout of the shell (Testing Specification §7.1).
@@ -56,6 +58,12 @@ import '../../../support/shell_harness.dart';
 /// area there is. If it grows again, the honest next step is a golden that
 /// masks the content area rather than another destination to move to.
 ///
+/// The panel has since stopped listing types at all: it lists the libraries,
+/// pinned ones first, below Home and Bookmarks. The images hold one pinned
+/// library and one other, so the divider between the two groups is in them,
+/// and the panel's own names are two short words rather than the nine labels
+/// it used to carry.
+///
 /// Regenerate with `flutter test --update-goldens`, and look at the images.
 void main() {
   const surfaces = <String, Size>{
@@ -78,11 +86,26 @@ void main() {
           final container = await tester.pumpShell(
             themeMode: mode,
             surfaceSize: surface.value,
+            extraOverrides: [
+              libraryGatewayProvider.overrideWithValue(
+                FakeLibraryGateway(
+                  libraries: const [
+                    Library(
+                      uuid: 'lib-1',
+                      name: 'Course',
+                      rootPath: '/course',
+                      pinned: true,
+                    ),
+                    Library(uuid: 'lib-2', name: 'Films', rootPath: '/films'),
+                  ],
+                ),
+              ),
+            ],
           );
 
           container
               .read(shellControllerProvider.notifier)
-              .go(ShellDestination.bookmarks);
+              .go(const BookmarksDestination());
           await tester.pumpAndSettle();
 
           await expectLater(

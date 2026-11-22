@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/fake_core_client.dart';
 
-/// Parsing what the core answers for a listing (UC-09, FR-CT-05).
+/// Parsing what the core answers for a listing (UC-11, FR-CT-05).
 ///
 /// The core's listing route answers the same `FileView` record the single-
 /// file call does — this is what proves the listing reuses that parse rather
@@ -27,10 +27,7 @@ void main() {
       );
       final gateway = CoreCatalogGateway(core);
 
-      final listing = await gateway.listFiles(
-        type: FileType.video,
-        credential: 'token',
-      );
+      final listing = await gateway.listFiles(type: FileType.video);
 
       expect(listing, isA<CatalogListingLoaded>());
       final row = (listing as CatalogListingLoaded).files.single;
@@ -51,10 +48,7 @@ void main() {
       );
       final gateway = CoreCatalogGateway(core);
 
-      final listing = await gateway.listFiles(
-        type: FileType.video,
-        credential: 'token',
-      );
+      final listing = await gateway.listFiles(type: FileType.video);
 
       expect(listing, isA<CatalogListingFailed>());
     },
@@ -77,10 +71,7 @@ void main() {
       );
       final gateway = CoreCatalogGateway(core);
 
-      final listing = await gateway.listFiles(
-        type: FileType.video,
-        credential: 'token',
-      );
+      final listing = await gateway.listFiles(type: FileType.video);
 
       expect(listing, isA<CatalogListingLoaded>());
       expect((listing as CatalogListingLoaded).files, isEmpty);

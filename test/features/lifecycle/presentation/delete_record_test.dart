@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
@@ -12,7 +11,6 @@ import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -88,13 +86,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.books.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openFolderHolding(FileType.document);
     await openDetailsOf(tester, 'Solaris.epub');
     await tester.pumpAndSettle();
 
@@ -116,13 +108,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.bookmarks.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.goTo(const BookmarksDestination());
 
     return (container: container, lifecycle: lifecycle);
   }
@@ -301,35 +287,6 @@ void main() {
         findsNothing,
       );
     });
-  });
-
-  // AF-05: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenADeleteIsSent_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openDetails(
-          tester,
-          outcomes: const [
-            LifecycleWrite.failed(
-              failure: Failure.unauthorized(
-                family: CoreStatusFamily.file,
-                code: FILE_ERR_UNAUTHORIZED,
-              ),
-            ),
-          ],
-        );
-
-        await tester.tap(find.text(messages(tester).deleteFile).last);
-        await tester.pumpAndSettle();
-        await confirm(tester);
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
-      },
-    );
   });
 
   group('themes and languages', () {

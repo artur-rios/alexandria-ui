@@ -42,14 +42,11 @@ class FakeReadingListGateway implements ReadingListGateway {
   progressUpdates = [];
 
   @override
-  Future<ReadingListBrowse> browse({required String credential}) async =>
+  Future<ReadingListBrowse> browse() async =>
       browseOutcome ?? ReadingListBrowse.loaded(readingLists: readingLists);
 
   @override
-  Future<ReadingListWrite> create({
-    required String name,
-    required String credential,
-  }) async {
+  Future<ReadingListWrite> create({required String name}) async {
     created.add(name);
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
 
@@ -60,10 +57,7 @@ class FakeReadingListGateway implements ReadingListGateway {
   }
 
   @override
-  Future<ReadingListWrite> delete({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<ReadingListWrite> delete({required String uuid}) async {
     deleted.add(uuid);
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
 
@@ -75,7 +69,6 @@ class FakeReadingListGateway implements ReadingListGateway {
   Future<ReadingListWrite> addItem({
     required String uuid,
     required String itemUuid,
-    required String credential,
   }) async {
     added.add((list: uuid, item: itemUuid));
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
@@ -101,7 +94,6 @@ class FakeReadingListGateway implements ReadingListGateway {
   Future<ReadingListWrite> removeItem({
     required String uuid,
     required String itemUuid,
-    required String credential,
   }) async {
     removed.add((list: uuid, item: itemUuid));
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
@@ -123,7 +115,6 @@ class FakeReadingListGateway implements ReadingListGateway {
     required String uuid,
     required String itemUuid,
     required ReadingState state,
-    required String credential,
     int? currentIssue,
     int? totalIssues,
   }) async {

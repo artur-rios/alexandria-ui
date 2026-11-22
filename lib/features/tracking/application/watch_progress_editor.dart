@@ -139,20 +139,12 @@ class WatchProgressEditor extends Notifier<WatchProgressEditorState> {
 
     state = state.copyWith(isSaving: true);
 
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) {
-      state = state.copyWith(isSaving: false);
-      return;
-    }
-
     final outcome = await ref
         .read(watchlistGatewayProvider)
         .updateProgress(
           uuid: state.watchlistUuid!,
           videoUuid: state.videoUuid!,
           state: state.state,
-          credential: credential,
           currentEpisode: countsEpisodes ? state.episodes.currentValue : null,
           totalEpisodes: countsEpisodes ? state.episodes.totalValue : null,
         );
@@ -162,11 +154,6 @@ class WatchProgressEditor extends Notifier<WatchProgressEditorState> {
         // Step 6: what the screen shows comes from the core, so it is read
         // again rather than patched here.
         await ref.read(watchlistsControllerProvider.notifier).reload();
-        state = const WatchProgressEditorState();
-
-      // AF-06: the session is discarded, which returns the owner to login.
-      case WatchlistWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
         state = const WatchProgressEditorState();
 
       // AF-04: the watchlist or the item is gone. The screen is read again,

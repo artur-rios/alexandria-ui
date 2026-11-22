@@ -5,9 +5,8 @@ import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
-import 'package:alexandria_ui/features/libraries/presentation/library_tree_screen.dart';
+import 'package:alexandria_ui/features/libraries/presentation/library_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -38,13 +37,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.libraries.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openLibrariesPage();
 
     return (container: container, gateway: theGateway);
   }
@@ -71,6 +64,34 @@ void main() {
     expect(find.text(messages(tester).librariesNone), findsOneWidget);
   });
 
+  testWidgets(
+    'GivenLibrariesInTheCoresOrder_WhenManageOpens_ThenTheyAreListedAToZ',
+    (tester) async {
+      // The core sorts names byte by byte, so "alpha" comes after "Zeta";
+      // the dialog lists them as the left menu and home do, ignoring case.
+      await openLibraries(
+        tester,
+        libraries: const [
+          Library(uuid: 'lib-b', name: 'Beta', rootPath: '/library/beta'),
+          Library(uuid: 'lib-z', name: 'Zeta', rootPath: '/library/zeta'),
+          Library(uuid: 'lib-a', name: 'alpha', rootPath: '/library/alpha'),
+        ],
+      );
+
+      double top(String name) => tester
+          .getTopLeft(
+            find.descendant(
+              of: find.byType(LibrariesView),
+              matching: find.text(name),
+            ),
+          )
+          .dy;
+
+      expect(top('alpha'), lessThan(top('Beta')));
+      expect(top('Beta'), lessThan(top('Zeta')));
+    },
+  );
+
   testWidgets('GivenALibrary_WhenItsRowIsTapped_ThenItsFoldersOpen', (
     tester,
   ) async {
@@ -88,10 +109,20 @@ void main() {
       ),
     };
 
-    await tester.tap(find.text('Course'));
+    // The row in the libraries page, not the library's own left-menu entry.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.byType(LibraryTreeScreen), findsOneWidget);
+    expect(find.byType(LibraryView), findsOneWidget);
+    expect(
+      opened.container.read(shellControllerProvider),
+      const LibraryDestination('lib-1'),
+    );
     expect(find.text('class-01'), findsOneWidget);
     expect(opened.gateway.readsMade, contains((uuid: 'lib-1', path: '')));
   });
@@ -112,7 +143,13 @@ void main() {
         ),
       ),
     };
-    await tester.tap(find.text('Course'));
+    // The row in the libraries page, not the library's own left-menu entry.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('class-01'));
@@ -121,45 +158,57 @@ void main() {
     expect(opened.gateway.readsMade.last, (uuid: 'lib-1', path: 'class-01'));
   });
 
-  testWidgets('GivenAFolderIsOpen_WhenBackIsPressed_ThenItGoesUpNotOut', (
-    tester,
-  ) async {
-    // Four levels down, a back control that closed the screen would throw
-    // the owner out of the course rather than up a folder.
-    final opened = await openLibraries(tester);
-    opened.gateway.reads['lib-1'] = {
-      '': const LibraryRead.loaded(
-        listing: LibraryListing(
-          library: course,
-          path: '',
-          folders: [LibraryFolder(name: 'class-01', path: 'class-01')],
-          files: [],
+  testWidgets(
+    'GivenAFolderIsOpen_WhenTheRootCrumbIsPressed_ThenItGoesUpNotOut',
+    (tester) async {
+      // Four levels down, a way back that closed the library would throw the
+      // owner out of the course rather than up a folder.
+      final opened = await openLibraries(tester);
+      opened.gateway.reads['lib-1'] = {
+        '': const LibraryRead.loaded(
+          listing: LibraryListing(
+            library: course,
+            path: '',
+            folders: [LibraryFolder(name: 'class-01', path: 'class-01')],
+            files: [],
+          ),
         ),
-      ),
-      'class-01': const LibraryRead.loaded(
-        listing: LibraryListing(
-          library: course,
-          path: 'class-01',
-          folders: [],
-          files: [],
+        'class-01': const LibraryRead.loaded(
+          listing: LibraryListing(
+            library: course,
+            path: 'class-01',
+            folders: [],
+            files: [],
+          ),
         ),
-      ),
-    };
-    await tester.tap(find.text('Course'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('class-01'));
-    await tester.pumpAndSettle();
+      };
+      // The row in the libraries page, not the library's own left-menu entry.
+      await tester.tap(
+        find.descendant(
+          of: find.byType(LibrariesView),
+          matching: find.text('Course'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('class-01'));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(LibraryBreadcrumbs),
+          matching: find.byTooltip('Course'),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(
-      find.byType(LibraryTreeScreen),
-      findsOneWidget,
-      reason: 'going up a folder closed the library instead',
-    );
-    expect(find.text('class-01'), findsOneWidget);
-  });
+      expect(
+        find.byType(LibraryView),
+        findsOneWidget,
+        reason: 'going up a folder closed the library instead',
+      );
+      expect(find.text('class-01'), findsOneWidget);
+    },
+  );
 
   testWidgets('GivenAnOverlappingFolder_WhenRegistered_ThenItSaysWhy', (
     tester,
@@ -202,12 +251,16 @@ void main() {
       ),
     };
 
-    await tester.tap(find.text('Course'));
+    // The row in the libraries page, not the library's own left-menu entry.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(LibraryTreeScreen)),
-    );
+    final l10n = AppLocalizations.of(tester.element(find.byType(LibraryView)));
     expect(find.text(l10n.libraryEmptyRoot), findsOneWidget);
     expect(find.text(l10n.libraryEmptyFolder), findsNothing);
   });
@@ -232,4 +285,108 @@ void main() {
       reason: 'it removed before the owner confirmed',
     );
   });
+
+  testWidgets(
+    'GivenManageLibraries_WhenItOpens_ThenEachRowOffersItsFourActions',
+    (tester) async {
+      await openLibraries(tester);
+      final l10n = messages(tester);
+
+      for (final tooltip in [
+        l10n.libraryRenameEntry,
+        l10n.libraryScan,
+        l10n.libraryMove,
+        l10n.libraryRemove,
+      ]) {
+        expect(find.byTooltip(tooltip), findsOneWidget, reason: tooltip);
+      }
+    },
+  );
+
+  testWidgets('GivenALibrary_WhenRenamedFromTheDialog_ThenItsRowUpdates', (
+    tester,
+  ) async {
+    final opened = await openLibraries(tester);
+
+    await tester.tap(find.byTooltip(messages(tester).libraryRenameEntry));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      ),
+      'Rust course',
+    );
+    await tester.pump();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(opened.gateway.renamedCalls.single, (
+      uuid: 'lib-1',
+      name: 'Rust course',
+    ));
+    final rows = find.descendant(
+      of: find.byType(LibrariesView),
+      matching: find.byType(ListTile),
+    );
+    expect(
+      find.descendant(of: rows, matching: find.text('Rust course')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: rows, matching: find.text('Course')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('GivenALibraryRow_WhenItIsTapped_ThenTheDialogClosesOnIt', (
+    tester,
+  ) async {
+    await openLibraries(tester);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LibrariesView), findsNothing);
+    expect(find.byType(LibraryView), findsOneWidget);
+  });
+
+  testWidgets(
+    'GivenLibraryOneIsShown_WhenItIsRemovedFromManageLibraries_ThenTheShellGoesHome',
+    (tester) async {
+      final opened = await openLibraries(tester);
+      // Shown in the main area behind the dialog.
+      opened.container
+          .read(shellControllerProvider.notifier)
+          .go(const LibraryDestination('lib-1'));
+      await tester.pumpAndSettle();
+      expect(
+        opened.container.read(shellControllerProvider),
+        const LibraryDestination('lib-1'),
+      );
+
+      await tester.tap(find.byTooltip(messages(tester).libraryRemove));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(FilledButton, messages(tester).libraryRemove),
+      );
+      await tester.pumpAndSettle();
+
+      expect(opened.gateway.removed, ['lib-1']);
+      expect(
+        opened.container.read(shellControllerProvider),
+        const HomeDestination(),
+      );
+    },
+  );
 }

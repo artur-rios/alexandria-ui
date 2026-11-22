@@ -7,8 +7,6 @@ import 'package:alexandria_ui/features/viewers/domain/document_gateway.dart';
 import 'package:alexandria_ui/features/viewers/domain/viewer_registry.dart';
 import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
 import 'package:alexandria_ui/features/viewers/presentation/viewer_failure_view.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,13 +33,12 @@ void main() {
     isDeleted: isDeleted,
   );
 
-  /// Signs in, opens the books listing, and opens the one file in it.
+  /// Opens a library folder holding the book, and opens it.
   Future<({ProviderContainer container, FakeDocumentGateway documents})> open(
     WidgetTester tester, {
     DocumentOutcome? outcome,
     FakeReadingPositionStore? positions,
     ViewerRegistry? registry,
-    ShellDestination destination = ShellDestination.books,
     FileType type = FileType.document,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
@@ -72,13 +69,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(destination.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openFolderHolding(type);
     // The row opens the file itself now, so a test that wants it open taps
     // the row, and one that wants the details taps the button beside it —
     // where the Open action still is, for a file that cannot just be opened.

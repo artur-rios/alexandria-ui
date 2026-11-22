@@ -49,7 +49,5 @@ flutter pub get
 # each `flutter test` on desktop builds and starts the application again, which a loop of one file per invocation paid for
 # once per file.
 #
-# ALEXANDRIA_AUTH_MODE is deliberately not set. The application puts the core into local auth mode itself, before
-# initializing it, and a runner that set the variable would hide a regression in that: the suite would pass on the
-# runner's configuration rather than on the application's.
+# No ALEXANDRIA_AUTH_* variable is set: core 0.7 has no authentication and ignores them, and the application sets none.
 bash ci/integration-suite.sh linux xvfb-run -a

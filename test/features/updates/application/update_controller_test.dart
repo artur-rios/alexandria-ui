@@ -1,8 +1,6 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:alexandria_ui/core/di/providers.dart';
-import 'package:alexandria_ui/features/updates/application/update_session_activity.dart';
 import 'package:alexandria_ui/features/updates/application/update_state.dart';
 import 'package:alexandria_ui/features/updates/domain/install_kind.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -376,33 +374,6 @@ void main() {
         const UpdateState.previousUpdateFailed(to: '1.2.0'),
       );
       expect(sut.source.requests, 0);
-    },
-  );
-
-  test(
-    'GivenADownloadInFlight_WhenTheSessionEnds_ThenItIsCancelledAndIdle',
-    () async {
-      const package =
-          'https://example.test/alexandria-installer-1.2.0-linux-x64.sh';
-      final sut = await build();
-      sut.downloader
-        ..contents[package] = 'abc'
-        ..gate = Completer<void>();
-      final controller = sut.ref.read(updateControllerProvider.notifier);
-      await controller.checkAtStartup();
-      final downloading = controller.download();
-      await pumpEventQueue();
-      expect(state(sut.ref), isA<UpdateDownloading>());
-
-      await sut.ref
-          .read(sessionActivitiesProvider)
-          .whereType<UpdateSessionActivity>()
-          .single
-          .end();
-      await downloading;
-
-      expect(state(sut.ref), isA<UpdateIdle>());
-      expect(sut.downloader.targets.first.existsSync(), isFalse);
     },
   );
 }

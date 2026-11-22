@@ -8,8 +8,6 @@ import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
@@ -49,13 +47,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.libraries.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openLibrariesPage();
 
     return gateway;
   }
@@ -144,6 +136,42 @@ void main() {
     await confirm(tester);
 
     expect(find.text(messages(tester).libraryRemoveRunning), findsWidgets);
-    expect(find.text('Course'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+      findsOneWidget,
+    );
   });
+
+  testWidgets(
+    'GivenTheManageDialog_WhenRemoveIsRefusedWhileScanning_ThenTheMessageShowsInsideTheDialog',
+    (tester) async {
+      // Said on the shell's scaffold, the message would sit under the
+      // dialog's barrier, dimmed and mostly covered at the minimum window.
+      const conflict = Failure.conflict(
+        family: CoreStatusFamily.library,
+        code: LIBRARY_ERR_CONFLICT,
+      );
+      await openLibraries(
+        tester,
+        writeOutcomes: const [LibraryWrite.failed(failure: conflict)],
+      );
+
+      await askToRemove(tester);
+      await confirm(tester);
+
+      expect(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.widgetWithText(
+            SnackBar,
+            messages(tester).libraryRemoveRunning,
+          ),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 }

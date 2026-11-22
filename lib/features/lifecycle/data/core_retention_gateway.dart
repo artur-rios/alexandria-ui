@@ -16,10 +16,10 @@ class CoreRetentionGateway implements RetentionGateway {
   final CoreClient _core;
 
   @override
-  Future<RetentionWindow> window({required String credential}) async {
+  Future<RetentionWindow> window() async {
     final CoreJsonResponse response;
     try {
-      response = await _core.settings(credential);
+      response = await _core.settings();
     } on CoreCallException {
       return _unreadable();
     }

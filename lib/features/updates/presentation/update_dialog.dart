@@ -22,7 +22,7 @@ class UpdateDialog extends ConsumerWidget {
   /// owner dismissed some other way counts as "later".
   static Future<void> show(BuildContext context, WidgetRef ref) async {
     // Read before waiting: the widget that asked may be gone by the time the
-    // prompt closes — a session ending closes every route at once.
+    // prompt closes.
     final container = ProviderScope.containerOf(context, listen: false);
     final presence = container.read(updatePromptPresenceProvider.notifier);
     if (container.read(updatePromptPresenceProvider)) return;

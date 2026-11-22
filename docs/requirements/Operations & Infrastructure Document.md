@@ -125,7 +125,6 @@ alexandria-ui/
 │   │   ├── settings/              local settings store
 │   │   └── theme/                 light and dark themes, breakpoints
 │   └── features/
-│       ├── auth/
 │       ├── indexing/
 │       ├── libraries/
 │       ├── catalog/
@@ -161,14 +160,14 @@ Each folder under `features/` holds `domain/`, `application/`, `data/`, and
 | IR-03 | The solution shall generate its Alexandria core bindings from the core's published C header, shall commit the generated output, and shall never hand-edit it. |
 | IR-04 | The solution shall bundle the Alexandria core's shared library for each target platform and load it at startup from a path resolved relative to the installed application. |
 | IR-05 | The solution shall initialize the core with a database path in the per-platform application-support directory, creating the directory when absent. |
-| IR-06 | The solution shall verify at startup that the loaded core reports a healthy status and a version the application supports — `>=0.6.0 <0.7.0`, since core 0.6 made libraries the only way into the catalog and changed what removing one does, so a 0.5 core is refused — and shall present a readable failure with a retry when it does not. |
+| IR-06 | The solution shall verify at startup that the loaded core reports a healthy status and a version the application supports — `>=0.7.0 <0.8.0`, since core 0.7 removed authentication and the token from every call, so an older core, which still expects one, cannot be called correctly and is refused — and shall present a readable failure with a retry when it does not. |
 | IR-07 | The solution shall expose a single composition root through which every gateway interface is bound to its implementation, and which a test can override wholesale. |
 | IR-08 | The solution shall define one typed failure model, mapping every status code the core can return to exactly one failure and every failure to exactly one localized message. |
 | IR-09 | The solution shall free every string returned across the FFI boundary, including on failure paths, and shall run every core call off the interface thread. |
 | IR-10 | The solution shall provide light and dark themes and the responsive breakpoints, as the single source of colors, spacing, and typography for every screen. |
 | IR-11 | The solution shall provide the localization infrastructure for `pt-BR` and `en`, and shall fail the build when a key is missing from either. |
-| IR-12 | The solution shall provide the local settings store, holding no credential and no catalog data. |
-| IR-13 | The solution shall write a rolling local log file in release builds, containing no credential, no session material, and no file content. |
+| IR-12 | The solution shall provide the local settings store, holding no catalog data. |
+| IR-13 | The solution shall write a rolling local log file in release builds, containing no file content. |
 | IR-14 | The solution shall provide the three test suites, the shared fakes, and the fixture-library and temporary-database helpers the Testing Specification requires. |
 | IR-15 | The solution shall run analysis, the unit and widget suite, and the integration suite on both target platforms in continuous integration, and shall fail on any analyzer warning. |
 | IR-16 | The solution shall produce, from the same pipeline, an MSIX package and an installer executable for Windows and an AppImage, a `.deb`, and a Flatpak for Linux, each bundling the core's shared library. |
@@ -187,13 +186,13 @@ environment. There is no server, no connection string, and no secret to inject.
 | Core configuration | The core's own configuration mechanism, which it loads itself | The application does not parse or duplicate the core's configuration; it passes the database path and lets the core resolve the rest, so a setting means the same thing on both sides. |
 | Log level | `--dart-define` at build time | Verbose in development, informational in release. |
 | Log file location | Application-support directory | See §4. |
-| Owner preferences — theme, language, layout, sort, filters, window geometry, the update check and a skipped version | The local settings store | Owner-facing state, changed in the interface, never in a config file. The update check is `settings.checksForUpdates` (on unless set to `false`) and the skipped version `updates.skippedVersion`. |
+| Owner preferences — theme, language, how a library's folder is drawn (layout, type filter, and sort, as `libraryView`), window geometry, the startup re-check, the update check and a skipped version | The local settings store | Owner-facing state, changed in the interface, never in a config file. The update check is `settings.checksForUpdates` (on unless set to `false`) and the skipped version `updates.skippedVersion`. |
 | Releases URL | `ALEXANDRIA_RELEASES_URL`, a `--dart-define` at build time | Defaults to `https://api.github.com/repos/artur-rios/alexandria-ui/releases/latest`. The override exists so that tests can point the update check elsewhere. |
 | The core's thumbnail cache | Set to a directory beside the catalog, through `ALEXANDRIA_PLAYBACK_THUMBNAIL_CACHE_DIR`, before the core is initialized | The setting defaults to a path relative to the process's working directory, which for an installed application is wherever the desktop started it — a directory this application does not own and often cannot write to. The catalog's own directory is the one it does. |
 
 No secret is ever written into this document, into the repository, or into a
-build argument. The only credential in the product is the owner's password, which
-the application forwards to the core and never stores.
+build argument. Since core 0.7 the product has no credential at all: there is
+no password, no account, and no session.
 
 ---
 
@@ -209,8 +208,8 @@ check (§5.4), and it carries none of what is logged.
 | Format | Structured records — timestamp, level, feature, message, and context fields. |
 | Destination in development | The console. |
 | Destination in release | A rolling file in the application-support directory, capped in size and count so it cannot grow without bound. |
-| Levels used | `severe` for a failure the owner sees, `warning` for a recovered failure, `info` for lifecycle events — startup, core initialization, session established, index run started and settled — and `fine` for diagnostic detail in development only. |
-| Never logged | Passwords, session credentials, file contents, and the personal contents of metadata fields. A file is identified in a log by its UUID, not by its path or name. |
+| Levels used | `severe` for a failure the owner sees, `warning` for a recovered failure, `info` for lifecycle events — startup, core initialization, index run started and settled — and `fine` for diagnostic detail in development only. |
+| Never logged | File contents and the personal contents of metadata fields. A file is identified in a log by its UUID, not by its path or name. |
 | Failure records | Every failure presented to the owner is logged once, with the core's status code, so a report can be traced without the owner reading a code on screen. |
 
 Monitoring, in a local desktop application, means the startup health check in §5
@@ -234,16 +233,15 @@ usable, and must say so rather than crashing.
 | 3 | Load the local settings and apply the theme and language | Fall back to system theme and language — and, for the core's own configuration below, to the shipped defaults — and report that preferences could not be read. |
 | 4 | Read the core's version and health status | Present an incompatible-version or unhealthy-core message, with a retry. |
 | 5 | Initialize the core against the database path | Present the core's reported reason, with a retry. |
-| 6 | Determine whether an account exists, and present sign-up or login | Present the core's reason, with a retry. |
-| 7 | After signing up, present the recovery codes the core minted | Present the core's reason, with a retry. An account created without codes is said so plainly, and regenerating a set is offered. |
-| 8 | Once startup is ready, read the pending-update record and check for updates in the background (§5.4) | Never blocks or fails startup: a failed check is logged and nothing is shown. |
+| 6 | Startup is ready: present the shell, on home, and begin the application's activities — the catalog, indexing (the startup re-check), the editor, and playback | An activity that fails to begin is logged; it never fails startup. |
+| 7 | Read the pending-update record and check for updates in the background (§5.4) | Never blocks or fails startup: a failed check is logged and nothing is shown. |
 
 The settings are read **before** the core is initialized, and that order is
 load-bearing rather than incidental. The core reads its own configuration
 exactly once, at `alexandria_index_init`, so whatever this application passes it
 — the database path and the thumbnail cache directory — has to be resolved
 first. No owner preference reconfigures the core any longer, so nothing needs
-the core to be initialized a second time during a session.
+the core to be initialized a second time while the application runs.
 
 The version and health are read **before** the core is initialized, and that
 order is load-bearing too. Initializing is what creates and migrates the
@@ -274,9 +272,11 @@ sequence from step 1.
 The startup sequence is not a use case — it has no owner-initiated flow. Its
 owner-visible outcomes are specified where the owner meets them: the
 core-unavailable state and its retry in
-[UC-38 AF-04](Use%20Case%20Specification%20Document.md), the branch between
-sign-up and login in UC-01 and UC-02, and the locked-catalog branch in UC-40. The
-sequence itself is platform work, tracked by `IR-04` through `IR-06`.
+[UC-38 AF-04](Use%20Case%20Specification%20Document.md), and the shell it ends
+at in UC-38's main flow. It used to branch between sign-up and login (UC-01,
+UC-02) and hold the catalog back behind the recovery codes (UC-40); core 0.7
+removed authentication, and those steps with it. The sequence itself is
+platform work, tracked by `IR-04` through `IR-06`.
 
 ### 5.4 The update check
 
@@ -290,7 +290,7 @@ what it puts on the wire and on disk.
 | When | Once per application start, when startup reaches ready, unawaited — and again only when the owner chooses "Check now" in Preferences. Never periodically while the application runs. |
 | Which builds | Release builds only. Debug and profile builds never check. The Flatpak never checks: it has no network permission, and its Preferences hide the setting. |
 | Switch | "Check for updates at startup", on by default, stored as `settings.checksForUpdates`. Off means no request at startup. |
-| Request | `GET https://api.github.com/repos/artur-rios/alexandria-ui/releases/latest` — GitHub's public API, read without a login. It answers the latest release, leaving out pre-releases and drafts. |
+| Request | `GET https://api.github.com/repos/artur-rios/alexandria-ui/releases/latest` — GitHub's public API, read without a token. It answers the latest release, leaving out pre-releases and drafts. |
 | What is sent | The request and two headers: `Accept: application/vnd.github+json` and `User-Agent: Alexandria/<version>`. Nothing about the owner, the machine, or the library; nothing beyond what any HTTPS request carries (the IP address). |
 | Timeout | 10 seconds. |
 | Failure | Offline, timed out, rate-limited, a server error, or an unreadable answer: logged, and nothing shown at startup. "Check now" says "Couldn't check for updates". |

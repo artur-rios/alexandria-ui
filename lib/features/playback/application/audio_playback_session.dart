@@ -4,7 +4,7 @@ import '../../../core/di/providers.dart';
 import '../../lifecycle/domain/file_hold.dart';
 import '../domain/playback_session.dart';
 
-/// The music playing in the player bar, which sign-out stops (UC-03).
+/// The music playing in the player bar, which closing for an update stops.
 class AudioPlaybackSession implements PlaybackSession {
   /// Creates the session over [_ref].
   const AudioPlaybackSession(this._ref);

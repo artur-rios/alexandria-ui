@@ -20,10 +20,7 @@ class FakeIndexGateway implements IndexGateway {
   final List<String> failuresRequested = [];
 
   @override
-  Future<RunFailuresOutcome> readFailures({
-    required String runId,
-    required String credential,
-  }) async {
+  Future<RunFailuresOutcome> readFailures({required String runId}) async {
     failuresRequested.add(runId);
 
     return failures[runId] ?? const RunFailuresOutcome.read(failures: []);
@@ -73,14 +70,14 @@ class FakeIndexGateway implements IndexGateway {
 
   /// When set, [countCatalogedFiles] waits for this to complete before
   /// answering — a test's hook for pausing `startRefresh` mid-flight, most
-  /// concretely to drive a sign-out while the call is still outstanding.
+  /// concretely to end the activities while the call is still outstanding.
   Completer<void>? catalogedFileCountGate;
 
-  /// The credentials [startRefresh] was called with, in order.
-  final List<String> refreshStarts = [];
+  /// The priority each [startRefresh] was called with, in order.
+  final List<RunPriority?> refreshStarts = [];
 
   /// What [readRun] was called with, in order.
-  final List<({String runId, String credential})> reads = [];
+  final List<({String runId})> reads = [];
 
   /// What [pauseRun] answers.
   RunControlOutcome pauseOutcome = const RunControlOutcome.ok();
@@ -100,7 +97,7 @@ class FakeIndexGateway implements IndexGateway {
   /// null, which is the default.
   ///
   /// Exists for a scenario [activeRunsOutcome] alone cannot express: a test
-  /// proving `IndexSessionActivity.begin()` checks what the core already has
+  /// proving `IndexAppActivity.begin()` checks what the core already has
   /// outstanding (FR-LB-19) before it ever asks `startRefresh` to start one,
   /// and then wants the run that check just allowed to appear as outstanding
   /// once it exists. A call count could not stand in for this: this gateway
@@ -116,37 +113,31 @@ class FakeIndexGateway implements IndexGateway {
   final List<IndexStartOutcome> libraryStartOutcomes = [];
 
   /// What [startLibraryIndex] was called with, in order.
-  final List<({String uuid, RunPriority? priority, String credential})>
-  libraryStarts = [];
+  final List<({String uuid, RunPriority? priority})> libraryStarts = [];
 
   @override
   Future<IndexStartOutcome> startLibraryIndex({
     required String uuid,
     RunPriority? priority,
-    required String credential,
   }) async {
-    libraryStarts.add((uuid: uuid, priority: priority, credential: credential));
+    libraryStarts.add((uuid: uuid, priority: priority));
     return libraryStartOutcomes.isNotEmpty
         ? libraryStartOutcomes.removeAt(0)
         : startOutcome;
   }
 
   /// What [pauseRun] was called with, in order.
-  final List<({String runId, String credential})> pauses = [];
+  final List<({String runId})> pauses = [];
 
   /// What [cancelRun] was called with, in order.
-  final List<({String runId, String credential})> cancels = [];
+  final List<({String runId})> cancels = [];
 
   /// What [resumeRun] was called with, in order.
-  final List<({String runId, RunPriority? priority, String credential})>
-  resumes = [];
+  final List<({String runId, RunPriority? priority})> resumes = [];
 
   @override
-  Future<IndexStartOutcome> startRefresh({
-    RunPriority? priority,
-    required String credential,
-  }) async {
-    refreshStarts.add(credential);
+  Future<IndexStartOutcome> startRefresh({RunPriority? priority}) async {
+    refreshStarts.add(priority);
     return refreshOutcome ?? startOutcome;
   }
 
@@ -158,31 +149,22 @@ class FakeIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<IndexRunOutcome> readRun({
-    required String runId,
-    required String credential,
-  }) async {
-    reads.add((runId: runId, credential: credential));
+  Future<IndexRunOutcome> readRun({required String runId}) async {
+    reads.add((runId: runId));
 
     final index = reads.length - 1;
     return readOutcomes[index.clamp(0, readOutcomes.length - 1)];
   }
 
   @override
-  Future<RunControlOutcome> pauseRun({
-    required String runId,
-    required String credential,
-  }) async {
-    pauses.add((runId: runId, credential: credential));
+  Future<RunControlOutcome> pauseRun({required String runId}) async {
+    pauses.add((runId: runId));
     return pauseOutcome;
   }
 
   @override
-  Future<RunControlOutcome> cancelRun({
-    required String runId,
-    required String credential,
-  }) async {
-    cancels.add((runId: runId, credential: credential));
+  Future<RunControlOutcome> cancelRun({required String runId}) async {
+    cancels.add((runId: runId));
     return cancelOutcome;
   }
 
@@ -190,14 +172,13 @@ class FakeIndexGateway implements IndexGateway {
   Future<IndexStartOutcome> resumeRun({
     required String runId,
     RunPriority? priority,
-    required String credential,
   }) async {
-    resumes.add((runId: runId, priority: priority, credential: credential));
+    resumes.add((runId: runId, priority: priority));
     return resumeOutcome ?? IndexStartOutcome.started(runId: runId);
   }
 
   @override
-  Future<ActiveRunsOutcome> listActiveRuns({required String credential}) async {
+  Future<ActiveRunsOutcome> listActiveRuns() async {
     if (refreshStarts.isNotEmpty &&
         activeRunsOutcomeOnceRefreshStarts != null) {
       return activeRunsOutcomeOnceRefreshStarts!;

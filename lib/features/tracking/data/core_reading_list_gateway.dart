@@ -22,11 +22,11 @@ class CoreReadingListGateway implements ReadingListGateway {
   final CoreClient _core;
 
   @override
-  Future<ReadingListBrowse> browse({required String credential}) async {
+  Future<ReadingListBrowse> browse() async {
     final CoreJsonResponse response;
     try {
       // An empty filter is every reading list, which is what the screen shows.
-      response = await _core.readingListsList('', credential);
+      response = await _core.readingListsList('');
     } on CoreCallException {
       return _unreadable();
     }
@@ -54,45 +54,32 @@ class CoreReadingListGateway implements ReadingListGateway {
   }
 
   @override
-  Future<ReadingListWrite> create({
-    required String name,
-    required String credential,
-  }) => _write(
-    () => _core.readingListCreate(jsonEncode({'name': name}), credential),
-  );
+  Future<ReadingListWrite> create({required String name}) =>
+      _write(() => _core.readingListCreate(jsonEncode({'name': name})));
 
   @override
-  Future<ReadingListWrite> delete({
-    required String uuid,
-    required String credential,
-  }) => _write(() => _core.readingListDelete(uuid, credential));
+  Future<ReadingListWrite> delete({required String uuid}) =>
+      _write(() => _core.readingListDelete(uuid));
 
   @override
   Future<ReadingListWrite> addItem({
     required String uuid,
     required String itemUuid,
-    required String credential,
   }) => _write(
-    () => _core.readingListAddItem(
-      uuid,
-      jsonEncode({'itemUuid': itemUuid}),
-      credential,
-    ),
+    () => _core.readingListAddItem(uuid, jsonEncode({'itemUuid': itemUuid})),
   );
 
   @override
   Future<ReadingListWrite> removeItem({
     required String uuid,
     required String itemUuid,
-    required String credential,
-  }) => _write(() => _core.readingListRemoveItem(uuid, itemUuid, credential));
+  }) => _write(() => _core.readingListRemoveItem(uuid, itemUuid));
 
   @override
   Future<ReadingListWrite> updateProgress({
     required String uuid,
     required String itemUuid,
     required ReadingState state,
-    required String credential,
     int? currentIssue,
     int? totalIssues,
   }) => _write(
@@ -107,7 +94,6 @@ class CoreReadingListGateway implements ReadingListGateway {
         'currentIssue': ?currentIssue,
         'totalIssues': ?totalIssues,
       }),
-      credential,
     ),
   );
 

@@ -10,8 +10,8 @@ import 'update_dialog.dart';
 final RouteObserver<ModalRoute<void>> updateRouteObserver =
     RouteObserver<ModalRoute<void>>();
 
-/// Shows the update prompt over whichever screen is up — the login screen or
-/// the shell — once the check answers (update-check design §5).
+/// Shows the update prompt over whichever screen is up once the check answers
+/// (update-check design §5).
 ///
 /// Never over another dialog: when one is open, the prompt waits for it to
 /// close. It also keeps the update check alive for the life of the

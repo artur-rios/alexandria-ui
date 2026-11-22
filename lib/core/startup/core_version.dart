@@ -1,22 +1,21 @@
 /// The range of Alexandria core versions this application supports (IR-06).
 ///
-/// The core is pre-1.0, so a minor bump is a breaking change: `0.6.x` is
-/// accepted and `0.7.0` is not. Widening this is a deliberate decision made
+/// The core is pre-1.0, so a minor bump is a breaking change: `0.7.x` is
+/// accepted and `0.8.0` is not. Widening this is a deliberate decision made
 /// after the FFI surface has actually been checked, not a default that drifts
 /// upward on its own.
 ///
-/// Moved to `0.6.x` with the core that made libraries the only way into the
-/// catalog: its FFI no longer exports `alexandria_index_start` or the per-run
-/// type scope, adding a library starts its first run, and removing one
-/// deletes its records. A `0.5.x` core still indexes folders outside any
-/// library, which this build can no longer add or show, so it is refused at
-/// startup by name and version instead of misbehaving quietly.
+/// Moved to `0.7.x` with the core that removed authentication: no FFI call
+/// takes a session token any more, and the `alexandria_auth_*` calls are
+/// gone. A `0.6.x` core still expects a token on every call, so this build
+/// cannot call it correctly at all — it is refused at startup by name and
+/// version instead of failing on every read.
 abstract final class CoreVersionRange {
   /// The lowest accepted version, inclusive.
-  static const String minimum = '0.6.0';
+  static const String minimum = '0.7.0';
 
   /// The lowest rejected version, exclusive upper bound.
-  static const String exclusiveMaximum = '0.7.0';
+  static const String exclusiveMaximum = '0.8.0';
 
   /// How the range reads in a failure message.
   static const String description = '>=$minimum <$exclusiveMaximum';

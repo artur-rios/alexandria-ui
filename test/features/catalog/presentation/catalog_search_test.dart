@@ -9,12 +9,11 @@ import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
-import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
-    show CatalogListing;
+import 'package:alexandria_ui/features/libraries/presentation/library_view.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
+import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -23,6 +22,8 @@ import 'package:riverpod/misc.dart';
 import '../../../support/fake_folder_picker.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_library_gateway.dart';
+import '../../../support/fake_media_player.dart';
+import '../../../support/fake_playback.dart';
 import '../../../support/shell_harness.dart';
 
 /// Searching the catalog (UC-11, FR-CT-06, FR-CT-09).
@@ -82,20 +83,9 @@ void main() {
     ]),
   };
 
-  /// Moves to [destination] through the navigation panel.
-  Future<void> goTo(WidgetTester tester, ShellDestination destination) async {
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(destination.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
-  }
-
   group('leaving a search behind', () {
     testWidgets(
-      'GivenASearchIsOpen_WhenAnotherAreaIsChosen_ThenTheListingIsShown',
+      'GivenASearchIsOpen_WhenAnotherAreaIsChosen_ThenThatAreaIsShown',
       (tester) async {
         // Navigating is a request for that area. A search left standing would
         // leave the panel highlighting one thing and the content showing
@@ -103,10 +93,10 @@ void main() {
         await openShell(tester, listings: aLibrary());
         await search(tester, 'blue');
 
-        await goTo(tester, ShellDestination.images);
+        await tester.openLibrary(shelf);
 
         expect(find.byType(CatalogSearchResults), findsNothing);
-        expect(find.byType(CatalogListing), findsOneWidget);
+        expect(find.byType(LibraryView), findsOneWidget);
       },
     );
 
@@ -116,7 +106,7 @@ void main() {
         final container = await openShell(tester, listings: aLibrary());
         await search(tester, 'blue');
 
-        await goTo(tester, ShellDestination.images);
+        await tester.openLibrary(shelf);
 
         expect(container.read(searchTermProvider), isEmpty);
       },
@@ -132,7 +122,7 @@ void main() {
         // results would be offering an answer to a question it cannot ask.
         await openShell(tester, listings: aLibrary());
 
-        await goTo(tester, ShellDestination.bookmarks);
+        await tester.goTo(const BookmarksDestination());
         final l10n = AppLocalizations.of(
           tester.element(find.byType(ShellScreen)),
         );
@@ -141,22 +131,18 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenAFileTypeArea_WhenItOpens_ThenTheCatalogSearchIsOffered',
-      (tester) async {
-        await openShell(tester, listings: aLibrary());
+    testWidgets('GivenALibrary_WhenItOpens_ThenTheCatalogSearchIsOffered', (
+      tester,
+    ) async {
+      await openShell(tester, listings: aLibrary());
 
-        await goTo(tester, ShellDestination.images);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
+      await tester.openLibrary(shelf);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
-        expect(
-          find.widgetWithText(TextField, l10n.searchLabel),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(find.widgetWithText(TextField, l10n.searchLabel), findsOneWidget);
+    });
   });
 
   group('the main flow', () {
@@ -315,10 +301,19 @@ void main() {
       );
       expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
 
-      await tester.tap(find.text(l10n.libraryAdd));
+      // The content area's offer, not the left menu's entry beside it.
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(ShellContentArea),
+
+          matching: find.text(l10n.libraryAdd),
+        ),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.byType(LibrariesView), findsOneWidget);
+      // The add flow runs where the owner is: no screen opens for it.
+      expect(find.byType(LibrariesView), findsNothing);
     });
   });
 
@@ -446,6 +441,74 @@ void main() {
         expect(
           find.text(localizations(tester).searchInALibrary),
           findsOneWidget,
+        );
+      },
+    );
+  });
+
+  group('opening a result (UC-13 main flow step 1)', () {
+    testWidgets('GivenAResult_WhenItIsTapped_ThenTheFileItselfOpens', (
+      tester,
+    ) async {
+      await openShell(
+        tester,
+        listings: {
+          FileType.document: loadedDetails([
+            aFile(name: 'Blue Book.epub', type: FileType.document),
+          ]),
+        },
+      );
+      await search(tester, 'blue');
+
+      await tester.tap(find.text('Blue Book.epub'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(DocumentViewerScreen), findsOneWidget);
+    });
+
+    testWidgets(
+      'GivenMatchingTracks_WhenOneIsTapped_ThenItPlaysThroughTheMatchingTracks',
+      (tester) async {
+        final container = await tester.pumpShell(
+          extraOverrides: [
+            catalogGatewayProvider.overrideWithValue(
+              FakeCatalogGateway(
+                listings: {
+                  FileType.audio: loadedDetails([
+                    aFile(
+                      uuid: 't-a',
+                      name: 'blue-a.flac',
+                      type: FileType.audio,
+                    ),
+                    aFile(uuid: 't-r', name: 'red.flac', type: FileType.audio),
+                    aFile(
+                      uuid: 't-b',
+                      name: 'blue-b.flac',
+                      type: FileType.audio,
+                    ),
+                  ]),
+                },
+              ),
+            ),
+            audioPlayerProvider.overrideWithValue(FakeMediaPlayer()),
+            playbackSourceGatewayProvider.overrideWithValue(
+              FakePlaybackSourceGateway()..pathFor = (uuid) => '/music/$uuid',
+            ),
+            coverGatewayProvider.overrideWithValue(FakeCoverGateway()),
+          ],
+        );
+        await search(tester, 'blue');
+
+        await tester.tap(find.text('blue-b.flac'));
+        await tester.pumpAndSettle();
+
+        final playing = container.read(audioPlaybackControllerProvider);
+        expect(playing.current?.uuid, 't-b');
+        // The queue is what the search showed, not the whole catalog: a track
+        // that did not match is not one the owner asked to hear.
+        expect(
+          playing.queue.map((file) => file.uuid),
+          unorderedEquals(['t-a', 't-b']),
         );
       },
     );

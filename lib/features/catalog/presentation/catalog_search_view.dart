@@ -7,9 +7,11 @@ import '../../../core/theme/app_spacing.dart';
 import '../../libraries/presentation/libraries_view.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../application/search_controller.dart';
+import '../domain/catalog_file.dart';
 import '../domain/catalog_search.dart';
 import '../domain/file_details.dart';
 import '../domain/file_type.dart';
+import 'file_details_view.dart';
 import 'music_display_name.dart';
 
 /// The catalog-wide search field (UC-11 main flow step 1).
@@ -152,7 +154,11 @@ class _Matches extends StatelessWidget {
                     ),
                   ),
                   for (final details in rows)
-                    _ResultRow(details: details, term: term),
+                    _ResultRow(
+                      details: details,
+                      term: term,
+                      shown: [for (final each in rows) each.file],
+                    ),
                 ],
               );
             },
@@ -166,11 +172,22 @@ class _Matches extends StatelessWidget {
 /// One match (main flow step 3).
 ///
 /// Named by its file name, which is what it is called, with its path beneath.
+/// A tap opens the file, the way a row in a library does (UC-13 main flow
+/// step 1): a result that cannot be opened from where it was found sends the
+/// owner off to look for it again.
 class _ResultRow extends ConsumerWidget {
-  const _ResultRow({required this.details, required this.term});
+  const _ResultRow({
+    required this.details,
+    required this.term,
+    required this.shown,
+  });
 
   final FileDetails details;
   final String term;
+
+  /// The results of its type, in the order drawn: a track plays through the
+  /// tracks the search found, not through the whole catalog.
+  final List<CatalogFile> shown;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -179,14 +196,14 @@ class _ResultRow extends ConsumerWidget {
     final file = details.file;
 
     return ListTile(
+      onTap: () => openFile(context, ref, file, shown: shown),
       leading: const Icon(Icons.insert_drive_file_outlined),
       // The term is marked in the name the row shows; marking a name the row
       // does not show would point at nothing.
       title: _Highlighted(text: displayName(file), term: term),
       // Says where a hit lives when it lives in a library. Without it the
-      // row is a puzzle: the owner finds the file here and then cannot find
-      // it in the panel for its type, because a library's files are shown in
-      // their folders instead (FR-CT-16).
+      // row is a puzzle: a library's files are browsed in its folders, so the
+      // library is where the owner goes to find this one again (FR-CT-16).
       trailing: details.libraryUuid == null
           ? null
           : _LibraryTag(uuid: details.libraryUuid!),
@@ -204,8 +221,8 @@ class _ResultRow extends ConsumerWidget {
 /// The name is looked up rather than carried on the row: the core answers
 /// membership as a uuid, deliberately, so a listing does not go stale the
 /// moment a library is renamed. Until the list of libraries has been read
-/// this says only that the file is in one, which is the part that explains
-/// the panel it is missing from.
+/// this says only that the file is in one, which is the part that says where
+/// to look for it.
 class _LibraryTag extends ConsumerWidget {
   const _LibraryTag({required this.uuid});
 
@@ -345,7 +362,7 @@ class _NothingCatalogued extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
-              onPressed: () => openLibrariesAndAdd(ref),
+              onPressed: () => openLibrariesAndAdd(context, ref),
               icon: const Icon(Icons.folder_outlined),
               label: Text(l10n.libraryAdd),
             ),

@@ -55,10 +55,7 @@ class FakeCollectionGateway implements CollectionGateway {
   final List<CollectionKind?> filters = [];
 
   @override
-  Future<CollectionBrowse> browse({
-    required String credential,
-    CollectionKind? kind,
-  }) async {
+  Future<CollectionBrowse> browse({CollectionKind? kind}) async {
     filters.add(kind);
     if (browseOutcome case final outcome?) return outcome;
 
@@ -74,7 +71,6 @@ class FakeCollectionGateway implements CollectionGateway {
   Future<CollectionWrite> create({
     required String name,
     required CollectionKind kind,
-    required String credential,
   }) async {
     created.add((name: name, kind: kind));
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
@@ -89,7 +85,6 @@ class FakeCollectionGateway implements CollectionGateway {
   Future<CollectionWrite> rename({
     required String uuid,
     required String name,
-    required String credential,
   }) async {
     renamed.add((uuid: uuid, name: name));
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
@@ -102,10 +97,7 @@ class FakeCollectionGateway implements CollectionGateway {
   }
 
   @override
-  Future<CollectionMembers> members({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<CollectionMembers> members({required String uuid}) async {
     if (membersOutcome case final outcome?) return outcome;
 
     final collection = collections.where((c) => c.uuid == uuid).firstOrNull;
@@ -120,7 +112,6 @@ class FakeCollectionGateway implements CollectionGateway {
   Future<CollectionAdditions> addItems({
     required String uuid,
     required List<String> itemUuids,
-    required String credential,
   }) async {
     added.add((uuid: uuid, itemUuids: itemUuids));
     if (additionsOutcome case final outcome?) return outcome;
@@ -148,7 +139,6 @@ class FakeCollectionGateway implements CollectionGateway {
   Future<CollectionWrite> removeItem({
     required String uuid,
     required String itemUuid,
-    required String credential,
   }) async {
     removed.add((uuid: uuid, itemUuid: itemUuid));
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
@@ -158,10 +148,7 @@ class FakeCollectionGateway implements CollectionGateway {
   }
 
   @override
-  Future<CollectionWrite> delete({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<CollectionWrite> delete({required String uuid}) async {
     deleted.add(uuid);
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
 

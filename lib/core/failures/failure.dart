@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'core_rejection.dart';
 import 'core_status.dart';
 
 part 'failure.freezed.dart';
@@ -33,46 +32,6 @@ sealed class Failure with _$Failure implements Exception {
     required CoreStatusFamily family,
     required int code,
   }) = InvalidInputFailure;
-
-  /// The core rejected the input and said which rule it broke.
-  ///
-  /// Distinct from [InvalidInputFailure] because the two produce different
-  /// messages: this one can tell the owner *what* to change, where the other
-  /// can only say that something was wrong. Both remain, because a core that
-  /// answers without a code — an older build, or a path that has none — must
-  /// still produce a readable failure.
-  const factory Failure.rejected({
-    required CoreStatusFamily family,
-    required int code,
-    required CoreRejection rejection,
-  }) = RejectedFailure;
-
-  /// The core refused because the caller is asking too often.
-  ///
-  /// Its own variant rather than an invalid-input one: nothing the owner typed
-  /// was wrong, and the remedy is to wait rather than to correct anything.
-  const factory Failure.rateLimited({
-    required CoreStatusFamily family,
-    required int code,
-  }) = RateLimitedFailure;
-
-  /// The core could not reach something it depends on — outbound mail being
-  /// the one that exists today.
-  ///
-  /// Distinct from [ConfigurationFailure] because the catalog is unaffected:
-  /// the operation the owner asked for may well have succeeded, and only the
-  /// message that should have followed it did not.
-  const factory Failure.serviceUnavailable({
-    required CoreStatusFamily family,
-    required int code,
-  }) = ServiceUnavailableFailure;
-
-  /// The session is absent, expired, or rejected. Clearing the session is the
-  /// caller's obligation.
-  const factory Failure.unauthorized({
-    required CoreStatusFamily family,
-    required int code,
-  }) = UnauthorizedFailure;
 
   /// A call was made before `alexandria_index_init` succeeded. This is a
   /// programming error in the startup sequence rather than an owner-facing
@@ -109,18 +68,11 @@ sealed class Failure with _$Failure implements Exception {
     required int code,
   }) = IntegrityFailure;
 
-  /// The core's own configuration is missing or unusable.
-  const factory Failure.configuration({
-    required CoreStatusFamily family,
-    required int code,
-  }) = ConfigurationFailure;
-
   /// The operation would create something that already exists.
   ///
   /// Distinct from [InvalidInputFailure] because nothing the owner typed was
-  /// wrong: registering a second account (UC-01 AF-04) is refused because the
-  /// first one exists, and the answer is to sign in rather than to correct the
-  /// form.
+  /// wrong: a folder overlapping a library already registered is refused
+  /// because of the catalog's current state, not because of the request.
   const factory Failure.conflict({
     required CoreStatusFamily family,
     required int code,
@@ -179,16 +131,11 @@ sealed class Failure with _$Failure implements Exception {
   /// (Operations & Infrastructure Document §4).
   int? get coreStatusCode => switch (this) {
     InvalidInputFailure(:final code) ||
-    RejectedFailure(:final code) ||
-    RateLimitedFailure(:final code) ||
-    ServiceUnavailableFailure(:final code) ||
-    UnauthorizedFailure(:final code) ||
     NotInitializedFailure(:final code) ||
     NotFoundFailure(:final code) ||
     InvalidStateFailure(:final code) ||
     DiskFailure(:final code) ||
     IntegrityFailure(:final code) ||
-    ConfigurationFailure(:final code) ||
     ConflictFailure(:final code) ||
     UnexpectedFailure(:final code) ||
     CoreInitializationFailedFailure(:final code) ||

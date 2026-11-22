@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:alexandria_ui/core/bindings/core_client.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
-import 'package:alexandria_ui/features/auth/data/core_auth_gateway.dart';
-import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
 import 'package:alexandria_ui/features/catalog/data/core_catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
@@ -28,10 +26,10 @@ import '../support/temporary_catalog.dart';
 /// Every unit test of this feature runs against a fake this application also
 /// wrote, so none of them can tell whether the two sides agree — about the
 /// wire names, about what "overlapping" means, or about the argument order.
-/// `alexandria_library_browse` takes **three consecutive strings**: a uuid,
-/// a folder path and a token. Transpose any two and it compiles, passes
-/// every unit test, and answers an empty folder at run time — which looks
-/// exactly like a library nobody has indexed into yet.
+/// `alexandria_library_browse` takes **two consecutive strings**: a uuid and
+/// a folder path. Transpose them and it compiles, passes every unit test, and
+/// answers an empty folder at run time — which looks exactly like a library
+/// nobody has indexed into yet.
 ///
 /// It also proves what the 0.6.0 core changed: a library is the only way
 /// into the catalog, its files are listed in their type panels like any
@@ -39,9 +37,6 @@ import '../support/temporary_catalog.dart';
 /// that, because it lives in the core's own queries.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-
-  const email = 'owner@example.com';
-  const password = 'correct horse battery staple';
 
   late TemporaryCatalog catalog;
   late String libraryPath;
@@ -61,38 +56,30 @@ void main() {
   setUp(() => catalog = TemporaryCatalog.create());
   tearDown(() => catalog.dispose());
 
-  Future<(CoreClient, String)> signedInCore() async {
+  Future<CoreClient> initializedCore() async {
     final client = await FfiCoreClient.load(libraryPath);
     addTearDown(client.dispose);
 
     final status = await client.initialize(catalog.databasePath);
     expect(CoreStatusFamily.indexing.isOk(status), isTrue);
 
-    final outcome = await CoreAuthGateway(client).register(
-      email: email,
-      password: password,
-      passwordConfirmation: password,
-    );
-    expect(outcome, isA<AuthenticatedOutcome>());
-
-    return (client, (outcome as AuthenticatedOutcome).session.credential);
+    return client;
   }
 
   test('GivenALibrary_WhenItsTypeIsListed_ThenItsFilesAreListed', () async {
     // Every file belongs to a library now, so the type panel lists them —
     // each row saying which library it is in.
-    final (client, credential) = await signedInCore();
+    final client = await initializedCore();
     catalog.addFixture('class-01/lecture.md', '# a lecture');
     catalog.addFixture('class-01/handout.md', '# a handout');
     final library = await addLibraryAndSettle(
       client,
-      credential,
       root: catalog.libraryDirectory.path,
     );
 
     final listing = await CoreCatalogGateway(
       client,
-    ).listFiles(type: FileType.text, credential: credential);
+    ).listFiles(type: FileType.text);
     final files = (listing as CatalogListingLoaded).files;
 
     expect(files.map((row) => row.file.name).toSet(), {
@@ -109,21 +96,16 @@ void main() {
     () async {
       // Also what pins `libraryBrowse`'s three arguments: transposed, the uuid
       // is read as a folder path and this answers an empty top level.
-      final (client, credential) = await signedInCore();
+      final client = await initializedCore();
       catalog.addFixture('class-01/lecture.md', '# a lecture');
       catalog.addFixture('syllabus.md', '# the syllabus');
       final library = await addLibraryAndSettle(
         client,
-        credential,
         root: catalog.libraryDirectory.path,
       );
 
       final libraries = CoreLibraryGateway(client);
-      final top = await libraries.read(
-        uuid: library.uuid,
-        path: '',
-        credential: credential,
-      );
+      final top = await libraries.read(uuid: library.uuid, path: '');
       final listing = (top as LibraryReadLoaded).listing;
 
       expect(listing.library.name, 'Course');
@@ -134,11 +116,7 @@ void main() {
         'syllabus.md',
       ], reason: 'a file from a subfolder leaked into the top level');
 
-      final inside = await libraries.read(
-        uuid: library.uuid,
-        path: 'class-01',
-        credential: credential,
-      );
+      final inside = await libraries.read(uuid: library.uuid, path: 'class-01');
       expect(
         (inside as LibraryReadLoaded).listing.files.map((e) => e.file.name),
         ['lecture.md'],
@@ -148,18 +126,13 @@ void main() {
 
   test('GivenAnOverlappingFolder_WhenAdded_ThenTheCoreRefusesIt', () async {
     // A file in two libraries means two answers to "where does this appear".
-    final (client, credential) = await signedInCore();
+    final client = await initializedCore();
     catalog.addFixture('class-01/lecture.md', '# a lecture');
-    await addLibraryAndSettle(
-      client,
-      credential,
-      root: catalog.libraryDirectory.path,
-    );
+    await addLibraryAndSettle(client, root: catalog.libraryDirectory.path);
 
     final nested = await CoreLibraryGateway(client).register(
       name: 'Week one',
       rootPath: '${catalog.libraryDirectory.path}/class-01',
-      credential: credential,
     );
 
     expect(
@@ -172,20 +145,19 @@ void main() {
   test(
     'GivenAMissingFolder_WhenAdded_ThenTheCoreRefusesItAndStoresNothing',
     () async {
-      final (client, credential) = await signedInCore();
+      final client = await initializedCore();
       final libraries = CoreLibraryGateway(client);
 
       final refused = await libraries.register(
         name: 'Nowhere',
         rootPath: '${catalog.libraryDirectory.path}-not-there',
-        credential: credential,
       );
 
       expect(
         (refused as LibraryRegistrationFailed).failure,
         isA<InvalidInputFailure>(),
       );
-      final browsed = await libraries.browse(credential: credential);
+      final browsed = await libraries.browse();
       expect((browsed as LibraryBrowseLoaded).libraries, isEmpty);
     },
   );
@@ -193,22 +165,19 @@ void main() {
   test('GivenALibrary_WhenRemoved_ThenItsFilesLeaveTheCatalog', () async {
     // On the 0.6.0 core a file is in the catalog only by being in a library,
     // so removing the library removes its records. Files on disk stay.
-    final (client, credential) = await signedInCore();
+    final client = await initializedCore();
     final lecture = catalog.addFixture('class-01/lecture.md', '# a lecture');
     final library = await addLibraryAndSettle(
       client,
-      credential,
       root: catalog.libraryDirectory.path,
     );
 
-    final removed = await CoreLibraryGateway(
-      client,
-    ).remove(uuid: library.uuid, credential: credential);
+    final removed = await CoreLibraryGateway(client).remove(uuid: library.uuid);
     expect(removed, isA<LibraryWriteDone>());
 
     final listing = await CoreCatalogGateway(
       client,
-    ).listFiles(type: FileType.text, credential: credential);
+    ).listFiles(type: FileType.text);
     expect(
       (listing as CatalogListingLoaded).files,
       isEmpty,
@@ -224,20 +193,15 @@ void main() {
       // JSON body is read as the uuid and nothing moves. And what no fake can
       // show — that the core rewrites the stored paths, so the library is
       // browsable at its new root without a re-index.
-      final (client, credential) = await signedInCore();
+      final client = await initializedCore();
       catalog.addFixture('class-01/lecture.md', '# a lecture');
       final library = await addLibraryAndSettle(
         client,
-        credential,
         root: catalog.libraryDirectory.path,
       );
 
       final libraries = CoreLibraryGateway(client);
-      final before = await libraries.read(
-        uuid: library.uuid,
-        path: 'class-01',
-        credential: credential,
-      );
+      final before = await libraries.read(uuid: library.uuid, path: 'class-01');
       final was = (before as LibraryReadLoaded).listing.files.single.file.uuid;
 
       // A folder that need not exist: the record is being corrected, and the
@@ -245,15 +209,10 @@ void main() {
       final moved = await libraries.move(
         uuid: library.uuid,
         rootPath: '${catalog.libraryDirectory.path}-moved',
-        credential: credential,
       );
       expect(moved, isA<LibraryWriteDone>());
 
-      final after = await libraries.read(
-        uuid: library.uuid,
-        path: 'class-01',
-        credential: credential,
-      );
+      final after = await libraries.read(uuid: library.uuid, path: 'class-01');
       final listing = (after as LibraryReadLoaded).listing;
 
       expect(
@@ -277,27 +236,19 @@ void main() {
       // The conflict the screen has its own sentence for. Asserted against the
       // real core because the status has to survive the crossing to be the one
       // the application shows.
-      final (client, credential) = await signedInCore();
+      final client = await initializedCore();
       catalog.addFixture('class-01/lecture.md', '# a lecture');
       final photos = Directory('${catalog.libraryDirectory.path}-photos')
         ..createSync();
       final course = await addLibraryAndSettle(
         client,
-        credential,
         root: catalog.libraryDirectory.path,
       );
-      await addLibraryAndSettle(
-        client,
-        credential,
-        root: photos.path,
-        name: 'Photos',
-      );
+      await addLibraryAndSettle(client, root: photos.path, name: 'Photos');
 
-      final refused = await CoreLibraryGateway(client).move(
-        uuid: course.uuid,
-        rootPath: '${photos.path}/2024',
-        credential: credential,
-      );
+      final refused = await CoreLibraryGateway(
+        client,
+      ).move(uuid: course.uuid, rootPath: '${photos.path}/2024');
 
       expect(
         (refused as LibraryWriteFailed).failure,
@@ -308,41 +259,35 @@ void main() {
   );
 
   test('GivenAnIndexedLibrary_WhenScannedAgain_ThenANewRunCompletes', () async {
-    final (client, credential) = await signedInCore();
+    final client = await initializedCore();
     catalog.addFixture('class-01/lecture.md', '# a lecture');
     final library = await addLibraryAndSettle(
       client,
-      credential,
       root: catalog.libraryDirectory.path,
     );
     catalog.addFixture('class-02/lecture.md', '# another lecture');
 
     final started = await CoreIndexGateway(
       client,
-    ).startLibraryIndex(uuid: library.uuid, credential: credential);
-    final run = await settleRun(
-      client,
-      credential,
-      (started as IndexStarted).runId,
-    );
+    ).startLibraryIndex(uuid: library.uuid);
+    final run = await settleRun(client, (started as IndexStarted).runId);
 
     expect(run.status, IndexRunStatus.complete);
     expect(run.libraryUuid, library.uuid);
     final listing = await CoreCatalogGateway(
       client,
-    ).listFiles(type: FileType.text, credential: credential);
+    ).listFiles(type: FileType.text);
     expect((listing as CatalogListingLoaded).files, hasLength(2));
   });
 
   test('GivenAnUnknownLibrary_WhenScanned_ThenTheCoreSaysNotFound', () async {
     // What pins the new status code across the boundary: an unknown library
     // reaches the application as not found, not as a generic failure.
-    final (client, credential) = await signedInCore();
+    final client = await initializedCore();
 
-    final refused = await CoreIndexGateway(client).startLibraryIndex(
-      uuid: '00000000-0000-4000-8000-000000000000',
-      credential: credential,
-    );
+    final refused = await CoreIndexGateway(
+      client,
+    ).startLibraryIndex(uuid: '00000000-0000-4000-8000-000000000000');
 
     expect((refused as IndexStartFailed).failure, isA<NotFoundFailure>());
   });
@@ -353,29 +298,21 @@ void main() {
       // A deleted library file appears in no type panel and not in its own
       // library either — `list_in_library` answers only active files. Without
       // this it could be restored from nowhere.
-      final (client, credential) = await signedInCore();
+      final client = await initializedCore();
       catalog.addFixture('class-01/lecture.md', '# a lecture');
-      await addLibraryAndSettle(
-        client,
-        credential,
-        root: catalog.libraryDirectory.path,
-      );
+      await addLibraryAndSettle(client, root: catalog.libraryDirectory.path);
 
       final gateway = CoreCatalogGateway(client);
-      final listed = await gateway.listFiles(
-        type: FileType.text,
-        credential: credential,
-      );
+      final listed = await gateway.listFiles(type: FileType.text);
       final uuid = (listed as CatalogListingLoaded).files.single.file.uuid;
 
       final deleted = await CoreLifecycleGateway(
         client,
-      ).softDeleteFile(uuid: uuid, credential: credential);
+      ).softDeleteFile(uuid: uuid);
       expect(deleted, isA<LifecycleWriteDone>());
 
       final review = await gateway.listFiles(
         type: FileType.text,
-        credential: credential,
         lifecycle: LifecycleFilter.deleted,
       );
 

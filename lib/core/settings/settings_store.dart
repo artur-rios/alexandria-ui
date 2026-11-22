@@ -6,10 +6,8 @@ import 'package:material_ui/material_ui.dart';
 /// language, layout, sort and filter defaults, registered source folders,
 /// playback resume points, and window geometry.
 ///
-/// What it never holds is a credential or any catalog data. The salted password
-/// hash lives in the core; the session credential lives in process memory for
-/// the run of the application only; every file, collection, and list is read
-/// through the core's FFI surface and never cached here. A settings store that
+/// What it never holds is any catalog data: every file, collection, and list is
+/// read through the core's FFI surface and never cached here. A settings store that
 /// starts caching catalog rows becomes a second source of truth, and the two
 /// disagree the first time an index run changes something.
 ///
@@ -30,7 +28,7 @@ abstract interface class SettingsStore {
   /// Records the owner's language choice. Applied immediately.
   Future<void> setLocale(Locale? locale);
 
-  /// Whether the library is re-checked when a session is established, or
+  /// Whether the library is re-checked when the application starts, or
   /// `true` when the owner has not said (FR-LB-21).
   bool get rechecksAtStartup;
 
