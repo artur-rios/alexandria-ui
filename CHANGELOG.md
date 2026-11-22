@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-11-22
+
 ### Added
 
 - Libraries can be pinned to the top of the left menu, and marked as favorites to see them on home, from a library's
@@ -279,7 +281,8 @@ First tagged release, published as a prerelease to exercise the release pipeline
 - Windows packages — an installer, an MSIX, and a portable zip — and Linux packages — a self-extracting installer and a
   portable tarball, which need the distribution's ffmpeg libraries installed.
 
-[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/artur-rios/alexandria-ui/compare/v2.0.1...v3.0.0
 [2.0.1]: https://github.com/artur-rios/alexandria-ui/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/artur-rios/alexandria-ui/compare/v1.0.1...v2.0.0
 [1.0.1]: https://github.com/artur-rios/alexandria-ui/compare/v1.0.0...v1.0.1
