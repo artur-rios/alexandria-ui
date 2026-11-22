@@ -13,26 +13,17 @@ import '../domain/bookmark_gateway.dart';
 class BookmarksController extends AsyncNotifier<List<Bookmark>> {
   @override
   Future<List<Bookmark>> build() async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
-
     // Watched, so choosing a collection reloads the listing without anything
     // having to remember to ask (main flow step 1).
     final collectionUuid = ref.watch(bookmarkCollectionFilterProvider);
 
     final listing = await ref
         .read(bookmarkGatewayProvider)
-        .list(credential: credential, collectionUuid: collectionUuid);
+        .list(collectionUuid: collectionUuid);
 
     switch (listing) {
       case BookmarkListingLoaded(:final bookmarks):
         return bookmarks;
-
-      // AF-06: a rejected session returns the owner to login, as everywhere.
-      case BookmarkListingFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return const [];
 
       case BookmarkListingFailed(:final failure):
         throw failure;
@@ -198,27 +189,18 @@ class BookmarkForm extends Notifier<BookmarkFormState> {
 
     state = state.copyWith(stage: BookmarkFormStage.saving);
 
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) {
-      state = state.copyWith(stage: BookmarkFormStage.editing);
-      return;
-    }
-
     final gateway = ref.read(bookmarkGatewayProvider);
     final uuid = state.uuid;
     final outcome = uuid == null
         ? await gateway.create(
             url: state.url.trim(),
             title: state.title.trim(),
-            credential: credential,
             collectionUuid: state.collectionUuid,
           )
         : await gateway.update(
             uuid: uuid,
             url: state.url.trim(),
             title: state.title.trim(),
-            credential: credential,
             collectionUuid: state.collectionUuid,
           );
 
@@ -229,11 +211,6 @@ class BookmarkForm extends Notifier<BookmarkFormState> {
         await ref.read(bookmarksControllerProvider.notifier).reload();
         // The form is finished, so it closes. What it wrote is in the listing
         // behind it, which is where the owner looks next.
-        state = const BookmarkFormState();
-
-      // AF-06: the session is discarded, which returns the owner to login.
-      case BookmarkWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
         state = const BookmarkFormState();
 
       // AF-05: the bookmark is gone. The form closes and the listing is read

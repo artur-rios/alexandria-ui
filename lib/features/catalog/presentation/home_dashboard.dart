@@ -4,228 +4,189 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../libraries/domain/catalog_stats.dart';
+import '../../libraries/domain/library.dart';
+import '../../libraries/domain/library_order.dart';
 import '../../libraries/presentation/libraries_view.dart';
+import '../../libraries/presentation/library_run_status.dart';
+import '../../shell/domain/shell_destination.dart';
 import '../../shell/presentation/async_state_view.dart';
-import '../domain/catalog_file.dart';
-import '../application/dashboard_controller.dart';
-import '../application/in_progress.dart';
 import '../domain/file_type.dart';
 import 'catalog_search_view.dart';
-import 'file_details_view.dart';
-import 'music_display_name.dart';
 
-/// The home dashboard (UC-14, FR-CT-11).
+/// The home screen (libraries design §6).
 ///
-/// Four sections, each loading and failing on its own. AF-03 is the reason
-/// they are separate widgets rather than one query: a section whose query
-/// failed shows its own failure and its own retry, and the rest of the
-/// dashboard still renders.
+/// Two sections, each loading and failing on its own: the favorite libraries,
+/// and the totals. A section whose query failed shows its own failure and its
+/// own retry while the other still renders, and a total that could not be
+/// counted is never shown as a zero.
 ///
-/// The library-wide screens it used to link to at the bottom — collections,
-/// deleted items, the missing-files review — are in the navigation panel's
-/// tools menu now, reachable from every area rather than from this one below
-/// four sections of content.
+/// The library-wide screens it used to link to — collections, deleted items,
+/// the missing-files review — are in the menu bar's Library menu.
 class HomeDashboard extends ConsumerWidget {
   /// Creates the dashboard.
   const HomeDashboard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final counts = ref.watch(typeCountsControllerProvider);
-
-    // AF-01: nothing is cataloged, so the whole dashboard is the first-run
-    // guidance — four empty sections would be four ways of saying the same
-    // thing. Every type has to have actually been counted before this reads
-    // as empty: `TypeCountsController` answers no counts at all rather than
-    // zeroes when its listing fails, so a map shorter than every type means
-    // "this could not be read", not "there is nothing here" — vacuously true
-    // on an empty map is exactly the lie a core outage would otherwise tell
-    // the owner.
-    final catalogEmpty = counts.maybeWhen(
-      data: (byType) =>
-          byType.length == FileType.values.length &&
-          byType.values.every((count) => count == 0),
-      orElse: () => false,
-    );
-    if (catalogEmpty) return const _FirstRun();
+    // First run: no libraries at all. Only a list that loaded and is empty
+    // says so — while it loads, or when it failed, nothing is known about
+    // what is registered, and guidance to add one would be a lie.
+    final libraries = ref.watch(librariesControllerProvider);
+    if (libraries case AsyncData(:final value) when value.isEmpty) {
+      return const _FirstRun();
+    }
 
     return ListView(
+      padding: const EdgeInsets.all(AppSpacing.md),
       children: const [
-        _RecentSection(),
+        _FavoritesSection(),
         SizedBox(height: AppSpacing.lg),
-        _InProgressSection(),
-        SizedBox(height: AppSpacing.lg),
-        _CountsSection(),
-        SizedBox(height: AppSpacing.lg),
-        _LastRunSection(),
+        _StatisticsSection(),
       ],
     );
   }
 }
 
-/// The recently added files (main flow step 2).
-class _RecentSection extends ConsumerWidget {
-  const _RecentSection();
+/// The libraries marked as favorites, A–Z, as cards.
+class _FavoritesSection extends ConsumerWidget {
+  const _FavoritesSection();
+
+  /// The width of a card; the cards wrap into as many columns as fit.
+  static const double cardWidth = 280;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
 
     return _Section(
-      title: l10n.dashboardRecent,
-      child: SizedBox(
-        height: 220,
-        child: AsyncStateView<List<CatalogFile>>(
-          value: ref.watch(recentFilesProvider),
-          onRetry: () => ref.read(recentFilesProvider.notifier).reload(),
-          isEmpty: (files) => files.isEmpty,
-          emptyBuilder: (context) => _Quiet(l10n.dashboardRecentNone),
-          builder: (context, files) => ListView.builder(
-            itemCount: files.length,
-            itemBuilder: (context, index) {
-              final file = files[index];
+      title: l10n.homeFavorites,
+      child: AsyncStateView<List<Library>>(
+        value: ref.watch(librariesControllerProvider),
+        onRetry: () => ref.read(librariesControllerProvider.notifier).reload(),
+        builder: (context, libraries) {
+          final favorites = [
+            for (final library in libraries)
+              if (library.favorite) library,
+          ]..sort(byLibraryName);
 
-              return ListTile(
-                dense: true,
-                leading: const Icon(Icons.insert_drive_file_outlined),
-                title: Text(displayName(file)),
-                subtitle: Text(file.type.label(l10n)),
-                // Main flow step 4: opening an item here behaves exactly as
-                // opening it from its listing, which now means the file
-                // itself rather than a dialog about it (`openFile`).
-                onTap: () => openFile(context, ref, file),
-                // And the way to its details is where it is on a listing row:
-                // beside it. A file is reachable from here, so everything the
-                // details hold has to be too.
-                trailing: FileDetailsButton(file: file),
-              );
-            },
+          // Spec §6: with none, where the star is, not only that there is one.
+          if (favorites.isEmpty) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Quiet(l10n.homeFavoritesNone),
+                const SizedBox(height: AppSpacing.xs),
+                _Quiet(l10n.homeFavoritesHint),
+              ],
+            );
+          }
+
+          return Wrap(
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.md,
+            children: [
+              for (final library in favorites)
+                SizedBox(
+                  width: cardWidth,
+                  child: _LibraryCard(library: library),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _LibraryCard extends ConsumerWidget {
+  const _LibraryCard({required this.library});
+
+  final Library library;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () => ref
+                .read(shellControllerProvider.notifier)
+                .go(LibraryDestination(library.uuid)),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    library.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    library.rootPath,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          LibraryRunStatus(library: library),
+        ],
+      ),
+    );
+  }
+}
+
+/// The totals: how many libraries, and how many files of each type.
+class _StatisticsSection extends ConsumerWidget {
+  const _StatisticsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+
+    return _Section(
+      title: l10n.homeStatistics,
+      child: AsyncStateView<CatalogStats>(
+        value: ref.watch(catalogStatsProvider),
+        onRetry: () => ref.read(catalogStatsProvider.notifier).reload(),
+        builder: (context, stats) => ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.homeLibraryCount(stats.libraries),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              for (final type in FileType.values)
+                Padding(
+                  key: ValueKey('home-stat-${type.wireName}'),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(type.label(l10n))),
+                      Text('${stats.filesByType[type] ?? 0}'),
+                    ],
+                  ),
+                ),
+            ],
           ),
         ),
       ),
-    );
-  }
-}
-
-/// What the owner is part-way through (main flow step 2, FR-CT-11).
-///
-/// Watchlists and reading lists both answer it, merged into one section,
-/// because the owner is in the middle of *things* rather than in the middle of
-/// two features. AF-02 is the empty case: it is stated rather than rendered as
-/// an empty box.
-class _InProgressSection extends ConsumerWidget {
-  const _InProgressSection();
-
-  /// How many entries the dashboard shows.
-  ///
-  /// A glance rather than a listing, like the recent section above it: the
-  /// lists themselves are one click away.
-  static const int limit = 6;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-
-    return _Section(
-      title: l10n.dashboardInProgress,
-      child: AsyncStateView<List<InProgressItem>>(
-        value: ref.watch(inProgressProvider),
-        onRetry: () => ref.read(inProgressProvider.notifier).reload(),
-        isEmpty: (items) => items.isEmpty,
-        emptyBuilder: (context) => _Quiet(l10n.dashboardInProgressNone),
-        builder: (context, items) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final item in items.take(limit))
-              ListTile(
-                dense: true,
-                leading: Icon(
-                  item.unit == ProgressUnit.episodes
-                      ? Icons.movie_outlined
-                      : Icons.menu_book_outlined,
-                ),
-                title: Text(item.title),
-                subtitle: Text(_where(item, l10n)),
-                // Main flow step 4: opening an item here behaves exactly as
-                // opening it from its listing, because it is the same view.
-                onTap: () => FileDetailsView.show(context, ref, item.uuid),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Which list the item is in, and how far through it the owner is.
-  ///
-  /// The position is folded into the same line rather than given a column of
-  /// its own: a movie and a book have none, and a column that is empty for
-  /// half the rows reads as missing data.
-  String _where(InProgressItem item, AppLocalizations l10n) {
-    final position = item.position;
-    if (position == null) return l10n.dashboardInProgressIn(item.listName);
-
-    final total = item.total;
-    final progress = switch ((item.unit, total)) {
-      (ProgressUnit.episodes, null) => l10n.watchEpisode(position),
-      (ProgressUnit.episodes, final total?) => l10n.watchEpisodeOf(
-        position,
-        total,
-      ),
-      (ProgressUnit.issues, null) => l10n.readIssue(position),
-      (ProgressUnit.issues, final total?) => l10n.readIssueOf(position, total),
-    };
-
-    return l10n.dashboardInProgressInAt(item.listName, progress);
-  }
-}
-
-/// How much of each type the library holds (main flow step 2).
-class _CountsSection extends ConsumerWidget {
-  const _CountsSection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-
-    return _Section(
-      title: l10n.dashboardCounts,
-      child: AsyncStateView<Map<FileType, int>>(
-        value: ref.watch(typeCountsControllerProvider),
-        onRetry: () => ref.read(typeCountsControllerProvider.notifier).reload(),
-        builder: (context, counts) => Wrap(
-          spacing: AppSpacing.md,
-          runSpacing: AppSpacing.sm,
-          children: [
-            for (final type in FileType.values)
-              if (counts[type] case final count?)
-                Chip(
-                  label: Text('${type.label(l10n)}  $count'),
-                  labelStyle: theme.textTheme.bodySmall,
-                ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// What the most recent run did (main flow step 3).
-class _LastRunSection extends ConsumerWidget {
-  const _LastRunSection();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final runs = ref.watch(indexRunsControllerProvider);
-    final summary = mostRecentRun(runs);
-
-    return _Section(
-      title: l10n.dashboardLastRun,
-      // AF-04: a run in flight says so, and this rebuilds when it settles
-      // because the run state is what it reads.
-      child: _Quiet(summary.describe(l10n)),
     );
   }
 }
@@ -260,7 +221,7 @@ class _FirstRun extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
-              onPressed: () => openLibrariesAndAdd(ref),
+              onPressed: () => openLibrariesAndAdd(context, ref),
               icon: const Icon(Icons.folder_outlined),
               label: Text(l10n.libraryAdd),
             ),

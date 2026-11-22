@@ -335,8 +335,8 @@ class CoreIsolate {
 
       'healthStatus' => bindings.alexandria_health_status_code(),
 
-      // The auth mode and the caches are settled here, immediately before
-      // the one call that reads the core's settings.
+      // The caches are settled here, immediately before the one call that
+      // reads the core's settings.
       // Anywhere earlier would be a promise about ordering; anywhere later
       // would be too late for the process.
       'init' => withNativeString(arguments.first! as String, (path) {
@@ -353,32 +353,27 @@ class CoreIsolate {
 
       'countFiles' => bindings.alexandria_index_count_files(),
 
-      // The session token and an optional priority in, a status and a run id
-      // out. No library: a refresh covers every library at once rather than
-      // one (FR-LB-06). withNativeString already passes null through as
-      // nullptr (see its signature), which is what a null priority needs:
-      // the core reads an absent priority as "normal" here, as it does for
+      // An optional priority in, a status and a run id out. No library: a
+      // refresh covers every library at once rather than one (FR-LB-06).
+      // withNativeString already passes null through as nullptr (see its
+      // signature), which is what a null priority needs: the core reads an
+      // absent priority as "normal" here, as it does for
       // alexandria_library_index_start.
-      'indexRefreshStart' => withNativeString(arguments.first! as String, (
-        token,
+      'indexRefreshStart' => withNativeString(arguments.first as String?, (
+        priority,
       ) {
-        final result = withNativeString(
-          arguments[1] as String?,
-          (priority) =>
-              bindings.alexandria_index_refresh_start(token, priority),
-        );
+        final result = bindings.alexandria_index_refresh_start(priority);
         return (status: result.status, runId: _readRunId(result.run_id));
       }),
 
-      // A library's uuid, the session token and an optional priority in;
-      // the same struct a refresh answers out.
+      // A library's uuid and an optional priority in; the same struct a
+      // refresh answers out.
       'libraryIndexStart' => withNativeString(
         arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = withNativeString(
-            arguments[2] as String?,
-            (priority) =>
-                bindings.alexandria_library_index_start(uuid, token, priority),
+        (uuid) => withNativeString(arguments[1] as String?, (priority) {
+          final result = bindings.alexandria_library_index_start(
+            uuid,
+            priority,
           );
           return (status: result.status, runId: _readRunId(result.run_id));
         }),
@@ -391,142 +386,25 @@ class CoreIsolate {
         (json) => json,
       ),
 
-      // The one branch that both passes and receives a string. The body
-      // carries the owner's plaintext password, so it is freed by
-      // withNativeString on the way in — including if the call throws — and
-      // the result's JSON is freed by consume on the way out, on the failure
-      // path too (IR-09, NFR-13, FR-AU-11).
-      'authLocalLogin' => withNativeString(arguments.first! as String, (body) {
-        final result = bindings.alexandria_auth_local_login(body);
-        return (
-          status: result.status,
-          json: strings.consume(result.json, (json) => json),
-        );
-      }),
-
-      // Carries both plaintext entries in, so the same discipline as login
-      // applies: freed by withNativeString on the way in, and the result's
-      // JSON freed by consume on the way out (IR-09, NFR-13, FR-AU-11).
-      'authLocalAccount' => withNativeString(arguments.first! as String, (
-        token,
-      ) {
-        final result = bindings.alexandria_auth_local_account(token);
-        return (
-          status: result.status,
-          json: strings.consume(result.json, (json) => json),
-        );
-      }),
-
-      'authLocalRegenerateRecoveryCodes' => withNativeString(
-        arguments.first! as String,
-        (token) {
-          final result = bindings
-              .alexandria_auth_local_regenerate_recovery_codes(token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        },
-      ),
-
-      'authLocalRedeemRecoveryCode' => withNativeString(
-        arguments.first! as String,
-        (body) {
-          final result = bindings.alexandria_auth_local_redeem_recovery_code(
-            body,
-          );
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        },
-      ),
-
-      'authLocalRegister' => withNativeString(arguments.first! as String, (
-        body,
-      ) {
-        final result = bindings.alexandria_auth_local_register(body);
-        return (
-          status: result.status,
-          json: strings.consume(result.json, (json) => json),
-        );
-      }),
-
-      // Two strings in, one out. The nesting is what frees both on every
-      // path: the inner withNativeString's finally runs before the outer's,
-      // and neither depends on the call succeeding. One carries the new
-      // plaintext password and the other the session credential, so leaking
-      // either would be exactly what FR-AU-11 forbids (IR-09, NFR-13).
-      'authLocalSetCredentials' => withNativeString(
-        arguments.first! as String,
-        (body) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_auth_local_set_credentials(
-            body,
-            token,
-          );
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'indexRunFailures' => withNativeString(
-        arguments.first! as String,
-        (runId) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_index_run_failures_json(
-            runId,
-            token,
-          );
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'indexRunStatus' => withNativeString(
-        arguments.first! as String,
-        (runId) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_index_run_status_json(
-            runId,
-            token,
-          );
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
       // Just a status code out, so nothing to free on the way back — only the
-      // two strings passed in.
+      // string passed in.
       'indexPause' => withNativeString(
         arguments.first! as String,
-        (runId) => withNativeString(
-          arguments[1]! as String,
-          (token) => bindings.alexandria_index_pause(runId, token),
-        ),
+        bindings.alexandria_index_pause,
       ),
 
       'indexCancel' => withNativeString(
         arguments.first! as String,
-        (runId) => withNativeString(
-          arguments[1]! as String,
-          (token) => bindings.alexandria_index_cancel(runId, token),
-        ),
+        bindings.alexandria_index_cancel,
       ),
 
-      // The run id, the session token, and an optional priority in, the same
-      // shape libraryIndexStart answers with — the *same* run id, not a fresh one
-      // (FR-FC-33). The C function takes (run_id, token, priority) — not the
-      // Dart-level (runId, priority, token) order this operation's argument
-      // list uses — so the nesting reorders on the way in; getting this wrong
-      // would pass a token as a priority and a priority as a token.
+      // The run id and an optional priority in, the same shape
+      // libraryIndexStart answers with — the *same* run id, not a fresh one
+      // (FR-FC-33).
       //
       // priority goes through withNativeString for the same reason it does
-      // in libraryIndexStart, with a sharper stake here: null must reach the core
-      // as a null pointer because the core reads an absent priority as
+      // in libraryIndexStart, with a sharper stake here: null must reach the
+      // core as a null pointer because the core reads an absent priority as
       // *keep the run's current width* — deliberately not the same as
       // "normal". An empty string lands in that same branch today only
       // because the core treats any unrecognised value as absent, which is a
@@ -534,76 +412,62 @@ class CoreIsolate {
       // a plain resume silently re-pace a scan the owner had throttled.
       'indexResume' => withNativeString(
         arguments.first! as String,
-        (runId) => withNativeString(arguments[2]! as String, (token) {
-          final result = withNativeString(
-            arguments[1] as String?,
-            (priority) =>
-                bindings.alexandria_index_resume(runId, token, priority),
-          );
+        (runId) => withNativeString(arguments[1] as String?, (priority) {
+          final result = bindings.alexandria_index_resume(runId, priority);
           return (status: result.status, runId: _readRunId(result.run_id));
         }),
       ),
 
-      // The session token in, a JSON array out — freed by consume on the way
-      // back, on the failure path too (IR-09, NFR-13).
-      'indexRunsActive' => withNativeString(arguments.first! as String, (
-        token,
+      // Nothing in, a JSON array out — freed by consume on the way back, on the
+      // failure path too (IR-09, NFR-13).
+      'indexRunsActive' => switch (bindings
+          .alexandria_index_runs_active_json()) {
+        final result => (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        ),
+      },
+
+      'indexRunFailures' => withNativeString(arguments.first! as String, (
+        runId,
       ) {
-        final result = bindings.alexandria_index_runs_active_json(token);
+        final result = bindings.alexandria_index_run_failures_json(runId);
         return (
           status: result.status,
           json: strings.consume(result.json, (json) => json),
         );
       }),
 
-      // Filters and the session token in, a JSON array out — freed by consume
-      // on the way back, on the failure path too (IR-09, NFR-13).
-      'filesList' => withNativeString(
-        arguments.first! as String,
-        (filters) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_files_list(filters, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
+      'indexRunStatus' => withNativeString(arguments.first! as String, (runId) {
+        final result = bindings.alexandria_index_run_status_json(runId);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
-      'fileByUuid' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_get_by_uuid(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
+      // Filters in, a JSON array out — freed by consume on the way back, on the
+      // failure path too (IR-09, NFR-13).
+      'filesList' => withNativeString(arguments.first! as String, (filters) {
+        final result = bindings.alexandria_files_list(filters);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
-      // Three strings, so three nestings: each pointer stays alive for the
-      // whole call and is freed on the way out, in the order it was taken.
+      'fileByUuid' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_file_get_by_uuid(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
       'fileEditMetadata' => withNativeString(
         arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (patch) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_file_edit_metadata(
-              uuid,
-              patch,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'filePlaybackSource' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_playback_source(uuid, token);
+        (uuid) => withNativeString(arguments[1]! as String, (patch) {
+          final result = bindings.alexandria_file_edit_metadata(uuid, patch);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
@@ -611,79 +475,58 @@ class CoreIsolate {
         }),
       ),
 
-      'fileThumbnail' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_thumbnail(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
+      'filePlaybackSource' => withNativeString(arguments.first! as String, (
+        uuid,
+      ) {
+        final result = bindings.alexandria_file_playback_source(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
-      'comicPage' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[2]! as String, (token) {
-          final result = bindings.alexandria_comic_page(
-            uuid,
-            arguments[1]! as int,
-            token,
-          );
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
+      'fileThumbnail' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_file_thumbnail(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
-      'fileReadContent' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_read_content(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
+      'comicPage' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_comic_page(
+          uuid,
+          arguments[1]! as int,
+        );
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'fileReadContent' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_file_read_content(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
       'fileEditContent' => withNativeString(
         arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (body) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_file_edit_content(
-              uuid,
-              body,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
+        (uuid) => withNativeString(arguments[1]! as String, (body) {
+          final result = bindings.alexandria_file_edit_content(uuid, body);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
       ),
 
       'fileRename' => withNativeString(
         arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (name) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_file_rename(uuid, name, token);
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'filePurge' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_purge(uuid, token);
+        (uuid) => withNativeString(arguments[1]! as String, (name) {
+          final result = bindings.alexandria_file_rename(uuid, name);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
@@ -691,131 +534,78 @@ class CoreIsolate {
         }),
       ),
 
-      'filePurgeOnDisk' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_purge_on_disk(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'bookmarkPurge' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_bookmark_purge(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'fileRestore' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_restore(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'bookmarkRestore' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_bookmark_restore(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'fileSoftDelete' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_file_soft_delete(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'bookmarkSoftDelete' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_bookmark_soft_delete(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'collectionListItems' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_collection_list_items(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'collectionAddItems' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (second) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_collection_add_items(
-              uuid,
-              second,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'collectionRemoveItem' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (second) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_collection_remove_item(
-              uuid,
-              second,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'settings' => withNativeString(arguments.first! as String, (token) {
-        final result = bindings.alexandria_settings_json(token);
+      'filePurge' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_file_purge(uuid);
         return (
           status: result.status,
           json: strings.consume(result.json, (json) => json),
         );
       }),
 
-      'collectionsList' => withNativeString(
+      'filePurgeOnDisk' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_file_purge_on_disk(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'bookmarkPurge' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_bookmark_purge(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'fileRestore' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_file_restore(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'bookmarkRestore' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_bookmark_restore(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'fileSoftDelete' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_file_soft_delete(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'bookmarkSoftDelete' => withNativeString(arguments.first! as String, (
+        uuid,
+      ) {
+        final result = bindings.alexandria_bookmark_soft_delete(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'collectionListItems' => withNativeString(arguments.first! as String, (
+        uuid,
+      ) {
+        final result = bindings.alexandria_collection_list_items(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'collectionAddItems' => withNativeString(
         arguments.first! as String,
-        (first) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_collections_list(first, token);
+        (uuid) => withNativeString(arguments[1]! as String, (body) {
+          final result = bindings.alexandria_collection_add_items(uuid, body);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
@@ -823,39 +613,48 @@ class CoreIsolate {
         }),
       ),
 
-      'collectionCreate' => withNativeString(
+      'collectionRemoveItem' => withNativeString(
         arguments.first! as String,
-        (first) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_collection_create(first, token);
+        (uuid) => withNativeString(arguments[1]! as String, (item) {
+          final result = bindings.alexandria_collection_remove_item(uuid, item);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
           );
         }),
       ),
+
+      'settings' => switch (bindings.alexandria_settings_json()) {
+        final result => (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        ),
+      },
+
+      'collectionsList' => withNativeString(arguments.first! as String, (
+        filters,
+      ) {
+        final result = bindings.alexandria_collections_list(filters);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'collectionCreate' => withNativeString(arguments.first! as String, (
+        body,
+      ) {
+        final result = bindings.alexandria_collection_create(body);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
       'collectionRename' => withNativeString(
         arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (body) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_collection_rename(
-              uuid,
-              body,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'collectionDelete' => withNativeString(
-        arguments.first! as String,
-        (first) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_collection_delete(first, token);
+        (uuid) => withNativeString(arguments[1]! as String, (body) {
+          final result = bindings.alexandria_collection_rename(uuid, body);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
@@ -863,39 +662,28 @@ class CoreIsolate {
         }),
       ),
 
-      'bookmarkCreate' => withNativeString(
-        arguments.first! as String,
-        (body) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_bookmark_create(body, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
+      'collectionDelete' => withNativeString(arguments.first! as String, (
+        uuid,
+      ) {
+        final result = bindings.alexandria_collection_delete(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'bookmarkCreate' => withNativeString(arguments.first! as String, (body) {
+        final result = bindings.alexandria_bookmark_create(body);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
       'bookmarkUpdate' => withNativeString(
         arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (body) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_bookmark_update(
-              uuid,
-              body,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'bookmarksList' => withNativeString(
-        arguments.first! as String,
-        (filters) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_bookmarks_list(filters, token);
+        (uuid) => withNativeString(arguments[1]! as String, (body) {
+          final result = bindings.alexandria_bookmark_update(uuid, body);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
@@ -903,128 +691,72 @@ class CoreIsolate {
         }),
       ),
 
-      'readingListCreate' => withNativeString(
-        arguments.first! as String,
-        (body) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_reading_list_create(body, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
+      'bookmarksList' => withNativeString(arguments.first! as String, (
+        filters,
+      ) {
+        final result = bindings.alexandria_bookmarks_list(filters);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
-      'readingListDelete' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_reading_list_delete(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
+      'readingListCreate' => withNativeString(arguments.first! as String, (
+        body,
+      ) {
+        final result = bindings.alexandria_reading_list_create(body);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'readingListDelete' => withNativeString(arguments.first! as String, (
+        uuid,
+      ) {
+        final result = bindings.alexandria_reading_list_delete(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
       'readingListAddItem' => withNativeString(
         arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (body) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_reading_list_add_item(
-              uuid,
-              body,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
+        (uuid) => withNativeString(arguments[1]! as String, (body) {
+          final result = bindings.alexandria_reading_list_add_item(uuid, body);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
       ),
 
       'readingListRemoveItem' => withNativeString(
         arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (item) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_reading_list_remove_item(
-              uuid,
-              item,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
+        (uuid) => withNativeString(arguments[1]! as String, (item) {
+          final result = bindings.alexandria_reading_list_remove_item(
+            uuid,
+            item,
+          );
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
       ),
 
+      // Three strings, so three nestings: each pointer stays alive for the whole
+      // call and is freed on the way out, in the order it was taken.
       'readingListUpdateProgress' => withNativeString(
         arguments.first! as String,
         (uuid) => withNativeString(
           arguments[1]! as String,
-          (item) => withNativeString(
-            arguments[2]! as String,
-            (body) => withNativeString(arguments[3]! as String, (token) {
-              final result = bindings.alexandria_reading_list_update_progress(
-                uuid,
-                item,
-                body,
-                token,
-              );
-              return (
-                status: result.status,
-                json: strings.consume(result.json, (json) => json),
-              );
-            }),
-          ),
-        ),
-      ),
-
-      'readingListsList' => withNativeString(
-        arguments.first! as String,
-        (filters) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_reading_lists_list(filters, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'watchlistCreate' => withNativeString(
-        arguments.first! as String,
-        (body) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_watchlist_create(body, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'watchlistDelete' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_watchlist_delete(uuid, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'watchlistAddVideo' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (body) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_watchlist_add_video(
+          (item) => withNativeString(arguments[2]! as String, (body) {
+            final result = bindings.alexandria_reading_list_update_progress(
               uuid,
+              item,
               body,
-              token,
             );
             return (
               status: result.status,
@@ -1032,131 +764,173 @@ class CoreIsolate {
             );
           }),
         ),
+      ),
+
+      'readingListsList' => withNativeString(arguments.first! as String, (
+        filters,
+      ) {
+        final result = bindings.alexandria_reading_lists_list(filters);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'watchlistCreate' => withNativeString(arguments.first! as String, (body) {
+        final result = bindings.alexandria_watchlist_create(body);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'watchlistDelete' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_watchlist_delete(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'watchlistAddVideo' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (body) {
+          final result = bindings.alexandria_watchlist_add_video(uuid, body);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
       ),
 
       'watchlistRemoveVideo' => withNativeString(
         arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (video) {
+          final result = bindings.alexandria_watchlist_remove_video(
+            uuid,
+            video,
+          );
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'watchlistUpdateProgress' => withNativeString(
+        arguments.first! as String,
         (uuid) => withNativeString(
           arguments[1]! as String,
-          (video) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_watchlist_remove_video(
+          (video) => withNativeString(arguments[2]! as String, (body) {
+            final result = bindings.alexandria_watchlist_update_progress(
               uuid,
               video,
-              token,
+              body,
             );
             return (
               status: result.status,
               json: strings.consume(result.json, (json) => json),
             );
           }),
-        ),
-      ),
-
-      // Four strings, so four nestings: each pointer stays alive for the whole
-      // call and is freed on the way out, in the order it was taken.
-      'watchlistUpdateProgress' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (video) => withNativeString(
-            arguments[2]! as String,
-            (body) => withNativeString(arguments[3]! as String, (token) {
-              final result = bindings.alexandria_watchlist_update_progress(
-                uuid,
-                video,
-                body,
-                token,
-              );
-              return (
-                status: result.status,
-                json: strings.consume(result.json, (json) => json),
-              );
-            }),
-          ),
         ),
       ),
 
       // UC-16 AF-03 reads this to find out whether a video's progress is
       // counted per episode; UC-29 and UC-30 are what browse it.
-      'watchlistsList' => withNativeString(
-        arguments.first! as String,
-        (filters) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_watchlists_list(filters, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      // The library calls. `libraryBrowse` takes three consecutive strings,
-      // which is the mapping a transposition breaks silently — the uuid
-      // would be read as a folder path and answer nothing.
-      'libraryRegister' => withNativeString(
-        arguments.first! as String,
-        (jsonBody) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_library_register(jsonBody, token);
-          return (
-            status: result.status,
-            json: strings.consume(result.json, (json) => json),
-          );
-        }),
-      ),
-
-      'librariesList' => withNativeString(arguments.first! as String, (token) {
-        final result = bindings.alexandria_libraries_list(token);
+      'watchlistsList' => withNativeString(arguments.first! as String, (
+        filters,
+      ) {
+        final result = bindings.alexandria_watchlists_list(filters);
         return (
           status: result.status,
           json: strings.consume(result.json, (json) => json),
         );
       }),
 
+      // The library calls. `libraryBrowse` and `libraryMove` take two
+      // consecutive strings, which is the mapping a transposition breaks
+      // silently — the uuid would be read as a folder path and answer nothing.
+      'libraryRegister' => withNativeString(arguments.first! as String, (
+        jsonBody,
+      ) {
+        final result = bindings.alexandria_library_register(jsonBody);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
+
+      'librariesList' => switch (bindings.alexandria_libraries_list()) {
+        final result => (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        ),
+      },
+
+      // The whole catalog's totals (library navigation design §6). Library
+      // family codes.
+      'catalogStats' => switch (bindings.alexandria_catalog_stats_json()) {
+        final result => (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        ),
+      },
+
       'libraryBrowse' => withNativeString(
         arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (path) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_library_browse(
-              uuid,
-              path,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'libraryMove' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(
-          arguments[1]! as String,
-          (jsonBody) => withNativeString(arguments[2]! as String, (token) {
-            final result = bindings.alexandria_library_move(
-              uuid,
-              jsonBody,
-              token,
-            );
-            return (
-              status: result.status,
-              json: strings.consume(result.json, (json) => json),
-            );
-          }),
-        ),
-      ),
-
-      'libraryRemove' => withNativeString(
-        arguments.first! as String,
-        (uuid) => withNativeString(arguments[1]! as String, (token) {
-          final result = bindings.alexandria_library_remove(uuid, token);
+        (uuid) => withNativeString(arguments[1]! as String, (path) {
+          final result = bindings.alexandria_library_browse(uuid, path);
           return (
             status: result.status,
             json: strings.consume(result.json, (json) => json),
           );
         }),
       ),
+
+      'libraryMove' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (jsonBody) {
+          final result = bindings.alexandria_library_move(uuid, jsonBody);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      'libraryRename' => withNativeString(
+        arguments.first! as String,
+        (uuid) => withNativeString(arguments[1]! as String, (jsonBody) {
+          final result = bindings.alexandria_library_rename(uuid, jsonBody);
+          return (
+            status: result.status,
+            json: strings.consume(result.json, (json) => json),
+          );
+        }),
+      ),
+
+      // A library's uuid and a flag in, just a status code out.
+      'librarySetPinned' => withNativeString(
+        arguments.first! as String,
+        (uuid) =>
+            bindings.alexandria_library_set_pinned(uuid, arguments[1]! as bool),
+      ),
+
+      'librarySetFavorite' => withNativeString(
+        arguments.first! as String,
+        (uuid) => bindings.alexandria_library_set_favorite(
+          uuid,
+          arguments[1]! as bool,
+        ),
+      ),
+
+      'libraryRemove' => withNativeString(arguments.first! as String, (uuid) {
+        final result = bindings.alexandria_library_remove(uuid);
+        return (
+          status: result.status,
+          json: strings.consume(result.json, (json) => json),
+        );
+      }),
 
       _ => throw CoreCallException('unknown core operation "$operation"'),
     };

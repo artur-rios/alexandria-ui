@@ -14,8 +14,5 @@ abstract interface class WatchProgressGateway {
   /// justify is worse than none, and the core is the authority on what it
   /// holds. The edit itself is not blocked by this — it is what decides
   /// whether a confirmation stands between the owner and the call.
-  Future<bool> episodesRecordedFor({
-    required String uuid,
-    required String credential,
-  });
+  Future<bool> episodesRecordedFor({required String uuid});
 }

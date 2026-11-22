@@ -72,7 +72,7 @@ void main() {
 
   group('what the store must never hold (IR-12)', () {
     // The interface itself is the enforcement: it exposes no method that takes
-    // a credential or a catalog record, so storing one would mean changing
+    // a secret or a catalog record, so storing one would mean changing
     // SettingsStore — a change a reviewer sees. These tests cover the part a
     // reviewer cannot see, which is what actually ends up in the store.
     test('GivenAFreshStore_WhenItIsInspected_ThenNothingIsStored', () {
@@ -80,7 +80,7 @@ void main() {
     });
 
     test(
-      'GivenOwnerPreferences_WhenTheyAreStored_ThenNoCredentialIsAmongThem',
+      'GivenOwnerPreferences_WhenTheyAreStored_ThenNoSecretIsAmongThem',
       () async {
         final store = InMemorySettingsStore();
 
@@ -88,8 +88,7 @@ void main() {
         await store.setLocale(const Locale('en'));
         await store.setString('catalog.layout', 'grid');
 
-        // The salted hash lives in the core and the session credential lives in
-        // process memory for the run only; neither has a home here.
+        // Preferences are all this store holds; a secret has no home here.
         expect(
           store.entries.keys,
           everyElement(

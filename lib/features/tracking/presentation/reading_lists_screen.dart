@@ -16,9 +16,8 @@ import '../domain/reading_list.dart';
 
 /// The reading-lists screen (UC-31, FR-TR-08 … FR-TR-11).
 ///
-/// Reached from the books and comics areas, as watchlists are from videos: a
-/// reading list is not a file type, so it is not a destination of its own
-/// (FR-CT-01).
+/// Reached from the menu bar's Library menu, as watchlists are: a reading list
+/// is not a library, so it is not an entry of the left menu (FR-CT-20).
 class ReadingListsScreen extends ConsumerWidget {
   /// Creates the screen.
   const ReadingListsScreen({super.key});

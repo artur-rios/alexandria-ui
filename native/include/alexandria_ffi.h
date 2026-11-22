@@ -5,12 +5,14 @@
 
 /**
  * FFI status codes returned by index operations.
+ *
+ * Code 2 is missing here and in every family below: it was
+ * `*_ERR_UNAUTHORIZED`, retired with authentication, and is never reused,
+ * so a caller built against an older core cannot read a new failure as it.
  */
 #define INDEX_OK 0
 
 #define INDEX_ERR_INVALID_INPUT 1
-
-#define INDEX_ERR_UNAUTHORIZED 2
 
 #define INDEX_ERR_NOT_INITIALIZED 3
 
@@ -29,12 +31,12 @@
 #define INDEX_ERR_BUSY 5
 
 /**
- * `alexandria_library_index_start` named no library (HTTP's `404`).
+ * `alexandria_library_index_start` named no library.
  */
 #define INDEX_ERR_NOT_FOUND 6
 
 /**
- * The library already has an unfinished run (FR-FC-43; HTTP's `409`).
+ * The library already has an unfinished run (FR-FC-43).
  */
 #define INDEX_ERR_CONFLICT 7
 
@@ -46,8 +48,6 @@
 #define FILE_OK 0
 
 #define FILE_ERR_INVALID_INPUT 1
-
-#define FILE_ERR_UNAUTHORIZED 2
 
 #define FILE_ERR_NOT_INITIALIZED 3
 
@@ -72,8 +72,6 @@
 
 #define COLLECTION_ERR_INVALID_INPUT 1
 
-#define COLLECTION_ERR_UNAUTHORIZED 2
-
 #define COLLECTION_ERR_NOT_INITIALIZED 3
 
 #define COLLECTION_ERR_NOT_FOUND 4
@@ -91,8 +89,6 @@
 #define PLAYBACK_OK 0
 
 #define PLAYBACK_ERR_INVALID_INPUT 1
-
-#define PLAYBACK_ERR_UNAUTHORIZED 2
 
 #define PLAYBACK_ERR_NOT_INITIALIZED 3
 
@@ -115,8 +111,6 @@
 
 #define BOOKMARK_ERR_INVALID_INPUT 1
 
-#define BOOKMARK_ERR_UNAUTHORIZED 2
-
 #define BOOKMARK_ERR_NOT_INITIALIZED 3
 
 #define BOOKMARK_ERR_NOT_FOUND 4
@@ -134,8 +128,6 @@
 #define WATCHLIST_OK 0
 
 #define WATCHLIST_ERR_INVALID_INPUT 1
-
-#define WATCHLIST_ERR_UNAUTHORIZED 2
 
 #define WATCHLIST_ERR_NOT_INITIALIZED 3
 
@@ -155,8 +147,6 @@
 
 #define READING_LIST_ERR_INVALID_INPUT 1
 
-#define READING_LIST_ERR_UNAUTHORIZED 2
-
 #define READING_LIST_ERR_NOT_INITIALIZED 3
 
 #define READING_LIST_ERR_NOT_FOUND 4
@@ -166,46 +156,6 @@
 #define READING_LIST_ERR_OTHER 9
 
 /**
- * FFI status codes returned by local-auth operations (UC-34/UC-35).
- * Deliberately separate from the other `*_OK == 0` families — per the
- * convention above — so local-auth use cases can grow their own set
- * without colliding.
- */
-#define AUTH_OK 0
-
-#define AUTH_ERR_INVALID_INPUT 1
-
-#define AUTH_ERR_UNAUTHORIZED 2
-
-#define AUTH_ERR_NOT_INITIALIZED 3
-
-#define AUTH_ERR_INVALID_STATE 5
-
-#define AUTH_ERR_CONFIG 8
-
-#define AUTH_ERR_OTHER 9
-
-/**
- * UC-41 AF-01/AF-02: the request conflicts with existing state — the
- * active auth mode is not local, or an account already exists. The FFI
- * counterpart of HTTP's `409`.
- */
-#define AUTH_ERR_CONFLICT 10
-
-/**
- * Refused because it came too soon after some earlier request — a rate
- * limit. The FFI counterpart of HTTP's `429`. Its own code because it is a
- * "not yet", not a mistake the caller made.
- */
-#define AUTH_ERR_RATE_LIMITED 11
-
-/**
- * A dependency the operation needs is unavailable. The FFI counterpart of
- * HTTP's `503`; the body's `code` says which.
- */
-#define AUTH_ERR_SERVICE_UNAVAILABLE 12
-
-/**
  * FFI status codes returned by the settings read (UC-47 / FR-FC-30).
  * Deliberately separate from every other family — per the convention above —
  * so this surface can grow independently; `SETTINGS_OK == INDEX_OK == 0` by
@@ -213,23 +163,19 @@
  */
 #define SETTINGS_OK 0
 
-#define SETTINGS_ERR_UNAUTHORIZED 2
-
 #define SETTINGS_ERR_NOT_INITIALIZED 3
 
 #define SETTINGS_ERR_OTHER 9
 
 /**
  * FFI status codes returned by run-status operations (UC-42, UC-48 / FR-FC-28, FR-FC-32 … FR-FC-35).
- * Deliberately separate from `INDEX_*`, `FILE_*`, `COLLECTION_*`, `PLAYBACK_*`,
- * and `AUTH_*` — per the convention established above — so this surface can
+ * Deliberately separate from `INDEX_*`, `FILE_*`, `COLLECTION_*`, and
+ * `PLAYBACK_*` — per the convention established above — so this surface can
  * grow independently; `RUN_OK == INDEX_OK == 0` by convention.
  */
 #define RUN_OK 0
 
 #define RUN_ERR_INVALID_INPUT 1
-
-#define RUN_ERR_UNAUTHORIZED 2
 
 #define RUN_ERR_NOT_INITIALIZED 3
 
@@ -255,8 +201,6 @@
 #define LIBRARY_OK 0
 
 #define LIBRARY_ERR_INVALID_INPUT 1
-
-#define LIBRARY_ERR_UNAUTHORIZED 2
 
 #define LIBRARY_ERR_NOT_INITIALIZED 3
 
@@ -295,10 +239,8 @@ typedef struct IndexStartResult {
 /**
  * Result of `alexandria_file_edit_metadata` (UC-04). On success `status` is
  * `FILE_OK` and `json` is a NUL-terminated JSON string of the `FileMetadata`
- * body — byte-for-byte the same shape HTTP returns from
- * `PATCH /v1/files/{uuid}/metadata` (FR-FC-24 / NFR-09). On failure `json`
- * is NULL and `status` carries the mapped error code. The caller must free
- * `json` with `alexandria_free_string`.
+ * body. On failure `json` is NULL and `status` carries the mapped error code.
+ * The caller must free `json` with `alexandria_free_string`.
  */
 typedef struct FileMetadataResult {
   int status;
@@ -306,14 +248,12 @@ typedef struct FileMetadataResult {
 } FileMetadataResult;
 
 /**
- * Result of `alexandria_files_list` and `alexandria_file_get_by_uuid` (UC-03).
- * On success `status` is `FILE_OK` and `json` is a NUL-terminated JSON string
- * — byte-for-byte the same shape HTTP returns from `GET /v1/files` (a JSON
- * array of `FileView` objects, issue #116) or `GET /v1/files/{uuid}` (a
- * single `FileView` object), so the FFI and HTTP surfaces agree modulo key
- * ordering (parity, FR-FC-24 / NFR-09). On failure `json` is NULL and
- * `status` carries the mapped error code. The caller must free `json` with
- * `alexandria_free_string`.
+ * Result of `alexandria_files_list` and `alexandria_file_get_by_uuid`
+ * (UC-03). On success `status` is `FILE_OK` and `json` is a NUL-terminated
+ * JSON string: an array of `FileView` objects for the listing (issue #116),
+ * or a single `FileView` object for the lookup. On failure `json` is NULL
+ * and `status` carries the mapped error code. The caller must free `json`
+ * with `alexandria_free_string`.
  */
 typedef struct FileJsonResult {
   int status;
@@ -333,9 +273,8 @@ typedef struct PlaybackJsonResult {
 /**
  * Result of `alexandria_collection_create` (UC-10). On success `status` is
  * `COLLECTION_OK` and `json` is a NUL-terminated JSON string of the
- * `Collection` body — byte-for-byte the same shape HTTP returns from
- * `POST /v1/collections` (FR-FC-24 / NFR-09). On failure `json` is NULL and
- * `status` carries the mapped error code. The caller must free `json` with
+ * `Collection` body. On failure `json` is NULL and `status` carries the
+ * mapped error code. The caller must free `json` with
  * `alexandria_free_string`.
  */
 typedef struct CollectionJsonResult {
@@ -346,10 +285,8 @@ typedef struct CollectionJsonResult {
 /**
  * Result of `alexandria_bookmark_create` (UC-15). On success `status` is
  * `BOOKMARK_OK` and `json` is a NUL-terminated JSON string of the `Bookmark`
- * body — byte-for-byte the same shape HTTP returns from `POST
- * /v1/bookmarks` (FR-FC-24 / NFR-09). On failure `json` is NULL and `status`
- * carries the mapped error code. The caller must free `json` with
- * `alexandria_free_string`.
+ * body. On failure `json` is NULL and `status` carries the mapped error code.
+ * The caller must free `json` with `alexandria_free_string`.
  */
 typedef struct BookmarkJsonResult {
   int status;
@@ -359,10 +296,8 @@ typedef struct BookmarkJsonResult {
 /**
  * Result of `alexandria_watchlist_create` (UC-20). On success `status` is
  * `WATCHLIST_OK` and `json` is a NUL-terminated JSON string of the
- * `Watchlist` body — byte-for-byte the same shape HTTP returns from `POST
- * /v1/watchlists` (FR-FC-24 / NFR-09). On failure `json` is NULL and
- * `status` carries the mapped error code. The caller must free `json` with
- * `alexandria_free_string`.
+ * `Watchlist` body. On failure `json` is NULL and `status` carries the mapped
+ * error code. The caller must free `json` with `alexandria_free_string`.
  */
 typedef struct WatchlistJsonResult {
   int status;
@@ -370,12 +305,11 @@ typedef struct WatchlistJsonResult {
 } WatchlistJsonResult;
 
 /**
- * Result of `alexandria_reading_list_create` (UC-26). On success `status`
- * is `READING_LIST_OK` and `json` is a NUL-terminated JSON string of the
- * `ReadingList` body — byte-for-byte the same shape HTTP returns from
- * `POST /v1/reading-lists` (FR-FC-24 / NFR-09). On failure `json` is NULL
- * and `status` carries the mapped error code. The caller must free `json`
- * with `alexandria_free_string`.
+ * Result of `alexandria_reading_list_create` (UC-26). On success `status` is
+ * `READING_LIST_OK` and `json` is a NUL-terminated JSON string of the
+ * `ReadingList` body. On failure `json` is NULL and `status` carries the
+ * mapped error code. The caller must free `json` with
+ * `alexandria_free_string`.
  */
 typedef struct ReadingListJsonResult {
   int status;
@@ -383,36 +317,10 @@ typedef struct ReadingListJsonResult {
 } ReadingListJsonResult;
 
 /**
- * Result of `alexandria_auth_local_login` / `alexandria_auth_local_set_credentials`
- * (UC-34/UC-35). On success `status` is `AUTH_OK` and `json` is a
- * NUL-terminated JSON string of the `LocalLoginResult` /
- * `LocalCredentialsResult` body — byte-for-byte the same shape HTTP
- * returns from the matching `/v1/auth/local/*` endpoint (FR-FC-24 /
- * NFR-09).
- *
- * On failure `status` carries the mapped error code and `json` carries the
- * same error envelope HTTP returns for that failure (issue #101):
- * `{"error": …}`, plus `"code"` and `"params"` when the rejection has a
- * stable reason. `status` is the coarse class; `code` is the reason — six
- * distinct password-policy rejections all arrive as
- * `AUTH_ERR_INVALID_INPUT`, and only `code` tells them apart.
- *
- * `json` is NULL only when the library was never initialized, so there was
- * no service to answer at all. The caller must free `json` with
- * `alexandria_free_string` on every path; freeing NULL is a no-op.
- */
-typedef struct AuthJsonResult {
-  int status;
-  char *json;
-} AuthJsonResult;
-
-/**
  * Result of `alexandria_settings_json` (UC-47). On success `status` is
  * `SETTINGS_OK` and `json` is a NUL-terminated JSON string of the settings
- * body — byte-for-byte the same shape HTTP returns from `GET /v1/settings`
- * (FR-FC-24 / NFR-09). On failure `json` is NULL and `status` carries the
- * mapped error code. The caller must free `json` with
- * `alexandria_free_string`.
+ * body. On failure `json` is NULL and `status` carries the mapped error code.
+ * The caller must free `json` with `alexandria_free_string`.
  */
 typedef struct SettingsJsonResult {
   int status;
@@ -422,10 +330,8 @@ typedef struct SettingsJsonResult {
 /**
  * Result of `alexandria_index_run_status_json` (UC-42). On success `status`
  * is `RUN_OK` and `json` is a NUL-terminated JSON string of the `CatalogRun`
- * body — byte-for-byte the same shape HTTP returns from
- * `GET /v1/index/runs/{runId}` (FR-FC-24 / NFR-09). On failure `json` is
- * NULL and `status` carries the mapped error code. The caller must free
- * `json` with `alexandria_free_string`.
+ * body. On failure `json` is NULL and `status` carries the mapped error code.
+ * The caller must free `json` with `alexandria_free_string`.
  */
 typedef struct RunJsonResult {
   int status;
@@ -434,9 +340,8 @@ typedef struct RunJsonResult {
 
 /**
  * Result of every library FFI function. On success `status` is `LIBRARY_OK`
- * and `json` is a NUL-terminated JSON string of the same body HTTP returns
- * from the matching `/v1/libraries*` route (FR-FC-24 / NFR-09). The caller
- * must free `json` with `alexandria_free_string`.
+ * and `json` is a NUL-terminated JSON string of the library body the call
+ * answers. The caller must free `json` with `alexandria_free_string`.
  */
 typedef struct LibraryJsonResult {
   int status;
@@ -471,28 +376,25 @@ int32_t alexandria_health_status_code(void);
  * succeeds. Pointing at a *different* database is subject to the same rule,
  * for the same reason.
  *
- * Configuration is loaded the same way `alexandria-http` loads it — from the
- * path in `ALEXANDRIA_CONFIG` (default `config.toml`), with `ALEXANDRIA_*`
- * environment overrides applied — so a setting such as the auth mode or the
- * retention window means the same thing on both surfaces (FR-FC-24 / NFR-09).
- * A missing or unreadable config file falls back to defaults rather than
- * failing, matching the HTTP binary. `db_path` wins over the config's
- * `database.path`: the embedder passed it explicitly.
+ * Configuration is loaded from the path in `ALEXANDRIA_CONFIG` (default
+ * `config.toml`), with `ALEXANDRIA_*` environment overrides applied. A
+ * missing or unreadable config file falls back to defaults rather than
+ * failing. `db_path` wins over the config's `database.path`: the embedder
+ * passed it explicitly.
  */
 int alexandria_index_init(const char *db_path);
 
 /**
  * Start an asynchronous re-index/refresh of every cataloged path (UC-02).
- * Takes only a token (no root — refresh touches everything cataloged) and
- * returns a `IndexStartResult` with a `run_id` and `status` (parity with the
- * HTTP `POST /v1/index/refresh` 202 body). The refresh runs in the background
- * on the FFI runtime; read results via the accessor functions.
+ * Takes no root — refresh touches everything cataloged — and returns a
+ * `IndexStartResult` with a `run_id` and `status`. The refresh runs in the
+ * background on the FFI runtime; read results via the accessor functions.
  *
  * `priority` is parsed exactly as `alexandria_library_index_start`'s is — see that
  * function's doc comment for the accepted spellings and the NULL/garbage
  * fallback.
  */
-struct IndexStartResult alexandria_index_refresh_start(const char *token, const char *priority);
+struct IndexStartResult alexandria_index_refresh_start(const char *priority);
 
 /**
  * Count of indexed files. For tests waiting for the background scan.
@@ -502,69 +404,55 @@ int64_t alexandria_index_count_files(void);
 /**
  * Edit a file's type-specific metadata (UC-04 / FR-FC-15..18).
  *
- * `uuid` is the file's public UUID string; `json_patch` is the JSON body
- * (the `SubtypeMetadata` enum, internally tagged by `type`) that HTTP would
- * send. The function deserializes it, calls the same `EditMetadataHandler`
- * the HTTP route uses, and on success serializes the returned `FileMetadata`
- * back to JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo key
- * ordering (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `uuid` is the file's public UUID string; `json_patch` is the JSON body (the
+ * `SubtypeMetadata` enum, internally tagged by `type`). The function
+ * deserializes it, calls `EditMetadataHandler`, and on success serializes the
+ * returned `FileMetadata` back to JSON.
  */
-struct FileMetadataResult alexandria_file_edit_metadata(const char *uuid,
-                                                        const char *json_patch,
-                                                        const char *token);
+struct FileMetadataResult alexandria_file_edit_metadata(const char *uuid, const char *json_patch);
 
 /**
  * List/query files filtered by type and lifecycle state (UC-03 / FR-FC-12).
  *
  * `json_filters` is a JSON string `{"type":"video","state":"all"}` (empty
  * string or NULL for defaults), answered across every library unless
- * `"libraryUuid"` names one. The
- * function deserializes it, calls the same
- * `BrowseFilesHandler` the HTTP route uses, and on success serializes the
- * returned `Vec<FileView>` back to a JSON array — each element the same
+ * `"libraryUuid"` names one. The function deserializes it, calls
+ * `BrowseFilesHandler`, and on success serializes the returned
+ * `Vec<FileView>` back to a JSON array — each element the same
  * `{"file": …, "metadata": …, …}` shape `alexandria_file_get_by_uuid`
- * answers for one file (issue #116) — so the FFI and HTTP surfaces agree
- * byte-for-byte modulo key ordering (parity, FR-FC-24 / NFR-09). `token` is
- * the bearer auth token.
+ * answers for one file (issue #116).
  */
-struct FileJsonResult alexandria_files_list(const char *json_filters, const char *token);
+struct FileJsonResult alexandria_files_list(const char *json_filters);
 
 /**
  * Get a single file's metadata by its public UUID (UC-03 / FR-FC-13).
  *
- * `uuid` is the file's public UUID string. The function calls the same
- * `BrowseFilesHandler::get_by_uuid` the HTTP route uses, and on success
- * serializes the returned `FileView` back to JSON — the same shape HTTP
- * returns from `GET /v1/files/{uuid}` (parity, FR-FC-24 / NFR-09). `token`
- * is the bearer auth token.
+ * `uuid` is the file's public UUID string. The function calls
+ * `BrowseFilesHandler::get_by_uuid`, and on success serializes the returned
+ * `FileView` back to JSON.
  */
-struct FileJsonResult alexandria_file_get_by_uuid(const char *uuid, const char *token);
+struct FileJsonResult alexandria_file_get_by_uuid(const char *uuid);
 
 /**
  * Read a TextFile's content from disk (UC-32 / FR-TX-01).
  *
- * `uuid` is the file's public UUID (NUL-terminated string). On success
- * `json` carries the `FileContent` — byte-for-byte the same shape HTTP
- * returns from `GET /v1/files/{uuid}/content` (parity, FR-FC-24 / NFR-09).
- * `token` is the bearer auth token.
+ * `uuid` is the file's public UUID (NUL-terminated string). On success `json`
+ * carries the `FileContent`.
  */
-struct FileJsonResult alexandria_file_read_content(const char *uuid, const char *token);
+struct FileJsonResult alexandria_file_read_content(const char *uuid);
 
 /**
  * Resolve a File to everything a local player needs to open it
  * (UC-38 / FR-MP-01, FR-MP-06).
  *
- * The FFI surface cannot carry a byte stream, so where HTTP streams
- * `GET /v1/files/{uuid}/stream`, this returns
- * `{"uuid":…,"path":…,"mimeType":…,"sizeBytes":…}` and the caller — Flutter
- * desktop, on the same machine as the file — opens that path directly.
- * Zero bytes cross this boundary. Parity with HTTP is defined on this
- * descriptor and on the authorization, state, and error decisions rather
- * than on byte transfer (FR-MP-06). A file whose path resolves outside the
- * configured `filesystem.root` gets `PLAYBACK_ERR_INVALID_INPUT` and no
- * descriptor (FR-FC-26), as HTTP's `400`.
+ * The FFI surface cannot carry a byte stream, so rather than stream the
+ * file, this returns `{"uuid":…,"path":…,"mimeType":…,"sizeBytes":…}` and
+ * the caller — Flutter desktop, on the same machine as the file — opens that
+ * path directly. Zero bytes cross this boundary (FR-MP-06). A file whose
+ * path resolves outside the configured `filesystem.root` gets
+ * `PLAYBACK_ERR_INVALID_INPUT` and no descriptor (FR-FC-26).
  */
-struct PlaybackJsonResult alexandria_file_playback_source(const char *uuid, const char *token);
+struct PlaybackJsonResult alexandria_file_playback_source(const char *uuid);
 
 /**
  * One page of a CBZ ComicBook (UC-39 / FR-MP-04).
@@ -573,9 +461,9 @@ struct PlaybackJsonResult alexandria_file_playback_source(const char *uuid, cons
  * Unlike UC-38, the bytes *do* cross the boundary: a comic page has no path
  * of its own — it lives inside an archive — and it is bounded, so
  * base64 inside the existing JSON payload keeps the FFI shape intact while
- * staying byte-exact with HTTP.
+ * staying byte-exact with the page in the archive.
  */
-struct PlaybackJsonResult alexandria_comic_page(const char *uuid, uint32_t page, const char *token);
+struct PlaybackJsonResult alexandria_comic_page(const char *uuid, uint32_t page);
 
 /**
  * A downscaled thumbnail for a video, image, or comic
@@ -583,211 +471,165 @@ struct PlaybackJsonResult alexandria_comic_page(const char *uuid, uint32_t page,
  * `{"uuid":…,"mimeType":"image/jpeg","bytesBase64":…}`. Bounded derived
  * bytes, so the same base64 rule as `alexandria_comic_page` applies.
  */
-struct PlaybackJsonResult alexandria_file_thumbnail(const char *uuid, const char *token);
+struct PlaybackJsonResult alexandria_file_thumbnail(const char *uuid);
 
 /**
  * Write edited content back to a TextFile on disk (UC-33 / FR-TX-02,
  * FR-TX-03).
  *
  * `uuid` is the file's public UUID (NUL-terminated string). `json_body` is
- * the JSON body HTTP would send (`content`). The function deserializes it,
- * calls the same `EditTextFileContentHandler` the HTTP route uses, and on
- * success serializes the returned `File` back to JSON — so the FFI and
- * HTTP surfaces agree byte-for-byte modulo key ordering (parity,
- * FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * the JSON body (`content`). The function deserializes it, calls
+ * `EditTextFileContentHandler`, and on success serializes the returned `File`
+ * back to JSON.
  */
-struct FileJsonResult alexandria_file_edit_content(const char *uuid,
-                                                   const char *json_body,
-                                                   const char *token);
+struct FileJsonResult alexandria_file_edit_content(const char *uuid, const char *json_body);
 
 /**
  * Rename a file (and its on-disk file) (UC-05 / FR-FC-19).
  *
  * `uuid` is the file's public UUID string; `name` is the new file name. The
- * function calls the same `RenameFileHandler` the HTTP route uses and on
- * success serializes the returned `File` back to JSON — the same shape HTTP
- * returns from `POST /v1/files/{uuid}/rename`, so the FFI and HTTP surfaces
- * agree byte-for-byte modulo key ordering (parity, FR-FC-24 / NFR-09).
- * `token` is the bearer auth token. A disk failure (AF-02) maps to
- * `FILE_ERR_DISK`; the catalog is left untouched in that case.
+ * function calls `RenameFileHandler` and on success serializes the returned
+ * `File` back to JSON. A disk failure (AF-02) maps to `FILE_ERR_DISK`; the
+ * catalog is left untouched in that case.
  */
-struct FileJsonResult alexandria_file_rename(const char *uuid, const char *name, const char *token);
+struct FileJsonResult alexandria_file_rename(const char *uuid, const char *name);
 
 /**
  * Soft-delete a file (UC-06 / FR-FC-20).
  *
- * `uuid` is the file's public UUID string; `token` is the bearer auth token.
- * The function calls the same `SoftDeleteFileHandler` the HTTP route uses
- * and on success serializes the returned `File` back to JSON — the same
- * shape HTTP returns from `DELETE /v1/files/{uuid}`, so the FFI and HTTP
- * surfaces agree byte-for-byte modulo key ordering (parity, FR-FC-24 /
- * NFR-09). The on-disk file is untouched (only `state` and `deleted_at`
+ * `uuid` is the file's public UUID string. The function calls
+ * `SoftDeleteFileHandler` and on success serializes the returned `File` back
+ * to JSON. The on-disk file is untouched (only `state` and `deleted_at`
  * change on the catalog row).
  */
-struct FileJsonResult alexandria_file_soft_delete(const char *uuid, const char *token);
+struct FileJsonResult alexandria_file_soft_delete(const char *uuid);
 
 /**
  * Restore a soft-deleted file (UC-07 / FR-FC-21).
  *
- * `uuid` is the file's public UUID string; `token` is the bearer auth token.
- * The function calls the same `RestoreFileHandler` the HTTP route uses and
- * on success serializes the returned `File` back to JSON — the same shape
- * HTTP returns from `POST /v1/files/{uuid}/restore`, so the FFI and HTTP
- * surfaces agree byte-for-byte modulo key ordering (parity, FR-FC-24 /
- * NFR-09). The on-disk file is untouched (only `state` and `deleted_at`
- * change on the catalog row). The retention window (default 30 days,
- * NFR-10) is enforced; a record past it is reported as `NotFound`
- * (`FILE_ERR_NOT_FOUND`) since UC-08 owns the actual hard purge.
+ * `uuid` is the file's public UUID string. The function calls
+ * `RestoreFileHandler` and on success serializes the returned `File` back to
+ * JSON. The on-disk file is untouched (only `state` and `deleted_at` change
+ * on the catalog row). The retention window (default 30 days, NFR-10) is
+ * enforced; a record past it is reported as `NotFound` (`FILE_ERR_NOT_FOUND`)
+ * since UC-08 owns the actual hard purge.
  */
-struct FileJsonResult alexandria_file_restore(const char *uuid, const char *token);
+struct FileJsonResult alexandria_file_restore(const char *uuid);
 
 /**
  * Hard-purge a soft-deleted file's catalog row (UC-08 / FR-FC-22).
  *
- * `uuid` is the file's public UUID string; `token` is the bearer auth
- * token. The function calls the same `PurgeFileHandler` the HTTP route
- * uses (`DELETE /v1/files/{uuid}?purge=true`) and on success serializes
- * the pre-delete `File` back to JSON as confirmation — the same shape
- * HTTP returns, so the FFI and HTTP surfaces agree byte-for-byte modulo
- * key ordering (parity, FR-FC-24 / NFR-09). Only the catalog row (and its
- * subtype row) is removed; the on-disk file is untouched (NFR-07). The
- * retention window (default 30 days, NFR-10) is enforced: a record still
- * within it, or not `deleted`, is reported as `FILE_ERR_INVALID_STATE`.
+ * `uuid` is the file's public UUID string. The function calls
+ * `PurgeFileHandler` and on success serializes the pre-delete `File` back to
+ * JSON as confirmation. Only the catalog row (and its subtype row) is
+ * removed; the on-disk file is untouched (NFR-07). The retention window
+ * (default 30 days, NFR-10) is enforced: a record still within it, or not
+ * `deleted`, is reported as `FILE_ERR_INVALID_STATE`.
  */
-struct FileJsonResult alexandria_file_purge(const char *uuid, const char *token);
+struct FileJsonResult alexandria_file_purge(const char *uuid);
 
 /**
  * Purge a file both on disk and in the catalog (UC-09 / FR-FC-23).
  *
- * `uuid` is the file's public UUID string; `token` is the bearer auth
- * token. The function calls the same `PurgeFileOnDiskHandler` the HTTP
- * route uses (`DELETE /v1/files/{uuid}?purge-on-disk=true`) and on success
- * serializes the returned [`PurgeOnDiskOutcome`] back to JSON — the same
- * shape HTTP returns, so the FFI and HTTP surfaces agree byte-for-byte
- * modulo key ordering (parity, FR-FC-24 / NFR-09). Unlike UC-08 there is no
- * retention gate: an `active` or `deleted` record is purgeable, the only
- * precondition is that it exists. A missing on-disk file is still a
- * success, reported via `diskFilePresent: false` (AF-01); a disk failure
- * is reported as `FILE_ERR_DISK` (AF-02) and leaves the record untouched.
+ * `uuid` is the file's public UUID string. The function calls
+ * `PurgeFileOnDiskHandler` and on success serializes the returned
+ * [`PurgeOnDiskOutcome`] back to JSON. Unlike UC-08 there is no retention
+ * gate: an `active` or `deleted` record is purgeable, the only precondition
+ * is that it exists. A missing on-disk file is still a success, reported via
+ * `diskFilePresent: false` (AF-01); a disk failure is reported as
+ * `FILE_ERR_DISK` (AF-02) and leaves the record untouched.
  */
-struct FileJsonResult alexandria_file_purge_on_disk(const char *uuid, const char *token);
+struct FileJsonResult alexandria_file_purge_on_disk(const char *uuid);
 
 /**
  * Create a flat file or bookmark collection (UC-10 / FR-CO-01, FR-CO-02).
  *
- * `json_body` is the JSON body HTTP would send (`name` + `kind`). The
- * function deserializes it, calls the same `CreateCollectionHandler` the HTTP
- * route uses, and on success serializes the returned `Collection` back to
- * JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `json_body` is the JSON body (`name` + `kind`). The function deserializes
+ * it, calls `CreateCollectionHandler`, and on success serializes the returned
+ * `Collection` back to JSON.
  */
-struct CollectionJsonResult alexandria_collection_create(const char *json_body, const char *token);
+struct CollectionJsonResult alexandria_collection_create(const char *json_body);
 
 /**
  * Rename a collection (UC-11 / FR-CO-03).
  *
  * `uuid` is the collection's public UUID (NUL-terminated string). `json_body`
- * is the JSON body HTTP would send (`{"name": …}`). The function
- * deserializes it, calls the same `RenameCollectionHandler` the HTTP route
- * uses, and on success serializes the returned `Collection` back to JSON —
- * so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * is the JSON body (`{"name": …}`). The function deserializes it, calls
+ * `RenameCollectionHandler`, and on success serializes the returned
+ * `Collection` back to JSON.
  */
-struct CollectionJsonResult alexandria_collection_rename(const char *uuid,
-                                                         const char *json_body,
-                                                         const char *token);
+struct CollectionJsonResult alexandria_collection_rename(const char *uuid, const char *json_body);
 
 /**
  * Delete a collection, unlinking its items (UC-12 / FR-CO-04).
  *
  * `uuid` is the collection's public UUID (NUL-terminated string). On success
- * `json` carries the pre-delete `Collection` as confirmation — byte-for-byte
- * the same shape HTTP returns from `DELETE /v1/collections/{uuid}` (parity,
- * FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `json` carries the pre-delete `Collection` as confirmation.
  */
-struct CollectionJsonResult alexandria_collection_delete(const char *uuid, const char *token);
+struct CollectionJsonResult alexandria_collection_delete(const char *uuid);
 
 /**
  * Add items to a collection (UC-13 / FR-CO-05).
  *
  * `uuid` is the collection's public UUID (NUL-terminated string). `json_body`
- * is the JSON body HTTP would send (`itemUuids`). The function deserializes
- * it, calls the same `AddItemsToCollectionHandler` the HTTP route uses, and
- * on success serializes the returned `CollectionItemsResult` back to JSON —
- * so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * is the JSON body (`itemUuids`). The function deserializes it, calls
+ * `AddItemsToCollectionHandler`, and on success serializes the returned
+ * `CollectionItemsResult` back to JSON.
  */
 struct CollectionJsonResult alexandria_collection_add_items(const char *uuid,
-                                                            const char *json_body,
-                                                            const char *token);
+                                                            const char *json_body);
 
 /**
  * Remove an item from a collection (UC-14 / FR-CO-06).
  *
  * `collection_uuid` and `item_uuid` are the collection's and item's public
  * UUIDs (NUL-terminated strings). On success `json` carries the
- * `collectionUuid`/`itemUuid` confirmation — byte-for-byte the same shape
- * HTTP returns from `DELETE /v1/collections/{uuid}/items/{itemUuid}`
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `collectionUuid`/`itemUuid` confirmation.
  */
 struct CollectionJsonResult alexandria_collection_remove_item(const char *collection_uuid,
-                                                              const char *item_uuid,
-                                                              const char *token);
+                                                              const char *item_uuid);
 
 /**
  * List the items in a collection (UC-14 / FR-CO-07).
  *
- * `uuid` is the collection's public UUID (NUL-terminated string). On
- * success `json` carries the `kind` and current members — byte-for-byte
- * the same shape HTTP returns from `GET /v1/collections/{uuid}/items`
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `uuid` is the collection's public UUID (NUL-terminated string). On success
+ * `json` carries the `kind` and current members.
  */
-struct CollectionJsonResult alexandria_collection_list_items(const char *uuid, const char *token);
+struct CollectionJsonResult alexandria_collection_list_items(const char *uuid);
 
 /**
  * List the owner's collections (UC-46 / FR-CO-08).
  *
- * `json_filters` is the JSON filter HTTP would build from its query string
- * (`kind`); an empty string or `null` means every collection. On success
- * `json` carries a JSON array of `CollectionSummary` — each collection with
- * the number of items it holds — byte-for-byte the same shape HTTP returns
- * from `GET /v1/collections` (parity, FR-FC-24 / NFR-09). `token` is the
- * bearer auth token.
+ * `json_filters` is a JSON filter (`kind`); an empty string or `null` means
+ * every collection. On success `json` carries a JSON array of
+ * `CollectionSummary` — each collection with the number of items it holds.
  *
  * An owner with no collections gets an empty array and `COLLECTION_OK`, not
  * an error (AF-01). An unrecognised `kind` is `COLLECTION_ERR_INVALID_INPUT`
  * and nothing is queried (AF-02).
  */
-struct CollectionJsonResult alexandria_collections_list(const char *json_filters,
-                                                        const char *token);
+struct CollectionJsonResult alexandria_collections_list(const char *json_filters);
 
 /**
  * Create a browser bookmark, optionally in an existing bookmark collection
  * (UC-15 / FR-BM-01).
  *
- * `json_body` is the JSON body HTTP would send (`url` + `title` +
- * `collectionUuid`). The function deserializes it, calls the same
- * `CreateBookmarkHandler` the HTTP route uses, and on success serializes the
- * returned `Bookmark` back to JSON — so the FFI and HTTP surfaces agree
- * byte-for-byte modulo key ordering (parity, FR-FC-24 / NFR-09). `token` is
- * the bearer auth token.
+ * `json_body` is the JSON body (`url` + `title` + `collectionUuid`). The
+ * function deserializes it, calls `CreateBookmarkHandler`, and on success
+ * serializes the returned `Bookmark` back to JSON.
  */
-struct BookmarkJsonResult alexandria_bookmark_create(const char *json_body, const char *token);
+struct BookmarkJsonResult alexandria_bookmark_create(const char *json_body);
 
 /**
  * Update a bookmark's url, title, and containing collection (UC-16 /
  * FR-BM-02).
  *
  * `uuid` is the bookmark's public UUID (NUL-terminated string). `json_body`
- * is the JSON body HTTP would send (`url` + `title` + `collectionUuid`).
- * The function deserializes it, calls the same `UpdateBookmarkHandler` the
- * HTTP route uses, and on success serializes the returned `Bookmark` back
- * to JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo key
- * ordering (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * is the JSON body (`url` + `title` + `collectionUuid`). The function
+ * deserializes it, calls `UpdateBookmarkHandler`, and on success serializes
+ * the returned `Bookmark` back to JSON.
  */
-struct BookmarkJsonResult alexandria_bookmark_update(const char *uuid,
-                                                     const char *json_body,
-                                                     const char *token);
+struct BookmarkJsonResult alexandria_bookmark_update(const char *uuid, const char *json_body);
 
 /**
  * Browse bookmarks, optionally filtered by containing collection (UC-17 /
@@ -795,117 +637,93 @@ struct BookmarkJsonResult alexandria_bookmark_update(const char *uuid,
  *
  * `json_filters` is a JSON string `{"collectionUuid":"…","state":"all"}`
  * (empty string or NULL for defaults). The function deserializes it, calls
- * the same `BrowseBookmarksHandler` the HTTP route uses, and on success
- * serializes the returned `Vec<Bookmark>` back to a JSON array — so the FFI
- * and HTTP surfaces agree byte-for-byte modulo key ordering (parity,
- * FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `BrowseBookmarksHandler`, and on success serializes the returned
+ * `Vec<Bookmark>` back to a JSON array.
  */
-struct BookmarkJsonResult alexandria_bookmarks_list(const char *json_filters, const char *token);
+struct BookmarkJsonResult alexandria_bookmarks_list(const char *json_filters);
 
 /**
  * Soft-delete a bookmark (UC-18 / FR-BM-03).
  *
  * `uuid` is the bookmark's public UUID (NUL-terminated string). On success
- * `json` carries the updated `Bookmark` — byte-for-byte the same shape HTTP
- * returns from `DELETE /v1/bookmarks/{uuid}` (parity, FR-FC-24 / NFR-09).
- * `token` is the bearer auth token.
+ * `json` carries the updated `Bookmark`.
  */
-struct BookmarkJsonResult alexandria_bookmark_soft_delete(const char *uuid, const char *token);
+struct BookmarkJsonResult alexandria_bookmark_soft_delete(const char *uuid);
 
 /**
  * Restore a soft-deleted bookmark (UC-18 / FR-BM-05).
  *
  * `uuid` is the bookmark's public UUID (NUL-terminated string). On success
- * `json` carries the restored `Bookmark` — byte-for-byte the same shape
- * HTTP returns from `POST /v1/bookmarks/{uuid}/restore` (parity,
- * FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `json` carries the restored `Bookmark`.
  */
-struct BookmarkJsonResult alexandria_bookmark_restore(const char *uuid, const char *token);
+struct BookmarkJsonResult alexandria_bookmark_restore(const char *uuid);
 
 /**
  * Hard-purge a bookmark (UC-19 / FR-BM-04).
  *
  * `uuid` is the bookmark's public UUID (NUL-terminated string). On success
- * `json` carries the pre-purge `Bookmark` as confirmation — byte-for-byte
- * the same shape HTTP returns from `DELETE /v1/bookmarks/{uuid}?purge=true`
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `json` carries the pre-purge `Bookmark` as confirmation.
  */
-struct BookmarkJsonResult alexandria_bookmark_purge(const char *uuid, const char *token);
+struct BookmarkJsonResult alexandria_bookmark_purge(const char *uuid);
 
 /**
  * Create a named watchlist for tracking video consumption (UC-20 /
  * FR-WL-01).
  *
- * `json_body` is the JSON body HTTP would send (`name`). The function
- * deserializes it, calls the same `CreateWatchlistHandler` the HTTP route
- * uses, and on success serializes the returned `Watchlist` back to JSON —
- * so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `json_body` is the JSON body (`name`). The function deserializes it, calls
+ * `CreateWatchlistHandler`, and on success serializes the returned
+ * `Watchlist` back to JSON.
  */
-struct WatchlistJsonResult alexandria_watchlist_create(const char *json_body, const char *token);
+struct WatchlistJsonResult alexandria_watchlist_create(const char *json_body);
 
 /**
  * Add a video to a watchlist (UC-22 / FR-WL-02, FR-WL-03).
  *
  * `uuid` is the watchlist's public UUID (NUL-terminated string). `json_body`
- * is the JSON body HTTP would send (`videoUuid`). The function deserializes
- * it, calls the same `AddVideoToWatchlistHandler` the HTTP route uses, and
- * on success serializes the returned `WatchProgress` back to JSON — so the
- * FFI and HTTP surfaces agree byte-for-byte modulo key ordering (parity,
- * FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * is the JSON body (`videoUuid`). The function deserializes it, calls
+ * `AddVideoToWatchlistHandler`, and on success serializes the returned
+ * `WatchProgress` back to JSON.
  */
-struct WatchlistJsonResult alexandria_watchlist_add_video(const char *uuid,
-                                                          const char *json_body,
-                                                          const char *token);
+struct WatchlistJsonResult alexandria_watchlist_add_video(const char *uuid, const char *json_body);
 
 /**
  * Browse watchlists and their items' watch progress (UC-21 / FR-WL-08).
  *
- * `json_filters` is the JSON filter HTTP would build from its query string
- * (`watchlistUuid`); an empty string or `null` means every watchlist. On
- * success `json` carries a JSON array of `WatchlistWithProgress` — byte-for-
- * byte the same shape HTTP returns from `GET /v1/watchlists` (parity,
- * FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `json_filters` is a JSON filter (`watchlistUuid`); an empty string or
+ * `null` means every watchlist. On success `json` carries a JSON array of
+ * `WatchlistWithProgress`.
  */
-struct WatchlistJsonResult alexandria_watchlists_list(const char *json_filters, const char *token);
+struct WatchlistJsonResult alexandria_watchlists_list(const char *json_filters);
 
 /**
  * Update watch progress (UC-23 / FR-WL-04, FR-WL-05).
  *
  * `watchlist_uuid` and `video_uuid` are the watchlist's and video's public
- * UUIDs (NUL-terminated strings). `json_body` is the JSON body HTTP would
- * send (`state`, optional `currentEpisode`/`totalEpisodes`). On success
- * `json` carries the updated `WatchProgress` — byte-for-byte the same shape
- * HTTP returns from `PATCH /v1/watchlists/{uuid}/items/{videoUuid}`
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * UUIDs (NUL-terminated strings). `json_body` is the JSON body (`state`,
+ * optional `currentEpisode`/`totalEpisodes`). On success `json` carries the
+ * updated `WatchProgress`.
  */
 struct WatchlistJsonResult alexandria_watchlist_update_progress(const char *watchlist_uuid,
                                                                 const char *video_uuid,
-                                                                const char *json_body,
-                                                                const char *token);
+                                                                const char *json_body);
 
 /**
  * Remove a video from a watchlist (UC-24 / FR-WL-06).
  *
  * `watchlist_uuid` and `video_uuid` are the watchlist's and video's public
  * UUIDs (NUL-terminated strings). On success `json` carries the
- * `watchlistUuid`/`videoUuid` confirmation — byte-for-byte the same shape
- * HTTP returns from `DELETE /v1/watchlists/{uuid}/items/{videoUuid}`
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `watchlistUuid`/`videoUuid` confirmation.
  */
 struct WatchlistJsonResult alexandria_watchlist_remove_video(const char *watchlist_uuid,
-                                                             const char *video_uuid,
-                                                             const char *token);
+                                                             const char *video_uuid);
 
 /**
  * Delete a watchlist (UC-25 / FR-WL-07).
  *
  * `uuid` is the watchlist's public UUID (NUL-terminated string). On success
- * `json` carries the pre-delete `Watchlist` — byte-for-byte the same shape
- * HTTP returns from `DELETE /v1/watchlists/{uuid}` (parity, FR-FC-24 /
- * NFR-09). `token` is the bearer auth token.
+ * `json` carries the pre-delete `Watchlist`.
  */
-struct WatchlistJsonResult alexandria_watchlist_delete(const char *uuid, const char *token);
+struct WatchlistJsonResult alexandria_watchlist_delete(const char *uuid);
 
 /**
  * Count of cataloged files currently marked missing on disk (UC-02 AF-01).
@@ -920,13 +738,12 @@ int64_t alexandria_index_count_missing(void);
  * `content_hash` is nullable (Task 3: indexing never computes one; Task 4:
  * neither does refresh) and is decoded as `Option<String>` — not `String` —
  * so a `NULL` row serializes as JSON `null` here, matching what the shared
- * `File`/`FileView` model emits over HTTP for the same column
- * (`GET /v1/files`, `catalog/model.rs`). Decoding it as a bare `String`
- * used to silently turn a SQL `NULL` into `""` instead (sqlx does not error
- * on that mismatch for this driver), which was a byte-for-byte parity
- * violation (FR-FC-24) for every indexed or refreshed file — not an edge
- * case, since neither indexing nor refresh have computed a hash since
- * Task 3/4.
+ * `File`/`FileView` model emits for the same column (`alexandria_files_list`,
+ * `catalog/model.rs`). Decoding it as a bare `String` used to silently turn a
+ * SQL `NULL` into `""` instead (sqlx does not error on that mismatch for this
+ * driver), so the two listings disagreed for every indexed or refreshed file
+ * — not an edge case, since neither indexing nor refresh have computed a hash
+ * since Task 3/4.
  */
 char *alexandria_index_files_json(void);
 
@@ -934,231 +751,132 @@ char *alexandria_index_files_json(void);
  * Create a named reading list for tracking book/comic consumption (UC-26 /
  * FR-RL-01).
  *
- * `json_body` is the JSON body HTTP would send (`name`). The function
- * deserializes it, calls the same `CreateReadingListHandler` the HTTP
- * route uses, and on success serializes the returned `ReadingList` back to
- * JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo key
- * ordering (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `json_body` is the JSON body (`name`). The function deserializes it, calls
+ * `CreateReadingListHandler`, and on success serializes the returned
+ * `ReadingList` back to JSON.
  */
-struct ReadingListJsonResult alexandria_reading_list_create(const char *json_body,
-                                                            const char *token);
+struct ReadingListJsonResult alexandria_reading_list_create(const char *json_body);
 
 /**
  * Add a book or comic to a reading list (UC-28 / FR-RL-02, FR-RL-03).
  *
  * `uuid` is the reading list's public UUID (NUL-terminated string).
- * `json_body` is the JSON body HTTP would send (`itemUuid`). The function
- * deserializes it, calls the same `AddItemToReadingListHandler` the HTTP
- * route uses, and on success serializes the returned `ReadingProgress`
- * back to JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo
- * key ordering (parity, FR-FC-24 / NFR-09). `token` is the bearer auth
- * token.
+ * `json_body` is the JSON body (`itemUuid`). The function deserializes it,
+ * calls `AddItemToReadingListHandler`, and on success serializes the returned
+ * `ReadingProgress` back to JSON.
  */
 struct ReadingListJsonResult alexandria_reading_list_add_item(const char *uuid,
-                                                              const char *json_body,
-                                                              const char *token);
+                                                              const char *json_body);
 
 /**
  * Browse reading lists and their items' read progress (UC-27 / FR-RL-08).
  *
- * `json_filters` is the JSON filter HTTP would build from its query string
- * (`readingListUuid`); an empty string or `null` means every reading list.
- * On success `json` carries a JSON array of `ReadingListWithProgress` —
- * byte-for-byte the same shape HTTP returns from `GET /v1/reading-lists`
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `json_filters` is a JSON filter (`readingListUuid`); an empty string or
+ * `null` means every reading list. On success `json` carries a JSON array of
+ * `ReadingListWithProgress`.
  */
-struct ReadingListJsonResult alexandria_reading_lists_list(const char *json_filters,
-                                                           const char *token);
+struct ReadingListJsonResult alexandria_reading_lists_list(const char *json_filters);
 
 /**
  * Update reading progress (UC-29 / FR-RL-04, FR-RL-05).
  *
  * `reading_list_uuid` and `item_uuid` are the reading list's and item's
- * public UUIDs (NUL-terminated strings). `json_body` is the JSON body HTTP
- * would send (`state`, optional `currentIssue`/`totalIssues`). On success
- * `json` carries the updated `ReadingProgress` — byte-for-byte the same
- * shape HTTP returns from `PATCH /v1/reading-lists/{uuid}/items/{itemUuid}`
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * public UUIDs (NUL-terminated strings). `json_body` is the JSON body
+ * (`state`, optional `currentIssue`/`totalIssues`). On success `json` carries
+ * the updated `ReadingProgress`.
  */
 struct ReadingListJsonResult alexandria_reading_list_update_progress(const char *reading_list_uuid,
                                                                      const char *item_uuid,
-                                                                     const char *json_body,
-                                                                     const char *token);
+                                                                     const char *json_body);
 
 /**
  * Remove an item from a reading list (UC-30 / FR-RL-06).
  *
  * `reading_list_uuid` and `item_uuid` are the reading list's and item's
  * public UUIDs (NUL-terminated strings). On success `json` carries the
- * `readingListUuid`/`itemUuid` confirmation — byte-for-byte the same shape
- * HTTP returns from `DELETE /v1/reading-lists/{uuid}/items/{itemUuid}`
- * (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * `readingListUuid`/`itemUuid` confirmation.
  */
 struct ReadingListJsonResult alexandria_reading_list_remove_item(const char *reading_list_uuid,
-                                                                 const char *item_uuid,
-                                                                 const char *token);
+                                                                 const char *item_uuid);
 
 /**
  * Delete a reading list (UC-31 / FR-RL-07).
  *
  * `uuid` is the reading list's public UUID (NUL-terminated string). On
- * success `json` carries the pre-delete `ReadingList` — byte-for-byte the
- * same shape HTTP returns from `DELETE /v1/reading-lists/{uuid}` (parity,
- * FR-FC-24 / NFR-09). `token` is the bearer auth token.
+ * success `json` carries the pre-delete `ReadingList`.
  */
-struct ReadingListJsonResult alexandria_reading_list_delete(const char *uuid, const char *token);
-
-/**
- * Local login (UC-34 / FR-AU-04): verify email + password and create a
- * session. `json_body` is the JSON body HTTP would send (`email`,
- * `password`). On success `json` carries the `LocalLoginResult` — the
- * caller presents its `sessionId` on subsequent requests instead of a
- * bearer token in local mode.
- *
- * Deliberately takes no `token`: this is how a caller obtains credentials
- * in the first place (mirrors the HTTP route being outside the auth gate).
- */
-struct AuthJsonResult alexandria_auth_local_login(const char *json_body);
-
-/**
- * Windows login (UC-45 / FR-AU-20, FR-AU-22): open a session for the
- * Windows account this process runs as. Takes no credentials — the account
- * was already verified against the configured SID at startup. `json_body`
- * is accepted but ignored: it exists only for signature consistency with
- * this surface's other `alexandria_auth_*` neighbours, which all take a
- * body. On success `json` carries the `LocalLoginResult`, the same shape
- * `alexandria_auth_local_login` returns.
- */
-struct AuthJsonResult alexandria_auth_windows_login(const char *_json_body);
-
-/**
- * Set or change local-login credentials (UC-35 / FR-AU-05, FR-AU-06).
- * `json_body` is the JSON body HTTP would send (`email`, `password`).
- * `token` is required: this changes existing credentials. Creating the
- * account is `alexandria_auth_local_register` (UC-41).
- */
-struct AuthJsonResult alexandria_auth_local_set_credentials(const char *json_body,
-                                                            const char *token);
-
-/**
- * Register the local account (UC-41 / FR-AU-10, FR-AU-11): create the
- * single owner's credentials and open a session. `json_body` is the JSON
- * body HTTP would send (`email`, `password`, `passwordConfirmation`). On
- * success `json` carries the `LocalRegisterResult`, whose `sessionId` the
- * caller presents on subsequent requests.
- *
- * Deliberately takes no `token`: there is nothing to authenticate with
- * before an account exists. Succeeds only once — a second call returns
- * `AUTH_ERR_CONFLICT` (AF-02).
- */
-struct AuthJsonResult alexandria_auth_local_register(const char *json_body);
-
-/**
- * Report the authenticated owner's account state (FR-AU-18): the same body
- * `GET /v1/auth/local/account` returns. `token` is the session id.
- *
- * This is the call a client makes to learn the stored address and how many
- * recovery codes remain unspent.
- */
-struct AuthJsonResult alexandria_auth_local_account(const char *token);
-
-/**
- * Redeem a recovery code for a new password (UC-43 / FR-AU-14 … FR-AU-16).
- * `json_body` is the JSON body HTTP would send: an object with `code`,
- * `newPassword`, and `passwordConfirmation`.
- *
- * Deliberately takes no session token: the code is the credential, and this
- * is the operation a caller who cannot authenticate uses to get back in.
- * Every session is invalidated on success.
- */
-struct AuthJsonResult alexandria_auth_local_redeem_recovery_code(const char *json_body);
-
-/**
- * Replace the owner's recovery codes with a fresh set of ten (UC-44 /
- * FR-AU-17), invalidating every old one. `token` is the session id the
- * caller authenticates with, exactly as `alexandria_auth_local_account`
- * takes it.
- */
-struct AuthJsonResult alexandria_auth_local_regenerate_recovery_codes(const char *token);
+struct ReadingListJsonResult alexandria_reading_list_delete(const char *uuid);
 
 /**
  * Report the client-relevant configuration (UC-47 / FR-FC-30).
  *
- * On success `json` carries the same body HTTP returns from
- * `GET /v1/settings` — today `{"deletion":{"retentionDays":30}}`, the
- * soft-delete retention window this server enforces on every restore and
- * purge. `token` is the bearer auth token.
+ * On success `json` carries the settings body — today
+ * `{"deletion":{"retentionDays":30}}`, the soft-delete retention window this
+ * core enforces on every restore and purge.
  *
  * The boundary the number describes is the core's own: elapsed time up to and
  * including `retentionDays` leaves a record restorable and not yet purgeable;
  * strictly past it, the record is purgeable and no longer restorable.
  */
-struct SettingsJsonResult alexandria_settings_json(const char *token);
+struct SettingsJsonResult alexandria_settings_json(void);
 
 /**
  * Report an index or re-index run's status and outcome (UC-42 / FR-FC-28).
  * `run_id` is the id `alexandria_library_index_start` or
  * `alexandria_index_refresh_start` returned. On success `json` carries the
- * same body the HTTP `GET /v1/index/runs/{runId}` route returns (FR-FC-24).
+ * run's `CatalogRun` body.
  *
- * Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
- * `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02), and
+ * Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01), and
  * `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid.
  */
-struct RunJsonResult alexandria_index_run_status_json(const char *run_id, const char *token);
+struct RunJsonResult alexandria_index_run_status_json(const char *run_id);
 
 /**
- * The files a run could not record, oldest first (FR-FC-42). `run_id` is
- * the id `alexandria_library_index_start` or `alexandria_index_refresh_start`
- * returned. On success `json` carries the same array the HTTP
- * `GET /v1/index/runs/{runId}/failures` route returns (FR-FC-24).
+ * The files a run could not record, oldest first (FR-FC-42). `run_id` is the
+ * id `alexandria_library_index_start` or `alexandria_index_refresh_start`
+ * returned. On success `json` carries the array of failures.
  *
  * A call of its own rather than a field on the status above: status is
  * polled every second while a run is in flight, and this is wanted once, if
  * ever — when the owner asks which files. The list is bounded per run; the
  * run's own `failed` tally stays the authority on how many.
  *
- * Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
- * `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02), and
+ * Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01), and
  * `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid.
  */
-struct RunJsonResult alexandria_index_run_failures_json(const char *run_id, const char *token);
+struct RunJsonResult alexandria_index_run_failures_json(const char *run_id);
 
 /**
- * Pause a running index or re-index run where it stands, leaving it
- * resumable (UC-48 / FR-FC-32). `run_id` is the id `alexandria_library_index_start`
- * or `alexandria_index_refresh_start` returned; `token` is the bearer auth
- * token. Calls the same `RunControlHandler::pause` the HTTP route (Task 12)
- * calls.
+ * Pause a running index or re-index run where it stands, leaving it resumable
+ * (UC-48 / FR-FC-32). `run_id` is the id `alexandria_library_index_start` or
+ * `alexandria_index_refresh_start` returned. Calls
+ * `RunControlHandler::pause`.
  *
  * Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
- * `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02),
  * `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid, and
  * `RUN_ERR_INVALID_STATE` when the run is not currently `running` — pausing
  * an already-paused or already-finished run is refused rather than silently
  * accepted.
  */
-int alexandria_index_pause(const char *run_id, const char *token);
+int alexandria_index_pause(const char *run_id);
 
 /**
  * Abandon a running or paused index or re-index run (UC-48 / FR-FC-34).
  * Terminal — a cancelled run is never resumed. `run_id` is the id
- * `alexandria_library_index_start` or `alexandria_index_refresh_start` returned;
- * `token` is the bearer auth token. Calls the same
- * `RunControlHandler::cancel` the HTTP route (Task 12) calls.
+ * `alexandria_library_index_start` or `alexandria_index_refresh_start`
+ * returned. Calls `RunControlHandler::cancel`.
  *
  * Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
- * `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02),
  * `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid, and
  * `RUN_ERR_INVALID_STATE` when the run is already terminal (`complete`,
  * `failed`, or already `cancelled`) — there is nothing left to abandon.
  */
-int alexandria_index_cancel(const char *run_id, const char *token);
+int alexandria_index_cancel(const char *run_id);
 
 /**
  * Put a paused index or re-index run back to work (UC-48 / FR-FC-33).
- * `run_id` is the id `alexandria_library_index_start` or `alexandria_index_refresh_start`
- * returned; `token` is the bearer auth token. Returns the *same* `run_id` on
+ * `run_id` is the id `alexandria_library_index_start` or
+ * `alexandria_index_refresh_start` returned. Returns the *same* `run_id` on
  * success — a resume does not mint a fresh run, it continues the one it was
  * given — wrapped in the same `IndexStartResult` `alexandria_library_index_start`
  * returns (parity of shape, not of meaning: `status` here is a `RUN_ERR_*`
@@ -1186,29 +904,23 @@ int alexandria_index_cancel(const char *run_id, const char *token);
  * to speed a low-priority run back up. See `parse_resume_priority`.
  *
  * Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
- * `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02),
  * `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid, and
  * `RUN_ERR_INVALID_STATE` when the run is not currently `paused`.
  */
-struct IndexStartResult alexandria_index_resume(const char *run_id,
-                                                const char *token,
-                                                const char *priority);
+struct IndexStartResult alexandria_index_resume(const char *run_id, const char *priority);
 
 /**
  * Every outstanding (`running` or `paused`) index and re-index run at once,
- * each with live progress overlaid exactly as `alexandria_index_run_status_json`
- * overlays a single run (UC-42 / FR-FC-35). `token` is the bearer auth
- * token. On success `json` is a NUL-terminated JSON array of `CatalogRun`
- * bodies, newest first — byte-for-byte the same shape the HTTP
- * `GET /v1/index/runs?status=active` route (Task 12) returns (FR-FC-24 / NFR-09).
- * The caller must free `json` with `alexandria_free_string`.
+ * each with live progress overlaid exactly as
+ * `alexandria_index_run_status_json` overlays a single run (UC-42 /
+ * FR-FC-35). On success `json` is a NUL-terminated JSON array of `CatalogRun`
+ * bodies, newest first. The caller must free `json` with
+ * `alexandria_free_string`.
  *
  * A caller with nothing outstanding gets `RUN_OK` and an empty JSON array,
  * not an error — an idle library is the normal case, not a failure.
- *
- * Returns `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02).
  */
-struct RunJsonResult alexandria_index_runs_active_json(const char *token);
+struct RunJsonResult alexandria_index_runs_active_json(void);
 
 /**
  * Free a string previously returned by an FFI accessor.
@@ -1228,62 +940,89 @@ void alexandria_free_string(char *ptr);
  *
  * Answers `INDEX_OK` with the run id, `INDEX_ERR_NOT_FOUND` for an unknown
  * library, `INDEX_ERR_CONFLICT` while it has an unfinished run (FR-FC-43),
- * `INDEX_ERR_INVALID_INPUT` for a malformed uuid, `INDEX_ERR_UNAUTHORIZED`
- * or `INDEX_ERR_NOT_INITIALIZED` — HTTP's `202`, `404`, `409`, `400`, `401`.
+ * `INDEX_ERR_INVALID_INPUT` for a malformed uuid or
+ * `INDEX_ERR_NOT_INITIALIZED`.
  */
-struct IndexStartResult alexandria_library_index_start(const char *uuid,
-                                                       const char *token,
-                                                       const char *priority);
+struct IndexStartResult alexandria_library_index_start(const char *uuid, const char *priority);
 
 /**
  * Add a folder as a library and start indexing it (FR-FC-36).
  *
- * `json_body` is the JSON body `POST /v1/libraries` takes: `name`,
- * `rootPath`, and an optional `priority` (`"low"`; anything else is normal)
- * for the first run. On success `json` is the library with the `runId` of
- * its first index run beside its fields; follow it with
- * `alexandria_index_run_status_json`. Answers `LIBRARY_ERR_INVALID_INPUT` for
- * a blank name or folder, a folder that does not exist or is not a folder,
- * or one outside `filesystem.root`; `LIBRARY_ERR_CONFLICT` when the folder
- * overlaps an existing library. A refusal stores nothing.
+ * `json_body` carries `name`, `rootPath`, and an optional `priority`
+ * (`"low"`; anything else is normal) for the first run. On success `json` is
+ * the library with the `runId` of its first index run beside its fields;
+ * follow it with `alexandria_index_run_status_json`. Answers
+ * `LIBRARY_ERR_INVALID_INPUT` for a blank name or folder, a folder that does
+ * not exist or is not a folder, or one outside `filesystem.root`;
+ * `LIBRARY_ERR_CONFLICT` when the folder overlaps an existing library. A
+ * refusal stores nothing.
  */
-struct LibraryJsonResult alexandria_library_register(const char *json_body, const char *token);
+struct LibraryJsonResult alexandria_library_register(const char *json_body);
 
 /**
  * Point a library at the folder it moved to (libraries design).
  *
- * `json_body` is the JSON body `PATCH /v1/libraries/{uuid}` takes
- * (`rootPath`). The library's files move with it, keeping their uuids and
+ * `json_body` is `{"rootPath": …}`. The library's files move with it, keeping their uuids and
  * everything that points at them. Answers `LIBRARY_ERR_CONFLICT` when the
  * destination overlaps another library, or when the catalog already holds
  * files there, and `LIBRARY_ERR_INVALID_INPUT` when `rootPath` is blank or
- * lies outside the configured `filesystem.root` (FR-FC-26), as HTTP's `400`.
+ * lies outside the configured `filesystem.root` (FR-FC-26).
  */
-struct LibraryJsonResult alexandria_library_move(const char *uuid,
-                                                 const char *json_body,
-                                                 const char *token);
+struct LibraryJsonResult alexandria_library_move(const char *uuid, const char *json_body);
 
 /**
  * Every registered library.
  */
-struct LibraryJsonResult alexandria_libraries_list(const char *token);
+struct LibraryJsonResult alexandria_libraries_list(void);
+
+/**
+ * The catalog's totals: `{"libraries": n, "filesByType": {...}}`, with all
+ * seven types present and `0` for an empty one. Counts what the default file
+ * listing shows: active files, including those marked missing on disk;
+ * soft-deleted files are not counted. `LIBRARY_ERR_NOT_INITIALIZED` before
+ * `alexandria_index_init`, `LIBRARY_ERR_OTHER` when the query fails.
+ */
+struct LibraryJsonResult alexandria_catalog_stats_json(void);
 
 /**
  * One level of a library's tree.
  *
  * `path` is the folder to list, relative to the library's root; NULL or an
- * empty string is the top. One level rather than the whole tree — see the
- * matching HTTP route.
+ * empty string is the top. One level rather than the whole tree (FR-FC-39):
+ * a course of two hundred classes is a large document to build and parse
+ * when the owner is looking at one folder.
  */
-struct LibraryJsonResult alexandria_library_browse(const char *uuid,
-                                                   const char *path,
-                                                   const char *token);
+struct LibraryJsonResult alexandria_library_browse(const char *uuid, const char *path);
+
+/**
+ * Rename a library, whenever the owner likes, including while its run is in
+ * progress or paused. `json_body` is `{"name": "..."}`; the answer is the
+ * updated library's JSON. `LIBRARY_ERR_INVALID_INPUT` for a `uuid` that is
+ * not one, a body that is not JSON or has no string `name`, or a blank name;
+ * `LIBRARY_ERR_NOT_INITIALIZED` before init; `LIBRARY_ERR_NOT_FOUND` for a
+ * uuid no library has.
+ */
+struct LibraryJsonResult alexandria_library_rename(const char *uuid, const char *json_body);
+
+/**
+ * Pin a library to the top of the menu, or unpin it. Answers `LIBRARY_OK`,
+ * `LIBRARY_ERR_INVALID_INPUT` when `uuid` is not a uuid,
+ * `LIBRARY_ERR_NOT_INITIALIZED` before init, and `LIBRARY_ERR_NOT_FOUND`
+ * for a uuid no library has. Setting the value a library already has is
+ * not an error.
+ */
+int alexandria_library_set_pinned(const char *uuid, bool pinned);
+
+/**
+ * Mark a library as a favorite, or unmark it, independently of pinning.
+ * Answers the same codes as `alexandria_library_set_pinned`.
+ */
+int alexandria_library_set_favorite(const char *uuid, bool favorite);
 
 /**
  * Remove a library and its catalog records (FR-FC-40); nothing on disk is
  * touched. `LIBRARY_ERR_CONFLICT` while one of its runs is running
- * (FR-FC-43), as HTTP answers `409`. On success `json`
- * carries an empty object rather than NULL, so a caller can tell success
- * from the failure codes without a special case.
+ * (FR-FC-43). On success `json` carries an empty object rather than NULL, so
+ * a caller can tell success from the failure codes without a special case.
  */
-struct LibraryJsonResult alexandria_library_remove(const char *uuid, const char *token);
+struct LibraryJsonResult alexandria_library_remove(const char *uuid);

@@ -9,22 +9,11 @@ import '../domain/collection_gateway.dart';
 class CollectionsController extends AsyncNotifier<List<Collection>> {
   @override
   Future<List<Collection>> build() async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
-
-    final browse = await ref
-        .read(collectionGatewayProvider)
-        .browse(credential: credential);
+    final browse = await ref.read(collectionGatewayProvider).browse();
 
     switch (browse) {
       case CollectionBrowseLoaded(:final collections):
         return collections;
-
-      // AF-05: a rejected session returns the owner to login.
-      case CollectionBrowseFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return const [];
 
       case CollectionBrowseFailed(:final failure):
         throw failure;
@@ -143,11 +132,7 @@ class CollectionsForm extends Notifier<CollectionsState> {
 
     final kind = state.kind;
     await _call(
-      (gateway, credential) => gateway.create(
-        name: state.name.trim(),
-        kind: kind,
-        credential: credential,
-      ),
+      (gateway) => gateway.create(name: state.name.trim(), kind: kind),
     );
   }
 
@@ -164,11 +149,7 @@ class CollectionsForm extends Notifier<CollectionsState> {
     }
 
     await _call(
-      (gateway, credential) => gateway.rename(
-        uuid: uuid,
-        name: state.name.trim(),
-        credential: credential,
-      ),
+      (gateway) => gateway.rename(uuid: uuid, name: state.name.trim()),
     );
   }
 
@@ -176,21 +157,16 @@ class CollectionsForm extends Notifier<CollectionsState> {
   ///
   /// The confirmation is the screen's: it has to say that the contained items
   /// are preserved before this is reached (FR-OG-03, BR-07).
-  Future<void> delete(String uuid) => _call(
-    (gateway, credential) => gateway.delete(uuid: uuid, credential: credential),
-  );
+  Future<void> delete(String uuid) =>
+      _call((gateway) => gateway.delete(uuid: uuid));
 
   /// Runs [call] and turns its answer into what the screen shows.
   Future<void> _call(
-    Future<CollectionWrite> Function(CollectionGateway, String credential) call,
+    Future<CollectionWrite> Function(CollectionGateway) call,
   ) async {
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return;
-
     state = state.copyWith(isWriting: true, renaming: state.renaming);
 
-    final outcome = await call(ref.read(collectionGatewayProvider), credential);
+    final outcome = await call(ref.read(collectionGatewayProvider));
 
     switch (outcome) {
       case CollectionWriteDone():
@@ -198,10 +174,6 @@ class CollectionsForm extends Notifier<CollectionsState> {
         // which is also what keeps the item counts right.
         await ref.read(collectionsControllerProvider.notifier).reload();
         state = const CollectionsState();
-
-      // AF-05: the session is discarded, which returns the owner to login.
-      case CollectionWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
 
       // AF-04: the collection is gone, so the screen says so and reads the
       // core again.

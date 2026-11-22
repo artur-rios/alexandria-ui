@@ -15,12 +15,9 @@ class CoreCoverGateway implements CoverGateway {
   final CoreClient _core;
 
   @override
-  Future<Uint8List?> cover({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<Uint8List?> cover({required String uuid}) async {
     try {
-      final response = await _core.fileThumbnail(uuid, credential);
+      final response = await _core.fileThumbnail(uuid);
       final json = response.json;
       if (!CoreStatusFamily.playback.isOk(response.status) || json == null) {
         return null;

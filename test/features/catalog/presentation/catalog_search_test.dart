@@ -9,11 +9,9 @@ import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
-import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
-    show CatalogListing;
+import 'package:alexandria_ui/features/libraries/presentation/library_view.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -82,20 +80,9 @@ void main() {
     ]),
   };
 
-  /// Moves to [destination] through the navigation panel.
-  Future<void> goTo(WidgetTester tester, ShellDestination destination) async {
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(destination.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
-  }
-
   group('leaving a search behind', () {
     testWidgets(
-      'GivenASearchIsOpen_WhenAnotherAreaIsChosen_ThenTheListingIsShown',
+      'GivenASearchIsOpen_WhenAnotherAreaIsChosen_ThenThatAreaIsShown',
       (tester) async {
         // Navigating is a request for that area. A search left standing would
         // leave the panel highlighting one thing and the content showing
@@ -103,10 +90,10 @@ void main() {
         await openShell(tester, listings: aLibrary());
         await search(tester, 'blue');
 
-        await goTo(tester, ShellDestination.images);
+        await tester.openLibrary(shelf);
 
         expect(find.byType(CatalogSearchResults), findsNothing);
-        expect(find.byType(CatalogListing), findsOneWidget);
+        expect(find.byType(LibraryView), findsOneWidget);
       },
     );
 
@@ -116,7 +103,7 @@ void main() {
         final container = await openShell(tester, listings: aLibrary());
         await search(tester, 'blue');
 
-        await goTo(tester, ShellDestination.images);
+        await tester.openLibrary(shelf);
 
         expect(container.read(searchTermProvider), isEmpty);
       },
@@ -132,7 +119,7 @@ void main() {
         // results would be offering an answer to a question it cannot ask.
         await openShell(tester, listings: aLibrary());
 
-        await goTo(tester, ShellDestination.bookmarks);
+        await tester.goTo(const BookmarksDestination());
         final l10n = AppLocalizations.of(
           tester.element(find.byType(ShellScreen)),
         );
@@ -141,22 +128,18 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenAFileTypeArea_WhenItOpens_ThenTheCatalogSearchIsOffered',
-      (tester) async {
-        await openShell(tester, listings: aLibrary());
+    testWidgets('GivenALibrary_WhenItOpens_ThenTheCatalogSearchIsOffered', (
+      tester,
+    ) async {
+      await openShell(tester, listings: aLibrary());
 
-        await goTo(tester, ShellDestination.images);
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
+      await tester.openLibrary(shelf);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
-        expect(
-          find.widgetWithText(TextField, l10n.searchLabel),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(find.widgetWithText(TextField, l10n.searchLabel), findsOneWidget);
+    });
   });
 
   group('the main flow', () {
@@ -315,10 +298,19 @@ void main() {
       );
       expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
 
-      await tester.tap(find.text(l10n.libraryAdd));
+      // The content area's offer, not the left menu's entry beside it.
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(ShellContentArea),
+
+          matching: find.text(l10n.libraryAdd),
+        ),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.byType(LibrariesView), findsOneWidget);
+      // The add flow runs where the owner is: no screen opens for it.
+      expect(find.byType(LibrariesView), findsNothing);
     });
   });
 

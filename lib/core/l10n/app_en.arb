@@ -12,86 +12,6 @@
   "@coreUnavailableTitle": {
     "description": "Heading of the core-unavailable state (UC-38 AF-04). The catalog is not reachable and no catalog call is attempted from here."
   },
-  "loginTitle": "Sign in to Alexandria",
-  "@loginTitle": {
-    "description": "Heading of the login screen (UC-02). Presented whenever there is no active session."
-  },
-  "loginEmailLabel": "E-mail",
-  "@loginEmailLabel": {
-    "description": "Label of the login form's e-mail field."
-  },
-  "loginPasswordLabel": "Password",
-  "@loginPasswordLabel": {
-    "description": "Label of the login form's password field."
-  },
-  "loginSubmit": "Sign in",
-  "@loginSubmit": {
-    "description": "The login form's primary action."
-  },
-  "loginEmailMissing": "Enter your e-mail address.",
-  "@loginEmailMissing": {
-    "description": "UC-02 AF-01: the e-mail field was left empty. The core is not called."
-  },
-  "loginEmailMalformed": "That does not look like an e-mail address.",
-  "@loginEmailMalformed": {
-    "description": "UC-02 AF-01: the e-mail field does not hold an address. The core is not called."
-  },
-  "loginPasswordMissing": "Enter your password.",
-  "@loginPasswordMissing": {
-    "description": "UC-02 AF-01: the password field was left empty. The core is not called."
-  },
-  "loginRejected": "That e-mail and password do not match an account.",
-  "@loginRejected": {
-    "description": "UC-02 AF-02: the core rejected the credentials. Deliberately does not say which of the two was wrong, and does not reveal whether the address is registered."
-  },
-  "loginNoAccount": "No account has been set up on this computer yet.",
-  "@loginNoAccount": {
-    "description": "UC-02 AF-03: the core holds no credentials, so the owner is sent to sign-up (UC-01) by the action beside this message."
-  },
-  "signUpTitle": "Create your Alexandria account",
-  "@signUpTitle": {
-    "description": "Heading of the sign-up screen (UC-01). Presented on first launch, when the core holds no account."
-  },
-  "signUpIntro": "This is the only account. Its password cannot be recovered, so choose one you will not lose.",
-  "@signUpIntro": {
-    "description": "UC-01: explains the stakes before the owner chooses. The core owns no mail transport, so there is no reset to fall back on."
-  },
-  "signUpPasswordConfirmationLabel": "Repeat password",
-  "@signUpPasswordConfirmationLabel": {
-    "description": "Label of the sign-up form's second password field."
-  },
-  "signUpSubmit": "Create account",
-  "@signUpSubmit": {
-    "description": "The sign-up form's primary action."
-  },
-  "signUpPasswordConfirmationMissing": "Repeat your password.",
-  "@signUpPasswordConfirmationMissing": {
-    "description": "UC-01 AF-02: the second password field was left empty. The core is not called."
-  },
-  "signUpPasswordMismatch": "The two passwords do not match.",
-  "@signUpPasswordMismatch": {
-    "description": "UC-01 AF-02: the two entries differ. The core is not called."
-  },
-  "signUpRejected": "Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.",
-  "@signUpRejected": {
-    "description": "UC-01 AF-03: the core rejected the credentials. The core owns the password policy and does not send its reason across the boundary, so this names the rules it enforces without restating them as front-end validation."
-  },
-  "signUpAccountExists": "An account already exists on this computer. Sign in instead.",
-  "@signUpAccountExists": {
-    "description": "UC-01 AF-04: the core already holds an account, so registration is refused and the owner is sent to the login screen."
-  },
-  "signUpGoToLogin": "Go to sign in",
-  "@signUpGoToLogin": {
-    "description": "UC-01 AF-04: the action that leaves sign-up for the login screen."
-  },
-  "loginGoToSignUp": "Create an account",
-  "@loginGoToSignUp": {
-    "description": "UC-02 AF-03: the action that leaves login for the sign-up screen, offered when the core holds no account."
-  },
-  "loginSessionEndedTitle": "You were signed out",
-  "@loginSessionEndedTitle": {
-    "description": "UC-02 AF-04: heading shown on the login screen when a session was discarded because the core rejected a call, rather than because the owner signed out."
-  },
   "failureCoreLibraryNotLoaded": "The Alexandria core could not be loaded from {path}.",
   "@failureCoreLibraryNotLoaded": {
     "description": "Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.",
@@ -142,10 +62,6 @@
   "@failureInvalidInput": {
     "description": "The core rejected the input. Its verdict is final even when local validation passed."
   },
-  "failureUnauthorized": "Your session has ended. Please sign in again.",
-  "@failureUnauthorized": {
-    "description": "The session is absent, expired, or rejected."
-  },
   "failureNotInitialized": "Alexandria is not ready yet. Please restart the application.",
   "@failureNotInitialized": {
     "description": "A call was made before the core was initialized — a fault in the startup sequence rather than something the owner did."
@@ -166,61 +82,9 @@
   "@failureIntegrity": {
     "description": "The on-disk file and the catalog record have diverged."
   },
-  "failureConfiguration": "Alexandria's configuration could not be read.",
-  "@failureConfiguration": {
-    "description": "The core's own configuration is missing or unusable."
-  },
   "failureConflict": "That already exists in Alexandria.",
   "@failureConflict": {
     "description": "The operation would create something that already exists. Nothing the owner typed was wrong."
-  },
-  "failureRateLimited": "Too many attempts. Wait a moment and try again.",
-  "@failureRateLimited": {
-    "description": "The core refused because the caller is asking too often. Nothing the owner typed was wrong; the remedy is to wait."
-  },
-  "failureServiceUnavailable": "Alexandria could not reach a service it needs, so that step did not happen.",
-  "@failureServiceUnavailable": {
-    "description": "The core could not reach a dependency — outbound mail being the one that exists today. The catalog is unaffected."
-  },
-  "rejectionPasswordTooShort": "Use at least {min} characters.",
-  "@rejectionPasswordTooShort": {
-    "description": "Core rejection password_too_short. The bound comes from the core, which owns the policy.",
-    "placeholders": {
-      "min": {
-        "type": "String",
-        "example": "12"
-      }
-    }
-  },
-  "rejectionPasswordTooLong": "Use at most {max} characters.",
-  "@rejectionPasswordTooLong": {
-    "description": "Core rejection password_too_long.",
-    "placeholders": {
-      "max": {
-        "type": "String",
-        "example": "128"
-      }
-    }
-  },
-  "rejectionPasswordWhitespace": "A password cannot be only spaces.",
-  "@rejectionPasswordWhitespace": {
-    "description": "Core rejection password_whitespace."
-  },
-  "rejectionPasswordRepeatedCharacter": "A password cannot be one character repeated.",
-  "@rejectionPasswordRepeatedCharacter": {
-    "description": "Core rejection password_repeated_character."
-  },
-  "rejectionPasswordTooCommon": "That password is too common. Choose something less predictable.",
-  "@rejectionPasswordTooCommon": {
-    "description": "Core rejection password_too_common."
-  },
-  "rejectionPasswordContainsEmail": "A password cannot contain your e-mail address.",
-  "@rejectionPasswordContainsEmail": {
-    "description": "Core rejection password_contains_email, which covers both being the address and containing it."
-  },
-  "rejectionEmailUntrimmed": "Remove the spaces around your e-mail address.",
-  "@rejectionEmailUntrimmed": {
-    "description": "Core rejection email_untrimmed."
   },
   "failureUnexpected": "Something went wrong in Alexandria.",
   "@failureUnexpected": {
@@ -236,39 +100,35 @@
   },
   "destinationHome": "Home",
   "@destinationHome": {
-    "description": "Navigation panel entry for the dashboard the application opens on (UC-14)."
+    "description": "Left-menu entry for home, the screen the application opens on (UC-14, FR-CT-20)."
   },
   "destinationBooks": "Books",
   "@destinationBooks": {
-    "description": "Navigation panel entry for books and e-books (FR-CT-01)."
+    "description": "The name of the books-and-e-books type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationComicBooks": "Comic books",
   "@destinationComicBooks": {
-    "description": "Navigation panel entry for comic book archives (FR-CT-01)."
+    "description": "The name of the comic-book-archive type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationNotes": "Notes",
   "@destinationNotes": {
-    "description": "Navigation panel entry for notes, Markdown, and plain text files (FR-CT-01)."
+    "description": "The name of the notes, Markdown, and plain-text type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationPages": "Pages",
   "@destinationPages": {
-    "description": "Navigation panel entry for saved HTML pages (FR-CT-01)."
+    "description": "The name of the saved-HTML-page type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationImages": "Images",
   "@destinationImages": {
-    "description": "Navigation panel entry for still images (FR-CT-01)."
+    "description": "The name of the still-image type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationBookmarks": "Bookmarks",
   "@destinationBookmarks": {
-    "description": "Navigation panel entry for saved links, the one type holding no file on disk (FR-CT-01)."
+    "description": "Left-menu entry for saved links, which hold no file on disk (UC-28, FR-CT-20)."
   },
   "preferencesTitle": "Preferences",
   "@preferencesTitle": {
-    "description": "Title of the preferences dialog (UC-39). Reachable with or without a session."
-  },
-  "preferencesOpen": "Open preferences",
-  "@preferencesOpen": {
-    "description": "Accessible label and tooltip of the control that opens the preferences dialog."
+    "description": "Title of the preferences dialog (UC-39)."
   },
   "preferencesLabel": "Preferences",
   "@preferencesLabel": {
@@ -276,7 +136,7 @@
   },
   "settingsMenuLabel": "Settings",
   "@settingsMenuLabel": {
-    "description": "The menu bar's settings menu, holding preferences and the account actions."
+    "description": "The menu bar's settings menu, holding the preferences."
   },
   "settingsMenuOpen": "Open settings",
   "@settingsMenuOpen": {
@@ -308,7 +168,7 @@
   },
   "startupRecheckLabel": "Re-check the library at startup",
   "@startupRecheckLabel": {
-    "description": "Preference controlling whether the catalog is re-checked against the disk each time a session is established."
+    "description": "Preference controlling whether the catalog is re-checked against the disk each time the application starts."
   },
   "startupRecheckDescription": "Looks for files added, changed, or removed while Alexandria was closed.",
   "@startupRecheckDescription": {
@@ -321,42 +181,6 @@
   "preferencesClose": "Done",
   "@preferencesClose": {
     "description": "The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made."
-  },
-  "changeCredentialsOpen": "Change credentials…",
-  "@changeCredentialsOpen": {
-    "description": "Label of the entry in the Settings menu that opens the credential-change form (UC-04 main flow step 1)."
-  },
-  "changeCredentialsTitle": "Change credentials",
-  "@changeCredentialsTitle": {
-    "description": "Title of the credential-change dialog (UC-04)."
-  },
-  "changeCredentialsIntro": "Both are replaced together. You stay signed in.",
-  "@changeCredentialsIntro": {
-    "description": "Explains that the e-mail and password change as one, and that the session survives the change (UC-04 postconditions)."
-  },
-  "changeCredentialsEmailLabel": "New e-mail",
-  "@changeCredentialsEmailLabel": {
-    "description": "Label of the new e-mail field."
-  },
-  "changeCredentialsPasswordLabel": "New password",
-  "@changeCredentialsPasswordLabel": {
-    "description": "Label of the new password field."
-  },
-  "changeCredentialsConfirmationLabel": "Repeat the new password",
-  "@changeCredentialsConfirmationLabel": {
-    "description": "Label of the repeated-password field (FR-AU-10 requires it entered twice)."
-  },
-  "changeCredentialsSubmit": "Change",
-  "@changeCredentialsSubmit": {
-    "description": "The form's primary action."
-  },
-  "changeCredentialsDone": "Your e-mail and password have been changed.",
-  "@changeCredentialsDone": {
-    "description": "UC-04 main flow step 6: the core stored the new hash and the change is confirmed."
-  },
-  "changeCredentialsRejected": "The change was refused, and your e-mail and password are unchanged.",
-  "@changeCredentialsRejected": {
-    "description": "UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched."
   },
   "dismiss": "Dismiss",
   "@dismiss": {
@@ -463,19 +287,15 @@
   },
   "destinationVideos": "Videos",
   "@destinationVideos": {
-    "description": "Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog."
+    "description": "The name of the video type, of every kind: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22). One type rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog."
   },
   "destinationMusic": "Music",
   "@destinationMusic": {
-    "description": "The listing's name for music and other audio."
-  },
-  "catalogEmptyTitle": "Nothing of this type yet",
-  "@catalogEmptyTitle": {
-    "description": "UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states."
+    "description": "The name of the music-and-other-audio type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "catalogEmptyFirstRun": "Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.",
   "@catalogEmptyFirstRun": {
-    "description": "UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06)."
+    "description": "UC-14 AF-01 and UC-11 AF-04: there is no library yet, so adding a folder as one is what the owner needs (UC-05, UC-06)."
   },
   "catalogFileMissing": "Missing from disk",
   "@catalogFileMissing": {
@@ -500,10 +320,6 @@
   "layoutSubstituted": "The window is too narrow for that layout, so the list is shown instead.",
   "@layoutSubstituted": {
     "description": "UC-10 AF-01: the chosen layout does not fit, so the closest one that does is drawn and the substitution is stated rather than columns being clipped."
-  },
-  "layoutUnsaved": "The layout changed, but the choice could not be saved — it will not be remembered next time.",
-  "@layoutUnsaved": {
-    "description": "UC-10 AF-02: the settings store could not be written. The layout still applies for this session."
   },
   "searchLabel": "Search the library",
   "@searchLabel": {
@@ -535,26 +351,6 @@
       }
     }
   },
-  "filtersLabel": "Filters and order",
-  "@filtersLabel": {
-    "description": "Accessible label of the control that opens the filter and sort choices (UC-12)."
-  },
-  "filterLifecycle": "Show",
-  "@filterLifecycle": {
-    "description": "Heading of the lifecycle filter (FR-CT-07)."
-  },
-  "filterLifecycleActive": "In the library",
-  "@filterLifecycleActive": {
-    "description": "Lifecycle filter: only records the core calls active. What a listing opens on."
-  },
-  "filterLifecycleDeleted": "Deleted",
-  "@filterLifecycleDeleted": {
-    "description": "Lifecycle filter: only soft-deleted records."
-  },
-  "filterLifecycleAll": "Everything",
-  "@filterLifecycleAll": {
-    "description": "Lifecycle filter: active and deleted records together."
-  },
   "sortLabel": "Order by",
   "@sortLabel": {
     "description": "Heading of the sort choices (FR-CT-08)."
@@ -578,18 +374,6 @@
   "sortDescending": "Descending",
   "@sortDescending": {
     "description": "Sort direction: Z to A, newest first."
-  },
-  "filtersClear": "Clear the filters",
-  "@filtersClear": {
-    "description": "The action that restores the unfiltered listing (UC-12 AF-02). The sort is left alone, because ordering hides nothing."
-  },
-  "filtersEmpty": "Nothing matches the filters you have set.",
-  "@filtersEmpty": {
-    "description": "UC-12 AF-01: the filter combination matched nothing. Offers to clear them."
-  },
-  "filtersRejected": "That filter was refused, so the previous one is back.",
-  "@filtersRejected": {
-    "description": "UC-12 AF-04: the core rejected the filter as invalid input, and the previous filters were restored."
   },
   "detailsTitle": "Details",
   "@detailsTitle": {
@@ -679,94 +463,34 @@
   "@detailsFileModified": {
     "description": "Label for when the file was last changed on disk, in the details dialog."
   },
-  "dashboardRecent": "Recently added",
-  "@dashboardRecent": {
-    "description": "Heading of the dashboard's recently added section (UC-14, FR-CT-11)."
+  "homeFavorites": "Favorite libraries",
+  "@homeFavorites": {
+    "description": "Heading of home's section listing the libraries marked as favorites."
   },
-  "dashboardRecentNone": "Nothing has been added yet.",
-  "@dashboardRecentNone": {
-    "description": "The recently added section has nothing to show."
+  "homeFavoritesNone": "Mark a library as a favorite to see it here",
+  "@homeFavoritesNone": {
+    "description": "Home's favorites section when no library is marked as a favorite."
   },
-  "dashboardInProgress": "In progress",
-  "@dashboardInProgress": {
-    "description": "Heading of the dashboard's in-progress section (UC-14, FR-CT-11)."
+  "homeFavoritesHint": "Use the star in a library's header, or right-click it in the left menu.",
+  "@homeFavoritesHint": {
+    "description": "Under home's empty favorites section: where the owner marks a library as a favorite — the star in the library view's header, or the left menu entry's right-click menu."
   },
-  "dashboardInProgressNone": "Nothing is in progress.",
-  "@dashboardInProgressNone": {
-    "description": "UC-14 AF-02: the section states that nothing is in progress rather than rendering empty."
+  "homeStatistics": "Statistics",
+  "@homeStatistics": {
+    "description": "Heading of home's section with the totals: libraries, and files per type."
   },
-  "dashboardInProgressIn": "In {list}",
-  "@dashboardInProgressIn": {
-    "description": "UC-14 main flow step 2: which watchlist or reading list an in-progress item belongs to.",
+  "homeLibraryCount": "{count, plural, =1{1 library} other{{count} libraries}}",
+  "@homeLibraryCount": {
+    "description": "Home's statistics: how many libraries are registered.",
     "placeholders": {
-      "list": {
-        "type": "String"
+      "count": {
+        "type": "num"
       }
     }
-  },
-  "dashboardInProgressInAt": "In {list} — {progress}",
-  "@dashboardInProgressInAt": {
-    "description": "UC-14 main flow step 2: the list an in-progress item belongs to, and how far through it the owner is.",
-    "placeholders": {
-      "list": {
-        "type": "String"
-      },
-      "progress": {
-        "type": "String"
-      }
-    }
-  },
-  "dashboardCounts": "What is in the library",
-  "@dashboardCounts": {
-    "description": "Heading of the dashboard's per-type counts (UC-14, FR-CT-11)."
-  },
-  "dashboardLastRun": "The last scan",
-  "@dashboardLastRun": {
-    "description": "Heading of the dashboard's most-recent-run section (UC-14, FR-CT-11)."
-  },
-  "dashboardLastRunNone": "Nothing has been scanned in this session.",
-  "@dashboardLastRunNone": {
-    "description": "No index or refresh run has been observed since the application started."
-  },
-  "dashboardLastRunRunning": "A scan is running now.",
-  "@dashboardLastRunRunning": {
-    "description": "UC-14 AF-04: a run is in flight, and the dashboard updates when it settles."
-  },
-  "dashboardLastRunComplete": "The last scan finished.",
-  "@dashboardLastRunComplete": {
-    "description": "The most recent run completed."
-  },
-  "dashboardLastRunFailed": "The last scan did not finish.",
-  "@dashboardLastRunFailed": {
-    "description": "The most recent run failed."
-  },
-  "dashboardLastRunInterrupted": "The last scan was interrupted when Alexandria closed.",
-  "@dashboardLastRunInterrupted": {
-    "description": "The most recent run was interrupted rather than failing."
   },
   "detailsEditMetadata": "Edit metadata",
   "@detailsEditMetadata": {
     "description": "Opens the video metadata form from a video's detail view (UC-16 main flow step 1)."
-  },
-  "signOut": "Sign out",
-  "@signOut": {
-    "description": "UC-03 main flow step 1: ends the session without closing the application."
-  },
-  "signOutUnsavedTitle": "Unsaved changes",
-  "@signOutUnsavedTitle": {
-    "description": "UC-03 AF-01: the heading of the warning shown when an editor is holding changes that were never saved."
-  },
-  "signOutUnsavedMessage": "Signing out now discards the changes you have not saved. Cancel to go back and save them first.",
-  "@signOutUnsavedMessage": {
-    "description": "UC-03 AF-01: names what signing out would lose, and says that cancelling is how to save it."
-  },
-  "signOutUnsavedConfirm": "Sign out and discard",
-  "@signOutUnsavedConfirm": {
-    "description": "UC-03 AF-01: confirms the sign-out, unsaved changes and all."
-  },
-  "signOutIndexRunContinues": "You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.",
-  "@signOutIndexRunContinues": {
-    "description": "UC-03 AF-02: the scan belongs to the core, so signing out neither stopped it nor lost its outcome."
   },
   "videoMetadataTitle": "Edit video metadata",
   "@videoMetadataTitle": {
@@ -910,10 +634,6 @@
   "@editorOverwrite": {
     "description": "UC-18 AF-05: writes over the version that changed on disk."
   },
-  "editorSignInAgain": "Sign in again",
-  "@editorSignInAgain": {
-    "description": "UC-18 AF-06: acknowledges that the session ended and the content could not be saved."
-  },
   "editorNothingToSave": "The content has not changed, so nothing was written.",
   "@editorNothingToSave": {
     "description": "UC-18 AF-01: the editor holds exactly what was read, so the core was not called."
@@ -929,10 +649,6 @@
   "editorRecordGone": "This file is no longer in the catalog. What you have written is still here, and is not saved.",
   "@editorRecordGone": {
     "description": "UC-18 AF-04: the record went while the editor was open, and nothing typed is discarded silently."
-  },
-  "editorSessionRejected": "Your session ended, so this could not be saved. Signing in again will lose what is on screen.",
-  "@editorSessionRejected": {
-    "description": "UC-18 AF-06: the core rejected the write, and the owner is warned before the session goes."
   },
   "editorCouldNotRead": "This file could not be read.",
   "@editorCouldNotRead": {
@@ -1422,9 +1138,9 @@
       }
     }
   },
-  "libraryMove": "The folder moved",
+  "libraryMove": "Move…",
   "@libraryMove": {
-    "description": "Libraries design FR-FC-41: corrects a library's root after its folder moved on disk, taking its files with it."
+    "description": "The action, in a library's menu and on its row in Manage libraries (libraries design FR-FC-41): corrects a library's root after its folder moved on disk, taking its files with it."
   },
   "libraryMoveConflict": "That folder cannot hold this library: it overlaps another one, or the catalog already has files there.",
   "@libraryMoveConflict": {
@@ -1483,6 +1199,42 @@
   "@libraryNameLabel": {
     "description": "The owner's name for the library, which is not the folder's name."
   },
+  "libraryRename": "Rename library",
+  "@libraryRename": {
+    "description": "Title of the dialog that renames a library, and the tooltip of the action that opens it."
+  },
+  "libraryRenameEntry": "Rename…",
+  "@libraryRenameEntry": {
+    "description": "Context-menu entry of a library in the left menu that opens the rename dialog."
+  },
+  "libraryPin": "Pin",
+  "@libraryPin": {
+    "description": "Context-menu entry of a library in the left menu that pins it to the top of the menu."
+  },
+  "libraryUnpin": "Unpin",
+  "@libraryUnpin": {
+    "description": "Context-menu entry of a pinned library in the left menu that returns it to the other libraries."
+  },
+  "libraryPinned": "Pinned",
+  "@libraryPinned": {
+    "description": "Read out for the pin badge on a pinned library's icon in the left menu."
+  },
+  "libraryFavoriteAdd": "Add to favorites",
+  "@libraryFavoriteAdd": {
+    "description": "Context-menu entry of a library in the left menu that marks it a favorite, which home shows. Not a bookmark."
+  },
+  "libraryFavoriteRemove": "Remove from favorites",
+  "@libraryFavoriteRemove": {
+    "description": "Context-menu entry of a favorite library in the left menu that clears the mark."
+  },
+  "libraryChangeNotSaved": "The change could not be saved.",
+  "@libraryChangeNotSaved": {
+    "description": "Snackbar shown when the core refuses to pin, unpin, favorite or unfavorite a library; the left menu stays as it was."
+  },
+  "librariesLoadFailed": "Libraries didn't load. Try again",
+  "@librariesLoadFailed": {
+    "description": "Left-menu entry, and its tooltip, shown when the libraries could not be read; activating it reads them again."
+  },
   "libraryAdd": "Add a library",
   "@libraryAdd": {
     "description": "Opens the folder picker to mark a folder as a library."
@@ -1504,7 +1256,7 @@
       }
     }
   },
-  "libraryEmptyRoot": "Nothing under this folder has been indexed yet. Scan it from the libraries list, and what it holds will appear here.",
+  "libraryEmptyRoot": "Nothing under this folder has been indexed yet. Scan the library from its menu, and what it holds will appear here.",
   "@libraryEmptyRoot": {
     "description": "Libraries design: the top of a library with no indexed files under it. A library is browsed out of the catalog, not out of a walk of the disk, so this is what an owner sees when they made a library of a folder nobody has scanned — and it says the remedy, because \"nothing in this folder\" describes a disk the owner can see is not empty."
   },
@@ -1512,9 +1264,49 @@
   "@libraryEmptyFolder": {
     "description": "A folder with no files and no subfolders indexed under it."
   },
-  "libraryUp": "Up one folder",
-  "@libraryUp": {
-    "description": "Goes to the folder containing the one being shown."
+  "libraryNoneVideos": "No videos in this folder.",
+  "@libraryNoneVideos": {
+    "description": "A library folder that has files, but no videos, while the type filter shows only videos."
+  },
+  "libraryNoneMusic": "No music in this folder.",
+  "@libraryNoneMusic": {
+    "description": "A library folder that has files, but no music, while the type filter shows only music."
+  },
+  "libraryNoneBooks": "No books in this folder.",
+  "@libraryNoneBooks": {
+    "description": "A library folder that has files, but no books, while the type filter shows only books."
+  },
+  "libraryNoneComicBooks": "No comic books in this folder.",
+  "@libraryNoneComicBooks": {
+    "description": "A library folder that has files, but no comic books, while the type filter shows only comic books."
+  },
+  "libraryNoneNotes": "No notes in this folder.",
+  "@libraryNoneNotes": {
+    "description": "A library folder that has files, but no notes, while the type filter shows only notes."
+  },
+  "libraryNonePages": "No pages in this folder.",
+  "@libraryNonePages": {
+    "description": "A library folder that has files, but no saved pages, while the type filter shows only saved pages."
+  },
+  "libraryNoneImages": "No images in this folder.",
+  "@libraryNoneImages": {
+    "description": "A library folder that has files, but no images, while the type filter shows only images."
+  },
+  "libraryTypeAll": "All types",
+  "@libraryTypeAll": {
+    "description": "The library view's type filter showing every type; also the filter button's label while it does."
+  },
+  "libraryTypeFilterClear": "Clear the filter",
+  "@libraryTypeFilterClear": {
+    "description": "Shows every type again, from a library folder whose files are all of another type than the filter's."
+  },
+  "libraryActions": "Library actions",
+  "@libraryActions": {
+    "description": "Tooltip of the library header's menu button: rename, scan again, move and remove."
+  },
+  "libraryViewUnsaved": "The change applied, but it could not be saved — it will not be remembered next time.",
+  "@libraryViewUnsaved": {
+    "description": "Shown under the library view's toolbar when a layout, filter or order applied but the settings store refused to keep it."
   },
   "libraryOverlaps": "That folder is already inside another library.",
   "@libraryOverlaps": {
@@ -1739,111 +1531,6 @@
   "@missingFilesUnregisteredFolder": {
     "description": "UC-37 AF-03: the record came from a folder the owner has since unregistered."
   },
-  "recoveryCodesTitle": "Save your recovery codes",
-  "@recoveryCodesTitle": {
-    "description": "UC-40 main flow step 2: the heading of the screen shown once after sign-up."
-  },
-  "recoveryCodesExplanation": "This is the only time these are shown. Each one replaces a forgotten password exactly once — without them, a forgotten password means a lost library.",
-  "@recoveryCodesExplanation": {
-    "description": "UC-40 main flow step 2 and FR-AU-12: says plainly that the codes are not retrievable and what they are for."
-  },
-  "recoveryCodesCopy": "Copy the codes",
-  "@recoveryCodesCopy": {
-    "description": "UC-40 AF-02: places the codes on the clipboard. Nothing is written to disk (FR-AU-13)."
-  },
-  "recoveryCodesCopied": "Copied to the clipboard.",
-  "@recoveryCodesCopied": {
-    "description": "UC-40 AF-02: confirms the copy happened."
-  },
-  "recoveryCodesAcknowledge": "I have stored them",
-  "@recoveryCodesAcknowledge": {
-    "description": "UC-40 main flow step 4: the only way past this screen (AF-01). Confirming opens the library."
-  },
-  "recoveryCodesNone": "Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.",
-  "@recoveryCodesNone": {
-    "description": "UC-40 AF-03: the core issued no codes, which is said plainly rather than shown as an empty list."
-  },
-  "recoveryTitle": "Recover access",
-  "@recoveryTitle": {
-    "description": "UC-41 main flow step 1: the screen for an owner who cannot remember their password."
-  },
-  "recoveryOpen": "I cannot sign in",
-  "@recoveryOpen": {
-    "description": "UC-41 main flow step 1: reaches account recovery from the login screen."
-  },
-  "recoveryExplanation": "Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.",
-  "@recoveryExplanation": {
-    "description": "UC-41 main flow step 2: what the owner needs and what it costs them."
-  },
-  "recoveryCodeLabel": "Recovery code",
-  "@recoveryCodeLabel": {
-    "description": "UC-41 main flow step 2: the code the owner saved."
-  },
-  "recoveryNewPassword": "New password",
-  "@recoveryNewPassword": {
-    "description": "UC-41 main flow step 2: the password that replaces the forgotten one."
-  },
-  "recoveryConfirmPassword": "Repeat the new password",
-  "@recoveryConfirmPassword": {
-    "description": "UC-41 main flow step 2: entered twice, and the two must match before the core is called."
-  },
-  "recoveryCodeMissing": "Enter a recovery code.",
-  "@recoveryCodeMissing": {
-    "description": "UC-41 AF-01: the code is blank, so the core is not called."
-  },
-  "recoveryPasswordMissing": "Enter a new password.",
-  "@recoveryPasswordMissing": {
-    "description": "UC-41 AF-01: the password is empty, so the core is not called."
-  },
-  "recoverySubmit": "Replace the password",
-  "@recoverySubmit": {
-    "description": "UC-41 main flow step 4: sends the code and the new password to the core."
-  },
-  "recoveryCodeUnknown": "That is not one of this account's recovery codes. Check it and try again.",
-  "@recoveryCodeUnknown": {
-    "description": "UC-41 AF-02: the core does not recognise the code. Distinct from AF-03, because a mistyped code and a spent one call for different things."
-  },
-  "recoveryCodeUsed": "That recovery code has already been used. Each one works once — try another from your list.",
-  "@recoveryCodeUsed": {
-    "description": "UC-41 AF-03: the core reports the code as already consumed."
-  },
-  "recoveryRefused": "The password could not be replaced. Check the code and try again.",
-  "@recoveryRefused": {
-    "description": "UC-41: the core refused without naming a reason this version knows, so the message says what to do rather than a code."
-  },
-  "recoveryDone": "Your password was replaced",
-  "@recoveryDone": {
-    "description": "UC-41 main flow step 6: the redemption succeeded."
-  },
-  "recoveryDoneExplanation": "The code you used is spent, and every open session was signed out. Sign in with the new password.",
-  "@recoveryDoneExplanation": {
-    "description": "UC-41 main flow step 6: what happened, and what to do next."
-  },
-  "recoveryBackToLogin": "Back to sign in",
-  "@recoveryBackToLogin": {
-    "description": "UC-41 main flow step 6: returns to the login screen."
-  },
-  "recoveryCodesRegenerate": "Generate new recovery codes",
-  "@recoveryCodesRegenerate": {
-    "description": "UC-42 main flow step 2: replaces the whole set with ten new codes."
-  },
-  "recoveryCodesRegenerateMessage": "Every code you have now stops working, and ten new ones take their place. They are shown once.",
-  "@recoveryCodesRegenerateMessage": {
-    "description": "UC-42 main flow step 3: the confirmation states what the owner is giving up."
-  },
-  "recoveryCodesNoneLeft": "No recovery codes are left. Generate a set while you still know your password.",
-  "@recoveryCodesNoneLeft": {
-    "description": "UC-42 main flow step 1: the core reports none unspent, which means the account cannot currently be recovered."
-  },
-  "recoveryCodesRemaining": "{count, plural, =1{1 recovery code left} other{{count} recovery codes left}}",
-  "@recoveryCodesRemaining": {
-    "description": "UC-42 main flow step 1 and FR-AU-14: how many codes the core reports as unspent.",
-    "placeholders": {
-      "count": {
-        "type": "num"
-      }
-    }
-  },
   "collectionsTitle": "Collections",
   "@collectionsTitle": {
     "description": "UC-26 main flow step 1: the collections screen heading."
@@ -1994,15 +1681,15 @@
   },
   "libraryToolsGroupLibrary": "Library",
   "@libraryToolsGroupLibrary": {
-    "description": "Heading over the library tools menu's first group: sources and collections — filling and organizing the library itself."
+    "description": "Heading over the Library menu's group for collections — organizing the library itself."
   },
   "libraryToolsGroupTracking": "Tracking",
   "@libraryToolsGroupTracking": {
-    "description": "Heading over the library tools menu's second group: watchlists and reading lists — what the owner is following."
+    "description": "Heading over the Library menu's group for watchlists and reading lists — what the owner is following."
   },
   "libraryToolsGroupReview": "Review",
   "@libraryToolsGroupReview": {
-    "description": "Heading over the library tools menu's third group: deleted items and the missing-files review — what has left the library or needs a look."
+    "description": "Heading over the Library menu's group for deleted items and the missing-files review — what has left the library or needs a look."
   },
   "activityBarLabel": "Background indexing",
   "@activityBarLabel": {
@@ -2177,10 +1864,6 @@
   "@activityDismiss": {
     "description": "FR-FC-29: clears a failed run's report from the strip. The strip's own rather than the text editor's, so that renaming one does not silently change the other."
   },
-  "destinationLibraries": "Libraries",
-  "@destinationLibraries": {
-    "description": "Navigation panel entry for the registered libraries — folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it."
-  },
   "libraryRemovePausedNote": "Its paused scan is discarded too.",
   "@libraryRemovePausedNote": {
     "description": "Added to the remove confirmation when the library has a paused scan."
@@ -2207,7 +1890,11 @@
   },
   "libraryMenuLibraries": "Libraries",
   "@libraryMenuLibraries": {
-    "description": "Library menu entry that opens the libraries."
+    "description": "The Library menu's first heading, over adding and managing libraries, and the title of the Manage libraries dialog."
+  },
+  "libraryMenuManage": "Manage libraries…",
+  "@libraryMenuManage": {
+    "description": "Library menu entry that opens the dialog listing every library, with rename, scan again, move and remove."
   },
   "libraryMenuAdd": "Add library…",
   "@libraryMenuAdd": {

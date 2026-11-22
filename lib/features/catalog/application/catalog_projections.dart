@@ -14,9 +14,8 @@ import '../../../core/di/providers.dart';
 /// Bookmarks are not here: only the writes that can touch a bookmark record
 /// invalidate that one, and it is theirs to add.
 void invalidateCatalogProjections(Ref ref) {
-  ref.invalidate(listingControllerProvider);
-  ref.invalidate(typeCountsControllerProvider);
-  ref.invalidate(recentFilesProvider);
+  ref.invalidate(libraryTreeControllerProvider);
+  ref.invalidate(catalogStatsProvider);
   ref.invalidate(catalogSearchProvider);
   ref.invalidate(fileDetailsControllerProvider);
 }

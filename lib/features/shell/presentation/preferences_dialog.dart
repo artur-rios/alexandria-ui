@@ -6,17 +6,15 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../auth/application/session_state.dart';
 import '../../updates/application/update_state.dart';
 import '../../updates/domain/install_kind.dart';
 import '../../updates/presentation/update_dialog.dart';
 
 /// The preferences dialog (UC-39, FR-UX-04, FR-UX-05, FR-UX-12).
 ///
-/// A dialog rather than a screen, because main flow step 1 requires it
-/// reachable "with or without a session" — it opens over the login screen and
-/// over the shell alike, which a routed screen could not do without inventing
-/// navigation no use case has asked for.
+/// A dialog rather than a screen: it opens over whatever the shell is showing,
+/// which a routed screen could not do without inventing navigation no use case
+/// has asked for.
 ///
 /// Nothing here has an apply or a cancel. Each choice takes effect the moment
 /// it is made (steps 3 and 5), so [preferencesClose] closes a dialog whose
@@ -36,13 +34,6 @@ class PreferencesDialog extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final preferences = ref.watch(preferencesControllerProvider);
     final controller = ref.read(preferencesControllerProvider.notifier);
-    // What the owner can act on from where they are (UC-39 AF-05).
-    //
-    // The theme and the language change the screen they are standing on, so
-    // they belong on the login screen as much as anywhere. The re-check does
-    // not: it is about a library that is not open, and offering it here is
-    // offering a setting for a session that does not exist.
-    final signedIn = ref.watch(sessionControllerProvider) is SessionActive;
 
     return AlertDialog(
       title: Text(l10n.preferencesTitle),
@@ -124,21 +115,19 @@ class PreferencesDialog extends ConsumerWidget {
                 ),
               ],
 
-              if (signedIn) ...[
-                const SizedBox(height: AppSpacing.md),
-                // No `_GroupLabel` here: a group of one control restating its
-                // own name in a label above it would be the same redundancy
-                // this fixes, only moved rather than removed. The switch names
-                // itself.
-                SwitchListTile(
-                  title: Text(l10n.startupRecheckLabel),
-                  subtitle: Text(l10n.startupRecheckDescription),
-                  value: preferences.rechecksAtStartup,
-                  contentPadding: EdgeInsets.zero,
-                  onChanged: (value) =>
-                      unawaited(controller.setRechecksAtStartup(value)),
-                ),
-              ],
+              const SizedBox(height: AppSpacing.md),
+              // No `_GroupLabel` here: a group of one control restating its
+              // own name in a label above it would be the same redundancy
+              // this fixes, only moved rather than removed. The switch names
+              // itself.
+              SwitchListTile(
+                title: Text(l10n.startupRecheckLabel),
+                subtitle: Text(l10n.startupRecheckDescription),
+                value: preferences.rechecksAtStartup,
+                contentPadding: EdgeInsets.zero,
+                onChanged: (value) =>
+                    unawaited(controller.setRechecksAtStartup(value)),
+              ),
             ],
           ),
         ),
@@ -266,26 +255,6 @@ enum _LanguageOption {
     _LanguageOption.english => 'English',
     _LanguageOption.portuguese => 'Português (Brasil)',
   };
-}
-
-/// The control that opens [PreferencesDialog].
-///
-/// One widget rather than a button on each screen, because UC-39 requires the
-/// same entry point with and without a session, and two of them would drift.
-class PreferencesButton extends StatelessWidget {
-  /// Creates the button.
-  const PreferencesButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return IconButton(
-      icon: const Icon(Icons.settings_outlined),
-      tooltip: l10n.preferencesOpen,
-      onPressed: () => PreferencesDialog.show(context),
-    );
-  }
 }
 
 /// "Check now": asks for the latest release and says what it found, or

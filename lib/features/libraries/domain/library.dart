@@ -20,6 +20,12 @@ abstract class Library with _$Library {
 
     /// The folder every entry's position is relative to.
     required String rootPath,
+
+    /// Whether the owner pinned it to the top of the left menu.
+    @Default(false) bool pinned,
+
+    /// Whether the owner marked it a favorite, which home shows.
+    @Default(false) bool favorite,
   }) = _Library;
 }
 

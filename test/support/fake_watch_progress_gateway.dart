@@ -19,10 +19,7 @@ class FakeWatchProgressGateway implements WatchProgressGateway {
   final List<String> asked = [];
 
   @override
-  Future<bool> episodesRecordedFor({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<bool> episodesRecordedFor({required String uuid}) async {
     asked.add(uuid);
     return recordsEpisodes;
   }

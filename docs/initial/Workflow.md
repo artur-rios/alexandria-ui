@@ -9,7 +9,7 @@ this document is the operational form an implementer follows step by step.
 
 ## Invocation
 
-Work starts when a use case is named by its identifier, e.g. `UC-03`. If the
+Work starts when a use case is named by its identifier, e.g. `UC-05`. If the
 identifier is missing or ambiguous, ask which one before doing anything else.
 One pass handles exactly **one use case**.
 
@@ -92,7 +92,7 @@ Once the plan is approved, create the branch from an up-to-date `develop` branch
 
 ```bash
 git switch develop && git pull
-git switch -c feature/uc-01-sign-up
+git switch -c feature/uc-05-add-a-library
 ```
 
 Then — the **one** status change made without asking — move the issue to

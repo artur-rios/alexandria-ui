@@ -36,7 +36,7 @@ class ShellMenuBar extends ConsumerWidget {
     // frame rather than to whichever listing is showing. Bookmarks are the one
     // area that holds no files, and so the one area with nothing to answer.
     final searchable =
-        ref.watch(shellControllerProvider) != ShellDestination.bookmarks;
+        ref.watch(shellControllerProvider) is! BookmarksDestination;
 
     return Material(
       color: theme.colorScheme.surfaceContainer,

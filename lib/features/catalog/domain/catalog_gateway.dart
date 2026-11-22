@@ -10,7 +10,8 @@ import 'video_metadata.dart';
 
 part 'catalog_gateway.freezed.dart';
 
-/// What listing a type produced (UC-09 main flow steps 3 and 4).
+/// What listing a type produced: search's and the reviews' (UC-11, UC-34,
+/// UC-37).
 @freezed
 sealed class CatalogListing with _$CatalogListing {
   /// The core answered with [files], which may be empty (AF-01).
@@ -84,30 +85,23 @@ sealed class FileRenameOutcome with _$FileRenameOutcome {
 
 /// The application's view of the core's catalog queries (IR-02, NFR-17).
 abstract interface class CatalogGateway {
-  /// The files of [type] in [lifecycle], across every library (FR-CT-02,
-  /// FR-CT-07, FR-LB-04). Every file belongs to one (core 0.6.0), so nothing
+  /// The files of [type] in [lifecycle], across every library (FR-CT-06,
+  /// FR-LC-03, FR-LB-04). Every file belongs to one (core 0.6.0), so nothing
   /// is left out for being in a library.
   ///
-  /// [lifecycle] is the one filter the core applies itself; everything else
-  /// UC-12 offers is applied to what it returns. Defaults to active records,
-  /// which is what a listing opens on.
-  /// [type] is optional, and omitting it lists every type in one call. That
-  /// is what the navigation panel's counts want: they used to ask once per
-  /// type and take the length of each answer, which serialized the whole
-  /// catalog out of the core, across the FFI boundary and through a JSON
-  /// decode once for every type on screen — and again after each scan,
-  /// purge, and restore.
+  /// [lifecycle] is the one filter the core applies itself. Defaults to active
+  /// records; Deleted items asks for the deleted ones (UC-34).
+  /// [type] is optional, and omitting it lists every type in one call, rather
+  /// than serializing the whole catalog out of the core, across the FFI
+  /// boundary and through a JSON decode once for every type. Home's counts no
+  /// longer come from here: they are the core's statistics (FR-CT-22).
   Future<CatalogListing> listFiles({
-    required String credential,
     FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
   });
 
   /// One file, with everything the core knows about it (FR-CT-05, UC-13).
-  Future<FileDetailsOutcome> fileDetails({
-    required String uuid,
-    required String credential,
-  });
+  Future<FileDetailsOutcome> fileDetails({required String uuid});
 
   /// Replaces the video metadata of the file [uuid] identifies (FR-ME-02,
   /// UC-16).
@@ -119,7 +113,6 @@ abstract interface class CatalogGateway {
   Future<VideoMetadataEditOutcome> editVideoMetadata({
     required String uuid,
     required VideoMetadata metadata,
-    required String credential,
   });
 
   /// Replaces the tags of the audio file [uuid] identifies (FR-ME-01, UC-15).
@@ -130,7 +123,6 @@ abstract interface class CatalogGateway {
   Future<MetadataEditOutcome> editMusicMetadata({
     required String uuid,
     required MusicMetadata metadata,
-    required String credential,
   });
 
   /// Renames the file [uuid] identifies, on disk and in the catalog
@@ -142,6 +134,5 @@ abstract interface class CatalogGateway {
   Future<FileRenameOutcome> renameFile({
     required String uuid,
     required String name,
-    required String credential,
   });
 }

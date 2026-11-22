@@ -89,13 +89,12 @@ is always at the same relative path under `test/`, with `_test` appended.
 lib/
 ├── core/                       cross-cutting: failures, theme, l10n, di
 ├── features/
-│   ├── auth/
+│   ├── indexing/
+│   ├── libraries/
 │   │   ├── domain/
 │   │   ├── application/
 │   │   ├── data/
 │   │   └── presentation/
-│   ├── indexing/
-│   ├── libraries/
 │   ├── catalog/
 │   ├── editing/
 │   ├── playback/
@@ -109,7 +108,7 @@ lib/
 test/                           unit and widget tests, mirroring lib/
 ├── core/
 ├── features/
-│   ├── auth/
+│   ├── libraries/
 │   │   ├── domain/
 │   │   ├── application/
 │   │   └── presentation/
@@ -119,13 +118,13 @@ test/                           unit and widget tests, mirroring lib/
 
 integration_test/               whole flows against the real core
 ├── support/                    temporary database and fixture library setup
-├── auth/
 ├── libraries/
 └── …
 ```
 
-`lib/features/auth/domain/session.dart` is tested by
-`test/features/auth/domain/session_test.dart`. No other mapping is used.
+`lib/features/libraries/application/libraries_controller.dart` is tested by
+`test/features/libraries/application/libraries_controller_test.dart`. No other
+mapping is used.
 
 ## 5. Naming & structure
 
@@ -136,17 +135,17 @@ GivenSomeCondition_WhenSomeAction_ThenSomeOutcome
 ```
 
 ```dart
-test('GivenAMalformedEmail_WhenTheOwnerSubmitsLogin_ThenTheCoreIsNeverCalled', () {
+test('GivenTheCoreRefusesThePin_WhenTheOwnerPinsALibrary_ThenTheListIsNotReloaded', () async {
   // Given — the preconditions, and only those that matter to this test
-  final gateway = FakeAuthGateway();
-  final sut = LoginViewModel(gateway);
+  final gateway = FakeLibraryGateway()..refuseNextWrite();
+  final sut = LibrariesController(gateway);
 
   // When — exactly one action
-  sut.submit(email: 'not-an-email', password: 'correct horse');
+  final failure = await sut.setPinned('library-uuid', true);
 
   // Then — the observable outcome
-  expect(gateway.loginCallCount, 0);
-  expect(sut.state.emailError, isNotNull);
+  expect(failure, isNotNull);
+  expect(gateway.listCallCount, 0);
 });
 ```
 
@@ -199,7 +198,6 @@ For each production unit, walk this checklist:
 - [ ] The happy path.
 - [ ] Each validation failure the unit can produce, asserted individually.
 - [ ] Each not-found condition.
-- [ ] Each unauthorized condition, including that it clears the session.
 - [ ] Each boundary: empty collection, single item, the maximum the unit accepts,
       and one past it.
 - [ ] Each failure the Alexandria core can return that this unit maps, asserted as
@@ -254,7 +252,6 @@ FFI, entering through the same screens the owner uses.
 | The Alexandria core | The real shared library, loaded exactly as the application loads it. Never faked — verifying this boundary is the point of the suite. |
 | The catalog database | A temporary SQLite file created per test run and deleted afterwards. |
 | The library folder | A fixture directory of small sample files created per test run, never a real library. |
-| Credentials | Set through the core's own set-credentials call at the start of the run. |
 | The settings store | Pointed at a temporary directory, so no test can read or write the developer's own settings. |
 | The page engine (Chromium, through the vendored `webview_cef`) | The real engine, sandboxed, opening a hostile page written to a temporary folder (`integration_test/viewers/saved_page_engine_test.dart`, NFR-12). It needs a machine where Chromium's sandbox can run: an ordinary user with unprivileged user namespaces, or the setuid helper. CI lifts Ubuntu's AppArmor restriction for it. As root, and on Windows, where the engine must refuse to start, the same file asserts the refusal instead. The fork's own rules are also unit-tested without a browser by `third_party/webview_cef/test/native/run.sh`. |
 
@@ -301,7 +298,7 @@ flutter test
 | Suite | Command |
 | --- | --- |
 | Unit and widget (the default suite) | `flutter test` |
-| One feature's tests | `flutter test test/features/auth` |
+| One feature's tests | `flutter test test/features/libraries` |
 | With coverage | `flutter test --coverage` |
 | Regenerate golden files | `flutter test --update-goldens` |
 | Integration, on Windows | `bash ci/integration-suite.sh windows` |

@@ -247,8 +247,8 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
     state = const VideoPlaybackState();
   }
 
-  /// Closes the player if it holds a file: what signing out and deleting the
-  /// playing file ask for (UC-03 main flow step 2, UC-33 AF-04).
+  /// Closes the player if it holds a file: what closing for an update and
+  /// deleting the playing file ask for (UC-33 AF-04).
   Future<void> closeIfOpen() async {
     if (!state.isOpen) return;
     await close();
@@ -261,17 +261,9 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
     _reachedEnd = false;
     state = VideoPlaybackState(file: file, stage: VideoStage.opening);
 
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, so nothing can be opened — and the player is closed rather
-    // than left in `opening`, which is a spinner with nothing behind it.
-    if (credential == null) {
-      state = const VideoPlaybackState();
-      return;
-    }
-
     final outcome = await ref
         .read(playbackSourceGatewayProvider)
-        .resolve(uuid: file.uuid, credential: credential);
+        .resolve(uuid: file.uuid);
 
     if (generation != _startGeneration) return;
 
@@ -296,11 +288,6 @@ class VideoPlaybackController extends Notifier<VideoPlaybackState> {
           failure: outcome.failure,
           isMissing: true,
         );
-
-      // A rejected session returns the owner to login, as everywhere else.
-      case PlaybackSourceFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        state = const VideoPlaybackState();
 
       case PlaybackSourceFailed(:final failure):
         state = state.copyWith(stage: VideoStage.failed, failure: failure);

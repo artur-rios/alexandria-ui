@@ -16,19 +16,16 @@ class CorePlaybackSourceGateway implements PlaybackSourceGateway {
   final CoreClient _core;
 
   @override
-  Future<PlaybackSourceOutcome> resolve({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<PlaybackSourceOutcome> resolve({required String uuid}) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.filePlaybackSource(uuid, credential);
+      response = await _core.filePlaybackSource(uuid);
     } on CoreCallException {
       return _unresolvable();
     }
 
-    // AF-01's missing file, a rejected session, and a record the core does not
-    // have are three statuses on the same call. The playback family is its own
+    // AF-01's missing file and a record the core does not have are two
+    // statuses on the same call. The playback family is its own
     // set of codes, which is why it is named here (IR-08).
     if (!CoreStatusFamily.playback.isOk(response.status)) {
       return PlaybackSourceOutcome.failed(

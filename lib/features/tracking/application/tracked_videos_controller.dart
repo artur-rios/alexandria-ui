@@ -33,9 +33,6 @@ class TrackedVideosController extends AsyncNotifier<Map<String, TrackedVideo>> {
   @override
   Future<Map<String, TrackedVideo>> build() async {
     final watchlists = await ref.watch(watchlistsControllerProvider.future);
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return const {};
-
     final uuids = {
       for (final watchlist in watchlists)
         for (final item in watchlist.items) item.videoUuid,
@@ -45,10 +42,7 @@ class TrackedVideosController extends AsyncNotifier<Map<String, TrackedVideo>> {
     final videos = <String, TrackedVideo>{};
 
     for (final uuid in uuids) {
-      final details = await gateway.fileDetails(
-        uuid: uuid,
-        credential: credential,
-      );
+      final details = await gateway.fileDetails(uuid: uuid);
 
       videos[uuid] = switch (details) {
         FileDetailsRead(:final details) => TrackedVideo(

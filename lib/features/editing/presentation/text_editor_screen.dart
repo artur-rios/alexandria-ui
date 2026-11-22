@@ -93,8 +93,7 @@ class _TextEditorScreenState extends ConsumerState<TextEditorScreen> {
       _seeded = true;
     }
 
-    // AF-06: the session went while the editor was open. Acknowledging it is
-    // what closes the editor and takes the owner to the login screen.
+    // The editor closing, however it closes, takes this screen with it.
     ref.listen(textEditorControllerProvider, (_, next) {
       if (!next.isOpen && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
@@ -347,18 +346,6 @@ class _Question extends StatelessWidget {
         message: l10n.editorRecordGone,
         isError: true,
         onDismiss: editor.dismissQuestion,
-      ),
-
-      // AF-06: the session was rejected, and acknowledging it lets it go.
-      EditorQuestion.sessionRejected => _Banner(
-        message: l10n.editorSessionRejected,
-        isError: true,
-        actions: [
-          FilledButton(
-            onPressed: editor.acceptSessionRejection,
-            child: Text(l10n.editorSignInAgain),
-          ),
-        ],
       ),
 
       EditorQuestion.none => const SizedBox.shrink(),

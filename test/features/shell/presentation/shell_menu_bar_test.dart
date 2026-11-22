@@ -1,12 +1,11 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
-import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
-import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
-import 'package:alexandria_ui/features/auth/presentation/recovery_codes_section.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/shell/presentation/menu_entry.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
@@ -15,7 +14,9 @@ import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_folder_picker.dart';
 import '../../../support/shell_harness.dart';
 
 /// The shell's menu bar (UC-37 main flow step 1, UC-39, FR-UX-01, FR-UX-02).
@@ -66,15 +67,16 @@ void main() {
         await openLibrary(tester);
 
         for (final label in [
-          l10n.libraryMenuLibraries,
           l10n.libraryMenuAdd,
+          l10n.libraryMenuManage,
           l10n.collectionsOpen,
           l10n.watchlistsOpen,
           l10n.readingListsOpen,
           l10n.deletedItemsOpen,
           l10n.missingFilesOpen,
         ]) {
-          // In the menu: "Libraries" is also the navigation panel's label.
+          // In the menu itself, so the same words elsewhere in the shell
+          // cannot satisfy it.
           expect(
             find.descendant(
               of: find.byType(MenuItemButton),
@@ -84,6 +86,67 @@ void main() {
             reason: label,
           );
         }
+      },
+    );
+
+    testWidgets(
+      'GivenTheLibraryMenu_WhenItIsOpened_ThenTheLibrariesHeadingComesFirst',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await openLibrary(tester);
+
+        final headings = tester
+            .widgetList<MenuGroupHeading>(find.byType(MenuGroupHeading))
+            .map((heading) => heading.text);
+        expect(headings.first, l10n.libraryMenuLibraries);
+        expect(
+          tester.getTopLeft(find.text(l10n.libraryMenuAdd)).dy,
+          greaterThan(
+            tester.getTopLeft(find.byType(MenuGroupHeading).first).dy,
+          ),
+        );
+        expect(
+          tester.getTopLeft(find.text(l10n.libraryMenuAdd)).dy,
+          lessThan(tester.getTopLeft(find.text(l10n.libraryMenuManage)).dy),
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheLibraryMenu_WhenAddLibraryIsChosen_ThenTheAddFlowStarts',
+      (tester) async {
+        final picker = FakeFolderPicker();
+        await tester.pumpShell(
+          extraOverrides: <Override>[
+            folderPickerProvider.overrideWithValue(picker),
+          ],
+        );
+        final l10n = localizations(tester);
+
+        await openLibrary(tester);
+        await tester.tap(find.text(l10n.libraryMenuAdd));
+        await tester.pumpAndSettle();
+
+        expect(picker.openCount, 1);
+        // Where the owner already is: no screen was opened for it.
+        expect(find.byType(LibrariesView), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenTheLibraryMenu_WhenManageLibrariesIsChosen_ThenTheDialogOpens',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await openLibrary(tester);
+        await tester.tap(find.text(l10n.libraryMenuManage));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(LibrariesView), findsOneWidget);
+        expect(find.byType(Dialog), findsOneWidget);
       },
     );
 
@@ -185,7 +248,7 @@ void main() {
     );
 
     testWidgets(
-      'GivenACompactWindow_WhenTheSettingsMenuIsOpened_ThenEveryEntryIsStillReachable',
+      'GivenACompactWindow_WhenTheSettingsMenuIsOpened_ThenPreferencesIsStillReachable',
       (tester) async {
         await tester.pumpShell(surfaceSize: Breakpoint.minimumWindowSize);
         final l10n = localizations(tester);
@@ -194,8 +257,6 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text(l10n.preferencesLabel), findsOneWidget);
-        expect(find.text(l10n.changeCredentialsOpen), findsOneWidget);
-        expect(find.text(l10n.signOut), findsOneWidget);
       },
     );
   });
@@ -211,6 +272,21 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text(l10n.preferencesLabel), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheSettingsMenu_WhenItIsOpened_ThenNoAccountActionIsOffered',
+      (tester) async {
+        // There is no account: the menu that held "Change credentials" and
+        // "Sign out" keeps Preferences only (library navigation design §2).
+        await tester.pumpShell();
+
+        await tester.tap(find.byType(SettingsMenu));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.key_outlined), findsNothing);
+        expect(find.byIcon(Icons.logout_outlined), findsNothing);
       },
     );
 
@@ -245,71 +321,6 @@ void main() {
         );
       },
     );
-
-    testWidgets(
-      'GivenTheSettingsMenu_WhenCredentialsAreChosen_ThenTheCredentialsDialogOpens',
-      (tester) async {
-        await tester.pumpShell();
-        final l10n = localizations(tester);
-
-        await tester.openSettingsMenuEntry(l10n.changeCredentialsOpen);
-
-        expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenTheCredentialsDialog_WhenItIsOpen_ThenTheRecoveryCodesAreOffered',
-      (tester) async {
-        // UC-42 beside UC-04: both are things an owner does to an account they
-        // still have access to, and neither is a preference.
-        await tester.pumpShell();
-        final l10n = localizations(tester);
-
-        await tester.openSettingsMenuEntry(l10n.changeCredentialsOpen);
-
-        expect(find.byType(RecoveryCodesSection), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenPreferences_WhenTheyAreOpen_ThenNoAccountActionIsOffered',
-      (tester) async {
-        // The dialog is theme and language: an account action inside it is
-        // what made signing out three levels deep.
-        await tester.pumpShell();
-        final l10n = localizations(tester);
-
-        await tester.openSettingsMenuEntry(l10n.preferencesLabel);
-
-        expect(find.text(l10n.changeCredentialsOpen), findsNothing);
-        expect(find.byType(RecoveryCodesSection), findsNothing);
-      },
-    );
-
-    testWidgets('GivenTheSettingsMenu_WhenItIsOpened_ThenSigningOutIsOffered', (
-      tester,
-    ) async {
-      await tester.pumpShell();
-      final l10n = localizations(tester);
-
-      await tester.tap(find.byType(SettingsMenu));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.signOut), findsOneWidget);
-    });
-
-    testWidgets(
-      'GivenTheSettingsMenu_WhenSigningOutIsChosen_ThenTheLoginScreenReturns',
-      (tester) async {
-        await tester.pumpShell();
-        final l10n = localizations(tester);
-
-        await tester.openSettingsMenuEntry(l10n.signOut);
-
-        expect(find.byType(LoginScreen), findsOneWidget);
-      },
-    );
   });
 
   group('the search field (UC-11 main flow step 1)', () {
@@ -337,7 +348,7 @@ void main() {
 
         container
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.bookmarks);
+            .go(const BookmarksDestination());
         await tester.pumpAndSettle();
 
         expect(find.byType(CatalogSearchField), findsNothing);
@@ -395,13 +406,8 @@ void main() {
     testWidgets(
       'GivenTheMinimumWindow_WhenASearchableDestinationIsShown_ThenTheBarFitsInOneRow',
       (tester) async {
-        final container = await tester.pumpShell(
-          surfaceSize: Breakpoint.minimumWindowSize,
-        );
-        container
-            .read(shellControllerProvider.notifier)
-            .go(ShellDestination.videos);
-        await tester.pumpAndSettle();
+        await tester.pumpShell(surfaceSize: Breakpoint.minimumWindowSize);
+        await tester.openLibrary(shelf);
 
         await expectTheBarFitsInOneRow(tester);
       },
@@ -410,13 +416,8 @@ void main() {
     testWidgets(
       'GivenAMediumWindow_WhenASearchableDestinationIsShown_ThenTheBarFitsInOneRow',
       (tester) async {
-        final container = await tester.pumpShell(
-          surfaceSize: const Size(1280, 800),
-        );
-        container
-            .read(shellControllerProvider.notifier)
-            .go(ShellDestination.videos);
-        await tester.pumpAndSettle();
+        await tester.pumpShell(surfaceSize: const Size(1280, 800));
+        await tester.openLibrary(shelf);
 
         await expectTheBarFitsInOneRow(tester);
       },

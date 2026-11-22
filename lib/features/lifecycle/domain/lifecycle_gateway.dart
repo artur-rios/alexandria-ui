@@ -38,54 +38,33 @@ abstract interface class LifecycleGateway {
   ///
   /// The record is hidden and stays restorable; the file on disk is untouched,
   /// which is what the confirmation is able to promise.
-  Future<LifecycleWrite> softDeleteFile({
-    required String uuid,
-    required String credential,
-  });
+  Future<LifecycleWrite> softDeleteFile({required String uuid});
 
   /// Soft-deletes the bookmark [uuid] identifies (FR-LC-01).
-  Future<LifecycleWrite> softDeleteBookmark({
-    required String uuid,
-    required String credential,
-  });
+  Future<LifecycleWrite> softDeleteBookmark({required String uuid});
 
   /// Restores the file [uuid] identifies (FR-LC-04, UC-34).
   ///
   /// The core enforces the retention window; a record past it comes back as
   /// not found, which is what AF-02 and AF-03 both read.
-  Future<LifecycleWrite> restoreFile({
-    required String uuid,
-    required String credential,
-  });
+  Future<LifecycleWrite> restoreFile({required String uuid});
 
   /// Restores the bookmark [uuid] identifies (FR-LC-04, UC-34).
-  Future<LifecycleWrite> restoreBookmark({
-    required String uuid,
-    required String credential,
-  });
+  Future<LifecycleWrite> restoreBookmark({required String uuid});
 
   /// Purges the file [uuid] identifies from the catalog (FR-LC-05, UC-35).
   ///
   /// The record only. The file on disk is untouched, which is what the
   /// confirmation promises.
-  Future<LifecycleWrite> purgeFile({
-    required String uuid,
-    required String credential,
-  });
+  Future<LifecycleWrite> purgeFile({required String uuid});
 
   /// Purges the bookmark [uuid] identifies (FR-LC-05, UC-35).
-  Future<LifecycleWrite> purgeBookmark({
-    required String uuid,
-    required String credential,
-  });
+  Future<LifecycleWrite> purgeBookmark({required String uuid});
 
   /// Purges the file [uuid] identifies from disk and from the catalog
   /// (FR-LC-06, UC-36).
   ///
   /// The one operation in this application that removes the owner's data from
   /// disk. Answers whether there was a file to remove (AF-02).
-  Future<PurgeOnDiskOutcome> purgeFileOnDisk({
-    required String uuid,
-    required String credential,
-  });
+  Future<PurgeOnDiskOutcome> purgeFileOnDisk({required String uuid});
 }

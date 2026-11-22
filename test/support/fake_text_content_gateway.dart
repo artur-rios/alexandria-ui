@@ -38,10 +38,7 @@ class FakeTextContentGateway implements TextContentGateway {
   final List<({String uuid, String content})> writes = [];
 
   @override
-  Future<TextContentRead> readContent({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<TextContentRead> readContent({required String uuid}) async {
     reads.add(uuid);
 
     if (readOutcomes.isNotEmpty) return readOutcomes.removeAt(0);
@@ -53,7 +50,6 @@ class FakeTextContentGateway implements TextContentGateway {
   Future<TextContentWrite> writeContent({
     required String uuid,
     required String content,
-    required String credential,
   }) async {
     writes.add((uuid: uuid, content: content));
 

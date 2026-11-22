@@ -64,8 +64,7 @@ class DeletionController extends Notifier<DeletionState> {
     }
 
     await _delete(
-      (gateway, credential) =>
-          gateway.softDeleteFile(uuid: uuid, credential: credential),
+      (gateway) => gateway.softDeleteFile(uuid: uuid),
       // FR-LC-09: every listing, count, and detail view reads the core
       // again, so the record leaves the default listings without a manual
       // refresh.
@@ -75,30 +74,21 @@ class DeletionController extends Notifier<DeletionState> {
 
   /// Soft-deletes the bookmark [uuid] identifies (main flow steps 4 to 6).
   Future<void> deleteBookmark(String uuid) => _delete(
-    (gateway, credential) =>
-        gateway.softDeleteBookmark(uuid: uuid, credential: credential),
+    (gateway) => gateway.softDeleteBookmark(uuid: uuid),
     onDone: () => ref.read(bookmarksControllerProvider.notifier).reload(),
   );
 
   /// Runs [call] and turns its answer into what the screen shows.
   Future<void> _delete(
-    Future<LifecycleWrite> Function(LifecycleGateway, String credential) call, {
+    Future<LifecycleWrite> Function(LifecycleGateway) call, {
     required void Function() onDone,
   }) async {
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return;
-
-    final outcome = await call(ref.read(lifecycleGatewayProvider), credential);
+    final outcome = await call(ref.read(lifecycleGatewayProvider));
 
     switch (outcome) {
       case LifecycleWriteDone():
         state = const DeletionState();
         onDone();
-
-      // AF-05: the session is discarded, which returns the owner to login.
-      case LifecycleWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
 
       // AF-02: the record was already deleted. The listing is read again,
       // which is what makes it agree with the core.

@@ -16,8 +16,8 @@ import '../domain/deleted_record.dart';
 /// The deleted-items view (UC-34, FR-LC-03, FR-LC-04).
 ///
 /// A screen of its own rather than a destination: what is deleted spans every
-/// type and the bookmarks alike, so it is not an area of the library
-/// (FR-CT-01).
+/// library and the bookmarks alike, so it is not an entry of the left menu
+/// (FR-CT-20).
 class DeletedItemsScreen extends ConsumerWidget {
   /// Creates the screen.
   const DeletedItemsScreen({super.key});

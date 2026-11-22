@@ -18,72 +18,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coreUnavailableTitle => 'Alexandria\'s core is not available';
 
   @override
-  String get loginTitle => 'Sign in to Alexandria';
-
-  @override
-  String get loginEmailLabel => 'E-mail';
-
-  @override
-  String get loginPasswordLabel => 'Password';
-
-  @override
-  String get loginSubmit => 'Sign in';
-
-  @override
-  String get loginEmailMissing => 'Enter your e-mail address.';
-
-  @override
-  String get loginEmailMalformed =>
-      'That does not look like an e-mail address.';
-
-  @override
-  String get loginPasswordMissing => 'Enter your password.';
-
-  @override
-  String get loginRejected =>
-      'That e-mail and password do not match an account.';
-
-  @override
-  String get loginNoAccount =>
-      'No account has been set up on this computer yet.';
-
-  @override
-  String get signUpTitle => 'Create your Alexandria account';
-
-  @override
-  String get signUpIntro =>
-      'This is the only account. Its password cannot be recovered, so choose one you will not lose.';
-
-  @override
-  String get signUpPasswordConfirmationLabel => 'Repeat password';
-
-  @override
-  String get signUpSubmit => 'Create account';
-
-  @override
-  String get signUpPasswordConfirmationMissing => 'Repeat your password.';
-
-  @override
-  String get signUpPasswordMismatch => 'The two passwords do not match.';
-
-  @override
-  String get signUpRejected =>
-      'Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.';
-
-  @override
-  String get signUpAccountExists =>
-      'An account already exists on this computer. Sign in instead.';
-
-  @override
-  String get signUpGoToLogin => 'Go to sign in';
-
-  @override
-  String get loginGoToSignUp => 'Create an account';
-
-  @override
-  String get loginSessionEndedTitle => 'You were signed out';
-
-  @override
   String failureCoreLibraryNotLoaded(String path) {
     return 'The Alexandria core could not be loaded from $path.';
   }
@@ -114,10 +48,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failureInvalidInput => 'Alexandria rejected that as invalid.';
 
   @override
-  String get failureUnauthorized =>
-      'Your session has ended. Please sign in again.';
-
-  @override
   String get failureNotInitialized =>
       'Alexandria is not ready yet. Please restart the application.';
 
@@ -137,48 +67,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The file on disk no longer matches what Alexandria recorded.';
 
   @override
-  String get failureConfiguration =>
-      'Alexandria\'s configuration could not be read.';
-
-  @override
   String get failureConflict => 'That already exists in Alexandria.';
-
-  @override
-  String get failureRateLimited =>
-      'Too many attempts. Wait a moment and try again.';
-
-  @override
-  String get failureServiceUnavailable =>
-      'Alexandria could not reach a service it needs, so that step did not happen.';
-
-  @override
-  String rejectionPasswordTooShort(String min) {
-    return 'Use at least $min characters.';
-  }
-
-  @override
-  String rejectionPasswordTooLong(String max) {
-    return 'Use at most $max characters.';
-  }
-
-  @override
-  String get rejectionPasswordWhitespace => 'A password cannot be only spaces.';
-
-  @override
-  String get rejectionPasswordRepeatedCharacter =>
-      'A password cannot be one character repeated.';
-
-  @override
-  String get rejectionPasswordTooCommon =>
-      'That password is too common. Choose something less predictable.';
-
-  @override
-  String get rejectionPasswordContainsEmail =>
-      'A password cannot contain your e-mail address.';
-
-  @override
-  String get rejectionEmailUntrimmed =>
-      'Remove the spaces around your e-mail address.';
 
   @override
   String get failureUnexpected => 'Something went wrong in Alexandria.';
@@ -212,9 +101,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preferencesTitle => 'Preferences';
-
-  @override
-  String get preferencesOpen => 'Open preferences';
 
   @override
   String get preferencesLabel => 'Preferences';
@@ -256,36 +142,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preferencesClose => 'Done';
-
-  @override
-  String get changeCredentialsOpen => 'Change credentials…';
-
-  @override
-  String get changeCredentialsTitle => 'Change credentials';
-
-  @override
-  String get changeCredentialsIntro =>
-      'Both are replaced together. You stay signed in.';
-
-  @override
-  String get changeCredentialsEmailLabel => 'New e-mail';
-
-  @override
-  String get changeCredentialsPasswordLabel => 'New password';
-
-  @override
-  String get changeCredentialsConfirmationLabel => 'Repeat the new password';
-
-  @override
-  String get changeCredentialsSubmit => 'Change';
-
-  @override
-  String get changeCredentialsDone =>
-      'Your e-mail and password have been changed.';
-
-  @override
-  String get changeCredentialsRejected =>
-      'The change was refused, and your e-mail and password are unchanged.';
 
   @override
   String get dismiss => 'Dismiss';
@@ -361,9 +217,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get destinationMusic => 'Music';
 
   @override
-  String get catalogEmptyTitle => 'Nothing of this type yet';
-
-  @override
   String get catalogEmptyFirstRun =>
       'Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.';
 
@@ -387,10 +240,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The window is too narrow for that layout, so the list is shown instead.';
 
   @override
-  String get layoutUnsaved =>
-      'The layout changed, but the choice could not be saved — it will not be remembered next time.';
-
-  @override
   String get searchLabel => 'Search the library';
 
   @override
@@ -411,21 +260,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get filtersLabel => 'Filters and order';
-
-  @override
-  String get filterLifecycle => 'Show';
-
-  @override
-  String get filterLifecycleActive => 'In the library';
-
-  @override
-  String get filterLifecycleDeleted => 'Deleted';
-
-  @override
-  String get filterLifecycleAll => 'Everything';
-
-  @override
   String get sortLabel => 'Order by';
 
   @override
@@ -442,16 +276,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortDescending => 'Descending';
-
-  @override
-  String get filtersClear => 'Clear the filters';
-
-  @override
-  String get filtersEmpty => 'Nothing matches the filters you have set.';
-
-  @override
-  String get filtersRejected =>
-      'That filter was refused, so the previous one is back.';
 
   @override
   String get detailsTitle => 'Details';
@@ -523,69 +347,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detailsFileModified => 'Last modified';
 
   @override
-  String get dashboardRecent => 'Recently added';
+  String get homeFavorites => 'Favorite libraries';
 
   @override
-  String get dashboardRecentNone => 'Nothing has been added yet.';
+  String get homeFavoritesNone => 'Mark a library as a favorite to see it here';
 
   @override
-  String get dashboardInProgress => 'In progress';
+  String get homeFavoritesHint =>
+      'Use the star in a library\'s header, or right-click it in the left menu.';
 
   @override
-  String get dashboardInProgressNone => 'Nothing is in progress.';
+  String get homeStatistics => 'Statistics';
 
   @override
-  String dashboardInProgressIn(String list) {
-    return 'In $list';
+  String homeLibraryCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count libraries',
+      one: '1 library',
+    );
+    return '$_temp0';
   }
-
-  @override
-  String dashboardInProgressInAt(String list, String progress) {
-    return 'In $list — $progress';
-  }
-
-  @override
-  String get dashboardCounts => 'What is in the library';
-
-  @override
-  String get dashboardLastRun => 'The last scan';
-
-  @override
-  String get dashboardLastRunNone =>
-      'Nothing has been scanned in this session.';
-
-  @override
-  String get dashboardLastRunRunning => 'A scan is running now.';
-
-  @override
-  String get dashboardLastRunComplete => 'The last scan finished.';
-
-  @override
-  String get dashboardLastRunFailed => 'The last scan did not finish.';
-
-  @override
-  String get dashboardLastRunInterrupted =>
-      'The last scan was interrupted when Alexandria closed.';
 
   @override
   String get detailsEditMetadata => 'Edit metadata';
-
-  @override
-  String get signOut => 'Sign out';
-
-  @override
-  String get signOutUnsavedTitle => 'Unsaved changes';
-
-  @override
-  String get signOutUnsavedMessage =>
-      'Signing out now discards the changes you have not saved. Cancel to go back and save them first.';
-
-  @override
-  String get signOutUnsavedConfirm => 'Sign out and discard';
-
-  @override
-  String get signOutIndexRunContinues =>
-      'You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.';
 
   @override
   String get videoMetadataTitle => 'Edit video metadata';
@@ -695,9 +481,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorOverwrite => 'Save anyway';
 
   @override
-  String get editorSignInAgain => 'Sign in again';
-
-  @override
   String get editorNothingToSave =>
       'The content has not changed, so nothing was written.';
 
@@ -712,10 +495,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get editorRecordGone =>
       'This file is no longer in the catalog. What you have written is still here, and is not saved.';
-
-  @override
-  String get editorSessionRejected =>
-      'Your session ended, so this could not be saved. Signing in again will lose what is on screen.';
 
   @override
   String get editorCouldNotRead => 'This file could not be read.';
@@ -1060,7 +839,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get libraryMove => 'The folder moved';
+  String get libraryMove => 'Move…';
 
   @override
   String get libraryMoveConflict =>
@@ -1104,6 +883,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryNameLabel => 'Library name';
 
   @override
+  String get libraryRename => 'Rename library';
+
+  @override
+  String get libraryRenameEntry => 'Rename…';
+
+  @override
+  String get libraryPin => 'Pin';
+
+  @override
+  String get libraryUnpin => 'Unpin';
+
+  @override
+  String get libraryPinned => 'Pinned';
+
+  @override
+  String get libraryFavoriteAdd => 'Add to favorites';
+
+  @override
+  String get libraryFavoriteRemove => 'Remove from favorites';
+
+  @override
+  String get libraryChangeNotSaved => 'The change could not be saved.';
+
+  @override
+  String get librariesLoadFailed => 'Libraries didn\'t load. Try again';
+
+  @override
   String get libraryAdd => 'Add a library';
 
   @override
@@ -1119,13 +925,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryEmptyRoot =>
-      'Nothing under this folder has been indexed yet. Scan it from the libraries list, and what it holds will appear here.';
+      'Nothing under this folder has been indexed yet. Scan the library from its menu, and what it holds will appear here.';
 
   @override
   String get libraryEmptyFolder => 'Nothing in this folder.';
 
   @override
-  String get libraryUp => 'Up one folder';
+  String get libraryNoneVideos => 'No videos in this folder.';
+
+  @override
+  String get libraryNoneMusic => 'No music in this folder.';
+
+  @override
+  String get libraryNoneBooks => 'No books in this folder.';
+
+  @override
+  String get libraryNoneComicBooks => 'No comic books in this folder.';
+
+  @override
+  String get libraryNoneNotes => 'No notes in this folder.';
+
+  @override
+  String get libraryNonePages => 'No pages in this folder.';
+
+  @override
+  String get libraryNoneImages => 'No images in this folder.';
+
+  @override
+  String get libraryTypeAll => 'All types';
+
+  @override
+  String get libraryTypeFilterClear => 'Clear the filter';
+
+  @override
+  String get libraryActions => 'Library actions';
+
+  @override
+  String get libraryViewUnsaved =>
+      'The change applied, but it could not be saved — it will not be remembered next time.';
 
   @override
   String get libraryOverlaps =>
@@ -1299,98 +1136,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get missingFilesUnregisteredFolder =>
       'From a folder that is no longer registered.';
-
-  @override
-  String get recoveryCodesTitle => 'Save your recovery codes';
-
-  @override
-  String get recoveryCodesExplanation =>
-      'This is the only time these are shown. Each one replaces a forgotten password exactly once — without them, a forgotten password means a lost library.';
-
-  @override
-  String get recoveryCodesCopy => 'Copy the codes';
-
-  @override
-  String get recoveryCodesCopied => 'Copied to the clipboard.';
-
-  @override
-  String get recoveryCodesAcknowledge => 'I have stored them';
-
-  @override
-  String get recoveryCodesNone =>
-      'Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.';
-
-  @override
-  String get recoveryTitle => 'Recover access';
-
-  @override
-  String get recoveryOpen => 'I cannot sign in';
-
-  @override
-  String get recoveryExplanation =>
-      'Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.';
-
-  @override
-  String get recoveryCodeLabel => 'Recovery code';
-
-  @override
-  String get recoveryNewPassword => 'New password';
-
-  @override
-  String get recoveryConfirmPassword => 'Repeat the new password';
-
-  @override
-  String get recoveryCodeMissing => 'Enter a recovery code.';
-
-  @override
-  String get recoveryPasswordMissing => 'Enter a new password.';
-
-  @override
-  String get recoverySubmit => 'Replace the password';
-
-  @override
-  String get recoveryCodeUnknown =>
-      'That is not one of this account\'s recovery codes. Check it and try again.';
-
-  @override
-  String get recoveryCodeUsed =>
-      'That recovery code has already been used. Each one works once — try another from your list.';
-
-  @override
-  String get recoveryRefused =>
-      'The password could not be replaced. Check the code and try again.';
-
-  @override
-  String get recoveryDone => 'Your password was replaced';
-
-  @override
-  String get recoveryDoneExplanation =>
-      'The code you used is spent, and every open session was signed out. Sign in with the new password.';
-
-  @override
-  String get recoveryBackToLogin => 'Back to sign in';
-
-  @override
-  String get recoveryCodesRegenerate => 'Generate new recovery codes';
-
-  @override
-  String get recoveryCodesRegenerateMessage =>
-      'Every code you have now stops working, and ten new ones take their place. They are shown once.';
-
-  @override
-  String get recoveryCodesNoneLeft =>
-      'No recovery codes are left. Generate a set while you still know your password.';
-
-  @override
-  String recoveryCodesRemaining(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count recovery codes left',
-      one: '1 recovery code left',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get collectionsTitle => 'Collections';
@@ -1643,9 +1388,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityDismiss => 'Dismiss';
 
   @override
-  String get destinationLibraries => 'Libraries';
-
-  @override
   String get libraryRemovePausedNote => 'Its paused scan is discarded too.';
 
   @override
@@ -1662,6 +1404,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryMenuLibraries => 'Libraries';
+
+  @override
+  String get libraryMenuManage => 'Manage libraries…';
 
   @override
   String get libraryMenuAdd => 'Add library…';

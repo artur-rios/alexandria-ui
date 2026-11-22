@@ -184,9 +184,8 @@ class _ResultRow extends ConsumerWidget {
       // does not show would point at nothing.
       title: _Highlighted(text: displayName(file), term: term),
       // Says where a hit lives when it lives in a library. Without it the
-      // row is a puzzle: the owner finds the file here and then cannot find
-      // it in the panel for its type, because a library's files are shown in
-      // their folders instead (FR-CT-16).
+      // row is a puzzle: a library's files are browsed in its folders, so the
+      // library is where the owner goes to find this one again (FR-CT-16).
       trailing: details.libraryUuid == null
           ? null
           : _LibraryTag(uuid: details.libraryUuid!),
@@ -204,8 +203,8 @@ class _ResultRow extends ConsumerWidget {
 /// The name is looked up rather than carried on the row: the core answers
 /// membership as a uuid, deliberately, so a listing does not go stale the
 /// moment a library is renamed. Until the list of libraries has been read
-/// this says only that the file is in one, which is the part that explains
-/// the panel it is missing from.
+/// this says only that the file is in one, which is the part that says where
+/// to look for it.
 class _LibraryTag extends ConsumerWidget {
   const _LibraryTag({required this.uuid});
 
@@ -345,7 +344,7 @@ class _NothingCatalogued extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
-              onPressed: () => openLibrariesAndAdd(ref),
+              onPressed: () => openLibrariesAndAdd(context, ref),
               icon: const Icon(Icons.folder_outlined),
               label: Text(l10n.libraryAdd),
             ),

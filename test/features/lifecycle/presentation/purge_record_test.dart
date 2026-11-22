@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/lifecycle/domain/lifecycle_gateway.dart';
@@ -253,35 +252,6 @@ void main() {
 
       expect(find.text(messages(tester).purgeNotFound), findsOneWidget);
     });
-  });
-
-  // AF-05: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenAPurgeIsSent_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openDeleted(
-          tester,
-          file: elapsed,
-          outcomes: const [
-            LifecycleWrite.failed(
-              failure: Failure.unauthorized(
-                family: CoreStatusFamily.file,
-                code: FILE_ERR_UNAUTHORIZED,
-              ),
-            ),
-          ],
-        );
-
-        await askToPurge(tester);
-        await confirm(tester);
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
-      },
-    );
   });
 
   group('themes and languages', () {

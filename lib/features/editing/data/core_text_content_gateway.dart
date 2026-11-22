@@ -18,13 +18,10 @@ class CoreTextContentGateway implements TextContentGateway {
   final CoreClient _core;
 
   @override
-  Future<TextContentRead> readContent({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<TextContentRead> readContent({required String uuid}) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.fileReadContent(uuid, credential);
+      response = await _core.fileReadContent(uuid);
     } on CoreCallException {
       return _unreadableRead();
     }
@@ -55,21 +52,19 @@ class CoreTextContentGateway implements TextContentGateway {
   Future<TextContentWrite> writeContent({
     required String uuid,
     required String content,
-    required String credential,
   }) async {
     final CoreJsonResponse response;
     try {
       response = await _core.fileEditContent(
         uuid,
         jsonEncode({'content': content}),
-        credential,
       );
     } on CoreCallException {
       return _unwritable();
     }
 
-    // AF-03's disk failure, AF-04's missing record, and AF-06's rejected
-    // session are three different statuses on the same call.
+    // AF-03's disk failure and AF-04's missing record are different statuses
+    // on the same call.
     if (!CoreStatusFamily.file.isOk(response.status)) {
       return TextContentWrite.failed(
         failure: mapCoreStatus(CoreStatusFamily.file, response.status),

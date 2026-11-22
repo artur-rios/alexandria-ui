@@ -16,20 +16,17 @@ internal keys never cross the FFI boundary and never appear here.
 Three conditions recur in almost every use case and are stated once here rather
 than repeated as an alternative flow in each:
 
-- **No active session.** Any use case whose precondition includes an active
-  session is unreachable without one; the application presents the login screen
-  and issues no call (`FR-AU-07`). Where the *core* rejects a call as
-  unauthorized mid-session, that is specified per use case, because it returns
-  the owner to login and loses their place.
-- **Recovery codes not yet acknowledged.** A newly created account shows its ten
-  recovery codes in place of the catalog until the owner confirms having stored
-  them (`FR-AU-12`); UC-40 is that step. It is the only thing between signing up
-  and the library, and it happens once.
 - **The core is unavailable.** A failure to reach or initialize the core is
   presented as a readable message with a retry rather than terminating the
   application (`NFR-14`).
 - **Every failure is readable.** No flow below ever ends in a raw status code or
   a silent no-operation (`FR-UX-09`).
+- **There is no login.** Core 0.7 removed authentication, so the application
+  starts straight into the shell once the core is initialized, and no use case
+  waits on a session. The use cases that signed the owner up, in, and out, and
+  recovered access (UC-01 … UC-04, UC-40 … UC-42), are kept below only as
+  Removed stubs so that their numbers are never reused, and so is every
+  alternative flow that handled a call the core rejected as unauthorized.
 
 ### 1.2 Actors
 
@@ -49,31 +46,23 @@ graph LR
         OWNER(("Owner"))
     end
 
-    subgraph "Authentication (AU)"
-        UC01[UC-01: Sign up]
-        UC02[UC-02: Log in]
-        UC03[UC-03: Sign out]
-        UC04[UC-04: Change credentials]
-        UC40[UC-40: Save the recovery codes]
-        UC41[UC-41: Recover with a code]
-        UC42[UC-42: Regenerate the codes]
-    end
-
     subgraph "Libraries (LB)"
         UC05[UC-05: Add a library]
         UC06[UC-06: Scan a library]
         UC07[UC-07: Refresh the catalog]
         UC08[UC-08: Remove a library]
         UC49[UC-49: Browse a library]
+        UC52[UC-52: Pin a library]
+        UC53[UC-53: Mark a favorite library]
+        UC54[UC-54: Rename a library]
     end
 
     subgraph "Catalog (CT)"
-        UC09[UC-09: Browse by type]
         UC10[UC-10: Switch the view layout]
         UC11[UC-11: Search the catalog]
         UC12[UC-12: Filter and sort]
         UC13[UC-13: View file details]
-        UC14[UC-14: View the dashboard]
+        UC14[UC-14: View home]
     end
 
     subgraph "Editing (ME)"
@@ -125,9 +114,9 @@ graph LR
         UC51[UC-51: Update the application]
     end
 
-    OWNER --> UC01
     OWNER --> UC05
-    OWNER --> UC09
+    OWNER --> UC49
+    OWNER --> UC11
     OWNER --> UC19
     OWNER --> UC22
     OWNER --> UC26
@@ -145,136 +134,32 @@ graph LR
 
 ### UC-01: Sign up
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-01 |
-| **Name** | Sign up |
-| **Actors** | Owner, Alexandria core |
-| **Description** | On first launch, the owner creates the single account — the e-mail and password that will gate the library from then on. |
-| **Preconditions** | The core is initialized. No account exists yet. |
-| **Postconditions** | The core holds a salted password hash and ten single-use recovery codes for the new account. The owner is authenticated, and the codes are shown once before the library opens (UC-40). |
-| **Requirements** | FR-AU-01, FR-AU-02, FR-AU-03, FR-AU-11 |
-
-**Main Flow**
-
-1. The application determines at launch that no account exists.
-2. The application presents the sign-up screen.
-3. The owner enters an e-mail address and a password, and repeats the password.
-4. The application validates the e-mail format, that the password is not empty,
-   and that the two entries match.
-5. The application creates the account through the core.
-6. The core stores the salted hash, mints ten single-use recovery codes, and
-   returns them with the new session.
-7. The application discards the plaintext password, establishes the session, and
-   presents the recovery codes (UC-40) rather than the catalog.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | The e-mail is malformed or the password is empty | The application marks the field, explains what is wrong, and does not call the core. |
-| AF-02 | The two password entries differ | The application marks the confirmation field and does not call the core. |
-| AF-03 | The core rejects the credentials as invalid | The application presents the core's reason and keeps the owner on the screen with the password fields cleared. |
-| AF-04 | An account already exists | The application presents the login screen instead; changing the credentials is UC-04, and recovering them is UC-41. |
-| AF-05 | The core reports a configuration failure | The application explains that the account cannot be created, offers a retry, and remains on the screen. |
-| AF-06 | The account is created but the core returns no recovery codes | The account exists and the session is established; the application says so and offers to generate a set (UC-42), rather than showing an empty list (UC-40 AF-03). |
+**Removed (0.7 core)** — Core 0.7 removed authentication: there is no account to
+create, and the application opens the shell as soon as the core is initialized
+(UC-38). The application runs only on the owner's machine, over their own files,
+so a login protected nothing.
 
 ---
 
 ### UC-02: Log in
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-02 |
-| **Name** | Log in |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner authenticates so that the catalog becomes reachable. |
-| **Preconditions** | The core is initialized. An account exists. No active session. |
-| **Postconditions** | A session credential is held in memory and presented on every subsequent call. The catalog is reachable. |
-| **Requirements** | FR-AU-04, FR-AU-05, FR-AU-06, FR-AU-07, FR-AU-08, FR-AU-11 |
-
-**Main Flow**
-
-1. The application presents the login screen and issues no catalog call.
-2. The owner enters the e-mail and password.
-3. The application validates the e-mail format and that the password is not empty.
-4. The application calls the core's local-login operation.
-5. The core verifies the credentials and returns the session material.
-6. The application holds the session in memory and discards the plaintext
-   password.
-7. The application opens the home dashboard.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | The e-mail is malformed or the password is empty | The application marks the field and does not call the core. The mark, and any refusal above the form, clear at the first keystroke: what they named stops being true as soon as the owner acts on it, and the next attempt restates whatever still is. |
-| AF-02 | The core rejects the credentials | The application presents an authentication-failed message, clears the password, and stays on the login screen. The message does not distinguish an unknown address from a wrong password. |
-| AF-03 | No account exists in the core | The application presents sign-up instead (UC-01). |
-| AF-04 | The core rejects a later call as unauthorized | The application discards the session, returns to the login screen, and states why the owner was signed out. |
-| AF-05 | The core is not initialized | The application presents the core-unavailable message with a retry. |
-| AF-06 | The owner cannot remember the password | The login screen offers recovery with a recovery code (UC-41). |
+**Removed (0.7 core)** — There is no account to sign in to. The shell is the
+first screen after startup (UC-38), and every use case below is reachable from
+it.
 
 ---
 
 ### UC-03: Sign out
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-03 |
-| **Name** | Sign out |
-| **Actors** | Owner |
-| **Description** | The owner ends the session, locking the library without closing the application. |
-| **Preconditions** | An active session exists. |
-| **Postconditions** | The session credential is discarded, playback has stopped, and the login screen is shown. |
-| **Requirements** | FR-AU-09 |
-
-**Main Flow**
-
-1. The owner chooses to sign out.
-2. The application stops any active playback.
-3. The application discards the session credential and every in-memory catalog
-   projection.
-4. The application presents the login screen.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | An editor holds unsaved changes | The application warns before signing out and lets the owner cancel or save first. |
-| AF-02 | An index run is in flight | The application signs out and states that the run continues in the core; its outcome is shown after the next login. |
+**Removed (0.7 core)** — There is no session to end. Playback stops and the
+application's activities end when it closes for an update (UC-51) or exits.
 
 ---
 
 ### UC-04: Change credentials
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-04 |
-| **Name** | Change credentials |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner replaces the stored e-mail and password. |
-| **Preconditions** | An active session exists. Credentials already exist in the core. |
-| **Postconditions** | The core holds the new salted hash. The existing session remains valid. |
-| **Requirements** | FR-AU-10, FR-AU-11 |
-
-**Main Flow**
-
-1. The owner opens preferences and chooses to change the credentials.
-2. The owner enters the new e-mail and the new password, and repeats the password.
-3. The application validates the format, non-emptiness, and that the entries match.
-4. The application calls the core's set-credentials operation with the active
-   session.
-5. The core stores the new salted hash and confirms.
-6. The application discards the plaintext and confirms the change.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | Validation fails locally | The application marks the field and does not call the core. |
-| AF-02 | The core rejects the call as unauthorized | The application discards the session and returns to login, stating why. |
-| AF-03 | The core rejects the new credentials | The application presents the core's reason and leaves the stored credentials unchanged. |
+**Removed (0.7 core)** — There are no credentials to change. Preferences keeps
+the theme, the language, the startup re-check, and the update check (UC-39).
 
 ---
 
@@ -286,33 +171,39 @@ graph LR
 | **Name** | Add a library |
 | **Actors** | Owner, Alexandria core, Local filesystem |
 | **Description** | The owner adds a folder on disk as a library, which is the only way its files reach the catalog. The core starts indexing it straight away. Several may be added. |
-| **Preconditions** | An active session exists. |
-| **Postconditions** | The core holds the library, and its first index run is under way and followed under the library's row. |
-| **Requirements** | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12 |
+| **Preconditions** | The application is running. |
+| **Postconditions** | The core holds the library, it is listed in the left menu, and its first index run is under way and followed wherever the library's run is shown. |
+| **Requirements** | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12, FR-LB-27, FR-CT-20 |
 
 **Main Flow**
 
-1. The owner opens the Libraries screen — from the navigation panel, from the
-   Library menu's "Libraries" or "Add library…", or from the button an empty
-   catalog shows, the last two of which start step 2 at once. With no library
-   yet, the screen presents first-run guidance to add one.
+1. The owner starts adding a library: from the Library menu's "Add library…",
+   from "Add a library" in Manage libraries (the Library menu's "Manage
+   libraries…"), from the left menu's "Add a library" entry while there is
+   none, or from the button home's first-run guidance and an empty search
+   show. No screen opens for it: the picker and the name question open over
+   whatever is showing.
 2. The owner opens the platform's native folder picker and chooses a folder.
 3. The application asks what to call the library, offering the folder's name.
+   Confirm is disabled while the name is blank, as it is when a library is
+   renamed (UC-54).
 4. The application asks the core to register the folder as a library. The core
    checks the folder, records the library, and starts its first index run.
-5. The application lists the library and follows that run under its row
-   (UC-06 step 3 onwards), at the normal pace; the run can be slowed from the
-   background activity indicator (UC-45).
+5. The application reloads the libraries, so the new one takes its place in the
+   left menu, A–Z among the libraries that are not pinned, and follows that run
+   under its row in Manage libraries and in its page header (UC-06 step 3
+   onwards), at the normal pace; the run can be slowed from the background
+   activity indicator (UC-45).
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The owner cancels the picker | Nothing is added and the screen is unchanged. |
+| AF-01 | The owner cancels the picker | Nothing is added and what was showing is unchanged. |
 | AF-02 | The core refuses the folder as invalid — not a folder, missing, or outside the core's root | The application states the core's reason and adds nothing. |
 | AF-03 | The core refuses the folder as overlapping another library | The application says the folder is already inside, or holds, another library, and adds nothing. A file in two libraries would have two answers to where it lives. |
 | AF-04 | The owner cancels the name question | Nothing is added. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 > **The core judges the folder.** Which folder may be a library is the core's
 > rule (BR-01), so the application asks rather than checking the disk itself
@@ -323,6 +214,10 @@ graph LR
 > file types its index recorded, and an optional marking as a library. The 0.6
 > core has no free-form indexing, so a folder is a library or is not in the
 > catalog at all, and the question of types went with it.
+>
+> **Amended for library navigation.** The Libraries screen became the Manage
+> libraries dialog, reached from the Library menu, and adding a library runs
+> where the owner is rather than sending them to a screen first.
 
 ---
 
@@ -334,21 +229,23 @@ graph LR
 | **Name** | Scan a library |
 | **Actors** | Owner, Alexandria core, Local filesystem |
 | **Description** | The owner scans a library again and watches it complete without the interface locking up. A library's first scan, started when it is added (UC-05), is followed the same way. |
-| **Preconditions** | An active session exists. At least one library exists. |
-| **Postconditions** | The catalog contains the library's files. The run's outcome is shown under the library's row. |
-| **Requirements** | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09, FR-LB-23 |
+| **Preconditions** | At least one library exists. |
+| **Postconditions** | The catalog contains the library's files. The run's outcome is shown with the library's run status, under its row in Manage libraries and in its page header. |
+| **Requirements** | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09, FR-LB-23, FR-LB-27, FR-CT-21 |
 
 **Main Flow**
 
-1. The owner chooses "Scan again" on a library's row.
+1. The owner chooses "Scan again" — from the menu in the library's page header
+   (UC-49), or on its row in Manage libraries.
 2. The application asks the core to start an index run of the library and
    retains the run identifier it returns.
-3. The application presents the run as in progress under the library's row and
-   leaves browsing, playback, viewing, and editing available.
+3. The application presents the run as in progress under the library's row in
+   Manage libraries and in its page header, and leaves browsing, playback,
+   viewing, and editing available.
 4. The application observes the run's progress off the interface thread.
 5. The run finishes; the application presents the outcome — files added, files
    updated, files found missing — and keeps it visible until dismissed.
-6. The application refreshes the type counts and any open listing.
+6. The application refreshes home's statistics and the open library folder.
 
 **Alternative Flows**
 
@@ -358,14 +255,15 @@ graph LR
 | AF-02 | The core rejects the start as invalid input | The application presents the reason. |
 | AF-03 | The library's folder disappeared or became unreadable | The application presents the failure; if the folder moved, the owner corrects it (UC-49 AF-06), and otherwise may remove the library (UC-08). |
 | AF-04 | The run reports files missing on disk | The outcome links to the missing-files review (UC-37). |
-| AF-08 | The run reports files it could not record | The outcome says so in the screen's warning colours rather than as a clause on the summary line: those files are on disk and absent from the library, and no other screen will ever mention them. It happens under write contention, where a file's insert exhausts the core's retry bound — the core counts it and carries on rather than abandoning the walk. The outcome also offers to name them (FR-LB-23), because a count alone leaves the owner nowhere to look, and the remedy is another run, which the library's row already offers beside the report. |
+| AF-08 | The run reports files it could not record | The outcome says so in the screen's warning colours rather than as a clause on the summary line: those files are on disk and absent from the library, and no other screen will ever mention them. It happens under write contention, where a file's insert exhausts the core's retry bound — the core counts it and carries on rather than abandoning the walk. The outcome also offers to name them (FR-LB-23), because a count alone leaves the owner nowhere to look, and the remedy is another run, which the library's menu and its row already offer beside the report. |
 | AF-05 | The application is closed while a run is in flight | The run belongs to the core; its outcome is presented at the next launch. |
-| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-06 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 | AF-07 | **Removed (0.6 core)** | A run no longer carries a file-type scope, so there is no recorded scope to refuse. |
 
-> **A row's status lasts for the session.** A library shows the run this session
-> is following, or one the core lists as running or paused; otherwise the
-> outcome of the last run this session followed; and with neither, nothing. The
+> **A library's run status lasts while the application runs.** A library shows
+> the run the application is following, or one the core lists as running or
+> paused; otherwise the outcome of the last run followed since startup; and
+> with neither, nothing. The
 > core does not list finished runs per library, and keeping one in the
 > application's settings would bring back the folder store FR-LB-03 removed.
 
@@ -378,31 +276,31 @@ graph LR
 | **ID** | UC-07 |
 | **Name** | Refresh the catalog |
 | **Actors** | Owner, Alexandria core, Local filesystem |
-| **Description** | Everything already cataloged is re-checked, across every library at once — either because the owner asked for it ("Re-check all libraries" on the Libraries screen), or once, unannounced, when a session is established (FR-LB-21). |
-| **Preconditions** | An active session exists. The catalog is not empty. |
+| **Description** | Everything already cataloged is re-checked, across every library at once — either because the owner asked for it ("Re-check all libraries" in Manage libraries), or once, unannounced, when startup is ready (FR-LB-21). |
+| **Preconditions** | The catalog is not empty. |
 | **Postconditions** | Every cataloged record is refreshed; changed files are updated and absent files are marked missing. |
 | **Requirements** | FR-LB-06, FR-LB-07, FR-LB-08, FR-LB-21 |
 
 **Main Flow**
 
-1. The owner starts a refresh, or a session is established with the
-   re-check preference on (FR-LB-21).
+1. The owner starts a refresh, or startup becomes ready with the re-check
+   preference on (FR-LB-21).
 2. The application calls the core's refresh operation and retains the run
    identifier.
 3. The application presents the run as in progress, without blocking the interface.
 4. The run finishes; the application presents what was updated and what is now
    missing, and keeps it visible until dismissed.
-5. The application refreshes the type counts and any open listing.
+5. The application refreshes home's statistics and the open library folder.
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | A refresh is already in flight | Owner-started: the application points at the running one rather than starting a second. Started at sign-in: the check is silently not repeated — nothing is presented, because nobody asked (FR-LB-21). |
-| AF-02 | The catalog is empty | Owner-started: the application offers to add a library instead (UC-05). Started at sign-in: nothing is presented; the offer is what the owner already sees on an empty catalog regardless. |
+| AF-01 | A refresh is already in flight | Owner-started: the application points at the running one rather than starting a second. Started at startup: the check is silently not repeated — nothing is presented, because nobody asked (FR-LB-21). |
+| AF-02 | The catalog is empty | Owner-started: the application offers to add a library instead (UC-05). Started at startup: nothing is presented; the offer is what the owner already sees on an empty catalog regardless. |
 | AF-03 | The refresh marks files missing | The outcome links to the missing-files review (UC-37). |
-| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login, whether the refresh was owner-started or begun at sign-in. |
-| AF-05 | The owner has turned the sign-in re-check off, or a run the core already had outstanding covers it (FR-LB-19) | Started at sign-in only: no refresh is started, and nothing is presented. |
+| AF-04 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
+| AF-05 | The owner has turned the startup re-check off, or a run the core already had outstanding covers it (FR-LB-19) | Started at startup only: no refresh is started, and nothing is presented. |
 
 ---
 
@@ -414,21 +312,23 @@ graph LR
 | **Name** | Remove a library |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner removes a library, which deletes its records from the catalog. Nothing on disk is touched. |
-| **Preconditions** | An active session exists. The library exists, and no run of it is running. |
+| **Preconditions** | The library exists, and no run of it is running. |
 | **Postconditions** | The library, its files' records with their reading and watching positions and collection membership, and its runs are gone from the catalog. The files on disk are untouched. |
-| **Requirements** | FR-LB-10, FR-PL-19 |
+| **Requirements** | FR-LB-10, FR-PL-19, FR-LB-27, FR-CT-20, FR-CT-21 |
 
 **Main Flow**
 
-1. The owner chooses "Remove" on a library's row.
+1. The owner chooses "Remove" — from the menu in the library's page header
+   (UC-49), or on its row in Manage libraries.
 2. The application presents a confirmation stating that the library is deleted
    from the catalog with its files, their reading and watching positions, and
    their place in collections, and that nothing on disk is touched.
 3. The owner confirms.
 4. The application asks the core to remove the library.
 5. The application stops following the library's run, reloads the outstanding
-   runs, and refreshes the libraries, the type counts, the listings, and the
-   collections. Any of the library's tracks leave the player's queue.
+   runs, and refreshes the libraries — the left menu, home's favorites, and
+   Manage libraries — home's statistics, and the collections. Any of the
+   library's tracks leave the player's queue.
 
 **Alternative Flows**
 
@@ -436,10 +336,11 @@ graph LR
 | --- | --- | --- |
 | AF-01 | The owner cancels | Nothing changes. |
 | AF-02 | A run of that library is running | The core refuses until the run is paused, cancelled, or finished; the application shows the core's sentence. |
-| AF-03 | It is the last library | The application removes it and presents the first-run guidance again. |
+| AF-03 | It is the last library | The application removes it; home presents the first-run guidance again, and the left menu offers "Add a library". |
 | AF-04 | The library has a paused run | The confirmation also says that the paused scan is discarded; the core deletes it with the library. |
 | AF-05 | The track playing belongs to the library | Playback stops when the library is removed (FR-PL-19). |
-| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-07 | The library removed is the one open in the main area | The shell goes to Home (FR-CT-20). |
+| AF-06 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 > **Rewritten for the 0.6 core.** This was *Unregister a library folder*, which
 > left the catalog untouched. In 0.6 a file is in the catalog only because it is
@@ -451,35 +352,10 @@ graph LR
 
 ### UC-09: Browse the library by type
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-09 |
-| **Name** | Browse the library by type |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner selects a file type in the navigation panel and sees the matching items, merged across every library. |
-| **Preconditions** | An active session exists. |
-| **Postconditions** | The listing shows the items of the selected type. |
-| **Requirements** | FR-CT-01, FR-CT-02, FR-CT-10, FR-CT-13, FR-LB-04 |
-
-**Main Flow**
-
-1. The application presents the navigation panel listing every file type with its
-   item count.
-2. The owner selects a type.
-3. The application requests that type's items from the core, filtered to active
-   records.
-4. The core returns the matching records.
-5. The application renders the listing, materializing only the rows on screen.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | The type has no items | The application presents an empty state distinct from loading and from error, offering to add a library when the catalog is empty (UC-05). |
-| AF-02 | The core returns a failure | The application presents a readable message with a retry, and leaves the previous listing intact. |
-| AF-03 | The listing is large | Rows are materialized as they scroll into view; the scroll cost does not grow with the library size. |
-| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
-| AF-05 | The type is Music | Each row names the track by its tags — its title, or its file name when it has none, then artist · album, and the duration (FR-CT-13) — in album order unless the owner chose another sort (UC-12). |
+**Removed (navigation by library)** — The left menu no longer lists file types,
+and there are no per-type pages. Files are browsed in their library's folders,
+with a type filter (UC-49, UC-12), and found across every library by search
+(UC-11). The count of each type moved to home's statistics (UC-14).
 
 ---
 
@@ -490,25 +366,31 @@ graph LR
 | **ID** | UC-10 |
 | **Name** | Switch the view layout |
 | **Actors** | Owner |
-| **Description** | The owner chooses between list, list with details, and grid, and the choice sticks per type. |
-| **Preconditions** | An active session exists and a listing is open. |
-| **Postconditions** | The listing is rendered in the chosen layout, and the choice is remembered for that type. |
+| **Description** | The owner chooses between list, list with details, and grid for a library's files, and the choice holds for every library. |
+| **Preconditions** | A library is open in the main area (UC-49). |
+| **Postconditions** | The open folder's files are drawn in the chosen layout, and the choice is remembered for every library. |
 | **Requirements** | FR-CT-03, FR-CT-04 |
 
 **Main Flow**
 
-1. The owner selects one of the three layouts.
-2. The application re-renders the current listing in that layout, keeping the
-   scroll position on the same item where possible.
-3. The application records the choice for that file type in the local settings.
-4. Returning to that type later restores the same layout.
+1. The owner selects one of the three layouts in the library's toolbar.
+2. The application draws the open folder in that layout — its folders first,
+   then its files.
+3. The application records the choice in the local settings: one choice for
+   every library, with the type filter and the sort (UC-12).
+4. Opening another library, or this one after a restart, draws the same layout.
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
 | AF-01 | The window is too narrow for the chosen layout | The application renders the closest layout that fits and indicates the substitution rather than clipping columns. |
-| AF-02 | The settings store cannot be written | The layout still changes for the session, and the application reports that the preference was not saved. |
+| AF-02 | The settings store cannot be written | The layout still changes while the application runs, and the toolbar says that it will not be remembered next time. |
+
+> **Rewritten for library navigation.** The layout was chosen per file type, on
+> the type's page. With the type pages gone it is one choice for every library:
+> the owner reads their libraries one way, and a grid chosen in one folder that
+> vanished in the next would look like the choice had not been kept.
 
 ---
 
@@ -520,9 +402,9 @@ graph LR
 | **Name** | Search the catalog |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner finds items by name or metadata across every type at once. |
-| **Preconditions** | An active session exists. |
+| **Preconditions** | The application is running. |
 | **Postconditions** | Matching items are listed, grouped by type. |
-| **Requirements** | FR-CT-06, FR-CT-09 |
+| **Requirements** | FR-CT-06, FR-CT-09, FR-LB-04 |
 
 **Main Flow**
 
@@ -532,7 +414,7 @@ graph LR
 3. The application presents the matches grouped by type, with the matched term
    highlighted, each naming the library it lives in. A track is named by its
    tags (FR-CT-13).
-4. The owner opens a result, which behaves exactly as opening it from its listing
+4. The owner opens a result, which behaves exactly as opening it from its folder
    (UC-13).
 
 **Alternative Flows**
@@ -540,7 +422,7 @@ graph LR
 | ID | Condition | Outcome |
 | --- | --- | --- |
 | AF-01 | Nothing matches | The application presents an empty-result state naming the term, distinct from loading and error. |
-| AF-02 | The term is blank or whitespace | The application clears the search and restores the previous listing. |
+| AF-02 | The term is blank or whitespace | The application clears the search and restores what was showing before. |
 | AF-03 | The catalog is still loading | The application searches what has loaded and indicates that results may grow as loading completes. |
 | AF-04 | The catalog is empty | The application offers to add a library instead (UC-05). |
 
@@ -559,31 +441,40 @@ graph LR
 | --- | --- |
 | **ID** | UC-12 |
 | **Name** | Filter and sort a listing |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner narrows and orders a listing by type, lifecycle state, containing collection, and type-specific attributes. |
-| **Preconditions** | An active session exists and a listing is open. |
-| **Postconditions** | The listing shows the filtered, ordered items, and the choices are remembered for that type. |
+| **Actors** | Owner |
+| **Description** | The owner narrows a library folder's files to one type, and orders them. |
+| **Preconditions** | A library is open in the main area (UC-49). |
+| **Postconditions** | The open folder shows its folders, then the chosen type's files in the chosen order, and the choices are remembered for every library. |
 | **Requirements** | FR-CT-07, FR-CT-08, FR-CT-19 |
 
 **Main Flow**
 
-1. The owner opens the filter controls and selects one or more filters.
-2. The application requests the matching records from the core, passing the
-   filters the core supports and applying the remainder to the returned set.
-3. The owner chooses a sort field and direction.
-4. The application orders and re-renders the listing.
-5. The application records the filters and sort for that type in the local
-   settings.
+1. The owner opens the type filter in the library's toolbar and chooses all
+   types, or one of the seven: videos, music, books, comic books, notes, pages,
+   or images.
+2. The application shows the open folder's files of that type. Folders are
+   never filtered, and always come first, A–Z.
+3. The owner opens the sort and chooses name, date indexed, or album, and
+   ascending or descending.
+4. The application orders the files and draws them again.
+5. The application records the filter and the sort in the local settings: one
+   choice for every library, with the layout (UC-10).
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The filter combination matches nothing | The application presents an empty-result state naming the active filters and offering to clear them. |
-| AF-02 | The owner clears the filters | The application restores the unfiltered listing and clears the stored filters for that type. |
-| AF-03 | A filter names a collection that no longer exists | The application drops that filter, says so, and re-runs the query. |
-| AF-04 | The core rejects the filter as invalid input | The application presents the reason and reverts to the previous filters. |
-| AF-05 | The listing is Music | The album sort is offered beside the others and is the default: album artist (or artist), album, track number, title, untagged values last (FR-CT-19). |
+| AF-01 | The folder has files, but none of the chosen type | The application says "No <type> in this folder", with a button that clears the filter. |
+| AF-02 | The owner clears the filter | Every type is shown again, and that is what is stored. |
+| AF-03 | **Removed (navigation by library)** | A library's files are not filtered by collection: a collection's members are listed in Collections (UC-27). |
+| AF-04 | **Removed (navigation by library)** | The filter and the sort are applied by the application to the folder the core returned, so there is nothing for the core to refuse. |
+| AF-05 | The sort is album | Album artist (or artist), album, track number, title, untagged files last in file-name order (FR-CT-19). It is offered whatever the filter: a folder of tracks plays in the order shown (UC-20). |
+| AF-06 | The settings store cannot be written | The choice still applies while the application runs, and the toolbar says that it will not be remembered next time. |
+
+> **Rewritten for library navigation.** This filtered and sorted a type's page,
+> by lifecycle state, with the choices kept per type. The type pages are gone;
+> deleted records are reached through Deleted items (UC-34), never inside a
+> library.
 
 ---
 
@@ -595,14 +486,14 @@ graph LR
 | **Name** | View a file's details |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner inspects one file's metadata, path, and state, and reaches every action available for it. |
-| **Preconditions** | An active session exists and the file is in the catalog. |
+| **Preconditions** | The file is in the catalog. |
 | **Postconditions** | The file's current details are shown. |
 | **Requirements** | FR-CT-05, FR-CT-12 |
 
 **Main Flow**
 
-1. The owner presses the details button on a file's row or tile, in a listing,
-   the dashboard's recent list, or a library's folder view. Tapping the row
+1. The owner presses the details button on a file's row or tile, in a library's
+   folder or in search results. Tapping the row
    itself opens the file rather than its details: a reader, a viewer, or
    playback, according to its type. The details are one press away from
    wherever a file is listed, because everything else a file can have done to
@@ -619,11 +510,11 @@ graph LR
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The core reports the file as not found | The application says the file is no longer in the catalog and returns to the listing, refreshing it. |
+| AF-01 | The core reports the file as not found | The application says the file is no longer in the catalog and returns to where the owner was, refreshing it. |
 | AF-02 | The record is soft-deleted | The application shows it as deleted and offers restore (UC-34) instead of editing. |
 | AF-03 | The record is marked missing on disk | The application shows it as missing, offers a re-scan, and disables the actions that need the file. A tap on such a file's row opens these details rather than a reader, since there is nothing on disk to open. |
 | AF-04 | No viewer is registered for the type | The application presents the details and reports that the file cannot be opened, leaving the other actions available. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -634,28 +525,40 @@ graph LR
 | **ID** | UC-14 |
 | **Name** | View the home dashboard |
 | **Actors** | Owner, Alexandria core |
-| **Description** | The owner opens the application and sees the state of the library at a glance. |
-| **Preconditions** | An active session exists. |
-| **Postconditions** | The dashboard shows recent items, items in progress, per-type counts, and the last run's outcome. |
-| **Requirements** | FR-CT-11 |
+| **Description** | The owner opens the application and sees their favorite libraries and the catalog's totals at a glance. |
+| **Preconditions** | The application is running. |
+| **Postconditions** | Home shows the favorite libraries, A–Z, and the totals: how many libraries, and how many files of each type. |
+| **Requirements** | FR-CT-11, FR-CT-22, FR-LB-11 |
 
 **Main Flow**
 
-1. The application opens the dashboard after login.
-2. The application requests recently added files, watchlist and reading-list
-   items in progress, and per-type counts from the core.
-3. The application presents them alongside the outcome of the most recent index
-   run.
-4. The owner opens any item, which behaves as opening it from its listing.
+1. The application opens on home once startup is ready; the left menu's Home
+   returns to it.
+2. The application reads the libraries and the catalog's statistics from the
+   core, each section on its own.
+3. The favorites section shows the libraries marked as favorites (UC-53), A–Z
+   by name, as cards: the name, the root folder, and the library's run status
+   as Manage libraries shows it.
+4. The statistics section shows "N libraries", then a row per type with its
+   count — videos, music, books, comic books, notes, pages, and images — all
+   seven, zeroes included.
+5. The owner opens a favorite's card, and its library opens in the main area
+   (UC-49).
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | The catalog is empty | The dashboard presents the first-run guidance to add a library (UC-05). |
-| AF-02 | No item is in progress | That section states so rather than rendering empty. |
-| AF-03 | A section's query fails | That section shows its own failure and retry; the rest of the dashboard still renders. |
-| AF-04 | A run is in flight | The dashboard shows it as running and updates when it settles. |
+| AF-01 | No library has been added | Home presents the first-run guidance to add one (UC-05) in place of both sections. Only a list of libraries that loaded empty says so: while it loads, or when it failed, nothing is known. |
+| AF-02 | No library is a favorite | The favorites section says "Mark a library as a favorite to see it here", rather than rendering empty. |
+| AF-03 | A section's query fails | That section shows its own failure and retry; the other still renders. A total that could not be counted is never shown as a zero. |
+| AF-04 | A run finishes, or a library is added or removed | The statistics are read again. |
+| AF-05 | A favorite is renamed, unmarked, or removed | Its card follows: the new name in its place A–Z, or no card. |
+
+> **Rewritten for library navigation.** Home showed recently added files, items
+> in progress, per-type counts, and the last run's outcome; the owner chose
+> their favorite libraries and the totals instead. Resume positions still work
+> (UC-19, UC-30, UC-32): they are no longer listed here.
 
 ---
 
@@ -667,7 +570,7 @@ graph LR
 | **Name** | Edit a track's tags |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner corrects an audio file's title, artist, album artist, album, year, genre, and track number. |
-| **Preconditions** | An active session exists. The file is an active audio record. |
+| **Preconditions** | The file is an active audio record. |
 | **Postconditions** | The core holds the edited tags and every open view reflects them. |
 | **Requirements** | FR-ME-01, FR-ME-03, FR-ME-05 |
 
@@ -691,7 +594,7 @@ graph LR
 | AF-02 | The core rejects the change as invalid | The application presents the core's reason as final, keeps the form open, and leaves the stored tags unchanged. |
 | AF-03 | The core reports the file as not found | The application says the file is no longer in the catalog and closes the form. |
 | AF-04 | Nothing was actually changed | The application closes the form without calling the core. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 > **Reinstated for the 0.6 core**, which knows audio files again. This was
 > *Edit music metadata* until music left Alexandria; it comes back as the tags a
@@ -708,7 +611,7 @@ graph LR
 | **Name** | Edit video metadata |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner corrects a video file's metadata, including whether it is a movie or a series. |
-| **Preconditions** | An active session exists. The file is an active video record. |
+| **Preconditions** | The file is an active video record. |
 | **Postconditions** | The core holds the edited metadata and every open view reflects it. |
 | **Requirements** | FR-ME-02, FR-ME-03, FR-ME-05 |
 
@@ -730,7 +633,7 @@ graph LR
 | AF-02 | The core rejects the change | The application presents the reason and leaves the stored metadata unchanged. |
 | AF-03 | The marking changes from series to movie while watch progress records episodes | The application warns that per-episode progress becomes single-item progress and asks for confirmation before calling the core. |
 | AF-04 | The core reports the file as not found | The application says so and closes the form. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -742,7 +645,7 @@ graph LR
 | **Name** | Rename a file |
 | **Actors** | Owner, Alexandria core, Local filesystem |
 | **Description** | The owner renames a file, which the core applies to the catalog and to the file on disk. |
-| **Preconditions** | An active session exists. The file is an active record. |
+| **Preconditions** | The file is an active record. |
 | **Postconditions** | The file carries the new name in the catalog and on disk. |
 | **Requirements** | FR-ME-04, FR-ME-05 |
 
@@ -764,7 +667,7 @@ graph LR
 | AF-02 | The core reports a disk failure | The application presents the failure and states that neither the catalog nor the file changed. |
 | AF-03 | The core reports the file as not found | The application says the file is no longer in the catalog and refreshes the listing. |
 | AF-04 | The new name equals the current one | The application closes the dialog without calling the core. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -776,7 +679,7 @@ graph LR
 | **Name** | Edit a Markdown or text file |
 | **Actors** | Owner, Alexandria core, Local filesystem |
 | **Description** | The owner edits a note or text file, with a live preview, and saves the content back to disk. |
-| **Preconditions** | An active session exists. The file is an active text record. |
+| **Preconditions** | The file is an active text record. |
 | **Postconditions** | The file on disk holds the edited content and the core has refreshed its content hash. |
 | **Requirements** | FR-ME-06, FR-ME-07, FR-ME-08, FR-ME-09, FR-ME-10 |
 
@@ -801,7 +704,7 @@ graph LR
 | AF-03 | The core reports a disk failure on write | The application presents the failure and leaves the editor content exactly as it was, unsaved. |
 | AF-04 | The core reports the file as not found | The application reports that the file is no longer in the catalog and keeps the edited content on screen until the owner dismisses it, so nothing typed is lost silently. |
 | AF-05 | The file changed on disk since it was loaded | The application warns before overwriting and lets the owner reload or continue. |
-| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login; unsaved content is warned about first. |
+| AF-06 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -813,7 +716,7 @@ graph LR
 | **Name** | Play a video |
 | **Actors** | Owner, Local filesystem |
 | **Description** | The owner watches a movie or an episode, with full-screen, seeking, subtitles, and audio-track selection. |
-| **Preconditions** | An active session exists. The file is an active video record whose file is present on disk. |
+| **Preconditions** | The file is an active video record whose file is present on disk. |
 | **Postconditions** | Playback ran; a resume position is recorded. |
 | **Requirements** | FR-PL-01, FR-PL-02, FR-PL-03, FR-PL-04, FR-PL-08, FR-PL-10 |
 
@@ -849,18 +752,17 @@ graph LR
 | **Name** | Play audio |
 | **Actors** | Owner, Local filesystem |
 | **Description** | The owner plays a track, and the list it was started from plays on, in a player bar that stays while they browse. |
-| **Preconditions** | An active session exists. The file is an active audio record. |
+| **Preconditions** | The file is an active audio record. |
 | **Postconditions** | Playback ran. No resume position is recorded for music. |
 | **Requirements** | FR-PL-05, FR-PL-06, FR-PL-08, FR-PL-18, FR-PL-19, FR-CT-13 |
 
 **Main Flow**
 
-1. The owner opens a track — from the Music panel, a library's folder, search,
-   its details, or the dashboard.
-2. The application builds the queue from where the track was started: the Music
-   listing as it is sorted and filtered, the folder's audio files in tree order,
-   or the track alone from search, details, or the dashboard. Deleted records
-   are left out.
+1. The owner opens a track — from a library's folder, search, or its details.
+2. The application builds the queue from where the track was started: the open
+   folder's audio files in the order shown, after its type filter and sort
+   (UC-12), or the track alone from search or its details. Deleted records are
+   left out.
 3. The application plays the track from its on-disk path in the player bar,
    docked at the bottom of the shell, which shows its cover, its title and
    artist, previous, play and pause, next, its position with seeking, and close.
@@ -877,7 +779,7 @@ graph LR
 | AF-01 | A queued track is absent from disk or cannot be opened | The application skips it, says briefly in the bar which one it skipped, and plays the next (FR-PL-18). |
 | AF-02 | Nothing left in the queue can be opened | Playback stops with a readable failure in the bar, offering a re-scan. |
 | AF-03 | The owner opens a video | The music pauses (FR-PL-08). |
-| AF-04 | The owner signs out | Playback stops (UC-03). |
+| AF-04 | **Removed (0.7 core)** | There is no signing out. Playback stops when the application closes for an update (UC-51) or exits. |
 | AF-05 | The library holding a queued track is removed (UC-08) | Its tracks leave the queue; if the track playing is one of them, playback stops. |
 | AF-06 | The owner presses the track's title in the bar | The track's details open (UC-13); playback continues. |
 
@@ -903,7 +805,7 @@ graph LR
 | **Name** | View a document |
 | **Actors** | Owner, Local filesystem |
 | **Description** | The owner reads a PDF or an e-book, with page or chapter navigation and a remembered position. |
-| **Preconditions** | An active session exists. The file is an active document record present on disk. |
+| **Preconditions** | The file is an active document record present on disk. |
 | **Postconditions** | The document was displayed; the reading position is remembered. |
 | **Requirements** | FR-VW-01, FR-VW-02, FR-VW-07, FR-VW-08 |
 
@@ -935,7 +837,7 @@ graph LR
 | **Name** | Read a comic book |
 | **Actors** | Owner, Local filesystem |
 | **Description** | The owner reads a comic book archive page by page. |
-| **Preconditions** | An active session exists. The file is an active comic-book record present on disk. |
+| **Preconditions** | The file is an active comic-book record present on disk. |
 | **Postconditions** | The comic was displayed; the page position is remembered. |
 | **Requirements** | FR-VW-03, FR-VW-07, FR-VW-08 |
 
@@ -967,7 +869,7 @@ graph LR
 | **Name** | View an image |
 | **Actors** | Owner, Local filesystem |
 | **Description** | The owner views an image, fitted to the window or zoomed. |
-| **Preconditions** | An active session exists. The file is an active image record present on disk. |
+| **Preconditions** | The file is an active image record present on disk. |
 | **Postconditions** | The image was displayed. |
 | **Requirements** | FR-VW-04, FR-VW-07 |
 
@@ -977,7 +879,8 @@ graph LR
 2. The application reads its bytes from the on-disk path.
 3. The viewer presents it fitted to the window.
 4. The owner zooms and pans, or returns to fit.
-5. The owner moves to the next or previous image in the current listing.
+5. The owner moves to the next or previous image among those it was drawn with —
+   the open library folder's, in the order shown.
 
 **Alternative Flows**
 
@@ -997,7 +900,7 @@ graph LR
 | **Name** | View a saved page |
 | **Actors** | Owner, Local filesystem |
 | **Description** | The owner reads a saved HTML page, or a Markdown file rendered rather than edited. |
-| **Preconditions** | An active session exists. The file is an active HTML or text record present on disk. |
+| **Preconditions** | The file is an active HTML or text record present on disk. |
 | **Postconditions** | The page was displayed as rendered content. |
 | **Requirements** | FR-VW-05, FR-VW-06, FR-VW-07 |
 
@@ -1036,7 +939,7 @@ graph LR
 | **Name** | Manage collections |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner creates, renames, and deletes collections of files or of bookmarks. |
-| **Preconditions** | An active session exists. |
+| **Preconditions** | The application is running. |
 | **Postconditions** | The core holds the created, renamed, or deleted collection; contained items are preserved in every case. |
 | **Requirements** | FR-OG-01, FR-OG-02, FR-OG-03 |
 
@@ -1060,7 +963,7 @@ graph LR
 | AF-02 | The core rejects the name | The application presents the core's reason and keeps the form open. |
 | AF-03 | The owner cancels a deletion | Nothing changes. |
 | AF-04 | The core reports the collection as not found | The application says so and refreshes the collections list. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1072,7 +975,7 @@ graph LR
 | **Name** | Organize items into collections |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner adds items to a collection, removes them, and browses a collection's members. |
-| **Preconditions** | An active session exists and at least one collection exists. |
+| **Preconditions** | At least one collection exists. |
 | **Postconditions** | The collection's membership reflects the change; the items themselves are untouched. |
 | **Requirements** | FR-OG-04, FR-OG-05, FR-OG-06, FR-OG-07 |
 
@@ -1094,7 +997,7 @@ graph LR
 | AF-02 | An item is already a member | The application reports it as already present and adds nothing. |
 | AF-03 | The core reports the collection or the item as not found | The application says so and refreshes the membership. |
 | AF-04 | Some of a multiple-item addition fail | The application reports exactly which succeeded and which did not. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1106,7 +1009,7 @@ graph LR
 | **Name** | Manage bookmarks |
 | **Actors** | Owner, Alexandria core, Default browser |
 | **Description** | The owner creates, updates, lists, and opens browser bookmarks, optionally filed in bookmark collections. |
-| **Preconditions** | An active session exists. |
+| **Preconditions** | The application is running. |
 | **Postconditions** | The core holds the created or updated bookmark. |
 | **Requirements** | FR-OG-08, FR-OG-09, FR-OG-10, FR-OG-11, FR-OG-12 |
 
@@ -1132,7 +1035,7 @@ graph LR
 | AF-03 | The named collection is not a bookmark collection | The application does not offer it, and states why if reached another way. |
 | AF-04 | No default browser can be launched | The application reports it and offers to copy the URL instead. |
 | AF-05 | The core reports the bookmark as not found | The application says so and refreshes the listing. |
-| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-06 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1144,7 +1047,7 @@ graph LR
 | **Name** | Manage watchlists |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner creates and deletes watchlists and adds or removes the videos they track. |
-| **Preconditions** | An active session exists. |
+| **Preconditions** | The application is running. |
 | **Postconditions** | The core holds the watchlist and its membership; the videos themselves are preserved in every case. |
 | **Requirements** | FR-TR-01, FR-TR-02, FR-TR-03, FR-TR-04 |
 
@@ -1169,7 +1072,7 @@ graph LR
 | AF-03 | The video is already in that watchlist | The application says so and adds nothing. |
 | AF-04 | The core reports the watchlist or video as not found | The application says so and refreshes the screen. |
 | AF-05 | The owner cancels a deletion | Nothing changes. |
-| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-06 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1181,7 +1084,7 @@ graph LR
 | **Name** | Track watch progress |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner records how far through a movie or series they are, per watchlist. |
-| **Preconditions** | An active session exists and the video is in the watchlist. |
+| **Preconditions** | The video is in the watchlist. |
 | **Postconditions** | The core holds the updated watch state and progress. |
 | **Requirements** | FR-TR-05, FR-TR-06, FR-TR-07 |
 
@@ -1205,7 +1108,7 @@ graph LR
 | AF-03 | The core rejects the state as invalid | The application presents the reason and leaves the stored progress unchanged. |
 | AF-04 | The core reports the watchlist or item as not found | The application says so and refreshes the screen. |
 | AF-05 | The same video is in several watchlists | Progress is set for this watchlist only; the others are unaffected. |
-| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-06 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1217,7 +1120,7 @@ graph LR
 | **Name** | Manage reading lists |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner creates and deletes reading lists and adds or removes the books and comics they track. |
-| **Preconditions** | An active session exists. |
+| **Preconditions** | The application is running. |
 | **Postconditions** | The core holds the reading list and its membership; the books and comics themselves are preserved. |
 | **Requirements** | FR-TR-08, FR-TR-09, FR-TR-10, FR-TR-11 |
 
@@ -1243,7 +1146,7 @@ graph LR
 | AF-03 | The item is already in that reading list | The application says so and adds nothing. |
 | AF-04 | The core reports the reading list or item as not found | The application says so and refreshes the screen. |
 | AF-05 | The owner cancels a deletion | Nothing changes. |
-| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-06 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1255,7 +1158,7 @@ graph LR
 | **Name** | Track reading progress |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner records how far through a book or a comic series they are, per reading list. |
-| **Preconditions** | An active session exists and the item is in the reading list. |
+| **Preconditions** | The item is in the reading list. |
 | **Postconditions** | The core holds the updated read state and progress. |
 | **Requirements** | FR-TR-12, FR-TR-13, FR-TR-14 |
 
@@ -1280,7 +1183,7 @@ graph LR
 | AF-03 | The core rejects the state as invalid | The application presents the reason and leaves the stored progress unchanged. |
 | AF-04 | The core reports the reading list or item as not found | The application says so and refreshes the screen. |
 | AF-05 | The same item is in several reading lists | Progress is set for this reading list only. |
-| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-06 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1292,7 +1195,7 @@ graph LR
 | **Name** | Delete an item |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner hides a file or bookmark from the library, keeping it restorable and leaving any on-disk file untouched. |
-| **Preconditions** | An active session exists and the record is active. |
+| **Preconditions** | The record is active. |
 | **Postconditions** | The record is soft-deleted and absent from the default listings. The on-disk file is unchanged. |
 | **Requirements** | FR-LC-01, FR-LC-02, FR-LC-09 |
 
@@ -1305,7 +1208,8 @@ graph LR
 3. The owner confirms.
 4. The application sends the soft delete to the core.
 5. The core marks the record deleted and returns it.
-6. The application removes it from the default listings and refreshes the counts.
+6. The application removes it from the default listings and refreshes home's
+   statistics.
 
 **Alternative Flows**
 
@@ -1315,7 +1219,7 @@ graph LR
 | AF-02 | The record is already deleted | The application says so and refreshes the listing. |
 | AF-03 | The core reports the record as not found | The application says so and refreshes the listing. |
 | AF-04 | The file is currently playing or open in a viewer or editor | The application warns, and stops playback or closes the viewer on confirmation. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1327,7 +1231,7 @@ graph LR
 | **Name** | Browse and restore deleted items |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner reviews what has been deleted, sees how long each remains restorable, and brings any of it back. |
-| **Preconditions** | An active session exists. |
+| **Preconditions** | The application is running. |
 | **Postconditions** | A restored record is active again and back in the default listings. |
 | **Requirements** | FR-LC-03, FR-LC-04, FR-LC-09 |
 
@@ -1340,7 +1244,7 @@ graph LR
 5. The application sends the restore to the core, which returns the reactivated
    record.
 6. The application removes it from this view and refreshes the default listings
-   and counts.
+   and home's statistics.
 
 **Alternative Flows**
 
@@ -1350,7 +1254,7 @@ graph LR
 | AF-02 | The record's retention window has elapsed | The application shows it as no longer restorable and offers purge instead (UC-35). |
 | AF-03 | The core reports the record as not found | The application says so and refreshes the view. |
 | AF-04 | The on-disk file is gone since the deletion | The record is restored and immediately shown as missing (UC-37). |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1362,7 +1266,7 @@ graph LR
 | **Name** | Purge a record |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner permanently removes a deleted record from the catalog, leaving the file on disk alone. |
-| **Preconditions** | An active session exists. The record is soft-deleted and its retention window has elapsed. |
+| **Preconditions** | The record is soft-deleted and its retention window has elapsed. |
 | **Postconditions** | The record no longer exists in the catalog. The on-disk file is unchanged. |
 | **Requirements** | FR-LC-05, FR-LC-07, FR-LC-09 |
 
@@ -1374,7 +1278,7 @@ graph LR
 3. The owner confirms.
 4. The application sends the purge to the core.
 5. The core removes the record and returns it as confirmation.
-6. The application removes it from the view, refreshes the counts, and discards
+6. The application removes it from the view, refreshes home's statistics, and discards
    any resume position held for it.
 
 **Alternative Flows**
@@ -1385,7 +1289,7 @@ graph LR
 | AF-02 | The retention window has not elapsed | The core rejects it; the application explains when purging becomes possible rather than showing a status code. |
 | AF-03 | The record is not soft-deleted | The application offers deletion first (UC-33) and does not call the core. |
 | AF-04 | The core reports the record as not found | The application says so and refreshes the view. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1397,7 +1301,7 @@ graph LR
 | **Name** | Purge a file on disk |
 | **Actors** | Owner, Alexandria core, Local filesystem |
 | **Description** | The owner deletes both the catalog record and the physical file. This is the only operation in the application that removes the owner's data from disk. |
-| **Preconditions** | An active session exists and the record exists. |
+| **Preconditions** | The record exists. |
 | **Postconditions** | The record and the file on disk are both gone. |
 | **Requirements** | FR-LC-06, FR-LC-09 |
 
@@ -1412,8 +1316,8 @@ graph LR
 4. The application sends the purge-on-disk to the core.
 5. The core removes the file from disk and the record from the catalog, and
    reports the outcome.
-6. The application refreshes the listings and counts and discards any resume
-   position held for the file.
+6. The application refreshes the listings and home's statistics and discards
+   any resume position held for the file.
 
 **Alternative Flows**
 
@@ -1424,7 +1328,7 @@ graph LR
 | AF-03 | The core reports a disk failure | The application states that neither the file nor the record was removed. |
 | AF-04 | The core reports the record as not found | The application says so and refreshes the listing. |
 | AF-05 | The file is playing or open | The application warns and stops playback or closes the viewer before proceeding. |
-| AF-06 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-06 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1436,13 +1340,13 @@ graph LR
 | **Name** | Review missing files |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner reviews the cataloged files that were not found on disk and decides what to do about them. |
-| **Preconditions** | An active session exists. |
+| **Preconditions** | The application is running. |
 | **Postconditions** | The owner has seen the missing files; no record has been removed on the application's initiative. |
 | **Requirements** | FR-LC-08 |
 
 **Main Flow**
 
-1. The owner opens the missing-files review, from the navigation panel or from an
+1. The owner opens the missing-files review, from the Library menu or from an
    index run's outcome.
 2. The application requests the count and the records the core reports as missing.
 3. The application lists them with their last known paths.
@@ -1457,7 +1361,7 @@ graph LR
 | AF-01 | No file is missing | The view presents an empty state saying so. |
 | AF-02 | The owner decides to remove a missing record | The application routes them through deletion (UC-33) and purge (UC-35); it never removes a record because a file is absent. |
 | AF-03 | **Removed (0.6 core)** | Every record belongs to a library, and removing a library removes its records (UC-08), so no missing record can come from a folder that is no longer one. |
-| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-04 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1468,22 +1372,30 @@ graph LR
 | **ID** | UC-38 |
 | **Name** | Navigate the application shell |
 | **Actors** | Owner |
-| **Description** | The owner moves around the application in a window that adapts to its size, with consistent loading, error, and confirmation behavior throughout. |
+| **Description** | The owner moves around the application by library, in a window that adapts to its size, with consistent loading, error, and confirmation behavior throughout. |
 | **Preconditions** | The application is running. |
 | **Postconditions** | The owner reached the screen they wanted; the window's geometry is remembered. |
-| **Requirements** | FR-UX-01, FR-UX-02, FR-UX-03, FR-UX-08, FR-UX-09, FR-UX-10, FR-UX-11 |
+| **Requirements** | FR-UX-01, FR-UX-02, FR-UX-03, FR-UX-08, FR-UX-09, FR-UX-10, FR-UX-11, FR-CT-20 |
 
 **Main Flow**
 
-1. The application presents the shell: the library menu bar, the type
-   navigation panel, and the content area.
-2. The owner navigates between areas from the panel, and by keyboard.
-3. The owner resizes the window; the shell adapts across the breakpoints,
-   collapsing the navigation panel rather than clipping controls.
-4. Every perceptible operation shows a loading state while it runs.
-5. Every failure appears as a localized, readable message; every destructive
+1. Once startup is ready, the application presents the shell, on home: the
+   menu bar, the left menu, and the main area. There is no login before it.
+2. The left menu lists, top to bottom, Home, Bookmarks, the pinned libraries
+   A–Z, a divider, and the other libraries A–Z. The owner picks one, with the
+   pointer or the keyboard, and it opens in the main area; a library opens as
+   its folders (UC-49).
+3. The library-wide screens — adding and managing libraries, collections,
+   watchlists, reading lists, deleted items, and the missing-files review — are
+   in the menu bar's Library menu, and Preferences in its Settings menu.
+4. The owner resizes the window; the shell adapts across the breakpoints,
+   collapsing the left menu to labels beneath the icons, then to icons with
+   tooltips, rather than clipping an entry. However many libraries there are,
+   the left menu scrolls rather than dropping one.
+5. Every perceptible operation shows a loading state while it runs.
+6. Every failure appears as a localized, readable message; every destructive
    action is confirmed by a modal naming what will be removed.
-6. The owner closes the application; the window size and position are recorded and
+7. The owner closes the application; the window size and position are recorded and
    restored at the next launch.
 
 **Alternative Flows**
@@ -1495,6 +1407,14 @@ graph LR
 | AF-03 | An operation fails while a loading state is showing | The loading state is replaced by the failure and a retry, never left spinning and never dismissed silently. |
 | AF-04 | The core cannot be loaded or initialized at startup | The shell presents the core-unavailable message with a retry, rather than terminating. |
 | AF-05 | The owner cancels a confirmation | Nothing changes, and the owner stays where they were. |
+| AF-06 | No library has been added | The libraries part of the left menu is a single "Add a library" entry, which starts adding one (UC-05). |
+| AF-07 | The libraries could not be read | The libraries part of the left menu is a single "Libraries didn't load. Try again" entry, which reads them again rather than opening anything. Home and Bookmarks are still there; an empty list would read as "you have none", a count nobody made. |
+| AF-08 | The library open in the main area is removed | The shell goes to Home (FR-CT-20). |
+
+> **Rewritten for library navigation.** The panel listed one entry per file
+> type, with its count, beside Home, Bookmarks, and Libraries. The owner knows
+> where things are by the folders they chose, so the left menu lists those
+> instead (FR-CT-20), and library management moved to the menu bar.
 
 ---
 
@@ -1506,14 +1426,15 @@ graph LR
 | **Name** | Manage application preferences |
 | **Actors** | Owner |
 | **Description** | The owner chooses the theme and the language, and those choices persist. |
-| **Preconditions** | The application is running. A session is not required. |
+| **Preconditions** | The application is running. |
 | **Postconditions** | The chosen theme and language are applied and remembered. |
 | **Requirements** | FR-UX-04, FR-UX-05, FR-UX-06, FR-UX-07, FR-UX-12 |
 
 **Main Flow**
 
-1. The owner opens preferences, which is reachable with or without a session —
-   showing, without one, the choices that apply from where they are (AF-05).
+1. The owner opens Preferences from the menu bar's Settings menu. It holds the
+   theme, the language, the startup re-check (FR-LB-21), and the update check
+   (UC-51).
 2. The owner chooses light, dark, or the system theme.
 3. The application applies it immediately, taking every color from the active
    theme, without restarting.
@@ -1527,118 +1448,30 @@ graph LR
 | ID | Condition | Outcome |
 | --- | --- | --- |
 | AF-01 | The system theme changes while "system" is selected | The application follows the change immediately. |
-| AF-02 | The settings store cannot be written | The choices apply for this session and the application reports that they were not saved. |
+| AF-02 | The settings store cannot be written | The choices apply while the application runs, and the application reports that they were not saved. |
 | AF-03 | No preference has ever been set | The application starts on the system theme and the system language when it is one of the two supported, and English otherwise. |
 | AF-04 | Playback or an index run is active | Both continue uninterrupted through a theme or language change. |
-| AF-05 | There is no session | The theme and the language are offered — they change the screen the owner is standing on — and so is the update check, which belongs to the application rather than to a library (UC-51). The choices that belong to a library nobody has opened (the startup re-check) appear once they have signed in. |
+| AF-05 | **Removed (0.7 core)** | There is no session, so Preferences always offers every choice, and has no account section. |
 
 ---
 
 ### UC-40: Save the recovery codes
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-40 |
-| **Name** | Save the recovery codes |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner is shown the ten single-use codes the core minted at sign-up, once, and confirms having stored them before the library opens. |
-| **Preconditions** | An account has just been created and a session is active. |
-| **Postconditions** | The owner has seen the codes and acknowledged them. Nothing about them is retained by the application. |
-| **Requirements** | FR-AU-12, FR-AU-13, FR-AU-19 |
-
-**Main Flow**
-
-1. Sign-up returns the ten recovery codes with the new session (UC-01 step 6).
-2. The application presents them in place of the catalog, states that this is the
-   only time they will be shown, and explains that each one replaces a forgotten
-   password exactly once.
-3. The owner copies or saves the codes.
-4. The owner confirms having stored them.
-5. The application discards the codes from memory and opens the home dashboard.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | The owner tries to continue without confirming | The application keeps the codes on screen; the confirmation is the only way past it. |
-| AF-02 | The owner asks to copy the codes | The application places them on the clipboard and says so. It writes no file, because a file is a stored value (`FR-AU-13`). |
-| AF-03 | The core returned no codes with the session | The application says the account was created but no codes were issued, and offers regenerating a set (UC-42) rather than showing an empty list. |
-| AF-04 | The owner signs out from the prompt | The session is discarded and the login screen is presented. The codes are gone, and the account has none the owner has seen — which is what UC-42 exists to fix. |
-
-> This use case replaces the e-mail confirmation the core removed on
-> 2026-08-18. The account's address is a login identifier and nothing else: the
-> core never writes to it, so there is nothing to confirm, and a recovery code
-> is what gets a locked-out owner back in.
+**Removed (0.7 core)** — There is no account, so the core mints no recovery
+codes and there is nothing to show before the library opens.
 
 ---
 
 ### UC-41: Recover access with a recovery code
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-41 |
-| **Name** | Recover access with a recovery code |
-| **Actors** | Owner, Alexandria core |
-| **Description** | An owner who cannot remember their password spends one of the recovery codes to set a new one. |
-| **Preconditions** | The core is initialized. No active session. The owner holds a recovery code. |
-| **Postconditions** | The core holds the new salted hash, the code is spent, every existing session is invalidated, and the owner is at the login screen. |
-| **Requirements** | FR-AU-15, FR-AU-16, FR-AU-18, FR-AU-19 |
-
-**Main Flow**
-
-1. The owner chooses account recovery from the login screen.
-2. The owner enters a recovery code, a new password, and repeats the password.
-3. The application checks that the code is not blank, the password is not empty,
-   and the two entries match.
-4. The application submits the code and the new password to the core.
-5. The core validates the code, replaces the credentials, consumes that code, and
-   invalidates every session.
-6. The application discards the plaintext and the code, discards any session, and
-   presents the login screen stating that the password was replaced.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | The code is blank, the password is empty, or the two entries differ | The application marks the field and does not call the core. |
-| AF-02 | The core does not recognise the code | The application says the code was not recognised, clears it, and keeps the screen open. |
-| AF-03 | The core reports the code as already used | The application says so — distinctly from AF-02, because the two mean different things to an owner working through a list — and keeps the screen open. |
-| AF-04 | The core rejects the new password | The application presents the core's own reason and keeps the screen open with the password fields cleared. The code is not spent (`FR-AU-16`). |
-| AF-05 | An account is signed in | Recovery is not offered; changing a known password is UC-04. |
-| AF-06 | No account exists | Recovery is not offered; the sign-up screen is what launch presents (UC-01). |
+**Removed (0.7 core)** — There is no password to forget and no login screen to
+recover from.
 
 ---
 
 ### UC-42: Regenerate the recovery codes
 
-| Field | Value |
-| --- | --- |
-| **ID** | UC-42 |
-| **Name** | Regenerate the recovery codes |
-| **Actors** | Owner, Alexandria core |
-| **Description** | The owner replaces the whole set of recovery codes with ten new ones — because the old set ran low, or was lost, or was seen by someone else. |
-| **Preconditions** | An active session exists. |
-| **Postconditions** | The core holds ten new codes and none of the old ones. The owner has seen the new set once. |
-| **Requirements** | FR-AU-14, FR-AU-17, FR-AU-19 |
-
-**Main Flow**
-
-1. The owner opens the account section of preferences, which states how many
-   codes remain unconsumed.
-2. The owner asks for a new set.
-3. The application confirms, stating that every existing code stops working.
-4. The application asks the core to regenerate, and presents the ten new codes
-   under the same rules as UC-40: once, with no way back to them.
-5. The owner confirms having stored them, and the application discards them.
-
-**Alternative Flows**
-
-| ID | Condition | Outcome |
-| --- | --- | --- |
-| AF-01 | The owner cancels the confirmation | Nothing changes and the existing codes keep working. |
-| AF-02 | The core refuses the regeneration | The application presents the core's reason; the existing codes are unchanged, because the core replaced nothing. |
-| AF-03 | The core cannot report how many codes remain | The application offers the regeneration without the count rather than hiding the action behind a number it does not have. |
-| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+**Removed (0.7 core)** — There are no recovery codes to replace.
 
 ---
 
@@ -1650,7 +1483,7 @@ graph LR
 | **Name** | Follow a scan while it runs |
 | **Actors** | Owner, Alexandria core |
 | **Description** | The owner watches an index or refresh run make progress — from anywhere in the application, not only from the screen it was started on. |
-| **Preconditions** | At least one run is outstanding, whether started in this session or left behind by a previous one. |
+| **Preconditions** | At least one run is outstanding, whether started since startup or left behind by a previous run of the application. |
 | **Postconditions** | None — this is observation. The catalog is unchanged. |
 | **Requirements** | FR-LB-07, FR-LB-13, FR-LB-14, FR-LB-15, FR-LB-19, FR-LB-20, FR-UX-08 |
 
@@ -1674,10 +1507,10 @@ graph LR
 | ID | Condition | Outcome |
 | --- | --- | --- |
 | AF-01 | The run has not yet reported a total | The application presents the count processed so far and no estimate, rather than dividing by a total it does not have. |
-| AF-02 | Several runs are outstanding at once | The application presents an aggregate line and directs the owner to the Libraries screen, where a specific run can be addressed under its library's row. One row has no space to say which run a control would act on. |
+| AF-02 | Several runs are outstanding at once | The application presents an aggregate line and its "View all" opens Manage libraries, where a specific run can be addressed under its library's row. One row has no space to say which run a control would act on. |
 | AF-03 | One run's status cannot be read | That run stops being polled and the others continue. A single unreadable run never stops the application following the rest. |
 | AF-04 | Every outstanding run is paused | The application says so rather than claiming work is under way, and offers the resume. |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1688,7 +1521,7 @@ graph LR
 | **ID** | UC-44 |
 | **Name** | Pause, resume, or cancel a scan |
 | **Actors** | Owner, Alexandria core |
-| **Description** | The owner stops a scan where it stands and picks it up later, or abandons it outright — from the library's own row, or from the background activity indicator. |
+| **Description** | The owner stops a scan where it stands and picks it up later, or abandons it outright — from the library's run status (its row in Manage libraries, or its page header), or from the background activity indicator. |
 | **Preconditions** | A run exists and is outstanding. |
 | **Postconditions** | The core records the run paused, running again under the same identifier, or cancelled. Whatever the run already catalogued stays catalogued; nothing is undone. |
 | **Requirements** | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
@@ -1721,7 +1554,7 @@ graph LR
 | AF-01 | The owner cancels the confirmation | Nothing is sent and the run continues. |
 | AF-02 | The core refuses because the run has moved on since the control was rendered | The application reads the run back and presents its actual state, rather than surfacing an error about a race the owner did not cause. |
 | AF-03 | The run resumes | Its progress restarts from zero for the new segment, and the application says so — a resumed run re-walks, and the reset must not read as lost work. |
-| AF-04 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-04 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
 
 ---
 
@@ -1781,54 +1614,65 @@ graph LR
 | **ID** | UC-49 |
 | **Name** | Browse a library |
 | **Actors** | Owner, Alexandria core |
-| **Description** | The owner opens a library, walks its folders as they are on disk, opens files from them, and corrects where the library is when its folder moves. |
-| **Preconditions** | An active session exists and at least one library has been added (UC-05). |
-| **Postconditions** | None. Browsing changes nothing. |
-| **Requirements** | FR-CT-13, FR-CT-15, FR-CT-17, FR-LB-09 |
+| **Description** | The owner opens a library from the left menu, walks its folders as they are on disk in the main area, opens files from them, and acts on the library from its header. |
+| **Preconditions** | At least one library has been added (UC-05). |
+| **Postconditions** | None. Browsing changes nothing; the folder open in each library is remembered while the application runs. |
+| **Requirements** | FR-CT-10, FR-CT-12, FR-CT-13, FR-CT-15, FR-CT-17, FR-CT-21, FR-LB-09 |
 
 **Main Flow**
 
-1. The owner opens the Libraries screen from the shell, which lists every
-   library by name with the folder it stands for.
-2. The owner opens one. The application asks the core for what sits directly
-   inside the library's root — the folders at that level, and the files.
-3. The owner opens a folder. The application asks for that level and shows it,
-   keeping a way back up to the level above. A track is named by its tags, with
-   its file name beneath (FR-CT-13).
-4. The owner opens a file. It opens in the viewer or player registered for its
-   type, exactly as it would from a catalog listing (FR-CT-12); a track plays
-   with that folder's audio files as its queue, in tree order (UC-20).
+1. The owner picks a library in the left menu (UC-38), or a favorite's card on
+   home (UC-14). It opens in the main area.
+2. The header names the library, with its Pin and Favorite toggles (UC-52,
+   UC-53), a menu with Rename (UC-54), Scan again (UC-06), Move, and Remove
+   (UC-08), and the library's run status.
+3. The application asks the core for what sits directly inside the library's
+   root, and shows its folders first, A–Z, then its files, in the layout, type
+   filter, and sort the owner chose (UC-10, UC-12). A track is named by its tags
+   (FR-CT-13).
+4. The owner opens a folder. The application asks for that level and shows it;
+   the breadcrumbs above it — the library's root, then each folder down to the
+   open one — open any level above.
+5. The owner opens a file. It opens in the viewer or player registered for its
+   type (FR-CT-12), with every action a file has — details, editing, renaming,
+   deleting, adding to a collection or a list; a track plays with the open
+   folder's audio files as its queue, in the order shown (UC-20).
+6. The owner leaves for another library and comes back; the folder they were in
+   is open again. A restart opens every library at its root.
 
 **Alternative Flows**
 
 | ID | Condition | Outcome |
 | --- | --- | --- |
-| AF-01 | No library has been added | The screen says so and offers to add one (UC-05). |
-| AF-02 | A folder in the library holds nothing the core catalogued | It is shown as an empty folder rather than hidden. It still exists on disk, and hiding it would misdescribe the structure the library exists to preserve. |
-| AF-03 | The library no longer exists — it was removed from another window | The screen states that it could not be read and offers to retry, which re-reads the list. |
-| AF-06 | The library's folder moved on disk | The owner chooses "Moved…" and picks where it is now. The library's files move with it and keep their identity, so the next scan walks the folder that is there. Nothing is re-indexed: these are the same files. |
+| AF-01 | No library has been added | The left menu offers "Add a library" in place of the libraries (UC-38 AF-06). |
+| AF-02 | A folder in the library holds nothing the core catalogued | It is shown as an empty folder rather than hidden, and opening it says "Nothing in this folder". It still exists on disk, and hiding it would misdescribe the structure the library exists to preserve. |
+| AF-03 | The library no longer exists — it was removed from another window | The main area states that it could not be read and offers to retry; once the list of libraries is read again without it, the shell goes to Home. |
+| AF-04 | **Removed (0.6 core)** | Unmarking a library so that its files returned to the type panels no longer exists: a library's files are listed with every other, and removing a library deletes its records (UC-08). |
+| AF-05 | **Removed (0.7 core)** | The core no longer authenticates, so no call is rejected as unauthorized and there is no session to discard. |
+| AF-06 | The library's folder moved on disk | The owner chooses "Move…" in the header's menu, or on its row in Manage libraries, and picks where it is now. The library's files move with it and keep their identity, so the next scan walks the folder that is there. Nothing is re-indexed: these are the same files. |
 | AF-07 | The folder picked already overlaps another library, or the catalog already holds files there | The application says which of the two it is, in those terms, and nothing moves. |
 | AF-08 | A run of the library is running or paused | The core refuses the move; the application shows the core's sentence, which names the unfinished run (FR-LB-09). |
-| AF-04 | **Removed (0.6 core)** | Unmarking a library so that its files returned to the type panels no longer exists: a library's files are in the type panels already, and removing a library deletes its records (UC-08). |
-| AF-05 | The core rejects the call as unauthorized | The session is discarded and the owner returns to login. |
+| AF-09 | Nothing under the library has been indexed yet | The root says so, and points at Scan again in the header's menu. |
+| AF-10 | The library is renamed, or pinned or unpinned, while it is open | The header shows the new name or the new toggle at once, and the left menu sorts the library again. |
 
-> **The Libraries screen is where libraries are made.** Since the 0.6 core, a
-> library is the only way into the catalog, so adding one (UC-05), scanning it
-> again (UC-06), re-checking every library (UC-07), and removing one (UC-08)
-> all happen on this screen, beside the browsing.
+> **A library opens in the main area.** It was a dialog over the Libraries
+> screen; it is now what the left menu opens, with the layout, type filter,
+> and sort controls the type pages had brought over (library navigation). A
+> deleted file is reached through Deleted items (UC-34), not inside its
+> library.
 >
 > **A moved folder is corrected, not re-indexed.** Re-walking the new
 > location would mint new records for the same files and leave the old ones to
 > be found missing — taking with them every reference a watchlist, a reading
 > position, or a collection holds. So the root and the paths beneath it are
-> corrected together, which is the core's own guarantee (FR-FC-41), and this
-> screen's part is to ask which folder.
+> corrected together, which is the core's own guarantee (FR-FC-41), and the
+> application's part is to ask which folder.
 >
-> **A library's files are listed everywhere.** The tree is a second way to
-> them, not the only one: the type panels, search, the dashboard, the
-> deleted-items and missing-files reviews, and the collection picker all list
-> them too. Until the 0.6 core they were kept out of the type panels (FR-CT-16,
-> now removed).
+> **A library's folders are the way to its files.** Search (UC-11), the
+> deleted-items and missing-files reviews, and the collection picker reach them
+> too. Until the 0.6 core they were kept out of the type panels (FR-CT-16, now
+> removed), and since library navigation there are no type panels at all
+> (FR-CT-01, removed).
 
 ### UC-50: See what has been played most
 
@@ -1844,7 +1688,7 @@ graph LR
 | **Name** | Update the application |
 | **Actors** | Owner, GitHub releases, Local filesystem |
 | **Description** | The application finds a newer release at startup, or when the owner asks, and offers it; the owner updates now, later, or never to that version, and a copy that can update itself downloads, verifies, installs, and starts the new version. |
-| **Preconditions** | A release build is running, from an installation other than the Flatpak. At startup, "Check for updates at startup" is on (the default). A session is not required. |
+| **Preconditions** | A release build is running, from an installation other than the Flatpak. At startup, "Check for updates at startup" is on (the default). |
 | **Postconditions** | The owner is running the newer release; or has chosen to be asked again at the next start; or has skipped that version, which is remembered; or has been sent to the release page. Nothing unverified has run, and the owner's data is untouched. |
 | **Requirements** | FR-UP-01, FR-UP-02, FR-UP-03, FR-UP-04, FR-UP-05, FR-UP-06, FR-UP-07, FR-UP-08, FR-UP-09, FR-UP-10, FR-UP-11, FR-UP-12, FR-UP-13, FR-UP-14, FR-UP-15 |
 
@@ -1855,15 +1699,15 @@ graph LR
    `Accept` header, and `User-Agent: Alexandria/<version>`.
 2. The latest release is newer than the running version, and is not a version
    the owner skipped.
-3. The application shows the prompt over whatever screen is up — the login
-   screen or the shell — waiting first for any open dialog to close. It names
+3. The application shows the prompt over the shell, waiting first for any open
+   dialog to close. It names
    the new version, says "You have <current>", and shows the release notes,
    with Update now, Later, and Skip this version.
 4. The owner chooses Update now. The application downloads the package for
    this installation, showing its progress and a Cancel.
 5. The application verifies the download's SHA-256 against the checksums file
    the release publishes.
-6. The application closes for the update: it ends the session's activities,
+6. The application closes for the update: it ends the application's activities,
    records the window's geometry, writes the pending-update record, starts the
    installer detached, and exits.
 7. The installer replaces the installation, keeping the owner's data, and
@@ -1881,8 +1725,8 @@ graph LR
 | AF-04 | The release publishes no checksums for this installation | As AF-03: the application cannot verify what it would install, so it offers the release page. The first release that publishes checksums is installed by hand, once. |
 | AF-05 | The download does not match its checksum, or the checksums file has no line for it | The download is deleted, the prompt says it could not be verified, and nothing runs. |
 | AF-06 | The download fails | The partial file is deleted and the prompt says the update could not be downloaded. |
-| AF-07 | The owner cancels the download, or signs out while it runs | The partial file is deleted and, on Cancel, the offer stands as it was. |
-| AF-08 | An edit is unsaved when the application closes for the update | The owner is asked first, as signing out asks. "Update and discard" continues; declining returns to the offer and deletes the download, so the owner can save first. |
+| AF-07 | The owner cancels the download | The partial file is deleted, and the offer stands as it was. |
+| AF-08 | An edit is unsaved when the application closes for the update | The owner is asked first. "Update and discard" continues; declining returns to the offer and deletes the download, so the owner can save first. |
 | AF-09 | A library scan is running when the application closes for the update | The owner is told that the scan will pause and can be resumed after the update (UC-44); confirming continues, and declining returns to the offer. |
 | AF-10 | The update did not take: the next start is still running the old version | The installer started the old version again. The application deletes the pending-update record and, in the prompt's place, shows "The update to <version> did not complete", with "Open release page". |
 | AF-11 | The check fails at startup — offline, timed out, rate-limited, a server error, or an unreadable answer | It is logged, and nothing is shown. Startup is neither slowed nor interrupted. |
@@ -1903,6 +1747,126 @@ graph LR
 > **Closing for an update is its own path.** It asks about unsaved edits and a
 > running scan; closing the window in the ordinary way does not, and is
 > unchanged.
+>
+> **The check is not one of the application's activities.** The activities —
+> the catalog, indexing, the editor, playback — begin once startup is ready and
+> end when the application closes for an update. The check starts at the same
+> moment, but it is never ended: ending it would cancel the very download the
+> application is closing to install. It was an activity only while signing out
+> had to cancel a download in flight, and there is no signing out.
+
+---
+
+### UC-52: Pin a library
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-52 |
+| **Name** | Pin a library |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner pins a library so that it stays at the top of the left menu, or unpins it. |
+| **Preconditions** | At least one library has been added (UC-05). |
+| **Postconditions** | The core records whether the library is pinned, and the left menu lists it among the pinned libraries or among the others. The choice survives restarts. |
+| **Requirements** | FR-LB-24, FR-CT-20, NFR-15 |
+
+**Main Flow**
+
+1. The owner right-clicks, or long-presses, the library's entry in the left
+   menu and chooses "Pin" — or presses the Pin toggle in the library's page
+   header (UC-49).
+2. The application asks the core to pin the library, and reads the libraries
+   again once the core has accepted.
+3. The left menu lists the library among the pinned ones, A–Z, above the
+   divider, with a pin on its icon; the header's toggle shows it pinned.
+4. "Unpin", from the same two places, returns it below the divider, A–Z among
+   the others.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The core refuses the change | Nothing moves and the toggle stays as it was, because the left menu only ever shows what the core holds; a snackbar says the change could not be saved. |
+| AF-02 | Every library is pinned, or none is | No divider is drawn: a line with nothing on one side of it divides nothing. |
+| AF-03 | The window is at its narrowest | The entry is its icon, with the pin, and the library's name as its tooltip (FR-UX-02). |
+
+> **No order but A–Z.** The pinned libraries and the others are each sorted by
+> name, without regard to case. There is no dragging to reorder: pinning is the
+> one way the owner moves a library up.
+
+---
+
+### UC-53: Mark a favorite library
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-53 |
+| **Name** | Mark a favorite library |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner marks a library as a favorite so that it is on home, or unmarks it. |
+| **Preconditions** | At least one library has been added (UC-05). |
+| **Postconditions** | The core records whether the library is a favorite, and home's favorites list it, A–Z, or no longer do. The choice survives restarts. |
+| **Requirements** | FR-LB-25, FR-CT-11, NFR-15 |
+
+**Main Flow**
+
+1. The owner right-clicks, or long-presses, the library's entry in the left
+   menu and chooses "Add to favorites" — or presses the Favorite toggle, a
+   star, in the library's page header (UC-49).
+2. The application asks the core to mark the library, and reads the libraries
+   again once the core has accepted.
+3. Home's favorites show the library's card, A–Z among the others (UC-14); the
+   context menu's entry and the header's toggle show a filled star.
+4. "Remove from favorites", from the same two places, takes the card off home.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The core refuses the change | Nothing changes, and a snackbar says the change could not be saved. |
+| AF-02 | The last favorite is unmarked | Home's favorites say "Mark a library as a favorite to see it here" (UC-14 AF-02). |
+
+> **Favorites and pins are separate.** A pin orders the left menu; a favorite
+> puts a library on home. A library can be either, both, or neither. In
+> Portuguese a favorite library is *preferida*: *Favoritos* already names the
+> bookmarks.
+
+---
+
+### UC-54: Rename a library
+
+| Field | Value |
+| --- | --- |
+| **ID** | UC-54 |
+| **Name** | Rename a library |
+| **Actors** | Owner, Alexandria core |
+| **Description** | The owner gives a library another name, at any time — while it is being scanned included. |
+| **Preconditions** | At least one library has been added (UC-05). |
+| **Postconditions** | The core holds the new name, and the left menu, the library's page header, home's favorites, and Manage libraries all show it. |
+| **Requirements** | FR-LB-26, FR-CT-20 |
+
+**Main Flow**
+
+1. The owner chooses "Rename…" — from the library's context menu in the left
+   menu, from the menu in its page header (UC-49), or on its row in Manage
+   libraries.
+2. The application asks for the new name, with the current one filled in and
+   selected. Confirm is disabled while the field is blank, the same rule as
+   when a library is added (UC-05).
+3. The owner confirms. The application asks the core to rename the library,
+   and reads the libraries again once the core has accepted.
+4. The new name is shown everywhere the library is, and the left menu sorts it
+   again, A–Z within its group.
+
+**Alternative Flows**
+
+| ID | Condition | Outcome |
+| --- | --- | --- |
+| AF-01 | The owner cancels | Nothing changes. |
+| AF-02 | The core refuses the name | The dialog stays open with the core's message, so the name typed is not lost. |
+| AF-03 | A run of the library is running or paused | The rename is offered and saved all the same: a library's name is not something a scan reads. |
+
+> **New with library navigation.** A library's name used to be set only when it
+> was added. The folder on disk keeps its own name; only the library's changes.
 
 ---
 
@@ -1910,20 +1874,20 @@ graph LR
 
 | Use Case | Requirements |
 | --- | --- |
-| UC-01: Sign up | FR-AU-01, FR-AU-02, FR-AU-03, FR-AU-11 |
-| UC-02: Log in | FR-AU-04, FR-AU-05, FR-AU-06, FR-AU-07, FR-AU-08, FR-AU-11 |
-| UC-03: Sign out | FR-AU-09 |
-| UC-04: Change credentials | FR-AU-10, FR-AU-11 |
-| UC-05: Add a library | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12 |
-| UC-06: Scan a library | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09, FR-LB-23 |
+| UC-01: Sign up | **Removed (0.7 core)** |
+| UC-02: Log in | **Removed (0.7 core)** |
+| UC-03: Sign out | **Removed (0.7 core)** |
+| UC-04: Change credentials | **Removed (0.7 core)** |
+| UC-05: Add a library | FR-LB-01, FR-LB-02, FR-LB-03, FR-LB-04, FR-LB-11, FR-LB-12, FR-LB-27, FR-CT-20 |
+| UC-06: Scan a library | FR-LB-05, FR-LB-07, FR-LB-08, FR-LB-09, FR-LB-23, FR-LB-27, FR-CT-21 |
 | UC-07: Refresh the catalog | FR-LB-06, FR-LB-07, FR-LB-08, FR-LB-21 |
-| UC-08: Remove a library | FR-LB-10, FR-PL-19 |
-| UC-09: Browse the library by type | FR-CT-01, FR-CT-02, FR-CT-10, FR-CT-13, FR-LB-04 |
+| UC-08: Remove a library | FR-LB-10, FR-PL-19, FR-LB-27, FR-CT-20, FR-CT-21 |
+| UC-09: Browse the library by type | **Removed (navigation by library)** |
 | UC-10: Switch the view layout | FR-CT-03, FR-CT-04 |
-| UC-11: Search the catalog | FR-CT-06, FR-CT-09, FR-CT-13 |
+| UC-11: Search the catalog | FR-CT-06, FR-CT-09, FR-CT-13, FR-LB-04 |
 | UC-12: Filter and sort a listing | FR-CT-07, FR-CT-08, FR-CT-19 |
 | UC-13: View a file's details | FR-CT-05, FR-CT-12, FR-CT-18 |
-| UC-14: View the home dashboard | FR-CT-11 |
+| UC-14: View the home dashboard | FR-CT-11, FR-CT-22, FR-LB-11 |
 | UC-15: Edit a track's tags | FR-ME-01, FR-ME-03, FR-ME-05 |
 | UC-16: Edit video metadata | FR-ME-02, FR-ME-03, FR-ME-05 |
 | UC-17: Rename a file | FR-ME-04, FR-ME-05 |
@@ -1947,20 +1911,23 @@ graph LR
 | UC-35: Purge a record | FR-LC-05, FR-LC-07, FR-LC-09 |
 | UC-36: Purge a file on disk | FR-LC-06, FR-LC-09 |
 | UC-37: Review missing files | FR-LC-08 |
-| UC-38: Navigate the application shell | FR-UX-01, FR-UX-02, FR-UX-03, FR-UX-08, FR-UX-09, FR-UX-10, FR-UX-11 |
+| UC-38: Navigate the application shell | FR-UX-01, FR-UX-02, FR-UX-03, FR-UX-08, FR-UX-09, FR-UX-10, FR-UX-11, FR-CT-20 |
 | UC-39: Manage application preferences | FR-UX-04, FR-UX-05, FR-UX-06, FR-UX-07, FR-UX-12 |
-| UC-40: Save the recovery codes | FR-AU-12, FR-AU-13, FR-AU-19 |
-| UC-41: Recover access with a recovery code | FR-AU-15, FR-AU-16, FR-AU-18, FR-AU-19 |
-| UC-42: Regenerate the recovery codes | FR-AU-14, FR-AU-17, FR-AU-19 |
+| UC-40: Save the recovery codes | **Removed (0.7 core)** |
+| UC-41: Recover access with a recovery code | **Removed (0.7 core)** |
+| UC-42: Regenerate the recovery codes | **Removed (0.7 core)** |
 | UC-43: Follow a scan while it runs | FR-LB-07, FR-LB-13, FR-LB-14, FR-LB-15, FR-LB-19, FR-LB-20, FR-UX-08 |
 | UC-44: Pause, resume, or cancel a scan | FR-LB-16, FR-LB-17, FR-LB-19, FR-LB-20, FR-UX-10 |
 | UC-45: Pace a scan | FR-LB-16, FR-LB-18 |
 | UC-46: Browse the music library | **Removed (moved out of scope, see Orpheus)** |
 | UC-47: Manage a playlist | **Removed (moved out of scope, see Orpheus)** |
 | UC-48: Play a playlist | **Removed (moved out of scope, see Orpheus)** |
-| UC-49: Browse a library | FR-CT-13, FR-CT-15, FR-CT-17, FR-LB-09 |
+| UC-49: Browse a library | FR-CT-10, FR-CT-12, FR-CT-13, FR-CT-15, FR-CT-17, FR-CT-21, FR-LB-09 |
 | UC-50: See what has been played most | **Removed (moved out of scope, see Orpheus)** |
 | UC-51: Update the application | FR-UP-01, FR-UP-02, FR-UP-03, FR-UP-04, FR-UP-05, FR-UP-06, FR-UP-07, FR-UP-08, FR-UP-09, FR-UP-10, FR-UP-11, FR-UP-12, FR-UP-13, FR-UP-14, FR-UP-15 |
+| UC-52: Pin a library | FR-LB-24, FR-CT-20, NFR-15 |
+| UC-53: Mark a favorite library | FR-LB-25, FR-CT-11, NFR-15 |
+| UC-54: Rename a library | FR-LB-26, FR-CT-20 |
 
 Every functional requirement in
 [System Requirements §3](System%20Requirements%20Document.md) that has not been
@@ -1970,38 +1937,28 @@ removed appears at least once above.
 
 ## 4. State Diagrams
 
-### 4.1 Session lifecycle
+### 4.1 Application lifecycle
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Uninitialized
-    Uninitialized --> NoAccount : core initialized, no account
-    Uninitialized --> LoggedOut : core initialized, account exists
-    Uninitialized --> CoreUnavailable : initialization failed
-    CoreUnavailable --> Uninitialized : retry
-    NoAccount --> ShowingCodes : signed up (UC-01)
-    ShowingCodes --> Authenticated : codes acknowledged (UC-40)
-    ShowingCodes --> LoggedOut : sign out (UC-40 AF-04)
-    LoggedOut --> Authenticated : login succeeds (UC-02)
-    LoggedOut --> LoggedOut : login rejected
-    LoggedOut --> LoggedOut : password replaced with a code (UC-41)
-    Authenticated --> ShowingCodes : codes regenerated (UC-42)
-    Authenticated --> LoggedOut : sign out (UC-03)
-    Authenticated --> LoggedOut : core rejects a call as unauthorized
-    ShowingCodes --> [*] : application closed
-    Authenticated --> [*] : application closed
+    [*] --> Starting
+    Starting --> CoreUnavailable : the core could not be loaded or initialized
+    CoreUnavailable --> Starting : retry
+    Starting --> Ready : core initialized
+    Ready --> ClosingForUpdate : update accepted (UC-51)
+    ClosingForUpdate --> Ready : declined, or the installer could not start
+    ClosingForUpdate --> [*] : installer started
+    Ready --> [*] : application closed
 ```
 
-`ShowingCodes` is an authenticated state, not a failed one: the session is real
-and the core accepted it. What the owner has not yet done is store the ten
-recovery codes, so the application refuses to reach the catalog from it
-(`BR-25`) — a product decision, held independently of whether the core would
-also refuse. It is the only state between signing up and the library, and a
-regeneration (UC-42) is the only way back into it.
+`Ready` is the shell, on home: there is no state between startup and the
+library. The application's activities — the catalog, indexing, the editor,
+playback — begin on entering it and end when the application closes for an
+update; the update check starts with them but is not one of them (UC-51).
 
-This note previously described a `Locked` state gated on a confirmed e-mail.
-The core dropped e-mail confirmation on 2026-08-18; there is no such state, and
-the diagram above has never had one.
+This was the *session lifecycle*, with `NoAccount`, `LoggedOut`,
+`ShowingCodes`, and `Authenticated` states. Core 0.7 removed authentication,
+and every one of those states went with it.
 
 ### 4.2 Library lifecycle
 

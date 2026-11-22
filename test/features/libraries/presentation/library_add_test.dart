@@ -10,7 +10,6 @@ import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -64,24 +63,26 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.libraries.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openLibrariesPage();
 
     return (container: container, gateway: gateway, index: theIndex);
   }
 
   AppLocalizations messages(WidgetTester tester) =>
-      AppLocalizations.of(tester.element(find.byType(LibrariesView)));
+      AppLocalizations.of(tester.element(find.byType(ShellNavigationPanel)));
 
   /// Presses the button, which opens the picker.
   Future<void> pressAdd(WidgetTester tester) async {
+    // Inside the page: home's first-run guidance offers the same button
+    // beneath it.
     await tester.tap(
-      find.widgetWithText(FilledButton, messages(tester).libraryAdd),
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.widgetWithText(
+          FilledButton,
+          messages(tester).libraryAdd,
+        ),
+      ),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
@@ -118,7 +119,13 @@ void main() {
           name: 'Rust course',
           rootPath: folder,
         ));
-        expect(find.text('Rust course'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(LibrariesView),
+            matching: find.text('Rust course'),
+          ),
+          findsOneWidget,
+        );
         // The core started the run with the library; this screen only
         // follows it, and starts nothing of its own.
         expect(opened.index.libraryStarts, isEmpty);
@@ -126,6 +133,32 @@ void main() {
         expect(find.text(messages(tester).libraryRunStarting), findsOneWidget);
       },
     );
+
+    testWidgets('GivenABlankName_WhenTheNameIsAsked_ThenConfirmIsDisabled', (
+      tester,
+    ) async {
+      final opened = await openLibraries(tester);
+
+      await pressAdd(tester);
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        ),
+        '   ',
+      );
+      await tester.pump();
+
+      final confirm = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(
+          FilledButton,
+          messages(tester).libraryAdd,
+        ),
+      );
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      expect(opened.gateway.registered, isEmpty);
+    });
 
     testWidgets('GivenAPickedFolder_WhenNamed_ThenTheFolderNameIsSuggested', (
       tester,
@@ -319,9 +352,9 @@ void main() {
     testWidgets(
       'GivenAnEmptyDashboard_WhenAddIsPressedAndAFolderPickedLater_ThenTheLibraryIsAdded',
       (tester) async {
-        // The native picker is open for seconds, and pressing the button
-        // switches to the Libraries screen meanwhile — so the dashboard that
-        // asked is gone by the time the folder comes back.
+        // The native picker is open for seconds, long enough for the
+        // dashboard that asked to be rebuilt around it: the flow's context
+        // has to survive until the folder comes back.
         final gate = Completer<void>();
         final gateway = FakeLibraryGateway();
         await tester.pumpShell(
@@ -345,7 +378,7 @@ void main() {
 
         await tester.tap(find.widgetWithText(FilledButton, l10n.libraryAdd));
         await tester.pumpAndSettle();
-        expect(find.byType(LibrariesView), findsOneWidget);
+        expect(find.byType(LibrariesView), findsNothing);
 
         gate.complete();
         await tester.pumpAndSettle();

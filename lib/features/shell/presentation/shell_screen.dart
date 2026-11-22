@@ -5,10 +5,9 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_search.dart';
-import '../../catalog/presentation/catalog_listing.dart';
 import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
-import '../../libraries/presentation/libraries_view.dart';
+import '../../libraries/presentation/library_view.dart';
 import '../../playback/presentation/player_bar.dart';
 import '../../organization/presentation/bookmarks_view.dart';
 import '../domain/shell_destination.dart';
@@ -66,10 +65,8 @@ class ShellScreen extends ConsumerWidget {
 
 /// The content area (FR-UX-01).
 ///
-/// A file type shows its listing (UC-09); home is the dashboard (UC-14) and
-/// bookmarks are the bookmark manager (UC-28). Neither of the last two is a
-/// file listing, which is why the switch below is on the type rather than on
-/// the destination alone.
+/// Home is the dashboard (UC-14), bookmarks are the bookmark manager (UC-28),
+/// and a library is its folders (library navigation design §4).
 class ShellContentArea extends ConsumerWidget {
   /// Creates the content area for [destination].
   const ShellContentArea({required this.destination, super.key});
@@ -87,13 +84,40 @@ class ShellContentArea extends ConsumerWidget {
     // results are what the content area shows.
     final searching = isSearchable(ref.watch(searchTermProvider));
 
+    // Read from the list the left menu shows rather than kept on the
+    // destination, so a rename reaches the heading the moment the list
+    // reloads. A library the list does not hold yet has no name to show; one
+    // it no longer holds sends the shell home (`ShellController`).
+    final library = switch (destination) {
+      LibraryDestination(:final uuid) =>
+        ref
+            .watch(librariesControllerProvider)
+            .value
+            ?.where((library) => library.uuid == uuid)
+            .firstOrNull,
+      _ => null,
+    };
+
+    final heading = switch (destination) {
+      HomeDestination() => l10n.destinationHome,
+      BookmarksDestination() => l10n.destinationBookmarks,
+      LibraryDestination() => library?.name ?? '',
+    };
+
+    // A library draws its own heading, with its toggles and menu beside the
+    // name; the shell's would say the name twice. A search over it still
+    // needs the shell's, to say where the owner is.
+    final headed = searching || destination is! LibraryDestination;
+
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(destination.label(l10n), style: theme.textTheme.headlineSmall),
-          const SizedBox(height: AppSpacing.md),
+          if (headed) ...[
+            Text(heading, style: theme.textTheme.headlineSmall),
+            const SizedBox(height: AppSpacing.md),
+          ],
           Expanded(
             child: switch (destination) {
               // AF-02 needs nothing of its own: an empty term is not a search,
@@ -102,18 +126,11 @@ class ShellContentArea extends ConsumerWidget {
               // are not files: the field is withheld there (see
               // `ShellMenuBar`), so a term left over from another area must
               // not replace the bookmarks with matching files either.
-              _ when searching && destination != ShellDestination.bookmarks =>
+              _ when searching && destination is! BookmarksDestination =>
                 const CatalogSearchResults(),
-              // The two areas that are not file listings: home is the
-              // dashboard (UC-14) and bookmarks are the bookmark manager
-              // (UC-28). Every other destination is a type, and its listing
-              // reads which one from the shell.
-              ShellDestination.home => const HomeDashboard(),
-              ShellDestination.bookmarks => const BookmarksView(),
-              // Folders browsed as trees, of every type at once (libraries
-              // design) — a listing of one type is exactly what it is not.
-              ShellDestination.libraries => const LibrariesView(),
-              _ => const CatalogListing(),
+              HomeDestination() => const HomeDashboard(),
+              BookmarksDestination() => const BookmarksView(),
+              LibraryDestination(:final uuid) => LibraryView(uuid: uuid),
             },
           ),
         ],

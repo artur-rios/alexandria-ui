@@ -38,6 +38,6 @@ bool isInternal(String uri) =>
 
 /// The layer an import URI points at, as written in the directive.
 ///
-/// Resolves `package:alexandria_ui/features/auth/data/x.dart` and
+/// Resolves `package:alexandria_ui/features/catalog/data/x.dart` and
 /// `../data/x.dart` alike: both carry the layer as a path segment.
 Layer? importedLayer(String uri) => isInternal(uri) ? layerOf(uri) : null;

@@ -40,7 +40,6 @@ class FakeBookmarkGateway implements BookmarkGateway {
 
   @override
   Future<BookmarkListing> list({
-    required String credential,
     String? collectionUuid,
     bool deleted = false,
   }) async {
@@ -55,7 +54,6 @@ class FakeBookmarkGateway implements BookmarkGateway {
   Future<BookmarkWrite> create({
     required String url,
     required String title,
-    required String credential,
     String? collectionUuid,
   }) async {
     writes.add((
@@ -83,7 +81,6 @@ class FakeBookmarkGateway implements BookmarkGateway {
     required String uuid,
     required String url,
     required String title,
-    required String credential,
     String? collectionUuid,
   }) async {
     writes.add((

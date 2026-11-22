@@ -19,71 +19,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'O núcleo do Alexandria não está disponível';
 
   @override
-  String get loginTitle => 'Entrar no Alexandria';
-
-  @override
-  String get loginEmailLabel => 'E-mail';
-
-  @override
-  String get loginPasswordLabel => 'Senha';
-
-  @override
-  String get loginSubmit => 'Entrar';
-
-  @override
-  String get loginEmailMissing => 'Informe seu endereço de e-mail.';
-
-  @override
-  String get loginEmailMalformed => 'Isso não parece um endereço de e-mail.';
-
-  @override
-  String get loginPasswordMissing => 'Informe sua senha.';
-
-  @override
-  String get loginRejected =>
-      'Esse e-mail e essa senha não correspondem a uma conta.';
-
-  @override
-  String get loginNoAccount =>
-      'Ainda não há uma conta configurada neste computador.';
-
-  @override
-  String get signUpTitle => 'Crie sua conta do Alexandria';
-
-  @override
-  String get signUpIntro =>
-      'Esta é a única conta. A senha dela não pode ser recuperada, então escolha uma que você não vá perder.';
-
-  @override
-  String get signUpPasswordConfirmationLabel => 'Repita a senha';
-
-  @override
-  String get signUpSubmit => 'Criar conta';
-
-  @override
-  String get signUpPasswordConfirmationMissing => 'Repita sua senha.';
-
-  @override
-  String get signUpPasswordMismatch => 'As duas senhas não coincidem.';
-
-  @override
-  String get signUpRejected =>
-      'O Alexandria não aceitou essas credenciais. Tente uma senha mais longa e menos previsível, que não seja seu endereço de e-mail.';
-
-  @override
-  String get signUpAccountExists =>
-      'Já existe uma conta neste computador. Entre com ela.';
-
-  @override
-  String get signUpGoToLogin => 'Ir para o login';
-
-  @override
-  String get loginGoToSignUp => 'Criar uma conta';
-
-  @override
-  String get loginSessionEndedTitle => 'Sua sessão foi encerrada';
-
-  @override
   String failureCoreLibraryNotLoaded(String path) {
     return 'Não foi possível carregar o núcleo do Alexandria a partir de $path.';
   }
@@ -115,9 +50,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'O Alexandria recusou esse valor como inválido.';
 
   @override
-  String get failureUnauthorized => 'Sua sessão terminou. Entre novamente.';
-
-  @override
   String get failureNotInitialized =>
       'O Alexandria ainda não está pronto. Reinicie o aplicativo.';
 
@@ -137,48 +69,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'O arquivo em disco não corresponde mais ao que o Alexandria registrou.';
 
   @override
-  String get failureConfiguration =>
-      'Não foi possível ler a configuração do Alexandria.';
-
-  @override
   String get failureConflict => 'Isso já existe no Alexandria.';
-
-  @override
-  String get failureRateLimited =>
-      'Tentativas demais. Espere um momento e tente de novo.';
-
-  @override
-  String get failureServiceUnavailable =>
-      'O Alexandria não conseguiu acessar um serviço necessário, então essa etapa não aconteceu.';
-
-  @override
-  String rejectionPasswordTooShort(String min) {
-    return 'Use pelo menos $min caracteres.';
-  }
-
-  @override
-  String rejectionPasswordTooLong(String max) {
-    return 'Use no máximo $max caracteres.';
-  }
-
-  @override
-  String get rejectionPasswordWhitespace => 'A senha não pode ser só espaços.';
-
-  @override
-  String get rejectionPasswordRepeatedCharacter =>
-      'A senha não pode ser um único caractere repetido.';
-
-  @override
-  String get rejectionPasswordTooCommon =>
-      'Essa senha é comum demais. Escolha algo menos previsível.';
-
-  @override
-  String get rejectionPasswordContainsEmail =>
-      'A senha não pode conter seu endereço de e-mail.';
-
-  @override
-  String get rejectionEmailUntrimmed =>
-      'Remova os espaços ao redor do seu endereço de e-mail.';
 
   @override
   String get failureUnexpected => 'Algo deu errado no Alexandria.';
@@ -212,9 +103,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get preferencesTitle => 'Preferências';
-
-  @override
-  String get preferencesOpen => 'Abrir preferências';
 
   @override
   String get preferencesLabel => 'Preferências';
@@ -256,35 +144,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get preferencesClose => 'Concluído';
-
-  @override
-  String get changeCredentialsOpen => 'Alterar credenciais…';
-
-  @override
-  String get changeCredentialsTitle => 'Alterar credenciais';
-
-  @override
-  String get changeCredentialsIntro =>
-      'Os dois são substituídos juntos. Você continua conectado.';
-
-  @override
-  String get changeCredentialsEmailLabel => 'Novo e-mail';
-
-  @override
-  String get changeCredentialsPasswordLabel => 'Nova senha';
-
-  @override
-  String get changeCredentialsConfirmationLabel => 'Repita a nova senha';
-
-  @override
-  String get changeCredentialsSubmit => 'Alterar';
-
-  @override
-  String get changeCredentialsDone => 'Seu e-mail e senha foram alterados.';
-
-  @override
-  String get changeCredentialsRejected =>
-      'A alteração foi recusada, e seu e-mail e senha continuam os mesmos.';
 
   @override
   String get dismiss => 'Dispensar';
@@ -359,9 +218,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get destinationMusic => 'Música';
 
   @override
-  String get catalogEmptyTitle => 'Nada deste tipo ainda';
-
-  @override
   String get catalogEmptyFirstRun =>
       'Ainda não há nada no Alexandria. Adicione uma pasta como biblioteca, e o que estiver dentro aparece aqui assim que for indexado.';
 
@@ -385,10 +241,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'A janela é estreita demais para esse layout, então a lista é exibida no lugar.';
 
   @override
-  String get layoutUnsaved =>
-      'O layout mudou, mas a escolha não pôde ser salva — ela não será lembrada na próxima vez.';
-
-  @override
   String get searchLabel => 'Pesquisar na biblioteca';
 
   @override
@@ -409,21 +261,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get filtersLabel => 'Filtros e ordem';
-
-  @override
-  String get filterLifecycle => 'Exibir';
-
-  @override
-  String get filterLifecycleActive => 'Na biblioteca';
-
-  @override
-  String get filterLifecycleDeleted => 'Excluídos';
-
-  @override
-  String get filterLifecycleAll => 'Tudo';
-
-  @override
   String get sortLabel => 'Ordenar por';
 
   @override
@@ -440,16 +277,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sortDescending => 'Decrescente';
-
-  @override
-  String get filtersClear => 'Limpar os filtros';
-
-  @override
-  String get filtersEmpty => 'Nada corresponde aos filtros definidos.';
-
-  @override
-  String get filtersRejected =>
-      'Esse filtro foi recusado, então o anterior voltou.';
 
   @override
   String get detailsTitle => 'Detalhes';
@@ -522,68 +349,32 @@ class AppLocalizationsPt extends AppLocalizations {
   String get detailsFileModified => 'Última modificação';
 
   @override
-  String get dashboardRecent => 'Adicionados recentemente';
+  String get homeFavorites => 'Bibliotecas preferidas';
 
   @override
-  String get dashboardRecentNone => 'Nada foi adicionado ainda.';
+  String get homeFavoritesNone =>
+      'Marque uma biblioteca como preferida para vê-la aqui';
 
   @override
-  String get dashboardInProgress => 'Em andamento';
+  String get homeFavoritesHint =>
+      'Use a estrela no cabeçalho da biblioteca ou clique com o botão direito na biblioteca no menu à esquerda.';
 
   @override
-  String get dashboardInProgressNone => 'Nada em andamento.';
+  String get homeStatistics => 'Estatísticas';
 
   @override
-  String dashboardInProgressIn(String list) {
-    return 'Em $list';
+  String homeLibraryCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bibliotecas',
+      one: '1 biblioteca',
+    );
+    return '$_temp0';
   }
-
-  @override
-  String dashboardInProgressInAt(String list, String progress) {
-    return 'Em $list — $progress';
-  }
-
-  @override
-  String get dashboardCounts => 'O que há na biblioteca';
-
-  @override
-  String get dashboardLastRun => 'A última análise';
-
-  @override
-  String get dashboardLastRunNone => 'Nada foi analisado nesta sessão.';
-
-  @override
-  String get dashboardLastRunRunning => 'Uma análise está em andamento agora.';
-
-  @override
-  String get dashboardLastRunComplete => 'A última análise foi concluída.';
-
-  @override
-  String get dashboardLastRunFailed => 'A última análise não foi concluída.';
-
-  @override
-  String get dashboardLastRunInterrupted =>
-      'A última análise foi interrompida quando o Alexandria fechou.';
 
   @override
   String get detailsEditMetadata => 'Editar metadados';
-
-  @override
-  String get signOut => 'Sair';
-
-  @override
-  String get signOutUnsavedTitle => 'Alterações não salvas';
-
-  @override
-  String get signOutUnsavedMessage =>
-      'Sair agora descarta as alterações que você não salvou. Cancele para voltar e salvá-las antes.';
-
-  @override
-  String get signOutUnsavedConfirm => 'Sair e descartar';
-
-  @override
-  String get signOutIndexRunContinues =>
-      'Você saiu enquanto uma varredura ainda estava em andamento. Ela continua no núcleo, e o resultado aparece no seu próximo acesso.';
 
   @override
   String get videoMetadataTitle => 'Editar metadados do vídeo';
@@ -694,9 +485,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get editorOverwrite => 'Salvar mesmo assim';
 
   @override
-  String get editorSignInAgain => 'Entrar novamente';
-
-  @override
   String get editorNothingToSave =>
       'O conteúdo não mudou, então nada foi gravado.';
 
@@ -711,10 +499,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get editorRecordGone =>
       'Este arquivo não está mais no catálogo. O que você escreveu continua aqui e não foi salvo.';
-
-  @override
-  String get editorSessionRejected =>
-      'Sua sessão terminou, então isto não pôde ser salvo. Entrar novamente fará você perder o que está na tela.';
 
   @override
   String get editorCouldNotRead => 'Não foi possível ler este arquivo.';
@@ -1060,7 +844,7 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get libraryMove => 'A pasta foi movida';
+  String get libraryMove => 'Mover…';
 
   @override
   String get libraryMoveConflict =>
@@ -1105,6 +889,34 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryNameLabel => 'Nome da biblioteca';
 
   @override
+  String get libraryRename => 'Renomear biblioteca';
+
+  @override
+  String get libraryRenameEntry => 'Renomear…';
+
+  @override
+  String get libraryPin => 'Fixar';
+
+  @override
+  String get libraryUnpin => 'Desafixar';
+
+  @override
+  String get libraryPinned => 'Fixada';
+
+  @override
+  String get libraryFavoriteAdd => 'Adicionar às preferidas';
+
+  @override
+  String get libraryFavoriteRemove => 'Remover das preferidas';
+
+  @override
+  String get libraryChangeNotSaved => 'A alteração não pôde ser salva.';
+
+  @override
+  String get librariesLoadFailed =>
+      'As bibliotecas não carregaram. Tentar novamente';
+
+  @override
   String get libraryAdd => 'Adicionar uma biblioteca';
 
   @override
@@ -1120,13 +932,44 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get libraryEmptyRoot =>
-      'Nada sob esta pasta foi indexado ainda. Faça uma varredura pela lista de bibliotecas, e o que ela contém aparecerá aqui.';
+      'Nada sob esta pasta foi indexado ainda. Faça uma varredura da biblioteca pelo menu dela, e o que ela contém aparecerá aqui.';
 
   @override
   String get libraryEmptyFolder => 'Nada nesta pasta.';
 
   @override
-  String get libraryUp => 'Subir uma pasta';
+  String get libraryNoneVideos => 'Nenhum vídeo nesta pasta.';
+
+  @override
+  String get libraryNoneMusic => 'Nenhuma música nesta pasta.';
+
+  @override
+  String get libraryNoneBooks => 'Nenhum livro nesta pasta.';
+
+  @override
+  String get libraryNoneComicBooks => 'Nenhum quadrinho nesta pasta.';
+
+  @override
+  String get libraryNoneNotes => 'Nenhuma nota nesta pasta.';
+
+  @override
+  String get libraryNonePages => 'Nenhuma página nesta pasta.';
+
+  @override
+  String get libraryNoneImages => 'Nenhuma imagem nesta pasta.';
+
+  @override
+  String get libraryTypeAll => 'Todos os tipos';
+
+  @override
+  String get libraryTypeFilterClear => 'Limpar o filtro';
+
+  @override
+  String get libraryActions => 'Ações da biblioteca';
+
+  @override
+  String get libraryViewUnsaved =>
+      'A mudança foi aplicada, mas não pôde ser salva — ela não será lembrada na próxima vez.';
 
   @override
   String get libraryOverlaps =>
@@ -1301,98 +1144,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get missingFilesUnregisteredFolder =>
       'De uma pasta que não está mais registrada.';
-
-  @override
-  String get recoveryCodesTitle => 'Guarde seus códigos de recuperação';
-
-  @override
-  String get recoveryCodesExplanation =>
-      'Esta é a única vez que eles são exibidos. Cada um substitui uma senha esquecida uma única vez — sem eles, uma senha esquecida significa uma biblioteca perdida.';
-
-  @override
-  String get recoveryCodesCopy => 'Copiar os códigos';
-
-  @override
-  String get recoveryCodesCopied => 'Copiados para a área de transferência.';
-
-  @override
-  String get recoveryCodesAcknowledge => 'Eu os guardei';
-
-  @override
-  String get recoveryCodesNone =>
-      'Sua conta foi criada, mas nenhum código de recuperação veio com ela. Gere um conjunto nas preferências antes de precisar de um.';
-
-  @override
-  String get recoveryTitle => 'Recuperar acesso';
-
-  @override
-  String get recoveryOpen => 'Não consigo entrar';
-
-  @override
-  String get recoveryExplanation =>
-      'Digite um dos códigos de recuperação que você guardou quando a conta foi criada e escolha uma nova senha. O código é consumido ao ser usado, e todas as sessões abertas são encerradas.';
-
-  @override
-  String get recoveryCodeLabel => 'Código de recuperação';
-
-  @override
-  String get recoveryNewPassword => 'Nova senha';
-
-  @override
-  String get recoveryConfirmPassword => 'Repita a nova senha';
-
-  @override
-  String get recoveryCodeMissing => 'Digite um código de recuperação.';
-
-  @override
-  String get recoveryPasswordMissing => 'Digite uma nova senha.';
-
-  @override
-  String get recoverySubmit => 'Substituir a senha';
-
-  @override
-  String get recoveryCodeUnknown =>
-      'Esse não é um dos códigos de recuperação desta conta. Verifique e tente novamente.';
-
-  @override
-  String get recoveryCodeUsed =>
-      'Esse código de recuperação já foi usado. Cada um funciona uma vez — tente outro da sua lista.';
-
-  @override
-  String get recoveryRefused =>
-      'Não foi possível substituir a senha. Verifique o código e tente novamente.';
-
-  @override
-  String get recoveryDone => 'Sua senha foi substituída';
-
-  @override
-  String get recoveryDoneExplanation =>
-      'O código usado foi consumido e todas as sessões abertas foram encerradas. Entre com a nova senha.';
-
-  @override
-  String get recoveryBackToLogin => 'Voltar para entrar';
-
-  @override
-  String get recoveryCodesRegenerate => 'Gerar novos códigos de recuperação';
-
-  @override
-  String get recoveryCodesRegenerateMessage =>
-      'Todos os códigos que você tem agora deixam de funcionar, e dez novos tomam o lugar deles. Eles são exibidos uma única vez.';
-
-  @override
-  String get recoveryCodesNoneLeft =>
-      'Não resta nenhum código de recuperação. Gere um conjunto enquanto você ainda sabe sua senha.';
-
-  @override
-  String recoveryCodesRemaining(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count códigos de recuperação restantes',
-      one: '1 código de recuperação restante',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get collectionsTitle => 'Coleções';
@@ -1646,9 +1397,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get activityDismiss => 'Dispensar';
 
   @override
-  String get destinationLibraries => 'Bibliotecas';
-
-  @override
   String get libraryRemovePausedNote =>
       'A análise pausada também é descartada.';
 
@@ -1666,6 +1414,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get libraryMenuLibraries => 'Bibliotecas';
+
+  @override
+  String get libraryMenuManage => 'Gerenciar bibliotecas…';
 
   @override
   String get libraryMenuAdd => 'Adicionar biblioteca…';

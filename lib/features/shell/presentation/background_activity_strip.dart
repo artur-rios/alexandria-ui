@@ -11,7 +11,7 @@ import '../../indexing/domain/index_run.dart';
 import '../../indexing/domain/run_estimate.dart';
 import '../../indexing/domain/run_priority.dart';
 import '../../libraries/domain/library.dart';
-import '../domain/shell_destination.dart';
+import '../../libraries/presentation/libraries_view.dart';
 
 /// What the core is indexing, from anywhere in the application
 /// (FR-LB-13 … FR-LB-16 / core FR-FC-28, FR-FC-31 … FR-FC-35).
@@ -476,9 +476,7 @@ class _AggregateRow extends ConsumerWidget {
         // runs a button would act on, and guessing is worse than sending the
         // owner where every run is named.
         TextButton(
-          onPressed: () => ref
-              .read(shellControllerProvider.notifier)
-              .go(ShellDestination.libraries),
+          onPressed: () => unawaited(openManageLibraries(context)),
           child: Text(l10n.activityViewAll),
         ),
         const SizedBox(width: AppSpacing.sm),

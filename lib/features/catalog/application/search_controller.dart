@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
-import '../../../core/failures/failure.dart';
 import '../domain/catalog_gateway.dart';
 import '../domain/file_details.dart';
 import '../domain/file_type.dart';
@@ -34,30 +33,16 @@ class SearchTermController extends Notifier<String> {
 class CatalogSearchController extends AsyncNotifier<CatalogSearchIndex> {
   @override
   Future<CatalogSearchIndex> build() async {
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return const CatalogSearchIndex();
-
     final gateway = ref.read(catalogGatewayProvider);
     final files = <FileDetails>[];
     var complete = true;
 
     for (final type in FileType.values) {
-      final listing = await gateway.listFiles(
-        type: type,
-        credential: credential,
-      );
+      final listing = await gateway.listFiles(type: type);
 
       switch (listing) {
         case CatalogListingLoaded(files: final loaded):
           files.addAll(loaded);
-
-        // AF-04's cousin: one type that could not be read does not fail the
-        // search. What it does is make the result incomplete, which AF-03 says
-        // has to be visible rather than presented as the whole answer.
-        case CatalogListingFailed(failure: final UnauthorizedFailure failure):
-          session.invalidate(failure);
-          throw failure;
 
         case CatalogListingFailed():
           complete = false;

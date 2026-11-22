@@ -20,16 +20,6 @@ void main() {
     );
 
     test(
-      'GivenTheUnauthorizedCode_WhenItIsMapped_ThenTheFailureIsUnauthorized',
-      () {
-        expect(
-          mapCoreStatus(CoreStatusFamily.indexing, INDEX_ERR_UNAUTHORIZED),
-          isA<UnauthorizedFailure>(),
-        );
-      },
-    );
-
-    test(
       'GivenTheNotInitializedCode_WhenItIsMapped_ThenTheFailureIsNotInitialized',
       () {
         expect(
@@ -83,7 +73,6 @@ void main() {
   group('mapCoreStatus — the file family', () {
     const cases = <int, Type>{
       FILE_ERR_INVALID_INPUT: InvalidInputFailure,
-      FILE_ERR_UNAUTHORIZED: UnauthorizedFailure,
       FILE_ERR_NOT_INITIALIZED: NotInitializedFailure,
       FILE_ERR_NOT_FOUND: NotFoundFailure,
       FILE_ERR_INVALID_STATE: InvalidStateFailure,
@@ -108,7 +97,6 @@ void main() {
   group('mapCoreStatus — the run family', () {
     const cases = <int, Type>{
       RUN_ERR_INVALID_INPUT: InvalidInputFailure,
-      RUN_ERR_UNAUTHORIZED: UnauthorizedFailure,
       RUN_ERR_NOT_INITIALIZED: NotInitializedFailure,
       RUN_ERR_NOT_FOUND: NotFoundFailure,
       // Pausing a run that is not running, or resuming one that is not
@@ -132,38 +120,15 @@ void main() {
     });
   });
 
-  group('mapCoreStatus — the auth family', () {
-    const cases = <int, Type>{
-      AUTH_ERR_INVALID_INPUT: InvalidInputFailure,
-      AUTH_ERR_UNAUTHORIZED: UnauthorizedFailure,
-      AUTH_ERR_NOT_INITIALIZED: NotInitializedFailure,
-      AUTH_ERR_INVALID_STATE: InvalidStateFailure,
-      AUTH_ERR_CONFIG: ConfigurationFailure,
-      // The account already exists (UC-01 AF-04). Its own variant rather than
-      // an invalid-input one, because the owner is not being told to correct
-      // what they typed — they are being sent to the login screen.
-      AUTH_ERR_CONFLICT: ConflictFailure,
-      AUTH_ERR_OTHER: UnexpectedFailure,
-    };
-
-    cases.forEach((code, expected) {
+  group('mapCoreStatus — the retired code 2', () {
+    // Core 0.7.0 retired `*_ERR_UNAUTHORIZED` with authentication and never
+    // reuses it, so no family maps 2 to anything but an unknown code.
+    for (final family in CoreStatusFamily.values) {
       test(
-        'GivenTheAuthCode${code}_WhenItIsMapped_ThenTheFailureIs$expected',
-        () => expect(
-          mapCoreStatus(CoreStatusFamily.auth, code).runtimeType,
-          expected,
-        ),
+        'Given${family.name}AndTheRetiredCodeTwo_WhenItIsMapped_ThenTheFailureIsUnexpected',
+        () => expect(mapCoreStatus(family, 2), isA<UnexpectedFailure>()),
       );
-    });
-
-    // The auth family has no disk code, so 6 is not a code it can return.
-    test(
-      'GivenACodeTheAuthFamilyDoesNotDefine_WhenItIsMapped_ThenTheFailureIsUnexpected',
-      () => expect(
-        mapCoreStatus(CoreStatusFamily.auth, FILE_ERR_DISK),
-        isA<UnexpectedFailure>(),
-      ),
-    );
+    }
   });
 
   group('mapCoreStatus — totality', () {

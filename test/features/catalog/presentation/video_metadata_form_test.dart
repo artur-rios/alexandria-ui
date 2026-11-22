@@ -3,14 +3,11 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 import 'package:alexandria_ui/features/catalog/presentation/video_metadata_form.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,6 +15,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/keyboard.dart';
 import '../../../support/fake_watch_progress_gateway.dart';
 import '../../../support/shell_harness.dart';
@@ -42,8 +40,8 @@ void main() {
     isDeleted: isDeleted,
   );
 
-  /// Signs in, opens the video listing, and opens the metadata form on the one
-  /// file in it.
+  /// Opens a library folder holding the video, and opens the metadata form
+  /// on it.
   Future<(ProviderContainer, FakeCatalogGateway)> openForm(
     WidgetTester tester, {
     FileDetails? details,
@@ -75,13 +73,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.videos.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openFolderHolding(FileType.video);
 
     // Main flow step 1: the form is opened from the file's detail view.
     await openDetailsOf(tester, 'Stalker.mkv');
@@ -238,16 +230,18 @@ void main() {
 
     // FR-ME-05: the listing and the detail view read the core again, so the
     // edit shows up without the owner refreshing anything.
-    testWidgets('GivenASavedEdit_WhenItIsStored_ThenTheListingIsReadAgain', (
+    testWidgets('GivenASavedEdit_WhenItIsStored_ThenTheFolderIsReadAgain', (
       tester,
     ) async {
-      final (_, gateway) = await openForm(tester);
-      final before = gateway.requested.length;
+      final (container, _) = await openForm(tester);
+      final libraries =
+          container.read(libraryGatewayProvider) as FakeLibraryGateway;
+      final before = libraries.readsMade.length;
 
       await enter(tester, messages(tester).videoMetadataFieldTitle, 'Сталкер');
       await save(tester);
 
-      expect(gateway.requested.length, greaterThan(before));
+      expect(libraries.readsMade.length, greaterThan(before));
     });
 
     testWidgets('GivenNothingWasChanged_WhenSaved_ThenTheCoreIsNotCalled', (
@@ -281,13 +275,7 @@ void main() {
             catalogGatewayProvider.overrideWithValue(gateway),
           ],
         );
-        await tester.tap(
-          find.descendant(
-            of: find.byType(ShellNavigationPanel),
-            matching: find.byIcon(ShellDestination.videos.icon),
-          ),
-        );
-        await tester.pumpAndSettle();
+        await tester.openFolderHolding(FileType.video);
         await openDetailsOf(tester, 'Stalker.mkv');
 
         expect(find.byIcon(Icons.edit_outlined), findsNothing);
@@ -528,36 +516,6 @@ void main() {
 
       expect(find.text(messages(tester).detailsNotFound), findsOneWidget);
     });
-  });
-
-  // AF-05: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenSaved_ThenTheOwnerSignsOut',
-      (tester) async {
-        final (container, _) = await openForm(
-          tester,
-          outcomes: const [
-            VideoMetadataEditOutcome.failed(
-              failure: Failure.unauthorized(
-                family: CoreStatusFamily.file,
-                code: FILE_ERR_UNAUTHORIZED,
-              ),
-            ),
-          ],
-        );
-
-        await enter(
-          tester,
-          messages(tester).videoMetadataFieldTitle,
-          'Solaris',
-        );
-        await tester.tap(find.text(messages(tester).videoMetadataSave));
-        await tester.pumpAndSettle();
-
-        expect(container.read(sessionControllerProvider), isA<SessionAbsent>());
-      },
-    );
   });
 
   group('themes and languages', () {

@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
@@ -17,6 +16,7 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/keyboard.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/shell_harness.dart';
 import '../../../support/file_row.dart';
 
@@ -71,10 +71,11 @@ void main() {
       ],
     );
     await tester.pumpAndSettle();
+    await tester.openFolderHolding(FileType.audio);
 
     // Main flow step 1: the form is opened from the file's detail view,
-    // reached from the dashboard's recent list, which names an audio file by
-    // its metadata title rather than its file name (FR-CT-13).
+    // reached from the folder holding it, which names an audio file by its
+    // metadata title rather than its file name (FR-CT-13).
     await openDetailsOf(tester, 'So What');
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.edit_outlined));
@@ -140,11 +141,13 @@ void main() {
     (tester) async {
       // The edit is the core's to store; what this screen owes the owner is
       // the listing and the details read back, so the new title shows.
-      final (_, gateway) = await openForm(tester);
+      final (container, gateway) = await openForm(tester);
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      final listingsBefore = gateway.requested.length;
+      final libraries =
+          container.read(libraryGatewayProvider) as FakeLibraryGateway;
+      final listingsBefore = libraries.readsMade.length;
       final detailsBefore = gateway.detailsRequested.length;
       await enter(tester, l10n.musicMetadataFieldTitle, 'Freddie Freeloader');
 
@@ -152,7 +155,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(gateway.edits.single.metadata.title, 'Freddie Freeloader');
-      expect(gateway.requested.length, greaterThan(listingsBefore));
+      expect(libraries.readsMade.length, greaterThan(listingsBefore));
       expect(gateway.detailsRequested.length, greaterThan(detailsBefore));
     },
   );
@@ -555,34 +558,6 @@ void main() {
     });
   });
 
-  group('the session is rejected (AF-05)', () {
-    testWidgets(
-      'GivenAnUnauthorizedCall_WhenSaved_ThenTheOwnerReturnsToLogin',
-      (tester) async {
-        final (container, _) = await openForm(
-          tester,
-          outcomes: const [
-            MetadataEditOutcome.failed(
-              failure: Failure.unauthorized(
-                family: CoreStatusFamily.file,
-                code: FILE_ERR_UNAUTHORIZED,
-              ),
-            ),
-          ],
-        );
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
-
-        await enter(tester, l10n.musicMetadataFieldTitle, 'So What?');
-        await tester.tap(find.text(l10n.musicMetadataSave));
-        await tester.pumpAndSettle();
-
-        expect(container.read(sessionControllerProvider), isA<SessionAbsent>());
-      },
-    );
-  });
-
   group('the form is offered only where it applies', () {
     testWidgets(
       'GivenADeletedRecord_WhenItsDetailsOpen_ThenEditingIsNotOffered',
@@ -606,8 +581,8 @@ void main() {
           ],
         );
         await tester.pumpAndSettle();
-        // Named by its metadata title on the dashboard, not its file name
-        // (FR-CT-13).
+        await tester.openFolderHolding(FileType.audio);
+        // Named by its metadata title, not its file name (FR-CT-13).
         await openDetailsOf(tester, 'So What');
 
         expect(find.byIcon(Icons.edit_outlined), findsNothing);

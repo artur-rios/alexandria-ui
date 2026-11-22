@@ -116,31 +116,19 @@ class FileRenameController extends Notifier<RenameState> {
 
     state = state.copyWith(stage: RenameStage.saving);
 
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) {
-      state = state.copyWith(stage: RenameStage.editing);
-      return;
-    }
-
     final outcome = await ref
         .read(catalogGatewayProvider)
-        .renameFile(uuid: _uuid, name: name, credential: credential);
+        .renameFile(uuid: _uuid, name: name);
 
     switch (outcome) {
       case FileRenamed(:final file):
         _original = file.name;
-        // FR-ME-05: the detail view and every open listing read the core
+        // FR-ME-05: the detail view and every open folder read the core
         // again, so the new name shows up without a manual refresh.
         ref.invalidate(fileDetailsControllerProvider);
-        ref.invalidate(listingControllerProvider);
+        ref.invalidate(libraryTreeControllerProvider);
         ref.invalidate(catalogSearchProvider);
         state = RenameState(name: file.name, stage: RenameStage.renamed);
-
-      // AF-05: the session is discarded, which returns the owner to login.
-      case FileRenameFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
-        state = state.copyWith(stage: RenameStage.editing);
 
       // AF-03: the record is gone. The screen closes the dialog and refreshes
       // the listing it came from.

@@ -87,6 +87,28 @@ class StartupController extends Notifier<StartupState> {
       databasePath: databasePath,
       warning: warning,
     );
+
+    // After the state assignment: an activity that begins by calling the
+    // core — the library re-check does — reads it through a gateway that is
+    // only built once startup is ready. Not awaited, because the shell must
+    // not wait on a re-check before it shows.
+    for (final activity in ref.read(appActivitiesProvider)) {
+      unawaited(_begin(activity.begin));
+    }
+  }
+
+  /// Runs one activity's `begin`, logging rather than throwing.
+  ///
+  /// `begin()` can read a gateway and call the core, and either can fail for
+  /// reasons of its own. Called from an `unawaited` loop in [start], an
+  /// unguarded throw here would be an unhandled zone error at every start
+  /// rather than a problem the activity itself owns.
+  Future<void> _begin(Future<void> Function() begin) async {
+    try {
+      await begin();
+    } on Object catch (error, stackTrace) {
+      _log.warning('an activity failed to begin', error, stackTrace);
+    }
   }
 
   /// Re-runs the sequence from step 1 (§5.2).

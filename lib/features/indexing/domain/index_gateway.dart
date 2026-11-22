@@ -76,17 +76,13 @@ abstract interface class IndexGateway {
   Future<IndexStartOutcome> startLibraryIndex({
     required String uuid,
     RunPriority? priority,
-    required String credential,
   });
 
   /// Starts a refresh over everything already cataloged (FR-LB-06, UC-07).
   ///
   /// Takes no library: a refresh re-checks every library at once, which is
   /// what separates it from [startLibraryIndex].
-  Future<IndexStartOutcome> startRefresh({
-    RunPriority? priority,
-    required String credential,
-  });
+  Future<IndexStartOutcome> startRefresh({RunPriority? priority});
 
   /// How many files the catalog holds, or a negative number when the core
   /// could not be asked (UC-07 AF-02).
@@ -96,10 +92,7 @@ abstract interface class IndexGateway {
   Future<int> countCatalogedFiles();
 
   /// Reads a run's status and outcome (FR-LB-07, FR-LB-08).
-  Future<IndexRunOutcome> readRun({
-    required String runId,
-    required String credential,
-  });
+  Future<IndexRunOutcome> readRun({required String runId});
 
   /// The files [runId] could not record, oldest first (core FR-FC-42).
   ///
@@ -107,29 +100,20 @@ abstract interface class IndexGateway {
   /// on every status poll. An empty list is a run that failed on nothing;
   /// a failure to read is its own outcome, because "could not ask" and
   /// "nothing to show" are answers the owner would act on differently.
-  Future<RunFailuresOutcome> readFailures({
-    required String runId,
-    required String credential,
-  });
+  Future<RunFailuresOutcome> readFailures({required String runId});
 
   /// Pauses a running run (FR-LB-16 / core FR-FC-32).
   ///
   /// Refused with [Failure] wrapping `RUN_ERR_INVALID_STATE` for a run that
   /// is not currently running — a terminal or already-paused run has nothing
   /// to pause.
-  Future<RunControlOutcome> pauseRun({
-    required String runId,
-    required String credential,
-  });
+  Future<RunControlOutcome> pauseRun({required String runId});
 
   /// Abandons a run for good (FR-LB-16 / core FR-FC-34).
   ///
   /// Terminal and not resumable, which is what separates this from
   /// [pauseRun]: a cancelled run cannot be picked back up.
-  Future<RunControlOutcome> cancelRun({
-    required String runId,
-    required String credential,
-  });
+  Future<RunControlOutcome> cancelRun({required String runId});
 
   /// Picks a paused run back up (FR-LB-16 / core FR-FC-33).
   ///
@@ -141,7 +125,6 @@ abstract interface class IndexGateway {
   Future<IndexStartOutcome> resumeRun({
     required String runId,
     RunPriority? priority,
-    required String credential,
   });
 
   /// Lists every run the core still has outstanding — running or paused
@@ -149,5 +132,5 @@ abstract interface class IndexGateway {
   ///
   /// What lets the application find a paused run to offer resuming without
   /// having kept its id since the session that started it.
-  Future<ActiveRunsOutcome> listActiveRuns({required String credential});
+  Future<ActiveRunsOutcome> listActiveRuns();
 }

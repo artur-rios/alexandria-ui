@@ -19,11 +19,10 @@ class CoreComicGateway implements ComicGateway {
   Future<ComicPageOutcome> readPage({
     required String uuid,
     required int page,
-    required String credential,
   }) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.comicPage(uuid, page, credential);
+      response = await _core.comicPage(uuid, page);
     } on CoreCallException {
       return const ComicPageFailed(failure: ViewerFailure.unreadable);
     }

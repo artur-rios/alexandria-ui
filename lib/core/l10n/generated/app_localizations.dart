@@ -116,126 +116,6 @@ abstract class AppLocalizations {
   /// **'Alexandria\'s core is not available'**
   String get coreUnavailableTitle;
 
-  /// Heading of the login screen (UC-02). Presented whenever there is no active session.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in to Alexandria'**
-  String get loginTitle;
-
-  /// Label of the login form's e-mail field.
-  ///
-  /// In en, this message translates to:
-  /// **'E-mail'**
-  String get loginEmailLabel;
-
-  /// Label of the login form's password field.
-  ///
-  /// In en, this message translates to:
-  /// **'Password'**
-  String get loginPasswordLabel;
-
-  /// The login form's primary action.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in'**
-  String get loginSubmit;
-
-  /// UC-02 AF-01: the e-mail field was left empty. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your e-mail address.'**
-  String get loginEmailMissing;
-
-  /// UC-02 AF-01: the e-mail field does not hold an address. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'That does not look like an e-mail address.'**
-  String get loginEmailMalformed;
-
-  /// UC-02 AF-01: the password field was left empty. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your password.'**
-  String get loginPasswordMissing;
-
-  /// UC-02 AF-02: the core rejected the credentials. Deliberately does not say which of the two was wrong, and does not reveal whether the address is registered.
-  ///
-  /// In en, this message translates to:
-  /// **'That e-mail and password do not match an account.'**
-  String get loginRejected;
-
-  /// UC-02 AF-03: the core holds no credentials, so the owner is sent to sign-up (UC-01) by the action beside this message.
-  ///
-  /// In en, this message translates to:
-  /// **'No account has been set up on this computer yet.'**
-  String get loginNoAccount;
-
-  /// Heading of the sign-up screen (UC-01). Presented on first launch, when the core holds no account.
-  ///
-  /// In en, this message translates to:
-  /// **'Create your Alexandria account'**
-  String get signUpTitle;
-
-  /// UC-01: explains the stakes before the owner chooses. The core owns no mail transport, so there is no reset to fall back on.
-  ///
-  /// In en, this message translates to:
-  /// **'This is the only account. Its password cannot be recovered, so choose one you will not lose.'**
-  String get signUpIntro;
-
-  /// Label of the sign-up form's second password field.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat password'**
-  String get signUpPasswordConfirmationLabel;
-
-  /// The sign-up form's primary action.
-  ///
-  /// In en, this message translates to:
-  /// **'Create account'**
-  String get signUpSubmit;
-
-  /// UC-01 AF-02: the second password field was left empty. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat your password.'**
-  String get signUpPasswordConfirmationMissing;
-
-  /// UC-01 AF-02: the two entries differ. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'The two passwords do not match.'**
-  String get signUpPasswordMismatch;
-
-  /// UC-01 AF-03: the core rejected the credentials. The core owns the password policy and does not send its reason across the boundary, so this names the rules it enforces without restating them as front-end validation.
-  ///
-  /// In en, this message translates to:
-  /// **'Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.'**
-  String get signUpRejected;
-
-  /// UC-01 AF-04: the core already holds an account, so registration is refused and the owner is sent to the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'An account already exists on this computer. Sign in instead.'**
-  String get signUpAccountExists;
-
-  /// UC-01 AF-04: the action that leaves sign-up for the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to sign in'**
-  String get signUpGoToLogin;
-
-  /// UC-02 AF-03: the action that leaves login for the sign-up screen, offered when the core holds no account.
-  ///
-  /// In en, this message translates to:
-  /// **'Create an account'**
-  String get loginGoToSignUp;
-
-  /// UC-02 AF-04: heading shown on the login screen when a session was discarded because the core rejected a call, rather than because the owner signed out.
-  ///
-  /// In en, this message translates to:
-  /// **'You were signed out'**
-  String get loginSessionEndedTitle;
-
   /// Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.
   ///
   /// In en, this message translates to:
@@ -278,12 +158,6 @@ abstract class AppLocalizations {
   /// **'Alexandria rejected that as invalid.'**
   String get failureInvalidInput;
 
-  /// The session is absent, expired, or rejected.
-  ///
-  /// In en, this message translates to:
-  /// **'Your session has ended. Please sign in again.'**
-  String get failureUnauthorized;
-
   /// A call was made before the core was initialized — a fault in the startup sequence rather than something the owner did.
   ///
   /// In en, this message translates to:
@@ -314,71 +188,11 @@ abstract class AppLocalizations {
   /// **'The file on disk no longer matches what Alexandria recorded.'**
   String get failureIntegrity;
 
-  /// The core's own configuration is missing or unusable.
-  ///
-  /// In en, this message translates to:
-  /// **'Alexandria\'s configuration could not be read.'**
-  String get failureConfiguration;
-
   /// The operation would create something that already exists. Nothing the owner typed was wrong.
   ///
   /// In en, this message translates to:
   /// **'That already exists in Alexandria.'**
   String get failureConflict;
-
-  /// The core refused because the caller is asking too often. Nothing the owner typed was wrong; the remedy is to wait.
-  ///
-  /// In en, this message translates to:
-  /// **'Too many attempts. Wait a moment and try again.'**
-  String get failureRateLimited;
-
-  /// The core could not reach a dependency — outbound mail being the one that exists today. The catalog is unaffected.
-  ///
-  /// In en, this message translates to:
-  /// **'Alexandria could not reach a service it needs, so that step did not happen.'**
-  String get failureServiceUnavailable;
-
-  /// Core rejection password_too_short. The bound comes from the core, which owns the policy.
-  ///
-  /// In en, this message translates to:
-  /// **'Use at least {min} characters.'**
-  String rejectionPasswordTooShort(String min);
-
-  /// Core rejection password_too_long.
-  ///
-  /// In en, this message translates to:
-  /// **'Use at most {max} characters.'**
-  String rejectionPasswordTooLong(String max);
-
-  /// Core rejection password_whitespace.
-  ///
-  /// In en, this message translates to:
-  /// **'A password cannot be only spaces.'**
-  String get rejectionPasswordWhitespace;
-
-  /// Core rejection password_repeated_character.
-  ///
-  /// In en, this message translates to:
-  /// **'A password cannot be one character repeated.'**
-  String get rejectionPasswordRepeatedCharacter;
-
-  /// Core rejection password_too_common.
-  ///
-  /// In en, this message translates to:
-  /// **'That password is too common. Choose something less predictable.'**
-  String get rejectionPasswordTooCommon;
-
-  /// Core rejection password_contains_email, which covers both being the address and containing it.
-  ///
-  /// In en, this message translates to:
-  /// **'A password cannot contain your e-mail address.'**
-  String get rejectionPasswordContainsEmail;
-
-  /// Core rejection email_untrimmed.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove the spaces around your e-mail address.'**
-  String get rejectionEmailUntrimmed;
 
   /// A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number.
   ///
@@ -398,59 +212,53 @@ abstract class AppLocalizations {
   /// **'Loading'**
   String get loading;
 
-  /// Navigation panel entry for the dashboard the application opens on (UC-14).
+  /// Left-menu entry for home, the screen the application opens on (UC-14, FR-CT-20).
   ///
   /// In en, this message translates to:
   /// **'Home'**
   String get destinationHome;
 
-  /// Navigation panel entry for books and e-books (FR-CT-01).
+  /// The name of the books-and-e-books type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Books'**
   String get destinationBooks;
 
-  /// Navigation panel entry for comic book archives (FR-CT-01).
+  /// The name of the comic-book-archive type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Comic books'**
   String get destinationComicBooks;
 
-  /// Navigation panel entry for notes, Markdown, and plain text files (FR-CT-01).
+  /// The name of the notes, Markdown, and plain-text type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Notes'**
   String get destinationNotes;
 
-  /// Navigation panel entry for saved HTML pages (FR-CT-01).
+  /// The name of the saved-HTML-page type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Pages'**
   String get destinationPages;
 
-  /// Navigation panel entry for still images (FR-CT-01).
+  /// The name of the still-image type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Images'**
   String get destinationImages;
 
-  /// Navigation panel entry for saved links, the one type holding no file on disk (FR-CT-01).
+  /// Left-menu entry for saved links, which hold no file on disk (UC-28, FR-CT-20).
   ///
   /// In en, this message translates to:
   /// **'Bookmarks'**
   String get destinationBookmarks;
 
-  /// Title of the preferences dialog (UC-39). Reachable with or without a session.
+  /// Title of the preferences dialog (UC-39).
   ///
   /// In en, this message translates to:
   /// **'Preferences'**
   String get preferencesTitle;
-
-  /// Accessible label and tooltip of the control that opens the preferences dialog.
-  ///
-  /// In en, this message translates to:
-  /// **'Open preferences'**
-  String get preferencesOpen;
 
   /// Visible label of the preferences entry in the Settings menu, shown beside its icon at every breakpoint wider than the minimum.
   ///
@@ -458,7 +266,7 @@ abstract class AppLocalizations {
   /// **'Preferences'**
   String get preferencesLabel;
 
-  /// The menu bar's settings menu, holding preferences and the account actions.
+  /// The menu bar's settings menu, holding the preferences.
   ///
   /// In en, this message translates to:
   /// **'Settings'**
@@ -506,7 +314,7 @@ abstract class AppLocalizations {
   /// **'Match the system'**
   String get preferencesLanguageSystem;
 
-  /// Preference controlling whether the catalog is re-checked against the disk each time a session is established.
+  /// Preference controlling whether the catalog is re-checked against the disk each time the application starts.
   ///
   /// In en, this message translates to:
   /// **'Re-check the library at startup'**
@@ -529,60 +337,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get preferencesClose;
-
-  /// Label of the entry in the Settings menu that opens the credential-change form (UC-04 main flow step 1).
-  ///
-  /// In en, this message translates to:
-  /// **'Change credentials…'**
-  String get changeCredentialsOpen;
-
-  /// Title of the credential-change dialog (UC-04).
-  ///
-  /// In en, this message translates to:
-  /// **'Change credentials'**
-  String get changeCredentialsTitle;
-
-  /// Explains that the e-mail and password change as one, and that the session survives the change (UC-04 postconditions).
-  ///
-  /// In en, this message translates to:
-  /// **'Both are replaced together. You stay signed in.'**
-  String get changeCredentialsIntro;
-
-  /// Label of the new e-mail field.
-  ///
-  /// In en, this message translates to:
-  /// **'New e-mail'**
-  String get changeCredentialsEmailLabel;
-
-  /// Label of the new password field.
-  ///
-  /// In en, this message translates to:
-  /// **'New password'**
-  String get changeCredentialsPasswordLabel;
-
-  /// Label of the repeated-password field (FR-AU-10 requires it entered twice).
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat the new password'**
-  String get changeCredentialsConfirmationLabel;
-
-  /// The form's primary action.
-  ///
-  /// In en, this message translates to:
-  /// **'Change'**
-  String get changeCredentialsSubmit;
-
-  /// UC-04 main flow step 6: the core stored the new hash and the change is confirmed.
-  ///
-  /// In en, this message translates to:
-  /// **'Your e-mail and password have been changed.'**
-  String get changeCredentialsDone;
-
-  /// UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched.
-  ///
-  /// In en, this message translates to:
-  /// **'The change was refused, and your e-mail and password are unchanged.'**
-  String get changeCredentialsRejected;
 
   /// Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action.
   ///
@@ -698,25 +452,19 @@ abstract class AppLocalizations {
   /// **'The catalog could not be re-checked.'**
   String get libraryRefreshFailed;
 
-  /// Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog.
+  /// The name of the video type, of every kind: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22). One type rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog.
   ///
   /// In en, this message translates to:
   /// **'Videos'**
   String get destinationVideos;
 
-  /// The listing's name for music and other audio.
+  /// The name of the music-and-other-audio type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Music'**
   String get destinationMusic;
 
-  /// UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing of this type yet'**
-  String get catalogEmptyTitle;
-
-  /// UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06).
+  /// UC-14 AF-01 and UC-11 AF-04: there is no library yet, so adding a folder as one is what the owner needs (UC-05, UC-06).
   ///
   /// In en, this message translates to:
   /// **'Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.'**
@@ -758,12 +506,6 @@ abstract class AppLocalizations {
   /// **'The window is too narrow for that layout, so the list is shown instead.'**
   String get layoutSubstituted;
 
-  /// UC-10 AF-02: the settings store could not be written. The layout still applies for this session.
-  ///
-  /// In en, this message translates to:
-  /// **'The layout changed, but the choice could not be saved — it will not be remembered next time.'**
-  String get layoutUnsaved;
-
   /// Label of the catalog-wide search field (UC-11 main flow step 1).
   ///
   /// In en, this message translates to:
@@ -793,36 +535,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Results for “{term}”'**
   String searchResultsFor(String term);
-
-  /// Accessible label of the control that opens the filter and sort choices (UC-12).
-  ///
-  /// In en, this message translates to:
-  /// **'Filters and order'**
-  String get filtersLabel;
-
-  /// Heading of the lifecycle filter (FR-CT-07).
-  ///
-  /// In en, this message translates to:
-  /// **'Show'**
-  String get filterLifecycle;
-
-  /// Lifecycle filter: only records the core calls active. What a listing opens on.
-  ///
-  /// In en, this message translates to:
-  /// **'In the library'**
-  String get filterLifecycleActive;
-
-  /// Lifecycle filter: only soft-deleted records.
-  ///
-  /// In en, this message translates to:
-  /// **'Deleted'**
-  String get filterLifecycleDeleted;
-
-  /// Lifecycle filter: active and deleted records together.
-  ///
-  /// In en, this message translates to:
-  /// **'Everything'**
-  String get filterLifecycleAll;
 
   /// Heading of the sort choices (FR-CT-08).
   ///
@@ -859,24 +571,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Descending'**
   String get sortDescending;
-
-  /// The action that restores the unfiltered listing (UC-12 AF-02). The sort is left alone, because ordering hides nothing.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear the filters'**
-  String get filtersClear;
-
-  /// UC-12 AF-01: the filter combination matched nothing. Offers to clear them.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing matches the filters you have set.'**
-  String get filtersEmpty;
-
-  /// UC-12 AF-04: the core rejected the filter as invalid input, and the previous filters were restored.
-  ///
-  /// In en, this message translates to:
-  /// **'That filter was refused, so the previous one is back.'**
-  String get filtersRejected;
 
   /// Title of the file detail view (UC-13, FR-CT-05).
   ///
@@ -1010,119 +704,41 @@ abstract class AppLocalizations {
   /// **'Last modified'**
   String get detailsFileModified;
 
-  /// Heading of the dashboard's recently added section (UC-14, FR-CT-11).
+  /// Heading of home's section listing the libraries marked as favorites.
   ///
   /// In en, this message translates to:
-  /// **'Recently added'**
-  String get dashboardRecent;
+  /// **'Favorite libraries'**
+  String get homeFavorites;
 
-  /// The recently added section has nothing to show.
+  /// Home's favorites section when no library is marked as a favorite.
   ///
   /// In en, this message translates to:
-  /// **'Nothing has been added yet.'**
-  String get dashboardRecentNone;
+  /// **'Mark a library as a favorite to see it here'**
+  String get homeFavoritesNone;
 
-  /// Heading of the dashboard's in-progress section (UC-14, FR-CT-11).
+  /// Under home's empty favorites section: where the owner marks a library as a favorite — the star in the library view's header, or the left menu entry's right-click menu.
   ///
   /// In en, this message translates to:
-  /// **'In progress'**
-  String get dashboardInProgress;
+  /// **'Use the star in a library\'s header, or right-click it in the left menu.'**
+  String get homeFavoritesHint;
 
-  /// UC-14 AF-02: the section states that nothing is in progress rather than rendering empty.
+  /// Heading of home's section with the totals: libraries, and files per type.
   ///
   /// In en, this message translates to:
-  /// **'Nothing is in progress.'**
-  String get dashboardInProgressNone;
+  /// **'Statistics'**
+  String get homeStatistics;
 
-  /// UC-14 main flow step 2: which watchlist or reading list an in-progress item belongs to.
+  /// Home's statistics: how many libraries are registered.
   ///
   /// In en, this message translates to:
-  /// **'In {list}'**
-  String dashboardInProgressIn(String list);
-
-  /// UC-14 main flow step 2: the list an in-progress item belongs to, and how far through it the owner is.
-  ///
-  /// In en, this message translates to:
-  /// **'In {list} — {progress}'**
-  String dashboardInProgressInAt(String list, String progress);
-
-  /// Heading of the dashboard's per-type counts (UC-14, FR-CT-11).
-  ///
-  /// In en, this message translates to:
-  /// **'What is in the library'**
-  String get dashboardCounts;
-
-  /// Heading of the dashboard's most-recent-run section (UC-14, FR-CT-11).
-  ///
-  /// In en, this message translates to:
-  /// **'The last scan'**
-  String get dashboardLastRun;
-
-  /// No index or refresh run has been observed since the application started.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing has been scanned in this session.'**
-  String get dashboardLastRunNone;
-
-  /// UC-14 AF-04: a run is in flight, and the dashboard updates when it settles.
-  ///
-  /// In en, this message translates to:
-  /// **'A scan is running now.'**
-  String get dashboardLastRunRunning;
-
-  /// The most recent run completed.
-  ///
-  /// In en, this message translates to:
-  /// **'The last scan finished.'**
-  String get dashboardLastRunComplete;
-
-  /// The most recent run failed.
-  ///
-  /// In en, this message translates to:
-  /// **'The last scan did not finish.'**
-  String get dashboardLastRunFailed;
-
-  /// The most recent run was interrupted rather than failing.
-  ///
-  /// In en, this message translates to:
-  /// **'The last scan was interrupted when Alexandria closed.'**
-  String get dashboardLastRunInterrupted;
+  /// **'{count, plural, =1{1 library} other{{count} libraries}}'**
+  String homeLibraryCount(num count);
 
   /// Opens the video metadata form from a video's detail view (UC-16 main flow step 1).
   ///
   /// In en, this message translates to:
   /// **'Edit metadata'**
   String get detailsEditMetadata;
-
-  /// UC-03 main flow step 1: ends the session without closing the application.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign out'**
-  String get signOut;
-
-  /// UC-03 AF-01: the heading of the warning shown when an editor is holding changes that were never saved.
-  ///
-  /// In en, this message translates to:
-  /// **'Unsaved changes'**
-  String get signOutUnsavedTitle;
-
-  /// UC-03 AF-01: names what signing out would lose, and says that cancelling is how to save it.
-  ///
-  /// In en, this message translates to:
-  /// **'Signing out now discards the changes you have not saved. Cancel to go back and save them first.'**
-  String get signOutUnsavedMessage;
-
-  /// UC-03 AF-01: confirms the sign-out, unsaved changes and all.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign out and discard'**
-  String get signOutUnsavedConfirm;
-
-  /// UC-03 AF-02: the scan belongs to the core, so signing out neither stopped it nor lost its outcome.
-  ///
-  /// In en, this message translates to:
-  /// **'You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.'**
-  String get signOutIndexRunContinues;
 
   /// UC-16 main flow step 2: the heading of the video metadata form.
   ///
@@ -1322,12 +938,6 @@ abstract class AppLocalizations {
   /// **'Save anyway'**
   String get editorOverwrite;
 
-  /// UC-18 AF-06: acknowledges that the session ended and the content could not be saved.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in again'**
-  String get editorSignInAgain;
-
   /// UC-18 AF-01: the editor holds exactly what was read, so the core was not called.
   ///
   /// In en, this message translates to:
@@ -1351,12 +961,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This file is no longer in the catalog. What you have written is still here, and is not saved.'**
   String get editorRecordGone;
-
-  /// UC-18 AF-06: the core rejected the write, and the owner is warned before the session goes.
-  ///
-  /// In en, this message translates to:
-  /// **'Your session ended, so this could not be saved. Signing in again will lose what is on screen.'**
-  String get editorSessionRejected;
 
   /// UC-18: the content never loaded, so there is nothing to edit.
   ///
@@ -1952,10 +1556,10 @@ abstract class AppLocalizations {
   /// **'{count} tracked'**
   String readingListItemCount(int count);
 
-  /// Libraries design FR-FC-41: corrects a library's root after its folder moved on disk, taking its files with it.
+  /// The action, in a library's menu and on its row in Manage libraries (libraries design FR-FC-41): corrects a library's root after its folder moved on disk, taking its files with it.
   ///
   /// In en, this message translates to:
-  /// **'The folder moved'**
+  /// **'Move…'**
   String get libraryMove;
 
   /// The two conflicts a move answers, said in the terms the owner can act on rather than as a generic refusal.
@@ -2024,6 +1628,60 @@ abstract class AppLocalizations {
   /// **'Library name'**
   String get libraryNameLabel;
 
+  /// Title of the dialog that renames a library, and the tooltip of the action that opens it.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename library'**
+  String get libraryRename;
+
+  /// Context-menu entry of a library in the left menu that opens the rename dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename…'**
+  String get libraryRenameEntry;
+
+  /// Context-menu entry of a library in the left menu that pins it to the top of the menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get libraryPin;
+
+  /// Context-menu entry of a pinned library in the left menu that returns it to the other libraries.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get libraryUnpin;
+
+  /// Read out for the pin badge on a pinned library's icon in the left menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get libraryPinned;
+
+  /// Context-menu entry of a library in the left menu that marks it a favorite, which home shows. Not a bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get libraryFavoriteAdd;
+
+  /// Context-menu entry of a favorite library in the left menu that clears the mark.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get libraryFavoriteRemove;
+
+  /// Snackbar shown when the core refuses to pin, unpin, favorite or unfavorite a library; the left menu stays as it was.
+  ///
+  /// In en, this message translates to:
+  /// **'The change could not be saved.'**
+  String get libraryChangeNotSaved;
+
+  /// Left-menu entry, and its tooltip, shown when the libraries could not be read; activating it reads them again.
+  ///
+  /// In en, this message translates to:
+  /// **'Libraries didn\'t load. Try again'**
+  String get librariesLoadFailed;
+
   /// Opens the folder picker to mark a folder as a library.
   ///
   /// In en, this message translates to:
@@ -2051,7 +1709,7 @@ abstract class AppLocalizations {
   /// Libraries design: the top of a library with no indexed files under it. A library is browsed out of the catalog, not out of a walk of the disk, so this is what an owner sees when they made a library of a folder nobody has scanned — and it says the remedy, because "nothing in this folder" describes a disk the owner can see is not empty.
   ///
   /// In en, this message translates to:
-  /// **'Nothing under this folder has been indexed yet. Scan it from the libraries list, and what it holds will appear here.'**
+  /// **'Nothing under this folder has been indexed yet. Scan the library from its menu, and what it holds will appear here.'**
   String get libraryEmptyRoot;
 
   /// A folder with no files and no subfolders indexed under it.
@@ -2060,11 +1718,71 @@ abstract class AppLocalizations {
   /// **'Nothing in this folder.'**
   String get libraryEmptyFolder;
 
-  /// Goes to the folder containing the one being shown.
+  /// A library folder that has files, but no videos, while the type filter shows only videos.
   ///
   /// In en, this message translates to:
-  /// **'Up one folder'**
-  String get libraryUp;
+  /// **'No videos in this folder.'**
+  String get libraryNoneVideos;
+
+  /// A library folder that has files, but no music, while the type filter shows only music.
+  ///
+  /// In en, this message translates to:
+  /// **'No music in this folder.'**
+  String get libraryNoneMusic;
+
+  /// A library folder that has files, but no books, while the type filter shows only books.
+  ///
+  /// In en, this message translates to:
+  /// **'No books in this folder.'**
+  String get libraryNoneBooks;
+
+  /// A library folder that has files, but no comic books, while the type filter shows only comic books.
+  ///
+  /// In en, this message translates to:
+  /// **'No comic books in this folder.'**
+  String get libraryNoneComicBooks;
+
+  /// A library folder that has files, but no notes, while the type filter shows only notes.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes in this folder.'**
+  String get libraryNoneNotes;
+
+  /// A library folder that has files, but no saved pages, while the type filter shows only saved pages.
+  ///
+  /// In en, this message translates to:
+  /// **'No pages in this folder.'**
+  String get libraryNonePages;
+
+  /// A library folder that has files, but no images, while the type filter shows only images.
+  ///
+  /// In en, this message translates to:
+  /// **'No images in this folder.'**
+  String get libraryNoneImages;
+
+  /// The library view's type filter showing every type; also the filter button's label while it does.
+  ///
+  /// In en, this message translates to:
+  /// **'All types'**
+  String get libraryTypeAll;
+
+  /// Shows every type again, from a library folder whose files are all of another type than the filter's.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the filter'**
+  String get libraryTypeFilterClear;
+
+  /// Tooltip of the library header's menu button: rename, scan again, move and remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Library actions'**
+  String get libraryActions;
+
+  /// Shown under the library view's toolbar when a layout, filter or order applied but the settings store refused to keep it.
+  ///
+  /// In en, this message translates to:
+  /// **'The change applied, but it could not be saved — it will not be remembered next time.'**
+  String get libraryViewUnsaved;
 
   /// Libraries design section 5: a file in two libraries means two answers to where it appears. Worded as a fact about the folder rather than as a mistake the owner made.
   ///
@@ -2336,156 +2054,6 @@ abstract class AppLocalizations {
   /// **'From a folder that is no longer registered.'**
   String get missingFilesUnregisteredFolder;
 
-  /// UC-40 main flow step 2: the heading of the screen shown once after sign-up.
-  ///
-  /// In en, this message translates to:
-  /// **'Save your recovery codes'**
-  String get recoveryCodesTitle;
-
-  /// UC-40 main flow step 2 and FR-AU-12: says plainly that the codes are not retrievable and what they are for.
-  ///
-  /// In en, this message translates to:
-  /// **'This is the only time these are shown. Each one replaces a forgotten password exactly once — without them, a forgotten password means a lost library.'**
-  String get recoveryCodesExplanation;
-
-  /// UC-40 AF-02: places the codes on the clipboard. Nothing is written to disk (FR-AU-13).
-  ///
-  /// In en, this message translates to:
-  /// **'Copy the codes'**
-  String get recoveryCodesCopy;
-
-  /// UC-40 AF-02: confirms the copy happened.
-  ///
-  /// In en, this message translates to:
-  /// **'Copied to the clipboard.'**
-  String get recoveryCodesCopied;
-
-  /// UC-40 main flow step 4: the only way past this screen (AF-01). Confirming opens the library.
-  ///
-  /// In en, this message translates to:
-  /// **'I have stored them'**
-  String get recoveryCodesAcknowledge;
-
-  /// UC-40 AF-03: the core issued no codes, which is said plainly rather than shown as an empty list.
-  ///
-  /// In en, this message translates to:
-  /// **'Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.'**
-  String get recoveryCodesNone;
-
-  /// UC-41 main flow step 1: the screen for an owner who cannot remember their password.
-  ///
-  /// In en, this message translates to:
-  /// **'Recover access'**
-  String get recoveryTitle;
-
-  /// UC-41 main flow step 1: reaches account recovery from the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'I cannot sign in'**
-  String get recoveryOpen;
-
-  /// UC-41 main flow step 2: what the owner needs and what it costs them.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.'**
-  String get recoveryExplanation;
-
-  /// UC-41 main flow step 2: the code the owner saved.
-  ///
-  /// In en, this message translates to:
-  /// **'Recovery code'**
-  String get recoveryCodeLabel;
-
-  /// UC-41 main flow step 2: the password that replaces the forgotten one.
-  ///
-  /// In en, this message translates to:
-  /// **'New password'**
-  String get recoveryNewPassword;
-
-  /// UC-41 main flow step 2: entered twice, and the two must match before the core is called.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat the new password'**
-  String get recoveryConfirmPassword;
-
-  /// UC-41 AF-01: the code is blank, so the core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a recovery code.'**
-  String get recoveryCodeMissing;
-
-  /// UC-41 AF-01: the password is empty, so the core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a new password.'**
-  String get recoveryPasswordMissing;
-
-  /// UC-41 main flow step 4: sends the code and the new password to the core.
-  ///
-  /// In en, this message translates to:
-  /// **'Replace the password'**
-  String get recoverySubmit;
-
-  /// UC-41 AF-02: the core does not recognise the code. Distinct from AF-03, because a mistyped code and a spent one call for different things.
-  ///
-  /// In en, this message translates to:
-  /// **'That is not one of this account\'s recovery codes. Check it and try again.'**
-  String get recoveryCodeUnknown;
-
-  /// UC-41 AF-03: the core reports the code as already consumed.
-  ///
-  /// In en, this message translates to:
-  /// **'That recovery code has already been used. Each one works once — try another from your list.'**
-  String get recoveryCodeUsed;
-
-  /// UC-41: the core refused without naming a reason this version knows, so the message says what to do rather than a code.
-  ///
-  /// In en, this message translates to:
-  /// **'The password could not be replaced. Check the code and try again.'**
-  String get recoveryRefused;
-
-  /// UC-41 main flow step 6: the redemption succeeded.
-  ///
-  /// In en, this message translates to:
-  /// **'Your password was replaced'**
-  String get recoveryDone;
-
-  /// UC-41 main flow step 6: what happened, and what to do next.
-  ///
-  /// In en, this message translates to:
-  /// **'The code you used is spent, and every open session was signed out. Sign in with the new password.'**
-  String get recoveryDoneExplanation;
-
-  /// UC-41 main flow step 6: returns to the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Back to sign in'**
-  String get recoveryBackToLogin;
-
-  /// UC-42 main flow step 2: replaces the whole set with ten new codes.
-  ///
-  /// In en, this message translates to:
-  /// **'Generate new recovery codes'**
-  String get recoveryCodesRegenerate;
-
-  /// UC-42 main flow step 3: the confirmation states what the owner is giving up.
-  ///
-  /// In en, this message translates to:
-  /// **'Every code you have now stops working, and ten new ones take their place. They are shown once.'**
-  String get recoveryCodesRegenerateMessage;
-
-  /// UC-42 main flow step 1: the core reports none unspent, which means the account cannot currently be recovered.
-  ///
-  /// In en, this message translates to:
-  /// **'No recovery codes are left. Generate a set while you still know your password.'**
-  String get recoveryCodesNoneLeft;
-
-  /// UC-42 main flow step 1 and FR-AU-14: how many codes the core reports as unspent.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 recovery code left} other{{count} recovery codes left}}'**
-  String recoveryCodesRemaining(num count);
-
   /// UC-26 main flow step 1: the collections screen heading.
   ///
   /// In en, this message translates to:
@@ -2666,19 +2234,19 @@ abstract class AppLocalizations {
   /// **'Library'**
   String get libraryToolsLabel;
 
-  /// Heading over the library tools menu's first group: sources and collections — filling and organizing the library itself.
+  /// Heading over the Library menu's group for collections — organizing the library itself.
   ///
   /// In en, this message translates to:
   /// **'Library'**
   String get libraryToolsGroupLibrary;
 
-  /// Heading over the library tools menu's second group: watchlists and reading lists — what the owner is following.
+  /// Heading over the Library menu's group for watchlists and reading lists — what the owner is following.
   ///
   /// In en, this message translates to:
   /// **'Tracking'**
   String get libraryToolsGroupTracking;
 
-  /// Heading over the library tools menu's third group: deleted items and the missing-files review — what has left the library or needs a look.
+  /// Heading over the Library menu's group for deleted items and the missing-files review — what has left the library or needs a look.
   ///
   /// In en, this message translates to:
   /// **'Review'**
@@ -2822,12 +2390,6 @@ abstract class AppLocalizations {
   /// **'Dismiss'**
   String get activityDismiss;
 
-  /// Navigation panel entry for the registered libraries — folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it.
-  ///
-  /// In en, this message translates to:
-  /// **'Libraries'**
-  String get destinationLibraries;
-
   /// Added to the remove confirmation when the library has a paused scan.
   ///
   /// In en, this message translates to:
@@ -2852,11 +2414,17 @@ abstract class AppLocalizations {
   /// **'Scanning… {processed} of {total}'**
   String libraryRunProgress(int processed, int total);
 
-  /// Library menu entry that opens the libraries.
+  /// The Library menu's first heading, over adding and managing libraries, and the title of the Manage libraries dialog.
   ///
   /// In en, this message translates to:
   /// **'Libraries'**
   String get libraryMenuLibraries;
+
+  /// Library menu entry that opens the dialog listing every library, with rename, scan again, move and remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage libraries…'**
+  String get libraryMenuManage;
 
   /// Library menu entry that adds a folder as a library.
   ///

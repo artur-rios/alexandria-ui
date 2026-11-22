@@ -105,8 +105,7 @@ sealed class CollectionAdditions with _$CollectionAdditions {
     required List<ItemAddition> items,
   }) = CollectionAdditionsReported;
 
-  /// The core refused the request itself — no such collection, or no session
-  /// (AF-03, AF-05). Nothing was linked and there is nothing to report per
+  /// The core refused the request itself — no such collection (AF-03). Nothing was linked and there is nothing to report per
   /// item.
   const factory CollectionAdditions.failed({required Failure failure}) =
       CollectionAdditionsFailed;
@@ -118,39 +117,25 @@ abstract interface class CollectionGateway {
   ///
   /// The read that makes the rest reachable: every other operation addresses a
   /// uuid, and this is where those uuids come from.
-  Future<CollectionBrowse> browse({
-    required String credential,
-    CollectionKind? kind,
-  });
+  Future<CollectionBrowse> browse({CollectionKind? kind});
 
   /// Creates a collection of [kind] (FR-OG-01).
   Future<CollectionWrite> create({
     required String name,
     required CollectionKind kind,
-    required String credential,
   });
 
   /// Renames the collection [uuid] identifies (FR-OG-02).
-  Future<CollectionWrite> rename({
-    required String uuid,
-    required String name,
-    required String credential,
-  });
+  Future<CollectionWrite> rename({required String uuid, required String name});
 
   /// Deletes the collection [uuid] identifies (FR-OG-03).
   ///
   /// The items it held are unlinked and stay in the catalog, which is what the
   /// confirmation has to say before this is reached.
-  Future<CollectionWrite> delete({
-    required String uuid,
-    required String credential,
-  });
+  Future<CollectionWrite> delete({required String uuid});
 
   /// The current members of the collection [uuid] identifies (FR-OG-06).
-  Future<CollectionMembers> members({
-    required String uuid,
-    required String credential,
-  });
+  Future<CollectionMembers> members({required String uuid});
 
   /// Adds [itemUuids] to the collection [uuid] identifies (FR-OG-04).
   ///
@@ -162,7 +147,6 @@ abstract interface class CollectionGateway {
   Future<CollectionAdditions> addItems({
     required String uuid,
     required List<String> itemUuids,
-    required String credential,
   });
 
   /// Removes [itemUuid] from the collection [uuid] identifies (FR-OG-05).
@@ -171,6 +155,5 @@ abstract interface class CollectionGateway {
   Future<CollectionWrite> removeItem({
     required String uuid,
     required String itemUuid,
-    required String credential,
   });
 }

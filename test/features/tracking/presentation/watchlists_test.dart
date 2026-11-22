@@ -5,14 +5,12 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
+import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist_gateway.dart';
@@ -39,7 +37,7 @@ void main() {
     type: FileType.video,
   );
 
-  /// Signs in, opens the videos area, and opens the watchlists screen.
+  /// Opens a library folder holding the video, and the watchlists screen.
   Future<({ProviderContainer container, FakeWatchlistGateway gateway})>
   openWatchlists(
     WidgetTester tester, {
@@ -49,7 +47,6 @@ void main() {
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
     bool openScreen = true,
-    bool reachArea = true,
   }) async {
     final catalog = FakeCatalogGateway(
       listings: {
@@ -74,24 +71,13 @@ void main() {
       ],
     );
 
-    // A rejected session has already returned the owner to login by now, so
-    // there is no panel to navigate — the sign-out is the outcome under test.
-    if (reachArea) {
-      await tester.tap(
-        find.descendant(
-          of: find.byType(ShellNavigationPanel),
-          matching: find.byIcon(ShellDestination.videos.icon),
-        ),
-      );
-      await tester.pumpAndSettle();
-    }
+    await tester.openFolderHolding(FileType.video);
 
     if (openScreen) {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      await tester.tap(find.text(l10n.watchlistsOpen));
-      await tester.pumpAndSettle();
+      await tester.openLibraryTool(l10n.watchlistsOpen);
     }
 
     return (container: container, gateway: gateway);
@@ -113,13 +99,19 @@ void main() {
 
   group('the main flow', () {
     // Step 1.
-    testWidgets('GivenTheVideosArea_WhenItIsShown_ThenWatchlistsAreReachable', (
-      tester,
-    ) async {
-      await openWatchlists(tester, openScreen: false);
+    // The videos area that used to offer them is gone with the type pages;
+    // the Library menu offers them from wherever the owner is.
+    testWidgets(
+      'GivenALibrary_WhenTheLibraryMenuOpens_ThenWatchlistsAreReachable',
+      (tester) async {
+        await openWatchlists(tester, openScreen: false);
 
-      expect(find.text(messages(tester).watchlistsOpen), findsOneWidget);
-    });
+        await tester.tap(find.byType(LibraryMenu));
+        await tester.pumpAndSettle();
+
+        expect(find.text(messages(tester).watchlistsOpen), findsOneWidget);
+      },
+    );
 
     testWidgets('GivenWatchlists_WhenTheScreenOpens_ThenTheyAreListed', (
       tester,
@@ -407,35 +399,6 @@ void main() {
       expect(opened.gateway.deleted, isEmpty);
       expect(find.text('Evenings'), findsOneWidget);
     });
-  });
-
-  // AF-06: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenBrowsing_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openWatchlists(
-          tester,
-          browse: const WatchlistBrowse.failed(
-            failure: Failure.unauthorized(
-              family: CoreStatusFamily.watchlist,
-              code: WATCHLIST_ERR_UNAUTHORIZED,
-            ),
-          ),
-          openScreen: false,
-          reachArea: false,
-        );
-
-        // Read rather than opened: the watchlists load lazily, so this is the
-        // browse the screen would have triggered.
-        await opened.container.read(watchlistsControllerProvider.future);
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
-      },
-    );
   });
 
   group('themes and languages', () {

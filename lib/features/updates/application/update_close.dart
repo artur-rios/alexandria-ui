@@ -7,9 +7,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../shell/application/window_geometry_controller.dart';
+import '../../shell/domain/app_activity.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
 import '../domain/release_info.dart';
-import 'update_session_activity.dart';
 
 final _log = Logger('updates');
 
@@ -21,9 +21,9 @@ enum CloseForUpdate {
   /// The installer is running and the application is exiting.
   launched,
 
-  /// The installer could not be started. The session's activities were begun
-  /// again and the pending-update record cleared, so the application goes on
-  /// as it was.
+  /// The installer could not be started. The application's activities were
+  /// begun again and the pending-update record cleared, so the application
+  /// goes on as it was.
   failed,
 }
 
@@ -31,9 +31,9 @@ enum CloseForUpdate {
 /// step 3), answering how that ended.
 ///
 /// A path of its own, not ordinary window closing: it asks about unsaved
-/// edits as signing out does, says a running scan will pause, ends the
-/// session's activities, records the window, leaves the record the next
-/// start checks, starts the installer, and exits.
+/// edits, says a running scan will pause, ends the application's activities,
+/// records the window, leaves the record the next start checks, starts the
+/// installer, and exits.
 Future<CloseForUpdate> closeForUpdate(
   BuildContext context,
   WidgetRef ref, {
@@ -42,7 +42,7 @@ Future<CloseForUpdate> closeForUpdate(
 }) async {
   final l10n = AppLocalizations.of(context);
 
-  if (ref.read(signOutControllerProvider).holdsUnsavedChanges) {
+  if (ref.read(appActivitiesProvider).holdUnsavedChanges) {
     final confirmed = await ConfirmationDialog.show(
       context,
       title: l10n.updateUnsavedTitle,
@@ -68,12 +68,7 @@ Future<CloseForUpdate> closeForUpdate(
   final location = ref.read(installKindProbeProvider).installLocation();
   if (installer == null || location == null) return CloseForUpdate.failed;
 
-  // Every activity but the update's own: ending that one cancels this very
-  // update and deletes the package about to be run.
-  final activities = [
-    for (final activity in ref.read(sessionActivitiesProvider))
-      if (activity is! UpdateSessionActivity) activity,
-  ];
+  final activities = ref.read(appActivitiesProvider);
   final store = await ref.read(pendingUpdateStoreProvider.future);
   var ended = 0;
   try {

@@ -7,7 +7,9 @@ import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/data/file_view_parser.dart';
+import '../../catalog/domain/file_type.dart';
 import '../../indexing/domain/run_priority.dart';
+import '../domain/catalog_stats.dart';
 import '../domain/library.dart';
 import '../domain/library_gateway.dart';
 
@@ -19,10 +21,10 @@ class CoreLibraryGateway implements LibraryGateway {
   final CoreClient _core;
 
   @override
-  Future<LibraryBrowse> browse({required String credential}) async {
+  Future<LibraryBrowse> browse() async {
     final CoreJsonResponse response;
     try {
-      response = await _core.librariesList(credential);
+      response = await _core.librariesList();
     } on CoreCallException {
       return _unreadableBrowse();
     }
@@ -53,14 +55,10 @@ class CoreLibraryGateway implements LibraryGateway {
   }
 
   @override
-  Future<LibraryRead> read({
-    required String uuid,
-    required String path,
-    required String credential,
-  }) async {
+  Future<LibraryRead> read({required String uuid, required String path}) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.libraryBrowse(uuid, path, credential);
+      response = await _core.libraryBrowse(uuid, path);
     } on CoreCallException {
       return _unreadableRead();
     }
@@ -107,7 +105,6 @@ class CoreLibraryGateway implements LibraryGateway {
     required String name,
     required String rootPath,
     RunPriority? priority,
-    required String credential,
   }) async {
     const unreadable = LibraryRegistration.failed(
       failure: Failure.unexpected(
@@ -126,7 +123,6 @@ class CoreLibraryGateway implements LibraryGateway {
           // core reads anything else as normal too.
           if (priority == RunPriority.low) 'priority': priority!.wire,
         }),
-        credential,
       );
     } on CoreCallException {
       return unreadable;
@@ -159,32 +155,101 @@ class CoreLibraryGateway implements LibraryGateway {
   }
 
   @override
-  Future<LibraryWrite> move({
-    required String uuid,
-    required String rootPath,
-    required String credential,
-  }) => _write(
-    () =>
-        _core.libraryMove(uuid, jsonEncode({'rootPath': rootPath}), credential),
-  );
+  Future<LibraryWrite> move({required String uuid, required String rootPath}) =>
+      _write(() => _core.libraryMove(uuid, jsonEncode({'rootPath': rootPath})));
 
   @override
-  Future<LibraryWrite> remove({
+  Future<LibraryWrite> remove({required String uuid}) =>
+      _write(() => _core.libraryRemove(uuid));
+
+  @override
+  Future<LibraryWrite> setPinned({
     required String uuid,
-    required String credential,
-  }) => _write(() => _core.libraryRemove(uuid, credential));
+    required bool pinned,
+  }) => _writeStatus(() => _core.librarySetPinned(uuid, pinned));
+
+  @override
+  Future<LibraryWrite> setFavorite({
+    required String uuid,
+    required bool favorite,
+  }) => _writeStatus(() => _core.librarySetFavorite(uuid, favorite));
+
+  @override
+  Future<LibraryWrite> rename({required String uuid, required String name}) =>
+      _write(() => _core.libraryRename(uuid, jsonEncode({'name': name})));
+
+  @override
+  Future<CatalogStats> stats() async {
+    const unreadable = Failure.unexpected(
+      family: CoreStatusFamily.library,
+      code: LIBRARY_ERR_OTHER,
+    );
+
+    final CoreJsonResponse response;
+    try {
+      response = await _core.catalogStats();
+    } on CoreCallException {
+      throw unreadable;
+    }
+
+    if (!CoreStatusFamily.library.isOk(response.status)) {
+      throw mapCoreStatus(CoreStatusFamily.library, response.status);
+    }
+
+    final json = response.json;
+    if (json == null) throw unreadable;
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+      final byType = body['filesByType'] as Map<String, dynamic>;
+
+      return CatalogStats(
+        libraries: body['libraries'] as int,
+        filesByType: {
+          // A type this build does not know is left out, as in a listing.
+          // The core answers every type it knows, a zero included, so one
+          // missing makes the answer unreadable: the cast throws rather than
+          // home showing a zero nobody counted.
+          for (final type in FileType.values)
+            type: byType[type.wireName] as int,
+        },
+      );
+    } on Object {
+      throw unreadable;
+    }
+  }
+
+  /// A write that answers a bare status, as pinning and favoriting do.
+  Future<LibraryWrite> _writeStatus(Future<int> Function() call) async {
+    final int status;
+    try {
+      status = await call();
+    } on CoreCallException {
+      return _unreadableWrite();
+    }
+
+    if (!CoreStatusFamily.library.isOk(status)) {
+      return LibraryWrite.failed(
+        failure: mapCoreStatus(CoreStatusFamily.library, status),
+      );
+    }
+
+    return const LibraryWrite.done();
+  }
+
+  LibraryWrite _unreadableWrite() => const LibraryWrite.failed(
+    failure: Failure.unexpected(
+      family: CoreStatusFamily.library,
+      code: LIBRARY_ERR_OTHER,
+    ),
+  );
 
   Future<LibraryWrite> _write(Future<CoreJsonResponse> Function() call) async {
     final CoreJsonResponse response;
     try {
       response = await call();
     } on CoreCallException {
-      return const LibraryWrite.failed(
-        failure: Failure.unexpected(
-          family: CoreStatusFamily.library,
-          code: LIBRARY_ERR_OTHER,
-        ),
-      );
+      return _unreadableWrite();
     }
 
     if (!CoreStatusFamily.library.isOk(response.status)) {
@@ -200,6 +265,8 @@ class CoreLibraryGateway implements LibraryGateway {
     uuid: row['uuid'] as String,
     name: row['name'] as String,
     rootPath: row['rootPath'] as String,
+    pinned: row['pinned'] as bool? ?? false,
+    favorite: row['favorite'] as bool? ?? false,
   );
 
   /// One file, or `null` when its record cannot be read.

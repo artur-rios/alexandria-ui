@@ -32,34 +32,26 @@ sealed class ReadingListWrite with _$ReadingListWrite {
 /// The core's reading-list operations (FR-TR-08 … FR-TR-14).
 abstract interface class ReadingListGateway {
   /// Every reading list and the progress of everything it tracks (FR-TR-11).
-  Future<ReadingListBrowse> browse({required String credential});
+  Future<ReadingListBrowse> browse();
 
   /// Creates a reading list called [name] (FR-TR-08).
-  Future<ReadingListWrite> create({
-    required String name,
-    required String credential,
-  });
+  Future<ReadingListWrite> create({required String name});
 
   /// Deletes the reading list [uuid] identifies (FR-TR-09).
   ///
   /// The books and comics are untouched: what goes is the tracking.
-  Future<ReadingListWrite> delete({
-    required String uuid,
-    required String credential,
-  });
+  Future<ReadingListWrite> delete({required String uuid});
 
   /// Adds [itemUuid] to the reading list [uuid] identifies (FR-TR-10).
   Future<ReadingListWrite> addItem({
     required String uuid,
     required String itemUuid,
-    required String credential,
   });
 
   /// Removes it again (FR-TR-11).
   Future<ReadingListWrite> removeItem({
     required String uuid,
     required String itemUuid,
-    required String credential,
   });
 
   /// Records how far through [itemUuid] the owner is, in this list alone
@@ -68,7 +60,6 @@ abstract interface class ReadingListGateway {
     required String uuid,
     required String itemUuid,
     required ReadingState state,
-    required String credential,
     int? currentIssue,
     int? totalIssues,
   });

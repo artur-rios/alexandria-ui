@@ -13,9 +13,6 @@ class TrackedReadingItemsController extends AsyncNotifier<Map<String, String>> {
   @override
   Future<Map<String, String>> build() async {
     final readingLists = await ref.watch(readingListsControllerProvider.future);
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return const {};
-
     final uuids = {
       for (final readingList in readingLists)
         for (final item in readingList.items) item.itemUuid,
@@ -25,10 +22,7 @@ class TrackedReadingItemsController extends AsyncNotifier<Map<String, String>> {
     final names = <String, String>{};
 
     for (final uuid in uuids) {
-      final details = await gateway.fileDetails(
-        uuid: uuid,
-        credential: credential,
-      );
+      final details = await gateway.fileDetails(uuid: uuid);
 
       names[uuid] = switch (details) {
         FileDetailsRead(:final details) => details.file.name,

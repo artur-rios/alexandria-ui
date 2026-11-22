@@ -12,9 +12,9 @@ class InMemorySettingsStore implements SettingsStore {
     ThemeMode themeMode = ThemeMode.system,
     Locale? locale,
     // On, matching the real default (`SettingsStore.rechecksAtStartup`'s own
-    // doc) — the honest default any owner starts a session with. This is a
+    // doc) — the honest default any owner starts with. This is a
     // live coupling worth knowing about: `pumpShell` (shell_harness.dart)
-    // signs in over a store built with this default, so every widget test
+    // starts over a store built with this default, so every widget test
     // built on it fires a real startup re-check through whatever fake index
     // gateway that container happens to have. Benign today because the
     // default fake gateway answers with nothing to refresh, but a test that

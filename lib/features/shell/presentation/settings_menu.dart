@@ -1,22 +1,14 @@
-import 'dart:async';
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
-import '../../auth/presentation/change_credentials_dialog.dart';
-import '../../auth/presentation/sign_out.dart';
 import 'menu_entry.dart';
 import 'preferences_dialog.dart';
 
-/// Preferences and the account actions (UC-39 main flow step 1, FR-UX-01).
+/// Preferences (UC-39 main flow step 1, FR-UX-01).
 ///
-/// Preferences were behind a button at the bottom of the navigation rail, and
-/// the account actions were inside the dialog that button opened — so leaving
-/// the application took three levels of nesting through a screen that does not
-/// announce it holds the exit. A named menu is one level, and it is where a
-/// desktop owner looks first.
-class SettingsMenu extends ConsumerWidget {
+/// A named menu in the bar rather than a button at the bottom of the
+/// navigation rail: it is where a desktop owner looks first.
+class SettingsMenu extends StatelessWidget {
   /// Creates the menu.
   const SettingsMenu({required this.showsLabel, super.key});
 
@@ -24,7 +16,7 @@ class SettingsMenu extends ConsumerWidget {
   final bool showsLabel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
     final button = SubmenuButton(
@@ -34,19 +26,6 @@ class SettingsMenu extends ConsumerWidget {
           icon: Icons.tune_outlined,
           label: l10n.preferencesLabel,
           onSelected: () => PreferencesDialog.show(context),
-        ),
-        MenuEntry(
-          icon: Icons.key_outlined,
-          label: l10n.changeCredentialsOpen,
-          onSelected: () => ChangeCredentialsDialog.show(context),
-        ),
-        // Last, and after a divider: it is the one action here that ends what
-        // the others operate on.
-        const Divider(),
-        MenuEntry(
-          icon: Icons.logout_outlined,
-          label: l10n.signOut,
-          onSelected: () => unawaited(confirmAndSignOut(context, ref)),
         ),
       ],
       child: showsLabel

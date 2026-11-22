@@ -27,295 +27,91 @@ class AlexandriaBindings {
     ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup,
   ) : _lookup = lookup;
 
-  /// Report the authenticated owner's account state (FR-AU-18): the same body
-  /// `GET /v1/auth/local/account` returns. `token` is the session id.
-  ///
-  /// This is the call a client makes to learn the stored address and how many
-  /// recovery codes remain unspent.
-  AuthJsonResult alexandria_auth_local_account(ffi.Pointer<ffi.Char> token) {
-    return _alexandria_auth_local_account(token);
-  }
-
-  late final _alexandria_auth_local_accountPtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_local_account');
-  late final _alexandria_auth_local_account = _alexandria_auth_local_accountPtr
-      .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
-  /// Local login (UC-34 / FR-AU-04): verify email + password and create a
-  /// session. `json_body` is the JSON body HTTP would send (`email`,
-  /// `password`). On success `json` carries the `LocalLoginResult` — the
-  /// caller presents its `sessionId` on subsequent requests instead of a
-  /// bearer token in local mode.
-  ///
-  /// Deliberately takes no `token`: this is how a caller obtains credentials
-  /// in the first place (mirrors the HTTP route being outside the auth gate).
-  AuthJsonResult alexandria_auth_local_login(ffi.Pointer<ffi.Char> json_body) {
-    return _alexandria_auth_local_login(json_body);
-  }
-
-  late final _alexandria_auth_local_loginPtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_local_login');
-  late final _alexandria_auth_local_login = _alexandria_auth_local_loginPtr
-      .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
-  /// Redeem a recovery code for a new password (UC-43 / FR-AU-14 … FR-AU-16).
-  /// `json_body` is the JSON body HTTP would send: an object with `code`,
-  /// `newPassword`, and `passwordConfirmation`.
-  ///
-  /// Deliberately takes no session token: the code is the credential, and this
-  /// is the operation a caller who cannot authenticate uses to get back in.
-  /// Every session is invalidated on success.
-  AuthJsonResult alexandria_auth_local_redeem_recovery_code(
-    ffi.Pointer<ffi.Char> json_body,
-  ) {
-    return _alexandria_auth_local_redeem_recovery_code(json_body);
-  }
-
-  late final _alexandria_auth_local_redeem_recovery_codePtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_local_redeem_recovery_code');
-  late final _alexandria_auth_local_redeem_recovery_code =
-      _alexandria_auth_local_redeem_recovery_codePtr
-          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
-  /// Replace the owner's recovery codes with a fresh set of ten (UC-44 /
-  /// FR-AU-17), invalidating every old one. `token` is the session id the
-  /// caller authenticates with, exactly as `alexandria_auth_local_account`
-  /// takes it.
-  AuthJsonResult alexandria_auth_local_regenerate_recovery_codes(
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_auth_local_regenerate_recovery_codes(token);
-  }
-
-  late final _alexandria_auth_local_regenerate_recovery_codesPtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_local_regenerate_recovery_codes');
-  late final _alexandria_auth_local_regenerate_recovery_codes =
-      _alexandria_auth_local_regenerate_recovery_codesPtr
-          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
-  /// Register the local account (UC-41 / FR-AU-10, FR-AU-11): create the
-  /// single owner's credentials and open a session. `json_body` is the JSON
-  /// body HTTP would send (`email`, `password`, `passwordConfirmation`). On
-  /// success `json` carries the `LocalRegisterResult`, whose `sessionId` the
-  /// caller presents on subsequent requests.
-  ///
-  /// Deliberately takes no `token`: there is nothing to authenticate with
-  /// before an account exists. Succeeds only once — a second call returns
-  /// `AUTH_ERR_CONFLICT` (AF-02).
-  AuthJsonResult alexandria_auth_local_register(
-    ffi.Pointer<ffi.Char> json_body,
-  ) {
-    return _alexandria_auth_local_register(json_body);
-  }
-
-  late final _alexandria_auth_local_registerPtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_local_register');
-  late final _alexandria_auth_local_register =
-      _alexandria_auth_local_registerPtr
-          .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
-  /// Set or change local-login credentials (UC-35 / FR-AU-05, FR-AU-06).
-  /// `json_body` is the JSON body HTTP would send (`email`, `password`).
-  /// `token` is required: this changes existing credentials. Creating the
-  /// account is `alexandria_auth_local_register` (UC-41).
-  AuthJsonResult alexandria_auth_local_set_credentials(
-    ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_auth_local_set_credentials(json_body, token);
-  }
-
-  late final _alexandria_auth_local_set_credentialsPtr =
-      _lookup<
-        ffi.NativeFunction<
-          AuthJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
-      >('alexandria_auth_local_set_credentials');
-  late final _alexandria_auth_local_set_credentials =
-      _alexandria_auth_local_set_credentialsPtr
-          .asFunction<
-            AuthJsonResult Function(
-              ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
-            )
-          >();
-
-  /// Windows login (UC-45 / FR-AU-20, FR-AU-22): open a session for the
-  /// Windows account this process runs as. Takes no credentials — the account
-  /// was already verified against the configured SID at startup. `json_body`
-  /// is accepted but ignored: it exists only for signature consistency with
-  /// this surface's other `alexandria_auth_*` neighbours, which all take a
-  /// body. On success `json` carries the `LocalLoginResult`, the same shape
-  /// `alexandria_auth_local_login` returns.
-  AuthJsonResult alexandria_auth_windows_login(
-    ffi.Pointer<ffi.Char> _json_body,
-  ) {
-    return _alexandria_auth_windows_login(_json_body);
-  }
-
-  late final _alexandria_auth_windows_loginPtr =
-      _lookup<
-        ffi.NativeFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_auth_windows_login');
-  late final _alexandria_auth_windows_login = _alexandria_auth_windows_loginPtr
-      .asFunction<AuthJsonResult Function(ffi.Pointer<ffi.Char>)>();
-
   /// Create a browser bookmark, optionally in an existing bookmark collection
   /// (UC-15 / FR-BM-01).
   ///
-  /// `json_body` is the JSON body HTTP would send (`url` + `title` +
-  /// `collectionUuid`). The function deserializes it, calls the same
-  /// `CreateBookmarkHandler` the HTTP route uses, and on success serializes the
-  /// returned `Bookmark` back to JSON — so the FFI and HTTP surfaces agree
-  /// byte-for-byte modulo key ordering (parity, FR-FC-24 / NFR-09). `token` is
-  /// the bearer auth token.
+  /// `json_body` is the JSON body (`url` + `title` + `collectionUuid`). The
+  /// function deserializes it, calls `CreateBookmarkHandler`, and on success
+  /// serializes the returned `Bookmark` back to JSON.
   BookmarkJsonResult alexandria_bookmark_create(
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_bookmark_create(json_body, token);
+    return _alexandria_bookmark_create(json_body);
   }
 
   late final _alexandria_bookmark_createPtr =
       _lookup<
-        ffi.NativeFunction<
-          BookmarkJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_bookmark_create');
   late final _alexandria_bookmark_create = _alexandria_bookmark_createPtr
-      .asFunction<
-        BookmarkJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Hard-purge a bookmark (UC-19 / FR-BM-04).
   ///
   /// `uuid` is the bookmark's public UUID (NUL-terminated string). On success
-  /// `json` carries the pre-purge `Bookmark` as confirmation — byte-for-byte
-  /// the same shape HTTP returns from `DELETE /v1/bookmarks/{uuid}?purge=true`
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
-  BookmarkJsonResult alexandria_bookmark_purge(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_bookmark_purge(uuid, token);
+  /// `json` carries the pre-purge `Bookmark` as confirmation.
+  BookmarkJsonResult alexandria_bookmark_purge(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_bookmark_purge(uuid);
   }
 
   late final _alexandria_bookmark_purgePtr =
       _lookup<
-        ffi.NativeFunction<
-          BookmarkJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_bookmark_purge');
   late final _alexandria_bookmark_purge = _alexandria_bookmark_purgePtr
-      .asFunction<
-        BookmarkJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Restore a soft-deleted bookmark (UC-18 / FR-BM-05).
   ///
   /// `uuid` is the bookmark's public UUID (NUL-terminated string). On success
-  /// `json` carries the restored `Bookmark` — byte-for-byte the same shape
-  /// HTTP returns from `POST /v1/bookmarks/{uuid}/restore` (parity,
-  /// FR-FC-24 / NFR-09). `token` is the bearer auth token.
-  BookmarkJsonResult alexandria_bookmark_restore(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_bookmark_restore(uuid, token);
+  /// `json` carries the restored `Bookmark`.
+  BookmarkJsonResult alexandria_bookmark_restore(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_bookmark_restore(uuid);
   }
 
   late final _alexandria_bookmark_restorePtr =
       _lookup<
-        ffi.NativeFunction<
-          BookmarkJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_bookmark_restore');
   late final _alexandria_bookmark_restore = _alexandria_bookmark_restorePtr
-      .asFunction<
-        BookmarkJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Soft-delete a bookmark (UC-18 / FR-BM-03).
   ///
   /// `uuid` is the bookmark's public UUID (NUL-terminated string). On success
-  /// `json` carries the updated `Bookmark` — byte-for-byte the same shape HTTP
-  /// returns from `DELETE /v1/bookmarks/{uuid}` (parity, FR-FC-24 / NFR-09).
-  /// `token` is the bearer auth token.
+  /// `json` carries the updated `Bookmark`.
   BookmarkJsonResult alexandria_bookmark_soft_delete(
     ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_bookmark_soft_delete(uuid, token);
+    return _alexandria_bookmark_soft_delete(uuid);
   }
 
   late final _alexandria_bookmark_soft_deletePtr =
       _lookup<
-        ffi.NativeFunction<
-          BookmarkJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_bookmark_soft_delete');
   late final _alexandria_bookmark_soft_delete =
       _alexandria_bookmark_soft_deletePtr
-          .asFunction<
-            BookmarkJsonResult Function(
-              ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
-            )
-          >();
+          .asFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Update a bookmark's url, title, and containing collection (UC-16 /
   /// FR-BM-02).
   ///
   /// `uuid` is the bookmark's public UUID (NUL-terminated string). `json_body`
-  /// is the JSON body HTTP would send (`url` + `title` + `collectionUuid`).
-  /// The function deserializes it, calls the same `UpdateBookmarkHandler` the
-  /// HTTP route uses, and on success serializes the returned `Bookmark` back
-  /// to JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo key
-  /// ordering (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// is the JSON body (`url` + `title` + `collectionUuid`). The function
+  /// deserializes it, calls `UpdateBookmarkHandler`, and on success serializes
+  /// the returned `Bookmark` back to JSON.
   BookmarkJsonResult alexandria_bookmark_update(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_bookmark_update(uuid, json_body, token);
+    return _alexandria_bookmark_update(uuid, json_body);
   }
 
   late final _alexandria_bookmark_updatePtr =
       _lookup<
         ffi.NativeFunction<
           BookmarkJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -326,7 +122,6 @@ class AlexandriaBindings {
         BookmarkJsonResult Function(
           ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
         )
       >();
 
@@ -335,55 +130,54 @@ class AlexandriaBindings {
   ///
   /// `json_filters` is a JSON string `{"collectionUuid":"…","state":"all"}`
   /// (empty string or NULL for defaults). The function deserializes it, calls
-  /// the same `BrowseBookmarksHandler` the HTTP route uses, and on success
-  /// serializes the returned `Vec<Bookmark>` back to a JSON array — so the FFI
-  /// and HTTP surfaces agree byte-for-byte modulo key ordering (parity,
-  /// FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `BrowseBookmarksHandler`, and on success serializes the returned
+  /// `Vec<Bookmark>` back to a JSON array.
   BookmarkJsonResult alexandria_bookmarks_list(
     ffi.Pointer<ffi.Char> json_filters,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_bookmarks_list(json_filters, token);
+    return _alexandria_bookmarks_list(json_filters);
   }
 
   late final _alexandria_bookmarks_listPtr =
       _lookup<
-        ffi.NativeFunction<
-          BookmarkJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_bookmarks_list');
   late final _alexandria_bookmarks_list = _alexandria_bookmarks_listPtr
-      .asFunction<
-        BookmarkJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<BookmarkJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
+  /// The catalog's totals: `{"libraries": n, "filesByType": {...}}`, with all
+  /// seven types present and `0` for an empty one. Counts what the default file
+  /// listing shows: active files, including those marked missing on disk;
+  /// soft-deleted files are not counted. `LIBRARY_ERR_NOT_INITIALIZED` before
+  /// `alexandria_index_init`, `LIBRARY_ERR_OTHER` when the query fails.
+  LibraryJsonResult alexandria_catalog_stats_json() {
+    return _alexandria_catalog_stats_json();
+  }
+
+  late final _alexandria_catalog_stats_jsonPtr =
+      _lookup<ffi.NativeFunction<LibraryJsonResult Function()>>(
+        'alexandria_catalog_stats_json',
+      );
+  late final _alexandria_catalog_stats_json = _alexandria_catalog_stats_jsonPtr
+      .asFunction<LibraryJsonResult Function()>();
 
   /// Add items to a collection (UC-13 / FR-CO-05).
   ///
   /// `uuid` is the collection's public UUID (NUL-terminated string). `json_body`
-  /// is the JSON body HTTP would send (`itemUuids`). The function deserializes
-  /// it, calls the same `AddItemsToCollectionHandler` the HTTP route uses, and
-  /// on success serializes the returned `CollectionItemsResult` back to JSON —
-  /// so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// is the JSON body (`itemUuids`). The function deserializes it, calls
+  /// `AddItemsToCollectionHandler`, and on success serializes the returned
+  /// `CollectionItemsResult` back to JSON.
   CollectionJsonResult alexandria_collection_add_items(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_collection_add_items(uuid, json_body, token);
+    return _alexandria_collection_add_items(uuid, json_body);
   }
 
   late final _alexandria_collection_add_itemsPtr =
       _lookup<
         ffi.NativeFunction<
           CollectionJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -395,126 +189,78 @@ class AlexandriaBindings {
             CollectionJsonResult Function(
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
             )
           >();
 
   /// Create a flat file or bookmark collection (UC-10 / FR-CO-01, FR-CO-02).
   ///
-  /// `json_body` is the JSON body HTTP would send (`name` + `kind`). The
-  /// function deserializes it, calls the same `CreateCollectionHandler` the HTTP
-  /// route uses, and on success serializes the returned `Collection` back to
-  /// JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `json_body` is the JSON body (`name` + `kind`). The function deserializes
+  /// it, calls `CreateCollectionHandler`, and on success serializes the returned
+  /// `Collection` back to JSON.
   CollectionJsonResult alexandria_collection_create(
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_collection_create(json_body, token);
+    return _alexandria_collection_create(json_body);
   }
 
   late final _alexandria_collection_createPtr =
       _lookup<
-        ffi.NativeFunction<
-          CollectionJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<CollectionJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_collection_create');
   late final _alexandria_collection_create = _alexandria_collection_createPtr
-      .asFunction<
-        CollectionJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<CollectionJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Delete a collection, unlinking its items (UC-12 / FR-CO-04).
   ///
   /// `uuid` is the collection's public UUID (NUL-terminated string). On success
-  /// `json` carries the pre-delete `Collection` as confirmation — byte-for-byte
-  /// the same shape HTTP returns from `DELETE /v1/collections/{uuid}` (parity,
-  /// FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `json` carries the pre-delete `Collection` as confirmation.
   CollectionJsonResult alexandria_collection_delete(
     ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_collection_delete(uuid, token);
+    return _alexandria_collection_delete(uuid);
   }
 
   late final _alexandria_collection_deletePtr =
       _lookup<
-        ffi.NativeFunction<
-          CollectionJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<CollectionJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_collection_delete');
   late final _alexandria_collection_delete = _alexandria_collection_deletePtr
-      .asFunction<
-        CollectionJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<CollectionJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// List the items in a collection (UC-14 / FR-CO-07).
   ///
-  /// `uuid` is the collection's public UUID (NUL-terminated string). On
-  /// success `json` carries the `kind` and current members — byte-for-byte
-  /// the same shape HTTP returns from `GET /v1/collections/{uuid}/items`
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `uuid` is the collection's public UUID (NUL-terminated string). On success
+  /// `json` carries the `kind` and current members.
   CollectionJsonResult alexandria_collection_list_items(
     ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_collection_list_items(uuid, token);
+    return _alexandria_collection_list_items(uuid);
   }
 
   late final _alexandria_collection_list_itemsPtr =
       _lookup<
-        ffi.NativeFunction<
-          CollectionJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<CollectionJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_collection_list_items');
   late final _alexandria_collection_list_items =
       _alexandria_collection_list_itemsPtr
-          .asFunction<
-            CollectionJsonResult Function(
-              ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
-            )
-          >();
+          .asFunction<CollectionJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Remove an item from a collection (UC-14 / FR-CO-06).
   ///
   /// `collection_uuid` and `item_uuid` are the collection's and item's public
   /// UUIDs (NUL-terminated strings). On success `json` carries the
-  /// `collectionUuid`/`itemUuid` confirmation — byte-for-byte the same shape
-  /// HTTP returns from `DELETE /v1/collections/{uuid}/items/{itemUuid}`
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `collectionUuid`/`itemUuid` confirmation.
   CollectionJsonResult alexandria_collection_remove_item(
     ffi.Pointer<ffi.Char> collection_uuid,
     ffi.Pointer<ffi.Char> item_uuid,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_collection_remove_item(
-      collection_uuid,
-      item_uuid,
-      token,
-    );
+    return _alexandria_collection_remove_item(collection_uuid, item_uuid);
   }
 
   late final _alexandria_collection_remove_itemPtr =
       _lookup<
         ffi.NativeFunction<
           CollectionJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -526,31 +272,26 @@ class AlexandriaBindings {
             CollectionJsonResult Function(
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
             )
           >();
 
   /// Rename a collection (UC-11 / FR-CO-03).
   ///
   /// `uuid` is the collection's public UUID (NUL-terminated string). `json_body`
-  /// is the JSON body HTTP would send (`{"name": …}`). The function
-  /// deserializes it, calls the same `RenameCollectionHandler` the HTTP route
-  /// uses, and on success serializes the returned `Collection` back to JSON —
-  /// so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// is the JSON body (`{"name": …}`). The function deserializes it, calls
+  /// `RenameCollectionHandler`, and on success serializes the returned
+  /// `Collection` back to JSON.
   CollectionJsonResult alexandria_collection_rename(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_collection_rename(uuid, json_body, token);
+    return _alexandria_collection_rename(uuid, json_body);
   }
 
   late final _alexandria_collection_renamePtr =
       _lookup<
         ffi.NativeFunction<
           CollectionJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -561,45 +302,30 @@ class AlexandriaBindings {
         CollectionJsonResult Function(
           ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
         )
       >();
 
   /// List the owner's collections (UC-46 / FR-CO-08).
   ///
-  /// `json_filters` is the JSON filter HTTP would build from its query string
-  /// (`kind`); an empty string or `null` means every collection. On success
-  /// `json` carries a JSON array of `CollectionSummary` — each collection with
-  /// the number of items it holds — byte-for-byte the same shape HTTP returns
-  /// from `GET /v1/collections` (parity, FR-FC-24 / NFR-09). `token` is the
-  /// bearer auth token.
+  /// `json_filters` is a JSON filter (`kind`); an empty string or `null` means
+  /// every collection. On success `json` carries a JSON array of
+  /// `CollectionSummary` — each collection with the number of items it holds.
   ///
   /// An owner with no collections gets an empty array and `COLLECTION_OK`, not
   /// an error (AF-01). An unrecognised `kind` is `COLLECTION_ERR_INVALID_INPUT`
   /// and nothing is queried (AF-02).
   CollectionJsonResult alexandria_collections_list(
     ffi.Pointer<ffi.Char> json_filters,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_collections_list(json_filters, token);
+    return _alexandria_collections_list(json_filters);
   }
 
   late final _alexandria_collections_listPtr =
       _lookup<
-        ffi.NativeFunction<
-          CollectionJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<CollectionJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_collections_list');
   late final _alexandria_collections_list = _alexandria_collections_listPtr
-      .asFunction<
-        CollectionJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<CollectionJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// One page of a CBZ ComicBook (UC-39 / FR-MP-04).
   ///
@@ -607,91 +333,65 @@ class AlexandriaBindings {
   /// Unlike UC-38, the bytes *do* cross the boundary: a comic page has no path
   /// of its own — it lives inside an archive — and it is bounded, so
   /// base64 inside the existing JSON payload keeps the FFI shape intact while
-  /// staying byte-exact with HTTP.
+  /// staying byte-exact with the page in the archive.
   PlaybackJsonResult alexandria_comic_page(
     ffi.Pointer<ffi.Char> uuid,
     int page,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_comic_page(uuid, page, token);
+    return _alexandria_comic_page(uuid, page);
   }
 
   late final _alexandria_comic_pagePtr =
       _lookup<
         ffi.NativeFunction<
-          PlaybackJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Uint32,
-            ffi.Pointer<ffi.Char>,
-          )
+          PlaybackJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Uint32)
         >
       >('alexandria_comic_page');
   late final _alexandria_comic_page = _alexandria_comic_pagePtr
-      .asFunction<
-        PlaybackJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          int,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<PlaybackJsonResult Function(ffi.Pointer<ffi.Char>, int)>();
 
   /// Write edited content back to a TextFile on disk (UC-33 / FR-TX-02,
   /// FR-TX-03).
   ///
   /// `uuid` is the file's public UUID (NUL-terminated string). `json_body` is
-  /// the JSON body HTTP would send (`content`). The function deserializes it,
-  /// calls the same `EditTextFileContentHandler` the HTTP route uses, and on
-  /// success serializes the returned `File` back to JSON — so the FFI and
-  /// HTTP surfaces agree byte-for-byte modulo key ordering (parity,
-  /// FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// the JSON body (`content`). The function deserializes it, calls
+  /// `EditTextFileContentHandler`, and on success serializes the returned `File`
+  /// back to JSON.
   FileJsonResult alexandria_file_edit_content(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_file_edit_content(uuid, json_body, token);
+    return _alexandria_file_edit_content(uuid, json_body);
   }
 
   late final _alexandria_file_edit_contentPtr =
       _lookup<
         ffi.NativeFunction<
-          FileJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
+          FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
         >
       >('alexandria_file_edit_content');
   late final _alexandria_file_edit_content = _alexandria_file_edit_contentPtr
       .asFunction<
-        FileJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
+        FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
       >();
 
   /// Edit a file's type-specific metadata (UC-04 / FR-FC-15..18).
   ///
-  /// `uuid` is the file's public UUID string; `json_patch` is the JSON body
-  /// (the `SubtypeMetadata` enum, internally tagged by `type`) that HTTP would
-  /// send. The function deserializes it, calls the same `EditMetadataHandler`
-  /// the HTTP route uses, and on success serializes the returned `FileMetadata`
-  /// back to JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo key
-  /// ordering (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `uuid` is the file's public UUID string; `json_patch` is the JSON body (the
+  /// `SubtypeMetadata` enum, internally tagged by `type`). The function
+  /// deserializes it, calls `EditMetadataHandler`, and on success serializes the
+  /// returned `FileMetadata` back to JSON.
   FileMetadataResult alexandria_file_edit_metadata(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> json_patch,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_file_edit_metadata(uuid, json_patch, token);
+    return _alexandria_file_edit_metadata(uuid, json_patch);
   }
 
   late final _alexandria_file_edit_metadataPtr =
       _lookup<
         ffi.NativeFunction<
           FileMetadataResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -702,304 +402,196 @@ class AlexandriaBindings {
         FileMetadataResult Function(
           ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
         )
       >();
 
   /// Get a single file's metadata by its public UUID (UC-03 / FR-FC-13).
   ///
-  /// `uuid` is the file's public UUID string. The function calls the same
-  /// `BrowseFilesHandler::get_by_uuid` the HTTP route uses, and on success
-  /// serializes the returned `FileView` back to JSON — the same shape HTTP
-  /// returns from `GET /v1/files/{uuid}` (parity, FR-FC-24 / NFR-09). `token`
-  /// is the bearer auth token.
-  FileJsonResult alexandria_file_get_by_uuid(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_file_get_by_uuid(uuid, token);
+  /// `uuid` is the file's public UUID string. The function calls
+  /// `BrowseFilesHandler::get_by_uuid`, and on success serializes the returned
+  /// `FileView` back to JSON.
+  FileJsonResult alexandria_file_get_by_uuid(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_file_get_by_uuid(uuid);
   }
 
   late final _alexandria_file_get_by_uuidPtr =
       _lookup<
-        ffi.NativeFunction<
-          FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
+        ffi.NativeFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_file_get_by_uuid');
   late final _alexandria_file_get_by_uuid = _alexandria_file_get_by_uuidPtr
-      .asFunction<
-        FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-      >();
+      .asFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Resolve a File to everything a local player needs to open it
   /// (UC-38 / FR-MP-01, FR-MP-06).
   ///
-  /// The FFI surface cannot carry a byte stream, so where HTTP streams
-  /// `GET /v1/files/{uuid}/stream`, this returns
-  /// `{"uuid":…,"path":…,"mimeType":…,"sizeBytes":…}` and the caller — Flutter
-  /// desktop, on the same machine as the file — opens that path directly.
-  /// Zero bytes cross this boundary. Parity with HTTP is defined on this
-  /// descriptor and on the authorization, state, and error decisions rather
-  /// than on byte transfer (FR-MP-06). A file whose path resolves outside the
-  /// configured `filesystem.root` gets `PLAYBACK_ERR_INVALID_INPUT` and no
-  /// descriptor (FR-FC-26), as HTTP's `400`.
+  /// The FFI surface cannot carry a byte stream, so rather than stream the
+  /// file, this returns `{"uuid":…,"path":…,"mimeType":…,"sizeBytes":…}` and
+  /// the caller — Flutter desktop, on the same machine as the file — opens that
+  /// path directly. Zero bytes cross this boundary (FR-MP-06). A file whose
+  /// path resolves outside the configured `filesystem.root` gets
+  /// `PLAYBACK_ERR_INVALID_INPUT` and no descriptor (FR-FC-26).
   PlaybackJsonResult alexandria_file_playback_source(
     ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_file_playback_source(uuid, token);
+    return _alexandria_file_playback_source(uuid);
   }
 
   late final _alexandria_file_playback_sourcePtr =
       _lookup<
-        ffi.NativeFunction<
-          PlaybackJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<PlaybackJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_file_playback_source');
   late final _alexandria_file_playback_source =
       _alexandria_file_playback_sourcePtr
-          .asFunction<
-            PlaybackJsonResult Function(
-              ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
-            )
-          >();
+          .asFunction<PlaybackJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Hard-purge a soft-deleted file's catalog row (UC-08 / FR-FC-22).
   ///
-  /// `uuid` is the file's public UUID string; `token` is the bearer auth
-  /// token. The function calls the same `PurgeFileHandler` the HTTP route
-  /// uses (`DELETE /v1/files/{uuid}?purge=true`) and on success serializes
-  /// the pre-delete `File` back to JSON as confirmation — the same shape
-  /// HTTP returns, so the FFI and HTTP surfaces agree byte-for-byte modulo
-  /// key ordering (parity, FR-FC-24 / NFR-09). Only the catalog row (and its
-  /// subtype row) is removed; the on-disk file is untouched (NFR-07). The
-  /// retention window (default 30 days, NFR-10) is enforced: a record still
-  /// within it, or not `deleted`, is reported as `FILE_ERR_INVALID_STATE`.
-  FileJsonResult alexandria_file_purge(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_file_purge(uuid, token);
+  /// `uuid` is the file's public UUID string. The function calls
+  /// `PurgeFileHandler` and on success serializes the pre-delete `File` back to
+  /// JSON as confirmation. Only the catalog row (and its subtype row) is
+  /// removed; the on-disk file is untouched (NFR-07). The retention window
+  /// (default 30 days, NFR-10) is enforced: a record still within it, or not
+  /// `deleted`, is reported as `FILE_ERR_INVALID_STATE`.
+  FileJsonResult alexandria_file_purge(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_file_purge(uuid);
   }
 
   late final _alexandria_file_purgePtr =
       _lookup<
-        ffi.NativeFunction<
-          FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
+        ffi.NativeFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_file_purge');
   late final _alexandria_file_purge = _alexandria_file_purgePtr
-      .asFunction<
-        FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-      >();
+      .asFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Purge a file both on disk and in the catalog (UC-09 / FR-FC-23).
   ///
-  /// `uuid` is the file's public UUID string; `token` is the bearer auth
-  /// token. The function calls the same `PurgeFileOnDiskHandler` the HTTP
-  /// route uses (`DELETE /v1/files/{uuid}?purge-on-disk=true`) and on success
-  /// serializes the returned [`PurgeOnDiskOutcome`] back to JSON — the same
-  /// shape HTTP returns, so the FFI and HTTP surfaces agree byte-for-byte
-  /// modulo key ordering (parity, FR-FC-24 / NFR-09). Unlike UC-08 there is no
-  /// retention gate: an `active` or `deleted` record is purgeable, the only
-  /// precondition is that it exists. A missing on-disk file is still a
-  /// success, reported via `diskFilePresent: false` (AF-01); a disk failure
-  /// is reported as `FILE_ERR_DISK` (AF-02) and leaves the record untouched.
-  FileJsonResult alexandria_file_purge_on_disk(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_file_purge_on_disk(uuid, token);
+  /// `uuid` is the file's public UUID string. The function calls
+  /// `PurgeFileOnDiskHandler` and on success serializes the returned
+  /// [`PurgeOnDiskOutcome`] back to JSON. Unlike UC-08 there is no retention
+  /// gate: an `active` or `deleted` record is purgeable, the only precondition
+  /// is that it exists. A missing on-disk file is still a success, reported via
+  /// `diskFilePresent: false` (AF-01); a disk failure is reported as
+  /// `FILE_ERR_DISK` (AF-02) and leaves the record untouched.
+  FileJsonResult alexandria_file_purge_on_disk(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_file_purge_on_disk(uuid);
   }
 
   late final _alexandria_file_purge_on_diskPtr =
       _lookup<
-        ffi.NativeFunction<
-          FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
+        ffi.NativeFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_file_purge_on_disk');
   late final _alexandria_file_purge_on_disk = _alexandria_file_purge_on_diskPtr
-      .asFunction<
-        FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-      >();
+      .asFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Read a TextFile's content from disk (UC-32 / FR-TX-01).
   ///
-  /// `uuid` is the file's public UUID (NUL-terminated string). On success
-  /// `json` carries the `FileContent` — byte-for-byte the same shape HTTP
-  /// returns from `GET /v1/files/{uuid}/content` (parity, FR-FC-24 / NFR-09).
-  /// `token` is the bearer auth token.
-  FileJsonResult alexandria_file_read_content(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_file_read_content(uuid, token);
+  /// `uuid` is the file's public UUID (NUL-terminated string). On success `json`
+  /// carries the `FileContent`.
+  FileJsonResult alexandria_file_read_content(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_file_read_content(uuid);
   }
 
   late final _alexandria_file_read_contentPtr =
       _lookup<
-        ffi.NativeFunction<
-          FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
+        ffi.NativeFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_file_read_content');
   late final _alexandria_file_read_content = _alexandria_file_read_contentPtr
-      .asFunction<
-        FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-      >();
+      .asFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Rename a file (and its on-disk file) (UC-05 / FR-FC-19).
   ///
   /// `uuid` is the file's public UUID string; `name` is the new file name. The
-  /// function calls the same `RenameFileHandler` the HTTP route uses and on
-  /// success serializes the returned `File` back to JSON — the same shape HTTP
-  /// returns from `POST /v1/files/{uuid}/rename`, so the FFI and HTTP surfaces
-  /// agree byte-for-byte modulo key ordering (parity, FR-FC-24 / NFR-09).
-  /// `token` is the bearer auth token. A disk failure (AF-02) maps to
-  /// `FILE_ERR_DISK`; the catalog is left untouched in that case.
+  /// function calls `RenameFileHandler` and on success serializes the returned
+  /// `File` back to JSON. A disk failure (AF-02) maps to `FILE_ERR_DISK`; the
+  /// catalog is left untouched in that case.
   FileJsonResult alexandria_file_rename(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> name,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_file_rename(uuid, name, token);
+    return _alexandria_file_rename(uuid, name);
   }
 
   late final _alexandria_file_renamePtr =
       _lookup<
         ffi.NativeFunction<
-          FileJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
+          FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
         >
       >('alexandria_file_rename');
   late final _alexandria_file_rename = _alexandria_file_renamePtr
       .asFunction<
-        FileJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
+        FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
       >();
 
   /// Restore a soft-deleted file (UC-07 / FR-FC-21).
   ///
-  /// `uuid` is the file's public UUID string; `token` is the bearer auth token.
-  /// The function calls the same `RestoreFileHandler` the HTTP route uses and
-  /// on success serializes the returned `File` back to JSON — the same shape
-  /// HTTP returns from `POST /v1/files/{uuid}/restore`, so the FFI and HTTP
-  /// surfaces agree byte-for-byte modulo key ordering (parity, FR-FC-24 /
-  /// NFR-09). The on-disk file is untouched (only `state` and `deleted_at`
-  /// change on the catalog row). The retention window (default 30 days,
-  /// NFR-10) is enforced; a record past it is reported as `NotFound`
-  /// (`FILE_ERR_NOT_FOUND`) since UC-08 owns the actual hard purge.
-  FileJsonResult alexandria_file_restore(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_file_restore(uuid, token);
+  /// `uuid` is the file's public UUID string. The function calls
+  /// `RestoreFileHandler` and on success serializes the returned `File` back to
+  /// JSON. The on-disk file is untouched (only `state` and `deleted_at` change
+  /// on the catalog row). The retention window (default 30 days, NFR-10) is
+  /// enforced; a record past it is reported as `NotFound` (`FILE_ERR_NOT_FOUND`)
+  /// since UC-08 owns the actual hard purge.
+  FileJsonResult alexandria_file_restore(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_file_restore(uuid);
   }
 
   late final _alexandria_file_restorePtr =
       _lookup<
-        ffi.NativeFunction<
-          FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
+        ffi.NativeFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_file_restore');
   late final _alexandria_file_restore = _alexandria_file_restorePtr
-      .asFunction<
-        FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-      >();
+      .asFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Soft-delete a file (UC-06 / FR-FC-20).
   ///
-  /// `uuid` is the file's public UUID string; `token` is the bearer auth token.
-  /// The function calls the same `SoftDeleteFileHandler` the HTTP route uses
-  /// and on success serializes the returned `File` back to JSON — the same
-  /// shape HTTP returns from `DELETE /v1/files/{uuid}`, so the FFI and HTTP
-  /// surfaces agree byte-for-byte modulo key ordering (parity, FR-FC-24 /
-  /// NFR-09). The on-disk file is untouched (only `state` and `deleted_at`
+  /// `uuid` is the file's public UUID string. The function calls
+  /// `SoftDeleteFileHandler` and on success serializes the returned `File` back
+  /// to JSON. The on-disk file is untouched (only `state` and `deleted_at`
   /// change on the catalog row).
-  FileJsonResult alexandria_file_soft_delete(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_file_soft_delete(uuid, token);
+  FileJsonResult alexandria_file_soft_delete(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_file_soft_delete(uuid);
   }
 
   late final _alexandria_file_soft_deletePtr =
       _lookup<
-        ffi.NativeFunction<
-          FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
+        ffi.NativeFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_file_soft_delete');
   late final _alexandria_file_soft_delete = _alexandria_file_soft_deletePtr
-      .asFunction<
-        FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-      >();
+      .asFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// A downscaled thumbnail for a video, image, or comic
   /// (UC-40 / FR-MP-05). Returns
   /// `{"uuid":…,"mimeType":"image/jpeg","bytesBase64":…}`. Bounded derived
   /// bytes, so the same base64 rule as `alexandria_comic_page` applies.
-  PlaybackJsonResult alexandria_file_thumbnail(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_file_thumbnail(uuid, token);
+  PlaybackJsonResult alexandria_file_thumbnail(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_file_thumbnail(uuid);
   }
 
   late final _alexandria_file_thumbnailPtr =
       _lookup<
-        ffi.NativeFunction<
-          PlaybackJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<PlaybackJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_file_thumbnail');
   late final _alexandria_file_thumbnail = _alexandria_file_thumbnailPtr
-      .asFunction<
-        PlaybackJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<PlaybackJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// List/query files filtered by type and lifecycle state (UC-03 / FR-FC-12).
   ///
   /// `json_filters` is a JSON string `{"type":"video","state":"all"}` (empty
   /// string or NULL for defaults), answered across every library unless
-  /// `"libraryUuid"` names one. The
-  /// function deserializes it, calls the same
-  /// `BrowseFilesHandler` the HTTP route uses, and on success serializes the
-  /// returned `Vec<FileView>` back to a JSON array — each element the same
+  /// `"libraryUuid"` names one. The function deserializes it, calls
+  /// `BrowseFilesHandler`, and on success serializes the returned
+  /// `Vec<FileView>` back to a JSON array — each element the same
   /// `{"file": …, "metadata": …, …}` shape `alexandria_file_get_by_uuid`
-  /// answers for one file (issue #116) — so the FFI and HTTP surfaces agree
-  /// byte-for-byte modulo key ordering (parity, FR-FC-24 / NFR-09). `token` is
-  /// the bearer auth token.
-  FileJsonResult alexandria_files_list(
-    ffi.Pointer<ffi.Char> json_filters,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_files_list(json_filters, token);
+  /// answers for one file (issue #116).
+  FileJsonResult alexandria_files_list(ffi.Pointer<ffi.Char> json_filters) {
+    return _alexandria_files_list(json_filters);
   }
 
   late final _alexandria_files_listPtr =
       _lookup<
-        ffi.NativeFunction<
-          FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
+        ffi.NativeFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_files_list');
   late final _alexandria_files_list = _alexandria_files_listPtr
-      .asFunction<
-        FileJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-      >();
+      .asFunction<FileJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Free a string previously returned by an FFI accessor.
   ///
@@ -1033,30 +625,23 @@ class AlexandriaBindings {
 
   /// Abandon a running or paused index or re-index run (UC-48 / FR-FC-34).
   /// Terminal — a cancelled run is never resumed. `run_id` is the id
-  /// `alexandria_library_index_start` or `alexandria_index_refresh_start` returned;
-  /// `token` is the bearer auth token. Calls the same
-  /// `RunControlHandler::cancel` the HTTP route (Task 12) calls.
+  /// `alexandria_library_index_start` or `alexandria_index_refresh_start`
+  /// returned. Calls `RunControlHandler::cancel`.
   ///
   /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
-  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02),
   /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid, and
   /// `RUN_ERR_INVALID_STATE` when the run is already terminal (`complete`,
   /// `failed`, or already `cancelled`) — there is nothing left to abandon.
-  int alexandria_index_cancel(
-    ffi.Pointer<ffi.Char> run_id,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_index_cancel(run_id, token);
+  int alexandria_index_cancel(ffi.Pointer<ffi.Char> run_id) {
+    return _alexandria_index_cancel(run_id);
   }
 
   late final _alexandria_index_cancelPtr =
-      _lookup<
-        ffi.NativeFunction<
-          ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
-      >('alexandria_index_cancel');
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>)>>(
+        'alexandria_index_cancel',
+      );
   late final _alexandria_index_cancel = _alexandria_index_cancelPtr
-      .asFunction<int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
+      .asFunction<int Function(ffi.Pointer<ffi.Char>)>();
 
   /// Count of indexed files. For tests waiting for the background scan.
   int alexandria_index_count_files() {
@@ -1089,13 +674,12 @@ class AlexandriaBindings {
   /// `content_hash` is nullable (Task 3: indexing never computes one; Task 4:
   /// neither does refresh) and is decoded as `Option<String>` — not `String` —
   /// so a `NULL` row serializes as JSON `null` here, matching what the shared
-  /// `File`/`FileView` model emits over HTTP for the same column
-  /// (`GET /v1/files`, `catalog/model.rs`). Decoding it as a bare `String`
-  /// used to silently turn a SQL `NULL` into `""` instead (sqlx does not error
-  /// on that mismatch for this driver), which was a byte-for-byte parity
-  /// violation (FR-FC-24) for every indexed or refreshed file — not an edge
-  /// case, since neither indexing nor refresh have computed a hash since
-  /// Task 3/4.
+  /// `File`/`FileView` model emits for the same column (`alexandria_files_list`,
+  /// `catalog/model.rs`). Decoding it as a bare `String` used to silently turn a
+  /// SQL `NULL` into `""` instead (sqlx does not error on that mismatch for this
+  /// driver), so the two listings disagreed for every indexed or refreshed file
+  /// — not an edge case, since neither indexing nor refresh have computed a hash
+  /// since Task 3/4.
   ffi.Pointer<ffi.Char> alexandria_index_files_json() {
     return _alexandria_index_files_json();
   }
@@ -1122,13 +706,11 @@ class AlexandriaBindings {
   /// succeeds. Pointing at a *different* database is subject to the same rule,
   /// for the same reason.
   ///
-  /// Configuration is loaded the same way `alexandria-http` loads it — from the
-  /// path in `ALEXANDRIA_CONFIG` (default `config.toml`), with `ALEXANDRIA_*`
-  /// environment overrides applied — so a setting such as the auth mode or the
-  /// retention window means the same thing on both surfaces (FR-FC-24 / NFR-09).
-  /// A missing or unreadable config file falls back to defaults rather than
-  /// failing, matching the HTTP binary. `db_path` wins over the config's
-  /// `database.path`: the embedder passed it explicitly.
+  /// Configuration is loaded from the path in `ALEXANDRIA_CONFIG` (default
+  /// `config.toml`), with `ALEXANDRIA_*` environment overrides applied. A
+  /// missing or unreadable config file falls back to defaults rather than
+  /// failing. `db_path` wins over the config's `database.path`: the embedder
+  /// passed it explicitly.
   int alexandria_index_init(ffi.Pointer<ffi.Char> db_path) {
     return _alexandria_index_init(db_path);
   }
@@ -1140,71 +722,52 @@ class AlexandriaBindings {
   late final _alexandria_index_init = _alexandria_index_initPtr
       .asFunction<int Function(ffi.Pointer<ffi.Char>)>();
 
-  /// Pause a running index or re-index run where it stands, leaving it
-  /// resumable (UC-48 / FR-FC-32). `run_id` is the id `alexandria_library_index_start`
-  /// or `alexandria_index_refresh_start` returned; `token` is the bearer auth
-  /// token. Calls the same `RunControlHandler::pause` the HTTP route (Task 12)
-  /// calls.
+  /// Pause a running index or re-index run where it stands, leaving it resumable
+  /// (UC-48 / FR-FC-32). `run_id` is the id `alexandria_library_index_start` or
+  /// `alexandria_index_refresh_start` returned. Calls
+  /// `RunControlHandler::pause`.
   ///
   /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
-  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02),
   /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid, and
   /// `RUN_ERR_INVALID_STATE` when the run is not currently `running` — pausing
   /// an already-paused or already-finished run is refused rather than silently
   /// accepted.
-  int alexandria_index_pause(
-    ffi.Pointer<ffi.Char> run_id,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_index_pause(run_id, token);
+  int alexandria_index_pause(ffi.Pointer<ffi.Char> run_id) {
+    return _alexandria_index_pause(run_id);
   }
 
   late final _alexandria_index_pausePtr =
-      _lookup<
-        ffi.NativeFunction<
-          ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
-      >('alexandria_index_pause');
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>)>>(
+        'alexandria_index_pause',
+      );
   late final _alexandria_index_pause = _alexandria_index_pausePtr
-      .asFunction<int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
+      .asFunction<int Function(ffi.Pointer<ffi.Char>)>();
 
   /// Start an asynchronous re-index/refresh of every cataloged path (UC-02).
-  /// Takes only a token (no root — refresh touches everything cataloged) and
-  /// returns a `IndexStartResult` with a `run_id` and `status` (parity with the
-  /// HTTP `POST /v1/index/refresh` 202 body). The refresh runs in the background
-  /// on the FFI runtime; read results via the accessor functions.
+  /// Takes no root — refresh touches everything cataloged — and returns a
+  /// `IndexStartResult` with a `run_id` and `status`. The refresh runs in the
+  /// background on the FFI runtime; read results via the accessor functions.
   ///
   /// `priority` is parsed exactly as `alexandria_library_index_start`'s is — see that
   /// function's doc comment for the accepted spellings and the NULL/garbage
   /// fallback.
   IndexStartResult alexandria_index_refresh_start(
-    ffi.Pointer<ffi.Char> token,
     ffi.Pointer<ffi.Char> priority,
   ) {
-    return _alexandria_index_refresh_start(token, priority);
+    return _alexandria_index_refresh_start(priority);
   }
 
   late final _alexandria_index_refresh_startPtr =
       _lookup<
-        ffi.NativeFunction<
-          IndexStartResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<IndexStartResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_index_refresh_start');
   late final _alexandria_index_refresh_start =
       _alexandria_index_refresh_startPtr
-          .asFunction<
-            IndexStartResult Function(
-              ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
-            )
-          >();
+          .asFunction<IndexStartResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Put a paused index or re-index run back to work (UC-48 / FR-FC-33).
-  /// `run_id` is the id `alexandria_library_index_start` or `alexandria_index_refresh_start`
-  /// returned; `token` is the bearer auth token. Returns the *same* `run_id` on
+  /// `run_id` is the id `alexandria_library_index_start` or
+  /// `alexandria_index_refresh_start` returned. Returns the *same* `run_id` on
   /// success — a resume does not mint a fresh run, it continues the one it was
   /// given — wrapped in the same `IndexStartResult` `alexandria_library_index_start`
   /// returns (parity of shape, not of meaning: `status` here is a `RUN_ERR_*`
@@ -1232,15 +795,13 @@ class AlexandriaBindings {
   /// to speed a low-priority run back up. See `parse_resume_priority`.
   ///
   /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
-  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02),
   /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid, and
   /// `RUN_ERR_INVALID_STATE` when the run is not currently `paused`.
   IndexStartResult alexandria_index_resume(
     ffi.Pointer<ffi.Char> run_id,
-    ffi.Pointer<ffi.Char> token,
     ffi.Pointer<ffi.Char> priority,
   ) {
-    return _alexandria_index_resume(run_id, token, priority);
+    return _alexandria_index_resume(run_id, priority);
   }
 
   late final _alexandria_index_resumePtr =
@@ -1249,125 +810,102 @@ class AlexandriaBindings {
           IndexStartResult Function(
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
           )
         >
       >('alexandria_index_resume');
   late final _alexandria_index_resume = _alexandria_index_resumePtr
       .asFunction<
-        IndexStartResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
+        IndexStartResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
       >();
 
-  /// The files a run could not record, oldest first (FR-FC-42). `run_id` is
-  /// the id `alexandria_library_index_start` or `alexandria_index_refresh_start`
-  /// returned. On success `json` carries the same array the HTTP
-  /// `GET /v1/index/runs/{runId}/failures` route returns (FR-FC-24).
+  /// The files a run could not record, oldest first (FR-FC-42). `run_id` is the
+  /// id `alexandria_library_index_start` or `alexandria_index_refresh_start`
+  /// returned. On success `json` carries the array of failures.
   ///
   /// A call of its own rather than a field on the status above: status is
   /// polled every second while a run is in flight, and this is wanted once, if
   /// ever — when the owner asks which files. The list is bounded per run; the
   /// run's own `failed` tally stays the authority on how many.
   ///
-  /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
-  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02), and
+  /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01), and
   /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid.
   RunJsonResult alexandria_index_run_failures_json(
     ffi.Pointer<ffi.Char> run_id,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_index_run_failures_json(run_id, token);
+    return _alexandria_index_run_failures_json(run_id);
   }
 
   late final _alexandria_index_run_failures_jsonPtr =
       _lookup<
-        ffi.NativeFunction<
-          RunJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
+        ffi.NativeFunction<RunJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_index_run_failures_json');
   late final _alexandria_index_run_failures_json =
       _alexandria_index_run_failures_jsonPtr
-          .asFunction<
-            RunJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-          >();
+          .asFunction<RunJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Report an index or re-index run's status and outcome (UC-42 / FR-FC-28).
   /// `run_id` is the id `alexandria_library_index_start` or
   /// `alexandria_index_refresh_start` returned. On success `json` carries the
-  /// same body the HTTP `GET /v1/index/runs/{runId}` route returns (FR-FC-24).
+  /// run's `CatalogRun` body.
   ///
-  /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01),
-  /// `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02), and
+  /// Returns `RUN_ERR_NOT_FOUND` for an id naming no run (AF-01), and
   /// `RUN_ERR_INVALID_INPUT` when `run_id` is not a uuid.
-  RunJsonResult alexandria_index_run_status_json(
-    ffi.Pointer<ffi.Char> run_id,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_index_run_status_json(run_id, token);
+  RunJsonResult alexandria_index_run_status_json(ffi.Pointer<ffi.Char> run_id) {
+    return _alexandria_index_run_status_json(run_id);
   }
 
   late final _alexandria_index_run_status_jsonPtr =
       _lookup<
-        ffi.NativeFunction<
-          RunJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-        >
+        ffi.NativeFunction<RunJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_index_run_status_json');
   late final _alexandria_index_run_status_json =
       _alexandria_index_run_status_jsonPtr
-          .asFunction<
-            RunJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-          >();
+          .asFunction<RunJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Every outstanding (`running` or `paused`) index and re-index run at once,
-  /// each with live progress overlaid exactly as `alexandria_index_run_status_json`
-  /// overlays a single run (UC-42 / FR-FC-35). `token` is the bearer auth
-  /// token. On success `json` is a NUL-terminated JSON array of `CatalogRun`
-  /// bodies, newest first — byte-for-byte the same shape the HTTP
-  /// `GET /v1/index/runs?status=active` route (Task 12) returns (FR-FC-24 / NFR-09).
-  /// The caller must free `json` with `alexandria_free_string`.
+  /// each with live progress overlaid exactly as
+  /// `alexandria_index_run_status_json` overlays a single run (UC-42 /
+  /// FR-FC-35). On success `json` is a NUL-terminated JSON array of `CatalogRun`
+  /// bodies, newest first. The caller must free `json` with
+  /// `alexandria_free_string`.
   ///
   /// A caller with nothing outstanding gets `RUN_OK` and an empty JSON array,
   /// not an error — an idle library is the normal case, not a failure.
-  ///
-  /// Returns `RUN_ERR_UNAUTHORIZED` for an unauthenticated caller (AF-02).
-  RunJsonResult alexandria_index_runs_active_json(ffi.Pointer<ffi.Char> token) {
-    return _alexandria_index_runs_active_json(token);
+  RunJsonResult alexandria_index_runs_active_json() {
+    return _alexandria_index_runs_active_json();
   }
 
   late final _alexandria_index_runs_active_jsonPtr =
-      _lookup<
-        ffi.NativeFunction<RunJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_index_runs_active_json');
+      _lookup<ffi.NativeFunction<RunJsonResult Function()>>(
+        'alexandria_index_runs_active_json',
+      );
   late final _alexandria_index_runs_active_json =
       _alexandria_index_runs_active_jsonPtr
-          .asFunction<RunJsonResult Function(ffi.Pointer<ffi.Char>)>();
+          .asFunction<RunJsonResult Function()>();
 
   /// Every registered library.
-  LibraryJsonResult alexandria_libraries_list(ffi.Pointer<ffi.Char> token) {
-    return _alexandria_libraries_list(token);
+  LibraryJsonResult alexandria_libraries_list() {
+    return _alexandria_libraries_list();
   }
 
   late final _alexandria_libraries_listPtr =
-      _lookup<
-        ffi.NativeFunction<LibraryJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_libraries_list');
+      _lookup<ffi.NativeFunction<LibraryJsonResult Function()>>(
+        'alexandria_libraries_list',
+      );
   late final _alexandria_libraries_list = _alexandria_libraries_listPtr
-      .asFunction<LibraryJsonResult Function(ffi.Pointer<ffi.Char>)>();
+      .asFunction<LibraryJsonResult Function()>();
 
   /// One level of a library's tree.
   ///
   /// `path` is the folder to list, relative to the library's root; NULL or an
-  /// empty string is the top. One level rather than the whole tree — see the
-  /// matching HTTP route.
+  /// empty string is the top. One level rather than the whole tree (FR-FC-39):
+  /// a course of two hundred classes is a large document to build and parse
+  /// when the owner is looking at one folder.
   LibraryJsonResult alexandria_library_browse(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> path,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_library_browse(uuid, path, token);
+    return _alexandria_library_browse(uuid, path);
   }
 
   late final _alexandria_library_browsePtr =
@@ -1376,17 +914,12 @@ class AlexandriaBindings {
           LibraryJsonResult Function(
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
           )
         >
       >('alexandria_library_browse');
   late final _alexandria_library_browse = _alexandria_library_browsePtr
       .asFunction<
-        LibraryJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
+        LibraryJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
       >();
 
   /// Re-index one library (UC-01). `priority` is `"low"` or anything else
@@ -1394,21 +927,19 @@ class AlexandriaBindings {
   ///
   /// Answers `INDEX_OK` with the run id, `INDEX_ERR_NOT_FOUND` for an unknown
   /// library, `INDEX_ERR_CONFLICT` while it has an unfinished run (FR-FC-43),
-  /// `INDEX_ERR_INVALID_INPUT` for a malformed uuid, `INDEX_ERR_UNAUTHORIZED`
-  /// or `INDEX_ERR_NOT_INITIALIZED` — HTTP's `202`, `404`, `409`, `400`, `401`.
+  /// `INDEX_ERR_INVALID_INPUT` for a malformed uuid or
+  /// `INDEX_ERR_NOT_INITIALIZED`.
   IndexStartResult alexandria_library_index_start(
     ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
     ffi.Pointer<ffi.Char> priority,
   ) {
-    return _alexandria_library_index_start(uuid, token, priority);
+    return _alexandria_library_index_start(uuid, priority);
   }
 
   late final _alexandria_library_index_startPtr =
       _lookup<
         ffi.NativeFunction<
           IndexStartResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -1420,24 +951,21 @@ class AlexandriaBindings {
             IndexStartResult Function(
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
             )
           >();
 
   /// Point a library at the folder it moved to (libraries design).
   ///
-  /// `json_body` is the JSON body `PATCH /v1/libraries/{uuid}` takes
-  /// (`rootPath`). The library's files move with it, keeping their uuids and
+  /// `json_body` is `{"rootPath": …}`. The library's files move with it, keeping their uuids and
   /// everything that points at them. Answers `LIBRARY_ERR_CONFLICT` when the
   /// destination overlaps another library, or when the catalog already holds
   /// files there, and `LIBRARY_ERR_INVALID_INPUT` when `rootPath` is blank or
-  /// lies outside the configured `filesystem.root` (FR-FC-26), as HTTP's `400`.
+  /// lies outside the configured `filesystem.root` (FR-FC-26).
   LibraryJsonResult alexandria_library_move(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_library_move(uuid, json_body, token);
+    return _alexandria_library_move(uuid, json_body);
   }
 
   late final _alexandria_library_movePtr =
@@ -1446,63 +974,66 @@ class AlexandriaBindings {
           LibraryJsonResult Function(
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
           )
         >
       >('alexandria_library_move');
   late final _alexandria_library_move = _alexandria_library_movePtr
       .asFunction<
-        LibraryJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
+        LibraryJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
       >();
 
   /// Add a folder as a library and start indexing it (FR-FC-36).
   ///
-  /// `json_body` is the JSON body `POST /v1/libraries` takes: `name`,
-  /// `rootPath`, and an optional `priority` (`"low"`; anything else is normal)
-  /// for the first run. On success `json` is the library with the `runId` of
-  /// its first index run beside its fields; follow it with
-  /// `alexandria_index_run_status_json`. Answers `LIBRARY_ERR_INVALID_INPUT` for
-  /// a blank name or folder, a folder that does not exist or is not a folder,
-  /// or one outside `filesystem.root`; `LIBRARY_ERR_CONFLICT` when the folder
-  /// overlaps an existing library. A refusal stores nothing.
+  /// `json_body` carries `name`, `rootPath`, and an optional `priority`
+  /// (`"low"`; anything else is normal) for the first run. On success `json` is
+  /// the library with the `runId` of its first index run beside its fields;
+  /// follow it with `alexandria_index_run_status_json`. Answers
+  /// `LIBRARY_ERR_INVALID_INPUT` for a blank name or folder, a folder that does
+  /// not exist or is not a folder, or one outside `filesystem.root`;
+  /// `LIBRARY_ERR_CONFLICT` when the folder overlaps an existing library. A
+  /// refusal stores nothing.
   LibraryJsonResult alexandria_library_register(
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_library_register(json_body, token);
+    return _alexandria_library_register(json_body);
   }
 
   late final _alexandria_library_registerPtr =
       _lookup<
-        ffi.NativeFunction<
-          LibraryJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<LibraryJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_library_register');
   late final _alexandria_library_register = _alexandria_library_registerPtr
-      .asFunction<
-        LibraryJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
-      >();
+      .asFunction<LibraryJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Remove a library and its catalog records (FR-FC-40); nothing on disk is
   /// touched. `LIBRARY_ERR_CONFLICT` while one of its runs is running
-  /// (FR-FC-43), as HTTP answers `409`. On success `json`
-  /// carries an empty object rather than NULL, so a caller can tell success
-  /// from the failure codes without a special case.
-  LibraryJsonResult alexandria_library_remove(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_library_remove(uuid, token);
+  /// (FR-FC-43). On success `json` carries an empty object rather than NULL, so
+  /// a caller can tell success from the failure codes without a special case.
+  LibraryJsonResult alexandria_library_remove(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_library_remove(uuid);
   }
 
   late final _alexandria_library_removePtr =
+      _lookup<
+        ffi.NativeFunction<LibraryJsonResult Function(ffi.Pointer<ffi.Char>)>
+      >('alexandria_library_remove');
+  late final _alexandria_library_remove = _alexandria_library_removePtr
+      .asFunction<LibraryJsonResult Function(ffi.Pointer<ffi.Char>)>();
+
+  /// Rename a library, whenever the owner likes, including while its run is in
+  /// progress or paused. `json_body` is `{"name": "..."}`; the answer is the
+  /// updated library's JSON. `LIBRARY_ERR_INVALID_INPUT` for a `uuid` that is
+  /// not one, a body that is not JSON or has no string `name`, or a blank name;
+  /// `LIBRARY_ERR_NOT_INITIALIZED` before init; `LIBRARY_ERR_NOT_FOUND` for a
+  /// uuid no library has.
+  LibraryJsonResult alexandria_library_rename(
+    ffi.Pointer<ffi.Char> uuid,
+    ffi.Pointer<ffi.Char> json_body,
+  ) {
+    return _alexandria_library_rename(uuid, json_body);
+  }
+
+  late final _alexandria_library_renamePtr =
       _lookup<
         ffi.NativeFunction<
           LibraryJsonResult Function(
@@ -1510,34 +1041,62 @@ class AlexandriaBindings {
             ffi.Pointer<ffi.Char>,
           )
         >
-      >('alexandria_library_remove');
-  late final _alexandria_library_remove = _alexandria_library_removePtr
+      >('alexandria_library_rename');
+  late final _alexandria_library_rename = _alexandria_library_renamePtr
       .asFunction<
         LibraryJsonResult Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
       >();
 
+  /// Mark a library as a favorite, or unmark it, independently of pinning.
+  /// Answers the same codes as `alexandria_library_set_pinned`.
+  int alexandria_library_set_favorite(
+    ffi.Pointer<ffi.Char> uuid,
+    bool favorite,
+  ) {
+    return _alexandria_library_set_favorite(uuid, favorite);
+  }
+
+  late final _alexandria_library_set_favoritePtr =
+      _lookup<
+        ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Bool)>
+      >('alexandria_library_set_favorite');
+  late final _alexandria_library_set_favorite =
+      _alexandria_library_set_favoritePtr
+          .asFunction<int Function(ffi.Pointer<ffi.Char>, bool)>();
+
+  /// Pin a library to the top of the menu, or unpin it. Answers `LIBRARY_OK`,
+  /// `LIBRARY_ERR_INVALID_INPUT` when `uuid` is not a uuid,
+  /// `LIBRARY_ERR_NOT_INITIALIZED` before init, and `LIBRARY_ERR_NOT_FOUND`
+  /// for a uuid no library has. Setting the value a library already has is
+  /// not an error.
+  int alexandria_library_set_pinned(ffi.Pointer<ffi.Char> uuid, bool pinned) {
+    return _alexandria_library_set_pinned(uuid, pinned);
+  }
+
+  late final _alexandria_library_set_pinnedPtr =
+      _lookup<
+        ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Bool)>
+      >('alexandria_library_set_pinned');
+  late final _alexandria_library_set_pinned = _alexandria_library_set_pinnedPtr
+      .asFunction<int Function(ffi.Pointer<ffi.Char>, bool)>();
+
   /// Add a book or comic to a reading list (UC-28 / FR-RL-02, FR-RL-03).
   ///
   /// `uuid` is the reading list's public UUID (NUL-terminated string).
-  /// `json_body` is the JSON body HTTP would send (`itemUuid`). The function
-  /// deserializes it, calls the same `AddItemToReadingListHandler` the HTTP
-  /// route uses, and on success serializes the returned `ReadingProgress`
-  /// back to JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo
-  /// key ordering (parity, FR-FC-24 / NFR-09). `token` is the bearer auth
-  /// token.
+  /// `json_body` is the JSON body (`itemUuid`). The function deserializes it,
+  /// calls `AddItemToReadingListHandler`, and on success serializes the returned
+  /// `ReadingProgress` back to JSON.
   ReadingListJsonResult alexandria_reading_list_add_item(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_reading_list_add_item(uuid, json_body, token);
+    return _alexandria_reading_list_add_item(uuid, json_body);
   }
 
   late final _alexandria_reading_list_add_itemPtr =
       _lookup<
         ffi.NativeFunction<
           ReadingListJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -1549,98 +1108,67 @@ class AlexandriaBindings {
             ReadingListJsonResult Function(
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
             )
           >();
 
   /// Create a named reading list for tracking book/comic consumption (UC-26 /
   /// FR-RL-01).
   ///
-  /// `json_body` is the JSON body HTTP would send (`name`). The function
-  /// deserializes it, calls the same `CreateReadingListHandler` the HTTP
-  /// route uses, and on success serializes the returned `ReadingList` back to
-  /// JSON — so the FFI and HTTP surfaces agree byte-for-byte modulo key
-  /// ordering (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `json_body` is the JSON body (`name`). The function deserializes it, calls
+  /// `CreateReadingListHandler`, and on success serializes the returned
+  /// `ReadingList` back to JSON.
   ReadingListJsonResult alexandria_reading_list_create(
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_reading_list_create(json_body, token);
+    return _alexandria_reading_list_create(json_body);
   }
 
   late final _alexandria_reading_list_createPtr =
       _lookup<
         ffi.NativeFunction<
-          ReadingListJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
+          ReadingListJsonResult Function(ffi.Pointer<ffi.Char>)
         >
       >('alexandria_reading_list_create');
   late final _alexandria_reading_list_create =
       _alexandria_reading_list_createPtr
-          .asFunction<
-            ReadingListJsonResult Function(
-              ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
-            )
-          >();
+          .asFunction<ReadingListJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Delete a reading list (UC-31 / FR-RL-07).
   ///
   /// `uuid` is the reading list's public UUID (NUL-terminated string). On
-  /// success `json` carries the pre-delete `ReadingList` — byte-for-byte the
-  /// same shape HTTP returns from `DELETE /v1/reading-lists/{uuid}` (parity,
-  /// FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// success `json` carries the pre-delete `ReadingList`.
   ReadingListJsonResult alexandria_reading_list_delete(
     ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_reading_list_delete(uuid, token);
+    return _alexandria_reading_list_delete(uuid);
   }
 
   late final _alexandria_reading_list_deletePtr =
       _lookup<
         ffi.NativeFunction<
-          ReadingListJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
+          ReadingListJsonResult Function(ffi.Pointer<ffi.Char>)
         >
       >('alexandria_reading_list_delete');
   late final _alexandria_reading_list_delete =
       _alexandria_reading_list_deletePtr
-          .asFunction<
-            ReadingListJsonResult Function(
-              ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
-            )
-          >();
+          .asFunction<ReadingListJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Remove an item from a reading list (UC-30 / FR-RL-06).
   ///
   /// `reading_list_uuid` and `item_uuid` are the reading list's and item's
   /// public UUIDs (NUL-terminated strings). On success `json` carries the
-  /// `readingListUuid`/`itemUuid` confirmation — byte-for-byte the same shape
-  /// HTTP returns from `DELETE /v1/reading-lists/{uuid}/items/{itemUuid}`
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `readingListUuid`/`itemUuid` confirmation.
   ReadingListJsonResult alexandria_reading_list_remove_item(
     ffi.Pointer<ffi.Char> reading_list_uuid,
     ffi.Pointer<ffi.Char> item_uuid,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_reading_list_remove_item(
-      reading_list_uuid,
-      item_uuid,
-      token,
-    );
+    return _alexandria_reading_list_remove_item(reading_list_uuid, item_uuid);
   }
 
   late final _alexandria_reading_list_remove_itemPtr =
       _lookup<
         ffi.NativeFunction<
           ReadingListJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -1652,29 +1180,24 @@ class AlexandriaBindings {
             ReadingListJsonResult Function(
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
             )
           >();
 
   /// Update reading progress (UC-29 / FR-RL-04, FR-RL-05).
   ///
   /// `reading_list_uuid` and `item_uuid` are the reading list's and item's
-  /// public UUIDs (NUL-terminated strings). `json_body` is the JSON body HTTP
-  /// would send (`state`, optional `currentIssue`/`totalIssues`). On success
-  /// `json` carries the updated `ReadingProgress` — byte-for-byte the same
-  /// shape HTTP returns from `PATCH /v1/reading-lists/{uuid}/items/{itemUuid}`
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// public UUIDs (NUL-terminated strings). `json_body` is the JSON body
+  /// (`state`, optional `currentIssue`/`totalIssues`). On success `json` carries
+  /// the updated `ReadingProgress`.
   ReadingListJsonResult alexandria_reading_list_update_progress(
     ffi.Pointer<ffi.Char> reading_list_uuid,
     ffi.Pointer<ffi.Char> item_uuid,
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
     return _alexandria_reading_list_update_progress(
       reading_list_uuid,
       item_uuid,
       json_body,
-      token,
     );
   }
 
@@ -1682,7 +1205,6 @@ class AlexandriaBindings {
       _lookup<
         ffi.NativeFunction<
           ReadingListJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
@@ -1696,61 +1218,48 @@ class AlexandriaBindings {
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
             )
           >();
 
   /// Browse reading lists and their items' read progress (UC-27 / FR-RL-08).
   ///
-  /// `json_filters` is the JSON filter HTTP would build from its query string
-  /// (`readingListUuid`); an empty string or `null` means every reading list.
-  /// On success `json` carries a JSON array of `ReadingListWithProgress` —
-  /// byte-for-byte the same shape HTTP returns from `GET /v1/reading-lists`
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `json_filters` is a JSON filter (`readingListUuid`); an empty string or
+  /// `null` means every reading list. On success `json` carries a JSON array of
+  /// `ReadingListWithProgress`.
   ReadingListJsonResult alexandria_reading_lists_list(
     ffi.Pointer<ffi.Char> json_filters,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_reading_lists_list(json_filters, token);
+    return _alexandria_reading_lists_list(json_filters);
   }
 
   late final _alexandria_reading_lists_listPtr =
       _lookup<
         ffi.NativeFunction<
-          ReadingListJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
+          ReadingListJsonResult Function(ffi.Pointer<ffi.Char>)
         >
       >('alexandria_reading_lists_list');
   late final _alexandria_reading_lists_list = _alexandria_reading_lists_listPtr
-      .asFunction<
-        ReadingListJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<ReadingListJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Report the client-relevant configuration (UC-47 / FR-FC-30).
   ///
-  /// On success `json` carries the same body HTTP returns from
-  /// `GET /v1/settings` — today `{"deletion":{"retentionDays":30}}`, the
-  /// soft-delete retention window this server enforces on every restore and
-  /// purge. `token` is the bearer auth token.
+  /// On success `json` carries the settings body — today
+  /// `{"deletion":{"retentionDays":30}}`, the soft-delete retention window this
+  /// core enforces on every restore and purge.
   ///
   /// The boundary the number describes is the core's own: elapsed time up to and
   /// including `retentionDays` leaves a record restorable and not yet purgeable;
   /// strictly past it, the record is purgeable and no longer restorable.
-  SettingsJsonResult alexandria_settings_json(ffi.Pointer<ffi.Char> token) {
-    return _alexandria_settings_json(token);
+  SettingsJsonResult alexandria_settings_json() {
+    return _alexandria_settings_json();
   }
 
   late final _alexandria_settings_jsonPtr =
-      _lookup<
-        ffi.NativeFunction<SettingsJsonResult Function(ffi.Pointer<ffi.Char>)>
-      >('alexandria_settings_json');
+      _lookup<ffi.NativeFunction<SettingsJsonResult Function()>>(
+        'alexandria_settings_json',
+      );
   late final _alexandria_settings_json = _alexandria_settings_jsonPtr
-      .asFunction<SettingsJsonResult Function(ffi.Pointer<ffi.Char>)>();
+      .asFunction<SettingsJsonResult Function()>();
 
   /// This core's version, as a NUL-terminated string such as `"0.6.0"`.
   ///
@@ -1772,24 +1281,20 @@ class AlexandriaBindings {
   /// Add a video to a watchlist (UC-22 / FR-WL-02, FR-WL-03).
   ///
   /// `uuid` is the watchlist's public UUID (NUL-terminated string). `json_body`
-  /// is the JSON body HTTP would send (`videoUuid`). The function deserializes
-  /// it, calls the same `AddVideoToWatchlistHandler` the HTTP route uses, and
-  /// on success serializes the returned `WatchProgress` back to JSON — so the
-  /// FFI and HTTP surfaces agree byte-for-byte modulo key ordering (parity,
-  /// FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// is the JSON body (`videoUuid`). The function deserializes it, calls
+  /// `AddVideoToWatchlistHandler`, and on success serializes the returned
+  /// `WatchProgress` back to JSON.
   WatchlistJsonResult alexandria_watchlist_add_video(
     ffi.Pointer<ffi.Char> uuid,
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_watchlist_add_video(uuid, json_body, token);
+    return _alexandria_watchlist_add_video(uuid, json_body);
   }
 
   late final _alexandria_watchlist_add_videoPtr =
       _lookup<
         ffi.NativeFunction<
           WatchlistJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -1801,96 +1306,59 @@ class AlexandriaBindings {
             WatchlistJsonResult Function(
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
             )
           >();
 
   /// Create a named watchlist for tracking video consumption (UC-20 /
   /// FR-WL-01).
   ///
-  /// `json_body` is the JSON body HTTP would send (`name`). The function
-  /// deserializes it, calls the same `CreateWatchlistHandler` the HTTP route
-  /// uses, and on success serializes the returned `Watchlist` back to JSON —
-  /// so the FFI and HTTP surfaces agree byte-for-byte modulo key ordering
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `json_body` is the JSON body (`name`). The function deserializes it, calls
+  /// `CreateWatchlistHandler`, and on success serializes the returned
+  /// `Watchlist` back to JSON.
   WatchlistJsonResult alexandria_watchlist_create(
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_watchlist_create(json_body, token);
+    return _alexandria_watchlist_create(json_body);
   }
 
   late final _alexandria_watchlist_createPtr =
       _lookup<
-        ffi.NativeFunction<
-          WatchlistJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<WatchlistJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_watchlist_create');
   late final _alexandria_watchlist_create = _alexandria_watchlist_createPtr
-      .asFunction<
-        WatchlistJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<WatchlistJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Delete a watchlist (UC-25 / FR-WL-07).
   ///
   /// `uuid` is the watchlist's public UUID (NUL-terminated string). On success
-  /// `json` carries the pre-delete `Watchlist` — byte-for-byte the same shape
-  /// HTTP returns from `DELETE /v1/watchlists/{uuid}` (parity, FR-FC-24 /
-  /// NFR-09). `token` is the bearer auth token.
-  WatchlistJsonResult alexandria_watchlist_delete(
-    ffi.Pointer<ffi.Char> uuid,
-    ffi.Pointer<ffi.Char> token,
-  ) {
-    return _alexandria_watchlist_delete(uuid, token);
+  /// `json` carries the pre-delete `Watchlist`.
+  WatchlistJsonResult alexandria_watchlist_delete(ffi.Pointer<ffi.Char> uuid) {
+    return _alexandria_watchlist_delete(uuid);
   }
 
   late final _alexandria_watchlist_deletePtr =
       _lookup<
-        ffi.NativeFunction<
-          WatchlistJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<WatchlistJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_watchlist_delete');
   late final _alexandria_watchlist_delete = _alexandria_watchlist_deletePtr
-      .asFunction<
-        WatchlistJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+      .asFunction<WatchlistJsonResult Function(ffi.Pointer<ffi.Char>)>();
 
   /// Remove a video from a watchlist (UC-24 / FR-WL-06).
   ///
   /// `watchlist_uuid` and `video_uuid` are the watchlist's and video's public
   /// UUIDs (NUL-terminated strings). On success `json` carries the
-  /// `watchlistUuid`/`videoUuid` confirmation — byte-for-byte the same shape
-  /// HTTP returns from `DELETE /v1/watchlists/{uuid}/items/{videoUuid}`
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `watchlistUuid`/`videoUuid` confirmation.
   WatchlistJsonResult alexandria_watchlist_remove_video(
     ffi.Pointer<ffi.Char> watchlist_uuid,
     ffi.Pointer<ffi.Char> video_uuid,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_watchlist_remove_video(
-      watchlist_uuid,
-      video_uuid,
-      token,
-    );
+    return _alexandria_watchlist_remove_video(watchlist_uuid, video_uuid);
   }
 
   late final _alexandria_watchlist_remove_videoPtr =
       _lookup<
         ffi.NativeFunction<
           WatchlistJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
           )
@@ -1902,29 +1370,24 @@ class AlexandriaBindings {
             WatchlistJsonResult Function(
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
             )
           >();
 
   /// Update watch progress (UC-23 / FR-WL-04, FR-WL-05).
   ///
   /// `watchlist_uuid` and `video_uuid` are the watchlist's and video's public
-  /// UUIDs (NUL-terminated strings). `json_body` is the JSON body HTTP would
-  /// send (`state`, optional `currentEpisode`/`totalEpisodes`). On success
-  /// `json` carries the updated `WatchProgress` — byte-for-byte the same shape
-  /// HTTP returns from `PATCH /v1/watchlists/{uuid}/items/{videoUuid}`
-  /// (parity, FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// UUIDs (NUL-terminated strings). `json_body` is the JSON body (`state`,
+  /// optional `currentEpisode`/`totalEpisodes`). On success `json` carries the
+  /// updated `WatchProgress`.
   WatchlistJsonResult alexandria_watchlist_update_progress(
     ffi.Pointer<ffi.Char> watchlist_uuid,
     ffi.Pointer<ffi.Char> video_uuid,
     ffi.Pointer<ffi.Char> json_body,
-    ffi.Pointer<ffi.Char> token,
   ) {
     return _alexandria_watchlist_update_progress(
       watchlist_uuid,
       video_uuid,
       json_body,
-      token,
     );
   }
 
@@ -1932,7 +1395,6 @@ class AlexandriaBindings {
       _lookup<
         ffi.NativeFunction<
           WatchlistJsonResult Function(
-            ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
             ffi.Pointer<ffi.Char>,
@@ -1946,92 +1408,26 @@ class AlexandriaBindings {
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
-              ffi.Pointer<ffi.Char>,
             )
           >();
 
   /// Browse watchlists and their items' watch progress (UC-21 / FR-WL-08).
   ///
-  /// `json_filters` is the JSON filter HTTP would build from its query string
-  /// (`watchlistUuid`); an empty string or `null` means every watchlist. On
-  /// success `json` carries a JSON array of `WatchlistWithProgress` — byte-for-
-  /// byte the same shape HTTP returns from `GET /v1/watchlists` (parity,
-  /// FR-FC-24 / NFR-09). `token` is the bearer auth token.
+  /// `json_filters` is a JSON filter (`watchlistUuid`); an empty string or
+  /// `null` means every watchlist. On success `json` carries a JSON array of
+  /// `WatchlistWithProgress`.
   WatchlistJsonResult alexandria_watchlists_list(
     ffi.Pointer<ffi.Char> json_filters,
-    ffi.Pointer<ffi.Char> token,
   ) {
-    return _alexandria_watchlists_list(json_filters, token);
+    return _alexandria_watchlists_list(json_filters);
   }
 
   late final _alexandria_watchlists_listPtr =
       _lookup<
-        ffi.NativeFunction<
-          WatchlistJsonResult Function(
-            ffi.Pointer<ffi.Char>,
-            ffi.Pointer<ffi.Char>,
-          )
-        >
+        ffi.NativeFunction<WatchlistJsonResult Function(ffi.Pointer<ffi.Char>)>
       >('alexandria_watchlists_list');
   late final _alexandria_watchlists_list = _alexandria_watchlists_listPtr
-      .asFunction<
-        WatchlistJsonResult Function(
-          ffi.Pointer<ffi.Char>,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
-}
-
-const int AUTH_ERR_CONFIG = 8;
-
-const int AUTH_ERR_CONFLICT = 10;
-
-const int AUTH_ERR_INVALID_INPUT = 1;
-
-const int AUTH_ERR_INVALID_STATE = 5;
-
-const int AUTH_ERR_NOT_INITIALIZED = 3;
-
-const int AUTH_ERR_OTHER = 9;
-
-const int AUTH_ERR_RATE_LIMITED = 11;
-
-const int AUTH_ERR_SERVICE_UNAVAILABLE = 12;
-
-const int AUTH_ERR_UNAUTHORIZED = 2;
-
-const int AUTH_OK = 0;
-
-/// Result of `alexandria_auth_local_login` / `alexandria_auth_local_set_credentials`
-/// (UC-34/UC-35). On success `status` is `AUTH_OK` and `json` is a
-/// NUL-terminated JSON string of the `LocalLoginResult` /
-/// `LocalCredentialsResult` body — byte-for-byte the same shape HTTP
-/// returns from the matching `/v1/auth/local/*` endpoint (FR-FC-24 /
-/// NFR-09).
-///
-/// On failure `status` carries the mapped error code and `json` carries the
-/// same error envelope HTTP returns for that failure (issue #101):
-/// `{"error": …}`, plus `"code"` and `"params"` when the rejection has a
-/// stable reason. `status` is the coarse class; `code` is the reason — six
-/// distinct password-policy rejections all arrive as
-/// `AUTH_ERR_INVALID_INPUT`, and only `code` tells them apart.
-///
-/// `json` is NULL only when the library was never initialized, so there was
-/// no service to answer at all. The caller must free `json` with
-/// `alexandria_free_string` on every path; freeing NULL is a no-op.
-final class AuthJsonResult extends ffi.Struct {
-  @ffi.Int()
-  external int status;
-
-  external ffi.Pointer<ffi.Char> json;
-
-  static ffi.Pointer<AuthJsonResult> $allocate(
-    ffi.Allocator $allocator, {
-    required int status,
-    required ffi.Pointer<ffi.Char> json,
-  }) => $allocator<AuthJsonResult>()
-    ..ref.status = status
-    ..ref.json = json;
+      .asFunction<WatchlistJsonResult Function(ffi.Pointer<ffi.Char>)>();
 }
 
 const int BOOKMARK_ERR_INVALID_INPUT = 1;
@@ -2044,16 +1440,12 @@ const int BOOKMARK_ERR_NOT_INITIALIZED = 3;
 
 const int BOOKMARK_ERR_OTHER = 9;
 
-const int BOOKMARK_ERR_UNAUTHORIZED = 2;
-
 const int BOOKMARK_OK = 0;
 
 /// Result of `alexandria_bookmark_create` (UC-15). On success `status` is
 /// `BOOKMARK_OK` and `json` is a NUL-terminated JSON string of the `Bookmark`
-/// body — byte-for-byte the same shape HTTP returns from `POST
-/// /v1/bookmarks` (FR-FC-24 / NFR-09). On failure `json` is NULL and `status`
-/// carries the mapped error code. The caller must free `json` with
-/// `alexandria_free_string`.
+/// body. On failure `json` is NULL and `status` carries the mapped error code.
+/// The caller must free `json` with `alexandria_free_string`.
 final class BookmarkJsonResult extends ffi.Struct {
   @ffi.Int()
   external int status;
@@ -2079,15 +1471,12 @@ const int COLLECTION_ERR_NOT_INITIALIZED = 3;
 
 const int COLLECTION_ERR_OTHER = 9;
 
-const int COLLECTION_ERR_UNAUTHORIZED = 2;
-
 const int COLLECTION_OK = 0;
 
 /// Result of `alexandria_collection_create` (UC-10). On success `status` is
 /// `COLLECTION_OK` and `json` is a NUL-terminated JSON string of the
-/// `Collection` body — byte-for-byte the same shape HTTP returns from
-/// `POST /v1/collections` (FR-FC-24 / NFR-09). On failure `json` is NULL and
-/// `status` carries the mapped error code. The caller must free `json` with
+/// `Collection` body. On failure `json` is NULL and `status` carries the
+/// mapped error code. The caller must free `json` with
 /// `alexandria_free_string`.
 final class CollectionJsonResult extends ffi.Struct {
   @ffi.Int()
@@ -2118,18 +1507,14 @@ const int FILE_ERR_NOT_INITIALIZED = 3;
 
 const int FILE_ERR_OTHER = 9;
 
-const int FILE_ERR_UNAUTHORIZED = 2;
-
 const int FILE_OK = 0;
 
-/// Result of `alexandria_files_list` and `alexandria_file_get_by_uuid` (UC-03).
-/// On success `status` is `FILE_OK` and `json` is a NUL-terminated JSON string
-/// — byte-for-byte the same shape HTTP returns from `GET /v1/files` (a JSON
-/// array of `FileView` objects, issue #116) or `GET /v1/files/{uuid}` (a
-/// single `FileView` object), so the FFI and HTTP surfaces agree modulo key
-/// ordering (parity, FR-FC-24 / NFR-09). On failure `json` is NULL and
-/// `status` carries the mapped error code. The caller must free `json` with
-/// `alexandria_free_string`.
+/// Result of `alexandria_files_list` and `alexandria_file_get_by_uuid`
+/// (UC-03). On success `status` is `FILE_OK` and `json` is a NUL-terminated
+/// JSON string: an array of `FileView` objects for the listing (issue #116),
+/// or a single `FileView` object for the lookup. On failure `json` is NULL
+/// and `status` carries the mapped error code. The caller must free `json`
+/// with `alexandria_free_string`.
 final class FileJsonResult extends ffi.Struct {
   @ffi.Int()
   external int status;
@@ -2147,10 +1532,8 @@ final class FileJsonResult extends ffi.Struct {
 
 /// Result of `alexandria_file_edit_metadata` (UC-04). On success `status` is
 /// `FILE_OK` and `json` is a NUL-terminated JSON string of the `FileMetadata`
-/// body — byte-for-byte the same shape HTTP returns from
-/// `PATCH /v1/files/{uuid}/metadata` (FR-FC-24 / NFR-09). On failure `json`
-/// is NULL and `status` carries the mapped error code. The caller must free
-/// `json` with `alexandria_free_string`.
+/// body. On failure `json` is NULL and `status` carries the mapped error code.
+/// The caller must free `json` with `alexandria_free_string`.
 final class FileMetadataResult extends ffi.Struct {
   @ffi.Int()
   external int status;
@@ -2177,8 +1560,6 @@ const int INDEX_ERR_NOT_FOUND = 6;
 const int INDEX_ERR_NOT_INITIALIZED = 3;
 
 const int INDEX_ERR_OTHER = 4;
-
-const int INDEX_ERR_UNAUTHORIZED = 2;
 
 const int INDEX_OK = 0;
 
@@ -2211,14 +1592,11 @@ const int LIBRARY_ERR_NOT_INITIALIZED = 3;
 
 const int LIBRARY_ERR_OTHER = 9;
 
-const int LIBRARY_ERR_UNAUTHORIZED = 2;
-
 const int LIBRARY_OK = 0;
 
 /// Result of every library FFI function. On success `status` is `LIBRARY_OK`
-/// and `json` is a NUL-terminated JSON string of the same body HTTP returns
-/// from the matching `/v1/libraries*` route (FR-FC-24 / NFR-09). The caller
-/// must free `json` with `alexandria_free_string`.
+/// and `json` is a NUL-terminated JSON string of the library body the call
+/// answers. The caller must free `json` with `alexandria_free_string`.
 final class LibraryJsonResult extends ffi.Struct {
   @ffi.Int()
   external int status;
@@ -2245,8 +1623,6 @@ const int PLAYBACK_ERR_NOT_FOUND = 4;
 const int PLAYBACK_ERR_NOT_INITIALIZED = 3;
 
 const int PLAYBACK_ERR_OTHER = 9;
-
-const int PLAYBACK_ERR_UNAUTHORIZED = 2;
 
 const int PLAYBACK_OK = 0;
 
@@ -2278,8 +1654,6 @@ const int READING_LIST_ERR_NOT_INITIALIZED = 3;
 
 const int READING_LIST_ERR_OTHER = 9;
 
-const int READING_LIST_ERR_UNAUTHORIZED = 2;
-
 const int READING_LIST_OK = 0;
 
 const int RUN_ERR_INVALID_INPUT = 1;
@@ -2292,16 +1666,13 @@ const int RUN_ERR_NOT_INITIALIZED = 3;
 
 const int RUN_ERR_OTHER = 9;
 
-const int RUN_ERR_UNAUTHORIZED = 2;
-
 const int RUN_OK = 0;
 
-/// Result of `alexandria_reading_list_create` (UC-26). On success `status`
-/// is `READING_LIST_OK` and `json` is a NUL-terminated JSON string of the
-/// `ReadingList` body — byte-for-byte the same shape HTTP returns from
-/// `POST /v1/reading-lists` (FR-FC-24 / NFR-09). On failure `json` is NULL
-/// and `status` carries the mapped error code. The caller must free `json`
-/// with `alexandria_free_string`.
+/// Result of `alexandria_reading_list_create` (UC-26). On success `status` is
+/// `READING_LIST_OK` and `json` is a NUL-terminated JSON string of the
+/// `ReadingList` body. On failure `json` is NULL and `status` carries the
+/// mapped error code. The caller must free `json` with
+/// `alexandria_free_string`.
 final class ReadingListJsonResult extends ffi.Struct {
   @ffi.Int()
   external int status;
@@ -2319,10 +1690,8 @@ final class ReadingListJsonResult extends ffi.Struct {
 
 /// Result of `alexandria_index_run_status_json` (UC-42). On success `status`
 /// is `RUN_OK` and `json` is a NUL-terminated JSON string of the `CatalogRun`
-/// body — byte-for-byte the same shape HTTP returns from
-/// `GET /v1/index/runs/{runId}` (FR-FC-24 / NFR-09). On failure `json` is
-/// NULL and `status` carries the mapped error code. The caller must free
-/// `json` with `alexandria_free_string`.
+/// body. On failure `json` is NULL and `status` carries the mapped error code.
+/// The caller must free `json` with `alexandria_free_string`.
 final class RunJsonResult extends ffi.Struct {
   @ffi.Int()
   external int status;
@@ -2342,16 +1711,12 @@ const int SETTINGS_ERR_NOT_INITIALIZED = 3;
 
 const int SETTINGS_ERR_OTHER = 9;
 
-const int SETTINGS_ERR_UNAUTHORIZED = 2;
-
 const int SETTINGS_OK = 0;
 
 /// Result of `alexandria_settings_json` (UC-47). On success `status` is
 /// `SETTINGS_OK` and `json` is a NUL-terminated JSON string of the settings
-/// body — byte-for-byte the same shape HTTP returns from `GET /v1/settings`
-/// (FR-FC-24 / NFR-09). On failure `json` is NULL and `status` carries the
-/// mapped error code. The caller must free `json` with
-/// `alexandria_free_string`.
+/// body. On failure `json` is NULL and `status` carries the mapped error code.
+/// The caller must free `json` with `alexandria_free_string`.
 final class SettingsJsonResult extends ffi.Struct {
   @ffi.Int()
   external int status;
@@ -2377,16 +1742,12 @@ const int WATCHLIST_ERR_NOT_INITIALIZED = 3;
 
 const int WATCHLIST_ERR_OTHER = 9;
 
-const int WATCHLIST_ERR_UNAUTHORIZED = 2;
-
 const int WATCHLIST_OK = 0;
 
 /// Result of `alexandria_watchlist_create` (UC-20). On success `status` is
 /// `WATCHLIST_OK` and `json` is a NUL-terminated JSON string of the
-/// `Watchlist` body — byte-for-byte the same shape HTTP returns from `POST
-/// /v1/watchlists` (FR-FC-24 / NFR-09). On failure `json` is NULL and
-/// `status` carries the mapped error code. The caller must free `json` with
-/// `alexandria_free_string`.
+/// `Watchlist` body. On failure `json` is NULL and `status` carries the mapped
+/// error code. The caller must free `json` with `alexandria_free_string`.
 final class WatchlistJsonResult extends ffi.Struct {
   @ffi.Int()
   external int status;

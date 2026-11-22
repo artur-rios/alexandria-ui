@@ -20,15 +20,12 @@ class CoreWatchProgressGateway implements WatchProgressGateway {
   final CoreClient _core;
 
   @override
-  Future<bool> episodesRecordedFor({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<bool> episodesRecordedFor({required String uuid}) async {
     final CoreJsonResponse response;
     try {
       // An empty filter is every watchlist, which is what this has to look
       // across: the video may be tracked by any of them.
-      response = await _core.watchlistsList('', credential);
+      response = await _core.watchlistsList('');
     } on CoreCallException {
       return false;
     }

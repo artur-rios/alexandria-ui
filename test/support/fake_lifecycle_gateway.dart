@@ -13,19 +13,13 @@ class FakeLifecycleGateway implements LifecycleGateway {
   final List<String> deletedBookmarks = [];
 
   @override
-  Future<LifecycleWrite> softDeleteFile({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<LifecycleWrite> softDeleteFile({required String uuid}) async {
     deletedFiles.add(uuid);
     return _next();
   }
 
   @override
-  Future<LifecycleWrite> softDeleteBookmark({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<LifecycleWrite> softDeleteBookmark({required String uuid}) async {
     deletedBookmarks.add(uuid);
     return _next();
   }
@@ -34,19 +28,13 @@ class FakeLifecycleGateway implements LifecycleGateway {
   final List<String> restored = [];
 
   @override
-  Future<LifecycleWrite> restoreFile({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<LifecycleWrite> restoreFile({required String uuid}) async {
     restored.add(uuid);
     return _next();
   }
 
   @override
-  Future<LifecycleWrite> restoreBookmark({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<LifecycleWrite> restoreBookmark({required String uuid}) async {
     restored.add(uuid);
     return _next();
   }
@@ -60,28 +48,19 @@ class FakeLifecycleGateway implements LifecycleGateway {
   final List<String> purged = [];
 
   @override
-  Future<LifecycleWrite> purgeFile({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<LifecycleWrite> purgeFile({required String uuid}) async {
     purged.add(uuid);
     return _next();
   }
 
   @override
-  Future<LifecycleWrite> purgeBookmark({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<LifecycleWrite> purgeBookmark({required String uuid}) async {
     purged.add(uuid);
     return _next();
   }
 
   @override
-  Future<PurgeOnDiskOutcome> purgeFileOnDisk({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<PurgeOnDiskOutcome> purgeFileOnDisk({required String uuid}) async {
     purged.add(uuid);
     return purgeOnDiskOutcome;
   }

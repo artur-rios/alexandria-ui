@@ -8,7 +8,7 @@ import 'package:alexandria_ui/features/indexing/domain/run_estimate.dart';
 import 'package:alexandria_ui/features/indexing/domain/run_priority.dart';
 import 'package:alexandria_ui/features/libraries/application/libraries_controller.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/background_activity_strip.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,8 +16,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/shell_harness.dart';
 
 /// The strip that reports whatever the core is indexing, from anywhere in the
@@ -166,16 +166,6 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
-    // Turned off before the session is established: this suite sets up its
-    // own gateway scenarios for the strip to render, and `establish`'s own
-    // unawaited call to `begin()` (FR-LB-21) would otherwise start a refresh
-    // of its own against them.
-    await container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -354,23 +344,24 @@ void main() {
       expect(find.text('View'), findsOneWidget);
     });
 
-    testWidgets(
-      'GivenTwoRuns_WhenViewIsChosen_ThenTheLibrariesDestinationIsSelected',
-      (tester) async {
-        await pumpStrip(tester, runs: [processingRun, secondRun]);
+    testWidgets('GivenTwoRuns_WhenViewIsChosen_ThenManageLibrariesOpens', (
+      tester,
+    ) async {
+      await pumpStrip(
+        tester,
+        runs: [processingRun, secondRun],
+        // What the dialog's own content reads.
+        extraOverrides: <Override>[
+          libraryGatewayProvider.overrideWithValue(FakeLibraryGateway()),
+          indexGatewayProvider.overrideWithValue(FakeIndexGateway()),
+        ],
+      );
 
-        await tester.tap(find.text('View'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('View'));
+      await tester.pumpAndSettle();
 
-        final container = ProviderScope.containerOf(
-          tester.element(find.byType(BackgroundActivityStrip)),
-        );
-        expect(
-          container.read(shellControllerProvider),
-          ShellDestination.libraries,
-        );
-      },
-    );
+      expect(find.byType(LibrariesView), findsOneWidget);
+    });
 
     testWidgets('GivenTwoRuns_WhenBuilt_ThenNoPerRunControlIsOffered', (
       tester,

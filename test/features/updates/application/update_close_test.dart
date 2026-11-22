@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:alexandria_ui/core/di/providers.dart';
@@ -11,7 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_index_gateway.dart';
-import '../../../support/fake_session_activity.dart';
+import '../../../support/fake_app_activity.dart';
 import '../../../support/fake_updates.dart';
 import '../../../support/fake_window_placement.dart';
 import '../../../support/in_memory_settings_store.dart';
@@ -35,7 +36,7 @@ void main() {
       WidgetRef ref,
       FakeUpdateInstaller installer,
       List<int> exits,
-      FakeSessionActivity activity,
+      FakeAppActivity activity,
       FakeIndexGateway index,
       ProviderContainer container,
     })
@@ -47,7 +48,7 @@ void main() {
   }) async {
     final installer = FakeUpdateInstaller();
     final exits = <int>[];
-    final activity = FakeSessionActivity(holdsUnsavedChanges: unsaved);
+    final activity = FakeAppActivity(holdsUnsavedChanges: unsaved);
     final index = FakeIndexGateway();
     final container = await tester.pumpShell(
       settings: InMemorySettingsStore(rechecksAtStartup: false),
@@ -57,7 +58,7 @@ void main() {
         updateInstallerProvider.overrideWithValue(installer),
         appExitProvider.overrideWithValue(exits.add),
         windowPlacementProvider.overrideWithValue(FakeWindowPlacement()),
-        sessionActivitiesProvider.overrideWithValue([activity]),
+        appActivitiesProvider.overrideWithValue([activity]),
         pendingUpdateStoreProvider.overrideWith(
           (ref) async => pendingStoreIn(support),
         ),
@@ -65,8 +66,8 @@ void main() {
       ],
     );
 
-    // Started after signing in: the activity strip animates a running scan,
-    // and the sign-in would never settle around it.
+    // Started once the shell is up: the activity strip animates a running
+    // scan, and startup would never settle around it.
     if (scanning) {
       index.activeRunsOutcome = const ActiveRunsOutcome.read(
         runs: [
@@ -116,8 +117,32 @@ void main() {
       expect(
         sut.activity.beginCount,
         begunBefore + 1,
-        reason: 'the session was left with its activities ended',
+        reason: 'the application was left with its activities ended',
       );
+    },
+  );
+
+  testWidgets(
+    'GivenAnActivityHoldsUnsavedChanges_WhenClosingForAnUpdate_ThenTheUnsavedChangesQuestionIsAsked',
+    (tester) async {
+      final sut = await openShell(tester, unsaved: true);
+
+      unawaited(
+        closeForUpdate(
+          tester.element(find.byType(ShellScreen)),
+          sut.ref,
+          release: aRelease('1.2.0'),
+          package: package,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(messages(tester).updateUnsavedTitle), findsOneWidget);
+      expect(find.text(messages(tester).updateUnsavedMessage), findsOneWidget);
+      expect(sut.activity.endCount, 0);
+
+      await tester.tap(find.text(messages(tester).updateCancel));
+      await tester.pumpAndSettle();
     },
   );
 

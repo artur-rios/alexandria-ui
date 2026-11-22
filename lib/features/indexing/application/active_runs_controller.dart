@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../../core/di/providers.dart';
-import '../../../core/failures/failure.dart';
-import '../../auth/application/session_controller.dart';
 import '../../catalog/application/catalog_projections.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
@@ -33,7 +31,6 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   static const int _maxSamplesPerRun = 10;
 
   late IndexGateway _gateway;
-  late SessionController _session;
   late Duration _pollInterval;
 
   Timer? _poller;
@@ -50,7 +47,6 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   @override
   ActiveRunsState build() {
     _gateway = ref.read(indexGatewayProvider);
-    _session = ref.read(sessionControllerProvider.notifier);
     _pollInterval = ref.read(runPollIntervalProvider);
 
     ref.onDispose(_stopPolling);
@@ -85,13 +81,11 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   /// Public so a test can advance the observation without waiting on a
   /// timer, and so the screen can ask for a fresh reading when it opens.
   Future<void> refresh() async {
-    final credential = _session.credential;
-    if (credential == null) return;
     if (_refreshing) return;
     _refreshing = true;
 
     try {
-      await _read(credential);
+      await _read();
     } finally {
       // In a `finally`, so a read that threw does not leave the flag set and
       // the poller silently dead for the rest of the session.
@@ -99,19 +93,12 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
     }
   }
 
-  Future<void> _read(String credential) async {
-    final outcome = await _gateway.listActiveRuns(credential: credential);
+  Future<void> _read() async {
+    final outcome = await _gateway.listActiveRuns();
 
     switch (outcome) {
       case ActiveRunsRead(:final runs):
-        await _applyRead(runs, credential);
-
-      // The core rejected the session. Discarding what is known would
-      // report "nothing running" on no evidence, but the session is gone
-      // either way, so there is nothing left to poll for.
-      case ActiveRunsFailed(failure: final UnauthorizedFailure failure):
-        _stopPolling();
-        _session.invalidate(failure);
+        await _applyRead(runs);
 
       // A read that failed for any other reason is not evidence that
       // nothing is running — only that the core could not be asked this
@@ -125,26 +112,14 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   /// Pauses [runId], then re-reads the outstanding runs (FR-LB-16 / core
   /// FR-FC-32).
   Future<void> pause(String runId) async {
-    final credential = _session.credential;
-    if (credential == null) return;
-
-    final outcome = await _gateway.pauseRun(
-      runId: runId,
-      credential: credential,
-    );
+    final outcome = await _gateway.pauseRun(runId: runId);
     await _afterControl(outcome);
   }
 
   /// Abandons [runId] for good, then re-reads the outstanding runs
   /// (FR-LB-16 / core FR-FC-34).
   Future<void> cancel(String runId) async {
-    final credential = _session.credential;
-    if (credential == null) return;
-
-    final outcome = await _gateway.cancelRun(
-      runId: runId,
-      credential: credential,
-    );
+    final outcome = await _gateway.cancelRun(runId: runId);
     await _afterControl(outcome);
   }
 
@@ -157,22 +132,11 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   /// `normal`, or a plain resume would silently re-pace a scan the owner
   /// deliberately throttled.
   Future<void> resume(String runId, {RunPriority? priority}) async {
-    final credential = _session.credential;
-    if (credential == null) return;
-
-    final outcome = await _gateway.resumeRun(
-      runId: runId,
-      priority: priority,
-      credential: credential,
-    );
+    final outcome = await _gateway.resumeRun(runId: runId, priority: priority);
 
     switch (outcome) {
       case IndexStarted():
         await refresh();
-
-      case IndexStartFailed(failure: final UnauthorizedFailure failure):
-        _stopPolling();
-        _session.invalidate(failure);
 
       // Refused for any other reason — most likely the run is no longer
       // paused. Re-reading it is the correct response, the same as every
@@ -190,10 +154,6 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
       case RunControlOk():
         await refresh();
 
-      case RunControlFailed(failure: final UnauthorizedFailure failure):
-        _stopPolling();
-        _session.invalidate(failure);
-
       // Refused for state — most commonly `RUN_ERR_INVALID_STATE`, because
       // the run moved on between the strip rendering and the owner clicking.
       // The run is not gone, only stale here, so this is read back rather
@@ -203,7 +163,7 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
     }
   }
 
-  Future<void> _applyRead(List<IndexRun> runs, String credential) async {
+  Future<void> _applyRead(List<IndexRun> runs) async {
     final stillActive = {for (final run in runs) run.runId};
 
     // A run held from last time and absent now is one the strip should report
@@ -219,7 +179,7 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
     for (final run in state.runs) {
       if (stillActive.contains(run.runId)) continue;
 
-      final ended = await _endOf(run, credential);
+      final ended = await _endOf(run);
 
       // A held failure is not replaced. The slot is one run wide, and a
       // failure standing in it is the outcome the owner has not seen yet — a
@@ -293,11 +253,8 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
   /// and holding it would make a completion, a failure and a cancellation
   /// indistinguishable — which is to say, unreportable. The run is read
   /// directly for the one fact the list cannot carry.
-  Future<IndexRun?> _endOf(IndexRun disappeared, String credential) async {
-    final outcome = await _gateway.readRun(
-      runId: disappeared.runId,
-      credential: credential,
-    );
+  Future<IndexRun?> _endOf(IndexRun disappeared) async {
+    final outcome = await _gateway.readRun(runId: disappeared.runId);
 
     switch (outcome) {
       // Kind and root come from the snapshot: the active list carries both,
@@ -310,12 +267,6 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
       // application has no word for, and announcing an end that has not
       // happened is worse than saying nothing.
       case IndexRunRead():
-        return null;
-
-      case IndexRunFailed(failure: final UnauthorizedFailure failure):
-        _stopPolling();
-        _session.invalidate(failure);
-
         return null;
 
       // A run the core no longer knows — most often one it has already
@@ -335,14 +286,14 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
 
   /// Refetches every projection the catalog itself feeds, once a run's
   /// ending has just changed what the catalog holds (FR-LB-15 /
-  /// FR-CT-01/09/11/13).
+  /// FR-CT-09/13/21/22).
   ///
   /// This is what `deletion_controller.dart`'s `onDone` does for a deletion —
   /// the catalog changed, so its listings, counts, search index, recent
   /// files, and open file details are all read again rather than kept from
-  /// before the run. Deliberately narrower than what signing
-  /// out invalidates (`catalog_session_activity.dart`): a run finishing is
-  /// not a session ending, so what the owner has open or typed —
+  /// before the run. Deliberately narrower than what ending the catalog's
+  /// activity invalidates (`catalog_app_activity.dart`): a run finishing
+  /// is not the application closing, so what the owner has open or typed —
   /// `openFileProvider`, `searchTermProvider`, the metadata and rename
   /// editors — is left alone. An owner mid-search or mid-edit when a scan
   /// completes underneath them must not have that thrown away.

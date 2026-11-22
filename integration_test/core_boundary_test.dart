@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:alexandria_ui/core/bindings/core_client.dart';
@@ -6,6 +7,7 @@ import 'package:alexandria_ui/core/startup/core_version.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
+import 'support/library_runs.dart';
 import 'support/temporary_catalog.dart';
 
 /// The FFI boundary, against the real Alexandria core (IR-14).
@@ -170,6 +172,70 @@ void main() {
         reason:
             'a disposed client must fail loudly rather than silently reopening '
             'the library on a worker that is gone',
+      );
+    },
+  );
+
+  test(
+    'GivenARegisteredLibrary_WhenPinnedFavoritedRenamedAndCounted_ThenTheCoreAgrees',
+    () async {
+      // The first calls in this FFI to take a C bool, and the four calls
+      // no fake can check: a flag sent the wrong way or a body the core
+      // does not read would pass every unit test.
+      final client = await FfiCoreClient.load(libraryPath);
+      addTearDown(client.dispose);
+      await client.initialize(catalog.databasePath);
+      catalog.addFixture('notes/one.md', '# one');
+      final library = await addLibraryAndSettle(
+        client,
+        root: catalog.libraryDirectory.path,
+      );
+
+      expect(
+        CoreStatusFamily.library.isOk(
+          await client.librarySetPinned(library.uuid, true),
+        ),
+        isTrue,
+      );
+      expect(
+        CoreStatusFamily.library.isOk(
+          await client.librarySetFavorite(library.uuid, true),
+        ),
+        isTrue,
+      );
+      final renamed = await client.libraryRename(
+        library.uuid,
+        jsonEncode({'name': 'Renamed'}),
+      );
+      expect(CoreStatusFamily.library.isOk(renamed.status), isTrue);
+
+      final listed = await client.librariesList();
+      final row = (jsonDecode(listed.json!) as List<dynamic>).single as Map;
+      expect(row['pinned'], isTrue);
+      expect(row['favorite'], isTrue);
+      expect(row['name'], 'Renamed');
+
+      // And back, so a flag stuck on true would show.
+      await client.librarySetPinned(library.uuid, false);
+      final unpinned = jsonDecode((await client.librariesList()).json!) as List;
+      expect((unpinned.single as Map)['pinned'], isFalse);
+      expect((unpinned.single as Map)['favorite'], isTrue);
+
+      final stats =
+          jsonDecode((await client.catalogStats()).json!)
+              as Map<String, dynamic>;
+      expect(stats['libraries'], 1);
+      expect(
+        (stats['filesByType'] as Map).keys,
+        unorderedEquals([
+          'audio',
+          'video',
+          'html',
+          'text',
+          'document',
+          'comic',
+          'image',
+        ]),
       );
     },
   );

@@ -253,7 +253,7 @@ new release branch is cut.
 
 One use case = one branch = one issue = one pull request. Each use case is
 implemented on its own branch created from an up-to-date `develop`, named
-`feature/uc-##-use-case-name` (for example `feature/uc-01-sign-up`), and merged
+`feature/uc-##-use-case-name` (for example `feature/uc-05-add-a-library`), and merged
 back through a pull request into `develop`. The full process — issue status
 lifecycle, the approval gates, the testing gate, and the Definition of Done — is
 in the

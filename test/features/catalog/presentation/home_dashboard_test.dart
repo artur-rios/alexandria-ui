@@ -2,68 +2,70 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
-import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
+import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
 import 'package:alexandria_ui/features/catalog/presentation/home_dashboard.dart';
+import 'package:alexandria_ui/features/libraries/domain/catalog_stats.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
+import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
-import 'package:alexandria_ui/features/tracking/domain/reading_list.dart';
-import 'package:alexandria_ui/features/tracking/domain/watchlist.dart';
-import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
 import '../../../support/fake_catalog_gateway.dart';
-import '../../../support/fake_index_gateway.dart';
 import '../../../support/fake_folder_picker.dart';
-import '../../../support/fake_reading_list_gateway.dart';
-import '../../../support/fake_watchlist_gateway.dart';
+import '../../../support/fake_index_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/in_memory_settings_store.dart';
 import '../../../support/shell_harness.dart';
 
-/// The home dashboard (UC-14, FR-CT-11).
+/// The home screen: the favorite libraries and the totals (libraries design
+/// §6).
 void main() {
-  /// Signs in, which lands on the dashboard.
-  Future<ProviderContainer> openDashboard(
+  Library library(String name, {bool favorite = false}) => Library(
+    uuid: 'uuid-$name',
+    name: name,
+    rootPath: '/media/$name',
+    favorite: favorite,
+  );
+
+  CatalogStats statsOf({int libraries = 0, Map<FileType, int>? counts}) =>
+      CatalogStats(
+        libraries: libraries,
+        filesByType: {
+          for (final type in FileType.values) type: counts?[type] ?? 0,
+        },
+      );
+
+  Future<ProviderContainer> openHome(
     WidgetTester tester, {
-    Map<FileType, CatalogListing>? listings,
-    FakeCatalogGateway? gateway,
+    FakeLibraryGateway? gateway,
     FakeIndexGateway? indexGateway,
     Locale? locale,
-    List<Watchlist> watchlists = const [],
-    List<ReadingList> readingLists = const [],
     ThemeMode themeMode = ThemeMode.light,
+    Size size = const Size(1440, 1000),
   }) async {
     final container = await tester.pumpShell(
       themeMode: themeMode,
       locale: locale,
-      surfaceSize: const Size(1440, 1000),
-      // Off, so `establish`'s own unawaited call to `begin()` (FR-LB-21)
-      // does not itself start a refresh through a gateway a test here
-      // configured for its own scenario, racing the run the test drives.
+      surfaceSize: size,
       settings: InMemorySettingsStore(
         themeMode: themeMode,
         locale: locale,
         rechecksAtStartup: false,
       ),
       extraOverrides: <Override>[
-        catalogGatewayProvider.overrideWithValue(
-          gateway ?? FakeCatalogGateway(listings: listings),
+        libraryGatewayProvider.overrideWithValue(
+          gateway ?? FakeLibraryGateway(),
         ),
+        catalogGatewayProvider.overrideWithValue(FakeCatalogGateway()),
         if (indexGateway != null)
           indexGatewayProvider.overrideWithValue(indexGateway),
-        // The empty dashboard offers to add a library; cancelling the picker
-        // it opens keeps a test that presses it off the platform channel.
         folderPickerProvider.overrideWithValue(FakeFolderPicker()),
-        watchlistGatewayProvider.overrideWithValue(
-          FakeWatchlistGateway(watchlists: watchlists),
-        ),
-        readingListGatewayProvider.overrideWithValue(
-          FakeReadingListGateway(readingLists: readingLists),
-        ),
         runPollIntervalProvider.overrideWithValue(const Duration(hours: 1)),
       ],
     );
@@ -72,339 +74,286 @@ void main() {
     return container;
   }
 
-  /// A library with three documents, added on three different days.
-  Map<FileType, CatalogListing> aLibrary() => {
-    FileType.document: loadedDetails([
-      aFile(
-        uuid: '1',
-        name: 'oldest.pdf',
-        type: FileType.document,
-        indexedAt: DateTime.utc(2026, 1),
-      ),
-      aFile(
-        uuid: '2',
-        name: 'newest.pdf',
-        type: FileType.document,
-        indexedAt: DateTime.utc(2026, 3),
-      ),
-      aFile(
-        uuid: '3',
-        name: 'middle.pdf',
-        type: FileType.document,
-        indexedAt: DateTime.utc(2026, 2),
-      ),
-    ]),
-  };
+  AppLocalizations l10nOf(WidgetTester tester) =>
+      AppLocalizations.of(tester.element(find.byType(ShellScreen)));
 
-  group('the main flow', () {
-    testWidgets('GivenASignedInOwner_WhenTheShellOpens_ThenItIsTheDashboard', (
+  Finder inHome(Finder finder) =>
+      find.descendant(of: find.byType(HomeDashboard), matching: finder);
+
+  group('the favorite libraries', () {
+    testWidgets('GivenFavoritesZetaAndAlpha_WhenHomeOpens_ThenAlphaIsFirst', (
       tester,
     ) async {
-      // UC-14 main flow step 1, and the reason the panel has a home entry.
-      await openDashboard(tester, listings: aLibrary());
-
-      expect(find.byType(HomeDashboard), findsOneWidget);
-    });
-
-    testWidgets(
-      'GivenAStockedLibrary_WhenTheDashboardOpens_ThenAllSectionsShow',
-      (tester) async {
-        await openDashboard(tester, listings: aLibrary());
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
-
-        expect(find.text(l10n.dashboardRecent), findsOneWidget);
-        expect(find.text(l10n.dashboardInProgress), findsOneWidget);
-        expect(find.text(l10n.dashboardCounts), findsOneWidget);
-        expect(find.text(l10n.dashboardLastRun), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenFilesAddedOnDifferentDays_WhenShown_ThenTheNewestIsFirst',
-      (tester) async {
-        await openDashboard(tester, listings: aLibrary());
-
-        final titles = tester
-            .widgetList<ListTile>(find.byType(ListTile))
-            .map((tile) => (tile.title! as Text).data)
-            .toList();
-        // Newest first, oldest last: the dashboard is a glance at what has
-        // just arrived.
-        expect(titles, ['newest.pdf', 'middle.pdf', 'oldest.pdf']);
-      },
-    );
-
-    testWidgets('GivenARecentFile_WhenItIsOpened_ThenTheFileItselfOpens', (
-      tester,
-    ) async {
-      // Main flow step 4: opening from here behaves as opening from a listing,
-      // because it is the same call — and a listing row opens the file rather
-      // than a dialog about it (`openFile`).
-      await openDashboard(tester, listings: aLibrary());
-
-      await tester.tap(find.text('newest.pdf'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(DocumentViewerScreen), findsOneWidget);
-      expect(find.byType(FileDetailsView), findsNothing);
-    });
-
-    testWidgets(
-      'GivenAStockedLibrary_WhenTheCountsShow_ThenEachTypeIsCounted',
-      (tester) async {
-        await openDashboard(tester, listings: aLibrary());
-
-        expect(find.byType(Chip), findsWidgets);
-      },
-    );
-  });
-
-  group('naming in the recent list', () {
-    testWidgets(
-      'GivenRecentFilesOfTwoTypes_WhenShown_ThenEachIsNamedByItsFile',
-      (tester) async {
-        final gateway = FakeCatalogGateway()
-          ..addFile(
-            uuid: '1',
-            name: 'so-what.md',
-            type: FileType.text,
-            indexedAt: DateTime.utc(2026, 1),
-          )
-          ..addFile(uuid: '2', name: 'itinerary.pdf', type: FileType.document);
-
-        await openDashboard(tester, gateway: gateway);
-
-        expect(find.text('so-what.md'), findsOneWidget);
-        expect(find.text('itinerary.pdf'), findsOneWidget);
-        // Named off the listing row the section already holds, never by a
-        // second read of each file.
-        expect(gateway.detailsRequested, isEmpty);
-      },
-    );
-  });
-
-  group('the catalog is empty (AF-01)', () {
-    testWidgets('GivenNothingCatalogued_WhenTheDashboardOpens_ThenGuidance', (
-      tester,
-    ) async {
-      await openDashboard(tester);
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
-      );
-
-      expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
-      // Four empty sections would be four ways of saying the same thing.
-      expect(find.text(l10n.dashboardRecent), findsNothing);
-
-      await tester.tap(find.text(l10n.libraryAdd));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(LibrariesView), findsOneWidget);
-    });
-  });
-
-  group('what the owner is part-way through (main flow step 2)', () {
-    testWidgets(
-      'GivenAVideoBeingWatched_WhenTheDashboardOpens_ThenItIsListed',
-      (tester) async {
-        await openDashboard(
-          tester,
-          listings: aLibrary(),
-          watchlists: [
-            const Watchlist(
-              uuid: 'wl-1',
-              name: 'Evenings',
-              items: [
-                WatchProgress(
-                  watchlistUuid: 'wl-1',
-                  videoUuid: '2',
-                  state: WatchState.watching,
-                ),
-              ],
-            ),
-          ],
-        );
-
-        // The watchlist's name, which only this section renders — the file
-        // itself also appears under "recently added".
-        expect(find.textContaining('Evenings'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenAnItemBeingRead_WhenTheDashboardOpens_ThenItsListIsNamed',
-      (tester) async {
-        await openDashboard(
-          tester,
-          listings: aLibrary(),
-          readingLists: [
-            const ReadingList(
-              uuid: 'rl-1',
-              name: 'Winter',
-              items: [
-                ReadingProgress(
-                  readingListUuid: 'rl-1',
-                  itemUuid: '3',
-                  targetKind: ReadingTargetKind.document,
-                  state: ReadingState.reading,
-                ),
-              ],
-            ),
-          ],
-        );
-
-        expect(find.textContaining('Winter'), findsOneWidget);
-      },
-    );
-
-    testWidgets('GivenAnItemInProgress_WhenItIsOpened_ThenTheDetailsAppear', (
-      tester,
-    ) async {
-      // Main flow step 4: opening from here behaves as opening from a
-      // listing, because it is the same view.
-      await openDashboard(
-        tester,
-        listings: aLibrary(),
-        watchlists: [
-          const Watchlist(
-            uuid: 'wl-1',
-            name: 'Evenings',
-            items: [
-              WatchProgress(
-                watchlistUuid: 'wl-1',
-                videoUuid: '1',
-                state: WatchState.watching,
-              ),
-            ],
-          ),
+      final gateway = FakeLibraryGateway(
+        libraries: [
+          library('Zeta', favorite: true),
+          library('alpha', favorite: true),
+          library('Other'),
         ],
       );
+      await openHome(tester, gateway: gateway);
 
-      await tester.tap(find.textContaining('Evenings'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(FileDetailsView), findsOneWidget);
+      expect(inHome(find.byType(Card)), findsNWidgets(2));
+      final alpha = tester.getTopLeft(inHome(find.text('alpha')));
+      final zeta = tester.getTopLeft(inHome(find.text('Zeta')));
+      expect(alpha.dy < zeta.dy || alpha.dx < zeta.dx, isTrue);
+      expect(inHome(find.text('Other')), findsNothing);
     });
-  });
 
-  group('nothing is in progress (AF-02)', () {
-    testWidgets(
-      'GivenNoWatchlists_WhenTheDashboardOpens_ThenTheSectionSaysSo',
-      (tester) async {
-        await openDashboard(tester, listings: aLibrary());
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
-
-        expect(find.text(l10n.dashboardInProgressNone), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenEverythingFinished_WhenTheDashboardOpens_ThenNothingIsListed',
-      (tester) async {
-        // Watched and read are not in progress: the section is what is still
-        // open, not what the lists hold.
-        await openDashboard(
-          tester,
-          listings: aLibrary(),
-          watchlists: [
-            const Watchlist(
-              uuid: 'wl-1',
-              name: 'Evenings',
-              items: [
-                WatchProgress(
-                  watchlistUuid: 'wl-1',
-                  videoUuid: '2',
-                  state: WatchState.watched,
-                ),
-              ],
-            ),
-          ],
-        );
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
-
-        expect(find.text(l10n.dashboardInProgressNone), findsOneWidget);
-      },
-    );
-  });
-
-  group('a section fails (AF-03)', () {
-    testWidgets(
-      'GivenOneSectionFails_WhenTheDashboardOpens_ThenTheRestRender',
-      (tester) async {
-        // The catalog query the recent section reads fails, and the counts,
-        // in-progress and last-run sections still render.
-        await openDashboard(
-          tester,
-          listings: {
-            FileType.text: const CatalogListing.failed(
-              failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
-            ),
-            FileType.image: loadedDetails([
-              aFile(uuid: 'i', name: 'a.png', type: FileType.image),
-            ]),
-          },
-        );
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
-
-        expect(find.text(l10n.dashboardInProgress), findsOneWidget);
-        expect(find.text(l10n.dashboardCounts), findsOneWidget);
-        expect(find.text(l10n.dashboardLastRun), findsOneWidget);
-      },
-    );
-  });
-
-  group('a run is in flight (AF-04)', () {
-    testWidgets('GivenARunning_WhenTheDashboardShowsIt_ThenItSaysSo', (
+    testWidgets('GivenAFavorite_WhenHomeOpens_ThenItShowsNameAndRootPath', (
       tester,
     ) async {
-      final indexGateway = FakeIndexGateway()..readOutcomes = [runningRun()];
-      final container = await openDashboard(
+      await openHome(
         tester,
-        listings: aLibrary(),
-        indexGateway: indexGateway,
+        gateway: FakeLibraryGateway(
+          libraries: [library('Films', favorite: true)],
+        ),
       );
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
-      );
-      expect(find.text(l10n.dashboardLastRunNone), findsOneWidget);
 
+      expect(inHome(find.text('Films')), findsOneWidget);
+      expect(inHome(find.text('/media/Films')), findsOneWidget);
+    });
+
+    testWidgets('GivenAFavorite_WhenItIsTapped_ThenTheLibraryOpens', (
+      tester,
+    ) async {
+      final container = await openHome(
+        tester,
+        gateway: FakeLibraryGateway(
+          libraries: [library('Films', favorite: true)],
+        ),
+      );
+
+      await tester.tap(inHome(find.text('Films')));
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(shellControllerProvider),
+        const LibraryDestination('uuid-Films'),
+      );
+    });
+
+    testWidgets('GivenARunningLibrary_WhenHomeOpens_ThenTheCardSaysSo', (
+      tester,
+    ) async {
+      final container = await openHome(
+        tester,
+        gateway: FakeLibraryGateway(
+          libraries: [library('Films', favorite: true)],
+        ),
+        indexGateway: FakeIndexGateway()..readOutcomes = [runningRun()],
+      );
       await container
           .read(indexRunsControllerProvider.notifier)
-          .startLibraryIndex('lib-1');
+          .startLibraryIndex('uuid-Films');
       await tester.pump();
 
-      expect(find.text(l10n.dashboardLastRunRunning), findsOneWidget);
+      expect(inHome(find.text(l10nOf(tester).libraryRunStarting)), findsOne);
 
       // The run is deliberately still going, so the poller is stopped here.
       container.dispose();
     });
 
-    testWidgets('GivenAFinishedRun_WhenTheDashboardShowsIt_ThenItSaysSo', (
+    testWidgets('GivenNoFavorites_WhenHomeOpens_ThenItSaysHowToMarkOne', (
       tester,
     ) async {
-      final container = await openDashboard(
+      await openHome(
         tester,
-        listings: aLibrary(),
-        indexGateway: FakeIndexGateway(),
+        gateway: FakeLibraryGateway(libraries: [library('Films')]),
       );
 
-      await container
-          .read(indexRunsControllerProvider.notifier)
-          .startLibraryIndex('lib-1');
+      expect(
+        inHome(find.text(l10nOf(tester).homeFavoritesNone)),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Mark a library as a favorite to see it here'),
+        findsOne,
+      );
+    });
+
+    testWidgets('GivenNoFavorites_WhenHomeOpens_ThenItSaysWhereTheStarIs', (
+      tester,
+    ) async {
+      // Spec §6: with none, a short hint about where the star is, so the
+      // owner is not left looking for how to mark one.
+      await openHome(
+        tester,
+        gateway: FakeLibraryGateway(libraries: [library('Films')]),
+      );
+
+      expect(
+        inHome(find.text(l10nOf(tester).homeFavoritesHint)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          "Use the star in a library's header, or right-click it in the "
+          'left menu.',
+        ),
+        findsOne,
+      );
+    });
+
+    testWidgets('GivenAFavorite_WhenHomeOpens_ThenNoHintIsShown', (
+      tester,
+    ) async {
+      await openHome(
+        tester,
+        gateway: FakeLibraryGateway(
+          libraries: [library('Films', favorite: true)],
+        ),
+      );
+
+      expect(inHome(find.text(l10nOf(tester).homeFavoritesHint)), findsNothing);
+    });
+
+    testWidgets('GivenTheListFails_WhenHomeOpens_ThenNoFirstRunIsShown', (
+      tester,
+    ) async {
+      final gateway = FakeLibraryGateway()
+        ..browseOutcome = const LibraryBrowse.failed(
+          failure: Failure.disk(family: CoreStatusFamily.library, code: 6),
+        );
+      await openHome(tester, gateway: gateway);
+
+      expect(find.text(l10nOf(tester).catalogEmptyFirstRun), findsNothing);
+      expect(inHome(find.text(l10nOf(tester).retry)), findsWidgets);
+    });
+  });
+
+  group('the statistics', () {
+    testWidgets('GivenTotals_WhenHomeOpens_ThenTheLibrariesAndEveryTypeShow', (
+      tester,
+    ) async {
+      final gateway =
+          FakeLibraryGateway(libraries: [library('a'), library('b')])
+            ..statsOutcome = statsOf(
+              libraries: 3,
+              counts: {
+                FileType.video: 12,
+                FileType.audio: 0,
+                FileType.image: 7,
+              },
+            );
+      await openHome(tester, gateway: gateway);
+      final l10n = l10nOf(tester);
+
+      expect(inHome(find.text('3 libraries')), findsOneWidget);
+      final expected = {
+        FileType.video: '12',
+        FileType.audio: '0',
+        FileType.document: '0',
+        FileType.comic: '0',
+        FileType.text: '0',
+        FileType.html: '0',
+        FileType.image: '7',
+      };
+      for (final MapEntry(:key, :value) in expected.entries) {
+        final row = inHome(find.byKey(ValueKey('home-stat-${key.wireName}')));
+        expect(row, findsOneWidget, reason: key.wireName);
+        expect(
+          find.descendant(of: row, matching: find.text(key.label(l10n))),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: row, matching: find.text(value)),
+          findsOneWidget,
+        );
+      }
+    });
+
+    testWidgets('GivenOneLibrary_WhenHomeOpens_ThenItReadsInTheSingular', (
+      tester,
+    ) async {
+      final gateway = FakeLibraryGateway(libraries: [library('a')])
+        ..statsOutcome = statsOf(libraries: 1);
+      await openHome(tester, gateway: gateway);
+
+      expect(inHome(find.text('1 library')), findsOneWidget);
+    });
+
+    testWidgets(
+      'GivenStatsFailAndFavoritesLoad_WhenHomeOpens_ThenOnlyTheStatsFail',
+      (tester) async {
+        final gateway =
+            FakeLibraryGateway(libraries: [library('Films', favorite: true)])
+              ..statsFailure = const Failure.disk(
+                family: CoreStatusFamily.library,
+                code: 6,
+              );
+        await openHome(tester, gateway: gateway);
+        final l10n = l10nOf(tester);
+
+        expect(inHome(find.text('Films')), findsOneWidget);
+        expect(inHome(find.text(l10n.retry)), findsOneWidget);
+        // No zero it could not count.
+        expect(inHome(find.text('0 libraries')), findsNothing);
+        expect(inHome(find.text('0')), findsNothing);
+
+        gateway
+          ..statsFailure = null
+          ..statsOutcome = statsOf(libraries: 1, counts: {FileType.text: 4});
+        await tester.tap(inHome(find.text(l10n.retry)));
+        await tester.pumpAndSettle();
+
+        expect(inHome(find.text('1 library')), findsOneWidget);
+        expect(inHome(find.text(l10n.retry)), findsNothing);
+        expect(inHome(find.text('Films')), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenFavoritesFailAndStatsLoad_WhenHomeOpens_ThenOnlyTheFavoritesFail',
+      (tester) async {
+        final gateway = FakeLibraryGateway()
+          ..browseOutcome = const LibraryBrowse.failed(
+            failure: Failure.disk(family: CoreStatusFamily.library, code: 6),
+          )
+          ..statsOutcome = statsOf(libraries: 2);
+        await openHome(tester, gateway: gateway);
+
+        expect(inHome(find.text('2 libraries')), findsOneWidget);
+        expect(inHome(find.text(l10nOf(tester).retry)), findsOneWidget);
+      },
+    );
+  });
+
+  group('the first run', () {
+    testWidgets('GivenNoLibraries_WhenHomeOpens_ThenGuidanceFillsTheScreen', (
+      tester,
+    ) async {
+      await openHome(tester);
+      final l10n = l10nOf(tester);
+
+      expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
+      expect(inHome(find.text(l10n.homeStatistics)), findsNothing);
+
+      await tester.tap(inHome(find.text(l10n.libraryAdd)));
       await tester.pumpAndSettle();
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
+      // The add flow runs where the owner is: no screen opens for it.
+      expect(find.byType(LibrariesView), findsNothing);
+    });
+  });
+
+  group('what home no longer shows', () {
+    testWidgets('GivenALibrary_WhenHomeOpens_ThenOnlyTheTwoSectionsShow', (
+      tester,
+    ) async {
+      await openHome(
+        tester,
+        gateway: FakeLibraryGateway(libraries: [library('a', favorite: true)]),
       );
-      expect(find.text(l10n.dashboardLastRunComplete), findsOneWidget);
+
+      for (final gone in [
+        'Recently added',
+        'In progress',
+        'The last scan',
+        'What is in the library',
+      ]) {
+        expect(find.text(gone), findsNothing, reason: gone);
+      }
     });
   });
 
@@ -412,58 +361,69 @@ void main() {
     ('English', const Locale('en')),
     ('Portuguese', const Locale('pt', 'BR')),
   ]) {
-    testWidgets('Given${name}_WhenTheDashboardOpens_ThenItIsLocalized', (
-      tester,
-    ) async {
-      await openDashboard(tester, listings: aLibrary(), locale: locale);
+    testWidgets('Given${name}_WhenHomeOpens_ThenItIsLocalized', (tester) async {
+      final gateway = FakeLibraryGateway(libraries: [library('a')])
+        ..statsOutcome = statsOf(libraries: 2);
+      await openHome(tester, gateway: gateway, locale: locale);
+      final l10n = l10nOf(tester);
 
-      final l10n = AppLocalizations.of(
-        tester.element(find.byType(ShellScreen)),
-      );
       for (final label in [
-        l10n.dashboardRecent,
-        l10n.dashboardInProgress,
-        l10n.dashboardCounts,
-        l10n.dashboardLastRun,
+        l10n.homeFavorites,
+        l10n.homeFavoritesNone,
+        l10n.homeFavoritesHint,
+        l10n.homeStatistics,
+        l10n.homeLibraryCount(2),
       ]) {
-        expect(label, isNot(startsWith('dashboard')));
-        expect(find.text(label), findsOneWidget);
+        expect(label, isNot(startsWith('home')));
+        expect(inHome(find.text(label)), findsOneWidget);
       }
     });
   }
 
-  testWidgets('GivenOneTypeFails_WhenTheRecentSectionLoads_ThenItDegrades', (
+  testWidgets(
+    'GivenPortuguese_WhenHomeOpens_ThenFavoritesAreCalledPreferidas',
+    (tester) async {
+      await openHome(
+        tester,
+        gateway: FakeLibraryGateway(libraries: [library('a')]),
+        locale: const Locale('pt', 'BR'),
+      );
+
+      expect(l10nOf(tester).homeFavorites, contains('preferidas'));
+      expect(l10nOf(tester).homeFavoritesHint, contains('estrela'));
+    },
+  );
+
+  testWidgets('GivenTheMinimumWindow_WhenHomeIsFull_ThenNothingOverflows', (
     tester,
   ) async {
-    // A type that cannot be read does not fail the section — it makes the
-    // answer partial, which is the behaviour UC-11 established and which this
-    // section inherits by reading the same catalog. AF-03 is about a section
-    // containing its own failure, and each section has its own AsyncStateView
-    // and its own retry; what this asserts is that one bad type does not cost
-    // the owner the files that did load.
-    await openDashboard(
-      tester,
-      listings: {
-        FileType.text: const CatalogListing.failed(
-          failure: Failure.disk(family: CoreStatusFamily.file, code: 6),
-        ),
-        FileType.image: loadedDetails([
-          aFile(uuid: 'i', name: 'a.png', type: FileType.image),
-        ]),
-      },
-    );
+    final gateway = FakeLibraryGateway(
+      libraries: [
+        for (var i = 0; i < 9; i++)
+          Library(
+            uuid: 'u$i',
+            name: 'A library with a rather long name number $i',
+            rootPath:
+                '/media/a/very/long/path/to/the/root/of/library/number/$i',
+            favorite: true,
+          ),
+      ],
+    )..statsOutcome = statsOf(libraries: 9, counts: {FileType.video: 1234567});
+    await openHome(tester, gateway: gateway, size: const Size(1024, 640));
 
-    expect(find.byType(HomeDashboard), findsOneWidget);
-    expect(find.text('a.png'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
-  // Testing Specification 7.1: both themes are test surface, not review
-  // surface. A screen that only reads correctly in one is a failing screen.
+
   group('both themes', () {
     for (final mode in [ThemeMode.light, ThemeMode.dark]) {
       testWidgets(
-        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenTheScreenOpens_ThenItRendersInThatBrightness',
+        'GivenThe${mode == ThemeMode.light ? 'Light' : 'Dark'}Theme_WhenHomeOpens_ThenItRendersInThatBrightness',
         (tester) async {
-          await openDashboard(tester, listings: aLibrary(), themeMode: mode);
+          await openHome(
+            tester,
+            gateway: FakeLibraryGateway(libraries: [library('a')]),
+            themeMode: mode,
+          );
 
           expect(
             Theme.of(
