@@ -144,4 +144,34 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'GivenTheManageDialog_WhenRemoveIsRefusedWhileScanning_ThenTheMessageShowsInsideTheDialog',
+    (tester) async {
+      // Said on the shell's scaffold, the message would sit under the
+      // dialog's barrier, dimmed and mostly covered at the minimum window.
+      const conflict = Failure.conflict(
+        family: CoreStatusFamily.library,
+        code: LIBRARY_ERR_CONFLICT,
+      );
+      await openLibraries(
+        tester,
+        writeOutcomes: const [LibraryWrite.failed(failure: conflict)],
+      );
+
+      await askToRemove(tester);
+      await confirm(tester);
+
+      expect(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.widgetWithText(
+            SnackBar,
+            messages(tester).libraryRemoveRunning,
+          ),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 }

@@ -36,33 +36,50 @@ class _ManageLibrariesDialog extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Dialog(
+      // The snackbars below are drawn to the dialog's rounded edge.
+      clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 760, maxHeight: 720),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
+        // A messenger and a scaffold of its own, so what an add, a scan, a
+        // move or a removal answers is said inside the dialog: the shell's
+        // scaffold is under the modal barrier, where a snackbar is dimmed
+        // and, at the minimum window, mostly covered.
+        //
+        // The scaffold lets the dialog's own surface show through. Zero alpha
+        // rather than `Colors.transparent`: BR-18 keeps every color literal
+        // out of the widget tree.
+        child: ScaffoldMessenger(
+          child: Scaffold(
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.surface.withValues(alpha: 0),
+            body: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: Text(
-                      l10n.libraryMenuLibraries,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.libraryMenuLibraries,
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: MaterialLocalizations.of(
+                          context,
+                        ).closeButtonTooltip,
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    tooltip: MaterialLocalizations.of(
-                      context,
-                    ).closeButtonTooltip,
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  const Expanded(child: LibrariesView()),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
-              const Expanded(child: LibrariesView()),
-            ],
+            ),
           ),
         ),
       ),
@@ -77,7 +94,7 @@ class _ManageLibrariesDialog extends StatelessWidget {
 /// library is renamed, scanned again, moved and removed from its row here, and
 /// its run is shown under it.
 ///
-/// No scaffold and no title of its own: the dialog draws the heading.
+/// No scaffold and no title of its own: the dialog draws both.
 class LibrariesView extends ConsumerWidget {
   /// Creates the view.
   const LibrariesView({super.key});
@@ -329,6 +346,9 @@ Future<void> removeLibrary(
 }
 
 /// Says [message] over whatever is showing.
+///
+/// On the nearest messenger: inside Manage libraries, the dialog's own; from
+/// a library's header, the shell's.
 void _say(BuildContext context, String message) => ScaffoldMessenger.of(
   context,
 ).showSnackBar(SnackBar(content: Text(message)));

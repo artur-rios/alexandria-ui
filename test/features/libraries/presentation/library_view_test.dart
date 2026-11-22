@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
@@ -806,6 +807,37 @@ void main() {
         opened.container.read(shellControllerProvider),
         const HomeDestination(),
       );
+    });
+
+    testWidgets('GivenTheHeader_WhenRemoveIsRefused_ThenTheShellSaysWhy', (
+      tester,
+    ) async {
+      // The Manage libraries dialog says its refusals inside itself; the
+      // header, with no dialog over it, still says them on the shell.
+      const conflict = Failure.conflict(
+        family: CoreStatusFamily.library,
+        code: LIBRARY_ERR_CONFLICT,
+      );
+      await open(
+        tester,
+        gateway: FakeLibraryGateway(libraries: const [course, films])
+          ..writeOutcomes.add(const LibraryWrite.failed(failure: conflict)),
+      );
+      final l10n = messages(tester);
+      await tester.tap(inHeader(find.byTooltip(l10n.libraryActions)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n.libraryRemove));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, l10n.libraryRemove));
+      await tester.pumpAndSettle();
+
+      final said = find.widgetWithText(SnackBar, l10n.libraryRemoveRunning);
+      expect(
+        find.descendant(of: find.byType(ShellScreen), matching: said),
+        findsOneWidget,
+      );
+      expect(find.byType(Dialog), findsNothing);
     });
 
     testWidgets('GivenAPausedRun_WhenTheLibraryIsShown_ThenItsStatusIsShown', (
