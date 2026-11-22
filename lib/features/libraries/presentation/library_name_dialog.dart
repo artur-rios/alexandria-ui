@@ -9,10 +9,10 @@ import '../../../core/theme/app_spacing.dart';
 
 /// Asks over [context] what to call a library, offering [suggestion].
 ///
-/// Shared by the two places a folder becomes one — the scope dialog that asks
-/// while a folder is being registered, and the action that marks a folder
-/// already registered — so the question is worded once and a library named
-/// from either place is named the same way.
+/// Used when a library is added, from the Library menu's "Add library…", the
+/// Manage libraries dialog or an empty screen's offer. [LibraryNameDialog]
+/// itself is also the one a library is renamed with, so the question is
+/// worded once and a library is named the same way whether it is new or not.
 ///
 /// Resolves to `null` when the owner cancels. Confirm is disabled while the
 /// field is blank, the same rule as when a library is renamed: a library has
