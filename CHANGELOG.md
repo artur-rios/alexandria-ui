@@ -45,6 +45,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   A library's files are filtered by type inside it, and home counts each type.
 - The Libraries page, which Manage libraries replaces.
 
+### Fixed
+
+- A search result opens its file when clicked, the way a file in a library does; a track plays on through the tracks
+  the search found. Before, clicking a result did nothing.
+
 ## [2.0.1] - 2026-11-21
 
 ### Fixed
