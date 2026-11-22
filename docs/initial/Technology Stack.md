@@ -57,48 +57,28 @@ directly from the on-disk path the core reports for each catalog record.
 ## Data Access
 
 Dart FFI (`dart:ffi`) against the C ABI published by the `alexandria-ffi` crate
-(`header.h`). Every call follows the same shape: pass a bearer/session token,
+(`header.h`). Every call follows the same shape: pass the call's arguments,
 receive a status code plus a JSON string, then free that string with
-`alexandria_free_string`.
+`alexandria_free_string`. Since core 0.7 no call takes a session token.
 
 The binding layer is generated from the C header rather than hand-written, and it
 is wrapped by a gateway that converts status codes into typed Dart failures and
 JSON into domain models. Feature code depends on the gateway interface, never on
 `dart:ffi` directly.
 
-Because the FFI and HTTP surfaces of the core are documented to return
-byte-for-byte identical payloads, that same gateway interface can be implemented
-over HTTP later. Only FFI is implemented in this scope.
+The gateway interface is what would let another transport replace FFI without
+touching a screen. Only FFI is implemented, and since core 0.7, which removed
+the core's HTTP server with its authentication, it is the only surface the core
+has.
 
 ## Authentication
 
-Local-login mode, matching the Rust core:
-
-1. **Sign-up** — the owner creates the single account with an e-mail and a
-   password. The core stores a salted hash and sends a confirmation message; the
-   app never persists the plaintext.
-2. **Confirmation** — the owner submits the code the core sent. Until then the
-   owner can sign in but the library stays locked.
-3. **Every later run** — the owner logs in through
-   `alexandria_auth_local_login`, and the app holds the returned session
-   identifier in memory for the lifetime of the session, presenting it on every
-   subsequent call.
-4. **Credential change** — through preferences with an active session, reusing
-   `alexandria_auth_local_set_credentials`.
-5. **Password recovery** — from the login screen the owner requests a reset, then
-   completes it with the token the core sent and a new password.
-
-**Pending core support.** Of these, only login and set-credentials exist on the
-core's published FFI surface today. Sign-up as a distinct operation, e-mail
-confirmation, resending a confirmation, requesting a reset, and completing a
-reset are capabilities the core will expose; the front-end specifies them now and
-implements each when its call is published. The app never invents a call the core
-does not export, and never sends e-mail itself — delivery, token lifetime, and
-rate limiting are the core's.
-
-The core's external-JWT mode is not driven by this app in this scope. The session
-abstraction is transport-agnostic so that supporting it later does not change
-feature code.
+None. The application runs only on the owner's machine, over their own files,
+so a login protected nothing: core 0.7 removed authentication — the
+`alexandria_auth_*` calls, the session token on every call, and the HTTP
+server — and the application starts straight into the shell. The sign-up,
+login, credentials change, and recovery flows this section used to describe
+went with it.
 
 ## Testing
 
@@ -133,9 +113,7 @@ flutter test
 No payments, no identity provider, no message broker, and no object storage are
 involved, and this application makes no network call of its own but one: the
 update check, which asks GitHub's public releases API for the latest release
-and can be turned off (System Requirements §3.11). E-mail is
-involved only indirectly: the core sends confirmation and recovery messages, and
-the app never touches a mail transport.
+and can be turned off (System Requirements §3.11). No e-mail is involved.
 
 ## Deployment
 

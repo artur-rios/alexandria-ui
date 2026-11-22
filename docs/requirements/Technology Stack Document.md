@@ -74,14 +74,15 @@ Two consequences follow, and both are binding:
 | **alexandria_ffi** (native) | latest stable at implementation time | Data layer | The Alexandria Rust core, consumed as a bundled shared library (`.dll` on Windows, `.so` on Linux) and loaded in process at startup. It is the **only** source of catalog data. |
 
 The generated bindings are wrapped by a gateway that owns three obligations the
-rest of the application never sees: passing the session credential on every call,
+rest of the application never sees: marshalling each call's arguments,
 translating status codes into typed failures, and freeing every string the core
-returns with `alexandria_free_string`. Feature code depends on the gateway
+returns with `alexandria_free_string`. Since core 0.7 no call carries a session
+credential: the core no longer authenticates. Feature code depends on the gateway
 interface declared in the domain layer, never on `dart:ffi`.
 
-Because the core documents its FFI and HTTP surfaces as returning identical
-payloads, that same interface admits an HTTP implementation later. Only the FFI
-implementation is built in this scope.
+The same interface would admit another transport later. Only the FFI
+implementation is built, and since core 0.7, which removed the core's HTTP
+server with its authentication, FFI is the only surface the core has.
 
 ### 3.3 Media playback
 
@@ -239,8 +240,8 @@ package is added for them.
 | --- | --- |
 | Catalog database | **None owned by this application.** The catalog is a SQLite database owned by the Alexandria core. The application supplies its path at startup via `alexandria_index_init` and thereafter reads and writes it *only* through the core's FFI surface. Opening that file directly is prohibited by [Business Rules BR-01 and its prohibitions](../initial/Business%20Rules.md). |
 | Database location | The per-platform application-support directory resolved by `path_provider`, overridable by configuration for development and tests. |
-| Application settings | **shared_preferences** — theme, language, view layout, per-type sort and filter defaults, playback resume points, and window geometry. |
-| Credentials | **Never stored by this application.** The salted hash lives in the core; the session credential lives in process memory for the run of the application only. |
+| Application settings | **shared_preferences** — theme, language, how a library's folder is drawn (layout, type filter, and sort, one choice for every library), playback resume points, and window geometry. |
+| Credentials | **None exist.** Core 0.7 removed authentication, so there is no password, hash, or session credential anywhere. |
 | File bytes | **Never stored or copied.** Media and document content is read from the on-disk path on each open. |
 
 The same storage mechanisms are used in every environment. Tests differ only in
@@ -261,7 +262,7 @@ so no test can reach the developer's own library or settings.
 | Naming convention | Dart models use `lowerCamelCase` fields matching the core's JSON keys; the C symbol names are untouched in the generated bindings | — |
 
 The access pattern is a **gateway per domain area** — files, collections,
-bookmarks, watchlists, reading lists, indexing, auth — each declared as an
+bookmarks, watchlists, reading lists, indexing, libraries — each declared as an
 abstract interface in the domain layer and implemented once in the data layer
 over the generated bindings. That indirection is what makes the whole application
 testable without a native library present: unit and widget tests bind a fake
@@ -276,8 +277,7 @@ a rewrite.
 | Concern | Technology | Version | How it is used |
 | --- | --- | --- | --- |
 | Input validation | Dart validators in the domain layer | — | Validates before the call for immediate feedback; the core's verdict is always final and always surfaced. |
-| Logging | **logging** | latest stable at implementation time | Structured records to console in development and to a rolling file in release. Credentials, session material, and file contents are never logged. |
-| Authentication | The core's local-login surface (`alexandria_auth_local_login`, `alexandria_auth_local_set_credentials`) | latest stable at implementation time | The application collects the credentials, forwards them, and holds the returned session in memory only. |
+| Logging | **logging** | latest stable at implementation time | Structured records to console in development and to a rolling file in release. File contents and the personal contents of metadata fields are never logged. |
 | Error / result model | A `freezed` union of typed failures | latest stable at implementation time | Every core status code maps to exactly one failure variant, and every variant maps to a localized message. A raw status code never reaches the screen. |
 | Configuration | Dart compile-time environment values plus the local settings store | — | See [Operations & Infrastructure §3](Operations%20%26%20Infrastructure%20Document.md). |
 | Dependency injection | **flutter_riverpod** providers | latest stable at implementation time | The provider graph is the composition root; tests override providers rather than patching globals. |

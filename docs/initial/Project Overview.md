@@ -40,14 +40,19 @@ library.
 
 ## What It Does
 
-- **Browses the catalog** by file type — movies, series, music, HTML pages,
-  Markdown and text notes, PDFs and e-books, comic books, images, and browser
-  bookmarks — in list, detailed-list, and grid layouts.
+- **Navigates by library**: the left menu lists Home, the bookmarks, and the
+  owner's libraries — the pinned ones first, then the others, each A–Z — and a
+  library opens as its folders, with its files in list, detailed-list, or grid
+  layout, filtered to one type — movies and series, music, HTML pages, Markdown
+  and text notes, PDFs and e-books, comic books, images — and sorted.
 - **Manages libraries**: the owner adds one or more folders as libraries —
-  the only way files reach the catalog — which indexes them, and scans them
-  again, moves, or removes them from the interface.
+  the only way files reach the catalog — which indexes them, and pins,
+  favorites, renames, scans again, moves, or removes them, from the left menu,
+  a library's own header, and the menu bar's Library menu.
+- **Shows home**: the favorite libraries, and how many libraries and how many
+  files of each type the catalog holds.
 - **Plays music** in a player bar that stays while the owner browses, through
-  the list a track was started from.
+  the folder a track was started from.
 - **Plays video** with the basics — full screen, pause, seek forward and
   backward, subtitle selection, and audio-track selection.
 - **Views documents and images**: PDFs, e-books, comic books, images, HTML pages,
@@ -57,12 +62,9 @@ library.
 - **Organizes** files and bookmarks into collections, tracks movies and series in
   watchlists with per-episode progress, and tracks books and comics in reading
   lists with per-issue progress.
-- **Searches and filters** the catalog across types and lifecycle states.
+- **Searches** the catalog across every library and type.
 - **Deletes safely** through the core's two-phase model: soft delete, restore,
   and an explicit purge that is the only thing that ever touches a file on disk.
-- **Authenticates the owner**: sign-up, recovery codes, login, credential
-  change, and password recovery, gating the library behind the core's local-auth
-  mode.
 - **Adapts** to window size and screen size, in light and dark themes, in
   Brazilian Portuguese and English.
 
@@ -78,13 +80,12 @@ library.
 - **No domain logic of its own.** Validation, lifecycle, retention, and every
   business rule belong to the Rust core. The app presents and enforces them in
   the interface; it does not reimplement or override them.
-- **No multi-user features.** One account, belonging to the single owner. No
-  second account, no sharing, no profile switching, no roles.
-- **No mail transport.** The app never sends e-mail. Confirmation and recovery
-  messages are the core's to send; the app asks and reports the outcome.
+- **No multi-user features, and no login.** The single owner runs it on their
+  own machine: there is no account to create or sign in to, no sharing, no
+  profile switching, no roles.
+- **No mail transport.** Nothing sends e-mail.
 - **No server, no cloud, no sync.** Everything is local to the machine, apart
-  from whatever the core does to deliver a confirmation or recovery message,
-  and the update check, which asks GitHub for the latest release and can be
+  from the update check, which asks GitHub for the latest release and can be
   turned off.
 - **No mobile or web build.** Windows and Linux desktop only.
 - **No library server administration.** The app configures where its own database

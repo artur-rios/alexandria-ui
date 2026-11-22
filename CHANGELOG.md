@@ -7,6 +7,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Libraries can be pinned to the top of the left menu, and marked as favorites to see them on home, from a library's
+  entry in the left menu (right-click or long-press) and from its page header. The core stores both, so they survive
+  restarts; a change the core refuses leaves the library as it was and says so.
+- A library can be renamed at any time, even while it is being scanned: from its entry in the left menu, its page
+  header, or Manage libraries. The name opens selected, and Confirm is disabled while it is blank.
+
+### Changed
+
+- The left menu lists Home, Bookmarks, the pinned libraries A–Z, a divider, and the other libraries A–Z, in place of an
+  entry per file type. It scrolls rather than dropping a library, at every window width. With no library it offers
+  "Add a library", and when the libraries could not be read it says so and tries again when pressed.
+- A library opens in the main area rather than in a dialog: a header with its name, Pin and Favorite toggles, a menu
+  with Rename, Scan again, Move… and Remove, and its scan; breadcrumbs; and a toolbar with the layout (list, detailed
+  list, grid), a type filter and the sort (name, date, album). Folders come first, A–Z, then the files, with everything
+  a type page let you do to one. The layout, filter and sort are one choice for every library, and the folder you were
+  in is kept while Alexandria runs; the choices made per type before are not carried over. A track plays on through
+  the folder's music in the order shown. Deleted files are reached through Deleted items.
+- Home shows the favorite libraries A–Z, as cards, and the statistics: how many libraries, and how many files of each
+  type, zeroes included. Recent files, files in progress and the last scan are no longer on home; videos still resume
+  where they stopped.
+- Adding and managing libraries moved to the menu bar. The Library menu starts with "Add library…" and "Manage
+  libraries…", a dialog listing every library with Rename, Scan again, Move and Remove, beside "Re-check all
+  libraries". The add buttons on home, in search and in the left menu add a library where you are, and the activity
+  strip's "View all" opens Manage libraries.
+- In Portuguese a favorite library is "preferida"; "Favoritos" still means the bookmarks.
+- The application needs Alexandria core 0.7 (`>=0.7.0 <0.8.0`), which has no authentication; an older core is refused
+  at startup.
+
+### Removed
+
+- The login: signing up, logging in, the recovery codes, changing the credentials, and signing out. Alexandria opens
+  straight into the library once the core is ready, and the Settings menu keeps Preferences.
+- The per-type pages — Videos, Music, Books, Comic books, Notes, Pages and Images — and their counts in the left menu.
+  A library's files are filtered by type inside it, and home counts each type.
+- The Libraries page, which Manage libraries replaces.
+
 ## [2.0.1] - 2026-11-21
 
 ### Fixed

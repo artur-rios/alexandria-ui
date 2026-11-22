@@ -4,6 +4,8 @@ This is the brainstorm for a desktop front-end for a project called "Alexandria"
 
 Alexandria is for things to read and watch, and it plays music files too. Managing music — playlists, play history, browsing by artist and album — lives in Orpheus, a separate project.
 
+There is no login: it runs on the owner's own machine, over their own files. And the library is navigated by the folders the owner chose, not by file type.
+
 ## Features
 
 - The user can view, reproduce (video), edit metadata and delete:
@@ -46,12 +48,9 @@ I want to use the best practices, SOLID principles, and the latest stable versio
 
 ## Screens, Features and components
 
-- Login/Sign-in
-- E-mail confirmation
-- Password recovery
 - Markdown/TXT editor
-- Home screen (must be a dashboard)
-- Left panel showing the types of files in the library (movies, series, books, comic books, notes, text files, HTML pages, PDFs, etc)
+- Home screen (must be a dashboard): the favorite libraries, and how many files of each type there are
+- Left panel showing the libraries, with the ones I pin at the top, and opening each one as its folders
 - File viewer, of different layouts (list, list with details and grid)
 - File search
 - Filters
