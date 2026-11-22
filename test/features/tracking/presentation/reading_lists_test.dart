@@ -9,9 +9,7 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/tracking/domain/reading_list.dart';
 import 'package:alexandria_ui/features/tracking/domain/reading_list_gateway.dart';
@@ -72,13 +70,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.books.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openTypeListing(FileType.document);
 
     if (openScreen) {
       final l10n = AppLocalizations.of(

@@ -8,8 +8,6 @@ import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 import 'package:alexandria_ui/features/catalog/presentation/video_metadata_form.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -74,13 +72,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.videos.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openTypeListing(FileType.video);
 
     // Main flow step 1: the form is opened from the file's detail view.
     await openDetailsOf(tester, 'Stalker.mkv');
@@ -280,13 +272,7 @@ void main() {
             catalogGatewayProvider.overrideWithValue(gateway),
           ],
         );
-        await tester.tap(
-          find.descendant(
-            of: find.byType(ShellNavigationPanel),
-            matching: find.byIcon(ShellDestination.videos.icon),
-          ),
-        );
-        await tester.pumpAndSettle();
+        await tester.openTypeListing(FileType.video);
         await openDetailsOf(tester, 'Stalker.mkv');
 
         expect(find.byIcon(Icons.edit_outlined), findsNothing);

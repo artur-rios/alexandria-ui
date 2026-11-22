@@ -40,7 +40,7 @@ void main() {
         final sut = build();
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
+            .go(const TypeDestination(FileType.document));
 
         await sut.ref.read(listingControllerProvider.future);
 
@@ -60,7 +60,7 @@ void main() {
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
+            .go(const TypeDestination(FileType.document));
 
         final files = await sut.ref.read(listingControllerProvider.future);
 
@@ -77,7 +77,7 @@ void main() {
         final sut = build();
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.videos);
+            .go(const TypeDestination(FileType.video));
 
         await sut.ref.read(listingControllerProvider.future);
 
@@ -99,7 +99,7 @@ void main() {
       final sut = build();
       sut.ref
           .read(shellControllerProvider.notifier)
-          .go(ShellDestination.bookmarks);
+          .go(const BookmarksDestination());
 
       await sut.ref.read(listingControllerProvider.future);
 
@@ -114,7 +114,7 @@ void main() {
         final sut = build();
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
+            .go(const TypeDestination(FileType.document));
 
         final files = await sut.ref.read(listingControllerProvider.future);
 
@@ -138,7 +138,7 @@ void main() {
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
+            .go(const TypeDestination(FileType.document));
 
         // The state rather than the future: the screen reads the state, and an
         // AsyncValue that settled into an error is exactly what AsyncStateView
@@ -167,12 +167,12 @@ void main() {
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
+            .go(const TypeDestination(FileType.document));
         await pumpEventQueue();
 
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.images);
+            .go(const TypeDestination(FileType.image));
         final files = await sut.ref.read(listingControllerProvider.future);
 
         expect(files, hasLength(1));

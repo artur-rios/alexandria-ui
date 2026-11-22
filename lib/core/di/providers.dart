@@ -293,7 +293,7 @@ final listingControllerProvider =
       ListingController.new,
     );
 
-/// Every type's item count, for the navigation panel (FR-CT-01).
+/// Every type's item count, for the dashboard (FR-CT-01).
 final typeCountsControllerProvider =
     AsyncNotifierProvider<TypeCountsController, Map<FileType, int>>(
       TypeCountsController.new,

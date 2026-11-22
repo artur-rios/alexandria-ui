@@ -356,7 +356,7 @@ void main() {
         );
         expect(
           container.read(shellControllerProvider),
-          ShellDestination.libraries,
+          const LibrariesDestination(),
         );
       },
     );

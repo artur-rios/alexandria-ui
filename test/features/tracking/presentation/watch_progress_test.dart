@@ -7,8 +7,6 @@ import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist_gateway.dart';
@@ -104,13 +102,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.videos.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openTypeListing(FileType.video);
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
     await tester.tap(find.text(l10n.watchlistsOpen));

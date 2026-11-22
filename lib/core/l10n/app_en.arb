@@ -1283,6 +1283,34 @@
   "@libraryRename": {
     "description": "Title of the dialog that renames a library, and the tooltip of the action that opens it."
   },
+  "libraryRenameEntry": "Rename…",
+  "@libraryRenameEntry": {
+    "description": "Context-menu entry of a library in the left menu that opens the rename dialog."
+  },
+  "libraryPin": "Pin",
+  "@libraryPin": {
+    "description": "Context-menu entry of a library in the left menu that pins it to the top of the menu."
+  },
+  "libraryUnpin": "Unpin",
+  "@libraryUnpin": {
+    "description": "Context-menu entry of a pinned library in the left menu that returns it to the other libraries."
+  },
+  "libraryPinned": "Pinned",
+  "@libraryPinned": {
+    "description": "Read out for the pin badge on a pinned library's icon in the left menu."
+  },
+  "libraryFavoriteAdd": "Add to favorites",
+  "@libraryFavoriteAdd": {
+    "description": "Context-menu entry of a library in the left menu that marks it a favorite, which home shows. Not a bookmark."
+  },
+  "libraryFavoriteRemove": "Remove from favorites",
+  "@libraryFavoriteRemove": {
+    "description": "Context-menu entry of a favorite library in the left menu that clears the mark."
+  },
+  "libraryChangeNotSaved": "The change could not be saved.",
+  "@libraryChangeNotSaved": {
+    "description": "Snackbar shown when the core refuses to pin, unpin, favorite or unfavorite a library; the left menu stays as it was."
+  },
   "libraryAdd": "Add a library",
   "@libraryAdd": {
     "description": "Opens the folder picker to mark a folder as a library."

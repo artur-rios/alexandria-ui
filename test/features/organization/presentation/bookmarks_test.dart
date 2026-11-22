@@ -7,7 +7,6 @@ import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark_gateway.dart';
 import 'package:alexandria_ui/features/organization/presentation/bookmarks_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,13 +58,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.bookmarks.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.goTo(const BookmarksDestination());
 
     return (container: container, gateway: gateway, browser: browser);
   }

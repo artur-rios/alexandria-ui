@@ -5,7 +5,6 @@ import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/editing/presentation/text_editor_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/viewers/domain/page_content.dart';
 import 'package:alexandria_ui/features/viewers/presentation/page_viewer_screen.dart';
@@ -32,7 +31,7 @@ void main() {
     PageOutcome? outcome,
     bool engine = false,
     FileType type = FileType.html,
-    ShellDestination destination = ShellDestination.pages,
+    ShellDestination destination = const TypeDestination(FileType.html),
     String name = 'Article.html',
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
@@ -69,13 +68,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(destination.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.goTo(destination);
     // The row opens the file itself now, so a test that wants it open taps
     // the row, and one that wants the details taps the button beside it —
     // where the Open action still is, for a file that cannot just be opened.
@@ -139,7 +132,7 @@ void main() {
       await open(
         tester,
         type: FileType.text,
-        destination: ShellDestination.notes,
+        destination: const TypeDestination(FileType.text),
         name: 'Notes.md',
         outcome: FakePageGateway.markdown,
       );
@@ -157,7 +150,7 @@ void main() {
       await open(
         tester,
         type: FileType.text,
-        destination: ShellDestination.notes,
+        destination: const TypeDestination(FileType.text),
         name: 'Notes.md',
         outcome: FakePageGateway.markdown,
       );
@@ -171,7 +164,7 @@ void main() {
       await open(
         tester,
         type: FileType.text,
-        destination: ShellDestination.notes,
+        destination: const TypeDestination(FileType.text),
         name: 'Notes.md',
         outcome: FakePageGateway.markdown,
       );

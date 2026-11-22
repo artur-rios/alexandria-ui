@@ -1,5 +1,8 @@
 import 'package:alexandria_ui/core/di/providers.dart';
+import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -7,6 +10,7 @@ import 'package:riverpod/misc.dart';
 
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
+import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 
 import 'failing_settings_store.dart';
 import 'fake_library_gateway.dart';
@@ -70,6 +74,26 @@ extension PumpShell on WidgetTester {
 
     return container;
   }
+
+  /// Moves the shell to [destination], as the left menu would, and settles.
+  Future<void> goTo(ShellDestination destination) async {
+    ProviderScope.containerOf(
+      element(find.byType(ShellScreen)),
+    ).read(shellControllerProvider.notifier).go(destination);
+    await pumpAndSettle();
+  }
+
+  /// Opens the listing of one [type].
+  ///
+  /// Through the shell rather than the left menu, which no longer lists the
+  /// types: the type listing stays only until the library view replaces it,
+  /// and goes with [TypeDestination].
+  Future<void> openTypeListing(FileType type) => goTo(TypeDestination(type));
+
+  /// Opens the libraries page from the Library menu, as the owner does.
+  Future<void> openLibrariesPage() => openLibraryTool(
+    AppLocalizations.of(element(find.byType(ShellScreen))).libraryMenuLibraries,
+  );
 
   /// Opens one of the library-wide screens (UC-37 main flow step 1).
   ///

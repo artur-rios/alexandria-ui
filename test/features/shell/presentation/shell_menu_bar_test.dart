@@ -12,6 +12,7 @@ import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 
 import '../../../support/shell_harness.dart';
 
@@ -282,7 +283,7 @@ void main() {
 
         container
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.bookmarks);
+            .go(const BookmarksDestination());
         await tester.pumpAndSettle();
 
         expect(find.byType(CatalogSearchField), findsNothing);
@@ -345,7 +346,7 @@ void main() {
         );
         container
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.videos);
+            .go(const TypeDestination(FileType.video));
         await tester.pumpAndSettle();
 
         await expectTheBarFitsInOneRow(tester);
@@ -360,7 +361,7 @@ void main() {
         );
         container
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.videos);
+            .go(const TypeDestination(FileType.video));
         await tester.pumpAndSettle();
 
         await expectTheBarFitsInOneRow(tester);

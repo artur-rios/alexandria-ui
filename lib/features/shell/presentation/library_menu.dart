@@ -49,7 +49,7 @@ class LibraryMenu extends ConsumerWidget {
           label: l10n.libraryMenuLibraries,
           onSelected: () => ref
               .read(shellControllerProvider.notifier)
-              .go(ShellDestination.libraries),
+              .go(const LibrariesDestination()),
         ),
         MenuEntry(
           icon: Icons.create_new_folder_outlined,

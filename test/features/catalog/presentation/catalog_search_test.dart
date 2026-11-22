@@ -13,7 +13,6 @@ import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart
     show CatalogListing;
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -82,17 +81,6 @@ void main() {
     ]),
   };
 
-  /// Moves to [destination] through the navigation panel.
-  Future<void> goTo(WidgetTester tester, ShellDestination destination) async {
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(destination.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
-  }
-
   group('leaving a search behind', () {
     testWidgets(
       'GivenASearchIsOpen_WhenAnotherAreaIsChosen_ThenTheListingIsShown',
@@ -103,7 +91,7 @@ void main() {
         await openShell(tester, listings: aLibrary());
         await search(tester, 'blue');
 
-        await goTo(tester, ShellDestination.images);
+        await tester.goTo(const TypeDestination(FileType.image));
 
         expect(find.byType(CatalogSearchResults), findsNothing);
         expect(find.byType(CatalogListing), findsOneWidget);
@@ -116,7 +104,7 @@ void main() {
         final container = await openShell(tester, listings: aLibrary());
         await search(tester, 'blue');
 
-        await goTo(tester, ShellDestination.images);
+        await tester.goTo(const TypeDestination(FileType.image));
 
         expect(container.read(searchTermProvider), isEmpty);
       },
@@ -132,7 +120,7 @@ void main() {
         // results would be offering an answer to a question it cannot ask.
         await openShell(tester, listings: aLibrary());
 
-        await goTo(tester, ShellDestination.bookmarks);
+        await tester.goTo(const BookmarksDestination());
         final l10n = AppLocalizations.of(
           tester.element(find.byType(ShellScreen)),
         );
@@ -146,7 +134,7 @@ void main() {
       (tester) async {
         await openShell(tester, listings: aLibrary());
 
-        await goTo(tester, ShellDestination.images);
+        await tester.goTo(const TypeDestination(FileType.image));
         final l10n = AppLocalizations.of(
           tester.element(find.byType(ShellScreen)),
         );
@@ -315,7 +303,15 @@ void main() {
       );
       expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
 
-      await tester.tap(find.text(l10n.libraryAdd));
+      // The content area's offer, not the left menu's entry beside it.
+
+      await tester.tap(
+        find.descendant(
+          of: find.byType(ShellContentArea),
+
+          matching: find.text(l10n.libraryAdd),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(LibrariesView), findsOneWidget);

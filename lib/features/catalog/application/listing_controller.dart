@@ -20,8 +20,7 @@ import '../domain/listing_view.dart';
 class ListingController extends AsyncNotifier<List<CatalogFile>> {
   @override
   Future<List<CatalogFile>> build() {
-    final destination = ref.watch(shellControllerProvider);
-    final type = fileTypeFor(destination);
+    final type = ref.watch(shellControllerProvider).listedType;
 
     // Watched, so changing a filter or a sort reloads the listing without
     // anything having to remember to ask for it (UC-12 main flow steps 2
@@ -69,7 +68,7 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
 
   /// Loads the current type again (UC-09 AF-02's retry).
   Future<void> reload() async {
-    final type = fileTypeFor(ref.read(shellControllerProvider));
+    final type = ref.read(shellControllerProvider).listedType;
     final view = type == null
         ? ListingView.initial
         : ref.read(listingViewControllerProvider).forType(type);
@@ -79,17 +78,18 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
   }
 }
 
-/// Every type's item count, for the navigation panel (FR-CT-01).
+/// Every type's item count, for the dashboard and the type listing's empty
+/// state (FR-CT-01).
 ///
 /// The core publishes no count call, so the count is still the length of the
 /// listing it would return — but one listing, not one per type. Asking per
 /// type meant serializing the whole catalog out of the core, across the FFI
-/// boundary and through a JSON decode once for every type in the panel, and
+/// boundary and through a JSON decode once for every type, and
 /// again after every scan, purge and restore. The one call omits the type
 /// filter, which the core reads as every type, and the tally is done here.
 ///
-/// Kept apart from the listing so the panel's numbers do not disappear while
-/// a listing reloads.
+/// Kept apart from the listing so the numbers do not disappear while a
+/// listing reloads.
 class TypeCountsController extends AsyncNotifier<Map<FileType, int>> {
   @override
   Future<Map<FileType, int>> build() async {

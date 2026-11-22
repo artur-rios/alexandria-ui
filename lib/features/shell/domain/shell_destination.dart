@@ -1,69 +1,102 @@
-/// The areas the navigation panel offers (FR-UX-01, FR-CT-01).
+import '../../catalog/domain/file_type.dart';
+
+/// The areas of the shell (FR-UX-01, spec §3).
 ///
-/// Eight of these are the library's types: the seven of the core's file types
-/// the panel lists, plus bookmarks, which are not files at all and are listed
-/// through their own core call (UC-28). [home] is not a file type — it is
-/// where UC-14's dashboard lands, and the panel carries it because "the
-/// application opens the dashboard" when it starts (UC-14 main flow step 1)
-/// would otherwise describe a screen the owner can never navigate back to.
+/// The left menu goes to three kinds of them: home, the bookmarks, and each
+/// library. [TypeDestination] and [LibrariesDestination] are temporary: they
+/// are reached from elsewhere in the shell but never listed in the left menu,
+/// and each goes once what replaces it exists.
 ///
-/// The shell owns *that there is a panel and what it selects*. The item count
-/// beside each type and the listing behind it are UC-09's, and arrive as a
-/// content area rather than as a change to this enum.
-enum ShellDestination {
-  /// The dashboard the application opens on (UC-14).
-  home,
-
-  /// Video of every kind.
-  ///
-  /// One entry, not the two FR-CT-01 originally listed. The core classifies a
-  /// file as `video` and carries no subtype, so "movies" and "series" would be
-  /// the same query and the same list. The distinction is real in this product
-  /// — it is what a watchlist tracks (UC-29) — but it is not a property of the
-  /// catalog, and inventing one here would be the front-end doing domain
-  /// classification the core owns (BR-02).
-  videos,
-
-  /// Music and other recordings (core 0.6.0), listed by their tags and played
-  /// in the player bar rather than opened full-screen.
-  music,
-
-  /// Books, including e-book formats and PDFs read as books.
-  books,
-
-  /// Comic book archives.
-  comicBooks,
-
-  /// Notes, Markdown, and plain text.
-  notes,
-
-  /// Saved HTML pages.
-  pages,
-
-  /// Still images.
-  images,
-
-  /// Saved links, which are the one destination holding no file on disk.
-  bookmarks,
-
-  /// The registered libraries — folders browsed as the trees they are, whose
-  /// files are shown only there (libraries design).
-  ///
-  /// Not a file type, and the second entry that is not: a library holds
-  /// whatever its folder holds, of every type at once. It is a destination
-  /// rather than an entry in the tools menu because it is somewhere the
-  /// owner browses, like the panels above it, rather than something they do
-  /// to the library.
-  libraries;
+/// The shell owns *that there is an area and which one is shown*; what each
+/// area holds is its own feature's content.
+sealed class ShellDestination {
+  const ShellDestination();
 
   /// The destination the shell opens on (UC-14 main flow step 1).
-  static const ShellDestination initial = ShellDestination.home;
+  static const ShellDestination initial = HomeDestination();
 
-  /// Whether this destination lists a file type, and so carries a count and a
-  /// listing.
-  ///
-  /// False for [home], which is the dashboard, and for [libraries], which
-  /// lists folders rather than files of any one type.
-  bool get isFileType =>
-      this != ShellDestination.home && this != ShellDestination.libraries;
+  /// The file type this destination lists, or `null` when it lists none.
+  FileType? get listedType => null;
+}
+
+/// The dashboard the application opens on (UC-14).
+final class HomeDestination extends ShellDestination {
+  /// Creates the destination.
+  const HomeDestination();
+
+  @override
+  bool operator ==(Object other) => other is HomeDestination;
+
+  @override
+  int get hashCode => (HomeDestination).hashCode;
+}
+
+/// Saved links, the one area holding no file on disk (UC-28).
+final class BookmarksDestination extends ShellDestination {
+  /// Creates the destination.
+  const BookmarksDestination();
+
+  @override
+  bool operator ==(Object other) => other is BookmarksDestination;
+
+  @override
+  int get hashCode => (BookmarksDestination).hashCode;
+}
+
+/// One library, the folder the owner chose (spec §3).
+///
+/// Compared by [uuid]: picking the library already shown is no move at all.
+final class LibraryDestination extends ShellDestination {
+  /// Creates the destination for the library [uuid] identifies.
+  const LibraryDestination(this.uuid);
+
+  /// The library shown.
+  final String uuid;
+
+  @override
+  bool operator ==(Object other) =>
+      other is LibraryDestination && other.uuid == uuid;
+
+  @override
+  int get hashCode => Object.hash(LibraryDestination, uuid);
+}
+
+/// The listing of one file type (UC-09).
+///
+/// Temporary. The left menu no longer lists the types; this stays only until
+/// a library's own page shows its files with the listing's tiles, and goes
+/// with `CatalogListing` then (library navigation plan, Task 4).
+final class TypeDestination extends ShellDestination {
+  /// Creates the destination listing [type].
+  const TypeDestination(this.type);
+
+  /// The type listed.
+  final FileType type;
+
+  @override
+  FileType get listedType => type;
+
+  @override
+  bool operator ==(Object other) =>
+      other is TypeDestination && other.type == type;
+
+  @override
+  int get hashCode => Object.hash(TypeDestination, type);
+}
+
+/// The registered libraries, with their runs and the add, scan, move and
+/// remove actions.
+///
+/// Temporary. Reached from the Library menu, the activity strip's "View all"
+/// and every "add a library" offer, never from the left menu; the Manage
+/// libraries dialog replaces it (library navigation plan, Task 5).
+final class LibrariesDestination extends ShellDestination {
+  /// Creates the destination.
+  const LibrariesDestination();
+
+  @override
+  bool operator ==(Object other) => other is LibrariesDestination;
+
+  @override
+  int get hashCode => (LibrariesDestination).hashCode;
 }

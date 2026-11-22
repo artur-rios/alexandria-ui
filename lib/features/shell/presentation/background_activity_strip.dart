@@ -478,7 +478,7 @@ class _AggregateRow extends ConsumerWidget {
         TextButton(
           onPressed: () => ref
               .read(shellControllerProvider.notifier)
-              .go(ShellDestination.libraries),
+              .go(const LibrariesDestination()),
           child: Text(l10n.activityViewAll),
         ),
         const SizedBox(width: AppSpacing.sm),

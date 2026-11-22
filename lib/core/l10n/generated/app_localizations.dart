@@ -1742,6 +1742,48 @@ abstract class AppLocalizations {
   /// **'Rename library'**
   String get libraryRename;
 
+  /// Context-menu entry of a library in the left menu that opens the rename dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename…'**
+  String get libraryRenameEntry;
+
+  /// Context-menu entry of a library in the left menu that pins it to the top of the menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get libraryPin;
+
+  /// Context-menu entry of a pinned library in the left menu that returns it to the other libraries.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get libraryUnpin;
+
+  /// Read out for the pin badge on a pinned library's icon in the left menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get libraryPinned;
+
+  /// Context-menu entry of a library in the left menu that marks it a favorite, which home shows. Not a bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get libraryFavoriteAdd;
+
+  /// Context-menu entry of a favorite library in the left menu that clears the mark.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get libraryFavoriteRemove;
+
+  /// Snackbar shown when the core refuses to pin, unpin, favorite or unfavorite a library; the left menu stays as it was.
+  ///
+  /// In en, this message translates to:
+  /// **'The change could not be saved.'**
+  String get libraryChangeNotSaved;
+
   /// Opens the folder picker to mark a folder as a library.
   ///
   /// In en, this message translates to:

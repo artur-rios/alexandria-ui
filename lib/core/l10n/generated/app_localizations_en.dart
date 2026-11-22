@@ -939,6 +939,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryRename => 'Rename library';
 
   @override
+  String get libraryRenameEntry => 'Rename…';
+
+  @override
+  String get libraryPin => 'Pin';
+
+  @override
+  String get libraryUnpin => 'Unpin';
+
+  @override
+  String get libraryPinned => 'Pinned';
+
+  @override
+  String get libraryFavoriteAdd => 'Add to favorites';
+
+  @override
+  String get libraryFavoriteRemove => 'Remove from favorites';
+
+  @override
+  String get libraryChangeNotSaved => 'The change could not be saved.';
+
+  @override
   String get libraryAdd => 'Add a library';
 
   @override

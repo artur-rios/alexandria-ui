@@ -943,6 +943,27 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryRename => 'Renomear biblioteca';
 
   @override
+  String get libraryRenameEntry => 'Renomear…';
+
+  @override
+  String get libraryPin => 'Fixar';
+
+  @override
+  String get libraryUnpin => 'Desafixar';
+
+  @override
+  String get libraryPinned => 'Fixada';
+
+  @override
+  String get libraryFavoriteAdd => 'Adicionar às preferidas';
+
+  @override
+  String get libraryFavoriteRemove => 'Remover das preferidas';
+
+  @override
+  String get libraryChangeNotSaved => 'A alteração não pôde ser salva.';
+
+  @override
   String get libraryAdd => 'Adicionar uma biblioteca';
 
   @override

@@ -10,7 +10,6 @@ import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -64,13 +63,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.libraries.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openLibrariesPage();
 
     return (container: container, gateway: gateway, index: theIndex);
   }
@@ -118,7 +111,13 @@ void main() {
           name: 'Rust course',
           rootPath: folder,
         ));
-        expect(find.text('Rust course'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(LibrariesView),
+            matching: find.text('Rust course'),
+          ),
+          findsOneWidget,
+        );
         // The core started the run with the library; this screen only
         // follows it, and starts nothing of its own.
         expect(opened.index.libraryStarts, isEmpty);

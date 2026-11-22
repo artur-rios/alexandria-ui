@@ -6,8 +6,6 @@ import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/libraries/presentation/library_tree_screen.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -38,13 +36,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.libraries.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openLibrariesPage();
 
     return (container: container, gateway: theGateway);
   }
@@ -88,7 +80,13 @@ void main() {
       ),
     };
 
-    await tester.tap(find.text('Course'));
+    // The row in the libraries page, not the library's own left-menu entry.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(LibraryTreeScreen), findsOneWidget);
@@ -112,7 +110,13 @@ void main() {
         ),
       ),
     };
-    await tester.tap(find.text('Course'));
+    // The row in the libraries page, not the library's own left-menu entry.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('class-01'));
@@ -145,7 +149,13 @@ void main() {
         ),
       ),
     };
-    await tester.tap(find.text('Course'));
+    // The row in the libraries page, not the library's own left-menu entry.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('class-01'));
     await tester.pumpAndSettle();
@@ -202,7 +212,13 @@ void main() {
       ),
     };
 
-    await tester.tap(find.text('Course'));
+    // The row in the libraries page, not the library's own left-menu entry.
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+    );
     await tester.pumpAndSettle();
 
     final l10n = AppLocalizations.of(

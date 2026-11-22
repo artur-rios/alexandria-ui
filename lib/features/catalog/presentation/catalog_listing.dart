@@ -27,7 +27,7 @@ class CatalogListing extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final listing = ref.watch(listingControllerProvider);
-    final type = fileTypeFor(ref.watch(shellControllerProvider));
+    final type = ref.watch(shellControllerProvider).listedType;
 
     // UC-10 AF-01 is about whether the layout fits *where it is drawn*. The
     // window is wider than the listing by the navigation panel, the divider,
@@ -424,7 +424,7 @@ class _EmptyListing extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    final type = fileTypeFor(ref.watch(shellControllerProvider));
+    final type = ref.watch(shellControllerProvider).listedType;
     final filtered =
         type != null &&
         ref.watch(listingViewControllerProvider).forType(type).isFiltered;
@@ -473,7 +473,7 @@ class _EmptyListing extends ConsumerWidget {
               const SizedBox(height: AppSpacing.lg),
               FilledButton.icon(
                 onPressed: () {
-                  final type = fileTypeFor(ref.read(shellControllerProvider));
+                  final type = ref.read(shellControllerProvider).listedType;
                   if (type != null) {
                     ref
                         .read(listingViewControllerProvider.notifier)
@@ -510,7 +510,7 @@ class _FilterControls extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final type = fileTypeFor(ref.watch(shellControllerProvider));
+    final type = ref.watch(shellControllerProvider).listedType;
     if (type == null) return const SizedBox.shrink();
 
     final view = ref.watch(listingViewControllerProvider).forType(type);

@@ -8,7 +8,6 @@ import 'package:alexandria_ui/features/viewers/domain/viewer_registry.dart';
 import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
 import 'package:alexandria_ui/features/viewers/presentation/viewer_failure_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,7 +40,7 @@ void main() {
     DocumentOutcome? outcome,
     FakeReadingPositionStore? positions,
     ViewerRegistry? registry,
-    ShellDestination destination = ShellDestination.books,
+    ShellDestination destination = const TypeDestination(FileType.document),
     FileType type = FileType.document,
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
@@ -72,13 +71,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(destination.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.goTo(destination);
     // The row opens the file itself now, so a test that wants it open taps
     // the row, and one that wants the details taps the button beside it —
     // where the Open action still is, for a file that cannot just be opened.

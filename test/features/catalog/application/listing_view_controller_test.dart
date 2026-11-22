@@ -46,7 +46,7 @@ void main() {
         final sut = await started();
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
+            .go(const TypeDestination(FileType.document));
         await pumpEventQueue();
 
         await sut.ref
@@ -74,7 +74,7 @@ void main() {
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
+            .go(const TypeDestination(FileType.document));
         await pumpEventQueue();
 
         final ascending = sut.ref.read(listingControllerProvider).value!;
@@ -246,7 +246,7 @@ void main() {
         );
         sut.ref
             .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
+            .go(const TypeDestination(FileType.document));
         await pumpEventQueue();
 
         await sut.ref

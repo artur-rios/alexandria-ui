@@ -158,7 +158,7 @@ class _LibraryRow extends ConsumerWidget {
 /// runs on the Libraries screen ([LibraryAddRequest] says why).
 void openLibrariesAndAdd(WidgetRef ref) {
   ref.read(libraryAddRequestProvider.notifier).ask();
-  ref.read(shellControllerProvider.notifier).go(ShellDestination.libraries);
+  ref.read(shellControllerProvider.notifier).go(const LibrariesDestination());
 }
 
 /// Adds a folder the owner picks as a library (core FR-FC-36).

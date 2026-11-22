@@ -7,12 +7,31 @@ import '../domain/shell_destination.dart';
 ///
 /// Deliberately the whole of the shell's navigation state: the content area
 /// reads it, the navigation panel writes it, and neither knows about the
-/// other. A destination that later needs to carry an argument — a collection
-/// the owner opened, say — grows this into a union rather than adding a second
-/// source of truth beside it.
+/// other.
 class ShellController extends Notifier<ShellDestination> {
   @override
-  ShellDestination build() => ShellDestination.initial;
+  ShellDestination build() {
+    // A library shown in the main area can be removed while it is shown —
+    // from the libraries page, or by another window on the same catalog. The
+    // libraries list reloading without it is what says so, and the area it
+    // was is then home rather than a page about nothing (spec §3).
+    //
+    // Weak, so the shell does not load the libraries itself: the left menu
+    // keeps them loaded whenever there is a shell to show one in. A failed
+    // or loading list says nothing about which libraries exist, so only a
+    // loaded one is read.
+    ref.listen(librariesControllerProvider, weak: true, (_, next) {
+      if (state case LibraryDestination(:final uuid)) {
+        if (next case AsyncData(
+          :final value,
+        ) when !value.any((library) => library.uuid == uuid)) {
+          go(ShellDestination.initial);
+        }
+      }
+    });
+
+    return ShellDestination.initial;
+  }
 
   /// Moves to [destination].
   ///

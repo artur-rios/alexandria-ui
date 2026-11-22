@@ -123,7 +123,9 @@ void main() {
   test('GivenAFileInALibrary_WhenItsTypePanelLists_ThenItIsListed', () async {
     final sut = build(files: [row('lecture.pdf', library: 'lib-1')]);
     sut.ref.listen(listingControllerProvider, (_, _) {});
-    sut.ref.read(shellControllerProvider.notifier).go(ShellDestination.books);
+    sut.ref
+        .read(shellControllerProvider.notifier)
+        .go(const TypeDestination(FileType.document));
 
     final listed = await sut.ref.read(listingControllerProvider.future);
 

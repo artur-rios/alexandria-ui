@@ -16,7 +16,6 @@ import 'package:alexandria_ui/features/organization/presentation/bookmarks_view.
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/async_state_view.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -33,7 +32,7 @@ void main() {
   Future<ProviderContainer> openListing(
     WidgetTester tester, {
     Map<FileType, CatalogListing>? listings,
-    ShellDestination destination = ShellDestination.videos,
+    ShellDestination destination = const TypeDestination(FileType.video),
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,
   }) async {
@@ -50,13 +49,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(destination.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.goTo(destination);
 
     return container;
   }
@@ -83,7 +76,7 @@ void main() {
       await openListing(
         tester,
         listings: aDocument(),
-        destination: ShellDestination.books,
+        destination: const TypeDestination(FileType.document),
       );
 
       await tester.tap(find.text('Solaris.epub'));
@@ -101,7 +94,7 @@ void main() {
       await openListing(
         tester,
         listings: aDocument(),
-        destination: ShellDestination.books,
+        destination: const TypeDestination(FileType.document),
       );
 
       await tester.tap(find.byType(FileDetailsButton));
@@ -121,7 +114,7 @@ void main() {
       await openListing(
         tester,
         listings: aDocument(missing: true),
-        destination: ShellDestination.books,
+        destination: const TypeDestination(FileType.document),
       );
 
       await tester.tap(find.text('Solaris.epub'));
@@ -138,7 +131,7 @@ void main() {
       final container = await openListing(
         tester,
         listings: aDocument(),
-        destination: ShellDestination.books,
+        destination: const TypeDestination(FileType.document),
       );
       await container
           .read(layoutControllerProvider.notifier)
@@ -244,7 +237,15 @@ void main() {
         );
         expect(find.text(l10n.catalogEmptyFirstRun), findsOneWidget);
 
-        await tester.tap(find.text(l10n.libraryAdd));
+        // The content area's offer, not the left menu's entry beside it.
+
+        await tester.tap(
+          find.descendant(
+            of: find.byType(ShellContentArea),
+
+            matching: find.text(l10n.libraryAdd),
+          ),
+        );
         await tester.pumpAndSettle();
 
         expect(find.byType(LibrariesView), findsOneWidget);
@@ -289,34 +290,10 @@ void main() {
       );
       expect(find.byType(ShellFailureView), findsOneWidget);
 
-      await tester.tap(
-        find.descendant(
-          of: find.byType(ShellNavigationPanel),
-          matching: find.byIcon(ShellDestination.images.icon),
-        ),
-      );
-      await tester.pumpAndSettle();
+      await tester.openTypeListing(FileType.image);
 
       expect(find.text('a.png'), findsOneWidget);
       expect(find.byType(ShellFailureView), findsNothing);
-    });
-  });
-
-  group('the panel counts (FR-CT-01)', () {
-    testWidgets('GivenTypesWithFiles_WhenTheShellOpens_ThenCountsAreShown', (
-      tester,
-    ) async {
-      await openListing(
-        tester,
-        listings: {
-          FileType.video: loadedDetails([
-            aFile(type: FileType.video),
-            aFile(uuid: 'b', type: FileType.video),
-          ]),
-        },
-      );
-
-      expect(find.widgetWithText(Badge, '2'), findsOneWidget);
     });
   });
 
@@ -326,7 +303,7 @@ void main() {
     ) async {
       // Bookmarks are not files, so the listing this use case built is not
       // what that destination shows — UC-28's bookmark manager is.
-      await openListing(tester, destination: ShellDestination.bookmarks);
+      await openListing(tester, destination: const BookmarksDestination());
 
       expect(find.byType(widgets.CatalogListing), findsNothing);
       expect(find.byType(BookmarksView), findsOneWidget);
@@ -409,7 +386,7 @@ void main() {
         await openListing(
           tester,
           listings: twoTracks(),
-          destination: ShellDestination.music,
+          destination: const TypeDestination(FileType.audio),
         );
 
         expect(find.text('First'), findsOneWidget);
@@ -425,7 +402,7 @@ void main() {
       await openListing(
         tester,
         listings: twoTracks(),
-        destination: ShellDestination.music,
+        destination: const TypeDestination(FileType.audio),
       );
 
       expect(

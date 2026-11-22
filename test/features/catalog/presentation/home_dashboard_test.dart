@@ -198,7 +198,13 @@ void main() {
       // Four empty sections would be four ways of saying the same thing.
       expect(find.text(l10n.dashboardRecent), findsNothing);
 
-      await tester.tap(find.text(l10n.libraryAdd));
+      // The dashboard's offer, not the left menu's entry beside it.
+      await tester.tap(
+        find.descendant(
+          of: find.byType(HomeDashboard),
+          matching: find.text(l10n.libraryAdd),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(LibrariesView), findsOneWidget);

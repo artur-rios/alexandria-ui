@@ -4,8 +4,6 @@ import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
-import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -55,13 +53,7 @@ void main() {
       ],
     );
 
-    await tester.tap(
-      find.descendant(
-        of: find.byType(ShellNavigationPanel),
-        matching: find.byIcon(ShellDestination.videos.icon),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await tester.openTypeListing(FileType.video);
 
     return container;
   }
@@ -130,13 +122,7 @@ void main() {
       await openListing(tester);
       await chooseLayout(tester, ViewLayout.grid);
 
-      await tester.tap(
-        find.descendant(
-          of: find.byType(ShellNavigationPanel),
-          matching: find.byIcon(ShellDestination.images.icon),
-        ),
-      );
-      await tester.pumpAndSettle();
+      await tester.openTypeListing(FileType.image);
 
       expect(find.byType(GridView), findsNothing);
     });
@@ -147,20 +133,8 @@ void main() {
       await openListing(tester);
       await chooseLayout(tester, ViewLayout.grid);
 
-      await tester.tap(
-        find.descendant(
-          of: find.byType(ShellNavigationPanel),
-          matching: find.byIcon(ShellDestination.images.icon),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.descendant(
-          of: find.byType(ShellNavigationPanel),
-          matching: find.byIcon(ShellDestination.videos.icon),
-        ),
-      );
-      await tester.pumpAndSettle();
+      await tester.openTypeListing(FileType.image);
+      await tester.openTypeListing(FileType.video);
 
       expect(find.byType(GridView), findsOneWidget);
     });
