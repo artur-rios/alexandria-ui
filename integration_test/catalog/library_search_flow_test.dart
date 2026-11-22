@@ -117,6 +117,11 @@ void main() {
         .register(name: libraryName, rootPath: catalog.libraryDirectory.path);
     expect(registered, isA<LibraryRegistered>());
 
+    // The left menu's list is read once, at startup, and a library added
+    // behind its back (here, through the gateway) is not in it until it is
+    // read again. The hit names its library from that list.
+    await container.read(librariesControllerProvider.notifier).reload();
+
     for (var attempt = 0; attempt < 300; attempt++) {
       if (await core.indexCountFiles() >= expected) return;
       await tester.pump(const Duration(milliseconds: 100));
