@@ -11,8 +11,7 @@ import '../../tracking/presentation/watchlists_screen.dart';
 import '../domain/catalog_file.dart';
 import '../domain/file_type.dart';
 import '../domain/listing_view.dart';
-import 'file_details_view.dart';
-import 'music_display_name.dart';
+import 'file_tiles.dart';
 import '../domain/view_layout.dart';
 
 /// The files of the selected type (UC-09, FR-CT-02, FR-CT-10).
@@ -69,7 +68,7 @@ class CatalogListing extends ConsumerWidget {
               isEmpty: (files) => files.isEmpty,
               emptyBuilder: (context) => const _EmptyListing(),
               builder: (context, files) => type == null
-                  ? _FileList(files: files)
+                  ? FileList(files: files)
                   : _LaidOutFiles(
                       files: files,
                       type: type,
@@ -200,9 +199,9 @@ class _LaidOutFiles extends ConsumerWidget {
     final chosen = ref.watch(layoutControllerProvider).chosenFor(type);
 
     return switch (chosen.resolvedFor(width)) {
-      ViewLayout.list => _FileList(files: files),
-      ViewLayout.detailedList => _FileList(files: files, detailed: true),
-      ViewLayout.grid => _FileGrid(files: files),
+      ViewLayout.list => FileList(files: files),
+      ViewLayout.detailedList => FileList(files: files, detailed: true),
+      ViewLayout.grid => FileGrid(files: files),
     };
   }
 }
@@ -220,195 +219,6 @@ extension _ViewLayoutPresentation on ViewLayout {
     ViewLayout.detailedList => l10n.layoutDetailedList,
     ViewLayout.grid => l10n.layoutGrid,
   };
-}
-
-/// The tiles (FR-CT-03, FR-CT-10).
-class _FileGrid extends ConsumerWidget {
-  const _FileGrid({required this.files});
-
-  final List<CatalogFile> files;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-
-    // A builder here too: a grid that built every tile would defeat FR-CT-10
-    // exactly as a column would.
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 220,
-        childAspectRatio: 4 / 3,
-        mainAxisSpacing: AppSpacing.sm,
-        crossAxisSpacing: AppSpacing.sm,
-      ),
-      itemCount: files.length,
-      itemBuilder: (context, index) {
-        final file = files[index];
-
-        return Card(
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                child: FileDetailsButton(file: file),
-              ),
-              Positioned.fill(
-                child: InkWell(
-                  // A track plays through the listing in its order.
-                  onTap: () => openFile(
-                    context,
-                    ref,
-                    file,
-                    queue: ref.read(listingControllerProvider).value,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          file.isMissing
-                              ? Icons.report_gmailerrorred_outlined
-                              : Icons.insert_drive_file_outlined,
-                          color: file.isMissing
-                              ? theme.colorScheme.error
-                              : null,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          displayName(file),
-                          style: theme.textTheme.bodySmall,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// The rows themselves.
-///
-/// A builder, not a column: FR-CT-10 asks that scrolling cost not grow with
-/// the size of the library, and a listing that built every row would spend the
-/// whole library's worth of work to show one screen of it.
-class _FileList extends StatelessWidget {
-  const _FileList({required this.files, this.detailed = false});
-
-  final List<CatalogFile> files;
-
-  /// Whether each row carries its details alongside the name.
-  final bool detailed;
-
-  @override
-  Widget build(BuildContext context) => ListView.builder(
-    itemCount: files.length,
-    itemBuilder: (context, index) =>
-        _FileRow(file: files[index], detailed: detailed),
-  );
-}
-
-/// One file.
-class _FileRow extends ConsumerWidget {
-  const _FileRow({required this.file, this.detailed = false});
-
-  final CatalogFile file;
-
-  /// Whether the row shows the file's path beneath its name.
-  final bool detailed;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-
-    return ListTile(
-      // UC-13 main flow step 1: a row opens its file. The details are the
-      // button at the end of the row, and are still where a file that cannot
-      // be opened ends up (`openFile`).
-      // A track plays through the listing as it is sorted and filtered.
-      onTap: () => openFile(
-        context,
-        ref,
-        file,
-        queue: ref.read(listingControllerProvider).value,
-      ),
-      leading: Icon(
-        // Deliberately not one of the navigation panel's icons: a row and a
-        // destination that draw the same glyph are two different things
-        // claiming to be one.
-        file.isMissing
-            ? Icons.report_gmailerrorred_outlined
-            : file.type == FileType.audio
-            ? Icons.music_note_outlined
-            : Icons.insert_drive_file_outlined,
-        color: file.isMissing ? theme.colorScheme.error : null,
-      ),
-      // The plain list is the name and nothing else; the detailed one adds
-      // where the file actually is beside it, which is the detail that
-      // distinguishes two files with the same name. Beside rather than
-      // beneath: a second column is what "list with details" means in
-      // FR-CT-03, and it is the column that needs the medium tier's width —
-      // below the medium floor the layout is substituted rather than squeezed
-      // (UC-10 AF-01).
-      title: detailed
-          ? Row(
-              children: [
-                Expanded(child: Text(displayName(file))),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Text(
-                    file.path,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            )
-          : Text(displayName(file)),
-      // A track is named by its tags, with who and from what beneath; the
-      // path beside it in the detailed layout still tells two apart.
-      subtitle: switch (musicByline(file)) {
-        final String byline when file.type == FileType.audio => Text(byline),
-        _ => null,
-      },
-      // A file the last refresh could not find is still an active record; it
-      // is marked rather than hidden, and reviewing them is UC-37.
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (file.durationSeconds case final double seconds
-              when file.type == FileType.audio)
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: Text(
-                formatDuration(seconds),
-                style: theme.textTheme.bodySmall,
-              ),
-            ),
-          if (file.isMissing)
-            Text(
-              l10n.catalogFileMissing,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.error,
-              ),
-            ),
-          FileDetailsButton(file: file),
-        ],
-      ),
-    );
-  }
 }
 
 /// The empty state (AF-01).
