@@ -79,9 +79,11 @@ import '../../features/playback/domain/media_player.dart';
 import '../../features/playback/domain/playback_position_store.dart';
 import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
+import '../../features/libraries/application/catalog_stats_controller.dart';
 import '../../features/libraries/application/libraries_controller.dart';
 import '../../features/libraries/application/library_add_request.dart';
 import '../../features/libraries/data/core_library_gateway.dart';
+import '../../features/libraries/domain/catalog_stats.dart';
 import '../../features/libraries/domain/library.dart';
 import '../../features/libraries/domain/library_gateway.dart';
 import '../../features/shell/domain/app_activity.dart';
@@ -809,6 +811,12 @@ final libraryGatewayProvider = Provider<LibraryGateway>((ref) {
 final libraryAddRequestProvider = NotifierProvider<LibraryAddRequest, bool>(
   LibraryAddRequest.new,
 );
+
+/// The catalog's totals: how many libraries, and how many files of each type.
+final catalogStatsProvider =
+    AsyncNotifierProvider<CatalogStatsController, CatalogStats>(
+      CatalogStatsController.new,
+    );
 
 /// The registered libraries.
 final librariesControllerProvider =

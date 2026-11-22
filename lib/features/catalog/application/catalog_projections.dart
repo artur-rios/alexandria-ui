@@ -16,6 +16,7 @@ import '../../../core/di/providers.dart';
 void invalidateCatalogProjections(Ref ref) {
   ref.invalidate(listingControllerProvider);
   ref.invalidate(typeCountsControllerProvider);
+  ref.invalidate(catalogStatsProvider);
   ref.invalidate(recentFilesProvider);
   ref.invalidate(catalogSearchProvider);
   ref.invalidate(fileDetailsControllerProvider);

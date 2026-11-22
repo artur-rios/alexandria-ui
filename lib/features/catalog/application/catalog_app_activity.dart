@@ -30,6 +30,7 @@ class CatalogAppActivity implements AppActivity {
     // The catalog itself, and everything derived from it.
     _ref.invalidate(listingControllerProvider);
     _ref.invalidate(typeCountsControllerProvider);
+    _ref.invalidate(catalogStatsProvider);
     _ref.invalidate(recentFilesProvider);
     _ref.invalidate(catalogSearchProvider);
 

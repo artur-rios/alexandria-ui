@@ -7,7 +7,9 @@ import '../../../core/failures/core_status.dart';
 import '../../../core/failures/core_status_mapper.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/data/file_view_parser.dart';
+import '../../catalog/domain/file_type.dart';
 import '../../indexing/domain/run_priority.dart';
+import '../domain/catalog_stats.dart';
 import '../domain/library.dart';
 import '../domain/library_gateway.dart';
 
@@ -160,17 +162,92 @@ class CoreLibraryGateway implements LibraryGateway {
   Future<LibraryWrite> remove({required String uuid}) =>
       _write(() => _core.libraryRemove(uuid));
 
+  @override
+  Future<LibraryWrite> setPinned({
+    required String uuid,
+    required bool pinned,
+  }) => _writeStatus(() => _core.librarySetPinned(uuid, pinned));
+
+  @override
+  Future<LibraryWrite> setFavorite({
+    required String uuid,
+    required bool favorite,
+  }) => _writeStatus(() => _core.librarySetFavorite(uuid, favorite));
+
+  @override
+  Future<LibraryWrite> rename({required String uuid, required String name}) =>
+      _write(() => _core.libraryRename(uuid, jsonEncode({'name': name})));
+
+  @override
+  Future<CatalogStats> stats() async {
+    const unreadable = Failure.unexpected(
+      family: CoreStatusFamily.library,
+      code: LIBRARY_ERR_OTHER,
+    );
+
+    final CoreJsonResponse response;
+    try {
+      response = await _core.catalogStats();
+    } on CoreCallException {
+      throw unreadable;
+    }
+
+    if (!CoreStatusFamily.library.isOk(response.status)) {
+      throw mapCoreStatus(CoreStatusFamily.library, response.status);
+    }
+
+    final json = response.json;
+    if (json == null) throw unreadable;
+
+    try {
+      final body = jsonDecode(json) as Map<String, dynamic>;
+      final byType = body['filesByType'] as Map<String, dynamic>;
+
+      return CatalogStats(
+        libraries: body['libraries'] as int,
+        filesByType: {
+          // A type this build does not know is left out, as in a listing;
+          // every type it does know is present, a zero included.
+          for (final type in FileType.values)
+            type: (byType[type.wireName] as int?) ?? 0,
+        },
+      );
+    } on Object {
+      throw unreadable;
+    }
+  }
+
+  /// A write that answers a bare status, as pinning and favoriting do.
+  Future<LibraryWrite> _writeStatus(Future<int> Function() call) async {
+    final int status;
+    try {
+      status = await call();
+    } on CoreCallException {
+      return _unreadableWrite();
+    }
+
+    if (!CoreStatusFamily.library.isOk(status)) {
+      return LibraryWrite.failed(
+        failure: mapCoreStatus(CoreStatusFamily.library, status),
+      );
+    }
+
+    return const LibraryWrite.done();
+  }
+
+  LibraryWrite _unreadableWrite() => const LibraryWrite.failed(
+    failure: Failure.unexpected(
+      family: CoreStatusFamily.library,
+      code: LIBRARY_ERR_OTHER,
+    ),
+  );
+
   Future<LibraryWrite> _write(Future<CoreJsonResponse> Function() call) async {
     final CoreJsonResponse response;
     try {
       response = await call();
     } on CoreCallException {
-      return const LibraryWrite.failed(
-        failure: Failure.unexpected(
-          family: CoreStatusFamily.library,
-          code: LIBRARY_ERR_OTHER,
-        ),
-      );
+      return _unreadableWrite();
     }
 
     if (!CoreStatusFamily.library.isOk(response.status)) {
@@ -186,6 +263,8 @@ class CoreLibraryGateway implements LibraryGateway {
     uuid: row['uuid'] as String,
     name: row['name'] as String,
     rootPath: row['rootPath'] as String,
+    pinned: row['pinned'] as bool? ?? false,
+    favorite: row['favorite'] as bool? ?? false,
   );
 
   /// One file, or `null` when its record cannot be read.

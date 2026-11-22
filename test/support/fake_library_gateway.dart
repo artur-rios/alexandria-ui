@@ -1,5 +1,7 @@
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
+import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/libraries/domain/catalog_stats.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/indexing/domain/run_priority.dart';
@@ -113,11 +115,7 @@ class FakeLibraryGateway implements LibraryGateway {
         failure: Failure.notFound(family: CoreStatusFamily.library, code: 4),
       );
     }
-    libraries[at] = Library(
-      uuid: uuid,
-      name: libraries[at].name,
-      rootPath: rootPath,
-    );
+    libraries[at] = libraries[at].copyWith(rootPath: rootPath);
 
     return const LibraryWrite.done();
   }
@@ -129,5 +127,76 @@ class FakeLibraryGateway implements LibraryGateway {
 
     libraries.removeWhere((library) => library.uuid == uuid);
     return const LibraryWrite.done();
+  }
+
+  /// Every pin change asked for, in order.
+  final List<({String uuid, bool pinned})> pinnedCalls = [];
+
+  /// Every favorite change asked for, in order.
+  final List<({String uuid, bool favorite})> favoriteCalls = [];
+
+  /// Every rename asked for, in order.
+  final List<({String uuid, String name})> renamedCalls = [];
+
+  @override
+  Future<LibraryWrite> setPinned({
+    required String uuid,
+    required bool pinned,
+  }) async {
+    pinnedCalls.add((uuid: uuid, pinned: pinned));
+    return _change(uuid, (library) => library.copyWith(pinned: pinned));
+  }
+
+  @override
+  Future<LibraryWrite> setFavorite({
+    required String uuid,
+    required bool favorite,
+  }) async {
+    favoriteCalls.add((uuid: uuid, favorite: favorite));
+    return _change(uuid, (library) => library.copyWith(favorite: favorite));
+  }
+
+  @override
+  Future<LibraryWrite> rename({
+    required String uuid,
+    required String name,
+  }) async {
+    renamedCalls.add((uuid: uuid, name: name));
+    return _change(uuid, (library) => library.copyWith(name: name));
+  }
+
+  /// Applies [change] to the library [uuid], unless a queued outcome refuses.
+  LibraryWrite _change(String uuid, Library Function(Library) change) {
+    if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
+
+    final at = libraries.indexWhere((library) => library.uuid == uuid);
+    if (at < 0) {
+      return const LibraryWrite.failed(
+        failure: Failure.notFound(family: CoreStatusFamily.library, code: 4),
+      );
+    }
+    libraries[at] = change(libraries[at]);
+
+    return const LibraryWrite.done();
+  }
+
+  /// What [stats] answers: an empty catalog, every type present and zero.
+  CatalogStats statsOutcome = CatalogStats(
+    libraries: 0,
+    filesByType: {for (final type in FileType.values) type: 0},
+  );
+
+  /// What [stats] throws instead, when a test says so.
+  Failure? statsFailure;
+
+  /// How many times [stats] was asked.
+  int statsReads = 0;
+
+  @override
+  Future<CatalogStats> stats() async {
+    statsReads++;
+    if (statsFailure case final failure?) throw failure;
+
+    return statsOutcome;
   }
 }

@@ -940,6 +940,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryNameLabel => 'Nome da biblioteca';
 
   @override
+  String get libraryRename => 'Renomear biblioteca';
+
+  @override
   String get libraryAdd => 'Adicionar uma biblioteca';
 
   @override

@@ -84,6 +84,41 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     }
   }
 
+  /// Pins the library [uuid] to the top of the left menu, or unpins it.
+  ///
+  /// Answers the refusal and leaves the list as it was: the list changes
+  /// only when the core says it did.
+  Future<Failure?> setPinned(String uuid, bool pinned) => _change(
+    () =>
+        ref.read(libraryGatewayProvider).setPinned(uuid: uuid, pinned: pinned),
+  );
+
+  /// Marks the library [uuid] a favorite, or clears it.
+  Future<Failure?> setFavorite(String uuid, bool favorite) => _change(
+    () => ref
+        .read(libraryGatewayProvider)
+        .setFavorite(uuid: uuid, favorite: favorite),
+  );
+
+  /// Calls the library [uuid] [name] from now on.
+  ///
+  /// Answers the refusal rather than throwing it, so the dialog asking for
+  /// the name can say why and stay open.
+  Future<Failure?> rename(String uuid, String name) => _change(
+    () => ref.read(libraryGatewayProvider).rename(uuid: uuid, name: name),
+  );
+
+  Future<Failure?> _change(Future<LibraryWrite> Function() write) async {
+    switch (await write()) {
+      case LibraryWriteDone():
+        await reload();
+        return null;
+
+      case LibraryWriteFailed(:final failure):
+        return failure;
+    }
+  }
+
   /// Adds [rootPath] as a library called [name], and follows the index run
   /// the core starts for it.
   ///
@@ -102,6 +137,7 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     switch (outcome) {
       case LibraryRegistered(:final library, :final runId):
         await reload();
+        ref.invalidate(catalogStatsProvider);
         // The core started the library's first run with it; following it is
         // what puts its progress beside the new row and its outcome there
         // once it settles.

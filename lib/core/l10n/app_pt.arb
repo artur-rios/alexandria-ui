@@ -273,6 +273,7 @@
   "librariesNone": "Você ainda não tem bibliotecas. Adicione uma pasta como biblioteca com o botão acima, e o Alexandria a indexa.",
   "librariesExplanation": "Uma biblioteca é uma pasta que o Alexandria indexa, mantendo suas pastas como estão. Adicionar uma é como os arquivos entram no Alexandria: tudo o que você navega, reproduz ou lê vem das suas bibliotecas.",
   "libraryNameLabel": "Nome da biblioteca",
+  "libraryRename": "Renomear biblioteca",
   "libraryAdd": "Adicionar uma biblioteca",
   "libraryScan": "Analisar novamente",
   "libraryRemove": "Remover esta biblioteca",

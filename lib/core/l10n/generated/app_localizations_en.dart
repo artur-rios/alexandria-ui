@@ -936,6 +936,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryNameLabel => 'Library name';
 
   @override
+  String get libraryRename => 'Rename library';
+
+  @override
   String get libraryAdd => 'Add a library';
 
   @override

@@ -1736,6 +1736,12 @@ abstract class AppLocalizations {
   /// **'Library name'**
   String get libraryNameLabel;
 
+  /// Title of the dialog that renames a library, and the tooltip of the action that opens it.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename library'**
+  String get libraryRename;
+
   /// Opens the folder picker to mark a folder as a library.
   ///
   /// In en, this message translates to:

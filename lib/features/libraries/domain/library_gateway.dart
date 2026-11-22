@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/failures/failure.dart';
 import '../../indexing/domain/run_priority.dart';
+import 'catalog_stats.dart';
 import 'library.dart';
 
 part 'library_gateway.freezed.dart';
@@ -98,4 +99,25 @@ abstract interface class LibraryGateway {
   /// empties part of a panel, which is not visible until afterwards, so the
   /// way back has to restore rather than delete.
   Future<LibraryWrite> remove({required String uuid});
+
+  /// Pins [uuid] to the top of the left menu, or unpins it.
+  Future<LibraryWrite> setPinned({required String uuid, required bool pinned});
+
+  /// Marks [uuid] a favorite, or clears it.
+  Future<LibraryWrite> setFavorite({
+    required String uuid,
+    required bool favorite,
+  });
+
+  /// Calls [uuid] [name] from now on.
+  ///
+  /// Allowed at any time, a run in progress included: the name is the
+  /// owner's label, and nothing a run reads.
+  Future<LibraryWrite> rename({required String uuid, required String name});
+
+  /// The catalog's totals.
+  ///
+  /// Throws the mapped [Failure] when the core cannot answer, as the type
+  /// counts do, so the screen showing them can say so and retry.
+  Future<CatalogStats> stats();
 }

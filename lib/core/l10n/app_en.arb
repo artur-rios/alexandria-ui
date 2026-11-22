@@ -1279,6 +1279,10 @@
   "@libraryNameLabel": {
     "description": "The owner's name for the library, which is not the folder's name."
   },
+  "libraryRename": "Rename library",
+  "@libraryRename": {
+    "description": "Title of the dialog that renames a library, and the tooltip of the action that opens it."
+  },
   "libraryAdd": "Add a library",
   "@libraryAdd": {
     "description": "Opens the folder picker to mark a folder as a library."
