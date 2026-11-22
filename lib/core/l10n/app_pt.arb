@@ -103,6 +103,7 @@
   "detailsFileModified": "Última modificação",
   "homeFavorites": "Bibliotecas preferidas",
   "homeFavoritesNone": "Marque uma biblioteca como preferida para vê-la aqui",
+  "homeFavoritesHint": "Use a estrela no cabeçalho da biblioteca ou clique com o botão direito na biblioteca no menu à esquerda.",
   "homeStatistics": "Estatísticas",
   "homeLibraryCount": "{count, plural, =1{1 biblioteca} other{{count} bibliotecas}}",
   "detailsEditMetadata": "Editar metadados",

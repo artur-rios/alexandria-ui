@@ -356,6 +356,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Marque uma biblioteca como preferida para vê-la aqui';
 
   @override
+  String get homeFavoritesHint =>
+      'Use a estrela no cabeçalho da biblioteca ou clique com o botão direito na biblioteca no menu à esquerda.';
+
+  @override
   String get homeStatistics => 'Estatísticas';
 
   @override

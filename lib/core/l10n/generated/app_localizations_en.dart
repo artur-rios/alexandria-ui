@@ -353,6 +353,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeFavoritesNone => 'Mark a library as a favorite to see it here';
 
   @override
+  String get homeFavoritesHint =>
+      'Use the star in a library\'s header, or right-click it in the left menu.';
+
+  @override
   String get homeStatistics => 'Statistics';
 
   @override

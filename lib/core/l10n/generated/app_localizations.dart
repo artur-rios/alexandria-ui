@@ -716,6 +716,12 @@ abstract class AppLocalizations {
   /// **'Mark a library as a favorite to see it here'**
   String get homeFavoritesNone;
 
+  /// Under home's empty favorites section: where the owner marks a library as a favorite — the star in the library view's header, or the left menu entry's right-click menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the star in a library\'s header, or right-click it in the left menu.'**
+  String get homeFavoritesHint;
+
   /// Heading of home's section with the totals: libraries, and files per type.
   ///
   /// In en, this message translates to:

@@ -471,6 +471,10 @@
   "@homeFavoritesNone": {
     "description": "Home's favorites section when no library is marked as a favorite."
   },
+  "homeFavoritesHint": "Use the star in a library's header, or right-click it in the left menu.",
+  "@homeFavoritesHint": {
+    "description": "Under home's empty favorites section: where the owner marks a library as a favorite — the star in the library view's header, or the left menu entry's right-click menu."
+  },
   "homeStatistics": "Statistics",
   "@homeStatistics": {
     "description": "Heading of home's section with the totals: libraries, and files per type."

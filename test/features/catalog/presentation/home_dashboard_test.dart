@@ -172,6 +172,42 @@ void main() {
       );
     });
 
+    testWidgets('GivenNoFavorites_WhenHomeOpens_ThenItSaysWhereTheStarIs', (
+      tester,
+    ) async {
+      // Spec §6: with none, a short hint about where the star is, so the
+      // owner is not left looking for how to mark one.
+      await openHome(
+        tester,
+        gateway: FakeLibraryGateway(libraries: [library('Films')]),
+      );
+
+      expect(
+        inHome(find.text(l10nOf(tester).homeFavoritesHint)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          "Use the star in a library's header, or right-click it in the "
+          'left menu.',
+        ),
+        findsOne,
+      );
+    });
+
+    testWidgets('GivenAFavorite_WhenHomeOpens_ThenNoHintIsShown', (
+      tester,
+    ) async {
+      await openHome(
+        tester,
+        gateway: FakeLibraryGateway(
+          libraries: [library('Films', favorite: true)],
+        ),
+      );
+
+      expect(inHome(find.text(l10nOf(tester).homeFavoritesHint)), findsNothing);
+    });
+
     testWidgets('GivenTheListFails_WhenHomeOpens_ThenNoFirstRunIsShown', (
       tester,
     ) async {
@@ -334,6 +370,7 @@ void main() {
       for (final label in [
         l10n.homeFavorites,
         l10n.homeFavoritesNone,
+        l10n.homeFavoritesHint,
         l10n.homeStatistics,
         l10n.homeLibraryCount(2),
       ]) {
@@ -353,6 +390,7 @@ void main() {
       );
 
       expect(l10nOf(tester).homeFavorites, contains('preferidas'));
+      expect(l10nOf(tester).homeFavoritesHint, contains('estrela'));
     },
   );
 

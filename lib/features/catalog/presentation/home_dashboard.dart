@@ -70,7 +70,17 @@ class _FavoritesSection extends ConsumerWidget {
               if (library.favorite) library,
           ]..sort(byLibraryName);
 
-          if (favorites.isEmpty) return _Quiet(l10n.homeFavoritesNone);
+          // Spec §6: with none, where the star is, not only that there is one.
+          if (favorites.isEmpty) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Quiet(l10n.homeFavoritesNone),
+                const SizedBox(height: AppSpacing.xs),
+                _Quiet(l10n.homeFavoritesHint),
+              ],
+            );
+          }
 
           return Wrap(
             spacing: AppSpacing.md,
