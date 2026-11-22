@@ -16,7 +16,6 @@ import '../application/library_add_request.dart';
 import '../domain/library.dart';
 import 'library_name_dialog.dart';
 import 'library_run_status.dart';
-import 'library_tree_screen.dart';
 
 /// The libraries, as the navigation panel's own area (libraries-only design
 /// §3).
@@ -121,24 +120,27 @@ class _LibraryRow extends ConsumerWidget {
             leading: const Icon(Icons.folder_special_outlined),
             title: Text(library.name),
             subtitle: Text(library.rootPath),
-            onTap: () => LibraryTreeScreen.show(context, library.uuid),
+            // Its folders, in the main area (library navigation design §4).
+            onTap: () => ref
+                .read(shellControllerProvider.notifier)
+                .go(LibraryDestination(library.uuid)),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
                   tooltip: l10n.libraryScan,
                   icon: const Icon(Icons.youtube_searched_for),
-                  onPressed: () => _scan(context, ref, library),
+                  onPressed: () => scanLibrary(context, ref, library),
                 ),
                 IconButton(
                   tooltip: l10n.libraryMove,
                   icon: const Icon(Icons.drive_file_move_outlined),
-                  onPressed: () => _move(context, ref, library),
+                  onPressed: () => moveLibrary(context, ref, library),
                 ),
                 IconButton(
                   tooltip: l10n.libraryRemove,
                   icon: const Icon(Icons.delete_outline),
-                  onPressed: () => _remove(context, ref, library),
+                  onPressed: () => removeLibrary(context, ref, library),
                 ),
               ],
             ),
@@ -152,8 +154,8 @@ class _LibraryRow extends ConsumerWidget {
 
 /// Opens the libraries and starts adding one.
 ///
-/// What the "add a library" offers on the empty dashboard, listing and
-/// search, and the Library menu, do: a library is the only way anything gets
+/// What the "add a library" offers on the empty dashboard, the search and
+/// the left menu, and the Library menu, do: a library is the only way anything gets
 /// into the catalog, so that is where they send the owner. The flow itself
 /// runs on the Libraries screen ([LibraryAddRequest] says why).
 void openLibrariesAndAdd(WidgetRef ref) {
@@ -192,8 +194,12 @@ Future<void> addLibrary(BuildContext context, WidgetRef ref) async {
   );
 }
 
-/// Scans [library]'s folder again.
-Future<void> _scan(BuildContext context, WidgetRef ref, Library library) async {
+/// Scans [library]'s folder again, and says why when the core refuses.
+Future<void> scanLibrary(
+  BuildContext context,
+  WidgetRef ref,
+  Library library,
+) async {
   final l10n = AppLocalizations.of(context);
 
   final failure = await ref
@@ -214,7 +220,11 @@ Future<void> _scan(BuildContext context, WidgetRef ref, Library library) async {
 /// A folder picker rather than a text field: the owner is naming somewhere
 /// that exists, and typing a path is how you get a library pointed at a
 /// folder that is one character wrong.
-Future<void> _move(BuildContext context, WidgetRef ref, Library library) async {
+Future<void> moveLibrary(
+  BuildContext context,
+  WidgetRef ref,
+  Library library,
+) async {
   final l10n = AppLocalizations.of(context);
   final to = await ref.read(folderPickerProvider).pickFolder();
   if (to == null || !context.mounted) return;
@@ -235,7 +245,7 @@ Future<void> _move(BuildContext context, WidgetRef ref, Library library) async {
 }
 
 /// Removes [library] once the owner has read what that deletes.
-Future<void> _remove(
+Future<void> removeLibrary(
   BuildContext context,
   WidgetRef ref,
   Library library,

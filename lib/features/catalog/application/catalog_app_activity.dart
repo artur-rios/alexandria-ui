@@ -28,7 +28,7 @@ class CatalogAppActivity implements AppActivity {
   @override
   Future<void> end() async {
     // The catalog itself, and everything derived from it.
-    _ref.invalidate(listingControllerProvider);
+    _ref.invalidate(libraryTreeControllerProvider);
     _ref.invalidate(typeCountsControllerProvider);
     _ref.invalidate(catalogStatsProvider);
     _ref.invalidate(recentFilesProvider);
@@ -68,9 +68,9 @@ class CatalogAppActivity implements AppActivity {
     _ref.invalidate(purgeControllerProvider);
     _ref.invalidate(missingFilesControllerProvider);
 
-    // The layout and the per-type filters are deliberately left alone: they
-    // are how the owner prefers to see their library, not a projection of it,
-    // and UC-10 and UC-12 carry them across the run on purpose.
+    // How the library folders are drawn is deliberately left alone: it is
+    // how the owner prefers to see their libraries, not a projection of
+    // them, and UC-10 and UC-12 carry it across the run on purpose.
   }
 
   /// Nothing to start: this activity only has state to drop, not work to do.

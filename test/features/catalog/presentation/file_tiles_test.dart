@@ -5,7 +5,6 @@ import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/music_metadata.dart';
 import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
-import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/viewers/presentation/document_viewer_screen.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,34 +12,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
-import '../../../support/fake_folder_picker.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/shell_harness.dart';
 
 /// The rows and tiles a file is drawn with (UC-13, FR-CT-03, FR-CT-10).
 void main() {
-  /// Signs in and selects [destination].
+  /// Opens a library folder holding the [listings] of [type].
   Future<ProviderContainer> openListing(
     WidgetTester tester, {
     Map<FileType, CatalogListing>? listings,
-    ShellDestination destination = const TypeDestination(FileType.video),
-    Locale? locale,
-    ThemeMode themeMode = ThemeMode.light,
+    FileType type = FileType.video,
   }) async {
     final container = await tester.pumpShell(
-      themeMode: themeMode,
-      locale: locale,
       extraOverrides: <Override>[
         catalogGatewayProvider.overrideWithValue(
           FakeCatalogGateway(listings: listings),
         ),
-        // The empty catalog offers to add a library; cancelling the picker it
-        // opens keeps a test that presses it off the platform channel.
-        folderPickerProvider.overrideWithValue(FakeFolderPicker()),
       ],
     );
 
-    await tester.goTo(destination);
+    await tester.openFolderHolding(type);
 
     return container;
   }
@@ -64,11 +55,7 @@ void main() {
       // It used to open a dialog about the file, with an Open button inside
       // it: two clicks and a modal to read something the owner had already
       // pointed at.
-      await openListing(
-        tester,
-        listings: aDocument(),
-        destination: const TypeDestination(FileType.document),
-      );
+      await openListing(tester, listings: aDocument(), type: FileType.document);
 
       await tester.tap(find.text('Solaris.epub'));
       await tester.pumpAndSettle();
@@ -82,11 +69,7 @@ void main() {
     ) async {
       // Renaming, metadata, collections and deletion all live in the details,
       // so the way in is on every row rather than behind a gesture.
-      await openListing(
-        tester,
-        listings: aDocument(),
-        destination: const TypeDestination(FileType.document),
-      );
+      await openListing(tester, listings: aDocument(), type: FileType.document);
 
       await tester.tap(find.byType(FileDetailsButton));
       await tester.pumpAndSettle();
@@ -105,7 +88,7 @@ void main() {
       await openListing(
         tester,
         listings: aDocument(missing: true),
-        destination: const TypeDestination(FileType.document),
+        type: FileType.document,
       );
 
       await tester.tap(find.text('Solaris.epub'));
@@ -122,11 +105,11 @@ void main() {
       final container = await openListing(
         tester,
         listings: aDocument(),
-        destination: const TypeDestination(FileType.document),
+        type: FileType.document,
       );
       await container
-          .read(layoutControllerProvider.notifier)
-          .choose(FileType.document, ViewLayout.grid);
+          .read(libraryViewPreferencesProvider.notifier)
+          .chooseLayout(ViewLayout.grid);
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Solaris.epub'));
@@ -216,11 +199,7 @@ void main() {
     testWidgets(
       'GivenTheMusicPanel_WhenListed_ThenRowsShowTitleBylineDuration',
       (tester) async {
-        await openListing(
-          tester,
-          listings: twoTracks(),
-          destination: const TypeDestination(FileType.audio),
-        );
+        await openListing(tester, listings: twoTracks(), type: FileType.audio);
 
         expect(find.text('First'), findsOneWidget);
         expect(find.text('01 - a.flac'), findsNothing);

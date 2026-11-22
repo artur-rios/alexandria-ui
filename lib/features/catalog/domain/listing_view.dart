@@ -1,5 +1,4 @@
 import 'catalog_file.dart';
-import 'file_type.dart';
 import 'music_metadata.dart';
 
 /// Which lifecycle states a listing shows (FR-CT-07).
@@ -7,7 +6,8 @@ import 'music_metadata.dart';
 /// The core's own filter, passed straight through: it is the one filter the
 /// core supports on a listing, and the application does not re-decide it.
 enum LifecycleFilter {
-  /// Only records the core calls active. The default a listing opens on.
+  /// Only records the core calls active. What a listing asks for unless told
+  /// otherwise.
   active('active'),
 
   /// Only soft-deleted records. UC-34's listing is the one built on this.
@@ -20,14 +20,6 @@ enum LifecycleFilter {
 
   /// The value the core's filter takes.
   final String wireName;
-
-  /// The filter [name] names, or `null` when it names none.
-  static LifecycleFilter? byName(String? name) {
-    for (final filter in LifecycleFilter.values) {
-      if (filter.name == name) return filter;
-    }
-    return null;
-  }
 }
 
 /// What a listing is ordered by (FR-CT-08).
@@ -76,81 +68,19 @@ enum SortDirection {
   }
 }
 
-/// How one type's listing is filtered and ordered (UC-12).
+/// How a listing's files are ordered (UC-12, FR-CT-08).
 class ListingView {
-  /// Creates a view.
+  /// Creates an order.
   const ListingView({
-    this.lifecycle = LifecycleFilter.active,
     this.sortField = SortField.name,
     this.direction = SortDirection.ascending,
   });
-
-  /// Which lifecycle states are shown.
-  final LifecycleFilter lifecycle;
 
   /// What the listing is ordered by.
   final SortField sortField;
 
   /// Which way the order runs.
   final SortDirection direction;
-
-  /// The view a listing opens on before the owner has chosen anything.
-  static const ListingView initial = ListingView();
-
-  /// The view [type]'s listing opens on: albums in their own order for
-  /// music, names for everything else.
-  static ListingView initialFor(FileType type) => type == FileType.audio
-      ? const ListingView(sortField: SortField.album)
-      : initial;
-
-  /// Whether anything has been narrowed away from the default.
-  ///
-  /// Only the lifecycle filter narrows; a sort reorders without hiding
-  /// anything, which is why AF-01's "clear the filters" does not reset it.
-  bool get isFiltered => lifecycle != LifecycleFilter.active;
-
-  /// A copy with the given changes.
-  ListingView copyWith({
-    LifecycleFilter? lifecycle,
-    SortField? sortField,
-    SortDirection? direction,
-  }) => ListingView(
-    lifecycle: lifecycle ?? this.lifecycle,
-    sortField: sortField ?? this.sortField,
-    direction: direction ?? this.direction,
-  );
-
-  /// This view as the map the settings store holds.
-  Map<String, String> toJson() => {
-    'lifecycle': lifecycle.name,
-    'sortField': sortField.name,
-    'direction': direction.name,
-  };
-
-  /// The view [json] describes, falling back per field.
-  ///
-  /// Per field rather than all-or-nothing: a document written by another
-  /// version may know one of these three and not the others, and the ones it
-  /// does know are still the owner's choices.
-  static ListingView fromJson(Map<String, dynamic> json) => ListingView(
-    lifecycle:
-        LifecycleFilter.byName(json['lifecycle'] as String?) ??
-        LifecycleFilter.active,
-    sortField: SortField.byName(json['sortField'] as String?) ?? SortField.name,
-    direction:
-        SortDirection.byName(json['direction'] as String?) ??
-        SortDirection.ascending,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      other is ListingView &&
-      other.lifecycle == lifecycle &&
-      other.sortField == sortField &&
-      other.direction == direction;
-
-  @override
-  int get hashCode => Object.hash(lifecycle, sortField, direction);
 }
 
 /// [files] in the order [view] asks for (main flow step 4).

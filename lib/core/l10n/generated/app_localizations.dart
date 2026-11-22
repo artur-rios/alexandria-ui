@@ -464,12 +464,6 @@ abstract class AppLocalizations {
   /// **'Music'**
   String get destinationMusic;
 
-  /// UC-09 AF-01: the selected type has no items, but the catalog has others. Distinct from the loading and error states.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing of this type yet'**
-  String get catalogEmptyTitle;
-
   /// UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06).
   ///
   /// In en, this message translates to:
@@ -512,12 +506,6 @@ abstract class AppLocalizations {
   /// **'The window is too narrow for that layout, so the list is shown instead.'**
   String get layoutSubstituted;
 
-  /// UC-10 AF-02: the settings store could not be written. The layout still applies for this session.
-  ///
-  /// In en, this message translates to:
-  /// **'The layout changed, but the choice could not be saved — it will not be remembered next time.'**
-  String get layoutUnsaved;
-
   /// Label of the catalog-wide search field (UC-11 main flow step 1).
   ///
   /// In en, this message translates to:
@@ -547,36 +535,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Results for “{term}”'**
   String searchResultsFor(String term);
-
-  /// Accessible label of the control that opens the filter and sort choices (UC-12).
-  ///
-  /// In en, this message translates to:
-  /// **'Filters and order'**
-  String get filtersLabel;
-
-  /// Heading of the lifecycle filter (FR-CT-07).
-  ///
-  /// In en, this message translates to:
-  /// **'Show'**
-  String get filterLifecycle;
-
-  /// Lifecycle filter: only records the core calls active. What a listing opens on.
-  ///
-  /// In en, this message translates to:
-  /// **'In the library'**
-  String get filterLifecycleActive;
-
-  /// Lifecycle filter: only soft-deleted records.
-  ///
-  /// In en, this message translates to:
-  /// **'Deleted'**
-  String get filterLifecycleDeleted;
-
-  /// Lifecycle filter: active and deleted records together.
-  ///
-  /// In en, this message translates to:
-  /// **'Everything'**
-  String get filterLifecycleAll;
 
   /// Heading of the sort choices (FR-CT-08).
   ///
@@ -613,24 +571,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Descending'**
   String get sortDescending;
-
-  /// The action that restores the unfiltered listing (UC-12 AF-02). The sort is left alone, because ordering hides nothing.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear the filters'**
-  String get filtersClear;
-
-  /// UC-12 AF-01: the filter combination matched nothing. Offers to clear them.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing matches the filters you have set.'**
-  String get filtersEmpty;
-
-  /// UC-12 AF-04: the core rejected the filter as invalid input, and the previous filters were restored.
-  ///
-  /// In en, this message translates to:
-  /// **'That filter was refused, so the previous one is back.'**
-  String get filtersRejected;
 
   /// Title of the file detail view (UC-13, FR-CT-05).
   ///
@@ -1826,11 +1766,71 @@ abstract class AppLocalizations {
   /// **'Nothing in this folder.'**
   String get libraryEmptyFolder;
 
-  /// Goes to the folder containing the one being shown.
+  /// A library folder that has files, but no videos, while the type filter shows only videos.
   ///
   /// In en, this message translates to:
-  /// **'Up one folder'**
-  String get libraryUp;
+  /// **'No videos in this folder.'**
+  String get libraryNoneVideos;
+
+  /// A library folder that has files, but no music, while the type filter shows only music.
+  ///
+  /// In en, this message translates to:
+  /// **'No music in this folder.'**
+  String get libraryNoneMusic;
+
+  /// A library folder that has files, but no books, while the type filter shows only books.
+  ///
+  /// In en, this message translates to:
+  /// **'No books in this folder.'**
+  String get libraryNoneBooks;
+
+  /// A library folder that has files, but no comic books, while the type filter shows only comic books.
+  ///
+  /// In en, this message translates to:
+  /// **'No comic books in this folder.'**
+  String get libraryNoneComicBooks;
+
+  /// A library folder that has files, but no notes, while the type filter shows only notes.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes in this folder.'**
+  String get libraryNoneNotes;
+
+  /// A library folder that has files, but no saved pages, while the type filter shows only saved pages.
+  ///
+  /// In en, this message translates to:
+  /// **'No pages in this folder.'**
+  String get libraryNonePages;
+
+  /// A library folder that has files, but no images, while the type filter shows only images.
+  ///
+  /// In en, this message translates to:
+  /// **'No images in this folder.'**
+  String get libraryNoneImages;
+
+  /// The library view's type filter showing every type; also the filter button's label while it does.
+  ///
+  /// In en, this message translates to:
+  /// **'All types'**
+  String get libraryTypeAll;
+
+  /// Shows every type again, from a library folder whose files are all of another type than the filter's.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the filter'**
+  String get libraryTypeFilterClear;
+
+  /// Tooltip of the library header's menu button: rename, scan again, move and remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Library actions'**
+  String get libraryActions;
+
+  /// Shown under the library view's toolbar when a layout, filter or order applied but the settings store refused to keep it.
+  ///
+  /// In en, this message translates to:
+  /// **'The change applied, but it could not be saved — it will not be remembered next time.'**
+  String get libraryViewUnsaved;
 
   /// Libraries design section 5: a file in two libraries means two answers to where it appears. Worded as a fact about the folder rather than as a mistake the owner made.
   ///

@@ -213,10 +213,10 @@ class TextEditorController extends Notifier<TextEditorState> {
         // The record the core refreshed is the truth about what is on disk
         // now, so the next save compares against its stamp.
         _stampWhenLoaded = file.stamp;
-        // FR-ME-05's neighbours: the listing and the detail view read the core
-        // again, because the record's stamp and index time have moved.
+        // FR-ME-05's neighbours: the open folder and the detail view read the
+        // core again, because the record's stamp and index time have moved.
         ref.invalidate(fileDetailsControllerProvider);
-        ref.invalidate(listingControllerProvider);
+        ref.invalidate(libraryTreeControllerProvider);
         ref.invalidate(catalogSearchProvider);
         state = state.copyWith(loaded: state.content, stage: EditorStage.clean);
 

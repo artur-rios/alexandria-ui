@@ -5,11 +5,10 @@ import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_search.dart';
-import '../../catalog/domain/file_type.dart';
-import '../../catalog/presentation/catalog_listing.dart';
 import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
 import '../../libraries/presentation/libraries_view.dart';
+import '../../libraries/presentation/library_view.dart';
 import '../../playback/presentation/player_bar.dart';
 import '../../organization/presentation/bookmarks_view.dart';
 import '../domain/shell_destination.dart';
@@ -68,9 +67,9 @@ class ShellScreen extends ConsumerWidget {
 /// The content area (FR-UX-01).
 ///
 /// Home is the dashboard (UC-14), bookmarks are the bookmark manager (UC-28),
-/// and a library is the library. The two temporary destinations the left menu
-/// does not list keep their pages until what replaces them exists: a type's
-/// listing (UC-09) and the libraries page.
+/// and a library is its folders (library navigation design §4). The
+/// temporary destination the left menu does not list keeps its page until
+/// what replaces it exists: the libraries page.
 class ShellContentArea extends ConsumerWidget {
   /// Creates the content area for [destination].
   const ShellContentArea({required this.destination, super.key});
@@ -106,17 +105,23 @@ class ShellContentArea extends ConsumerWidget {
       HomeDestination() => l10n.destinationHome,
       BookmarksDestination() => l10n.destinationBookmarks,
       LibraryDestination() => library?.name ?? '',
-      TypeDestination(:final type) => _typeLabel(type, l10n),
       LibrariesDestination() => l10n.destinationLibraries,
     };
+
+    // A library draws its own heading, with its toggles and menu beside the
+    // name; the shell's would say the name twice. A search over it still
+    // needs the shell's, to say where the owner is.
+    final headed = searching || destination is! LibraryDestination;
 
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(heading, style: theme.textTheme.headlineSmall),
-          const SizedBox(height: AppSpacing.md),
+          if (headed) ...[
+            Text(heading, style: theme.textTheme.headlineSmall),
+            const SizedBox(height: AppSpacing.md),
+          ],
           Expanded(
             child: switch (destination) {
               // AF-02 needs nothing of its own: an empty term is not a search,
@@ -129,14 +134,7 @@ class ShellContentArea extends ConsumerWidget {
                 const CatalogSearchResults(),
               HomeDestination() => const HomeDashboard(),
               BookmarksDestination() => const BookmarksView(),
-              // Where the library is, until its folders are browsed here.
-              LibraryDestination() => Text(
-                library?.rootPath ?? '',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              TypeDestination() => const CatalogListing(),
+              LibraryDestination(:final uuid) => LibraryView(uuid: uuid),
               LibrariesDestination() => const LibrariesView(),
             },
           ),
@@ -145,14 +143,3 @@ class ShellContentArea extends ConsumerWidget {
     );
   }
 }
-
-/// The heading of [type]'s listing.
-String _typeLabel(FileType type, AppLocalizations l10n) => switch (type) {
-  FileType.video => l10n.destinationVideos,
-  FileType.audio => l10n.destinationMusic,
-  FileType.document => l10n.destinationBooks,
-  FileType.comic => l10n.destinationComicBooks,
-  FileType.text => l10n.destinationNotes,
-  FileType.html => l10n.destinationPages,
-  FileType.image => l10n.destinationImages,
-};

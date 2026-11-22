@@ -156,7 +156,7 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
 typedef LibraryLocation = ({String uuid, String path});
 
 /// One level of one library's tree.
-class LibraryTreeController extends AsyncNotifier<LibraryListing?> {
+class LibraryTreeController extends AsyncNotifier<LibraryListing> {
   /// Creates the controller for [location].
   LibraryTreeController(this.location);
 
@@ -164,7 +164,7 @@ class LibraryTreeController extends AsyncNotifier<LibraryListing?> {
   final LibraryLocation location;
 
   @override
-  Future<LibraryListing?> build() async {
+  Future<LibraryListing> build() async {
     final outcome = await ref
         .read(libraryGatewayProvider)
         .read(uuid: location.uuid, path: location.path);

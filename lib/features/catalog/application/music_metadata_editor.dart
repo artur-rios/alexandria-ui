@@ -131,13 +131,13 @@ class MusicMetadataEditor extends Notifier<MusicEditorState> {
     switch (outcome) {
       case MetadataEditSaved(:final metadata):
         _original = metadata;
-        // FR-ME-05: the detail view and every open listing read the core
+        // FR-ME-05: the detail view and every open folder read the core
         // again, so the edit shows up without the owner refreshing anything.
         // Invalidated rather than patched in place, because the core is what
         // holds the catalog and a locally patched copy would be a guess at
         // what it now says.
         ref.invalidate(fileDetailsControllerProvider);
-        ref.invalidate(listingControllerProvider);
+        ref.invalidate(libraryTreeControllerProvider);
         ref.invalidate(catalogSearchProvider);
         state = MusicEditorState(
           draft: draftFrom(metadata),

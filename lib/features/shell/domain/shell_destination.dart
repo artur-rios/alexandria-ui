@@ -1,11 +1,9 @@
-import '../../catalog/domain/file_type.dart';
-
 /// The areas of the shell (FR-UX-01, spec §3).
 ///
 /// The left menu goes to three kinds of them: home, the bookmarks, and each
-/// library. [TypeDestination] and [LibrariesDestination] are temporary: they
-/// are reached from elsewhere in the shell but never listed in the left menu,
-/// and each goes once what replaces it exists.
+/// library. [LibrariesDestination] is temporary: it is reached from elsewhere
+/// in the shell but never listed in the left menu, and goes once what
+/// replaces it exists.
 ///
 /// The shell owns *that there is an area and which one is shown*; what each
 /// area holds is its own feature's content.
@@ -14,9 +12,6 @@ sealed class ShellDestination {
 
   /// The destination the shell opens on (UC-14 main flow step 1).
   static const ShellDestination initial = HomeDestination();
-
-  /// The file type this destination lists, or `null` when it lists none.
-  FileType? get listedType => null;
 }
 
 /// The dashboard the application opens on (UC-14).
@@ -59,29 +54,6 @@ final class LibraryDestination extends ShellDestination {
 
   @override
   int get hashCode => Object.hash(LibraryDestination, uuid);
-}
-
-/// The listing of one file type (UC-09).
-///
-/// Temporary. The left menu no longer lists the types; this stays only until
-/// a library's own page shows its files with the listing's tiles, and goes
-/// with `CatalogListing` then (library navigation plan, Task 4).
-final class TypeDestination extends ShellDestination {
-  /// Creates the destination listing [type].
-  const TypeDestination(this.type);
-
-  /// The type listed.
-  final FileType type;
-
-  @override
-  FileType get listedType => type;
-
-  @override
-  bool operator ==(Object other) =>
-      other is TypeDestination && other.type == type;
-
-  @override
-  int get hashCode => Object.hash(TypeDestination, type);
 }
 
 /// The registered libraries, with their runs and the add, scan, move and

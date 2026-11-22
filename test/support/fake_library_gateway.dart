@@ -21,6 +21,14 @@ class FakeLibraryGateway implements LibraryGateway {
   /// What [read] answers, by library uuid then folder path.
   final Map<String, Map<String, LibraryRead>> reads = {};
 
+  /// What [read] answers for a library, worked out at each read from the
+  /// folder's path — ahead of [reads].
+  ///
+  /// For a folder whose contents come from somewhere a test changes as it
+  /// goes, such as a fake catalog: the folder is read again after a write,
+  /// as the real one is, and answers what is there now.
+  final Map<String, LibraryRead Function(String path)> readers = {};
+
   /// What the next write answers, in order.
   final List<LibraryWrite> writeOutcomes = [];
 
@@ -45,7 +53,8 @@ class FakeLibraryGateway implements LibraryGateway {
   Future<LibraryRead> read({required String uuid, required String path}) async {
     readsMade.add((uuid: uuid, path: path));
 
-    return reads[uuid]?[path] ??
+    return readers[uuid]?.call(path) ??
+        reads[uuid]?[path] ??
         LibraryRead.loaded(
           listing: LibraryListing(
             library: libraries.firstWhere(

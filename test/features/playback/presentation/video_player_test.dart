@@ -29,8 +29,7 @@ void main() {
     isDeleted: isDeleted,
   );
 
-  /// Signs in, opens the video listing, and starts the player on the one file
-  /// in it.
+  /// Opens a library folder holding the video, and starts the player on it.
   Future<
     ({
       ProviderContainer container,
@@ -71,7 +70,7 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.video);
+    await tester.openFolderHolding(FileType.video);
     // A video row plays the file now (`openFile`), which is what the play
     // button inside the details used to do. A test that wants the details
     // taps the button beside the row instead.

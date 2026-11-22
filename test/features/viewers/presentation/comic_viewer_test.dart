@@ -22,7 +22,7 @@ import '../../../support/file_row.dart';
 void main() {
   const uuid = 'c1b2a390-4d5e-4f60-8a71-9b2c3d4e5f60';
 
-  /// Signs in, opens the comic listing, and opens the one file in it.
+  /// Opens a library folder holding the comic, and opens it.
   Future<
     ({
       ProviderContainer container,
@@ -67,7 +67,7 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.comic);
+    await tester.openFolderHolding(FileType.comic);
     // The row opens the file itself now, so a test that wants it open taps
     // the row, and one that wants the details taps the button beside it —
     // where the Open action still is, for a file that cannot just be opened.
@@ -261,7 +261,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
 
-      // Back to the listing it was opened from, with the file's other actions
+      // Back to the folder it was opened from, with the file's other actions
       // a press away on its row.
       expect(find.byType(ComicViewerScreen), findsNothing);
 

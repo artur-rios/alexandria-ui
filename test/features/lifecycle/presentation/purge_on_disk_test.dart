@@ -82,7 +82,7 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.document);
+    await tester.openFolderHolding(FileType.document);
     await openDetailsOf(tester, 'Solaris.epub');
     await tester.pumpAndSettle();
 

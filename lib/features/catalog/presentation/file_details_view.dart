@@ -19,6 +19,7 @@ import '../../viewers/presentation/image_viewer_screen.dart';
 import '../../viewers/presentation/page_viewer_screen.dart';
 import '../domain/catalog_file.dart';
 import '../../playback/presentation/video_player_screen.dart';
+import '../../libraries/application/library_view_controller.dart';
 import '../../lifecycle/application/open_file_holds.dart';
 import '../../lifecycle/domain/deleted_record.dart';
 import '../../lifecycle/presentation/delete_record_button.dart';
@@ -266,7 +267,13 @@ class _Details extends ConsumerWidget {
             FilledButton.icon(
               // AF-03: every viewer reads the file's bytes.
               onPressed: details.canReachTheFile
-                  ? () => openViewer(context, ref, viewer, details.file)
+                  ? () => openViewer(
+                      context,
+                      ref,
+                      viewer,
+                      details.file,
+                      shown: filesShownInTheOpenFolder(ref),
+                    )
                   : null,
               icon: const Icon(Icons.open_in_full),
               label: Text(l10n.viewerOpen),
@@ -432,12 +439,16 @@ class _Section extends StatelessWidget {
 /// The one place a [ViewerKind] becomes a screen. Everything above it works in
 /// terms of the registry, which is what FR-VW-01 asks for: a new viewer is a
 /// registration and one line here.
+///
+/// [shown] is what the file was opened among, in its order; an image viewer
+/// moves through the images in it.
 Future<void> openViewer(
   BuildContext context,
   WidgetRef ref,
   ViewerKind viewer,
-  CatalogFile file,
-) async {
+  CatalogFile file, {
+  List<CatalogFile>? shown,
+}) async {
   // UC-33 AF-04: while a viewer has the file open, a deletion knows about it
   // and can close it. Registered here rather than in each viewer, because this
   // is the one place a viewer is opened from.
@@ -454,7 +465,7 @@ Future<void> openViewer(
       );
 
   try {
-    await _showViewer(context, ref, viewer, file);
+    await _showViewer(context, ref, viewer, file, shown ?? [file]);
   } finally {
     forget();
   }
@@ -496,11 +507,15 @@ class FileDetailsButton extends ConsumerWidget {
 /// has no viewer registered (FR-VW-08), and one the last refresh could not
 /// find, which is a state to explain and a rescan to offer rather than a
 /// reader to fail in (UC-37).
+///
+/// [shown] is what the file was opened among, in the order it is drawn: a
+/// track plays through the tracks in it, and an image viewer moves through
+/// its images.
 Future<void> openFile(
   BuildContext context,
   WidgetRef ref,
   CatalogFile file, {
-  List<CatalogFile>? queue,
+  List<CatalogFile>? shown,
 }) {
   if (file.isMissing) return FileDetailsView.show(context, ref, file.uuid);
 
@@ -511,12 +526,13 @@ Future<void> openFile(
     case FileType.video:
       return VideoPlayerScreen.show(context, ref, file);
 
-    // A track plays in the player bar, through [queue] — the list it was
-    // opened from — or on its own.
+    // A track plays in the player bar, through the tracks it was opened
+    // among — or on its own.
     case FileType.audio:
-      return ref
-          .read(audioPlaybackControllerProvider.notifier)
-          .play(file, queue ?? [file]);
+      return ref.read(audioPlaybackControllerProvider.notifier).play(file, [
+        for (final each in shown ?? [file])
+          if (each.type == FileType.audio) each,
+      ]);
 
     case FileType.document:
     case FileType.comic:
@@ -526,7 +542,7 @@ Future<void> openFile(
       final viewer = ref.read(viewerRegistryProvider).viewerFor(file.type);
       if (viewer == null) return FileDetailsView.show(context, ref, file.uuid);
 
-      return openViewer(context, ref, viewer, file);
+      return openViewer(context, ref, viewer, file, shown: shown);
   }
 }
 
@@ -535,17 +551,16 @@ Future<void> _showViewer(
   WidgetRef ref,
   ViewerKind viewer,
   CatalogFile file,
+  List<CatalogFile> shown,
 ) => switch (viewer) {
   ViewerKind.document => DocumentViewerScreen.show(context, ref, file),
   ViewerKind.comic => ComicViewerScreen.show(context, ref, file),
-  // UC-24 moves between the images of the listing the owner opened this one
-  // from, so the viewer is handed that listing rather than one file.
-  ViewerKind.image => ImageViewerScreen.show(
-    context,
-    ref,
-    file,
-    ref.read(listingControllerProvider).value ?? [file],
-  ),
+  // UC-24 moves between the images the owner opened this one among, so the
+  // viewer is handed those rather than one file.
+  ViewerKind.image => ImageViewerScreen.show(context, ref, file, [
+    for (final each in shown)
+      if (each.type == FileType.image) each,
+  ]),
   ViewerKind.page => PageViewerScreen.show(context, ref, file),
 };
 
@@ -572,17 +587,17 @@ OpenMetadataForm? _metadataFormFor(FileType type) => switch (type) {
   FileType.image => null,
 };
 
-/// What AF-01 shows: the record is gone, so the listing is refreshed and the
-/// owner goes back to it.
+/// What AF-01 shows: the record is gone, so the folders are refreshed and the
+/// owner goes back to them.
 ///
 /// A dialog of its own rather than a state inside the detail view, because
 /// there are no details to show — the file is not there.
 Future<void> showFileNotFound(BuildContext context, WidgetRef ref) async {
   final l10n = AppLocalizations.of(context);
 
-  // The listing is refreshed because the record it was showing is gone, and
-  // the owner is going back to it.
-  unawaited(ref.read(listingControllerProvider.notifier).reload());
+  // The folders are read again because the record they were showing is
+  // gone, and the owner is going back to them.
+  ref.invalidate(libraryTreeControllerProvider);
 
   await showDialog<void>(
     context: context,

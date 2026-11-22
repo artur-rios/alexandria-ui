@@ -217,9 +217,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get destinationMusic => 'Music';
 
   @override
-  String get catalogEmptyTitle => 'Nothing of this type yet';
-
-  @override
   String get catalogEmptyFirstRun =>
       'Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.';
 
@@ -243,10 +240,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The window is too narrow for that layout, so the list is shown instead.';
 
   @override
-  String get layoutUnsaved =>
-      'The layout changed, but the choice could not be saved — it will not be remembered next time.';
-
-  @override
   String get searchLabel => 'Search the library';
 
   @override
@@ -267,21 +260,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get filtersLabel => 'Filters and order';
-
-  @override
-  String get filterLifecycle => 'Show';
-
-  @override
-  String get filterLifecycleActive => 'In the library';
-
-  @override
-  String get filterLifecycleDeleted => 'Deleted';
-
-  @override
-  String get filterLifecycleAll => 'Everything';
-
-  @override
   String get sortLabel => 'Order by';
 
   @override
@@ -298,16 +276,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortDescending => 'Descending';
-
-  @override
-  String get filtersClear => 'Clear the filters';
-
-  @override
-  String get filtersEmpty => 'Nothing matches the filters you have set.';
-
-  @override
-  String get filtersRejected =>
-      'That filter was refused, so the previous one is back.';
 
   @override
   String get detailsTitle => 'Details';
@@ -984,7 +952,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryEmptyFolder => 'Nothing in this folder.';
 
   @override
-  String get libraryUp => 'Up one folder';
+  String get libraryNoneVideos => 'No videos in this folder.';
+
+  @override
+  String get libraryNoneMusic => 'No music in this folder.';
+
+  @override
+  String get libraryNoneBooks => 'No books in this folder.';
+
+  @override
+  String get libraryNoneComicBooks => 'No comic books in this folder.';
+
+  @override
+  String get libraryNoneNotes => 'No notes in this folder.';
+
+  @override
+  String get libraryNonePages => 'No pages in this folder.';
+
+  @override
+  String get libraryNoneImages => 'No images in this folder.';
+
+  @override
+  String get libraryTypeAll => 'All types';
+
+  @override
+  String get libraryTypeFilterClear => 'Clear the filter';
+
+  @override
+  String get libraryActions => 'Library actions';
+
+  @override
+  String get libraryViewUnsaved =>
+      'The change applied, but it could not be saved — it will not be remembered next time.';
 
   @override
   String get libraryOverlaps =>

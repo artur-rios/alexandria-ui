@@ -102,11 +102,10 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.video);
+    await tester.openFolderHolding(FileType.video);
 
     final l10n = AppLocalizations.of(tester.element(find.byType(ShellScreen)));
-    await tester.tap(find.text(l10n.watchlistsOpen));
-    await tester.pumpAndSettle();
+    await tester.openLibraryTool(l10n.watchlistsOpen);
     await tester.tap(find.text('Evenings'));
     await tester.pumpAndSettle();
 
@@ -118,7 +117,7 @@ void main() {
 
   /// Opens the progress editor on the item called [name].
   ///
-  /// Scoped to the screen: the videos listing behind the dialog shows the same
+  /// Scoped to the screen: the library folder behind the dialog shows the same
   /// file names.
   Future<void> openEditorFor(WidgetTester tester, String name) async {
     await tester.tap(

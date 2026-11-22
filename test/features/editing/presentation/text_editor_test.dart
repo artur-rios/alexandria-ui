@@ -46,8 +46,7 @@ void main() {
         isDeleted: isDeleted,
       );
 
-  /// Signs in, opens the notes listing, and opens the editor on the one file
-  /// in it.
+  /// Opens a library folder holding the note, and opens the editor on it.
   Future<(ProviderContainer, FakeTextContentGateway, FakeCatalogGateway)>
   openEditor(
     WidgetTester tester, {
@@ -81,7 +80,7 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.text);
+    await tester.openFolderHolding(FileType.text);
     await openDetailsOf(tester, 'Notes.md');
     await tester.pumpAndSettle();
 

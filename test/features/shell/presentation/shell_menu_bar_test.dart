@@ -12,7 +12,6 @@ import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 
 import '../../../support/shell_harness.dart';
 
@@ -341,13 +340,8 @@ void main() {
     testWidgets(
       'GivenTheMinimumWindow_WhenASearchableDestinationIsShown_ThenTheBarFitsInOneRow',
       (tester) async {
-        final container = await tester.pumpShell(
-          surfaceSize: Breakpoint.minimumWindowSize,
-        );
-        container
-            .read(shellControllerProvider.notifier)
-            .go(const TypeDestination(FileType.video));
-        await tester.pumpAndSettle();
+        await tester.pumpShell(surfaceSize: Breakpoint.minimumWindowSize);
+        await tester.openLibrary(shelf);
 
         await expectTheBarFitsInOneRow(tester);
       },
@@ -356,13 +350,8 @@ void main() {
     testWidgets(
       'GivenAMediumWindow_WhenASearchableDestinationIsShown_ThenTheBarFitsInOneRow',
       (tester) async {
-        final container = await tester.pumpShell(
-          surfaceSize: const Size(1280, 800),
-        );
-        container
-            .read(shellControllerProvider.notifier)
-            .go(const TypeDestination(FileType.video));
-        await tester.pumpAndSettle();
+        await tester.pumpShell(surfaceSize: const Size(1280, 800));
+        await tester.openLibrary(shelf);
 
         await expectTheBarFitsInOneRow(tester);
       },

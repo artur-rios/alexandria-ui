@@ -9,8 +9,7 @@ import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/libraries/domain/library.dart';
 import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
-import 'package:alexandria_ui/features/catalog/presentation/catalog_listing.dart'
-    show CatalogListing;
+import 'package:alexandria_ui/features/libraries/presentation/library_view.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
@@ -83,7 +82,7 @@ void main() {
 
   group('leaving a search behind', () {
     testWidgets(
-      'GivenASearchIsOpen_WhenAnotherAreaIsChosen_ThenTheListingIsShown',
+      'GivenASearchIsOpen_WhenAnotherAreaIsChosen_ThenThatAreaIsShown',
       (tester) async {
         // Navigating is a request for that area. A search left standing would
         // leave the panel highlighting one thing and the content showing
@@ -91,10 +90,10 @@ void main() {
         await openShell(tester, listings: aLibrary());
         await search(tester, 'blue');
 
-        await tester.goTo(const TypeDestination(FileType.image));
+        await tester.openLibrary(shelf);
 
         expect(find.byType(CatalogSearchResults), findsNothing);
-        expect(find.byType(CatalogListing), findsOneWidget);
+        expect(find.byType(LibraryView), findsOneWidget);
       },
     );
 
@@ -104,7 +103,7 @@ void main() {
         final container = await openShell(tester, listings: aLibrary());
         await search(tester, 'blue');
 
-        await tester.goTo(const TypeDestination(FileType.image));
+        await tester.openLibrary(shelf);
 
         expect(container.read(searchTermProvider), isEmpty);
       },
@@ -129,22 +128,18 @@ void main() {
       },
     );
 
-    testWidgets(
-      'GivenAFileTypeArea_WhenItOpens_ThenTheCatalogSearchIsOffered',
-      (tester) async {
-        await openShell(tester, listings: aLibrary());
+    testWidgets('GivenALibrary_WhenItOpens_ThenTheCatalogSearchIsOffered', (
+      tester,
+    ) async {
+      await openShell(tester, listings: aLibrary());
 
-        await tester.goTo(const TypeDestination(FileType.image));
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
+      await tester.openLibrary(shelf);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ShellScreen)),
+      );
 
-        expect(
-          find.widgetWithText(TextField, l10n.searchLabel),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(find.widgetWithText(TextField, l10n.searchLabel), findsOneWidget);
+    });
   });
 
   group('the main flow', () {

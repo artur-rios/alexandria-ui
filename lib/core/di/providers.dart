@@ -24,10 +24,8 @@ import '../../features/catalog/application/in_progress.dart';
 import '../../features/catalog/application/file_rename_controller.dart';
 import '../../features/catalog/application/music_metadata_editor.dart';
 import '../../features/catalog/application/video_metadata_editor.dart';
-import '../../features/catalog/application/layout_controller.dart';
-import '../../features/catalog/application/listing_controller.dart';
-import '../../features/catalog/application/listing_view_controller.dart';
 import '../../features/catalog/application/search_controller.dart';
+import '../../features/catalog/application/type_counts_controller.dart';
 import '../../features/catalog/application/catalog_app_activity.dart';
 import '../../features/catalog/data/core_catalog_gateway.dart';
 import '../../features/catalog/domain/catalog_file.dart';
@@ -82,6 +80,8 @@ import '../../features/playback/domain/playback_source.dart';
 import '../../features/libraries/application/catalog_stats_controller.dart';
 import '../../features/libraries/application/libraries_controller.dart';
 import '../../features/libraries/application/library_add_request.dart';
+import '../../features/libraries/application/library_view_controller.dart';
+import '../../features/libraries/application/library_view_preferences.dart';
 import '../../features/libraries/data/core_library_gateway.dart';
 import '../../features/libraries/domain/catalog_stats.dart';
 import '../../features/libraries/domain/library.dart';
@@ -287,21 +287,11 @@ final catalogGatewayProvider = Provider<CatalogGateway>((ref) {
   return CoreCatalogGateway(core);
 });
 
-/// The selected type's files (UC-09).
-final listingControllerProvider =
-    AsyncNotifierProvider<ListingController, List<CatalogFile>>(
-      ListingController.new,
-    );
-
 /// Every type's item count, for the dashboard (FR-CT-01).
 final typeCountsControllerProvider =
     AsyncNotifierProvider<TypeCountsController, Map<FileType, int>>(
       TypeCountsController.new,
     );
-
-/// The layout each file type is drawn in (UC-10).
-final layoutControllerProvider =
-    NotifierProvider<LayoutController, LayoutState>(LayoutController.new);
 
 /// What the owner has typed into the search (UC-11).
 final searchTermProvider = NotifierProvider<SearchTermController, String>(
@@ -312,12 +302,6 @@ final searchTermProvider = NotifierProvider<SearchTermController, String>(
 final catalogSearchProvider =
     AsyncNotifierProvider<CatalogSearchController, CatalogSearchIndex>(
       CatalogSearchController.new,
-    );
-
-/// How each file type's listing is filtered and ordered (UC-12).
-final listingViewControllerProvider =
-    NotifierProvider<ListingViewController, ListingViewState>(
-      ListingViewController.new,
     );
 
 /// Which file's details are open, or `null` for none (UC-13).
@@ -833,9 +817,27 @@ final librariesControllerProvider =
 final libraryTreeControllerProvider =
     AsyncNotifierProvider.family<
       LibraryTreeController,
-      LibraryListing?,
+      LibraryListing,
       LibraryLocation
     >(LibraryTreeController.new, isAutoDispose: true);
+
+/// Which folder of each library is open, for as long as the application runs
+/// (library navigation design §4).
+final libraryViewControllerProvider =
+    NotifierProvider<LibraryViewController, Map<String, String>>(
+      LibraryViewController.new,
+    );
+
+/// How every library's folders are drawn: layout, type filter and order,
+/// stored under `libraryView` (library navigation design §4).
+final libraryViewPreferencesProvider =
+    NotifierProvider<LibraryViewPreferencesController, LibraryViewPreferences>(
+      LibraryViewPreferencesController.new,
+    );
+
+/// One library's open folder, filtered and ordered as the preferences ask.
+final libraryFolderProvider = Provider.autoDispose
+    .family<AsyncValue<LibraryFolderView>, String>(libraryFolder);
 
 /// The tracked books' and comics' names (UC-32 main flow step 2).
 final trackedReadingItemsProvider =

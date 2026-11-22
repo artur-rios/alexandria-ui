@@ -91,14 +91,13 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.document);
+    await tester.openFolderHolding(FileType.document);
 
     if (openScreen) {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      await tester.tap(find.text(l10n.readingListsOpen));
-      await tester.pumpAndSettle();
+      await tester.openLibraryTool(l10n.readingListsOpen);
 
       // Main flow step 1: the list is opened, which is what shows its items.
       await tester.tap(find.text('Shelf'));
@@ -113,7 +112,7 @@ void main() {
 
   /// [finder], but only inside the reading-lists screen.
   ///
-  /// The catalog listing it opens over carries the same file names, so an
+  /// The library folder it opens over carries the same file names, so an
   /// unscoped finder matches twice.
   Finder inScreen(Finder finder) =>
       find.descendant(of: find.byType(ReadingListsScreen), matching: finder);

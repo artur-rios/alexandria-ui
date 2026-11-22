@@ -4,6 +4,10 @@ import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/domain/view_layout.dart';
+import 'package:alexandria_ui/features/catalog/presentation/file_tiles.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
+import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
+import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,12 +16,13 @@ import 'package:riverpod/misc.dart';
 
 import '../../../support/failing_settings_store.dart';
 import '../../../support/fake_catalog_gateway.dart';
+import '../../../support/fake_library_gateway.dart';
 import '../../../support/in_memory_settings_store.dart';
 import '../../../support/shell_harness.dart';
 
 /// Switching the view layout (UC-10, FR-CT-03, FR-CT-04).
 void main() {
-  /// Signs in and opens a listing with two files in it.
+  /// Opens a library folder with two files in it.
   Future<ProviderContainer> openListing(
     WidgetTester tester, {
     SettingsStore? settings,
@@ -53,7 +58,7 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.video);
+    await tester.openFolderHolding(FileType.video);
 
     return container;
   }
@@ -84,11 +89,11 @@ void main() {
       tester,
     ) async {
       await openListing(tester);
-      expect(find.byType(GridView), findsNothing);
+      expect(find.byType(FileTile), findsNothing);
 
       await chooseLayout(tester, ViewLayout.grid);
 
-      expect(find.byType(GridView), findsOneWidget);
+      expect(find.byType(FileTile), findsNWidgets(2));
       expect(find.text('Interstellar.mp4'), findsOneWidget);
     });
 
@@ -115,28 +120,42 @@ void main() {
     });
   });
 
-  group('the choice sticks per type (FR-CT-04)', () {
-    testWidgets('GivenAGridForOneType_WhenAnotherIsOpened_ThenItIsAList', (
+  // One choice for every library rather than one per type, now that files
+  // are browsed by library (library navigation design §4).
+  group('the choice sticks (FR-CT-04)', () {
+    testWidgets('GivenAGridInOneLibrary_WhenAnotherIsOpened_ThenItIsAGridToo', (
       tester,
     ) async {
-      await openListing(tester);
+      final container = await openListing(tester);
       await chooseLayout(tester, ViewLayout.grid);
+      const films = Library(uuid: 'lib-films', name: 'Films', rootPath: '/f');
+      (container.read(libraryGatewayProvider) as FakeLibraryGateway)
+          .reads['lib-films'] = {
+        '': LibraryRead.loaded(
+          listing: LibraryListing(
+            library: films,
+            path: '',
+            folders: const [],
+            files: [LibraryFile(file: aFile(name: 'Up.mp4'))],
+          ),
+        ),
+      };
 
-      await tester.openTypeListing(FileType.image);
+      await tester.openLibrary(films);
 
-      expect(find.byType(GridView), findsNothing);
+      expect(find.byType(FileTile), findsOneWidget);
     });
 
-    testWidgets('GivenAGridForOneType_WhenItIsReopened_ThenItIsStillAGrid', (
+    testWidgets('GivenAGridInALibrary_WhenItIsReopened_ThenItIsStillAGrid', (
       tester,
     ) async {
       await openListing(tester);
       await chooseLayout(tester, ViewLayout.grid);
 
-      await tester.openTypeListing(FileType.image);
-      await tester.openTypeListing(FileType.video);
+      await tester.goTo(const HomeDestination());
+      await tester.openFolderHolding(FileType.video);
 
-      expect(find.byType(GridView), findsOneWidget);
+      expect(find.byType(FileTile), findsNWidgets(2));
     });
   });
 
@@ -204,11 +223,11 @@ void main() {
 
       await chooseLayout(tester, ViewLayout.grid);
 
-      expect(find.byType(GridView), findsOneWidget);
+      expect(find.byType(FileTile), findsNWidgets(2));
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      expect(find.text(l10n.layoutUnsaved), findsOneWidget);
+      expect(find.text(l10n.libraryViewUnsaved), findsOneWidget);
     });
   });
 

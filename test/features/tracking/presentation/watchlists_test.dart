@@ -10,6 +10,7 @@ import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
+import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist.dart';
 import 'package:alexandria_ui/features/tracking/domain/watchlist_gateway.dart';
@@ -36,7 +37,7 @@ void main() {
     type: FileType.video,
   );
 
-  /// Signs in, opens the videos area, and opens the watchlists screen.
+  /// Opens a library folder holding the video, and the watchlists screen.
   Future<({ProviderContainer container, FakeWatchlistGateway gateway})>
   openWatchlists(
     WidgetTester tester, {
@@ -70,14 +71,13 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.video);
+    await tester.openFolderHolding(FileType.video);
 
     if (openScreen) {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      await tester.tap(find.text(l10n.watchlistsOpen));
-      await tester.pumpAndSettle();
+      await tester.openLibraryTool(l10n.watchlistsOpen);
     }
 
     return (container: container, gateway: gateway);
@@ -99,13 +99,19 @@ void main() {
 
   group('the main flow', () {
     // Step 1.
-    testWidgets('GivenTheVideosArea_WhenItIsShown_ThenWatchlistsAreReachable', (
-      tester,
-    ) async {
-      await openWatchlists(tester, openScreen: false);
+    // The videos area that used to offer them is gone with the type pages;
+    // the Library menu offers them from wherever the owner is.
+    testWidgets(
+      'GivenALibrary_WhenTheLibraryMenuOpens_ThenWatchlistsAreReachable',
+      (tester) async {
+        await openWatchlists(tester, openScreen: false);
 
-      expect(find.text(messages(tester).watchlistsOpen), findsOneWidget);
-    });
+        await tester.tap(find.byType(LibraryMenu));
+        await tester.pumpAndSettle();
+
+        expect(find.text(messages(tester).watchlistsOpen), findsOneWidget);
+      },
+    );
 
     testWidgets('GivenWatchlists_WhenTheScreenOpens_ThenTheyAreListed', (
       tester,

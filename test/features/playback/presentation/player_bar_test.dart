@@ -72,7 +72,7 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.audio);
+    await tester.openFolderHolding(FileType.audio);
 
     return (container: container, player: player);
   }
@@ -90,7 +90,7 @@ void main() {
   });
 
   testWidgets(
-    'GivenATrackTapped_WhenItPlays_ThenTheBarShowsTitleAndArtistAndPlaysThroughTheListing',
+    'GivenATrackTapped_WhenItPlays_ThenTheBarShowsTitleAndArtistAndPlaysThroughTheFolder',
     (tester) async {
       final opened = await openMusic(tester);
 
@@ -107,7 +107,7 @@ void main() {
             .queue
             .map((file) => file.uuid),
         ['first', 'second'],
-        reason: 'the queue is the listing in its album order',
+        reason: 'the queue is the folder\'s tracks, in the order shown',
       );
     },
   );

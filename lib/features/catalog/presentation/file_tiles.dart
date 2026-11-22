@@ -5,50 +5,44 @@ import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../domain/catalog_file.dart';
 import '../domain/file_type.dart';
+import '../domain/view_layout.dart';
 import 'file_details_view.dart';
 import 'music_display_name.dart';
 
-/// Files as rows (FR-CT-03, FR-CT-10).
+/// Files drawn in [layout], as a sliver of a scroll view (FR-CT-03,
+/// FR-CT-10).
 ///
-/// A builder, not a column: FR-CT-10 asks that scrolling cost not grow with
-/// the size of the library, and a listing that built every row would spend the
-/// whole library's worth of work to show one screen of it.
-class FileList extends StatelessWidget {
-  /// Creates the rows for [files].
-  const FileList({required this.files, this.detailed = false, super.key});
+/// Built on demand, not as a column: FR-CT-10 asks that scrolling cost not
+/// grow with the size of the folder, and one that built every row would spend
+/// the whole folder's worth of work to show one screen of it.
+class FileSlivers extends StatelessWidget {
+  /// Creates the rows or tiles for [files].
+  const FileSlivers({required this.files, required this.layout, super.key});
 
   /// The files, in the order they are drawn.
   final List<CatalogFile> files;
 
-  /// Whether each row carries its details alongside the name.
-  final bool detailed;
+  /// The layout actually drawn, once a narrow window has had its say
+  /// (`ViewLayout.resolvedFor`).
+  final ViewLayout layout;
 
   @override
-  Widget build(BuildContext context) => ListView.builder(
-    itemCount: files.length,
-    itemBuilder: (context, index) =>
-        FileRow(file: files[index], shown: files, detailed: detailed),
-  );
-}
-
-/// Files as tiles (FR-CT-03, FR-CT-10).
-class FileGrid extends StatelessWidget {
-  /// Creates the tiles for [files].
-  const FileGrid({required this.files, super.key});
-
-  /// The files, in the order they are drawn.
-  final List<CatalogFile> files;
-
-  @override
-  Widget build(BuildContext context) =>
-      // A builder here too: a grid that built every tile would defeat
-      // FR-CT-10 exactly as a column would.
-      GridView.builder(
-        gridDelegate: fileGridDelegate,
-        itemCount: files.length,
-        itemBuilder: (context, index) =>
-            FileTile(file: files[index], shown: files),
-      );
+  Widget build(BuildContext context) => switch (layout) {
+    ViewLayout.grid => SliverGrid.builder(
+      gridDelegate: fileGridDelegate,
+      itemCount: files.length,
+      itemBuilder: (context, index) =>
+          FileTile(file: files[index], shown: files),
+    ),
+    ViewLayout.list || ViewLayout.detailedList => SliverList.builder(
+      itemCount: files.length,
+      itemBuilder: (context, index) => FileRow(
+        file: files[index],
+        shown: files,
+        detailed: layout == ViewLayout.detailedList,
+      ),
+    ),
+  };
 }
 
 /// How the tiles are laid out: as many columns as fit, each at most 220 wide.
@@ -82,7 +76,7 @@ class FileTile extends ConsumerWidget {
           Positioned(top: 0, right: 0, child: FileDetailsButton(file: file)),
           Positioned.fill(
             child: InkWell(
-              onTap: () => openFile(context, ref, file, queue: shown),
+              onTap: () => openFile(context, ref, file, shown: shown),
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 child: Column(
@@ -141,7 +135,7 @@ class FileRow extends ConsumerWidget {
       // UC-13 main flow step 1: a row opens its file. The details are the
       // button at the end of the row, and are still where a file that cannot
       // be opened ends up (`openFile`).
-      onTap: () => openFile(context, ref, file, queue: shown),
+      onTap: () => openFile(context, ref, file, shown: shown),
       leading: Icon(
         // Deliberately not one of the navigation panel's icons: a row and a
         // destination that draw the same glyph are two different things

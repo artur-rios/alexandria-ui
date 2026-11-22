@@ -218,9 +218,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get destinationMusic => 'Música';
 
   @override
-  String get catalogEmptyTitle => 'Nada deste tipo ainda';
-
-  @override
   String get catalogEmptyFirstRun =>
       'Ainda não há nada no Alexandria. Adicione uma pasta como biblioteca, e o que estiver dentro aparece aqui assim que for indexado.';
 
@@ -244,10 +241,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'A janela é estreita demais para esse layout, então a lista é exibida no lugar.';
 
   @override
-  String get layoutUnsaved =>
-      'O layout mudou, mas a escolha não pôde ser salva — ela não será lembrada na próxima vez.';
-
-  @override
   String get searchLabel => 'Pesquisar na biblioteca';
 
   @override
@@ -268,21 +261,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get filtersLabel => 'Filtros e ordem';
-
-  @override
-  String get filterLifecycle => 'Exibir';
-
-  @override
-  String get filterLifecycleActive => 'Na biblioteca';
-
-  @override
-  String get filterLifecycleDeleted => 'Excluídos';
-
-  @override
-  String get filterLifecycleAll => 'Tudo';
-
-  @override
   String get sortLabel => 'Ordenar por';
 
   @override
@@ -299,16 +277,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sortDescending => 'Decrescente';
-
-  @override
-  String get filtersClear => 'Limpar os filtros';
-
-  @override
-  String get filtersEmpty => 'Nada corresponde aos filtros definidos.';
-
-  @override
-  String get filtersRejected =>
-      'Esse filtro foi recusado, então o anterior voltou.';
 
   @override
   String get detailsTitle => 'Detalhes';
@@ -989,7 +957,38 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryEmptyFolder => 'Nada nesta pasta.';
 
   @override
-  String get libraryUp => 'Subir uma pasta';
+  String get libraryNoneVideos => 'Nenhum vídeo nesta pasta.';
+
+  @override
+  String get libraryNoneMusic => 'Nenhuma música nesta pasta.';
+
+  @override
+  String get libraryNoneBooks => 'Nenhum livro nesta pasta.';
+
+  @override
+  String get libraryNoneComicBooks => 'Nenhum quadrinho nesta pasta.';
+
+  @override
+  String get libraryNoneNotes => 'Nenhuma nota nesta pasta.';
+
+  @override
+  String get libraryNonePages => 'Nenhuma página nesta pasta.';
+
+  @override
+  String get libraryNoneImages => 'Nenhuma imagem nesta pasta.';
+
+  @override
+  String get libraryTypeAll => 'Todos os tipos';
+
+  @override
+  String get libraryTypeFilterClear => 'Limpar o filtro';
+
+  @override
+  String get libraryActions => 'Ações da biblioteca';
+
+  @override
+  String get libraryViewUnsaved =>
+      'A mudança foi aplicada, mas não pôde ser salva — ela não será lembrada na próxima vez.';
 
   @override
   String get libraryOverlaps =>

@@ -1,7 +1,10 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
+import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
+import 'package:alexandria_ui/features/libraries/domain/library.dart';
+import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,8 +16,16 @@ import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 
 import 'failing_settings_store.dart';
+import 'fake_catalog_gateway.dart';
 import 'fake_library_gateway.dart';
 import 'app_harness.dart';
+
+/// The library [PumpShell.openFolderHolding] puts a test's files in.
+const Library shelf = Library(
+  uuid: 'lib-shelf',
+  name: 'Test library',
+  rootPath: '/home/owner',
+);
 
 /// Whether [overrides] already replaces [provider], so [pumpShell]'s own
 /// default is skipped rather than colliding with a caller's own — Riverpod
@@ -83,12 +94,59 @@ extension PumpShell on WidgetTester {
     await pumpAndSettle();
   }
 
-  /// Opens the listing of one [type].
+  /// Opens [library] in the main area, as its left-menu entry does.
   ///
-  /// Through the shell rather than the left menu, which no longer lists the
-  /// types: the type listing stays only until the library view replaces it,
-  /// and goes with [TypeDestination].
-  Future<void> openTypeListing(FileType type) => goTo(TypeDestination(type));
+  /// The library is added to the test's [FakeLibraryGateway] first when it
+  /// does not hold it, and the list is read again, so the left menu and the
+  /// header know it.
+  Future<void> openLibrary(Library library) async {
+    final container = ProviderScope.containerOf(
+      element(find.byType(ShellScreen)),
+    );
+    final gateway =
+        container.read(libraryGatewayProvider) as FakeLibraryGateway;
+    if (!gateway.libraries.any((each) => each.uuid == library.uuid)) {
+      gateway.libraries.add(library);
+    }
+    await container.read(librariesControllerProvider.notifier).reload();
+    await goTo(LibraryDestination(library.uuid));
+  }
+
+  /// Opens a library whose top folder holds the test's files of [type].
+  ///
+  /// The files are the active ones the test's [FakeCatalogGateway] lists for
+  /// [type], read again every time the folder is — so a write the fake
+  /// answers shows in the folder the way it would in the real one. A listing
+  /// the fake fails fails the folder. A test that is about a file rather than
+  /// about folders reaches its files this way.
+  Future<void> openFolderHolding(FileType type) async {
+    final container = ProviderScope.containerOf(
+      element(find.byType(ShellScreen)),
+    );
+    final gateway =
+        container.read(libraryGatewayProvider) as FakeLibraryGateway;
+    final catalog =
+        container.read(catalogGatewayProvider) as FakeCatalogGateway;
+
+    gateway.readers[shelf.uuid] = (path) => switch (catalog.listings[type]) {
+      CatalogListingFailed(:final failure) => LibraryRead.failed(
+        failure: failure,
+      ),
+      final listing => LibraryRead.loaded(
+        listing: LibraryListing(
+          library: shelf,
+          path: path,
+          folders: const [],
+          files: [
+            if (path.isEmpty && listing is CatalogListingLoaded)
+              for (final row in listing.files) LibraryFile(file: row.file),
+          ],
+        ),
+      ),
+    };
+
+    await openLibrary(shelf);
+  }
 
   /// Opens the libraries page from the Library menu, as the owner does.
   Future<void> openLibrariesPage() => openLibraryTool(

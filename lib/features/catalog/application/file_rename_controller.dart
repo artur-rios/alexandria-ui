@@ -123,10 +123,10 @@ class FileRenameController extends Notifier<RenameState> {
     switch (outcome) {
       case FileRenamed(:final file):
         _original = file.name;
-        // FR-ME-05: the detail view and every open listing read the core
+        // FR-ME-05: the detail view and every open folder read the core
         // again, so the new name shows up without a manual refresh.
         ref.invalidate(fileDetailsControllerProvider);
-        ref.invalidate(listingControllerProvider);
+        ref.invalidate(libraryTreeControllerProvider);
         ref.invalidate(catalogSearchProvider);
         state = RenameState(name: file.name, stage: RenameStage.renamed);
 

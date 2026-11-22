@@ -10,6 +10,7 @@ import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/catalog/presentation/file_details_view.dart';
 import 'package:alexandria_ui/features/shell/presentation/confirmation_dialog.dart';
+import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:alexandria_ui/features/tracking/domain/reading_list.dart';
 import 'package:alexandria_ui/features/tracking/domain/reading_list_gateway.dart';
@@ -36,7 +37,7 @@ void main() {
     type: FileType.document,
   );
 
-  /// Signs in, opens the books area, and opens the reading-lists screen.
+  /// Opens a library folder holding the book, and the reading-lists screen.
   Future<({ProviderContainer container, FakeReadingListGateway gateway})>
   openLists(
     WidgetTester tester, {
@@ -70,14 +71,13 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.document);
+    await tester.openFolderHolding(FileType.document);
 
     if (openScreen) {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ShellScreen)),
       );
-      await tester.tap(find.text(l10n.readingListsOpen));
-      await tester.pumpAndSettle();
+      await tester.openLibraryTool(l10n.readingListsOpen);
     }
 
     return (container: container, gateway: gateway);
@@ -99,10 +99,15 @@ void main() {
 
   group('the main flow', () {
     // Step 1.
+    // The books and comics areas that used to offer them are gone with the
+    // type pages; the Library menu offers them from wherever the owner is.
     testWidgets(
-      'GivenTheBooksArea_WhenItIsShown_ThenReadingListsAreReachable',
+      'GivenALibrary_WhenTheLibraryMenuOpens_ThenReadingListsAreReachable',
       (tester) async {
         await openLists(tester, openScreen: false);
+
+        await tester.tap(find.byType(LibraryMenu));
+        await tester.pumpAndSettle();
 
         expect(find.text(messages(tester).readingListsOpen), findsOneWidget);
       },

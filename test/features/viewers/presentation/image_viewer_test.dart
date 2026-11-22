@@ -30,7 +30,7 @@ void main() {
     type: FileType.image,
   );
 
-  /// Signs in, opens the image listing, and opens [file].
+  /// Opens a library folder holding the images, and opens [file].
   Future<ProviderContainer> open(
     WidgetTester tester, {
     CatalogFile? file,
@@ -64,7 +64,7 @@ void main() {
       ],
     );
 
-    await tester.openTypeListing(FileType.image);
+    await tester.openFolderHolding(FileType.image);
     // The row opens the file itself now, so a test that wants it open taps
     // the row, and one that wants the details taps the button beside it —
     // where the Open action still is, for a file that cannot just be opened.
@@ -100,7 +100,7 @@ void main() {
       expect(find.byType(ImageViewerScreen), findsOneWidget);
     });
 
-    // Step 5: the listing is what "next" means.
+    // Step 5: the folder is what "next" means.
     testWidgets('GivenAListing_WhenTheOwnerMovesOn_ThenTheNextImageIsShown', (
       tester,
     ) async {
@@ -212,7 +212,7 @@ void main() {
       expect(find.text(messages(tester).detailsRescan), findsOneWidget);
     });
 
-    // The listing is still there, so the owner is not stuck on the gap.
+    // The folder is still there, so the owner is not stuck on the gap.
     testWidgets('GivenTheFileIsGone_WhenReported_ThenTheOwnerCanMoveOn', (
       tester,
     ) async {
@@ -258,7 +258,7 @@ void main() {
       expect(find.text(messages(tester).viewerUnreadable), findsOneWidget);
     });
 
-    // The one answer a viewer with a listing behind it can offer.
+    // The one answer a viewer with a folder behind it can offer.
     testWidgets('GivenADecodeFailure_WhenItIsReported_ThenTheNextIsOffered', (
       tester,
     ) async {
