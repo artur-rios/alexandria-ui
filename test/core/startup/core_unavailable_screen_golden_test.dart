@@ -7,9 +7,9 @@ import '../../support/app_harness.dart';
 /// The theme and layout of the core-unavailable state (Testing Specification
 /// §7.1).
 ///
-/// A key screen by the same measure as the authentication ones: it is the
-/// first thing an owner sees when the core will not load, and it is the one
-/// screen whose whole job is to be readable when something has gone wrong. Its
+/// A key screen because it is the first thing an owner sees when the core
+/// will not load, and it is the one screen whose whole job is to be readable
+/// when something has gone wrong. Its
 /// error colouring is also the most likely thing to go unnoticed in a theme
 /// change, because nobody looks at it in a working build.
 ///
