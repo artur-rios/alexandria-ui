@@ -964,6 +964,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryChangeNotSaved => 'A alteração não pôde ser salva.';
 
   @override
+  String get librariesLoadFailed =>
+      'As bibliotecas não carregaram. Tentar novamente';
+
+  @override
   String get libraryAdd => 'Adicionar uma biblioteca';
 
   @override

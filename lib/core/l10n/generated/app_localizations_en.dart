@@ -960,6 +960,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryChangeNotSaved => 'The change could not be saved.';
 
   @override
+  String get librariesLoadFailed => 'Libraries didn\'t load. Try again';
+
+  @override
   String get libraryAdd => 'Add a library';
 
   @override

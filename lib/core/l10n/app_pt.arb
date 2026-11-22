@@ -281,6 +281,7 @@
   "libraryFavoriteAdd": "Adicionar às preferidas",
   "libraryFavoriteRemove": "Remover das preferidas",
   "libraryChangeNotSaved": "A alteração não pôde ser salva.",
+  "librariesLoadFailed": "As bibliotecas não carregaram. Tentar novamente",
   "libraryAdd": "Adicionar uma biblioteca",
   "libraryScan": "Analisar novamente",
   "libraryRemove": "Remover esta biblioteca",

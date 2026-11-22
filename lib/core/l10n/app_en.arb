@@ -1311,6 +1311,10 @@
   "@libraryChangeNotSaved": {
     "description": "Snackbar shown when the core refuses to pin, unpin, favorite or unfavorite a library; the left menu stays as it was."
   },
+  "librariesLoadFailed": "Libraries didn't load. Try again",
+  "@librariesLoadFailed": {
+    "description": "Left-menu entry, and its tooltip, shown when the libraries could not be read; activating it reads them again."
+  },
   "libraryAdd": "Add a library",
   "@libraryAdd": {
     "description": "Opens the folder picker to mark a folder as a library."

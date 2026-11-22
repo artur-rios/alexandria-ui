@@ -45,10 +45,11 @@ class ShellNavigationPanel extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final tier = _Tier.of(Breakpoint.from(context));
     // The last list loaded stays while a reload runs, so a pin does not
-    // blank the menu on its way through. Nothing loaded yet, or a list that
-    // could not be read, lists no libraries — rather than offering to add
-    // one to an owner who may already have twenty.
-    final libraries = ref.watch(librariesControllerProvider).value;
+    // blank the menu on its way through. Nothing loaded yet lists no
+    // libraries — rather than offering to add one to an owner who may
+    // already have twenty.
+    final state = ref.watch(librariesControllerProvider);
+    final libraries = state.value;
 
     Widget fixed(
       ShellDestination destination, {
@@ -104,6 +105,23 @@ class ShellNavigationPanel extends ConsumerWidget {
                     selectedIcon: Icons.bookmark,
                     label: l10n.destinationBookmarks,
                   ),
+                  // A list that could not be read says so, with the retry:
+                  // with the libraries being the whole menu below the two
+                  // fixed entries, an empty section would read as "you have
+                  // none", a count the panel never made. Not a destination,
+                  // so tapping it asks again rather than moving anywhere.
+                  if (state.hasError && !state.hasValue)
+                    _PanelEntry(
+                      tier: tier,
+                      icon: const Icon(Icons.sync_problem),
+                      selectedIcon: const Icon(Icons.sync_problem),
+                      label: l10n.librariesLoadFailed,
+                      selected: false,
+                      tooltipAtEveryTier: true,
+                      onTap: () => unawaited(
+                        ref.read(librariesControllerProvider.notifier).reload(),
+                      ),
+                    ),
                   if (libraries != null && libraries.isEmpty)
                     // The libraries are the whole of the menu below the two
                     // fixed entries, so an empty catalog offers the one thing
@@ -267,6 +285,7 @@ class _PanelEntry extends StatelessWidget {
     required this.onTap,
     this.onSecondaryTapUp,
     this.onLongPress,
+    this.tooltipAtEveryTier = false,
   });
 
   final _Tier tier;
@@ -277,6 +296,10 @@ class _PanelEntry extends StatelessWidget {
   final VoidCallback onTap;
   final GestureTapUpCallback? onSecondaryTapUp;
   final VoidCallback? onLongPress;
+
+  /// Whether the label is also the tooltip where it is drawn, for a label
+  /// too long to be sure it is drawn whole.
+  final bool tooltipAtEveryTier;
 
   @override
   Widget build(BuildContext context) {
@@ -372,7 +395,7 @@ class _PanelEntry extends StatelessWidget {
     // The label is the tooltip only where it is not drawn — which is also
     // what names the entry to a screen reader there. A tooltip repeating the
     // text beside it is noise.
-    if (tier != _Tier.icons) return entry;
+    if (tier != _Tier.icons && !tooltipAtEveryTier) return entry;
     return Tooltip(message: label, child: entry);
   }
 }

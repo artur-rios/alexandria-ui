@@ -243,6 +243,99 @@ void main() {
       },
     );
 
+    group('when the libraries could not be read', () {
+      const failed = 'Libraries didn\'t load. Try again';
+
+      /// The shell over a gateway whose browse fails, at [surfaceSize].
+      Future<FakeLibraryGateway> openFailing(
+        WidgetTester tester, {
+        Size surfaceSize = const Size(1280, 900),
+      }) async {
+        final gateway = FakeLibraryGateway(libraries: [library('Course')])
+          ..browseOutcome = const LibraryBrowse.failed(
+            failure: Failure.unexpected(
+              family: CoreStatusFamily.library,
+              code: 9,
+            ),
+          );
+        await tester.pumpShell(
+          surfaceSize: surfaceSize,
+          extraOverrides: [
+            libraryGatewayProvider.overrideWithValue(gateway),
+            folderPickerProvider.overrideWithValue(FakeFolderPicker()),
+          ],
+        );
+
+        return gateway;
+      }
+
+      testWidgets(
+        'GivenTheBrowseFails_WhenThePanelIsDrawn_ThenItSaysSoAndOffersNoAdd',
+        (tester) async {
+          // An empty section would read as "you have no libraries", which
+          // is a count the panel never made.
+          await openFailing(tester);
+
+          expect(entry(failed), findsOneWidget);
+          expect(entry('Add a library'), findsNothing);
+        },
+      );
+
+      testWidgets(
+        'GivenTheBrowseFailed_WhenTheEntryIsTapped_ThenTheLibrariesAreReadAgain',
+        (tester) async {
+          final gateway = await openFailing(tester);
+
+          gateway.browseOutcome = null;
+          await tester.tap(entry(failed));
+          await tester.pumpAndSettle();
+
+          expect(entry(failed), findsNothing);
+          expect(entry('Course'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'GivenTheBrowseFails_WhenTheEntryIsTapped_ThenTheDestinationDoesNotChange',
+        (tester) async {
+          await openFailing(tester);
+          final container = ProviderScope.containerOf(
+            tester.element(find.byType(ShellScreen)),
+          );
+
+          await tester.tap(entry(failed));
+          await tester.pumpAndSettle();
+
+          expect(
+            container.read(shellControllerProvider),
+            const HomeDestination(),
+          );
+          expect(entry(failed), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'GivenTheIconsOnlyTier_WhenTheBrowseFails_ThenTheTooltipSaysSoAndRetries',
+        (tester) async {
+          final gateway = await openFailing(
+            tester,
+            surfaceSize: Breakpoint.minimumWindowSize,
+          );
+
+          final size = tester.getSize(find.byTooltip(failed));
+          expect(size.width, greaterThan(0));
+          expect(size.height, greaterThan(0));
+
+          gateway.browseOutcome = null;
+          await tester.tap(find.byTooltip(failed));
+          await tester.pumpAndSettle();
+
+          expect(find.byTooltip(failed), findsNothing);
+          expect(find.byTooltip('Course'), findsOneWidget);
+        },
+      );
+    });
+
     group('with no libraries', () {
       testWidgets(
         'GivenNoLibraries_WhenThePanelIsDrawn_ThenASingleAddLibraryEntryIsShown',

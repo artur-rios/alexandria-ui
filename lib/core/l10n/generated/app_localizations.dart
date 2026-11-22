@@ -1784,6 +1784,12 @@ abstract class AppLocalizations {
   /// **'The change could not be saved.'**
   String get libraryChangeNotSaved;
 
+  /// Left-menu entry, and its tooltip, shown when the libraries could not be read; activating it reads them again.
+  ///
+  /// In en, this message translates to:
+  /// **'Libraries didn\'t load. Try again'**
+  String get librariesLoadFailed;
+
   /// Opens the folder picker to mark a folder as a library.
   ///
   /// In en, this message translates to:
