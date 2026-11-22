@@ -69,7 +69,7 @@ void main() {
   }
 
   AppLocalizations messages(WidgetTester tester) =>
-      AppLocalizations.of(tester.element(find.byType(LibrariesView)));
+      AppLocalizations.of(tester.element(find.byType(ShellNavigationPanel)));
 
   /// Presses the button, which opens the picker.
   Future<void> pressAdd(WidgetTester tester) async {
@@ -344,9 +344,9 @@ void main() {
     testWidgets(
       'GivenAnEmptyDashboard_WhenAddIsPressedAndAFolderPickedLater_ThenTheLibraryIsAdded',
       (tester) async {
-        // The native picker is open for seconds, and pressing the button
-        // switches to the Libraries screen meanwhile — so the dashboard that
-        // asked is gone by the time the folder comes back.
+        // The native picker is open for seconds, long enough for the
+        // dashboard that asked to be rebuilt around it: the flow's context
+        // has to survive until the folder comes back.
         final gate = Completer<void>();
         final gateway = FakeLibraryGateway();
         await tester.pumpShell(
@@ -370,7 +370,7 @@ void main() {
 
         await tester.tap(find.widgetWithText(FilledButton, l10n.libraryAdd));
         await tester.pumpAndSettle();
-        expect(find.byType(LibrariesView), findsOneWidget);
+        expect(find.byType(LibrariesView), findsNothing);
 
         gate.complete();
         await tester.pumpAndSettle();

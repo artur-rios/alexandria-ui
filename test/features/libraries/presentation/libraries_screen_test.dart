@@ -257,4 +257,108 @@ void main() {
       reason: 'it removed before the owner confirmed',
     );
   });
+
+  testWidgets(
+    'GivenManageLibraries_WhenItOpens_ThenEachRowOffersItsFourActions',
+    (tester) async {
+      await openLibraries(tester);
+      final l10n = messages(tester);
+
+      for (final tooltip in [
+        l10n.libraryRenameEntry,
+        l10n.libraryScan,
+        l10n.libraryMove,
+        l10n.libraryRemove,
+      ]) {
+        expect(find.byTooltip(tooltip), findsOneWidget, reason: tooltip);
+      }
+    },
+  );
+
+  testWidgets('GivenALibrary_WhenRenamedFromTheDialog_ThenItsRowUpdates', (
+    tester,
+  ) async {
+    final opened = await openLibraries(tester);
+
+    await tester.tap(find.byTooltip(messages(tester).libraryRenameEntry));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      ),
+      'Rust course',
+    );
+    await tester.pump();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(opened.gateway.renamedCalls.single, (
+      uuid: 'lib-1',
+      name: 'Rust course',
+    ));
+    final rows = find.descendant(
+      of: find.byType(LibrariesView),
+      matching: find.byType(ListTile),
+    );
+    expect(
+      find.descendant(of: rows, matching: find.text('Rust course')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: rows, matching: find.text('Course')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('GivenALibraryRow_WhenItIsTapped_ThenTheDialogClosesOnIt', (
+    tester,
+  ) async {
+    await openLibraries(tester);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(LibrariesView),
+        matching: find.text('Course'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LibrariesView), findsNothing);
+    expect(find.byType(LibraryView), findsOneWidget);
+  });
+
+  testWidgets(
+    'GivenLibraryOneIsShown_WhenItIsRemovedFromManageLibraries_ThenTheShellGoesHome',
+    (tester) async {
+      final opened = await openLibraries(tester);
+      // Shown in the main area behind the dialog.
+      opened.container
+          .read(shellControllerProvider.notifier)
+          .go(const LibraryDestination('lib-1'));
+      await tester.pumpAndSettle();
+      expect(
+        opened.container.read(shellControllerProvider),
+        const LibraryDestination('lib-1'),
+      );
+
+      await tester.tap(find.byTooltip(messages(tester).libraryRemove));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(FilledButton, messages(tester).libraryRemove),
+      );
+      await tester.pumpAndSettle();
+
+      expect(opened.gateway.removed, ['lib-1']);
+      expect(
+        opened.container.read(shellControllerProvider),
+        const HomeDestination(),
+      );
+    },
+  );
 }

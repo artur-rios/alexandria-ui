@@ -863,7 +863,7 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get libraryMove => 'A pasta foi movida';
+  String get libraryMove => 'Mover…';
 
   @override
   String get libraryMoveConflict =>
@@ -951,7 +951,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get libraryEmptyRoot =>
-      'Nada sob esta pasta foi indexado ainda. Faça uma varredura pela lista de bibliotecas, e o que ela contém aparecerá aqui.';
+      'Nada sob esta pasta foi indexado ainda. Faça uma varredura da biblioteca pelo menu dela, e o que ela contém aparecerá aqui.';
 
   @override
   String get libraryEmptyFolder => 'Nada nesta pasta.';
@@ -1416,9 +1416,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get activityDismiss => 'Dispensar';
 
   @override
-  String get destinationLibraries => 'Bibliotecas';
-
-  @override
   String get libraryRemovePausedNote =>
       'A análise pausada também é descartada.';
 
@@ -1436,6 +1433,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get libraryMenuLibraries => 'Bibliotecas';
+
+  @override
+  String get libraryMenuManage => 'Gerenciar bibliotecas…';
 
   @override
   String get libraryMenuAdd => 'Adicionar biblioteca…';

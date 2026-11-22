@@ -1604,10 +1604,10 @@ abstract class AppLocalizations {
   /// **'{count} tracked'**
   String readingListItemCount(int count);
 
-  /// Libraries design FR-FC-41: corrects a library's root after its folder moved on disk, taking its files with it.
+  /// The action, in a library's menu and on its row in Manage libraries (libraries design FR-FC-41): corrects a library's root after its folder moved on disk, taking its files with it.
   ///
   /// In en, this message translates to:
-  /// **'The folder moved'**
+  /// **'Move…'**
   String get libraryMove;
 
   /// The two conflicts a move answers, said in the terms the owner can act on rather than as a generic refusal.
@@ -1757,7 +1757,7 @@ abstract class AppLocalizations {
   /// Libraries design: the top of a library with no indexed files under it. A library is browsed out of the catalog, not out of a walk of the disk, so this is what an owner sees when they made a library of a folder nobody has scanned — and it says the remedy, because "nothing in this folder" describes a disk the owner can see is not empty.
   ///
   /// In en, this message translates to:
-  /// **'Nothing under this folder has been indexed yet. Scan it from the libraries list, and what it holds will appear here.'**
+  /// **'Nothing under this folder has been indexed yet. Scan the library from its menu, and what it holds will appear here.'**
   String get libraryEmptyRoot;
 
   /// A folder with no files and no subfolders indexed under it.
@@ -2438,12 +2438,6 @@ abstract class AppLocalizations {
   /// **'Dismiss'**
   String get activityDismiss;
 
-  /// Navigation panel entry for the registered libraries — folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it.
-  ///
-  /// In en, this message translates to:
-  /// **'Libraries'**
-  String get destinationLibraries;
-
   /// Added to the remove confirmation when the library has a paused scan.
   ///
   /// In en, this message translates to:
@@ -2468,11 +2462,17 @@ abstract class AppLocalizations {
   /// **'Scanning… {processed} of {total}'**
   String libraryRunProgress(int processed, int total);
 
-  /// Library menu entry that opens the libraries.
+  /// The Library menu's first heading, over adding and managing libraries, and the title of the Manage libraries dialog.
   ///
   /// In en, this message translates to:
   /// **'Libraries'**
   String get libraryMenuLibraries;
+
+  /// Library menu entry that opens the dialog listing every library, with rename, scan again, move and remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage libraries…'**
+  String get libraryMenuManage;
 
   /// Library menu entry that adds a folder as a library.
   ///

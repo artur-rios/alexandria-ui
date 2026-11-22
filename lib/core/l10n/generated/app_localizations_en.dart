@@ -860,7 +860,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get libraryMove => 'The folder moved';
+  String get libraryMove => 'Move…';
 
   @override
   String get libraryMoveConflict =>
@@ -946,7 +946,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryEmptyRoot =>
-      'Nothing under this folder has been indexed yet. Scan it from the libraries list, and what it holds will appear here.';
+      'Nothing under this folder has been indexed yet. Scan the library from its menu, and what it holds will appear here.';
 
   @override
   String get libraryEmptyFolder => 'Nothing in this folder.';
@@ -1409,9 +1409,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityDismiss => 'Dismiss';
 
   @override
-  String get destinationLibraries => 'Libraries';
-
-  @override
   String get libraryRemovePausedNote => 'Its paused scan is discarded too.';
 
   @override
@@ -1428,6 +1425,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get libraryMenuLibraries => 'Libraries';
+
+  @override
+  String get libraryMenuManage => 'Manage libraries…';
 
   @override
   String get libraryMenuAdd => 'Add library…';

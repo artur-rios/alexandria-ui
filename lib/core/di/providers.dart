@@ -79,7 +79,6 @@ import '../../features/playback/domain/playback_session.dart';
 import '../../features/playback/domain/playback_source.dart';
 import '../../features/libraries/application/catalog_stats_controller.dart';
 import '../../features/libraries/application/libraries_controller.dart';
-import '../../features/libraries/application/library_add_request.dart';
 import '../../features/libraries/application/library_view_controller.dart';
 import '../../features/libraries/application/library_view_preferences.dart';
 import '../../features/libraries/data/core_library_gateway.dart';
@@ -790,11 +789,6 @@ final libraryGatewayProvider = Provider<LibraryGateway>((ref) {
 
   return CoreLibraryGateway(core);
 });
-
-/// Adding a library, asked for from a screen the Libraries screen replaces.
-final libraryAddRequestProvider = NotifierProvider<LibraryAddRequest, bool>(
-  LibraryAddRequest.new,
-);
 
 /// The catalog's totals: how many libraries, and how many files of each type.
 final catalogStatsProvider =

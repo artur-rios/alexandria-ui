@@ -2,8 +2,10 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
+import 'package:alexandria_ui/features/libraries/presentation/libraries_view.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
+import 'package:alexandria_ui/features/shell/presentation/menu_entry.dart';
 import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/preferences_dialog.dart';
 import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
@@ -12,7 +14,9 @@ import 'package:alexandria_ui/features/shell/presentation/shell_navigation_panel
 import 'package:alexandria_ui/features/shell/presentation/shell_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:riverpod/misc.dart';
 
+import '../../../support/fake_folder_picker.dart';
 import '../../../support/shell_harness.dart';
 
 /// The shell's menu bar (UC-37 main flow step 1, UC-39, FR-UX-01, FR-UX-02).
@@ -63,8 +67,8 @@ void main() {
         await openLibrary(tester);
 
         for (final label in [
-          l10n.libraryMenuLibraries,
           l10n.libraryMenuAdd,
+          l10n.libraryMenuManage,
           l10n.collectionsOpen,
           l10n.watchlistsOpen,
           l10n.readingListsOpen,
@@ -81,6 +85,67 @@ void main() {
             reason: label,
           );
         }
+      },
+    );
+
+    testWidgets(
+      'GivenTheLibraryMenu_WhenItIsOpened_ThenTheLibrariesHeadingComesFirst',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await openLibrary(tester);
+
+        final headings = tester
+            .widgetList<MenuGroupHeading>(find.byType(MenuGroupHeading))
+            .map((heading) => heading.text);
+        expect(headings.first, l10n.libraryMenuLibraries);
+        expect(
+          tester.getTopLeft(find.text(l10n.libraryMenuAdd)).dy,
+          greaterThan(
+            tester.getTopLeft(find.byType(MenuGroupHeading).first).dy,
+          ),
+        );
+        expect(
+          tester.getTopLeft(find.text(l10n.libraryMenuAdd)).dy,
+          lessThan(tester.getTopLeft(find.text(l10n.libraryMenuManage)).dy),
+        );
+      },
+    );
+
+    testWidgets(
+      'GivenTheLibraryMenu_WhenAddLibraryIsChosen_ThenTheAddFlowStarts',
+      (tester) async {
+        final picker = FakeFolderPicker();
+        await tester.pumpShell(
+          extraOverrides: <Override>[
+            folderPickerProvider.overrideWithValue(picker),
+          ],
+        );
+        final l10n = localizations(tester);
+
+        await openLibrary(tester);
+        await tester.tap(find.text(l10n.libraryMenuAdd));
+        await tester.pumpAndSettle();
+
+        expect(picker.openCount, 1);
+        // Where the owner already is: no screen was opened for it.
+        expect(find.byType(LibrariesView), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'GivenTheLibraryMenu_WhenManageLibrariesIsChosen_ThenTheDialogOpens',
+      (tester) async {
+        await tester.pumpShell();
+        final l10n = localizations(tester);
+
+        await openLibrary(tester);
+        await tester.tap(find.text(l10n.libraryMenuManage));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(LibrariesView), findsOneWidget);
+        expect(find.byType(Dialog), findsOneWidget);
       },
     );
 

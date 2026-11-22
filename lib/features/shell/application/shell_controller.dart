@@ -12,7 +12,7 @@ class ShellController extends Notifier<ShellDestination> {
   @override
   ShellDestination build() {
     // A library shown in the main area can be removed while it is shown —
-    // from the libraries page, or by another window on the same catalog. The
+    // from Manage libraries, or by another window on the same catalog. The
     // libraries list reloading without it is what says so, and the area it
     // was is then home rather than a page about nothing (spec §3).
     //

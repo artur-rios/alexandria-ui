@@ -12,56 +12,80 @@ import '../../indexing/domain/index_run.dart';
 import '../../shell/domain/shell_destination.dart';
 import '../../shell/presentation/async_state_view.dart';
 import '../../shell/presentation/confirmation_dialog.dart';
-import '../application/library_add_request.dart';
 import '../domain/library.dart';
 import 'library_name_dialog.dart';
 import 'library_run_status.dart';
+import 'rename_library.dart';
 
-/// The libraries, as the navigation panel's own area (libraries-only design
-/// §3).
+/// Opens Manage libraries, the dialog listing every library.
 ///
-/// The one place a folder gets into Alexandria: the 0.6.0 core indexes
-/// nothing that is not a library. Each library is added, scanned again,
-/// moved and removed from its row here, and its run is shown under it.
-///
-/// No scaffold and no title of its own: the content area draws the
-/// destination's heading, and a second one inside it would say Libraries
-/// twice.
-class LibrariesView extends ConsumerStatefulWidget {
-  /// Creates the view.
-  const LibrariesView({super.key});
+/// Reached from the Library menu and from the activity strip's "View all".
+/// Each row renames, scans again, moves and removes its library, and shows its
+/// run.
+Future<void> openManageLibraries(BuildContext context) => showDialog<void>(
+  context: context,
+  builder: (context) => const _ManageLibrariesDialog(),
+);
 
-  @override
-  ConsumerState<LibrariesView> createState() => _LibrariesViewState();
-}
-
-class _LibrariesViewState extends ConsumerState<LibrariesView> {
-  @override
-  void initState() {
-    super.initState();
-    // Asked for from another screen just before this one replaced it.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _addIfAsked());
-  }
-
-  /// Runs the add flow [openLibrariesAndAdd] asked for, here, where its
-  /// context outlives the picker.
-  void _addIfAsked() {
-    if (!mounted || !ref.read(libraryAddRequestProvider.notifier).take()) {
-      return;
-    }
-
-    unawaited(addLibrary(context, ref));
-  }
+class _ManageLibrariesDialog extends StatelessWidget {
+  const _ManageLibrariesDialog();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    return Dialog(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 760, maxHeight: 720),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.libraryMenuLibraries,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              const Expanded(child: LibrariesView()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The libraries, as the Manage libraries dialog's content.
+///
+/// The one place a folder gets into Alexandria besides the Library menu's
+/// "Add library…": the 0.6.0 core indexes nothing that is not a library. Each
+/// library is renamed, scanned again, moved and removed from its row here, and
+/// its run is shown under it.
+///
+/// No scaffold and no title of its own: the dialog draws the heading.
+class LibrariesView extends ConsumerWidget {
+  /// Creates the view.
+  const LibrariesView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final libraries = ref.watch(librariesControllerProvider);
-    // Asked for while this screen is already showing (the Library menu).
-    ref.listen(libraryAddRequestProvider, (_, asked) {
-      if (asked) _addIfAsked();
-    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -120,13 +144,23 @@ class _LibraryRow extends ConsumerWidget {
             leading: const Icon(Icons.folder_special_outlined),
             title: Text(library.name),
             subtitle: Text(library.rootPath),
-            // Its folders, in the main area (library navigation design §4).
-            onTap: () => ref
-                .read(shellControllerProvider.notifier)
-                .go(LibraryDestination(library.uuid)),
+            // Its folders, in the main area (library navigation design §4),
+            // with the dialog out of the way.
+            onTap: () {
+              Navigator.of(context).pop();
+              ref
+                  .read(shellControllerProvider.notifier)
+                  .go(LibraryDestination(library.uuid));
+            },
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                IconButton(
+                  tooltip: l10n.libraryRenameEntry,
+                  icon: const Icon(Icons.drive_file_rename_outline),
+                  onPressed: () =>
+                      unawaited(renameLibrary(context, ref, library)),
+                ),
                 IconButton(
                   tooltip: l10n.libraryScan,
                   icon: const Icon(Icons.youtube_searched_for),
@@ -152,16 +186,15 @@ class _LibraryRow extends ConsumerWidget {
   }
 }
 
-/// Opens the libraries and starts adding one.
+/// Starts adding a library, where the owner is.
 ///
 /// What the "add a library" offers on the empty dashboard, the search and
-/// the left menu, and the Library menu, do: a library is the only way anything gets
-/// into the catalog, so that is where they send the owner. The flow itself
-/// runs on the Libraries screen ([LibraryAddRequest] says why).
-void openLibrariesAndAdd(WidgetRef ref) {
-  ref.read(libraryAddRequestProvider.notifier).ask();
-  ref.read(shellControllerProvider.notifier).go(const LibrariesDestination());
-}
+/// the left menu, and the Library menu, do: a library is the only way anything
+/// gets into the catalog. No screen opens for it: the picker and the name
+/// dialog open over the one showing, and [context] is the offer's own, which
+/// stays mounted until the folder comes back.
+void openLibrariesAndAdd(BuildContext context, WidgetRef ref) =>
+    unawaited(addLibrary(context, ref));
 
 /// Adds a folder the owner picks as a library (core FR-FC-36).
 ///

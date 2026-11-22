@@ -134,7 +134,7 @@ class ShellNavigationPanel extends ConsumerWidget {
                       ),
                       label: l10n.libraryAdd,
                       selected: false,
-                      onTap: () => openLibrariesAndAdd(ref),
+                      onTap: () => openLibrariesAndAdd(context, ref),
                     ),
                   for (final library in pinned) libraryEntry(library),
                   if (pinned.isNotEmpty && others.isNotEmpty)

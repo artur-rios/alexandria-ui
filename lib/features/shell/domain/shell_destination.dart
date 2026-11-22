@@ -1,9 +1,7 @@
 /// The areas of the shell (FR-UX-01, spec §3).
 ///
 /// The left menu goes to three kinds of them: home, the bookmarks, and each
-/// library. [LibrariesDestination] is temporary: it is reached from elsewhere
-/// in the shell but never listed in the left menu, and goes once what
-/// replaces it exists.
+/// library.
 ///
 /// The shell owns *that there is an area and which one is shown*; what each
 /// area holds is its own feature's content.
@@ -54,21 +52,4 @@ final class LibraryDestination extends ShellDestination {
 
   @override
   int get hashCode => Object.hash(LibraryDestination, uuid);
-}
-
-/// The registered libraries, with their runs and the add, scan, move and
-/// remove actions.
-///
-/// Temporary. Reached from the Library menu, the activity strip's "View all"
-/// and every "add a library" offer, never from the left menu; the Manage
-/// libraries dialog replaces it (library navigation plan, Task 5).
-final class LibrariesDestination extends ShellDestination {
-  /// Creates the destination.
-  const LibrariesDestination();
-
-  @override
-  bool operator ==(Object other) => other is LibrariesDestination;
-
-  @override
-  int get hashCode => (LibrariesDestination).hashCode;
 }

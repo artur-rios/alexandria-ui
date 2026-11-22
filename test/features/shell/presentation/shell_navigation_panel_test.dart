@@ -360,11 +360,11 @@ void main() {
           await tester.tap(entry('Add a library'));
           await tester.pumpAndSettle();
 
-          // `openLibrariesAndAdd`: the libraries page, with the folder picker
-          // already open over it.
+          // `openLibrariesAndAdd`: the folder picker opens where the owner
+          // is, and nothing is navigated to.
           expect(
             container.read(shellControllerProvider),
-            const LibrariesDestination(),
+            const HomeDestination(),
           );
           expect(picker.openCount, 1);
         },

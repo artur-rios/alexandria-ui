@@ -309,7 +309,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(LibrariesView), findsOneWidget);
+      // The add flow runs where the owner is: no screen opens for it.
+      expect(find.byType(LibrariesView), findsNothing);
     });
   });
 

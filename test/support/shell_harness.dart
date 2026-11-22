@@ -148,9 +148,9 @@ extension PumpShell on WidgetTester {
     await openLibrary(shelf);
   }
 
-  /// Opens the libraries page from the Library menu, as the owner does.
+  /// Opens Manage libraries from the Library menu, as the owner does.
   Future<void> openLibrariesPage() => openLibraryTool(
-    AppLocalizations.of(element(find.byType(ShellScreen))).libraryMenuLibraries,
+    AppLocalizations.of(element(find.byType(ShellScreen))).libraryMenuManage,
   );
 
   /// Opens one of the library-wide screens (UC-37 main flow step 1).

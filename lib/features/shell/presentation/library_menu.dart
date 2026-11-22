@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/di/providers.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../lifecycle/presentation/deleted_items_screen.dart';
 import '../../lifecycle/presentation/missing_files_screen.dart';
@@ -9,7 +10,6 @@ import '../../libraries/presentation/libraries_view.dart';
 import '../../organization/presentation/collections_screen.dart';
 import '../../tracking/presentation/reading_lists_screen.dart';
 import '../../tracking/presentation/watchlists_screen.dart';
-import '../domain/shell_destination.dart';
 import 'menu_entry.dart';
 
 /// The library-wide areas, reached from the menu bar (UC-37 main flow step 1,
@@ -17,13 +17,11 @@ import 'menu_entry.dart';
 ///
 /// The screens that belong to no single file type — sources, collections,
 /// watchlists, reading lists, deleted items, and the missing-files review — and
-/// so are not destinations of their own (FR-CT-01). The libraries were here too
-/// until they became one: they are somewhere the owner browses rather than
-/// something they do. They were reached from the bottom of the navigation rail,
-/// below a divider that was the only thing saying they were not destinations; a
-/// menu bar says it by construction.
+/// so are not destinations of their own (FR-CT-01). Adding and managing the
+/// libraries are here too, under a heading of their own: they are something
+/// the owner does, while a library itself is browsed from the left menu.
 ///
-/// Three headings inside, because a menu holding six unrelated screens
+/// Four headings inside, because a menu holding eight unrelated entries
 /// cannot be read at a glance without them. The order beneath each runs from
 /// filling the library to reviewing what has left it.
 class LibraryMenu extends ConsumerWidget {
@@ -43,19 +41,18 @@ class LibraryMenu extends ConsumerWidget {
     final button = SubmenuButton(
       leadingIcon: const Icon(Icons.widgets_outlined),
       menuChildren: [
-        MenuGroupHeading(l10n.libraryToolsGroupLibrary),
-        MenuEntry(
-          icon: Icons.folder_special_outlined,
-          label: l10n.libraryMenuLibraries,
-          onSelected: () => ref
-              .read(shellControllerProvider.notifier)
-              .go(const LibrariesDestination()),
-        ),
+        MenuGroupHeading(l10n.libraryMenuLibraries),
         MenuEntry(
           icon: Icons.create_new_folder_outlined,
           label: l10n.libraryMenuAdd,
-          onSelected: () => openLibrariesAndAdd(ref),
+          onSelected: () => openLibrariesAndAdd(context, ref),
         ),
+        MenuEntry(
+          icon: Icons.folder_special_outlined,
+          label: l10n.libraryMenuManage,
+          onSelected: () => unawaited(openManageLibraries(context)),
+        ),
+        MenuGroupHeading(l10n.libraryToolsGroupLibrary),
         MenuEntry(
           icon: Icons.collections_bookmark_outlined,
           label: l10n.collectionsOpen,

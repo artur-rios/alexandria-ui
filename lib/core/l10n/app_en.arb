@@ -1178,9 +1178,9 @@
       }
     }
   },
-  "libraryMove": "The folder moved",
+  "libraryMove": "Move…",
   "@libraryMove": {
-    "description": "Libraries design FR-FC-41: corrects a library's root after its folder moved on disk, taking its files with it."
+    "description": "The action, in a library's menu and on its row in Manage libraries (libraries design FR-FC-41): corrects a library's root after its folder moved on disk, taking its files with it."
   },
   "libraryMoveConflict": "That folder cannot hold this library: it overlaps another one, or the catalog already has files there.",
   "@libraryMoveConflict": {
@@ -1296,7 +1296,7 @@
       }
     }
   },
-  "libraryEmptyRoot": "Nothing under this folder has been indexed yet. Scan it from the libraries list, and what it holds will appear here.",
+  "libraryEmptyRoot": "Nothing under this folder has been indexed yet. Scan the library from its menu, and what it holds will appear here.",
   "@libraryEmptyRoot": {
     "description": "Libraries design: the top of a library with no indexed files under it. A library is browsed out of the catalog, not out of a walk of the disk, so this is what an owner sees when they made a library of a folder nobody has scanned — and it says the remedy, because \"nothing in this folder\" describes a disk the owner can see is not empty."
   },
@@ -1904,10 +1904,6 @@
   "@activityDismiss": {
     "description": "FR-FC-29: clears a failed run's report from the strip. The strip's own rather than the text editor's, so that renaming one does not silently change the other."
   },
-  "destinationLibraries": "Libraries",
-  "@destinationLibraries": {
-    "description": "Navigation panel entry for the registered libraries — folders browsed as trees, whose files are shown only there (libraries design). A destination rather than a tools-menu entry: a library is somewhere the owner browses, like the type panels above it."
-  },
   "libraryRemovePausedNote": "Its paused scan is discarded too.",
   "@libraryRemovePausedNote": {
     "description": "Added to the remove confirmation when the library has a paused scan."
@@ -1934,7 +1930,11 @@
   },
   "libraryMenuLibraries": "Libraries",
   "@libraryMenuLibraries": {
-    "description": "Library menu entry that opens the libraries."
+    "description": "The Library menu's first heading, over adding and managing libraries, and the title of the Manage libraries dialog."
+  },
+  "libraryMenuManage": "Manage libraries…",
+  "@libraryMenuManage": {
+    "description": "Library menu entry that opens the dialog listing every library, with rename, scan again, move and remove."
   },
   "libraryMenuAdd": "Add library…",
   "@libraryMenuAdd": {

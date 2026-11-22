@@ -7,7 +7,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../catalog/domain/catalog_search.dart';
 import '../../catalog/presentation/catalog_search_view.dart';
 import '../../catalog/presentation/home_dashboard.dart';
-import '../../libraries/presentation/libraries_view.dart';
 import '../../libraries/presentation/library_view.dart';
 import '../../playback/presentation/player_bar.dart';
 import '../../organization/presentation/bookmarks_view.dart';
@@ -67,9 +66,7 @@ class ShellScreen extends ConsumerWidget {
 /// The content area (FR-UX-01).
 ///
 /// Home is the dashboard (UC-14), bookmarks are the bookmark manager (UC-28),
-/// and a library is its folders (library navigation design §4). The
-/// temporary destination the left menu does not list keeps its page until
-/// what replaces it exists: the libraries page.
+/// and a library is its folders (library navigation design §4).
 class ShellContentArea extends ConsumerWidget {
   /// Creates the content area for [destination].
   const ShellContentArea({required this.destination, super.key});
@@ -105,7 +102,6 @@ class ShellContentArea extends ConsumerWidget {
       HomeDestination() => l10n.destinationHome,
       BookmarksDestination() => l10n.destinationBookmarks,
       LibraryDestination() => library?.name ?? '',
-      LibrariesDestination() => l10n.destinationLibraries,
     };
 
     // A library draws its own heading, with its toggles and menu beside the
@@ -135,7 +131,6 @@ class ShellContentArea extends ConsumerWidget {
               HomeDestination() => const HomeDashboard(),
               BookmarksDestination() => const BookmarksView(),
               LibraryDestination(:final uuid) => LibraryView(uuid: uuid),
-              LibrariesDestination() => const LibrariesView(),
             },
           ),
         ],
