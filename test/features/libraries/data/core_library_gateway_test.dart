@@ -248,6 +248,41 @@ void main() {
       );
     });
 
+    test('GivenATypeMissing_WhenStatsAreRead_ThenItIsUnexpected', () async {
+      // The core answers all seven types, a zero included: one missing means
+      // the answer cannot be read, and home must not show a zero it never
+      // counted.
+      final fake = FakeCoreClient()
+        ..catalogStatsResponse = (
+          status: LIBRARY_OK,
+          json:
+              '{"libraries":3,"filesByType":{"audio":1,"video":2,"html":3,'
+              '"text":4,"document":5,"comic":6}}',
+        );
+
+      await expectLater(
+        CoreLibraryGateway(fake).stats(),
+        throwsA(isA<UnexpectedFailure>()),
+      );
+    });
+
+    test(
+      'GivenATypeThisBuildDoesNotKnow_WhenStatsAreRead_ThenItIsLeftOut',
+      () async {
+        final fake = FakeCoreClient()
+          ..catalogStatsResponse = (
+            status: LIBRARY_OK,
+            json:
+                '{"libraries":1,"filesByType":{"audio":1,"video":2,"html":3,'
+                '"text":4,"document":5,"comic":6,"image":7,"model3d":8}}',
+          );
+
+        final stats = await CoreLibraryGateway(fake).stats();
+
+        expect(stats.filesByType.keys, unorderedEquals(FileType.values));
+      },
+    );
+
     test('GivenAnUnreadableBody_WhenStatsAreRead_ThenItIsUnexpected', () async {
       final fake = FakeCoreClient()
         ..catalogStatsResponse = (status: LIBRARY_OK, json: 'nope');

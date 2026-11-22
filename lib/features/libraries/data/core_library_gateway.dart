@@ -206,10 +206,12 @@ class CoreLibraryGateway implements LibraryGateway {
       return CatalogStats(
         libraries: body['libraries'] as int,
         filesByType: {
-          // A type this build does not know is left out, as in a listing;
-          // every type it does know is present, a zero included.
+          // A type this build does not know is left out, as in a listing.
+          // The core answers every type it knows, a zero included, so one
+          // missing makes the answer unreadable: the cast throws rather than
+          // home showing a zero nobody counted.
           for (final type in FileType.values)
-            type: (byType[type.wireName] as int?) ?? 0,
+            type: byType[type.wireName] as int,
         },
       );
     } on Object {
