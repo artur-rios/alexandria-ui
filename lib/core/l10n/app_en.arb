@@ -100,31 +100,31 @@
   },
   "destinationHome": "Home",
   "@destinationHome": {
-    "description": "Navigation panel entry for the dashboard the application opens on (UC-14)."
+    "description": "Left-menu entry for home, the screen the application opens on (UC-14, FR-CT-20)."
   },
   "destinationBooks": "Books",
   "@destinationBooks": {
-    "description": "Navigation panel entry for books and e-books (FR-CT-01)."
+    "description": "The name of the books-and-e-books type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationComicBooks": "Comic books",
   "@destinationComicBooks": {
-    "description": "Navigation panel entry for comic book archives (FR-CT-01)."
+    "description": "The name of the comic-book-archive type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationNotes": "Notes",
   "@destinationNotes": {
-    "description": "Navigation panel entry for notes, Markdown, and plain text files (FR-CT-01)."
+    "description": "The name of the notes, Markdown, and plain-text type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationPages": "Pages",
   "@destinationPages": {
-    "description": "Navigation panel entry for saved HTML pages (FR-CT-01)."
+    "description": "The name of the saved-HTML-page type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationImages": "Images",
   "@destinationImages": {
-    "description": "Navigation panel entry for still images (FR-CT-01)."
+    "description": "The name of the still-image type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "destinationBookmarks": "Bookmarks",
   "@destinationBookmarks": {
-    "description": "Navigation panel entry for saved links, the one type holding no file on disk (FR-CT-01)."
+    "description": "Left-menu entry for saved links, which hold no file on disk (UC-28, FR-CT-20)."
   },
   "preferencesTitle": "Preferences",
   "@preferencesTitle": {
@@ -287,15 +287,15 @@
   },
   "destinationVideos": "Videos",
   "@destinationVideos": {
-    "description": "Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog."
+    "description": "The name of the video type, of every kind: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22). One type rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog."
   },
   "destinationMusic": "Music",
   "@destinationMusic": {
-    "description": "The listing's name for music and other audio."
+    "description": "The name of the music-and-other-audio type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22)."
   },
   "catalogEmptyFirstRun": "Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.",
   "@catalogEmptyFirstRun": {
-    "description": "UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06)."
+    "description": "UC-14 AF-01 and UC-11 AF-04: there is no library yet, so adding a folder as one is what the owner needs (UC-05, UC-06)."
   },
   "catalogFileMissing": "Missing from disk",
   "@catalogFileMissing": {
@@ -1677,15 +1677,15 @@
   },
   "libraryToolsGroupLibrary": "Library",
   "@libraryToolsGroupLibrary": {
-    "description": "Heading over the library tools menu's first group: sources and collections — filling and organizing the library itself."
+    "description": "Heading over the Library menu's group for collections — organizing the library itself."
   },
   "libraryToolsGroupTracking": "Tracking",
   "@libraryToolsGroupTracking": {
-    "description": "Heading over the library tools menu's second group: watchlists and reading lists — what the owner is following."
+    "description": "Heading over the Library menu's group for watchlists and reading lists — what the owner is following."
   },
   "libraryToolsGroupReview": "Review",
   "@libraryToolsGroupReview": {
-    "description": "Heading over the library tools menu's third group: deleted items and the missing-files review — what has left the library or needs a look."
+    "description": "Heading over the Library menu's group for deleted items and the missing-files review — what has left the library or needs a look."
   },
   "activityBarLabel": "Background indexing",
   "@activityBarLabel": {

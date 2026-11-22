@@ -96,7 +96,7 @@ abstract interface class CoreClient {
   Future<int> indexCountFiles();
 
   /// Lists files matching [jsonFilters] through `alexandria_files_list`
-  /// (FR-CT-02, UC-09).
+  /// (FR-CT-06, FR-LC-03).
   ///
   /// [jsonFilters] is the body the core's matching HTTP route takes —
   /// `{"type":"video","state":"active"}`.
@@ -136,7 +136,7 @@ abstract interface class CoreClient {
   Future<CoreJsonResponse> comicPage(String uuid, int page);
 
   /// A downscaled picture of the file [uuid], through
-  /// `alexandria_file_thumbnail` (UC-40).
+  /// `alexandria_file_thumbnail` (the core's UC-40).
   ///
   /// Answers `{"uuid":…,"mimeType":"image/jpeg","bytesBase64":…}`. For audio
   /// it is the embedded front cover; a file with none answers a playback

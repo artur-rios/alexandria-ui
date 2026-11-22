@@ -1,15 +1,16 @@
-/// The types the Alexandria core classifies a file into (FR-CT-02).
+/// The types the Alexandria core classifies a file into (FR-CT-07, FR-CT-22).
 ///
 /// Seven, which is the core's own `FileType` and not a reinterpretation of it.
-/// The navigation panel's entries map onto these; where the two disagree, the
-/// core wins, because classifying a file is domain work the core owns (BR-02).
+/// A library's type filter and home's statistics list these; where a label and
+/// the core disagree, the core wins, because classifying a file is domain work
+/// the core owns (BR-02).
 enum FileType {
   /// `video` — everything filmed.
   ///
-  /// The panel has one entry for this. FR-CT-01 originally listed movies and
-  /// series separately, but a `File` carries no video subtype, so the two
-  /// would be the same query returning the same rows. That distinction is a
-  /// watchlist's (UC-29), not the catalog's.
+  /// One type, not two: movies and series were once listed separately, but a
+  /// `File` carries no video subtype, so the two would be the same query
+  /// returning the same rows. That distinction is a watchlist's (UC-29), not
+  /// the catalog's.
   video('video'),
 
   /// `audio` — music and other recordings, played rather than read
@@ -17,7 +18,7 @@ enum FileType {
   /// track by its title and order an album by its track numbers.
   audio('audio'),
 
-  /// `document` — the panel's books.
+  /// `document` — books: PDFs and e-books.
   document('document'),
 
   /// `comic` — comic book archives.

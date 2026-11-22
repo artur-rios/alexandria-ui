@@ -148,7 +148,7 @@ class FakeCoreClient implements CoreClient {
   /// What [indexRefreshStart] was called with, in order.
   final List<({String? priority})> indexRefreshStarts = [];
 
-  /// What [filesList] answers (UC-09).
+  /// What [filesList] answers (UC-11, UC-34, UC-37).
   final CoreJsonResponse filesListResult;
 
   /// Whether [filesList] throws instead of answering.

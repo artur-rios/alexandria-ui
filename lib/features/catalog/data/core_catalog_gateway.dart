@@ -14,7 +14,7 @@ import '../domain/music_metadata.dart';
 import '../domain/video_metadata.dart';
 import 'file_view_parser.dart';
 
-/// [CatalogGateway] over the generated bindings (IR-03, UC-09).
+/// [CatalogGateway] over the generated bindings (IR-03, UC-11).
 class CoreCatalogGateway implements CatalogGateway {
   /// Creates a gateway over [core].
   const CoreCatalogGateway(this._core);

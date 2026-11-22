@@ -1,7 +1,7 @@
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// The core's file types (FR-CT-02).
+/// The core's file types (FR-CT-07, FR-CT-22).
 void main() {
   group('FileType.fromWire', () {
     for (final type in FileType.values) {

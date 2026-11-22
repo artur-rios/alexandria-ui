@@ -61,7 +61,7 @@ void main() {
     testWidgets(
       'GivenTheShell_WhenTheToolsAreOpened_ThenTheMissingFilesReviewIsOffered',
       (tester) async {
-        // UC-37 main flow step 1: "from the navigation panel or from an index
+        // UC-37 main flow step 1: "from the Library menu or from an index
         // run's outcome". This is the first of the two.
         await tester.pumpShell();
 
@@ -74,9 +74,9 @@ void main() {
     testWidgets(
       'GivenTheShell_WhenTheToolsAreOpened_ThenEveryLibraryWideAreaIsOffered',
       (tester) async {
-        // The areas that belong to no single file type, and so have no
-        // destination of their own (FR-CT-01) — but must still be reachable
-        // from anywhere rather than only from the dashboard.
+        // The areas that belong to no single library, and so have no entry
+        // in the left menu (FR-CT-20) — but must still be reachable from
+        // anywhere rather than only from home.
         await tester.pumpShell();
 
         final l10n = await openTools(tester);

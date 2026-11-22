@@ -286,7 +286,7 @@ class ActiveRunsController extends Notifier<ActiveRunsState> {
 
   /// Refetches every projection the catalog itself feeds, once a run's
   /// ending has just changed what the catalog holds (FR-LB-15 /
-  /// FR-CT-01/09/11/13).
+  /// FR-CT-09/13/21/22).
   ///
   /// This is what `deletion_controller.dart`'s `onDone` does for a deletion —
   /// the catalog changed, so its listings, counts, search index, recent

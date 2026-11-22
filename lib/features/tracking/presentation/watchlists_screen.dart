@@ -16,9 +16,9 @@ import '../domain/watchlist.dart';
 
 /// The watchlists screen (UC-29, FR-TR-01 … FR-TR-04).
 ///
-/// A full-screen dialog reached from the videos area, like the library-sources
-/// screen: a watchlist is not a file type, so it is not a destination in the
-/// navigation panel (FR-CT-01), and it is not a setting either.
+/// A full-screen dialog reached from the menu bar's Library menu: a watchlist
+/// is not a library, so it is not an entry of the left menu (FR-CT-20), and it
+/// is not a setting either.
 class WatchlistsScreen extends ConsumerWidget {
   /// Creates the screen.
   const WatchlistsScreen({super.key});

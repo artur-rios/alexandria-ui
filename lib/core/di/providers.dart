@@ -272,7 +272,7 @@ final activeRunsControllerProvider =
       ActiveRunsController.new,
     );
 
-/// The core's catalog queries (UC-09).
+/// The core's catalog queries (UC-11, UC-34, UC-37).
 final catalogGatewayProvider = Provider<CatalogGateway>((ref) {
   final core = _loadedCore(ref);
   if (core == null) {
@@ -349,7 +349,7 @@ final audioPlayerProvider = Provider<MediaPlayer>((ref) {
   return player;
 });
 
-/// A track's front cover (UC-40).
+/// A track's front cover (the core's UC-40).
 final coverGatewayProvider = Provider<CoverGateway>((ref) {
   final core = _loadedCore(ref);
   if (core == null) {

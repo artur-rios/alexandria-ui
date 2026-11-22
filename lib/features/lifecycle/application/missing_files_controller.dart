@@ -28,7 +28,7 @@ class MissingFilesController extends AsyncNotifier<List<FileDetails>> {
           missing.addAll(files.where((row) => row.file.isMissing));
 
         // One type the core will not answer must not take the others down
-        // with it (UC-09 AF-02).
+        // with it.
         case CatalogListingFailed():
           continue;
       }

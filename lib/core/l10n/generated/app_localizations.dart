@@ -212,43 +212,43 @@ abstract class AppLocalizations {
   /// **'Loading'**
   String get loading;
 
-  /// Navigation panel entry for the dashboard the application opens on (UC-14).
+  /// Left-menu entry for home, the screen the application opens on (UC-14, FR-CT-20).
   ///
   /// In en, this message translates to:
   /// **'Home'**
   String get destinationHome;
 
-  /// Navigation panel entry for books and e-books (FR-CT-01).
+  /// The name of the books-and-e-books type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Books'**
   String get destinationBooks;
 
-  /// Navigation panel entry for comic book archives (FR-CT-01).
+  /// The name of the comic-book-archive type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Comic books'**
   String get destinationComicBooks;
 
-  /// Navigation panel entry for notes, Markdown, and plain text files (FR-CT-01).
+  /// The name of the notes, Markdown, and plain-text type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Notes'**
   String get destinationNotes;
 
-  /// Navigation panel entry for saved HTML pages (FR-CT-01).
+  /// The name of the saved-HTML-page type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Pages'**
   String get destinationPages;
 
-  /// Navigation panel entry for still images (FR-CT-01).
+  /// The name of the still-image type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Images'**
   String get destinationImages;
 
-  /// Navigation panel entry for saved links, the one type holding no file on disk (FR-CT-01).
+  /// Left-menu entry for saved links, which hold no file on disk (UC-28, FR-CT-20).
   ///
   /// In en, this message translates to:
   /// **'Bookmarks'**
@@ -452,19 +452,19 @@ abstract class AppLocalizations {
   /// **'The catalog could not be re-checked.'**
   String get libraryRefreshFailed;
 
-  /// Navigation panel entry for video of every kind. One entry rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog.
+  /// The name of the video type, of every kind: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22). One type rather than separate movies and series, because the core classifies a file as `video` and carries no subtype — the distinction lives in watchlists (UC-29), not in the catalog.
   ///
   /// In en, this message translates to:
   /// **'Videos'**
   String get destinationVideos;
 
-  /// The listing's name for music and other audio.
+  /// The name of the music-and-other-audio type: a library's type filter, home's statistics, and search's group heading (FR-CT-07, FR-CT-22).
   ///
   /// In en, this message translates to:
   /// **'Music'**
   String get destinationMusic;
 
-  /// UC-09 AF-01: the whole catalog is empty, so registering and indexing a folder is what the owner needs (UC-05, UC-06).
+  /// UC-14 AF-01 and UC-11 AF-04: there is no library yet, so adding a folder as one is what the owner needs (UC-05, UC-06).
   ///
   /// In en, this message translates to:
   /// **'Nothing is in Alexandria yet. Add a folder as a library, and what is inside appears here as soon as it is indexed.'**
@@ -2228,19 +2228,19 @@ abstract class AppLocalizations {
   /// **'Library'**
   String get libraryToolsLabel;
 
-  /// Heading over the library tools menu's first group: sources and collections — filling and organizing the library itself.
+  /// Heading over the Library menu's group for collections — organizing the library itself.
   ///
   /// In en, this message translates to:
   /// **'Library'**
   String get libraryToolsGroupLibrary;
 
-  /// Heading over the library tools menu's second group: watchlists and reading lists — what the owner is following.
+  /// Heading over the Library menu's group for watchlists and reading lists — what the owner is following.
   ///
   /// In en, this message translates to:
   /// **'Tracking'**
   String get libraryToolsGroupTracking;
 
-  /// Heading over the library tools menu's third group: deleted items and the missing-files review — what has left the library or needs a look.
+  /// Heading over the Library menu's group for deleted items and the missing-files review — what has left the library or needs a look.
   ///
   /// In en, this message translates to:
   /// **'Review'**

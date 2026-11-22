@@ -39,7 +39,7 @@ class CollectionCandidatesController
       final listing = await catalog.listFiles(type: type);
 
       // A type the core will not answer is skipped rather than taking the
-      // others down with it (UC-09 AF-02).
+      // others down with it.
       if (listing case CatalogListingLoaded(:final files)) {
         candidates.addAll(
           files.map(

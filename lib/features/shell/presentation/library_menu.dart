@@ -15,11 +15,12 @@ import 'menu_entry.dart';
 /// The library-wide areas, reached from the menu bar (UC-37 main flow step 1,
 /// FR-UX-01).
 ///
-/// The screens that belong to no single file type — sources, collections,
-/// watchlists, reading lists, deleted items, and the missing-files review — and
-/// so are not destinations of their own (FR-CT-01). Adding and managing the
-/// libraries are here too, under a heading of their own: they are something
-/// the owner does, while a library itself is browsed from the left menu.
+/// The screens that belong to no single library — collections, watchlists,
+/// reading lists, deleted items, and the missing-files review — and so are not
+/// entries of the left menu, which lists Home, Bookmarks, and the libraries
+/// (FR-CT-20). Adding and managing the libraries are here too, under a heading
+/// of their own (FR-LB-27): they are something the owner does, while a library
+/// itself is browsed from the left menu.
 ///
 /// Four headings inside, because a menu holding eight unrelated entries
 /// cannot be read at a glance without them. The order beneath each runs from

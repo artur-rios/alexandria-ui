@@ -16,7 +16,8 @@ import 'collection_members_view.dart';
 /// The collections screen (UC-26, FR-OG-01 … FR-OG-03, FR-OG-06).
 ///
 /// A screen of its own rather than a destination: a collection holds files or
-/// bookmarks, so it belongs to no single area of the library (FR-CT-01).
+/// bookmarks from any library, so it is not an entry of the left menu
+/// (FR-CT-20).
 class CollectionsScreen extends ConsumerWidget {
   /// Creates the screen.
   const CollectionsScreen({super.key});

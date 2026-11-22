@@ -21,7 +21,7 @@ import 'catalog_search_view.dart';
 /// counted is never shown as a zero.
 ///
 /// The library-wide screens it used to link to — collections, deleted items,
-/// the missing-files review — are in the navigation panel's tools menu.
+/// the missing-files review — are in the menu bar's Library menu.
 class HomeDashboard extends ConsumerWidget {
   /// Creates the dashboard.
   const HomeDashboard({super.key});

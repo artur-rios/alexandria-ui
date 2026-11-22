@@ -12,8 +12,8 @@ import 'package:alexandria_ui/features/catalog/domain/video_metadata.dart';
 
 /// A [CatalogGateway] that never reaches the core (Testing Specification §2.3).
 ///
-/// Answers per type, because UC-09 is about types being listed independently:
-/// one that fails must not take the others down with it (AF-02).
+/// Answers per type, because search and the reviews list types independently:
+/// one that fails must not take the others down with it.
 class FakeCatalogGateway implements CatalogGateway {
   /// Creates a gateway whose types are empty unless a test fills them.
   FakeCatalogGateway({

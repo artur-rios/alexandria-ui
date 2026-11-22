@@ -34,7 +34,7 @@ class DeletedItemsController extends AsyncNotifier<List<DeletedRecord>> {
           records.addAll(files.map((row) => DeletedRecord.ofFile(row.file)));
 
         // One type the core will not answer must not take the others down
-        // with it, the same way a listing's does not (UC-09 AF-02).
+        // with it.
         case CatalogListingFailed():
           continue;
       }

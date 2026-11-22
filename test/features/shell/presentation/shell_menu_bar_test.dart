@@ -75,7 +75,8 @@ void main() {
           l10n.deletedItemsOpen,
           l10n.missingFilesOpen,
         ]) {
-          // In the menu: "Libraries" is also the navigation panel's label.
+          // In the menu itself, so the same words elsewhere in the shell
+          // cannot satisfy it.
           expect(
             find.descendant(
               of: find.byType(MenuItemButton),
