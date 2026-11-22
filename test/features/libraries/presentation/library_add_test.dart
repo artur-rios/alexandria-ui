@@ -127,6 +127,32 @@ void main() {
       },
     );
 
+    testWidgets('GivenABlankName_WhenTheNameIsAsked_ThenConfirmIsDisabled', (
+      tester,
+    ) async {
+      final opened = await openLibraries(tester);
+
+      await pressAdd(tester);
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        ),
+        '   ',
+      );
+      await tester.pump();
+
+      final confirm = find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.widgetWithText(
+          FilledButton,
+          messages(tester).libraryAdd,
+        ),
+      );
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      expect(opened.gateway.registered, isEmpty);
+    });
+
     testWidgets('GivenAPickedFolder_WhenNamed_ThenTheFolderNameIsSuggested', (
       tester,
     ) async {
