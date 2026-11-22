@@ -12,7 +12,7 @@ void main() {
   }
 
   test('GivenAFreshShell_WhenItIsBuilt_ThenItOpensOnTheDashboard', () {
-    // UC-14 main flow step 1: the application opens the dashboard after login.
+    // UC-14 main flow step 1: the application opens the dashboard.
     expect(container().read(shellControllerProvider), ShellDestination.home);
   });
 

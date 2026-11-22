@@ -10,7 +10,6 @@ import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/in_memory_settings_store.dart';
 import '../../../support/test_container.dart';
@@ -25,20 +24,15 @@ void main() {
     final gateway = FakeCatalogGateway(listings: listings, deleted: deleted);
     final container = buildTestContainer(
       overrides: [
-        ...fakeCoreOverrides(settings: settings ?? InMemorySettingsStore()),
+        // The re-check off, so the activities startup begins do not start a
+        // background refresh this suite has nothing to do with.
+        ...fakeCoreOverrides(
+          settings: settings ?? InMemorySettingsStore(rechecksAtStartup: false),
+        ),
         catalogGatewayProvider.overrideWithValue(gateway),
       ],
     );
     await container.read(startupControllerProvider.notifier).start();
-    // Off, so `establish`'s own unawaited call to `begin()` (FR-LB-21) does
-    // not itself start a background refresh this suite has nothing to do
-    // with, racing this container's own teardown.
-    await container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
     container.listen(listingControllerProvider, (_, _) {});
 
     return (ref: container, gateway: gateway);
@@ -123,7 +117,7 @@ void main() {
 
   group('remembering it (main flow step 5)', () {
     test('GivenAView_WhenItIsApplied_ThenItIsWritten', () async {
-      final settings = InMemorySettingsStore();
+      final settings = InMemorySettingsStore(rechecksAtStartup: false);
       final sut = await started(settings: settings);
 
       await sut.ref
@@ -144,6 +138,7 @@ void main() {
       () async {
         final sut = await started(
           settings: InMemorySettingsStore(
+            rechecksAtStartup: false,
             values: {
               ListingViewController.settingsKey:
                   '{"video":{"lifecycle":"all","sortField":"indexed",'
@@ -166,6 +161,7 @@ void main() {
       () async {
         final sut = await started(
           settings: InMemorySettingsStore(
+            rechecksAtStartup: false,
             values: {ListingViewController.settingsKey: 'not json'},
           ),
         );

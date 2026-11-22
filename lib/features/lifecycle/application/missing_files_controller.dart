@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
-import '../../../core/failures/failure.dart';
 import '../../catalog/domain/catalog_gateway.dart';
 import '../../catalog/domain/file_details.dart';
 import '../../catalog/domain/file_type.dart';
@@ -18,28 +17,15 @@ import '../../catalog/domain/file_type.dart';
 class MissingFilesController extends AsyncNotifier<List<FileDetails>> {
   @override
   Future<List<FileDetails>> build() async {
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
-
     final catalog = ref.read(catalogGatewayProvider);
     final missing = <FileDetails>[];
 
     for (final type in FileType.values) {
-      final listing = await catalog.listFiles(
-        type: type,
-        credential: credential,
-      );
+      final listing = await catalog.listFiles(type: type);
 
       switch (listing) {
         case CatalogListingLoaded(:final files):
           missing.addAll(files.where((row) => row.file.isMissing));
-
-        // AF-04: a rejected session returns the owner to login.
-        case CatalogListingFailed(failure: final UnauthorizedFailure failure):
-          session.invalidate(failure);
-          return const [];
 
         // One type the core will not answer must not take the others down
         // with it (UC-09 AF-02).

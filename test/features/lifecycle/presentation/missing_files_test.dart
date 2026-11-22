@@ -1,9 +1,5 @@
-import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
-import 'package:alexandria_ui/core/failures/core_status.dart';
-import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_file.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
@@ -199,39 +195,6 @@ void main() {
         findsOneWidget,
       );
     });
-  });
-
-  // AF-04: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenTheReviewLoads_ThenTheOwnerSignsOut',
-      (tester) async {
-        final catalog = FakeCatalogGateway(
-          listings: {
-            for (final type in FileType.values)
-              type: const CatalogListing.failed(
-                failure: Failure.unauthorized(
-                  family: CoreStatusFamily.file,
-                  code: FILE_ERR_UNAUTHORIZED,
-                ),
-              ),
-          },
-        );
-
-        final container = await tester.pumpShell(
-          surfaceSize: const Size(1440, 1000),
-          extraOverrides: <Override>[
-            catalogGatewayProvider.overrideWithValue(catalog),
-          ],
-        );
-
-        // Read rather than opened: the review loads lazily, so this is the
-        // listing it would have triggered.
-        await container.read(missingFilesControllerProvider.future);
-
-        expect(container.read(sessionControllerProvider), isA<SessionAbsent>());
-      },
-    );
   });
 
   group('the registered-folder check', () {

@@ -70,25 +70,17 @@ class FakeCatalogGateway implements CatalogGateway {
 
   /// Every type asked for, in order. `null` is a call that asked for every
   /// type at once, which is how the counts panel reads.
-  ///
-  /// Empty is the assertion that matters when there is no session: no catalog
-  /// call is made without one (FR-AU-07).
   final List<FileType?> requested = [];
-
-  /// The credentials each call was made with.
-  final List<String> credentials = [];
 
   /// The lifecycle filter each call was made with (UC-12).
   final List<LifecycleFilter> lifecycles = [];
 
   @override
   Future<CatalogListing> listFiles({
-    required String credential,
     FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
   }) async {
     requested.add(type);
-    credentials.add(credential);
     lifecycles.add(lifecycle);
 
     // No type is every type, as the core reads it — so the fake answers the
@@ -132,10 +124,7 @@ class FakeCatalogGateway implements CatalogGateway {
       };
 
   @override
-  Future<FileDetailsOutcome> fileDetails({
-    required String uuid,
-    required String credential,
-  }) {
+  Future<FileDetailsOutcome> fileDetails({required String uuid}) {
     detailsRequested.add(uuid);
 
     return Future.value(
@@ -196,10 +185,8 @@ class FakeCatalogGateway implements CatalogGateway {
   Future<MetadataEditOutcome> editMusicMetadata({
     required String uuid,
     required MusicMetadata metadata,
-    required String credential,
   }) async {
     edits.add((uuid: uuid, metadata: metadata));
-    credentials.add(credential);
 
     if (editOutcomes.isEmpty) {
       return MetadataEditOutcome.saved(metadata: metadata);
@@ -211,10 +198,8 @@ class FakeCatalogGateway implements CatalogGateway {
   Future<VideoMetadataEditOutcome> editVideoMetadata({
     required String uuid,
     required VideoMetadata metadata,
-    required String credential,
   }) async {
     videoEdits.add((uuid: uuid, metadata: metadata));
-    credentials.add(credential);
 
     if (videoEditOutcomes.isEmpty) {
       return VideoMetadataEditOutcome.saved(metadata: metadata);
@@ -227,10 +212,8 @@ class FakeCatalogGateway implements CatalogGateway {
   Future<FileRenameOutcome> renameFile({
     required String uuid,
     required String name,
-    required String credential,
   }) async {
     renames.add((uuid: uuid, name: name));
-    credentials.add(credential);
 
     // Accepting by echoing the record with the new name is what the core does
     // on success.

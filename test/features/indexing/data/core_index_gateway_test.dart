@@ -23,7 +23,7 @@ void main() {
           FakeCoreClient(pauseStatus: runErrInvalidState),
         );
 
-        final outcome = await gateway.pauseRun(runId: 'r1', credential: 't');
+        final outcome = await gateway.pauseRun(runId: 'r1');
 
         expect(outcome, isA<RunControlFailed>());
       },
@@ -32,7 +32,7 @@ void main() {
     test('GivenARunningRun_WhenPaused_ThenItSucceeds', () async {
       final gateway = CoreIndexGateway(FakeCoreClient());
 
-      final outcome = await gateway.pauseRun(runId: 'r1', credential: 't');
+      final outcome = await gateway.pauseRun(runId: 'r1');
 
       expect(outcome, isA<RunControlOk>());
     });
@@ -41,7 +41,7 @@ void main() {
       final fake = FakeCoreClient()..failOnIndexPause = true;
       final gateway = CoreIndexGateway(fake);
 
-      final outcome = await gateway.pauseRun(runId: 'r1', credential: 't');
+      final outcome = await gateway.pauseRun(runId: 'r1');
 
       expect(outcome, isA<RunControlFailed>());
     });
@@ -51,7 +51,7 @@ void main() {
     test('GivenARunningRun_WhenCancelled_ThenItSucceeds', () async {
       final gateway = CoreIndexGateway(FakeCoreClient());
 
-      final outcome = await gateway.cancelRun(runId: 'r1', credential: 't');
+      final outcome = await gateway.cancelRun(runId: 'r1');
 
       expect(outcome, isA<RunControlOk>());
     });
@@ -62,7 +62,7 @@ void main() {
         final fake = FakeCoreClient()..failOnIndexCancel = true;
         final gateway = CoreIndexGateway(fake);
 
-        final outcome = await gateway.cancelRun(runId: 'r1', credential: 't');
+        final outcome = await gateway.cancelRun(runId: 'r1');
 
         expect(outcome, isA<RunControlFailed>());
       },
@@ -73,7 +73,7 @@ void main() {
     test('GivenAResume_WhenTheCoreAnswers_ThenTheSameRunIdComesBack', () async {
       final gateway = CoreIndexGateway(FakeCoreClient(resumeRunId: 'r1'));
 
-      final outcome = await gateway.resumeRun(runId: 'r1', credential: 't');
+      final outcome = await gateway.resumeRun(runId: 'r1');
 
       expect((outcome as IndexStarted).runId, 'r1');
     });
@@ -82,11 +82,7 @@ void main() {
       final fake = FakeCoreClient(resumeRunId: 'r1');
       final gateway = CoreIndexGateway(fake);
 
-      await gateway.resumeRun(
-        runId: 'r1',
-        priority: RunPriority.low,
-        credential: 't',
-      );
+      await gateway.resumeRun(runId: 'r1', priority: RunPriority.low);
 
       expect(fake.indexResumes.single.priority, 'low');
     });
@@ -100,7 +96,7 @@ void main() {
         final fake = FakeCoreClient(resumeRunId: 'r1');
         final gateway = CoreIndexGateway(fake);
 
-        await gateway.resumeRun(runId: 'r1', credential: 't');
+        await gateway.resumeRun(runId: 'r1');
 
         expect(fake.indexResumes.single.priority, isNull);
       },
@@ -120,7 +116,7 @@ void main() {
           ),
         );
 
-        final outcome = await gateway.listActiveRuns(credential: 't');
+        final outcome = await gateway.listActiveRuns();
 
         final runs = (outcome as ActiveRunsRead).runs;
         expect(runs.single.processed, 8412);
@@ -131,7 +127,7 @@ void main() {
     test('GivenNoOutstandingRuns_WhenListed_ThenTheListIsEmpty', () async {
       final gateway = CoreIndexGateway(FakeCoreClient(activeRunsJson: '[]'));
 
-      final outcome = await gateway.listActiveRuns(credential: 't');
+      final outcome = await gateway.listActiveRuns();
 
       expect((outcome as ActiveRunsRead).runs, isEmpty);
     });
@@ -140,7 +136,7 @@ void main() {
       final fake = FakeCoreClient()..failOnIndexRunsActive = true;
       final gateway = CoreIndexGateway(fake);
 
-      final outcome = await gateway.listActiveRuns(credential: 't');
+      final outcome = await gateway.listActiveRuns();
 
       expect(outcome, isA<ActiveRunsFailed>());
     });
@@ -153,7 +149,7 @@ void main() {
         final fake = FakeCoreClient();
         final gateway = CoreIndexGateway(fake);
 
-        await gateway.startRefresh(priority: RunPriority.low, credential: 't');
+        await gateway.startRefresh(priority: RunPriority.low);
 
         expect(fake.indexRefreshStarts.single.priority, 'low');
       },
@@ -174,7 +170,7 @@ void main() {
       );
       final gateway = CoreIndexGateway(fake);
 
-      final outcome = await gateway.readRun(runId: 'r1', credential: 't');
+      final outcome = await gateway.readRun(runId: 'r1');
 
       final run = (outcome as IndexRunRead).run;
       expect(run.total, 100);
@@ -196,7 +192,7 @@ void main() {
         );
         final gateway = CoreIndexGateway(fake);
 
-        final outcome = await gateway.readRun(runId: 'r1', credential: 't');
+        final outcome = await gateway.readRun(runId: 'r1');
 
         final run = (outcome as IndexRunRead).run;
         expect(run.counts?.alreadyCataloged, 7);
@@ -217,7 +213,7 @@ void main() {
         ),
       );
 
-      final outcome = await gateway.readRun(runId: 'r1', credential: 't');
+      final outcome = await gateway.readRun(runId: 'r1');
 
       expect((outcome as IndexRunRead).run.libraryUuid, 'l1');
     });
@@ -232,7 +228,7 @@ void main() {
         ),
       );
 
-      final outcome = await gateway.readRun(runId: 'r1', credential: 't');
+      final outcome = await gateway.readRun(runId: 'r1');
 
       expect((outcome as IndexRunRead).run.libraryUuid, isNull);
     });
@@ -247,13 +243,10 @@ void main() {
         final outcome = await gateway.startLibraryIndex(
           uuid: 'l1',
           priority: RunPriority.low,
-          credential: 't',
         );
 
         expect(outcome, const IndexStartOutcome.started(runId: 'r9'));
-        expect(fake.libraryIndexStarts, [
-          (uuid: 'l1', token: 't', priority: 'low'),
-        ]);
+        expect(fake.libraryIndexStarts, [(uuid: 'l1', priority: 'low')]);
       },
     );
 
@@ -264,10 +257,7 @@ void main() {
           ..libraryIndexStartResult = (status: INDEX_ERR_CONFLICT, runId: '');
         final gateway = CoreIndexGateway(fake);
 
-        final outcome = await gateway.startLibraryIndex(
-          uuid: 'l1',
-          credential: 't',
-        );
+        final outcome = await gateway.startLibraryIndex(uuid: 'l1');
 
         expect((outcome as IndexStartFailed).failure, isA<ConflictFailure>());
       },

@@ -9,22 +9,11 @@ import '../domain/reading_list_gateway.dart';
 class ReadingListsController extends AsyncNotifier<List<ReadingList>> {
   @override
   Future<List<ReadingList>> build() async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
-
-    final browse = await ref
-        .read(readingListGatewayProvider)
-        .browse(credential: credential);
+    final browse = await ref.read(readingListGatewayProvider).browse();
 
     switch (browse) {
       case ReadingListBrowseLoaded(:final readingLists):
         return readingLists;
-
-      // AF-06: a rejected session returns the owner to login.
-      case ReadingListBrowseFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return const [];
 
       case ReadingListBrowseFailed(:final failure):
         throw failure;
@@ -120,8 +109,7 @@ class ReadingListsForm extends Notifier<ReadingListsState> {
     state = state.copyWith(isCreating: true);
 
     await _call(
-      (gateway, credential) =>
-          gateway.create(name: state.name.trim(), credential: credential),
+      (gateway) => gateway.create(name: state.name.trim()),
       onDone: () => state = const ReadingListsState(),
       onFailure: (notice, failure) => state = state.copyWith(
         isCreating: false,
@@ -150,11 +138,7 @@ class ReadingListsForm extends Notifier<ReadingListsState> {
     }
 
     await _call(
-      (gateway, credential) => gateway.addItem(
-        uuid: readingListUuid,
-        itemUuid: itemUuid,
-        credential: credential,
-      ),
+      (gateway) => gateway.addItem(uuid: readingListUuid, itemUuid: itemUuid),
     );
   }
 
@@ -163,47 +147,29 @@ class ReadingListsForm extends Notifier<ReadingListsState> {
     required String readingListUuid,
     required String itemUuid,
   }) => _call(
-    (gateway, credential) => gateway.removeItem(
-      uuid: readingListUuid,
-      itemUuid: itemUuid,
-      credential: credential,
-    ),
+    (gateway) => gateway.removeItem(uuid: readingListUuid, itemUuid: itemUuid),
   );
 
   /// Deletes a reading list (main flow step 6).
   ///
   /// The confirmation is the screen's: it has to say that the books and comics
   /// are preserved before this is reached.
-  Future<void> delete(String readingListUuid) => _call(
-    (gateway, credential) =>
-        gateway.delete(uuid: readingListUuid, credential: credential),
-  );
+  Future<void> delete(String readingListUuid) =>
+      _call((gateway) => gateway.delete(uuid: readingListUuid));
 
   /// Runs [call] and turns its answer into what the screen shows.
   Future<void> _call(
-    Future<ReadingListWrite> Function(ReadingListGateway, String credential)
-    call, {
+    Future<ReadingListWrite> Function(ReadingListGateway) call, {
     void Function()? onDone,
     void Function(ReadingListNotice, Failure?)? onFailure,
   }) async {
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return;
-
-    final outcome = await call(
-      ref.read(readingListGatewayProvider),
-      credential,
-    );
+    final outcome = await call(ref.read(readingListGatewayProvider));
 
     switch (outcome) {
       case ReadingListWriteDone():
         // The screen reads the core again rather than being patched here.
         await ref.read(readingListsControllerProvider.notifier).reload();
         (onDone ?? () => state = state.copyWith())();
-
-      // AF-06: the session is discarded, which returns the owner to login.
-      case ReadingListWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
 
       // AF-04: the list or the item is gone, so the screen says so and reads
       // the core again.

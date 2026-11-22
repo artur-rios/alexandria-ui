@@ -1,7 +1,6 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/indexing/application/active_runs_controller.dart';
 import 'package:alexandria_ui/features/indexing/application/index_runs_state.dart';
 import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
@@ -10,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/misc.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
 
 /// Refreshing the whole catalog (UC-07, FR-LB-06 … FR-LB-08).
@@ -52,17 +50,6 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    // Turned off before the session is established: this suite drives
-    // `startRefresh` explicitly, and `establish`'s own unawaited call to
-    // `begin()` (FR-LB-21) would otherwise start a refresh of its own and
-    // race the one each test drives.
-    container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
-
     return (ref: container, gateway: indexGateway);
   }
 
@@ -72,10 +59,7 @@ void main() {
 
       await sut.ref.read(indexRunsControllerProvider.notifier).startRefresh();
 
-      expect(
-        sut.gateway.refreshStarts.single,
-        FakeAuthGateway.defaultSession.credential,
-      );
+      expect(sut.gateway.refreshStarts, hasLength(1));
     });
 
     test('GivenARefreshStarts_WhenItSettles_ThenItsCountsAreShown', () async {
@@ -210,25 +194,7 @@ void main() {
     );
   });
 
-  group('the core rejects the session (AF-04)', () {
-    test(
-      'GivenTheRefreshIsUnauthorized_WhenItSettles_ThenTheOwnerIsSignedOut',
-      () async {
-        const failure = Failure.unauthorized(
-          family: CoreStatusFamily.indexing,
-          code: 2,
-        );
-        final sut = build(
-          gateway: FakeIndexGateway()
-            ..refreshOutcome = const IndexStartOutcome.failed(failure: failure),
-        );
-
-        await sut.ref.read(indexRunsControllerProvider.notifier).startRefresh();
-
-        expect(sut.ref.read(sessionControllerProvider), isA<SessionAbsent>());
-      },
-    );
-
+  group('the core refuses (AF-04)', () {
     test('GivenTheCoreRefuses_WhenItSettles_ThenTheReasonIsKept', () async {
       const failure = Failure.invalidInput(
         family: CoreStatusFamily.indexing,
@@ -242,7 +208,6 @@ void main() {
       await sut.ref.read(indexRunsControllerProvider.notifier).startRefresh();
 
       expect(sut.ref.read(indexRunsControllerProvider).refreshFailure, failure);
-      expect(sut.ref.read(sessionControllerProvider), isA<SessionActive>());
     });
   });
 }

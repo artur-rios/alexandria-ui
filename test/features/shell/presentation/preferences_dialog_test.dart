@@ -11,7 +11,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
 
-import '../../../support/login_harness.dart';
 import '../../../support/shell_harness.dart';
 import '../../../support/fake_updates.dart';
 import '../../../support/in_memory_settings_store.dart';
@@ -38,54 +37,17 @@ void main() {
   }
 
   group('reachability (main flow step 1)', () {
-    testWidgets(
-      'GivenASignedInOwner_WhenTheShellIsShown_ThenPreferencesCanBeOpened',
-      (tester) async {
-        await openFromShell(tester);
-
-        expect(find.byType(PreferencesDialog), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenNoSession_WhenTheLoginScreenIsShown_ThenPreferencesCanBeOpened',
-      (tester) async {
-        // "Reachable with or without a session" is the requirement, and the
-        // login screen is where an owner without one is.
-        await tester.pumpLoginScreen();
-
-        await tester.tap(find.byType(PreferencesButton));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(PreferencesDialog), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenNoSession_WhenPreferencesOpen_ThenOnlyTheThemeAndLanguageAreOffered',
-      (tester) async {
-        // What an owner standing on the login screen can actually act on
-        // (UC-39 AF-05). The theme and the language change the screen in
-        // front of them; the rest are settings for a library they have not
-        // opened.
-        await tester.pumpLoginScreen();
-        await tester.tap(find.byType(PreferencesButton));
-        await tester.pumpAndSettle();
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(PreferencesDialog)),
-        );
-
-        expect(find.text(l10n.preferencesThemeLabel), findsOneWidget);
-        expect(find.text(l10n.preferencesLanguageLabel), findsOneWidget);
-        expect(find.text(l10n.startupRecheckLabel), findsNothing);
-      },
-    );
-
-    testWidgets('GivenASession_WhenPreferencesOpen_ThenEveryChoiceIsOffered', (
+    testWidgets('GivenTheShell_WhenItIsShown_ThenPreferencesCanBeOpened', (
       tester,
     ) async {
-      // The other half, and what stops the gate above from being a switch
-      // nobody ever turns back on.
+      await openFromShell(tester);
+
+      expect(find.byType(PreferencesDialog), findsOneWidget);
+    });
+
+    testWidgets('GivenTheShell_WhenPreferencesOpen_ThenEveryChoiceIsOffered', (
+      tester,
+    ) async {
       await openFromShell(tester);
       final l10n = AppLocalizations.of(
         tester.element(find.byType(PreferencesDialog)),
@@ -95,20 +57,6 @@ void main() {
       expect(find.text(l10n.preferencesLanguageLabel), findsOneWidget);
       expect(find.text(l10n.startupRecheckLabel), findsOneWidget);
     });
-
-    testWidgets(
-      'GivenAFirstLaunch_WhenTheSignUpScreenIsShown_ThenPreferencesCanBeOpened',
-      (tester) async {
-        // The first screen a fresh installation shows, and so the owner's
-        // first chance to pick a language they can read.
-        await tester.pumpSignUpScreen();
-
-        await tester.tap(find.byType(PreferencesButton));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(PreferencesDialog), findsOneWidget);
-      },
-    );
   });
 
   group('choosing a theme', () {
@@ -264,7 +212,7 @@ void main() {
         expect(
           Theme.of(tester.element(find.byType(PreferencesDialog))).brightness,
           Brightness.dark,
-          reason: 'AF-02: the choice applies for this session either way',
+          reason: 'AF-02: the choice applies for this run either way',
         );
       },
     );
@@ -435,7 +383,7 @@ void main() {
     testWidgets(
       'GivenTheStoreRefusesAWrite_WhenTheRecheckIsTurnedOff_ThenTheOwnerIsTold',
       (tester) async {
-        // UC-39 AF-02: the choice applies for the session either way; what
+        // UC-39 AF-02: the choice applies for the run either way; what
         // the owner must not get is the silent belief that it was remembered.
         await tester.pumpShellWithFailingSettings();
         await tester.openSettingsMenuEntry(
@@ -523,8 +471,8 @@ void main() {
   testWidgets(
     'GivenThePromptOpenedFromCheckNow_WhenEveryRouteIsClosed_ThenItCanOpenAgain',
     (tester) async {
-      // A session the core rejects closes every route, Preferences and the
-      // prompt over it included. The prompt must not stay "open" after that.
+      // Something closing every route closes Preferences and the prompt over
+      // it too. The prompt must not stay "open" after that.
       final container = await tester.pumpShell(
         extraOverrides: [
           appVersionProvider.overrideWithValue('1.1.0'),

@@ -163,9 +163,6 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     String? skipped,
   }) async {
     final generation = ++_generation;
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return;
-
     Failure? lastFailure;
     final step = backwards ? -1 : 1;
 
@@ -182,7 +179,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
 
       final outcome = await ref
           .read(playbackSourceGatewayProvider)
-          .resolve(uuid: file.uuid, credential: credential);
+          .resolve(uuid: file.uuid);
       if (generation != _generation) return;
 
       switch (outcome) {
@@ -192,12 +189,7 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
           if (generation != _generation) return;
 
           state = state.copyWith(playing: true, skippedName: skipped);
-          unawaited(_loadCover(file, credential, generation));
-          return;
-
-        case PlaybackSourceFailed(failure: final UnauthorizedFailure failure):
-          ref.read(sessionControllerProvider.notifier).invalidate(failure);
-          await stop();
+          unawaited(_loadCover(file, generation));
           return;
 
         case PlaybackSourceFailed(:final failure):
@@ -226,14 +218,8 @@ class AudioPlaybackController extends Notifier<AudioPlaybackState> {
     );
   }
 
-  Future<void> _loadCover(
-    CatalogFile file,
-    String credential,
-    int generation,
-  ) async {
-    final cover = await ref
-        .read(coverGatewayProvider)
-        .cover(uuid: file.uuid, credential: credential);
+  Future<void> _loadCover(CatalogFile file, int generation) async {
+    final cover = await ref.read(coverGatewayProvider).cover(uuid: file.uuid);
     if (generation != _generation || cover == null) return;
 
     state = state.copyWith(cover: cover);

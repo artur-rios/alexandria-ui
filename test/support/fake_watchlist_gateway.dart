@@ -42,14 +42,11 @@ class FakeWatchlistGateway implements WatchlistGateway {
   progressUpdates = [];
 
   @override
-  Future<WatchlistBrowse> browse({required String credential}) async =>
+  Future<WatchlistBrowse> browse() async =>
       browseOutcome ?? WatchlistBrowse.loaded(watchlists: watchlists);
 
   @override
-  Future<WatchlistWrite> create({
-    required String name,
-    required String credential,
-  }) async {
+  Future<WatchlistWrite> create({required String name}) async {
     created.add(name);
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
 
@@ -58,10 +55,7 @@ class FakeWatchlistGateway implements WatchlistGateway {
   }
 
   @override
-  Future<WatchlistWrite> delete({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<WatchlistWrite> delete({required String uuid}) async {
     deleted.add(uuid);
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
 
@@ -73,7 +67,6 @@ class FakeWatchlistGateway implements WatchlistGateway {
   Future<WatchlistWrite> addVideo({
     required String uuid,
     required String videoUuid,
-    required String credential,
   }) async {
     added.add((watchlist: uuid, video: videoUuid));
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
@@ -98,7 +91,6 @@ class FakeWatchlistGateway implements WatchlistGateway {
   Future<WatchlistWrite> removeVideo({
     required String uuid,
     required String videoUuid,
-    required String credential,
   }) async {
     removed.add((watchlist: uuid, video: videoUuid));
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
@@ -120,7 +112,6 @@ class FakeWatchlistGateway implements WatchlistGateway {
     required String uuid,
     required String videoUuid,
     required WatchState state,
-    required String credential,
     int? currentEpisode,
     int? totalEpisodes,
   }) async {

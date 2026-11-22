@@ -8,7 +8,6 @@ import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_bookmarks.dart';
 import '../../../support/fake_catalog_gateway.dart';
 
@@ -51,10 +50,6 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
-
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
 
     return (ref: container, gateway: gateway);
   }

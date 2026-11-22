@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../support/login_harness.dart';
+import '../../../support/app_harness.dart';
 import '../../../support/shell_harness.dart';
 
 /// The application shell (UC-38, FR-UX-01, FR-UX-02, FR-UX-11).

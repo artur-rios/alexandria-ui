@@ -2,7 +2,7 @@ import 'package:alexandria_ui/core/startup/core_unavailable_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../support/login_harness.dart';
+import '../../support/app_harness.dart';
 
 /// The theme and layout of the core-unavailable state (Testing Specification
 /// §7.1).

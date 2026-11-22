@@ -31,35 +31,27 @@ sealed class WatchlistWrite with _$WatchlistWrite {
 /// The core's watchlist operations (FR-TR-01 … FR-TR-07).
 abstract interface class WatchlistGateway {
   /// Every watchlist and the progress of everything it tracks (FR-TR-04).
-  Future<WatchlistBrowse> browse({required String credential});
+  Future<WatchlistBrowse> browse();
 
   /// Creates a watchlist called [name] (FR-TR-01).
-  Future<WatchlistWrite> create({
-    required String name,
-    required String credential,
-  });
+  Future<WatchlistWrite> create({required String name});
 
   /// Deletes the watchlist [uuid] identifies (FR-TR-02).
   ///
   /// The videos are untouched: what goes is the tracking, which is what the
   /// confirmation says before this is called.
-  Future<WatchlistWrite> delete({
-    required String uuid,
-    required String credential,
-  });
+  Future<WatchlistWrite> delete({required String uuid});
 
   /// Adds [videoUuid] to the watchlist [uuid] identifies (FR-TR-03).
   Future<WatchlistWrite> addVideo({
     required String uuid,
     required String videoUuid,
-    required String credential,
   });
 
   /// Removes it again (FR-TR-04).
   Future<WatchlistWrite> removeVideo({
     required String uuid,
     required String videoUuid,
-    required String credential,
   });
 
   /// Records how far through [videoUuid] the owner is, in this watchlist
@@ -68,7 +60,6 @@ abstract interface class WatchlistGateway {
     required String uuid,
     required String videoUuid,
     required WatchState state,
-    required String credential,
     int? currentEpisode,
     int? totalEpisodes,
   });

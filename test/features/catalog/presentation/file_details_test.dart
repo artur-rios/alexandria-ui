@@ -2,7 +2,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
@@ -480,21 +479,6 @@ void main() {
       );
 
       expect(find.byType(ShellFailureView), findsOneWidget);
-    });
-
-    testWidgets('GivenTheCoreRejectsTheSession_WhenTheyOpen_ThenLoginReturns', (
-      tester,
-    ) async {
-      // AF-05.
-      await openDetails(
-        tester,
-        outcome: const FileDetailsOutcome.failed(
-          failure: Failure.unauthorized(family: CoreStatusFamily.file, code: 2),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(LoginScreen), findsOneWidget);
     });
   });
 

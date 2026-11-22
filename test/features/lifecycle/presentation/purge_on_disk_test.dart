@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
@@ -273,32 +272,6 @@ void main() {
       expect(hold.released, isTrue);
       expect(opened.lifecycle.purged, [bookUuid]);
     });
-  });
-
-  // AF-06: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenAPurgeIsSent_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openDetails(
-          tester,
-          outcome: const PurgeOnDiskOutcome.failed(
-            failure: Failure.unauthorized(
-              family: CoreStatusFamily.file,
-              code: FILE_ERR_UNAUTHORIZED,
-            ),
-          ),
-        );
-
-        await reachTheAction(tester);
-        await confirm(tester);
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
-      },
-    );
   });
 
   group('themes and languages', () {

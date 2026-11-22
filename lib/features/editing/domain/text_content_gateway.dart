@@ -42,15 +42,11 @@ sealed class TextContentWrite with _$TextContentWrite {
 /// even that goes through the core rather than through `dart:io`.
 abstract interface class TextContentGateway {
   /// Reads the content of the text file [uuid] identifies (FR-ME-06).
-  Future<TextContentRead> readContent({
-    required String uuid,
-    required String credential,
-  });
+  Future<TextContentRead> readContent({required String uuid});
 
   /// Writes [content] back to the text file [uuid] identifies (FR-ME-08).
   Future<TextContentWrite> writeContent({
     required String uuid,
     required String content,
-    required String credential,
   });
 }

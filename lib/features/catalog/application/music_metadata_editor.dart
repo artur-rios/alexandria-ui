@@ -124,20 +124,9 @@ class MusicMetadataEditor extends Notifier<MusicEditorState> {
 
     state = state.copyWith(stage: MusicEditorStage.saving);
 
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) {
-      state = state.copyWith(stage: MusicEditorStage.editing);
-      return;
-    }
-
     final outcome = await ref
         .read(catalogGatewayProvider)
-        .editMusicMetadata(
-          uuid: _uuid,
-          metadata: edited,
-          credential: credential,
-        );
+        .editMusicMetadata(uuid: _uuid, metadata: edited);
 
     switch (outcome) {
       case MetadataEditSaved(:final metadata):
@@ -154,11 +143,6 @@ class MusicMetadataEditor extends Notifier<MusicEditorState> {
           draft: draftFrom(metadata),
           stage: MusicEditorStage.saved,
         );
-
-      // AF-05: the session is discarded, which returns the owner to login.
-      case MetadataEditFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
-        state = state.copyWith(stage: MusicEditorStage.editing);
 
       // AF-03: the record is gone, so there is nothing to keep the form open
       // for. The listing is refreshed by the screen that closes it.

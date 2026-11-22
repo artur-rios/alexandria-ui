@@ -20,29 +20,18 @@ import '../domain/lifecycle_gateway.dart';
 class DeletedItemsController extends AsyncNotifier<List<DeletedRecord>> {
   @override
   Future<List<DeletedRecord>> build() async {
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
-
     final catalog = ref.read(catalogGatewayProvider);
     final records = <DeletedRecord>[];
 
     for (final type in FileType.values) {
       final listing = await catalog.listFiles(
         type: type,
-        credential: credential,
         lifecycle: LifecycleFilter.deleted,
       );
 
       switch (listing) {
         case CatalogListingLoaded(:final files):
           records.addAll(files.map((row) => DeletedRecord.ofFile(row.file)));
-
-        // AF-05: a rejected session returns the owner to login.
-        case CatalogListingFailed(failure: final UnauthorizedFailure failure):
-          session.invalidate(failure);
-          return const [];
 
         // One type the core will not answer must not take the others down
         // with it, the same way a listing's does not (UC-09 AF-02).
@@ -53,15 +42,11 @@ class DeletedItemsController extends AsyncNotifier<List<DeletedRecord>> {
 
     final bookmarks = await ref
         .read(bookmarkGatewayProvider)
-        .list(credential: credential, deleted: true);
+        .list(deleted: true);
 
     switch (bookmarks) {
       case BookmarkListingLoaded(bookmarks: final rows):
         records.addAll(rows.map(DeletedRecord.ofBookmark));
-
-      case BookmarkListingFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
-        return const [];
 
       case BookmarkListingFailed():
         break;
@@ -97,13 +82,7 @@ class DeletedItemsController extends AsyncNotifier<List<DeletedRecord>> {
 class RetentionWindowController extends AsyncNotifier<int?> {
   @override
   Future<int?> build() async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return null;
-
-    final window = await ref
-        .read(retentionGatewayProvider)
-        .window(credential: credential);
+    final window = await ref.read(retentionGatewayProvider).window();
 
     return switch (window) {
       RetentionWindowLoaded(:final days) => days,
@@ -139,19 +118,11 @@ class RestoreController
 
   /// Restores [record] (steps 4 to 6).
   Future<void> restore(DeletedRecord record) async {
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return;
-
     final gateway = ref.read(lifecycleGatewayProvider);
     final outcome = switch (record.kind) {
-      DeletedRecordKind.file => await gateway.restoreFile(
-        uuid: record.uuid,
-        credential: credential,
-      ),
+      DeletedRecordKind.file => await gateway.restoreFile(uuid: record.uuid),
       DeletedRecordKind.bookmark => await gateway.restoreBookmark(
         uuid: record.uuid,
-        credential: credential,
       ),
     };
 
@@ -163,10 +134,6 @@ class RestoreController
         // nothing more — a file whose bytes went missing since the deletion
         // comes back marked missing, because that marking is the core's.
         await _refresh();
-
-      // AF-05: the session is discarded, which returns the owner to login.
-      case LifecycleWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
 
       // AF-03, and AF-02 as the core reports it: a record past its retention
       // window is answered as not found.

@@ -32,9 +32,9 @@ class PageViewerScreen extends ConsumerWidget {
     CatalogFile file,
   ) {
     // Taken once, and used for both ends. A dialog can be closed *for* the
-    // owner — `SessionRouteGuard` does it when a session ends — and by then
-    // the widget that lent this `ref` has gone with the shell, which makes
-    // reading through it an error rather than a cleanup.
+    // owner, and by then the widget that lent this `ref` may have gone with
+    // the screen beneath it, which makes reading through it an error rather
+    // than a cleanup.
     final viewer = ref.read(pageViewerControllerProvider.notifier);
 
     unawaited(

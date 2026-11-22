@@ -27,10 +27,7 @@ void main() {
       );
       final gateway = CoreCatalogGateway(core);
 
-      final listing = await gateway.listFiles(
-        type: FileType.video,
-        credential: 'token',
-      );
+      final listing = await gateway.listFiles(type: FileType.video);
 
       expect(listing, isA<CatalogListingLoaded>());
       final row = (listing as CatalogListingLoaded).files.single;
@@ -51,10 +48,7 @@ void main() {
       );
       final gateway = CoreCatalogGateway(core);
 
-      final listing = await gateway.listFiles(
-        type: FileType.video,
-        credential: 'token',
-      );
+      final listing = await gateway.listFiles(type: FileType.video);
 
       expect(listing, isA<CatalogListingFailed>());
     },
@@ -77,10 +71,7 @@ void main() {
       );
       final gateway = CoreCatalogGateway(core);
 
-      final listing = await gateway.listFiles(
-        type: FileType.video,
-        credential: 'token',
-      );
+      final listing = await gateway.listFiles(type: FileType.video);
 
       expect(listing, isA<CatalogListingLoaded>());
       expect((listing as CatalogListingLoaded).files, isEmpty);

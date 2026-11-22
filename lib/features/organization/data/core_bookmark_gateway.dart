@@ -18,7 +18,6 @@ class CoreBookmarkGateway implements BookmarkGateway {
 
   @override
   Future<BookmarkListing> list({
-    required String credential,
     String? collectionUuid,
     bool deleted = false,
   }) async {
@@ -29,7 +28,6 @@ class CoreBookmarkGateway implements BookmarkGateway {
           'state': deleted ? 'deleted' : 'active',
           'collectionUuid': ?collectionUuid,
         }),
-        credential,
       );
     } on CoreCallException {
       return _unreadableListing();
@@ -61,13 +59,9 @@ class CoreBookmarkGateway implements BookmarkGateway {
   Future<BookmarkWrite> create({
     required String url,
     required String title,
-    required String credential,
     String? collectionUuid,
   }) => _write(
-    () => _core.bookmarkCreate(
-      jsonEncode(_body(url, title, collectionUuid)),
-      credential,
-    ),
+    () => _core.bookmarkCreate(jsonEncode(_body(url, title, collectionUuid))),
   );
 
   @override
@@ -75,13 +69,11 @@ class CoreBookmarkGateway implements BookmarkGateway {
     required String uuid,
     required String url,
     required String title,
-    required String credential,
     String? collectionUuid,
   }) => _write(
     () => _core.bookmarkUpdate(
       uuid,
       jsonEncode(_body(url, title, collectionUuid)),
-      credential,
     ),
   );
 
@@ -105,9 +97,9 @@ class CoreBookmarkGateway implements BookmarkGateway {
       return _unwritable();
     }
 
-    // AF-02, AF-05 and AF-06 all arrive here and are told apart by the status
-    // the mapper reads: a value the core refused, a bookmark it does not have,
-    // and a rejected session.
+    // AF-02 and AF-05 both arrive here and are told apart by the status the
+    // mapper reads: a value the core refused, and a bookmark it does not
+    // have.
     if (!CoreStatusFamily.bookmark.isOk(response.status)) {
       return BookmarkWrite.failed(
         failure: mapCoreStatus(CoreStatusFamily.bookmark, response.status),

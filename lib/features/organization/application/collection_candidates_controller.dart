@@ -20,13 +20,9 @@ class CollectionCandidatesController
     final collection = ref.watch(openCollectionProvider);
     if (collection == null) return const [];
 
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
-
     return switch (collection.kind) {
-      CollectionKind.file => _files(credential),
-      CollectionKind.bookmark => _bookmarks(credential),
+      CollectionKind.file => _files(),
+      CollectionKind.bookmark => _bookmarks(),
     };
   }
 
@@ -35,15 +31,12 @@ class CollectionCandidatesController
   /// A call per type, because the core lists by type and publishes nothing
   /// that answers "every file at once" — the same shape and the same cost as
   /// the deleted view's assembly, and for the same reason.
-  Future<List<CollectionMember>> _files(String credential) async {
+  Future<List<CollectionMember>> _files() async {
     final catalog = ref.read(catalogGatewayProvider);
     final candidates = <CollectionMember>[];
 
     for (final type in FileType.values) {
-      final listing = await catalog.listFiles(
-        type: type,
-        credential: credential,
-      );
+      final listing = await catalog.listFiles(type: type);
 
       // A type the core will not answer is skipped rather than taking the
       // others down with it (UC-09 AF-02).
@@ -63,10 +56,8 @@ class CollectionCandidatesController
     return candidates;
   }
 
-  Future<List<CollectionMember>> _bookmarks(String credential) async {
-    final listing = await ref
-        .read(bookmarkGatewayProvider)
-        .list(credential: credential);
+  Future<List<CollectionMember>> _bookmarks() async {
+    final listing = await ref.read(bookmarkGatewayProvider).list();
 
     if (listing case BookmarkListingLoaded(:final bookmarks)) {
       return [

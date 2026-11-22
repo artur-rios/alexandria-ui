@@ -24,7 +24,6 @@ class FakeComicGateway implements ComicGateway {
   Future<ComicPageOutcome> readPage({
     required String uuid,
     required int page,
-    required String credential,
   }) async {
     requested.add(page);
 

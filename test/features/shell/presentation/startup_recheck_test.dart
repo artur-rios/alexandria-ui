@@ -13,7 +13,7 @@ import '../../../support/shell_harness.dart';
 /// The owner's own experience of FR-LB-21 (UC-07 AF): nobody presses
 /// Re-check, and the strip reports one anyway.
 ///
-/// `test/features/indexing/application/index_session_activity_test.dart`
+/// `test/features/indexing/application/index_app_activity_test.dart`
 /// and `.../presentation/refresh_catalog_test.dart` already prove `begin()`
 /// reaches the core and that the sources screen shows the outcome with no
 /// refusal. Neither proves the half of the feature the owner actually sees
@@ -29,7 +29,7 @@ void main() {
       // until the refresh this test is about has genuinely started — or the
       // check itself would refuse to start it. Once it has, determinate, so
       // the bar paints once rather than animating forever and hanging
-      // `signIn`'s own `pumpAndSettle`.
+      // startup's own `pumpAndSettle`.
       final gateway = FakeIndexGateway()
         ..activeRunsOutcomeOnceRefreshStarts = const ActiveRunsOutcome.read(
           runs: [

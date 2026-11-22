@@ -11,9 +11,7 @@ void main() {
   Future<bool> answerTo(({int status, String? json}) watchlists) {
     final core = FakeCoreClient()..watchlists = watchlists;
 
-    return CoreWatchProgressGateway(
-      core,
-    ).episodesRecordedFor(uuid: uuid, credential: 'a-session');
+    return CoreWatchProgressGateway(core).episodesRecordedFor(uuid: uuid);
   }
 
   test(
@@ -93,7 +91,7 @@ void main() {
     'GivenTheCoreRefuses_WhenItIsAskedAbout_ThenNoEpisodesAreRecorded',
     () async {
       expect(
-        await answerTo((status: WATCHLIST_ERR_UNAUTHORIZED, json: null)),
+        await answerTo((status: WATCHLIST_ERR_OTHER, json: null)),
         isFalse,
       );
     },

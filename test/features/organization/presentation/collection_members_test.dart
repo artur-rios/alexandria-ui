@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
 import 'package:alexandria_ui/features/organization/domain/collection.dart';
@@ -333,31 +332,6 @@ void main() {
         findsOneWidget,
       );
     });
-  });
-
-  // AF-05: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenAnItemIsAdded_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openCollection(tester);
-        // The refusal is the request's, not an item's: an unauthorized call
-        // never gets far enough to report on anything.
-        opened.gateway.additionsOutcome = const CollectionAdditions.failed(
-          failure: Failure.unauthorized(
-            family: CoreStatusFamily.collection,
-            code: COLLECTION_ERR_UNAUTHORIZED,
-          ),
-        );
-
-        await addItems(tester, ['Deep Blue Sea.md']);
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
-      },
-    );
   });
 
   group('themes and languages', () {

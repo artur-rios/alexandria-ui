@@ -9,18 +9,21 @@ import '../../../support/in_memory_settings_store.dart';
 /// `librarySources`. The 0.6.0 core indexes only libraries and deleted those
 /// folders' records on upgrade, so the list is dropped once, unread.
 void main() {
-  test('GivenAStoredSourceList_WhenTheSessionBegins_ThenTheKeyIsRemoved', () async {
-    final settings = InMemorySettingsStore(
-      values: {'librarySources': '[{"path":"/media/movies"}]'},
-    );
+  test(
+    'GivenAStoredSourceList_WhenTheActivityBegins_ThenTheKeyIsRemoved',
+    () async {
+      final settings = InMemorySettingsStore(
+        values: {'librarySources': '[{"path":"/media/movies"}]'},
+      );
 
-    await SourceListCleanupActivity(() => settings).begin();
+      await SourceListCleanupActivity(() => settings).begin();
 
-    expect(settings.getString('librarySources'), isNull);
-  });
+      expect(settings.getString('librarySources'), isNull);
+    },
+  );
 
   test(
-    'GivenAMalformedSourceList_WhenTheSessionBegins_ThenTheKeyIsRemovedWithoutThrowing',
+    'GivenAMalformedSourceList_WhenTheActivityBegins_ThenTheKeyIsRemovedWithoutThrowing',
     () async {
       final settings = InMemorySettingsStore(
         values: {'librarySources': '{not json'},
@@ -32,20 +35,21 @@ void main() {
     },
   );
 
-  test('GivenNoSourceList_WhenTheSessionBegins_ThenNothingIsWritten', () async {
-    final settings = _RecordingSettingsStore();
+  test(
+    'GivenNoSourceList_WhenTheActivityBegins_ThenNothingIsWritten',
+    () async {
+      final settings = _RecordingSettingsStore();
 
-    await SourceListCleanupActivity(() => settings).begin();
+      await SourceListCleanupActivity(() => settings).begin();
 
-    expect(settings.removed, isEmpty);
-  });
+      expect(settings.removed, isEmpty);
+    },
+  );
 
   test(
-    'GivenTheStoreRefusesTheRemoval_WhenTheSessionBegins_ThenItDoesNotThrow',
+    'GivenTheStoreRefusesTheRemoval_WhenTheActivityBegins_ThenItDoesNotThrow',
     () async {
-      final settings = _ThrowingSettingsStore(
-        values: {'librarySources': '[]'},
-      );
+      final settings = _ThrowingSettingsStore(values: {'librarySources': '[]'});
 
       await expectLater(
         SourceListCleanupActivity(() => settings).begin(),
@@ -54,9 +58,15 @@ void main() {
     },
   );
 
-  test('GivenNoLoadedSettings_WhenTheSessionBegins_ThenItDoesNothing', () async {
-    await expectLater(SourceListCleanupActivity(() => null).begin(), completes);
-  });
+  test(
+    'GivenNoLoadedSettings_WhenTheActivityBegins_ThenItDoesNothing',
+    () async {
+      await expectLater(
+        SourceListCleanupActivity(() => null).begin(),
+        completes,
+      );
+    },
+  );
 }
 
 class _RecordingSettingsStore extends InMemorySettingsStore {

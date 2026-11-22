@@ -24,7 +24,7 @@ sealed class RetentionWindow with _$RetentionWindow {
 /// The core's settings read (UC-34, FR-LC-03).
 abstract interface class RetentionGateway {
   /// The retention window this core enforces.
-  Future<RetentionWindow> window({required String credential});
+  Future<RetentionWindow> window();
 }
 
 /// Where a deleted record stands in its retention window (FR-LC-03).

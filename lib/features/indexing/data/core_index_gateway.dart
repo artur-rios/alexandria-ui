@@ -27,11 +27,10 @@ class CoreIndexGateway implements IndexGateway {
   Future<IndexStartOutcome> startLibraryIndex({
     required String uuid,
     RunPriority? priority,
-    required String credential,
   }) async {
     final CoreRunStart result;
     try {
-      result = await _core.libraryIndexStart(uuid, credential, priority?.wire);
+      result = await _core.libraryIndexStart(uuid, priority?.wire);
     } on CoreCallException {
       return const IndexStartOutcome.failed(
         failure: Failure.unexpected(
@@ -61,13 +60,10 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<IndexStartOutcome> startRefresh({
-    RunPriority? priority,
-    required String credential,
-  }) async {
+  Future<IndexStartOutcome> startRefresh({RunPriority? priority}) async {
     final CoreRunStart result;
     try {
-      result = await _core.indexRefreshStart(credential, priority?.wire);
+      result = await _core.indexRefreshStart(priority?.wire);
     } on CoreCallException {
       return const IndexStartOutcome.failed(
         failure: Failure.unexpected(
@@ -107,13 +103,10 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<IndexRunOutcome> readRun({
-    required String runId,
-    required String credential,
-  }) async {
+  Future<IndexRunOutcome> readRun({required String runId}) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.indexRunStatus(runId, credential);
+      response = await _core.indexRunStatus(runId);
     } on CoreCallException {
       return const IndexRunOutcome.failed(
         failure: Failure.unexpected(
@@ -147,13 +140,10 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<RunFailuresOutcome> readFailures({
-    required String runId,
-    required String credential,
-  }) async {
+  Future<RunFailuresOutcome> readFailures({required String runId}) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.indexRunFailures(runId, credential);
+      response = await _core.indexRunFailures(runId);
     } on CoreCallException {
       return const RunFailuresOutcome.failed(
         failure: Failure.unexpected(
@@ -202,13 +192,10 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<RunControlOutcome> pauseRun({
-    required String runId,
-    required String credential,
-  }) async {
+  Future<RunControlOutcome> pauseRun({required String runId}) async {
     final int status;
     try {
-      status = await _core.indexPause(runId, credential);
+      status = await _core.indexPause(runId);
     } on CoreCallException {
       return const RunControlOutcome.failed(
         failure: Failure.unexpected(
@@ -228,13 +215,10 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<RunControlOutcome> cancelRun({
-    required String runId,
-    required String credential,
-  }) async {
+  Future<RunControlOutcome> cancelRun({required String runId}) async {
     final int status;
     try {
-      status = await _core.indexCancel(runId, credential);
+      status = await _core.indexCancel(runId);
     } on CoreCallException {
       return const RunControlOutcome.failed(
         failure: Failure.unexpected(
@@ -257,11 +241,10 @@ class CoreIndexGateway implements IndexGateway {
   Future<IndexStartOutcome> resumeRun({
     required String runId,
     RunPriority? priority,
-    required String credential,
   }) async {
     final CoreRunStart result;
     try {
-      result = await _core.indexResume(runId, priority?.wire, credential);
+      result = await _core.indexResume(runId, priority?.wire);
     } on CoreCallException {
       return const IndexStartOutcome.failed(
         failure: Failure.unexpected(
@@ -290,10 +273,10 @@ class CoreIndexGateway implements IndexGateway {
   }
 
   @override
-  Future<ActiveRunsOutcome> listActiveRuns({required String credential}) async {
+  Future<ActiveRunsOutcome> listActiveRuns() async {
     final CoreJsonResponse response;
     try {
-      response = await _core.indexRunsActive(credential);
+      response = await _core.indexRunsActive();
     } on CoreCallException {
       return const ActiveRunsOutcome.failed(
         failure: Failure.unexpected(

@@ -4,7 +4,7 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/settings/settings_store.dart';
 import 'package:alexandria_ui/core/startup/core_paths.dart';
 import 'package:alexandria_ui/core/startup/startup_state.dart';
-import 'package:alexandria_ui/features/auth/domain/auth_gateway.dart';
+import 'package:alexandria_ui/features/libraries/domain/library_gateway.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -125,15 +125,13 @@ void main() {
 
   // The retry re-runs startup from step 1 and disposes the core it loaded the
   // first time. A gateway built over that core and cached by the graph would
-  // go on talking to a worker that has been shut down: the login screen's own
-  // retry (UC-02 AF-05) would leave the owner unable to sign in until the
-  // application was restarted.
+  // go on talking to a worker that has been shut down, and every call would
+  // fail until the application was restarted.
   test(
     'GivenStartupWasRetried_WhenAGatewayIsReadAgain_ThenItIsBuiltOverTheNewCore',
     () async {
-      final first = FakeCoreClient(
-        authLocalLoginResult: (status: AUTH_ERR_NOT_INITIALIZED, json: null),
-      );
+      final first = FakeCoreClient()
+        ..libraryResponse = (status: LIBRARY_ERR_NOT_INITIALIZED, json: null);
       final second = FakeCoreClient();
       final cores = [first, second];
       final container = buildTestContainer(
@@ -142,18 +140,14 @@ void main() {
       final startup = container.read(startupControllerProvider.notifier);
 
       await startup.start();
-      final before = await container
-          .read(authGatewayProvider)
-          .logIn(email: 'owner@example.com', password: 'a long passphrase');
-      expect(before, isA<FailedOutcome>());
+      final before = await container.read(libraryGatewayProvider).browse();
+      expect(before, isA<LibraryBrowseFailed>());
 
       await startup.retry();
       expect(first.disposeCount, 1);
 
-      final after = await container
-          .read(authGatewayProvider)
-          .logIn(email: 'owner@example.com', password: 'a long passphrase');
-      expect(after, isNot(isA<FailedOutcome>()));
+      final after = await container.read(libraryGatewayProvider).browse();
+      expect(after, isA<LibraryBrowseLoaded>());
     },
   );
 }

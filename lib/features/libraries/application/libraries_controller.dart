@@ -1,45 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/bindings/alexandria_bindings.dart';
 import '../../../core/di/providers.dart';
-import '../../../core/failures/core_status.dart';
 import '../../../core/failures/failure.dart';
 import '../../catalog/application/catalog_projections.dart';
 import '../domain/library.dart';
 import '../domain/library_gateway.dart';
 
-/// What a write answers when there is no session to make it with.
-///
-/// Returned rather than `null`, because `null` is this file's word for "it
-/// worked". A caller that could not tell the two apart would report a
-/// library added, moved or removed that never was. No call was made, so the
-/// code is the library family's own unauthorized rather than anything the
-/// core said.
-const Failure _noSession = Failure.unauthorized(
-  family: CoreStatusFamily.library,
-  code: LIBRARY_ERR_UNAUTHORIZED,
-);
-
 /// The registered libraries (libraries design).
 class LibrariesController extends AsyncNotifier<List<Library>> {
   @override
   Future<List<Library>> build() async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
-
-    final browse = await ref
-        .read(libraryGatewayProvider)
-        .browse(credential: credential);
+    final browse = await ref.read(libraryGatewayProvider).browse();
 
     switch (browse) {
       case LibraryBrowseLoaded(:final libraries):
         return libraries;
-
-      // A rejected session returns the owner to login, as everywhere else.
-      case LibraryBrowseFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return const [];
 
       case LibraryBrowseFailed(:final failure):
         throw failure;
@@ -61,13 +36,7 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
   /// and the run this session followed for it is forgotten, so neither the
   /// panels nor the activity strip keep showing what the core no longer has.
   Future<Failure?> remove(String uuid) async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07) — and the caller is told so.
-    if (credential == null) return _noSession;
-
-    final outcome = await ref
-        .read(libraryGatewayProvider)
-        .remove(uuid: uuid, credential: credential);
+    final outcome = await ref.read(libraryGatewayProvider).remove(uuid: uuid);
 
     switch (outcome) {
       case LibraryWriteDone():
@@ -86,12 +55,6 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
         await reload();
         return null;
 
-      // The owner goes back to login, and the caller still learns the write
-      // did not happen — its follow-up must not run either way.
-      case LibraryWriteFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return failure;
-
       case LibraryWriteFailed(:final failure):
         return failure;
     }
@@ -107,24 +70,14 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     required String uuid,
     required String rootPath,
   }) async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07) — and the caller is told so.
-    if (credential == null) return _noSession;
-
     final outcome = await ref
         .read(libraryGatewayProvider)
-        .move(uuid: uuid, rootPath: rootPath, credential: credential);
+        .move(uuid: uuid, rootPath: rootPath);
 
     switch (outcome) {
       case LibraryWriteDone():
         await reload();
         return null;
-
-      // The owner goes back to login, and the caller still learns the write
-      // did not happen — its follow-up must not run either way.
-      case LibraryWriteFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return failure;
 
       case LibraryWriteFailed(:final failure):
         return failure;
@@ -142,13 +95,9 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
     required String name,
     required String rootPath,
   }) async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07) — and the caller is told so.
-    if (credential == null) return _noSession;
-
     final outcome = await ref
         .read(libraryGatewayProvider)
-        .register(name: name, rootPath: rootPath, credential: credential);
+        .register(name: name, rootPath: rootPath);
 
     switch (outcome) {
       case LibraryRegistered(:final library, :final runId):
@@ -160,14 +109,6 @@ class LibrariesController extends AsyncNotifier<List<Library>> {
             .read(indexRunsControllerProvider.notifier)
             .follow(library.uuid, runId);
         return null;
-
-      // The owner goes back to login, and the caller still learns the write
-      // did not happen — its follow-up must not run either way.
-      case LibraryRegistrationFailed(
-        failure: final UnauthorizedFailure failure,
-      ):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return failure;
 
       case LibraryRegistrationFailed(:final failure):
         return failure;
@@ -188,20 +129,13 @@ class LibraryTreeController extends AsyncNotifier<LibraryListing?> {
 
   @override
   Future<LibraryListing?> build() async {
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return null;
-
     final outcome = await ref
         .read(libraryGatewayProvider)
-        .read(uuid: location.uuid, path: location.path, credential: credential);
+        .read(uuid: location.uuid, path: location.path);
 
     switch (outcome) {
       case LibraryReadLoaded(:final listing):
         return listing;
-
-      case LibraryReadFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return null;
 
       // Including the library no longer being registered — the screen's
       // failure state is what says so, with a retry.

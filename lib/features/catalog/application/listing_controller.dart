@@ -38,18 +38,9 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
     // there is nothing for this to fetch.
     if (type == null) return const [];
 
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    // No session, no catalog call (FR-AU-07).
-    if (credential == null) return const [];
-
     final listing = await ref
         .read(catalogGatewayProvider)
-        .listFiles(
-          type: type,
-          credential: credential,
-          lifecycle: view.lifecycle,
-        );
+        .listFiles(type: type, lifecycle: view.lifecycle);
 
     switch (listing) {
       // Ordered here rather than by the core, which publishes no sort on a
@@ -57,13 +48,6 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
       // metadata each row now carries belongs to the callers that read it.
       case CatalogListingLoaded(:final files):
         return sortFiles([for (final row in files) row.file], view);
-
-      // AF-04: the core rejected the session. Discarding it returns the owner
-      // to login; the failure is still thrown so the listing does not read as
-      // an empty library on the way out.
-      case CatalogListingFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
-        throw failure;
 
       // UC-09 AF-02: thrown rather than returned empty, so the shell's
       // AsyncStateView renders the failure and its retry — and so "we could
@@ -109,13 +93,7 @@ class ListingController extends AsyncNotifier<List<CatalogFile>> {
 class TypeCountsController extends AsyncNotifier<Map<FileType, int>> {
   @override
   Future<Map<FileType, int>> build() async {
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return const {};
-
-    final listing = await ref
-        .read(catalogGatewayProvider)
-        .listFiles(credential: credential);
+    final listing = await ref.read(catalogGatewayProvider).listFiles();
 
     switch (listing) {
       // Every type starts at zero and is counted up, so a type with no files
@@ -130,13 +108,6 @@ class TypeCountsController extends AsyncNotifier<Map<FileType, int>> {
           counts[row.file.type] = (counts[row.file.type] ?? 0) + 1;
         }
         return counts;
-
-      // The core rejected the session, as in [ListingController]: discarding
-      // it returns the owner to login, and the failure is still thrown so the
-      // panel does not read as an empty catalog on the way out.
-      case CatalogListingFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
-        throw failure;
 
       // Thrown rather than answered as an empty map, so the dashboard's
       // counts section renders its failure and the retry beside it — which

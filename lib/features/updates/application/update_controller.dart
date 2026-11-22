@@ -29,9 +29,6 @@ class UpdateController extends Notifier<UpdateState> {
 
   Future<void>? _atStartup;
 
-  /// Set when the session ends mid-download, so the cancelled download
-  /// settles on idle rather than back on the offer.
-  bool _endedSession = false;
   CancelToken? _download;
 
   @override
@@ -163,8 +160,7 @@ class UpdateController extends Notifier<UpdateState> {
     } on Object catch (error) {
       if (folder.existsSync()) folder.deleteSync(recursive: true);
       if (cancel.isCancelled) {
-        state = _endedSession ? const UpdateState.idle() : offered;
-        _endedSession = false;
+        state = offered;
         return;
       }
       _log.warning('update download failed: $error');
@@ -176,19 +172,6 @@ class UpdateController extends Notifier<UpdateState> {
 
   /// Stops a download in flight; the offer stands.
   void cancelDownload() => _download?.cancel();
-
-  /// The session ended: a download in flight stops, a downloaded package is
-  /// deleted, and nothing is left on offer.
-  void endSession() {
-    final current = state;
-    _download?.cancel();
-    if (current is UpdateReadyToInstall) {
-      final folder = current.package.parent;
-      if (folder.existsSync()) folder.deleteSync(recursive: true);
-    }
-    _endedSession = true;
-    state = const UpdateState.idle();
-  }
 
   /// The installer could not be started: the package goes, and the owner is
   /// told and pointed at the release page.

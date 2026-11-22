@@ -62,16 +62,12 @@ abstract interface class LibraryGateway {
   ///
   /// The read that makes the rest reachable: browsing addresses a uuid, and
   /// this is where those uuids come from.
-  Future<LibraryBrowse> browse({required String credential});
+  Future<LibraryBrowse> browse();
 
   /// The folders and files directly inside [path] within [uuid].
   ///
   /// [path] is relative to the library's root; empty is the top.
-  Future<LibraryRead> read({
-    required String uuid,
-    required String path,
-    required String credential,
-  });
+  Future<LibraryRead> read({required String uuid, required String path});
 
   /// Adds [rootPath] as a library called [name], and starts indexing it.
   ///
@@ -85,7 +81,6 @@ abstract interface class LibraryGateway {
     required String name,
     required String rootPath,
     RunPriority? priority,
-    required String credential,
   });
 
   /// Points [uuid] at [rootPath], the folder it moved to.
@@ -95,19 +90,12 @@ abstract interface class LibraryGateway {
   /// watchlist place, a reading position, a collection — still does. Walking
   /// the new location instead would mint new records and leave these to be
   /// found missing.
-  Future<LibraryWrite> move({
-    required String uuid,
-    required String rootPath,
-    required String credential,
-  });
+  Future<LibraryWrite> move({required String uuid, required String rootPath});
 
   /// Stops treating a folder as a library.
   ///
   /// The files are kept and return to the type panels. Marking a folder
   /// empties part of a panel, which is not visible until afterwards, so the
   /// way back has to restore rather than delete.
-  Future<LibraryWrite> remove({
-    required String uuid,
-    required String credential,
-  });
+  Future<LibraryWrite> remove({required String uuid});
 }

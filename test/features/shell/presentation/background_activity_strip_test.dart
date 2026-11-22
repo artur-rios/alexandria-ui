@@ -16,7 +16,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/misc.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
 import '../../../support/shell_harness.dart';
 
@@ -166,16 +165,6 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
-    // Turned off before the session is established: this suite sets up its
-    // own gateway scenarios for the strip to render, and `establish`'s own
-    // unawaited call to `begin()` (FR-LB-21) would otherwise start a refresh
-    // of its own against them.
-    await container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
 
     await tester.pumpWidget(
       UncontrolledProviderScope(

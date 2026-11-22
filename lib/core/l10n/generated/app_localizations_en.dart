@@ -18,72 +18,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coreUnavailableTitle => 'Alexandria\'s core is not available';
 
   @override
-  String get loginTitle => 'Sign in to Alexandria';
-
-  @override
-  String get loginEmailLabel => 'E-mail';
-
-  @override
-  String get loginPasswordLabel => 'Password';
-
-  @override
-  String get loginSubmit => 'Sign in';
-
-  @override
-  String get loginEmailMissing => 'Enter your e-mail address.';
-
-  @override
-  String get loginEmailMalformed =>
-      'That does not look like an e-mail address.';
-
-  @override
-  String get loginPasswordMissing => 'Enter your password.';
-
-  @override
-  String get loginRejected =>
-      'That e-mail and password do not match an account.';
-
-  @override
-  String get loginNoAccount =>
-      'No account has been set up on this computer yet.';
-
-  @override
-  String get signUpTitle => 'Create your Alexandria account';
-
-  @override
-  String get signUpIntro =>
-      'This is the only account. Its password cannot be recovered, so choose one you will not lose.';
-
-  @override
-  String get signUpPasswordConfirmationLabel => 'Repeat password';
-
-  @override
-  String get signUpSubmit => 'Create account';
-
-  @override
-  String get signUpPasswordConfirmationMissing => 'Repeat your password.';
-
-  @override
-  String get signUpPasswordMismatch => 'The two passwords do not match.';
-
-  @override
-  String get signUpRejected =>
-      'Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.';
-
-  @override
-  String get signUpAccountExists =>
-      'An account already exists on this computer. Sign in instead.';
-
-  @override
-  String get signUpGoToLogin => 'Go to sign in';
-
-  @override
-  String get loginGoToSignUp => 'Create an account';
-
-  @override
-  String get loginSessionEndedTitle => 'You were signed out';
-
-  @override
   String failureCoreLibraryNotLoaded(String path) {
     return 'The Alexandria core could not be loaded from $path.';
   }
@@ -114,10 +48,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failureInvalidInput => 'Alexandria rejected that as invalid.';
 
   @override
-  String get failureUnauthorized =>
-      'Your session has ended. Please sign in again.';
-
-  @override
   String get failureNotInitialized =>
       'Alexandria is not ready yet. Please restart the application.';
 
@@ -137,48 +67,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'The file on disk no longer matches what Alexandria recorded.';
 
   @override
-  String get failureConfiguration =>
-      'Alexandria\'s configuration could not be read.';
-
-  @override
   String get failureConflict => 'That already exists in Alexandria.';
-
-  @override
-  String get failureRateLimited =>
-      'Too many attempts. Wait a moment and try again.';
-
-  @override
-  String get failureServiceUnavailable =>
-      'Alexandria could not reach a service it needs, so that step did not happen.';
-
-  @override
-  String rejectionPasswordTooShort(String min) {
-    return 'Use at least $min characters.';
-  }
-
-  @override
-  String rejectionPasswordTooLong(String max) {
-    return 'Use at most $max characters.';
-  }
-
-  @override
-  String get rejectionPasswordWhitespace => 'A password cannot be only spaces.';
-
-  @override
-  String get rejectionPasswordRepeatedCharacter =>
-      'A password cannot be one character repeated.';
-
-  @override
-  String get rejectionPasswordTooCommon =>
-      'That password is too common. Choose something less predictable.';
-
-  @override
-  String get rejectionPasswordContainsEmail =>
-      'A password cannot contain your e-mail address.';
-
-  @override
-  String get rejectionEmailUntrimmed =>
-      'Remove the spaces around your e-mail address.';
 
   @override
   String get failureUnexpected => 'Something went wrong in Alexandria.';
@@ -212,9 +101,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preferencesTitle => 'Preferences';
-
-  @override
-  String get preferencesOpen => 'Open preferences';
 
   @override
   String get preferencesLabel => 'Preferences';
@@ -256,36 +142,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preferencesClose => 'Done';
-
-  @override
-  String get changeCredentialsOpen => 'Change credentials…';
-
-  @override
-  String get changeCredentialsTitle => 'Change credentials';
-
-  @override
-  String get changeCredentialsIntro =>
-      'Both are replaced together. You stay signed in.';
-
-  @override
-  String get changeCredentialsEmailLabel => 'New e-mail';
-
-  @override
-  String get changeCredentialsPasswordLabel => 'New password';
-
-  @override
-  String get changeCredentialsConfirmationLabel => 'Repeat the new password';
-
-  @override
-  String get changeCredentialsSubmit => 'Change';
-
-  @override
-  String get changeCredentialsDone =>
-      'Your e-mail and password have been changed.';
-
-  @override
-  String get changeCredentialsRejected =>
-      'The change was refused, and your e-mail and password are unchanged.';
 
   @override
   String get dismiss => 'Dismiss';
@@ -571,23 +427,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get detailsEditMetadata => 'Edit metadata';
 
   @override
-  String get signOut => 'Sign out';
-
-  @override
-  String get signOutUnsavedTitle => 'Unsaved changes';
-
-  @override
-  String get signOutUnsavedMessage =>
-      'Signing out now discards the changes you have not saved. Cancel to go back and save them first.';
-
-  @override
-  String get signOutUnsavedConfirm => 'Sign out and discard';
-
-  @override
-  String get signOutIndexRunContinues =>
-      'You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.';
-
-  @override
   String get videoMetadataTitle => 'Edit video metadata';
 
   @override
@@ -695,9 +534,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorOverwrite => 'Save anyway';
 
   @override
-  String get editorSignInAgain => 'Sign in again';
-
-  @override
   String get editorNothingToSave =>
       'The content has not changed, so nothing was written.';
 
@@ -712,10 +548,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get editorRecordGone =>
       'This file is no longer in the catalog. What you have written is still here, and is not saved.';
-
-  @override
-  String get editorSessionRejected =>
-      'Your session ended, so this could not be saved. Signing in again will lose what is on screen.';
 
   @override
   String get editorCouldNotRead => 'This file could not be read.';
@@ -1299,98 +1131,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get missingFilesUnregisteredFolder =>
       'From a folder that is no longer registered.';
-
-  @override
-  String get recoveryCodesTitle => 'Save your recovery codes';
-
-  @override
-  String get recoveryCodesExplanation =>
-      'This is the only time these are shown. Each one replaces a forgotten password exactly once — without them, a forgotten password means a lost library.';
-
-  @override
-  String get recoveryCodesCopy => 'Copy the codes';
-
-  @override
-  String get recoveryCodesCopied => 'Copied to the clipboard.';
-
-  @override
-  String get recoveryCodesAcknowledge => 'I have stored them';
-
-  @override
-  String get recoveryCodesNone =>
-      'Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.';
-
-  @override
-  String get recoveryTitle => 'Recover access';
-
-  @override
-  String get recoveryOpen => 'I cannot sign in';
-
-  @override
-  String get recoveryExplanation =>
-      'Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.';
-
-  @override
-  String get recoveryCodeLabel => 'Recovery code';
-
-  @override
-  String get recoveryNewPassword => 'New password';
-
-  @override
-  String get recoveryConfirmPassword => 'Repeat the new password';
-
-  @override
-  String get recoveryCodeMissing => 'Enter a recovery code.';
-
-  @override
-  String get recoveryPasswordMissing => 'Enter a new password.';
-
-  @override
-  String get recoverySubmit => 'Replace the password';
-
-  @override
-  String get recoveryCodeUnknown =>
-      'That is not one of this account\'s recovery codes. Check it and try again.';
-
-  @override
-  String get recoveryCodeUsed =>
-      'That recovery code has already been used. Each one works once — try another from your list.';
-
-  @override
-  String get recoveryRefused =>
-      'The password could not be replaced. Check the code and try again.';
-
-  @override
-  String get recoveryDone => 'Your password was replaced';
-
-  @override
-  String get recoveryDoneExplanation =>
-      'The code you used is spent, and every open session was signed out. Sign in with the new password.';
-
-  @override
-  String get recoveryBackToLogin => 'Back to sign in';
-
-  @override
-  String get recoveryCodesRegenerate => 'Generate new recovery codes';
-
-  @override
-  String get recoveryCodesRegenerateMessage =>
-      'Every code you have now stops working, and ten new ones take their place. They are shown once.';
-
-  @override
-  String get recoveryCodesNoneLeft =>
-      'No recovery codes are left. Generate a set while you still know your password.';
-
-  @override
-  String recoveryCodesRemaining(num count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count recovery codes left',
-      one: '1 recovery code left',
-    );
-    return '$_temp0';
-  }
 
   @override
   String get collectionsTitle => 'Collections';

@@ -1,21 +1,18 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 
 /// Listing the selected type's files (UC-09, FR-CT-02, FR-LB-04).
 void main() {
   ({ProviderContainer ref, FakeCatalogGateway gateway}) build({
     Map<FileType, CatalogListing>? listings,
-    bool signedIn = true,
     bool watchCounts = false,
   }) {
     final gateway = FakeCatalogGateway(listings: listings);
@@ -24,12 +21,6 @@ void main() {
       overrides: [catalogGatewayProvider.overrideWithValue(gateway)],
     );
     addTearDown(container.dispose);
-
-    if (signedIn) {
-      container
-          .read(sessionControllerProvider.notifier)
-          .establish(FakeAuthGateway.defaultSession);
-    }
 
     // Providers are auto-disposed without a listener, and a listing read only
     // through its future would be torn down while it was still loading. The
@@ -114,21 +105,6 @@ void main() {
 
       expect(sut.gateway.requested, isEmpty);
     });
-
-    test(
-      'GivenNoSession_WhenAListingIsRead_ThenTheCoreIsNeverCalled',
-      () async {
-        // FR-AU-07.
-        final sut = build(signedIn: false);
-        sut.ref
-            .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
-
-        await sut.ref.read(listingControllerProvider.future);
-
-        expect(sut.gateway.requested, isEmpty);
-      },
-    );
   });
 
   group('the type is empty (AF-01)', () {
@@ -200,31 +176,6 @@ void main() {
         final files = await sut.ref.read(listingControllerProvider.future);
 
         expect(files, hasLength(1));
-      },
-    );
-  });
-
-  group('the core rejects the session (AF-04)', () {
-    test(
-      'GivenTheCoreRejectsTheSession_WhenAListingLoads_ThenTheOwnerSignsOut',
-      () async {
-        const failure = Failure.unauthorized(
-          family: CoreStatusFamily.file,
-          code: 2,
-        );
-        final sut = build(
-          listings: {
-            FileType.document: const CatalogListing.failed(failure: failure),
-          },
-        );
-        sut.ref
-            .read(shellControllerProvider.notifier)
-            .go(ShellDestination.books);
-
-        await pumpEventQueue();
-
-        expect(sut.ref.read(listingControllerProvider).hasError, isTrue);
-        expect(sut.ref.read(sessionControllerProvider), isA<SessionAbsent>());
       },
     );
   });

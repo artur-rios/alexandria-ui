@@ -39,9 +39,8 @@ sealed class StartupState with _$StartupState {
 
   /// The core is loaded, healthy, supported, and initialized.
   ///
-  /// Steps 6 and 7 — determining whether an account exists, and reading the
-  /// e-mail confirmation state — belong to UC-01, UC-02, and UC-40 and are not
-  /// part of the foundation. This is where the shell takes over.
+  /// This is where the shell takes over: there is nothing between a ready
+  /// startup and the library (library navigation design §2).
   const factory StartupState.ready({
     required String coreVersion,
     required String databasePath,

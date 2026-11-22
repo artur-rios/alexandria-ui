@@ -5,76 +5,56 @@ import 'package:alexandria_ui/core/bindings/core_environment.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_test/flutter_test.dart';
 
-/// The decision half of putting the core into local auth mode.
+/// The settings the application puts in the core's environment before it is
+/// initialized.
 ///
-/// Setting the variable is a platform call and cannot be observed from Dart —
-/// `Platform.environment` is a snapshot taken before it runs — so what proves
-/// the setting works is the integration suite, which drives the real core with
-/// the variable deliberately absent. What is testable here is *when* the
-/// application decides to set it, which is where the surprising behaviour would
-/// be.
+/// Setting a variable is a platform call and cannot be observed from Dart's
+/// own snapshot of the environment, so what is testable here is *when* the
+/// application decides to set one, and what it chooses — which is where the
+/// surprising behaviour would be.
 void main() {
   test(
-    'GivenNothingInTheEnvironment_WhenTheModeIsChecked_ThenTheApplicationSetsIt',
-    () {
-      expect(shouldSetAuthMode(const {}), isTrue);
-    },
-  );
-
-  test(
-    'GivenAnUnrelatedVariable_WhenTheModeIsChecked_ThenTheApplicationSetsIt',
+    'GivenNothingInTheEnvironment_WhenAVariableIsChecked_ThenTheApplicationSetsIt',
     () {
       expect(
-        shouldSetAuthMode(const {'ALEXANDRIA_LOGGING_LEVEL': 'debug'}),
+        shouldSetCoreVariable(const {}, coreThumbnailCacheDirVariable),
         isTrue,
       );
     },
   );
 
-  // An explicit setting is deliberate, and overriding it would make a
-  // configured run behave like an unconfigured one.
   test(
-    'GivenTheModeIsAlreadyLocal_WhenItIsChecked_ThenTheApplicationLeavesItAlone',
+    'GivenAnUnrelatedVariable_WhenAVariableIsChecked_ThenTheApplicationSetsIt',
     () {
       expect(
-        shouldSetAuthMode(const {coreAuthModeVariable: localAuthMode}),
-        isFalse,
+        shouldSetCoreVariable(const {
+          'ALEXANDRIA_LOGGING_LEVEL': 'debug',
+        }, coreThumbnailCacheDirVariable),
+        isTrue,
       );
     },
   );
 
-  // Including a mode this application cannot work in: whoever set it needs to
-  // see the core refuse, not to have the setting quietly replaced.
-  test(
-    'GivenTheModeIsSetToExternal_WhenItIsChecked_ThenTheApplicationLeavesItAlone',
-    () {
-      expect(
-        shouldSetAuthMode(const {coreAuthModeVariable: 'external'}),
-        isFalse,
-      );
-    },
-  );
-
-  test(
-    'GivenAModeTheCoreCannotParse_WhenItIsChecked_ThenTheApplicationLeavesItAlone',
-    () {
-      expect(
-        shouldSetAuthMode(const {coreAuthModeVariable: 'nonsense'}),
-        isFalse,
-      );
-    },
-  );
-
-  // A blank value is not a choice. The core would fail to parse it and fall
+  // A blank value is not a choice. The core would fail to read it and fall
   // back to its own default, which is the state this exists to avoid.
-  test('GivenTheModeIsBlank_WhenItIsChecked_ThenTheApplicationSetsIt', () {
-    expect(shouldSetAuthMode(const {coreAuthModeVariable: ''}), isTrue);
+  test('GivenTheVariableIsBlank_WhenItIsChecked_ThenTheApplicationSetsIt', () {
+    expect(
+      shouldSetCoreVariable(const {
+        coreThumbnailCacheDirVariable: '',
+      }, coreThumbnailCacheDirVariable),
+      isTrue,
+    );
   });
 
   test(
-    'GivenTheModeIsOnlyWhitespace_WhenItIsChecked_ThenTheApplicationSetsIt',
+    'GivenTheVariableIsOnlyWhitespace_WhenItIsChecked_ThenTheApplicationSetsIt',
     () {
-      expect(shouldSetAuthMode(const {coreAuthModeVariable: '   '}), isTrue);
+      expect(
+        shouldSetCoreVariable(const {
+          coreThumbnailCacheDirVariable: '   ',
+        }, coreThumbnailCacheDirVariable),
+        isTrue,
+      );
     },
   );
 
@@ -123,7 +103,8 @@ void main() {
       }
     });
 
-    // An explicit setting is deliberate, exactly as it is for the auth mode.
+    // An explicit setting is deliberate, and overriding it would make a
+    // configured run behave like an unconfigured one.
     test('GivenAThumbnailDirIsAlreadySet_WhenChecked_ThenItIsLeftAlone', () {
       expect(
         shouldSetCoreVariable(const {

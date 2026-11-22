@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
-import '../../../core/failures/failure.dart';
 import '../domain/catalog_gateway.dart';
 import '../domain/file_details.dart';
 
@@ -28,24 +27,13 @@ class FileDetailsController extends AsyncNotifier<FileDetails?> {
     final uuid = ref.watch(openFileProvider);
     if (uuid == null) return null;
 
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) return null;
-
     final outcome = await ref
         .read(catalogGatewayProvider)
-        .fileDetails(uuid: uuid, credential: credential);
+        .fileDetails(uuid: uuid);
 
     switch (outcome) {
       case FileDetailsRead(:final details):
         return details;
-
-      // AF-05: the core rejected the session, which returns the owner to
-      // login. The failure is still thrown so the detail view does not read
-      // as a file with nothing in it.
-      case FileDetailsFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
-        throw failure;
 
       // AF-01 arrives as a not-found failure. The screen is what says the
       // file is gone and sends the owner back with the listing refreshed —

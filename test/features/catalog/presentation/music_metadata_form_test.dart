@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
@@ -553,34 +552,6 @@ void main() {
 
       expect(gateway.edits, isEmpty);
     });
-  });
-
-  group('the session is rejected (AF-05)', () {
-    testWidgets(
-      'GivenAnUnauthorizedCall_WhenSaved_ThenTheOwnerReturnsToLogin',
-      (tester) async {
-        final (container, _) = await openForm(
-          tester,
-          outcomes: const [
-            MetadataEditOutcome.failed(
-              failure: Failure.unauthorized(
-                family: CoreStatusFamily.file,
-                code: FILE_ERR_UNAUTHORIZED,
-              ),
-            ),
-          ],
-        );
-        final l10n = AppLocalizations.of(
-          tester.element(find.byType(ShellScreen)),
-        );
-
-        await enter(tester, l10n.musicMetadataFieldTitle, 'So What?');
-        await tester.tap(find.text(l10n.musicMetadataSave));
-        await tester.pumpAndSettle();
-
-        expect(container.read(sessionControllerProvider), isA<SessionAbsent>());
-      },
-    );
   });
 
   group('the form is offered only where it applies', () {

@@ -24,7 +24,7 @@ void main() {
 
       final outcome = await CoreLibraryGateway(
         fake,
-      ).register(name: 'Movies', rootPath: '/m', credential: 't');
+      ).register(name: 'Movies', rootPath: '/m');
 
       expect(
         outcome,
@@ -43,9 +43,7 @@ void main() {
         json: '{"uuid":"l1","name":"Movies","rootPath":"/m","runId":"r1"}',
       );
 
-    await CoreLibraryGateway(
-      fake,
-    ).register(name: 'Movies', rootPath: '/m', credential: 't');
+    await CoreLibraryGateway(fake).register(name: 'Movies', rootPath: '/m');
 
     expect(jsonDecode(fake.libraryRegisterCalls.single.jsonBody), {
       'name': 'Movies',
@@ -60,12 +58,9 @@ void main() {
         json: '{"uuid":"l1","name":"Movies","rootPath":"/m","runId":"r1"}',
       );
 
-    await CoreLibraryGateway(fake).register(
-      name: 'Movies',
-      rootPath: '/m',
-      priority: RunPriority.low,
-      credential: 't',
-    );
+    await CoreLibraryGateway(
+      fake,
+    ).register(name: 'Movies', rootPath: '/m', priority: RunPriority.low);
 
     expect(
       (jsonDecode(fake.libraryRegisterCalls.single.jsonBody)
@@ -80,7 +75,7 @@ void main() {
 
     final outcome = await CoreLibraryGateway(
       fake,
-    ).register(name: 'Movies', rootPath: '/m', credential: 't');
+    ).register(name: 'Movies', rootPath: '/m');
 
     expect(
       (outcome as LibraryRegistrationFailed).failure,
@@ -97,7 +92,7 @@ void main() {
 
     final outcome = await CoreLibraryGateway(
       fake,
-    ).register(name: 'Movies', rootPath: '/m', credential: 't');
+    ).register(name: 'Movies', rootPath: '/m');
 
     expect(outcome, isA<LibraryRegistrationFailed>());
   });

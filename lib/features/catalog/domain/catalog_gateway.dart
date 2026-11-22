@@ -98,16 +98,12 @@ abstract interface class CatalogGateway {
   /// decode once for every type on screen — and again after each scan,
   /// purge, and restore.
   Future<CatalogListing> listFiles({
-    required String credential,
     FileType? type,
     LifecycleFilter lifecycle = LifecycleFilter.active,
   });
 
   /// One file, with everything the core knows about it (FR-CT-05, UC-13).
-  Future<FileDetailsOutcome> fileDetails({
-    required String uuid,
-    required String credential,
-  });
+  Future<FileDetailsOutcome> fileDetails({required String uuid});
 
   /// Replaces the video metadata of the file [uuid] identifies (FR-ME-02,
   /// UC-16).
@@ -119,7 +115,6 @@ abstract interface class CatalogGateway {
   Future<VideoMetadataEditOutcome> editVideoMetadata({
     required String uuid,
     required VideoMetadata metadata,
-    required String credential,
   });
 
   /// Replaces the tags of the audio file [uuid] identifies (FR-ME-01, UC-15).
@@ -130,7 +125,6 @@ abstract interface class CatalogGateway {
   Future<MetadataEditOutcome> editMusicMetadata({
     required String uuid,
     required MusicMetadata metadata,
-    required String credential,
   });
 
   /// Renames the file [uuid] identifies, on disk and in the catalog
@@ -142,6 +136,5 @@ abstract interface class CatalogGateway {
   Future<FileRenameOutcome> renameFile({
     required String uuid,
     required String name,
-    required String credential,
   });
 }

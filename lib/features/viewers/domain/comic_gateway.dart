@@ -52,9 +52,5 @@ class ComicPageFailed extends ComicPageOutcome {
 /// the boundary.
 abstract interface class ComicGateway {
   /// Reads [page] of the archive [uuid] identifies, counting from one.
-  Future<ComicPageOutcome> readPage({
-    required String uuid,
-    required int page,
-    required String credential,
-  });
+  Future<ComicPageOutcome> readPage({required String uuid, required int page});
 }

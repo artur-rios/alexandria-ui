@@ -28,22 +28,13 @@ class CollectionMembersController
     final collection = ref.watch(openCollectionProvider);
     if (collection == null) return const [];
 
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07).
-    if (credential == null) return const [];
-
     final members = await ref
         .read(collectionGatewayProvider)
-        .members(uuid: collection.uuid, credential: credential);
+        .members(uuid: collection.uuid);
 
     switch (members) {
       case CollectionMembersLoaded(members: final rows):
         return rows;
-
-      // AF-05: a rejected session returns the owner to login.
-      case CollectionMembersFailed(failure: final UnauthorizedFailure failure):
-        ref.read(sessionControllerProvider.notifier).invalidate(failure);
-        return const [];
 
       case CollectionMembersFailed(:final failure):
         throw failure;
@@ -131,9 +122,7 @@ class CollectionMembershipForm extends Notifier<MembershipReport> {
   /// per item, because the core rejected a whole batch over one bad member.
   Future<void> add(List<CollectionMember> candidates) async {
     final collection = ref.read(openCollectionProvider);
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (collection == null || credential == null) return;
+    if (collection == null) return;
 
     // AF-02: an item already in the collection is reported as such, and the
     // core is not asked about it — it would link it a second time to no
@@ -165,7 +154,6 @@ class CollectionMembershipForm extends Notifier<MembershipReport> {
         .addItems(
           uuid: collection.uuid,
           itemUuids: [for (final candidate in toAdd) candidate.uuid],
-          credential: credential,
         );
 
     switch (outcome) {
@@ -188,12 +176,6 @@ class CollectionMembershipForm extends Notifier<MembershipReport> {
         );
         await ref.read(collectionMembersControllerProvider.notifier).reload();
 
-      // AF-05: the session is discarded, which returns the owner to login.
-      case CollectionAdditionsFailed(
-        failure: final UnauthorizedFailure failure,
-      ):
-        session.invalidate(failure);
-
       // AF-03: the collection is gone. Nothing was linked, and there is
       // nothing to report per item.
       case CollectionAdditionsFailed(failure: NotFoundFailure()):
@@ -211,26 +193,16 @@ class CollectionMembershipForm extends Notifier<MembershipReport> {
   /// that is the core's own guarantee, not something arranged here.
   Future<void> remove(CollectionMember member) async {
     final collection = ref.read(openCollectionProvider);
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (collection == null || credential == null) return;
+    if (collection == null) return;
 
     final outcome = await ref
         .read(collectionGatewayProvider)
-        .removeItem(
-          uuid: collection.uuid,
-          itemUuid: member.uuid,
-          credential: credential,
-        );
+        .removeItem(uuid: collection.uuid, itemUuid: member.uuid);
 
     switch (outcome) {
       case CollectionWriteDone():
         state = const MembershipReport();
         await ref.read(collectionMembersControllerProvider.notifier).reload();
-
-      // AF-05.
-      case CollectionWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
 
       // AF-03: the collection or the item is gone, so the membership is read
       // again and the screen says so.

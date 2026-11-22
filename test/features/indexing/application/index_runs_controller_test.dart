@@ -2,13 +2,11 @@ import 'package:alexandria_ui/core/bindings/alexandria_bindings.dart';
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/indexing/domain/index_gateway.dart';
 import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
 
@@ -37,16 +35,6 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    // Turned off before the session is established: `establish`'s own
-    // unawaited call to `begin()` (FR-LB-21) would otherwise start a refresh
-    // of its own and race the one a test drives.
-    container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
-
     return (ref: container, gateway: indexGateway);
   }
 
@@ -64,10 +52,6 @@ void main() {
 
         expect(refused, isNull);
         expect(sut.gateway.libraryStarts.single.uuid, library);
-        expect(
-          sut.gateway.libraryStarts.single.credential,
-          FakeAuthGateway.defaultSession.credential,
-        );
         final run = sut.ref.read(indexRunsControllerProvider).runFor(library);
         expect(run?.status, IndexRunStatus.running);
         expect(run?.libraryUuid, library);
@@ -229,30 +213,6 @@ void main() {
       expect(catalog.requested.length, greaterThan(before));
     },
   );
-
-  group('the core rejects the session (AF-06)', () {
-    test(
-      'GivenTheStartIsUnauthorized_WhenItSettles_ThenTheSessionEnds',
-      () async {
-        const unauthorized = Failure.unauthorized(
-          family: CoreStatusFamily.indexing,
-          code: INDEX_ERR_UNAUTHORIZED,
-        );
-        final sut = build(
-          gateway: FakeIndexGateway()
-            ..libraryStartOutcomes.add(
-              const IndexStartOutcome.failed(failure: unauthorized),
-            ),
-        );
-
-        await sut.ref
-            .read(indexRunsControllerProvider.notifier)
-            .startLibraryIndex(library);
-
-        expect(sut.ref.read(sessionControllerProvider), isA<SessionAbsent>());
-      },
-    );
-  });
 
   group('a refresh started without asking (FR-LB-21)', () {
     test(

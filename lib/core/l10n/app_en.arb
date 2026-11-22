@@ -12,86 +12,6 @@
   "@coreUnavailableTitle": {
     "description": "Heading of the core-unavailable state (UC-38 AF-04). The catalog is not reachable and no catalog call is attempted from here."
   },
-  "loginTitle": "Sign in to Alexandria",
-  "@loginTitle": {
-    "description": "Heading of the login screen (UC-02). Presented whenever there is no active session."
-  },
-  "loginEmailLabel": "E-mail",
-  "@loginEmailLabel": {
-    "description": "Label of the login form's e-mail field."
-  },
-  "loginPasswordLabel": "Password",
-  "@loginPasswordLabel": {
-    "description": "Label of the login form's password field."
-  },
-  "loginSubmit": "Sign in",
-  "@loginSubmit": {
-    "description": "The login form's primary action."
-  },
-  "loginEmailMissing": "Enter your e-mail address.",
-  "@loginEmailMissing": {
-    "description": "UC-02 AF-01: the e-mail field was left empty. The core is not called."
-  },
-  "loginEmailMalformed": "That does not look like an e-mail address.",
-  "@loginEmailMalformed": {
-    "description": "UC-02 AF-01: the e-mail field does not hold an address. The core is not called."
-  },
-  "loginPasswordMissing": "Enter your password.",
-  "@loginPasswordMissing": {
-    "description": "UC-02 AF-01: the password field was left empty. The core is not called."
-  },
-  "loginRejected": "That e-mail and password do not match an account.",
-  "@loginRejected": {
-    "description": "UC-02 AF-02: the core rejected the credentials. Deliberately does not say which of the two was wrong, and does not reveal whether the address is registered."
-  },
-  "loginNoAccount": "No account has been set up on this computer yet.",
-  "@loginNoAccount": {
-    "description": "UC-02 AF-03: the core holds no credentials, so the owner is sent to sign-up (UC-01) by the action beside this message."
-  },
-  "signUpTitle": "Create your Alexandria account",
-  "@signUpTitle": {
-    "description": "Heading of the sign-up screen (UC-01). Presented on first launch, when the core holds no account."
-  },
-  "signUpIntro": "This is the only account. Its password cannot be recovered, so choose one you will not lose.",
-  "@signUpIntro": {
-    "description": "UC-01: explains the stakes before the owner chooses. The core owns no mail transport, so there is no reset to fall back on."
-  },
-  "signUpPasswordConfirmationLabel": "Repeat password",
-  "@signUpPasswordConfirmationLabel": {
-    "description": "Label of the sign-up form's second password field."
-  },
-  "signUpSubmit": "Create account",
-  "@signUpSubmit": {
-    "description": "The sign-up form's primary action."
-  },
-  "signUpPasswordConfirmationMissing": "Repeat your password.",
-  "@signUpPasswordConfirmationMissing": {
-    "description": "UC-01 AF-02: the second password field was left empty. The core is not called."
-  },
-  "signUpPasswordMismatch": "The two passwords do not match.",
-  "@signUpPasswordMismatch": {
-    "description": "UC-01 AF-02: the two entries differ. The core is not called."
-  },
-  "signUpRejected": "Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.",
-  "@signUpRejected": {
-    "description": "UC-01 AF-03: the core rejected the credentials. The core owns the password policy and does not send its reason across the boundary, so this names the rules it enforces without restating them as front-end validation."
-  },
-  "signUpAccountExists": "An account already exists on this computer. Sign in instead.",
-  "@signUpAccountExists": {
-    "description": "UC-01 AF-04: the core already holds an account, so registration is refused and the owner is sent to the login screen."
-  },
-  "signUpGoToLogin": "Go to sign in",
-  "@signUpGoToLogin": {
-    "description": "UC-01 AF-04: the action that leaves sign-up for the login screen."
-  },
-  "loginGoToSignUp": "Create an account",
-  "@loginGoToSignUp": {
-    "description": "UC-02 AF-03: the action that leaves login for the sign-up screen, offered when the core holds no account."
-  },
-  "loginSessionEndedTitle": "You were signed out",
-  "@loginSessionEndedTitle": {
-    "description": "UC-02 AF-04: heading shown on the login screen when a session was discarded because the core rejected a call, rather than because the owner signed out."
-  },
   "failureCoreLibraryNotLoaded": "The Alexandria core could not be loaded from {path}.",
   "@failureCoreLibraryNotLoaded": {
     "description": "Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.",
@@ -142,10 +62,6 @@
   "@failureInvalidInput": {
     "description": "The core rejected the input. Its verdict is final even when local validation passed."
   },
-  "failureUnauthorized": "Your session has ended. Please sign in again.",
-  "@failureUnauthorized": {
-    "description": "The session is absent, expired, or rejected."
-  },
   "failureNotInitialized": "Alexandria is not ready yet. Please restart the application.",
   "@failureNotInitialized": {
     "description": "A call was made before the core was initialized — a fault in the startup sequence rather than something the owner did."
@@ -166,61 +82,9 @@
   "@failureIntegrity": {
     "description": "The on-disk file and the catalog record have diverged."
   },
-  "failureConfiguration": "Alexandria's configuration could not be read.",
-  "@failureConfiguration": {
-    "description": "The core's own configuration is missing or unusable."
-  },
   "failureConflict": "That already exists in Alexandria.",
   "@failureConflict": {
     "description": "The operation would create something that already exists. Nothing the owner typed was wrong."
-  },
-  "failureRateLimited": "Too many attempts. Wait a moment and try again.",
-  "@failureRateLimited": {
-    "description": "The core refused because the caller is asking too often. Nothing the owner typed was wrong; the remedy is to wait."
-  },
-  "failureServiceUnavailable": "Alexandria could not reach a service it needs, so that step did not happen.",
-  "@failureServiceUnavailable": {
-    "description": "The core could not reach a dependency — outbound mail being the one that exists today. The catalog is unaffected."
-  },
-  "rejectionPasswordTooShort": "Use at least {min} characters.",
-  "@rejectionPasswordTooShort": {
-    "description": "Core rejection password_too_short. The bound comes from the core, which owns the policy.",
-    "placeholders": {
-      "min": {
-        "type": "String",
-        "example": "12"
-      }
-    }
-  },
-  "rejectionPasswordTooLong": "Use at most {max} characters.",
-  "@rejectionPasswordTooLong": {
-    "description": "Core rejection password_too_long.",
-    "placeholders": {
-      "max": {
-        "type": "String",
-        "example": "128"
-      }
-    }
-  },
-  "rejectionPasswordWhitespace": "A password cannot be only spaces.",
-  "@rejectionPasswordWhitespace": {
-    "description": "Core rejection password_whitespace."
-  },
-  "rejectionPasswordRepeatedCharacter": "A password cannot be one character repeated.",
-  "@rejectionPasswordRepeatedCharacter": {
-    "description": "Core rejection password_repeated_character."
-  },
-  "rejectionPasswordTooCommon": "That password is too common. Choose something less predictable.",
-  "@rejectionPasswordTooCommon": {
-    "description": "Core rejection password_too_common."
-  },
-  "rejectionPasswordContainsEmail": "A password cannot contain your e-mail address.",
-  "@rejectionPasswordContainsEmail": {
-    "description": "Core rejection password_contains_email, which covers both being the address and containing it."
-  },
-  "rejectionEmailUntrimmed": "Remove the spaces around your e-mail address.",
-  "@rejectionEmailUntrimmed": {
-    "description": "Core rejection email_untrimmed."
   },
   "failureUnexpected": "Something went wrong in Alexandria.",
   "@failureUnexpected": {
@@ -264,11 +128,7 @@
   },
   "preferencesTitle": "Preferences",
   "@preferencesTitle": {
-    "description": "Title of the preferences dialog (UC-39). Reachable with or without a session."
-  },
-  "preferencesOpen": "Open preferences",
-  "@preferencesOpen": {
-    "description": "Accessible label and tooltip of the control that opens the preferences dialog."
+    "description": "Title of the preferences dialog (UC-39)."
   },
   "preferencesLabel": "Preferences",
   "@preferencesLabel": {
@@ -276,7 +136,7 @@
   },
   "settingsMenuLabel": "Settings",
   "@settingsMenuLabel": {
-    "description": "The menu bar's settings menu, holding preferences and the account actions."
+    "description": "The menu bar's settings menu, holding the preferences."
   },
   "settingsMenuOpen": "Open settings",
   "@settingsMenuOpen": {
@@ -308,7 +168,7 @@
   },
   "startupRecheckLabel": "Re-check the library at startup",
   "@startupRecheckLabel": {
-    "description": "Preference controlling whether the catalog is re-checked against the disk each time a session is established."
+    "description": "Preference controlling whether the catalog is re-checked against the disk each time the application starts."
   },
   "startupRecheckDescription": "Looks for files added, changed, or removed while Alexandria was closed.",
   "@startupRecheckDescription": {
@@ -321,42 +181,6 @@
   "preferencesClose": "Done",
   "@preferencesClose": {
     "description": "The action that closes the preferences dialog. Nothing is applied on closing — every choice already took effect when it was made."
-  },
-  "changeCredentialsOpen": "Change credentials…",
-  "@changeCredentialsOpen": {
-    "description": "Label of the entry in the Settings menu that opens the credential-change form (UC-04 main flow step 1)."
-  },
-  "changeCredentialsTitle": "Change credentials",
-  "@changeCredentialsTitle": {
-    "description": "Title of the credential-change dialog (UC-04)."
-  },
-  "changeCredentialsIntro": "Both are replaced together. You stay signed in.",
-  "@changeCredentialsIntro": {
-    "description": "Explains that the e-mail and password change as one, and that the session survives the change (UC-04 postconditions)."
-  },
-  "changeCredentialsEmailLabel": "New e-mail",
-  "@changeCredentialsEmailLabel": {
-    "description": "Label of the new e-mail field."
-  },
-  "changeCredentialsPasswordLabel": "New password",
-  "@changeCredentialsPasswordLabel": {
-    "description": "Label of the new password field."
-  },
-  "changeCredentialsConfirmationLabel": "Repeat the new password",
-  "@changeCredentialsConfirmationLabel": {
-    "description": "Label of the repeated-password field (FR-AU-10 requires it entered twice)."
-  },
-  "changeCredentialsSubmit": "Change",
-  "@changeCredentialsSubmit": {
-    "description": "The form's primary action."
-  },
-  "changeCredentialsDone": "Your e-mail and password have been changed.",
-  "@changeCredentialsDone": {
-    "description": "UC-04 main flow step 6: the core stored the new hash and the change is confirmed."
-  },
-  "changeCredentialsRejected": "The change was refused, and your e-mail and password are unchanged.",
-  "@changeCredentialsRejected": {
-    "description": "UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched."
   },
   "dismiss": "Dismiss",
   "@dismiss": {
@@ -748,26 +572,6 @@
   "@detailsEditMetadata": {
     "description": "Opens the video metadata form from a video's detail view (UC-16 main flow step 1)."
   },
-  "signOut": "Sign out",
-  "@signOut": {
-    "description": "UC-03 main flow step 1: ends the session without closing the application."
-  },
-  "signOutUnsavedTitle": "Unsaved changes",
-  "@signOutUnsavedTitle": {
-    "description": "UC-03 AF-01: the heading of the warning shown when an editor is holding changes that were never saved."
-  },
-  "signOutUnsavedMessage": "Signing out now discards the changes you have not saved. Cancel to go back and save them first.",
-  "@signOutUnsavedMessage": {
-    "description": "UC-03 AF-01: names what signing out would lose, and says that cancelling is how to save it."
-  },
-  "signOutUnsavedConfirm": "Sign out and discard",
-  "@signOutUnsavedConfirm": {
-    "description": "UC-03 AF-01: confirms the sign-out, unsaved changes and all."
-  },
-  "signOutIndexRunContinues": "You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.",
-  "@signOutIndexRunContinues": {
-    "description": "UC-03 AF-02: the scan belongs to the core, so signing out neither stopped it nor lost its outcome."
-  },
   "videoMetadataTitle": "Edit video metadata",
   "@videoMetadataTitle": {
     "description": "UC-16 main flow step 2: the heading of the video metadata form."
@@ -910,10 +714,6 @@
   "@editorOverwrite": {
     "description": "UC-18 AF-05: writes over the version that changed on disk."
   },
-  "editorSignInAgain": "Sign in again",
-  "@editorSignInAgain": {
-    "description": "UC-18 AF-06: acknowledges that the session ended and the content could not be saved."
-  },
   "editorNothingToSave": "The content has not changed, so nothing was written.",
   "@editorNothingToSave": {
     "description": "UC-18 AF-01: the editor holds exactly what was read, so the core was not called."
@@ -929,10 +729,6 @@
   "editorRecordGone": "This file is no longer in the catalog. What you have written is still here, and is not saved.",
   "@editorRecordGone": {
     "description": "UC-18 AF-04: the record went while the editor was open, and nothing typed is discarded silently."
-  },
-  "editorSessionRejected": "Your session ended, so this could not be saved. Signing in again will lose what is on screen.",
-  "@editorSessionRejected": {
-    "description": "UC-18 AF-06: the core rejected the write, and the owner is warned before the session goes."
   },
   "editorCouldNotRead": "This file could not be read.",
   "@editorCouldNotRead": {
@@ -1738,111 +1534,6 @@
   "missingFilesUnregisteredFolder": "From a folder that is no longer registered.",
   "@missingFilesUnregisteredFolder": {
     "description": "UC-37 AF-03: the record came from a folder the owner has since unregistered."
-  },
-  "recoveryCodesTitle": "Save your recovery codes",
-  "@recoveryCodesTitle": {
-    "description": "UC-40 main flow step 2: the heading of the screen shown once after sign-up."
-  },
-  "recoveryCodesExplanation": "This is the only time these are shown. Each one replaces a forgotten password exactly once — without them, a forgotten password means a lost library.",
-  "@recoveryCodesExplanation": {
-    "description": "UC-40 main flow step 2 and FR-AU-12: says plainly that the codes are not retrievable and what they are for."
-  },
-  "recoveryCodesCopy": "Copy the codes",
-  "@recoveryCodesCopy": {
-    "description": "UC-40 AF-02: places the codes on the clipboard. Nothing is written to disk (FR-AU-13)."
-  },
-  "recoveryCodesCopied": "Copied to the clipboard.",
-  "@recoveryCodesCopied": {
-    "description": "UC-40 AF-02: confirms the copy happened."
-  },
-  "recoveryCodesAcknowledge": "I have stored them",
-  "@recoveryCodesAcknowledge": {
-    "description": "UC-40 main flow step 4: the only way past this screen (AF-01). Confirming opens the library."
-  },
-  "recoveryCodesNone": "Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.",
-  "@recoveryCodesNone": {
-    "description": "UC-40 AF-03: the core issued no codes, which is said plainly rather than shown as an empty list."
-  },
-  "recoveryTitle": "Recover access",
-  "@recoveryTitle": {
-    "description": "UC-41 main flow step 1: the screen for an owner who cannot remember their password."
-  },
-  "recoveryOpen": "I cannot sign in",
-  "@recoveryOpen": {
-    "description": "UC-41 main flow step 1: reaches account recovery from the login screen."
-  },
-  "recoveryExplanation": "Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.",
-  "@recoveryExplanation": {
-    "description": "UC-41 main flow step 2: what the owner needs and what it costs them."
-  },
-  "recoveryCodeLabel": "Recovery code",
-  "@recoveryCodeLabel": {
-    "description": "UC-41 main flow step 2: the code the owner saved."
-  },
-  "recoveryNewPassword": "New password",
-  "@recoveryNewPassword": {
-    "description": "UC-41 main flow step 2: the password that replaces the forgotten one."
-  },
-  "recoveryConfirmPassword": "Repeat the new password",
-  "@recoveryConfirmPassword": {
-    "description": "UC-41 main flow step 2: entered twice, and the two must match before the core is called."
-  },
-  "recoveryCodeMissing": "Enter a recovery code.",
-  "@recoveryCodeMissing": {
-    "description": "UC-41 AF-01: the code is blank, so the core is not called."
-  },
-  "recoveryPasswordMissing": "Enter a new password.",
-  "@recoveryPasswordMissing": {
-    "description": "UC-41 AF-01: the password is empty, so the core is not called."
-  },
-  "recoverySubmit": "Replace the password",
-  "@recoverySubmit": {
-    "description": "UC-41 main flow step 4: sends the code and the new password to the core."
-  },
-  "recoveryCodeUnknown": "That is not one of this account's recovery codes. Check it and try again.",
-  "@recoveryCodeUnknown": {
-    "description": "UC-41 AF-02: the core does not recognise the code. Distinct from AF-03, because a mistyped code and a spent one call for different things."
-  },
-  "recoveryCodeUsed": "That recovery code has already been used. Each one works once — try another from your list.",
-  "@recoveryCodeUsed": {
-    "description": "UC-41 AF-03: the core reports the code as already consumed."
-  },
-  "recoveryRefused": "The password could not be replaced. Check the code and try again.",
-  "@recoveryRefused": {
-    "description": "UC-41: the core refused without naming a reason this version knows, so the message says what to do rather than a code."
-  },
-  "recoveryDone": "Your password was replaced",
-  "@recoveryDone": {
-    "description": "UC-41 main flow step 6: the redemption succeeded."
-  },
-  "recoveryDoneExplanation": "The code you used is spent, and every open session was signed out. Sign in with the new password.",
-  "@recoveryDoneExplanation": {
-    "description": "UC-41 main flow step 6: what happened, and what to do next."
-  },
-  "recoveryBackToLogin": "Back to sign in",
-  "@recoveryBackToLogin": {
-    "description": "UC-41 main flow step 6: returns to the login screen."
-  },
-  "recoveryCodesRegenerate": "Generate new recovery codes",
-  "@recoveryCodesRegenerate": {
-    "description": "UC-42 main flow step 2: replaces the whole set with ten new codes."
-  },
-  "recoveryCodesRegenerateMessage": "Every code you have now stops working, and ten new ones take their place. They are shown once.",
-  "@recoveryCodesRegenerateMessage": {
-    "description": "UC-42 main flow step 3: the confirmation states what the owner is giving up."
-  },
-  "recoveryCodesNoneLeft": "No recovery codes are left. Generate a set while you still know your password.",
-  "@recoveryCodesNoneLeft": {
-    "description": "UC-42 main flow step 1: the core reports none unspent, which means the account cannot currently be recovered."
-  },
-  "recoveryCodesRemaining": "{count, plural, =1{1 recovery code left} other{{count} recovery codes left}}",
-  "@recoveryCodesRemaining": {
-    "description": "UC-42 main flow step 1 and FR-AU-14: how many codes the core reports as unspent.",
-    "placeholders": {
-      "count": {
-        "type": "num"
-      }
-    }
   },
   "collectionsTitle": "Collections",
   "@collectionsTitle": {

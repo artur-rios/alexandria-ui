@@ -157,11 +157,9 @@ class ComicViewerController extends Notifier<ComicViewerState> {
   /// viewer would turn a bad page into a bounce forward.
   Future<void> _read(int page, {required bool forward}) async {
     final target = state.target;
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    // No session, no call (FR-AU-07) — said rather than returned on, which
-    // left the viewer showing a spinner over an archive it was never going to
-    // read.
-    if (target == null || credential == null) {
+    // Nothing to read — said rather than returned on, which left the viewer
+    // showing a spinner over an archive it was never going to read.
+    if (target == null) {
       state = state.copyWith(
         stage: ComicStage.failed,
         failure: ViewerFailure.unreadable,
@@ -188,7 +186,7 @@ class ComicViewerController extends Notifier<ComicViewerState> {
 
       final outcome = await ref
           .read(comicGatewayProvider)
-          .readPage(uuid: target.uuid, page: wanted, credential: credential);
+          .readPage(uuid: target.uuid, page: wanted);
 
       switch (outcome) {
         case ComicPageRead(page: final read):

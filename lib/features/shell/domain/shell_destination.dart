@@ -4,7 +4,7 @@
 /// the panel lists, plus bookmarks, which are not files at all and are listed
 /// through their own core call (UC-28). [home] is not a file type — it is
 /// where UC-14's dashboard lands, and the panel carries it because "the
-/// application opens the dashboard after login" (UC-14 main flow step 1)
+/// application opens the dashboard" when it starts (UC-14 main flow step 1)
 /// would otherwise describe a screen the owner can never navigate back to.
 ///
 /// The shell owns *that there is a panel and what it selects*. The item count
@@ -56,7 +56,7 @@ enum ShellDestination {
   /// to the library.
   libraries;
 
-  /// The destination the shell opens on, after login (UC-14 main flow step 1).
+  /// The destination the shell opens on (UC-14 main flow step 1).
   static const ShellDestination initial = ShellDestination.home;
 
   /// Whether this destination lists a file type, and so carries a count and a

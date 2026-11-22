@@ -6,7 +6,6 @@ import 'package:alexandria_ui/features/indexing/domain/index_run.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_index_gateway.dart';
 
 /// Tracking every outstanding run in one place (FR-FC-29).
@@ -45,17 +44,6 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
-
-    // Turned off before the session is established: this suite drives
-    // `ActiveRunsController.refresh` explicitly, and `establish`'s own
-    // unawaited call to `begin()` (FR-LB-21) would otherwise start a refresh
-    // of its own and race it.
-    container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
 
     return container;
   }
@@ -374,11 +362,8 @@ class FakeGateway extends FakeIndexGateway {
   int listCalls = 0;
 
   @override
-  Future<IndexRunOutcome> readRun({
-    required String runId,
-    required String credential,
-  }) async {
-    reads.add((runId: runId, credential: credential));
+  Future<IndexRunOutcome> readRun({required String runId}) async {
+    reads.add((runId: runId));
 
     return terminal[runId] ??
         const IndexRunOutcome.failed(
@@ -387,7 +372,7 @@ class FakeGateway extends FakeIndexGateway {
   }
 
   @override
-  Future<ActiveRunsOutcome> listActiveRuns({required String credential}) async {
+  Future<ActiveRunsOutcome> listActiveRuns() async {
     listCalls++;
     if (failNext) {
       failNext = false;

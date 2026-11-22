@@ -7,7 +7,6 @@ import 'package:alexandria_ui/features/playback/domain/media_player.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../support/fake_auth_gateway.dart';
 import '../../../support/fake_catalog_gateway.dart';
 import '../../../support/fake_media_player.dart';
 import '../../../support/fake_playback.dart';
@@ -50,12 +49,6 @@ void main() {
       ],
     );
     addTearDown(container.dispose);
-    container
-        .read(preferencesControllerProvider.notifier)
-        .setRechecksAtStartup(false);
-    container
-        .read(sessionControllerProvider.notifier)
-        .establish(FakeAuthGateway.defaultSession);
 
     return (ref: container, player: player, sources: sources, covers: covers);
   }

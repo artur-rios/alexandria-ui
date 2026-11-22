@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_type.dart';
@@ -398,34 +397,6 @@ void main() {
 
       expect(opened.gateway.progressUpdates.single.list, 'rl-1');
     });
-  });
-
-  // AF-06: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenProgressIsSaved_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openLists(
-          tester,
-          writeOutcomes: const [
-            ReadingListWrite.failed(
-              failure: Failure.unauthorized(
-                family: CoreStatusFamily.readingList,
-                code: READING_LIST_ERR_UNAUTHORIZED,
-              ),
-            ),
-          ],
-        );
-
-        await openEditor(tester, 'Solaris.epub');
-        await save(tester);
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
-      },
-    );
   });
 
   group('themes and languages', () {

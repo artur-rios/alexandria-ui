@@ -29,10 +29,7 @@ class FakePlaybackSourceGateway implements PlaybackSourceGateway {
   final Set<String> failing = {};
 
   @override
-  Future<PlaybackSourceOutcome> resolve({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<PlaybackSourceOutcome> resolve({required String uuid}) async {
     resolved.add(uuid);
 
     if (failing.contains(uuid)) return missingOnDisk;
@@ -82,8 +79,8 @@ class FakePlaybackPositionStore implements PlaybackPositionStore {
 
 /// A [PlaybackSession] a test registers to stand in for a player.
 ///
-/// Sign-out stops whatever player is running (UC-03), and this is what a test
-/// gives it to stop.
+/// Closing for an update stops whatever player is running, and this is what a
+/// test gives it to stop.
 class FakePlaybackSession implements PlaybackSession {
   /// Creates a session, running or not.
   FakePlaybackSession({this.isActive = true});
@@ -106,8 +103,5 @@ class FakeCoverGateway implements CoverGateway {
   final Map<String, Uint8List> covers = {};
 
   @override
-  Future<Uint8List?> cover({
-    required String uuid,
-    required String credential,
-  }) async => covers[uuid];
+  Future<Uint8List?> cover({required String uuid}) async => covers[uuid];
 }

@@ -9,9 +9,8 @@ import 'package:alexandria_ui/features/shell/presentation/library_menu.dart';
 import 'package:alexandria_ui/features/shell/presentation/settings_menu.dart';
 
 import 'failing_settings_store.dart';
-import 'fake_auth_gateway.dart';
 import 'fake_library_gateway.dart';
-import 'login_harness.dart';
+import 'app_harness.dart';
 
 /// Whether [overrides] already replaces [provider], so [pumpShell]'s own
 /// default is skipped rather than colliding with a caller's own — Riverpod
@@ -21,13 +20,12 @@ bool _overrides(List<Override> overrides, ProviderBase<Object?> provider) =>
 
 /// Drives the shell through the real application root.
 ///
-/// The shell is reached the way the owner reaches it — startup settles, the
-/// login screen appears, and a successful sign-in replaces it — rather than by
-/// pumping the shell on its own. That is what makes these tests cover the
-/// wiring in `app.dart` as well as the shell itself, and it is the same
-/// approach the authentication screens' tests take.
+/// The shell is reached the way the owner reaches it — startup settles, and
+/// the shell is the first screen — rather than by pumping the shell on its
+/// own. That is what makes these tests cover the wiring in `app.dart` as well
+/// as the shell itself.
 extension PumpShell on WidgetTester {
-  /// Signs in and lands on the shell.
+  /// Starts the application and lands on the shell.
   ///
   /// [surfaceSize] is applied to the view as well as to the render surface.
   /// `setSurfaceSize` alone changes what is rasterized but leaves
@@ -42,15 +40,13 @@ extension PumpShell on WidgetTester {
     ThemeMode themeMode = ThemeMode.light,
     Size surfaceSize = const Size(1280, 800),
     SettingsStore? settings,
-    FakeAuthGateway? gateway,
     List<Override> extraOverrides = const [],
   }) async {
     view.devicePixelRatio = 1;
     view.physicalSize = surfaceSize;
     addTearDown(view.reset);
 
-    final container = await pumpLoginScreen(
-      gateway: gateway ?? FakeAuthGateway(),
+    final container = await pumpApp(
       locale: locale,
       themeMode: themeMode,
       surfaceSize: surfaceSize,
@@ -71,8 +67,6 @@ extension PumpShell on WidgetTester {
         ...extraOverrides,
       ],
     );
-
-    await signIn();
 
     return container;
   }
@@ -100,8 +94,8 @@ extension PumpShell on WidgetTester {
     await pumpAndSettle();
   }
 
-  /// Signs in and lands on the shell over a settings store that refuses every
-  /// write (UC-39 AF-02).
+  /// Lands on the shell over a settings store that refuses every write
+  /// (UC-39 AF-02).
   Future<ProviderContainer> pumpShellWithFailingSettings({
     Locale? locale,
     ThemeMode themeMode = ThemeMode.light,

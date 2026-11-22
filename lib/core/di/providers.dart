@@ -18,20 +18,6 @@ import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../failures/failure.dart';
-import '../../features/auth/application/auth_entry_controller.dart';
-import '../../features/auth/application/change_credentials_controller.dart';
-import '../../features/auth/application/change_credentials_state.dart';
-import '../../features/auth/application/login_controller.dart';
-import '../../features/auth/application/login_state.dart';
-import '../../features/auth/application/recovery_codes_controller.dart';
-import '../../features/auth/application/recovery_controller.dart';
-import '../../features/auth/application/session_controller.dart';
-import '../../features/auth/application/session_state.dart';
-import '../../features/auth/application/sign_out_controller.dart';
-import '../../features/auth/application/sign_up_controller.dart';
-import '../../features/auth/application/sign_up_state.dart';
-import '../../features/auth/data/core_auth_gateway.dart';
-import '../../features/auth/domain/auth_gateway.dart';
 import '../../features/catalog/application/dashboard_controller.dart';
 import '../../features/catalog/application/file_details_controller.dart';
 import '../../features/catalog/application/in_progress.dart';
@@ -42,7 +28,7 @@ import '../../features/catalog/application/layout_controller.dart';
 import '../../features/catalog/application/listing_controller.dart';
 import '../../features/catalog/application/listing_view_controller.dart';
 import '../../features/catalog/application/search_controller.dart';
-import '../../features/catalog/application/catalog_session_activity.dart';
+import '../../features/catalog/application/catalog_app_activity.dart';
 import '../../features/catalog/data/core_catalog_gateway.dart';
 import '../../features/catalog/domain/catalog_file.dart';
 import '../../features/catalog/domain/file_type.dart';
@@ -55,7 +41,7 @@ import '../../features/indexing/application/index_runs_controller.dart';
 import '../../features/indexing/application/run_failures_controller.dart';
 import '../../features/indexing/application/source_list_cleanup_activity.dart';
 import '../../features/indexing/application/index_runs_state.dart';
-import '../../features/indexing/application/index_session_activity.dart';
+import '../../features/indexing/application/index_app_activity.dart';
 import '../../features/indexing/data/core_index_gateway.dart';
 import '../../features/indexing/data/native_folder_picker.dart';
 import '../../features/indexing/domain/folder_picker.dart';
@@ -65,7 +51,7 @@ import '../../features/shell/application/preferences_controller.dart';
 import '../../features/shell/application/preferences_state.dart';
 import '../../features/shell/application/shell_controller.dart';
 import '../../features/shell/data/desktop_window_placement.dart';
-import '../../features/editing/application/editing_session_activity.dart';
+import '../../features/editing/application/editing_app_activity.dart';
 import '../../features/editing/application/text_editor_controller.dart';
 import '../../features/editing/data/core_text_content_gateway.dart';
 import '../../features/editing/domain/text_content_gateway.dart';
@@ -81,7 +67,7 @@ import '../../features/organization/domain/bookmark_gateway.dart';
 import '../../features/organization/domain/collection.dart';
 import '../../features/organization/domain/collection_gateway.dart';
 import '../../features/organization/domain/browser_launcher.dart';
-import '../../features/playback/application/playback_session_activity.dart';
+import '../../features/playback/application/playback_app_activity.dart';
 import '../../features/playback/application/video_playback_controller.dart';
 import '../../features/playback/application/video_playback_session.dart';
 import '../../features/playback/data/core_cover_gateway.dart';
@@ -98,7 +84,7 @@ import '../../features/libraries/application/library_add_request.dart';
 import '../../features/libraries/data/core_library_gateway.dart';
 import '../../features/libraries/domain/library.dart';
 import '../../features/libraries/domain/library_gateway.dart';
-import '../../features/shell/domain/session_activity.dart';
+import '../../features/shell/domain/app_activity.dart';
 import '../../features/viewers/application/comic_viewer_controller.dart';
 import '../../features/viewers/application/document_viewer_controller.dart';
 import '../../features/viewers/application/image_viewer_controller.dart';
@@ -145,7 +131,6 @@ import '../../features/shell/domain/shell_destination.dart';
 import '../../features/shell/domain/window_placement.dart';
 import '../../features/updates/application/update_controller.dart';
 import '../../features/updates/application/update_prompt_presence.dart';
-import '../../features/updates/application/update_session_activity.dart';
 import '../../features/updates/application/update_state.dart';
 import '../../features/updates/data/github_release_source.dart';
 import '../../features/updates/data/http_downloader.dart';
@@ -186,7 +171,7 @@ final settingsLoaderProvider = Provider<Future<SettingsStore> Function()>(
 /// A retry re-runs startup from step 1 and disposes the core it loaded before
 /// (§5.2). Read once and cached, a gateway would go on calling that disposed
 /// worker — every call failing as unexpected — until the application was
-/// restarted; the login screen's own retry is the path that reached it.
+/// restarted.
 /// Watching whether startup is ready is what invalidates the gateway when it
 /// stops being ready, so the next read builds it over the core that replaced
 /// the old one.
@@ -221,66 +206,9 @@ final preferencesControllerProvider =
 ///
 /// A thin read over [preferencesControllerProvider] rather than its own read
 /// of the settings store: the store answers what was saved, and after UC-39
-/// what is *applied* can differ from it for a session (AF-02).
+/// what is *applied* can differ from it for the rest of the run (AF-02).
 final themeModeProvider = Provider<ThemeMode>(
   (ref) => ref.watch(preferencesControllerProvider).themeMode,
-);
-
-/// The core's authentication operations (UC-02).
-///
-/// Reads the loaded core from the startup controller, so it is only usable
-/// once startup has reached [StartupReady] — which is exactly when the login
-/// screen is presented. A test overrides this with a fake gateway and never
-/// reaches the FFI boundary at all (Testing Specification §2.3).
-final authGatewayProvider = Provider<AuthGateway>((ref) {
-  final core = _loadedCore(ref);
-  if (core == null) {
-    throw StateError(
-      'the authentication gateway was read before the core was loaded',
-    );
-  }
-
-  return CoreAuthGateway(core);
-});
-
-/// The owner's session, held in memory for the run (FR-AU-05).
-final sessionControllerProvider =
-    NotifierProvider<SessionController, SessionState>(SessionController.new);
-
-/// The login form's state (UC-02).
-final loginControllerProvider = NotifierProvider<LoginController, LoginState>(
-  LoginController.new,
-);
-
-/// The credential-change form's state (UC-04).
-final changeCredentialsControllerProvider =
-    NotifierProvider<ChangeCredentialsController, ChangeCredentialsState>(
-      ChangeCredentialsController.new,
-    );
-
-/// The sign-up form's state (UC-01).
-final signUpControllerProvider =
-    NotifierProvider<SignUpController, SignUpState>(SignUpController.new);
-
-/// The owner's account and how many recovery codes remain (UC-42).
-final accountControllerProvider =
-    AsyncNotifierProvider<AccountController, AccountSummary?>(
-      AccountController.new,
-    );
-
-/// Replacing the whole recovery-code set (UC-42).
-final regenerateRecoveryCodesControllerProvider =
-    NotifierProvider<RegenerateRecoveryCodesController, RegenerateRefusal?>(
-      RegenerateRecoveryCodesController.new,
-    );
-
-/// Spending a recovery code on a new password (UC-41).
-final recoveryControllerProvider =
-    NotifierProvider<RecoveryController, RecoveryState>(RecoveryController.new);
-
-/// Which screen a session-less owner is shown (FR-AU-01).
-final authEntryProvider = NotifierProvider<AuthEntryController, AuthEntry>(
-  AuthEntryController.new,
 );
 
 /// The language the owner chose, or `null` to follow the system.
@@ -503,8 +431,8 @@ final videoPlaybackControllerProvider =
       VideoPlaybackController.new,
     );
 
-/// The players the session can have running, which sign-out stops (UC-03
-/// main flow step 2). The video player is the only one (`PlaybackSession`).
+/// The players the application can have running, which closing for an
+/// update stops (`PlaybackSession`).
 final playbackSessionsProvider = Provider<List<PlaybackSession>>(
   (ref) => [VideoPlaybackSession(ref), AudioPlaybackSession(ref)],
 );
@@ -723,12 +651,9 @@ final collectionsControllerProvider =
 final bookmarkCollectionsProvider = FutureProvider<List<Collection>>((
   ref,
 ) async {
-  final credential = ref.read(sessionControllerProvider.notifier).credential;
-  if (credential == null) return const [];
-
   final browse = await ref
       .read(collectionGatewayProvider)
-      .browse(credential: credential, kind: CollectionKind.bookmark);
+      .browse(kind: CollectionKind.bookmark);
 
   return switch (browse) {
     CollectionBrowseLoaded(:final collections) => collections,
@@ -943,28 +868,27 @@ final videoMetadataEditorProvider =
       VideoMetadataEditor.new,
     );
 
-/// Everything that runs for the length of a session (UC-03, FR-AU-09).
+/// Everything that runs for as long as the application does (library
+/// navigation design §2).
 ///
-/// The list is the registration point sign-out reads: a use case that opens
-/// something belonging to the session — a player, an editor — adds its
-/// activity here and changes nothing in the authentication layer.
-final sessionActivitiesProvider = Provider<List<SessionActivity>>(
+/// The list is the registration point startup and closing for an update read:
+/// startup begins every activity once it is ready, and closing for an update
+/// ends them. A use case that opens something that runs — a player, an
+/// editor — adds its activity here and changes nothing else.
+final appActivitiesProvider = Provider<List<AppActivity>>(
   (ref) => [
-    CatalogSessionActivity(ref),
-    IndexSessionActivity(ref),
-    // UC-18's editor, which is the first thing in the application that can
-    // hold something the owner has not saved (UC-03 AF-01).
-    EditingSessionActivity(ref),
-    // Whatever is playing, which sign-out stops (UC-03 main flow step 2).
-    PlaybackSessionActivity(ref),
+    CatalogAppActivity(ref),
+    IndexAppActivity(ref),
+    // UC-18's editor, the one thing in the application that can hold
+    // something the owner has not saved.
+    EditingAppActivity(ref),
+    // Whatever is playing.
+    PlaybackAppActivity(ref),
     // The folder list a 0.5 build kept, which the libraries-only core made
     // meaningless (libraries-only design).
     SourceListCleanupActivity(
       () => ref.read(startupControllerProvider.notifier).settings,
     ),
-    // An update in flight, which a session ending cancels (update-check
-    // design §6).
-    UpdateSessionActivity(ref),
   ],
 );
 
@@ -1039,8 +963,3 @@ final updatePromptPresenceProvider =
 /// The update check and the update itself (update-check design).
 final updateControllerProvider =
     NotifierProvider<UpdateController, UpdateState>(UpdateController.new);
-
-/// Ends the session on request (UC-03).
-final signOutControllerProvider = Provider<SignOutController>(
-  SignOutController.new,
-);

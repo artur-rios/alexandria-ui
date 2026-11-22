@@ -36,15 +36,11 @@ class FakeLibraryGateway implements LibraryGateway {
   final List<({String uuid, String rootPath})> moved = [];
 
   @override
-  Future<LibraryBrowse> browse({required String credential}) async =>
+  Future<LibraryBrowse> browse() async =>
       browseOutcome ?? LibraryBrowse.loaded(libraries: libraries);
 
   @override
-  Future<LibraryRead> read({
-    required String uuid,
-    required String path,
-    required String credential,
-  }) async {
+  Future<LibraryRead> read({required String uuid, required String path}) async {
     readsMade.add((uuid: uuid, path: path));
 
     return reads[uuid]?[path] ??
@@ -76,7 +72,6 @@ class FakeLibraryGateway implements LibraryGateway {
     required String name,
     required String rootPath,
     RunPriority? priority,
-    required String credential,
   }) async {
     registered.add((name: name, rootPath: rootPath));
     registeredPriorities.add(priority);
@@ -108,7 +103,6 @@ class FakeLibraryGateway implements LibraryGateway {
   Future<LibraryWrite> move({
     required String uuid,
     required String rootPath,
-    required String credential,
   }) async {
     moved.add((uuid: uuid, rootPath: rootPath));
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
@@ -129,10 +123,7 @@ class FakeLibraryGateway implements LibraryGateway {
   }
 
   @override
-  Future<LibraryWrite> remove({
-    required String uuid,
-    required String credential,
-  }) async {
+  Future<LibraryWrite> remove({required String uuid}) async {
     removed.add(uuid);
     if (writeOutcomes.isNotEmpty) return writeOutcomes.removeAt(0);
 

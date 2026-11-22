@@ -171,32 +171,18 @@ class VideoMetadataEditor extends Notifier<VideoEditorState> {
     final becomesMovie = edited.mediaKind == MediaKind.movie;
     if (!wasSeries || !becomesMovie) return false;
 
-    final credential = ref.read(sessionControllerProvider.notifier).credential;
-    if (credential == null) return false;
-
     return ref
         .read(watchProgressGatewayProvider)
-        .episodesRecordedFor(uuid: _uuid, credential: credential);
+        .episodesRecordedFor(uuid: _uuid);
   }
 
   /// Steps 4 to 6, and the flows the core's answer selects.
   Future<void> _send(VideoMetadata edited) async {
     state = state.copyWith(stage: VideoEditorStage.saving);
 
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) {
-      state = state.copyWith(stage: VideoEditorStage.editing);
-      return;
-    }
-
     final outcome = await ref
         .read(catalogGatewayProvider)
-        .editVideoMetadata(
-          uuid: _uuid,
-          metadata: edited,
-          credential: credential,
-        );
+        .editVideoMetadata(uuid: _uuid, metadata: edited);
 
     switch (outcome) {
       case VideoMetadataEditSaved(:final metadata):
@@ -210,11 +196,6 @@ class VideoMetadataEditor extends Notifier<VideoEditorState> {
           draft: draftFromVideo(metadata),
           stage: VideoEditorStage.saved,
         );
-
-      // AF-05: the session is discarded, which returns the owner to login.
-      case VideoMetadataEditFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
-        state = state.copyWith(stage: VideoEditorStage.editing);
 
       // AF-04: the record is gone, so there is nothing to keep the form open
       // for. The listing is refreshed by the screen that closes it.

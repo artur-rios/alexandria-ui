@@ -7,7 +7,6 @@ import '../../../core/di/providers.dart';
 import '../../../core/bindings/alexandria_bindings.dart';
 import '../../../core/failures/core_status.dart';
 import '../../../core/failures/failure.dart';
-import '../../auth/application/session_controller.dart';
 import '../../catalog/application/catalog_projections.dart';
 import '../domain/index_gateway.dart';
 import '../domain/index_run.dart';
@@ -26,7 +25,6 @@ class IndexRunsController extends Notifier<IndexRunsState> {
   static final Logger _log = Logger('indexing');
 
   late IndexGateway _gateway;
-  late SessionController _session;
   late Duration _pollInterval;
 
   Timer? _poller;
@@ -46,7 +44,6 @@ class IndexRunsController extends Notifier<IndexRunsState> {
   @override
   IndexRunsState build() {
     _gateway = ref.read(indexGatewayProvider);
-    _session = ref.read(sessionControllerProvider.notifier);
     _pollInterval = ref.read(runPollIntervalProvider);
 
     ref.onDispose(_stopPolling);
@@ -81,25 +78,14 @@ class IndexRunsController extends Notifier<IndexRunsState> {
     }
     if (state.isStarting(uuid)) return null;
 
-    final credential = _session.credential;
-    if (credential == null) return null;
-
     state = state.starting_(uuid);
 
-    final outcome = await _gateway.startLibraryIndex(
-      uuid: uuid,
-      credential: credential,
-    );
+    final outcome = await _gateway.startLibraryIndex(uuid: uuid);
 
     switch (outcome) {
       case IndexStarted(:final runId):
         await follow(uuid, runId);
         return null;
-
-      case IndexStartFailed(failure: final UnauthorizedFailure failure):
-        state = state.idle(uuid);
-        _session.invalidate(failure);
-        return failure;
 
       case IndexStartFailed(:final failure):
         _log.info('library run refused for $uuid (${failure.coreStatusCode})');
@@ -153,9 +139,6 @@ class IndexRunsController extends Notifier<IndexRunsState> {
       return;
     }
 
-    final credential = _session.credential;
-    if (credential == null) return;
-
     state = state.copyWith(
       refreshRefusal: null,
       refreshFailure: null,
@@ -174,7 +157,7 @@ class IndexRunsController extends Notifier<IndexRunsState> {
       return;
     }
 
-    final outcome = await _gateway.startRefresh(credential: credential);
+    final outcome = await _gateway.startRefresh();
 
     switch (outcome) {
       case IndexStarted(:final runId):
@@ -197,12 +180,6 @@ class IndexRunsController extends Notifier<IndexRunsState> {
         // shown outside this screen.
         await ref.read(activeRunsControllerProvider.notifier).refresh();
 
-      // AF-04: the same rule every other call follows — a rejected session
-      // returns the owner to login.
-      case IndexStartFailed(failure: final UnauthorizedFailure failure):
-        state = state.copyWith(refreshStarting: false);
-        _session.invalidate(failure);
-
       case IndexStartFailed(:final failure):
         _log.info('refresh refused (${failure.coreStatusCode})');
         state = state.copyWith(
@@ -221,23 +198,15 @@ class IndexRunsController extends Notifier<IndexRunsState> {
 
   Future<void> _pollRefresh() async {
     final run = state.refreshRun;
-    final credential = _session.credential;
-    if (run == null || credential == null) return;
+    if (run == null) return;
 
-    final outcome = await _gateway.readRun(
-      runId: run.runId,
-      credential: credential,
-    );
+    final outcome = await _gateway.readRun(runId: run.runId);
 
     switch (outcome) {
       case IndexRunRead(run: final observed):
         state = state.copyWith(
           refreshRun: observed.copyWith(kind: IndexRunKind.refresh),
         );
-
-      case IndexRunFailed(failure: final UnauthorizedFailure failure):
-        _stopPolling();
-        _session.invalidate(failure);
 
       // The refresh is off the board, but the folder scans are not: stopping
       // outright here would freeze every one of them on its last reading.
@@ -275,13 +244,9 @@ class IndexRunsController extends Notifier<IndexRunsState> {
 
   Future<void> _poll(String uuid) async {
     final run = state.runFor(uuid);
-    final credential = _session.credential;
-    if (run == null || credential == null) return;
+    if (run == null) return;
 
-    final outcome = await _gateway.readRun(
-      runId: run.runId,
-      credential: credential,
-    );
+    final outcome = await _gateway.readRun(runId: run.runId);
 
     // Removed while the read was out: the library is gone, and recording its
     // run again would bring it back on screen.
@@ -298,12 +263,6 @@ class IndexRunsController extends Notifier<IndexRunsState> {
           // before that listing ever lists it.
           if (!run.status.isTerminal) invalidateCatalogProjections(ref);
         }
-
-      // AF-06: the core rejected the session. Discarding it returns the owner
-      // to login, and there is nothing left to poll.
-      case IndexRunFailed(failure: final UnauthorizedFailure failure):
-        _stopPolling();
-        _session.invalidate(failure);
 
       // This library's run is the one that could not be read. Everything
       // else still followed — another library's run, or the refresh — is

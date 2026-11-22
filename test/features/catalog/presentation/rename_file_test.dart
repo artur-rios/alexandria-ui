@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/catalog/domain/catalog_gateway.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_details.dart';
 import 'package:alexandria_ui/features/catalog/domain/file_name.dart';
@@ -352,31 +351,6 @@ void main() {
 
       expect(find.byType(RenameFileDialog), findsNothing);
     });
-  });
-
-  // AF-05: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenRenaming_ThenTheOwnerSignsOut',
-      (tester) async {
-        final (container, _) = await openDialog(
-          tester,
-          outcomes: const [
-            FileRenameOutcome.failed(
-              failure: Failure.unauthorized(
-                family: CoreStatusFamily.file,
-                code: FILE_ERR_UNAUTHORIZED,
-              ),
-            ),
-          ],
-        );
-
-        await enter(tester, 'Blue.md');
-        await rename(tester);
-
-        expect(container.read(sessionControllerProvider), isA<SessionAbsent>());
-      },
-    );
   });
 
   group('themes and languages', () {

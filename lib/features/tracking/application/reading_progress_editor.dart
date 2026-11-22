@@ -139,20 +139,12 @@ class ReadingProgressEditor extends Notifier<ReadingProgressEditorState> {
 
     state = state.copyWith(isSaving: true);
 
-    final session = ref.read(sessionControllerProvider.notifier);
-    final credential = session.credential;
-    if (credential == null) {
-      state = state.copyWith(isSaving: false);
-      return;
-    }
-
     final outcome = await ref
         .read(readingListGatewayProvider)
         .updateProgress(
           uuid: state.readingListUuid!,
           itemUuid: state.itemUuid!,
           state: state.state,
-          credential: credential,
           currentIssue: countsIssues ? state.issues.currentValue : null,
           totalIssues: countsIssues ? state.issues.totalValue : null,
         );
@@ -162,11 +154,6 @@ class ReadingProgressEditor extends Notifier<ReadingProgressEditorState> {
         // Step 6: what the screen shows comes from the core, so it is read
         // again rather than patched here.
         await ref.read(readingListsControllerProvider.notifier).reload();
-        state = const ReadingProgressEditorState();
-
-      // AF-06: the session is discarded, which returns the owner to login.
-      case ReadingListWriteFailed(failure: final UnauthorizedFailure failure):
-        session.invalidate(failure);
         state = const ReadingProgressEditorState();
 
       // AF-04: the reading list or the item is gone. The screen is read again,

@@ -19,10 +19,10 @@ class CoreLibraryGateway implements LibraryGateway {
   final CoreClient _core;
 
   @override
-  Future<LibraryBrowse> browse({required String credential}) async {
+  Future<LibraryBrowse> browse() async {
     final CoreJsonResponse response;
     try {
-      response = await _core.librariesList(credential);
+      response = await _core.librariesList();
     } on CoreCallException {
       return _unreadableBrowse();
     }
@@ -53,14 +53,10 @@ class CoreLibraryGateway implements LibraryGateway {
   }
 
   @override
-  Future<LibraryRead> read({
-    required String uuid,
-    required String path,
-    required String credential,
-  }) async {
+  Future<LibraryRead> read({required String uuid, required String path}) async {
     final CoreJsonResponse response;
     try {
-      response = await _core.libraryBrowse(uuid, path, credential);
+      response = await _core.libraryBrowse(uuid, path);
     } on CoreCallException {
       return _unreadableRead();
     }
@@ -107,7 +103,6 @@ class CoreLibraryGateway implements LibraryGateway {
     required String name,
     required String rootPath,
     RunPriority? priority,
-    required String credential,
   }) async {
     const unreadable = LibraryRegistration.failed(
       failure: Failure.unexpected(
@@ -126,7 +121,6 @@ class CoreLibraryGateway implements LibraryGateway {
           // core reads anything else as normal too.
           if (priority == RunPriority.low) 'priority': priority!.wire,
         }),
-        credential,
       );
     } on CoreCallException {
       return unreadable;
@@ -159,20 +153,12 @@ class CoreLibraryGateway implements LibraryGateway {
   }
 
   @override
-  Future<LibraryWrite> move({
-    required String uuid,
-    required String rootPath,
-    required String credential,
-  }) => _write(
-    () =>
-        _core.libraryMove(uuid, jsonEncode({'rootPath': rootPath}), credential),
-  );
+  Future<LibraryWrite> move({required String uuid, required String rootPath}) =>
+      _write(() => _core.libraryMove(uuid, jsonEncode({'rootPath': rootPath})));
 
   @override
-  Future<LibraryWrite> remove({
-    required String uuid,
-    required String credential,
-  }) => _write(() => _core.libraryRemove(uuid, credential));
+  Future<LibraryWrite> remove({required String uuid}) =>
+      _write(() => _core.libraryRemove(uuid));
 
   Future<LibraryWrite> _write(Future<CoreJsonResponse> Function() call) async {
     final CoreJsonResponse response;

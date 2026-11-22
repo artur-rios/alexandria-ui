@@ -1,9 +1,6 @@
 import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
 import 'package:alexandria_ui/core/theme/breakpoints.dart';
-import 'package:alexandria_ui/features/auth/presentation/change_credentials_dialog.dart';
-import 'package:alexandria_ui/features/auth/presentation/login_screen.dart';
-import 'package:alexandria_ui/features/auth/presentation/recovery_codes_section.dart';
 import 'package:alexandria_ui/features/catalog/presentation/catalog_search_view.dart';
 import 'package:alexandria_ui/features/lifecycle/presentation/missing_files_screen.dart';
 import 'package:alexandria_ui/features/shell/domain/shell_destination.dart';
@@ -185,7 +182,7 @@ void main() {
     );
 
     testWidgets(
-      'GivenACompactWindow_WhenTheSettingsMenuIsOpened_ThenEveryEntryIsStillReachable',
+      'GivenACompactWindow_WhenTheSettingsMenuIsOpened_ThenPreferencesIsStillReachable',
       (tester) async {
         await tester.pumpShell(surfaceSize: Breakpoint.minimumWindowSize);
         final l10n = localizations(tester);
@@ -194,8 +191,6 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text(l10n.preferencesLabel), findsOneWidget);
-        expect(find.text(l10n.changeCredentialsOpen), findsOneWidget);
-        expect(find.text(l10n.signOut), findsOneWidget);
       },
     );
   });
@@ -211,6 +206,21 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text(l10n.preferencesLabel), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'GivenTheSettingsMenu_WhenItIsOpened_ThenNoAccountActionIsOffered',
+      (tester) async {
+        // There is no account: the menu that held "Change credentials" and
+        // "Sign out" keeps Preferences only (library navigation design §2).
+        await tester.pumpShell();
+
+        await tester.tap(find.byType(SettingsMenu));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.key_outlined), findsNothing);
+        expect(find.byIcon(Icons.logout_outlined), findsNothing);
       },
     );
 
@@ -243,71 +253,6 @@ void main() {
           ),
           findsNothing,
         );
-      },
-    );
-
-    testWidgets(
-      'GivenTheSettingsMenu_WhenCredentialsAreChosen_ThenTheCredentialsDialogOpens',
-      (tester) async {
-        await tester.pumpShell();
-        final l10n = localizations(tester);
-
-        await tester.openSettingsMenuEntry(l10n.changeCredentialsOpen);
-
-        expect(find.byType(ChangeCredentialsDialog), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenTheCredentialsDialog_WhenItIsOpen_ThenTheRecoveryCodesAreOffered',
-      (tester) async {
-        // UC-42 beside UC-04: both are things an owner does to an account they
-        // still have access to, and neither is a preference.
-        await tester.pumpShell();
-        final l10n = localizations(tester);
-
-        await tester.openSettingsMenuEntry(l10n.changeCredentialsOpen);
-
-        expect(find.byType(RecoveryCodesSection), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'GivenPreferences_WhenTheyAreOpen_ThenNoAccountActionIsOffered',
-      (tester) async {
-        // The dialog is theme and language: an account action inside it is
-        // what made signing out three levels deep.
-        await tester.pumpShell();
-        final l10n = localizations(tester);
-
-        await tester.openSettingsMenuEntry(l10n.preferencesLabel);
-
-        expect(find.text(l10n.changeCredentialsOpen), findsNothing);
-        expect(find.byType(RecoveryCodesSection), findsNothing);
-      },
-    );
-
-    testWidgets('GivenTheSettingsMenu_WhenItIsOpened_ThenSigningOutIsOffered', (
-      tester,
-    ) async {
-      await tester.pumpShell();
-      final l10n = localizations(tester);
-
-      await tester.tap(find.byType(SettingsMenu));
-      await tester.pumpAndSettle();
-
-      expect(find.text(l10n.signOut), findsOneWidget);
-    });
-
-    testWidgets(
-      'GivenTheSettingsMenu_WhenSigningOutIsChosen_ThenTheLoginScreenReturns',
-      (tester) async {
-        await tester.pumpShell();
-        final l10n = localizations(tester);
-
-        await tester.openSettingsMenuEntry(l10n.signOut);
-
-        expect(find.byType(LoginScreen), findsOneWidget);
       },
     );
   });

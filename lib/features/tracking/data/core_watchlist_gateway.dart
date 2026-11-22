@@ -17,11 +17,11 @@ class CoreWatchlistGateway implements WatchlistGateway {
   final CoreClient _core;
 
   @override
-  Future<WatchlistBrowse> browse({required String credential}) async {
+  Future<WatchlistBrowse> browse() async {
     final CoreJsonResponse response;
     try {
       // An empty filter is every watchlist, which is what the screen shows.
-      response = await _core.watchlistsList('', credential);
+      response = await _core.watchlistsList('');
     } on CoreCallException {
       return _unreadable();
     }
@@ -49,45 +49,32 @@ class CoreWatchlistGateway implements WatchlistGateway {
   }
 
   @override
-  Future<WatchlistWrite> create({
-    required String name,
-    required String credential,
-  }) => _write(
-    () => _core.watchlistCreate(jsonEncode({'name': name}), credential),
-  );
+  Future<WatchlistWrite> create({required String name}) =>
+      _write(() => _core.watchlistCreate(jsonEncode({'name': name})));
 
   @override
-  Future<WatchlistWrite> delete({
-    required String uuid,
-    required String credential,
-  }) => _write(() => _core.watchlistDelete(uuid, credential));
+  Future<WatchlistWrite> delete({required String uuid}) =>
+      _write(() => _core.watchlistDelete(uuid));
 
   @override
   Future<WatchlistWrite> addVideo({
     required String uuid,
     required String videoUuid,
-    required String credential,
   }) => _write(
-    () => _core.watchlistAddVideo(
-      uuid,
-      jsonEncode({'videoUuid': videoUuid}),
-      credential,
-    ),
+    () => _core.watchlistAddVideo(uuid, jsonEncode({'videoUuid': videoUuid})),
   );
 
   @override
   Future<WatchlistWrite> removeVideo({
     required String uuid,
     required String videoUuid,
-    required String credential,
-  }) => _write(() => _core.watchlistRemoveVideo(uuid, videoUuid, credential));
+  }) => _write(() => _core.watchlistRemoveVideo(uuid, videoUuid));
 
   @override
   Future<WatchlistWrite> updateProgress({
     required String uuid,
     required String videoUuid,
     required WatchState state,
-    required String credential,
     int? currentEpisode,
     int? totalEpisodes,
   }) => _write(
@@ -102,7 +89,6 @@ class CoreWatchlistGateway implements WatchlistGateway {
         'currentEpisode': ?currentEpisode,
         'totalEpisodes': ?totalEpisodes,
       }),
-      credential,
     ),
   );
 
@@ -123,7 +109,7 @@ class CoreWatchlistGateway implements WatchlistGateway {
 
     // Every alternative flow that is not local arrives here and is told apart
     // by the status the mapper reads: a name the core refused, a video it
-    // already tracks, a record it does not have, and a rejected session.
+    // already tracks, and a record it does not have.
     if (!CoreStatusFamily.watchlist.isOk(response.status)) {
       return WatchlistWrite.failed(
         failure: mapCoreStatus(CoreStatusFamily.watchlist, response.status),

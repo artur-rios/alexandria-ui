@@ -116,126 +116,6 @@ abstract class AppLocalizations {
   /// **'Alexandria\'s core is not available'**
   String get coreUnavailableTitle;
 
-  /// Heading of the login screen (UC-02). Presented whenever there is no active session.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in to Alexandria'**
-  String get loginTitle;
-
-  /// Label of the login form's e-mail field.
-  ///
-  /// In en, this message translates to:
-  /// **'E-mail'**
-  String get loginEmailLabel;
-
-  /// Label of the login form's password field.
-  ///
-  /// In en, this message translates to:
-  /// **'Password'**
-  String get loginPasswordLabel;
-
-  /// The login form's primary action.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in'**
-  String get loginSubmit;
-
-  /// UC-02 AF-01: the e-mail field was left empty. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your e-mail address.'**
-  String get loginEmailMissing;
-
-  /// UC-02 AF-01: the e-mail field does not hold an address. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'That does not look like an e-mail address.'**
-  String get loginEmailMalformed;
-
-  /// UC-02 AF-01: the password field was left empty. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your password.'**
-  String get loginPasswordMissing;
-
-  /// UC-02 AF-02: the core rejected the credentials. Deliberately does not say which of the two was wrong, and does not reveal whether the address is registered.
-  ///
-  /// In en, this message translates to:
-  /// **'That e-mail and password do not match an account.'**
-  String get loginRejected;
-
-  /// UC-02 AF-03: the core holds no credentials, so the owner is sent to sign-up (UC-01) by the action beside this message.
-  ///
-  /// In en, this message translates to:
-  /// **'No account has been set up on this computer yet.'**
-  String get loginNoAccount;
-
-  /// Heading of the sign-up screen (UC-01). Presented on first launch, when the core holds no account.
-  ///
-  /// In en, this message translates to:
-  /// **'Create your Alexandria account'**
-  String get signUpTitle;
-
-  /// UC-01: explains the stakes before the owner chooses. The core owns no mail transport, so there is no reset to fall back on.
-  ///
-  /// In en, this message translates to:
-  /// **'This is the only account. Its password cannot be recovered, so choose one you will not lose.'**
-  String get signUpIntro;
-
-  /// Label of the sign-up form's second password field.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat password'**
-  String get signUpPasswordConfirmationLabel;
-
-  /// The sign-up form's primary action.
-  ///
-  /// In en, this message translates to:
-  /// **'Create account'**
-  String get signUpSubmit;
-
-  /// UC-01 AF-02: the second password field was left empty. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat your password.'**
-  String get signUpPasswordConfirmationMissing;
-
-  /// UC-01 AF-02: the two entries differ. The core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'The two passwords do not match.'**
-  String get signUpPasswordMismatch;
-
-  /// UC-01 AF-03: the core rejected the credentials. The core owns the password policy and does not send its reason across the boundary, so this names the rules it enforces without restating them as front-end validation.
-  ///
-  /// In en, this message translates to:
-  /// **'Alexandria did not accept those credentials. Try a longer, less predictable password that is not your e-mail address.'**
-  String get signUpRejected;
-
-  /// UC-01 AF-04: the core already holds an account, so registration is refused and the owner is sent to the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'An account already exists on this computer. Sign in instead.'**
-  String get signUpAccountExists;
-
-  /// UC-01 AF-04: the action that leaves sign-up for the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to sign in'**
-  String get signUpGoToLogin;
-
-  /// UC-02 AF-03: the action that leaves login for the sign-up screen, offered when the core holds no account.
-  ///
-  /// In en, this message translates to:
-  /// **'Create an account'**
-  String get loginGoToSignUp;
-
-  /// UC-02 AF-04: heading shown on the login screen when a session was discarded because the core rejected a call, rather than because the owner signed out.
-  ///
-  /// In en, this message translates to:
-  /// **'You were signed out'**
-  String get loginSessionEndedTitle;
-
   /// Startup step 1 failed. The path attempted is named because it is the only thing that makes this actionable.
   ///
   /// In en, this message translates to:
@@ -278,12 +158,6 @@ abstract class AppLocalizations {
   /// **'Alexandria rejected that as invalid.'**
   String get failureInvalidInput;
 
-  /// The session is absent, expired, or rejected.
-  ///
-  /// In en, this message translates to:
-  /// **'Your session has ended. Please sign in again.'**
-  String get failureUnauthorized;
-
   /// A call was made before the core was initialized — a fault in the startup sequence rather than something the owner did.
   ///
   /// In en, this message translates to:
@@ -314,71 +188,11 @@ abstract class AppLocalizations {
   /// **'The file on disk no longer matches what Alexandria recorded.'**
   String get failureIntegrity;
 
-  /// The core's own configuration is missing or unusable.
-  ///
-  /// In en, this message translates to:
-  /// **'Alexandria\'s configuration could not be read.'**
-  String get failureConfiguration;
-
   /// The operation would create something that already exists. Nothing the owner typed was wrong.
   ///
   /// In en, this message translates to:
   /// **'That already exists in Alexandria.'**
   String get failureConflict;
-
-  /// The core refused because the caller is asking too often. Nothing the owner typed was wrong; the remedy is to wait.
-  ///
-  /// In en, this message translates to:
-  /// **'Too many attempts. Wait a moment and try again.'**
-  String get failureRateLimited;
-
-  /// The core could not reach a dependency — outbound mail being the one that exists today. The catalog is unaffected.
-  ///
-  /// In en, this message translates to:
-  /// **'Alexandria could not reach a service it needs, so that step did not happen.'**
-  String get failureServiceUnavailable;
-
-  /// Core rejection password_too_short. The bound comes from the core, which owns the policy.
-  ///
-  /// In en, this message translates to:
-  /// **'Use at least {min} characters.'**
-  String rejectionPasswordTooShort(String min);
-
-  /// Core rejection password_too_long.
-  ///
-  /// In en, this message translates to:
-  /// **'Use at most {max} characters.'**
-  String rejectionPasswordTooLong(String max);
-
-  /// Core rejection password_whitespace.
-  ///
-  /// In en, this message translates to:
-  /// **'A password cannot be only spaces.'**
-  String get rejectionPasswordWhitespace;
-
-  /// Core rejection password_repeated_character.
-  ///
-  /// In en, this message translates to:
-  /// **'A password cannot be one character repeated.'**
-  String get rejectionPasswordRepeatedCharacter;
-
-  /// Core rejection password_too_common.
-  ///
-  /// In en, this message translates to:
-  /// **'That password is too common. Choose something less predictable.'**
-  String get rejectionPasswordTooCommon;
-
-  /// Core rejection password_contains_email, which covers both being the address and containing it.
-  ///
-  /// In en, this message translates to:
-  /// **'A password cannot contain your e-mail address.'**
-  String get rejectionPasswordContainsEmail;
-
-  /// Core rejection email_untrimmed.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove the spaces around your e-mail address.'**
-  String get rejectionEmailUntrimmed;
 
   /// A status code this version does not recognize. Keeps the mapping total so an unknown code still reads as a message rather than a raw number.
   ///
@@ -440,17 +254,11 @@ abstract class AppLocalizations {
   /// **'Bookmarks'**
   String get destinationBookmarks;
 
-  /// Title of the preferences dialog (UC-39). Reachable with or without a session.
+  /// Title of the preferences dialog (UC-39).
   ///
   /// In en, this message translates to:
   /// **'Preferences'**
   String get preferencesTitle;
-
-  /// Accessible label and tooltip of the control that opens the preferences dialog.
-  ///
-  /// In en, this message translates to:
-  /// **'Open preferences'**
-  String get preferencesOpen;
 
   /// Visible label of the preferences entry in the Settings menu, shown beside its icon at every breakpoint wider than the minimum.
   ///
@@ -458,7 +266,7 @@ abstract class AppLocalizations {
   /// **'Preferences'**
   String get preferencesLabel;
 
-  /// The menu bar's settings menu, holding preferences and the account actions.
+  /// The menu bar's settings menu, holding the preferences.
   ///
   /// In en, this message translates to:
   /// **'Settings'**
@@ -506,7 +314,7 @@ abstract class AppLocalizations {
   /// **'Match the system'**
   String get preferencesLanguageSystem;
 
-  /// Preference controlling whether the catalog is re-checked against the disk each time a session is established.
+  /// Preference controlling whether the catalog is re-checked against the disk each time the application starts.
   ///
   /// In en, this message translates to:
   /// **'Re-check the library at startup'**
@@ -529,60 +337,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get preferencesClose;
-
-  /// Label of the entry in the Settings menu that opens the credential-change form (UC-04 main flow step 1).
-  ///
-  /// In en, this message translates to:
-  /// **'Change credentials…'**
-  String get changeCredentialsOpen;
-
-  /// Title of the credential-change dialog (UC-04).
-  ///
-  /// In en, this message translates to:
-  /// **'Change credentials'**
-  String get changeCredentialsTitle;
-
-  /// Explains that the e-mail and password change as one, and that the session survives the change (UC-04 postconditions).
-  ///
-  /// In en, this message translates to:
-  /// **'Both are replaced together. You stay signed in.'**
-  String get changeCredentialsIntro;
-
-  /// Label of the new e-mail field.
-  ///
-  /// In en, this message translates to:
-  /// **'New e-mail'**
-  String get changeCredentialsEmailLabel;
-
-  /// Label of the new password field.
-  ///
-  /// In en, this message translates to:
-  /// **'New password'**
-  String get changeCredentialsPasswordLabel;
-
-  /// Label of the repeated-password field (FR-AU-10 requires it entered twice).
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat the new password'**
-  String get changeCredentialsConfirmationLabel;
-
-  /// The form's primary action.
-  ///
-  /// In en, this message translates to:
-  /// **'Change'**
-  String get changeCredentialsSubmit;
-
-  /// UC-04 main flow step 6: the core stored the new hash and the change is confirmed.
-  ///
-  /// In en, this message translates to:
-  /// **'Your e-mail and password have been changed.'**
-  String get changeCredentialsDone;
-
-  /// UC-04 AF-03: the core refused the new credentials. Shown when the core names no more specific reason; the stored credentials are untouched.
-  ///
-  /// In en, this message translates to:
-  /// **'The change was refused, and your e-mail and password are unchanged.'**
-  String get changeCredentialsRejected;
 
   /// Dismisses an inline notice the owner has read. Distinct from closing a screen or cancelling an action.
   ///
@@ -1094,36 +848,6 @@ abstract class AppLocalizations {
   /// **'Edit metadata'**
   String get detailsEditMetadata;
 
-  /// UC-03 main flow step 1: ends the session without closing the application.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign out'**
-  String get signOut;
-
-  /// UC-03 AF-01: the heading of the warning shown when an editor is holding changes that were never saved.
-  ///
-  /// In en, this message translates to:
-  /// **'Unsaved changes'**
-  String get signOutUnsavedTitle;
-
-  /// UC-03 AF-01: names what signing out would lose, and says that cancelling is how to save it.
-  ///
-  /// In en, this message translates to:
-  /// **'Signing out now discards the changes you have not saved. Cancel to go back and save them first.'**
-  String get signOutUnsavedMessage;
-
-  /// UC-03 AF-01: confirms the sign-out, unsaved changes and all.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign out and discard'**
-  String get signOutUnsavedConfirm;
-
-  /// UC-03 AF-02: the scan belongs to the core, so signing out neither stopped it nor lost its outcome.
-  ///
-  /// In en, this message translates to:
-  /// **'You signed out while a scan was still running. It continues in the core, and how it ended is shown the next time you sign in.'**
-  String get signOutIndexRunContinues;
-
   /// UC-16 main flow step 2: the heading of the video metadata form.
   ///
   /// In en, this message translates to:
@@ -1322,12 +1046,6 @@ abstract class AppLocalizations {
   /// **'Save anyway'**
   String get editorOverwrite;
 
-  /// UC-18 AF-06: acknowledges that the session ended and the content could not be saved.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in again'**
-  String get editorSignInAgain;
-
   /// UC-18 AF-01: the editor holds exactly what was read, so the core was not called.
   ///
   /// In en, this message translates to:
@@ -1351,12 +1069,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This file is no longer in the catalog. What you have written is still here, and is not saved.'**
   String get editorRecordGone;
-
-  /// UC-18 AF-06: the core rejected the write, and the owner is warned before the session goes.
-  ///
-  /// In en, this message translates to:
-  /// **'Your session ended, so this could not be saved. Signing in again will lose what is on screen.'**
-  String get editorSessionRejected;
 
   /// UC-18: the content never loaded, so there is nothing to edit.
   ///
@@ -2335,156 +2047,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'From a folder that is no longer registered.'**
   String get missingFilesUnregisteredFolder;
-
-  /// UC-40 main flow step 2: the heading of the screen shown once after sign-up.
-  ///
-  /// In en, this message translates to:
-  /// **'Save your recovery codes'**
-  String get recoveryCodesTitle;
-
-  /// UC-40 main flow step 2 and FR-AU-12: says plainly that the codes are not retrievable and what they are for.
-  ///
-  /// In en, this message translates to:
-  /// **'This is the only time these are shown. Each one replaces a forgotten password exactly once — without them, a forgotten password means a lost library.'**
-  String get recoveryCodesExplanation;
-
-  /// UC-40 AF-02: places the codes on the clipboard. Nothing is written to disk (FR-AU-13).
-  ///
-  /// In en, this message translates to:
-  /// **'Copy the codes'**
-  String get recoveryCodesCopy;
-
-  /// UC-40 AF-02: confirms the copy happened.
-  ///
-  /// In en, this message translates to:
-  /// **'Copied to the clipboard.'**
-  String get recoveryCodesCopied;
-
-  /// UC-40 main flow step 4: the only way past this screen (AF-01). Confirming opens the library.
-  ///
-  /// In en, this message translates to:
-  /// **'I have stored them'**
-  String get recoveryCodesAcknowledge;
-
-  /// UC-40 AF-03: the core issued no codes, which is said plainly rather than shown as an empty list.
-  ///
-  /// In en, this message translates to:
-  /// **'Your account was created, but no recovery codes came with it. Generate a set from preferences before you need one.'**
-  String get recoveryCodesNone;
-
-  /// UC-41 main flow step 1: the screen for an owner who cannot remember their password.
-  ///
-  /// In en, this message translates to:
-  /// **'Recover access'**
-  String get recoveryTitle;
-
-  /// UC-41 main flow step 1: reaches account recovery from the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'I cannot sign in'**
-  String get recoveryOpen;
-
-  /// UC-41 main flow step 2: what the owner needs and what it costs them.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter one of the recovery codes you saved when the account was created, and choose a new password. The code is spent once used, and every open session is signed out.'**
-  String get recoveryExplanation;
-
-  /// UC-41 main flow step 2: the code the owner saved.
-  ///
-  /// In en, this message translates to:
-  /// **'Recovery code'**
-  String get recoveryCodeLabel;
-
-  /// UC-41 main flow step 2: the password that replaces the forgotten one.
-  ///
-  /// In en, this message translates to:
-  /// **'New password'**
-  String get recoveryNewPassword;
-
-  /// UC-41 main flow step 2: entered twice, and the two must match before the core is called.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeat the new password'**
-  String get recoveryConfirmPassword;
-
-  /// UC-41 AF-01: the code is blank, so the core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a recovery code.'**
-  String get recoveryCodeMissing;
-
-  /// UC-41 AF-01: the password is empty, so the core is not called.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a new password.'**
-  String get recoveryPasswordMissing;
-
-  /// UC-41 main flow step 4: sends the code and the new password to the core.
-  ///
-  /// In en, this message translates to:
-  /// **'Replace the password'**
-  String get recoverySubmit;
-
-  /// UC-41 AF-02: the core does not recognise the code. Distinct from AF-03, because a mistyped code and a spent one call for different things.
-  ///
-  /// In en, this message translates to:
-  /// **'That is not one of this account\'s recovery codes. Check it and try again.'**
-  String get recoveryCodeUnknown;
-
-  /// UC-41 AF-03: the core reports the code as already consumed.
-  ///
-  /// In en, this message translates to:
-  /// **'That recovery code has already been used. Each one works once — try another from your list.'**
-  String get recoveryCodeUsed;
-
-  /// UC-41: the core refused without naming a reason this version knows, so the message says what to do rather than a code.
-  ///
-  /// In en, this message translates to:
-  /// **'The password could not be replaced. Check the code and try again.'**
-  String get recoveryRefused;
-
-  /// UC-41 main flow step 6: the redemption succeeded.
-  ///
-  /// In en, this message translates to:
-  /// **'Your password was replaced'**
-  String get recoveryDone;
-
-  /// UC-41 main flow step 6: what happened, and what to do next.
-  ///
-  /// In en, this message translates to:
-  /// **'The code you used is spent, and every open session was signed out. Sign in with the new password.'**
-  String get recoveryDoneExplanation;
-
-  /// UC-41 main flow step 6: returns to the login screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Back to sign in'**
-  String get recoveryBackToLogin;
-
-  /// UC-42 main flow step 2: replaces the whole set with ten new codes.
-  ///
-  /// In en, this message translates to:
-  /// **'Generate new recovery codes'**
-  String get recoveryCodesRegenerate;
-
-  /// UC-42 main flow step 3: the confirmation states what the owner is giving up.
-  ///
-  /// In en, this message translates to:
-  /// **'Every code you have now stops working, and ten new ones take their place. They are shown once.'**
-  String get recoveryCodesRegenerateMessage;
-
-  /// UC-42 main flow step 1: the core reports none unspent, which means the account cannot currently be recovered.
-  ///
-  /// In en, this message translates to:
-  /// **'No recovery codes are left. Generate a set while you still know your password.'**
-  String get recoveryCodesNoneLeft;
-
-  /// UC-42 main flow step 1 and FR-AU-14: how many codes the core reports as unspent.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 recovery code left} other{{count} recovery codes left}}'**
-  String recoveryCodesRemaining(num count);
 
   /// UC-26 main flow step 1: the collections screen heading.
   ///

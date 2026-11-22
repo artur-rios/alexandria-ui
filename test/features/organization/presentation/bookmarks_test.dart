@@ -3,7 +3,6 @@ import 'package:alexandria_ui/core/di/providers.dart';
 import 'package:alexandria_ui/core/failures/core_status.dart';
 import 'package:alexandria_ui/core/failures/failure.dart';
 import 'package:alexandria_ui/core/l10n/generated/app_localizations.dart';
-import 'package:alexandria_ui/features/auth/application/session_state.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark.dart';
 import 'package:alexandria_ui/features/organization/domain/bookmark_gateway.dart';
 import 'package:alexandria_ui/features/organization/presentation/bookmarks_view.dart';
@@ -374,29 +373,6 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(copied, 'https://example.com/article');
-      },
-    );
-  });
-
-  // AF-06: the core rejects the call as unauthorized.
-  group('a session the core rejects', () {
-    testWidgets(
-      'GivenTheCoreRejectsTheSession_WhenListing_ThenTheOwnerSignsOut',
-      (tester) async {
-        final opened = await openBookmarks(
-          tester,
-          listing: const BookmarkListing.failed(
-            failure: Failure.unauthorized(
-              family: CoreStatusFamily.bookmark,
-              code: BOOKMARK_ERR_UNAUTHORIZED,
-            ),
-          ),
-        );
-
-        expect(
-          opened.container.read(sessionControllerProvider),
-          isA<SessionAbsent>(),
-        );
       },
     );
   });

@@ -1,0 +1,78 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/di/providers.dart';
+import '../../shell/domain/app_activity.dart';
+
+/// The catalog's share of the application's activities.
+///
+/// Every catalog provider is kept for the run rather than disposed with the
+/// widget that read it, which is what makes a listing instant on the way back
+/// to it. Ending this activity drops those projections, as closing for an
+/// update does before the installer runs.
+///
+/// Invalidation rather than a clear method on each controller: the projections
+/// are derived from the core, so the honest reset is "forget this and read it
+/// again", and every controller already knows how to build itself from empty.
+class CatalogAppActivity implements AppActivity {
+  /// Creates the activity over [_ref].
+  const CatalogAppActivity(this._ref);
+
+  final Ref _ref;
+
+  /// The catalog holds nothing unsaved: the metadata form writes through the
+  /// core as it saves (UC-16), and there is no draft left behind when it
+  /// closes.
+  @override
+  bool get holdsUnsavedChanges => false;
+
+  @override
+  Future<void> end() async {
+    // The catalog itself, and everything derived from it.
+    _ref.invalidate(listingControllerProvider);
+    _ref.invalidate(typeCountsControllerProvider);
+    _ref.invalidate(recentFilesProvider);
+    _ref.invalidate(catalogSearchProvider);
+
+    // What the owner had open, and what they had typed.
+    _ref.invalidate(searchTermProvider);
+    _ref.invalidate(openFileProvider);
+    _ref.invalidate(fileDetailsControllerProvider);
+    _ref.invalidate(videoMetadataEditorProvider);
+    _ref.invalidate(fileRenameControllerProvider);
+    // The bookmarks are the core's too (UC-28).
+    _ref.invalidate(bookmarksControllerProvider);
+    _ref.invalidate(bookmarkFormProvider);
+    _ref.invalidate(collectionsControllerProvider);
+    _ref.invalidate(collectionsFormProvider);
+    _ref.invalidate(openCollectionProvider);
+    _ref.invalidate(collectionMembersControllerProvider);
+    _ref.invalidate(collectionCandidatesControllerProvider);
+    _ref.invalidate(collectionMembershipFormProvider);
+    _ref.invalidate(bookmarkCollectionsProvider);
+    _ref.invalidate(bookmarkCollectionFilterProvider);
+    // The watchlists are the core's too (UC-29).
+    _ref.invalidate(watchlistsControllerProvider);
+    _ref.invalidate(watchlistsFormProvider);
+    _ref.invalidate(trackedVideosProvider);
+    _ref.invalidate(watchProgressEditorProvider);
+    _ref.invalidate(readingListsControllerProvider);
+    _ref.invalidate(readingListsFormProvider);
+    _ref.invalidate(trackedReadingItemsProvider);
+    _ref.invalidate(readingProgressEditorProvider);
+    _ref.invalidate(deletionControllerProvider);
+    _ref.invalidate(openFileHoldsProvider);
+    _ref.invalidate(deletedItemsControllerProvider);
+    _ref.invalidate(retentionWindowProvider);
+    _ref.invalidate(restoreControllerProvider);
+    _ref.invalidate(purgeControllerProvider);
+    _ref.invalidate(missingFilesControllerProvider);
+
+    // The layout and the per-type filters are deliberately left alone: they
+    // are how the owner prefers to see their library, not a projection of it,
+    // and UC-10 and UC-12 carry them across the run on purpose.
+  }
+
+  /// Nothing to start: this activity only has state to drop, not work to do.
+  @override
+  Future<void> begin() async {}
+}

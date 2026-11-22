@@ -1,5 +1,4 @@
 import '../bindings/alexandria_bindings.dart';
-import 'core_rejection.dart';
 import 'core_status.dart';
 import 'failure.dart';
 
@@ -11,21 +10,13 @@ import 'failure.dart';
 /// success code is a programming error — the caller checks
 /// [CoreStatusFamily.isOk] first — and is reported as [UnexpectedFailure]
 /// rather than silently producing a failure that reads like a real one.
-Failure mapCoreStatus(
-  CoreStatusFamily family,
-  int code, {
-  CoreRejection? rejection,
-}) {
+///
+/// Code 2 has no arm in any family: it was `*_ERR_UNAUTHORIZED`, which core
+/// 0.7.0 retired with authentication, and it reads as unexpected like any
+/// other code this application does not know.
+Failure mapCoreStatus(CoreStatusFamily family, int code) {
   if (family.isOk(code)) {
     return Failure.unexpected(family: family, code: code);
-  }
-
-  // A rejection the core named wins over the status code's generic meaning:
-  // both say the input was refused, and only this one can say which rule it
-  // broke. Applied here rather than per family, because the error envelope is
-  // the core's, not any one area's.
-  if (rejection != null) {
-    return Failure.rejected(family: family, code: code, rejection: rejection);
   }
 
   return switch (family) {
@@ -36,21 +27,16 @@ Failure mapCoreStatus(
     CoreStatusFamily.watchlist => _mapWatchlist(code),
     CoreStatusFamily.readingList => _mapReadingList(code),
     CoreStatusFamily.library => _mapLibrary(code),
-    CoreStatusFamily.auth => _mapAuth(code),
     CoreStatusFamily.playback => _mapPlayback(code),
     CoreStatusFamily.run => _mapRun(code),
     CoreStatusFamily.settings => _mapSettings(code),
   };
 }
 
-// The settings read carries only these three failures: it reads a value the
+// The settings read carries only these two failures: it reads a value the
 // core process already holds, so there is no input to reject and nothing to
 // look up.
 Failure _mapSettings(int code) => switch (code) {
-  SETTINGS_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.settings,
-    code: code,
-  ),
   SETTINGS_ERR_NOT_INITIALIZED => Failure.notInitialized(
     family: CoreStatusFamily.settings,
     code: code,
@@ -63,10 +49,6 @@ Failure _mapSettings(int code) => switch (code) {
 // exactly the misread the separate families exist to prevent.
 Failure _mapRun(int code) => switch (code) {
   RUN_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.run,
-    code: code,
-  ),
-  RUN_ERR_UNAUTHORIZED => Failure.unauthorized(
     family: CoreStatusFamily.run,
     code: code,
   ),
@@ -92,10 +74,6 @@ Failure _mapRun(int code) => switch (code) {
 // every later family uses 9 and reserves 4 for "not found".
 Failure _mapIndex(int code) => switch (code) {
   INDEX_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.indexing,
-    code: code,
-  ),
-  INDEX_ERR_UNAUTHORIZED => Failure.unauthorized(
     family: CoreStatusFamily.indexing,
     code: code,
   ),
@@ -131,10 +109,6 @@ Failure _mapPlayback(int code) => switch (code) {
     family: CoreStatusFamily.playback,
     code: code,
   ),
-  PLAYBACK_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.playback,
-    code: code,
-  ),
   PLAYBACK_ERR_NOT_INITIALIZED => Failure.notInitialized(
     family: CoreStatusFamily.playback,
     code: code,
@@ -157,10 +131,6 @@ Failure _mapPlayback(int code) => switch (code) {
 
 Failure _mapFile(int code) => switch (code) {
   FILE_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.file,
-    code: code,
-  ),
-  FILE_ERR_UNAUTHORIZED => Failure.unauthorized(
     family: CoreStatusFamily.file,
     code: code,
   ),
@@ -189,10 +159,6 @@ Failure _mapCollection(int code) => switch (code) {
     family: CoreStatusFamily.collection,
     code: code,
   ),
-  COLLECTION_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.collection,
-    code: code,
-  ),
   COLLECTION_ERR_NOT_INITIALIZED => Failure.notInitialized(
     family: CoreStatusFamily.collection,
     code: code,
@@ -210,10 +176,6 @@ Failure _mapCollection(int code) => switch (code) {
 
 Failure _mapBookmark(int code) => switch (code) {
   BOOKMARK_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.bookmark,
-    code: code,
-  ),
-  BOOKMARK_ERR_UNAUTHORIZED => Failure.unauthorized(
     family: CoreStatusFamily.bookmark,
     code: code,
   ),
@@ -237,10 +199,6 @@ Failure _mapWatchlist(int code) => switch (code) {
     family: CoreStatusFamily.watchlist,
     code: code,
   ),
-  WATCHLIST_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.watchlist,
-    code: code,
-  ),
   WATCHLIST_ERR_NOT_INITIALIZED => Failure.notInitialized(
     family: CoreStatusFamily.watchlist,
     code: code,
@@ -258,10 +216,6 @@ Failure _mapWatchlist(int code) => switch (code) {
 
 Failure _mapReadingList(int code) => switch (code) {
   READING_LIST_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.readingList,
-    code: code,
-  ),
-  READING_LIST_ERR_UNAUTHORIZED => Failure.unauthorized(
     family: CoreStatusFamily.readingList,
     code: code,
   ),
@@ -292,10 +246,6 @@ Failure _mapLibrary(int code) => switch (code) {
     family: CoreStatusFamily.library,
     code: code,
   ),
-  LIBRARY_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.library,
-    code: code,
-  ),
   LIBRARY_ERR_NOT_INITIALIZED => Failure.notInitialized(
     family: CoreStatusFamily.library,
     code: code,
@@ -309,43 +259,4 @@ Failure _mapLibrary(int code) => switch (code) {
     code: code,
   ),
   _ => Failure.unexpected(family: CoreStatusFamily.library, code: code),
-};
-
-// The auth family has no not-found and no disk code, and is the only one with a
-// configuration code: local login can fail because the core's own auth
-// configuration is unusable.
-Failure _mapAuth(int code) => switch (code) {
-  AUTH_ERR_INVALID_INPUT => Failure.invalidInput(
-    family: CoreStatusFamily.auth,
-    code: code,
-  ),
-  AUTH_ERR_UNAUTHORIZED => Failure.unauthorized(
-    family: CoreStatusFamily.auth,
-    code: code,
-  ),
-  AUTH_ERR_NOT_INITIALIZED => Failure.notInitialized(
-    family: CoreStatusFamily.auth,
-    code: code,
-  ),
-  AUTH_ERR_INVALID_STATE => Failure.invalidState(
-    family: CoreStatusFamily.auth,
-    code: code,
-  ),
-  AUTH_ERR_CONFIG => Failure.configuration(
-    family: CoreStatusFamily.auth,
-    code: code,
-  ),
-  AUTH_ERR_CONFLICT => Failure.conflict(
-    family: CoreStatusFamily.auth,
-    code: code,
-  ),
-  AUTH_ERR_RATE_LIMITED => Failure.rateLimited(
-    family: CoreStatusFamily.auth,
-    code: code,
-  ),
-  AUTH_ERR_SERVICE_UNAVAILABLE => Failure.serviceUnavailable(
-    family: CoreStatusFamily.auth,
-    code: code,
-  ),
-  _ => Failure.unexpected(family: CoreStatusFamily.auth, code: code),
 };
