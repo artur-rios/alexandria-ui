@@ -98,7 +98,7 @@ dependencies:
   archive: ^4.7.1
   xml: ^7.0.1
   flutter_widget_from_html: ^0.17.4
-  pdfrx: ^2.12.1
+  pdfrx: ^3.0.0
   markdown: ^7.3.1
 
   # Reads a saved page's own markup and its own stylesheets, so the rules in

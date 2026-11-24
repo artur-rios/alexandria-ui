@@ -13,8 +13,8 @@
 # checksum too, or ci/flutter-env.sh stops at the checksum).
 #
 # renovate: datasource=github-tags depName=flutter/flutter versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
-FLUTTER_VERSION=3.50.0
-FLUTTER_SHA256=6ea2d806fd57269ae783e6788e2a81fc26eaad782f1e0d0ff38623bb765ff9f5
+FLUTTER_VERSION=3.50.1
+FLUTTER_SHA256=4ad17fc8462fbcef2ba19ff4a78c0a16b7147fde1add8578e267ea62cdb92678
 
 # The core is a separate repository. Building it here rather than committing a binary keeps the shared library out of
 # git history and makes a drift between the two repositories fail the build instead of going unnoticed.
