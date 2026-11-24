@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - On Linux with an NVIDIA graphics card, the window shows the whole application again, under Wayland and X11
   alike. Since 1.0.1 it showed only the application's top-right quarter, drawn into the window's bottom-left
   quarter, with the rest black: a Flutter 3.50.0 bug, fixed in 3.50.1.
+- On Linux under Wayland, the window's contents are drawn at the right size after the window's display scale
+  changes, as when it moves between monitors of different scales. Since 1.0.1 they came out twice their size,
+  showing only their top-left quarter, or shrunk into that quarter: a Flutter 3.50 bug that the Linux runner
+  now works around.
 
 ### Changed
 
