@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-11-24
+
 ### Fixed
 
 - On Linux with an NVIDIA graphics card, the window shows the whole application again, under Wayland and X11
@@ -295,7 +297,8 @@ First tagged release, published as a prerelease to exercise the release pipeline
 - Windows packages — an installer, an MSIX, and a portable zip — and Linux packages — a self-extracting installer and a
   portable tarball, which need the distribution's ffmpeg libraries installed.
 
-[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/artur-rios/alexandria-ui/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/artur-rios/alexandria-ui/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/artur-rios/alexandria-ui/compare/v2.0.1...v3.0.0
 [2.0.1]: https://github.com/artur-rios/alexandria-ui/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/artur-rios/alexandria-ui/compare/v1.0.1...v2.0.0
