@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- On Linux with an NVIDIA graphics card, the window shows the whole application again, under Wayland and X11
+  alike. Since 1.0.1 it showed only the application's top-right quarter, drawn into the window's bottom-left
+  quarter, with the rest black: a Flutter 3.50.0 bug, fixed in 3.50.1.
+
+### Changed
+
+- Built with Flutter 3.50.1.
+
 ## [3.0.0] - 2026-11-22
 
 ### Added
